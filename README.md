@@ -28,37 +28,37 @@ Program compilation:
         3) Modify apost's Makefile to set the variable LIBXCDIR to point to where libxc the library has been installed
         4) Compilation of libxc libraries (see details provided below) 
         5) Copy the F90 interfaces provided by libxc (libxc_funcs.f90 and libxc.f90 files on /src folder) on $LIBXCDIR
-        6) cd $PROG
-        7) make
+        6) cd $PROG ; make
 
-Compilation Libxc Libraries:
+* Compilation Libxc Libraries
 
-        After loading the modules of the intel compilers above mentioned, one has to follow the next instructions:
-        1) cd $LIBXCDIR 
-        2) export CC=icc
-        3) export FC=ifort
-        4) export FCFLAGS="-u -fpp1 -nbs -pc80 -pad -align -unroll-aggressive -O3 -ip -no-fp-port -mno-ieee-fp -vec-report0 -no-prec-div -parallel -qopenmp"
-        5) export LDFLAGS="-qopenmp"
-        6) export CFLAGS="-O3"
-        7) ./configure --prefix=$LIBXCDIR
-        8) make
-        9) make install
+After loading the modules of the intel compilers above mentioned, one has to follow the next instructions:
 
-Important: To date it is not possible to couple APOST3D with newer libxc libraries than the provided, due to internal changes on the modules of libxc. We will work on that as soon as possible.
+        cd $LIBXCDIR 
+        export CC=icc
+        export FC=ifort
+        export FCFLAGS="-u -fpp1 -nbs -pc80 -pad -align -unroll-aggressive -O3 -ip -no-fp-port -mno-ieee-fp -vec-report0 -no-prec-div -parallel -qopenmp"
+        export LDFLAGS="-qopenmp"
+        export CFLAGS="-O3"
+        ./configure --prefix=$LIBXCDIR
+        make
+        make install
+
+Important: To date it is not possible to couple APOST3D with newer libxc libraries than the provided, due to internal changes on the modules of libxc. We will work on that as soon as possible
 
 Documentation
 -------------
 
-TO DO
+A manual of the program, together with examples for each type of calculation can be found here(TO DO: readthedocs?)
 
 Citing APOST3D
 --------------
 
 The following paper should be cited in publications utilizing the APOST3D program:
 
-TO DO
+P. Salvador, E. Ramos-Cordoba, M. Gimferrer, M. Montilla, Program APOST-3D, Version 4, Girona, 2023
 
 Bug reports and feature requests
 --------------------------------
 
-Please submit tickets to XX.
+Please submit tickets to psalse@gmail.com
