@@ -17,18 +17,18 @@ Installation
 
 Prerequisites for manual installation:
 
-        1) Intel oneAPI Base Toolkit
-        2) Intel® oneAPI HPC Toolkit
+        Intel oneAPI Base Toolkit
+        Intel® oneAPI HPC Toolkit
         Available free of charge from: https://www.intel.com/content/www/us/en/developer/tools/oneapi/toolkits.html#base-kit
 
 Program compilation:
 
-        1) Download source code from Github repository
-        2) Set variable PROG in Makefile to the destination folder
-        3) Modify apost's Makefile to set the variable LIBXCDIR to point to where libxc the library has been installed
-        4) Compilation of libxc libraries (see details provided below) 
-        5) Copy the F90 interfaces provided by libxc (libxc_funcs.f90 and libxc.f90 files on /src folder) on $LIBXCDIR
-        6) cd $PROG ; make
+        Download source code from Github repository
+        Set variable PROG in Makefile to the destination folder
+        Modify apost's Makefile to set the variable LIBXCDIR to point to where libxc the library has been installed
+        Compilation of libxc libraries (see details provided below) 
+        Copy the F90 interfaces provided by libxc (libxc_funcs.f90 and libxc.f90 files on /src folder) on $LIBXCDIR
+        cd $PROG ; make
 
 * Compilation Libxc Libraries
 
