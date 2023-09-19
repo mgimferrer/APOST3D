@@ -1,0 +1,627 @@
+  ------------------------------------------------------------------------------
+                                                                                
+                      Program APOST-3D, Version 3.1                             
+                     --------------------------------                           
+                                                                                
+      Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Available atomic definitions:                                             
+      ----------------------------                                              
+                                                                                
+      Real space:                                                               
+        Becke, J. Chem. Phys. 88 2547 1988                                      
+        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
+        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
+        Topological fuzzy Voronoi cells (TFVC), J Chem Phys, 139 071103 2013    
+        QTAIM, J. Comput. Chem 30 1082 2009                                     
+                                                                                
+      Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
+                                                                                
+                                                                                
+      Calculating:                                                              
+      ------------                                                              
+                                                                                
+        A)  Atomic and overlap populations, bond orders and valences            
+             I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	      
+                                                                                
+        B) Hartree-Fock molecular energy decomposition                          
+           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
+                                                                                
+        C) KS-DFT molecular energy decomposition                                
+            P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
+                                                                                
+        D) Molecular energy decomposition for CAS/DMRG wavefunctions            
+                                                                                
+        E) Effective atomic orbitals:                                           
+           I. Mayer, J. Phys. Chem. 100 6249 1996                               
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
+           E. Ramos-Cordoba et.al., J. Chem. Phys. 138 214107 2013              
+                                                                                
+        F) Local spin analysis                                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 8, 1270-1279 2012   
+           E. Ramos-Cordoba et.al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+                                                                                
+        G) Effective Oxidation states analysis                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 11 1501-1508 2015   
+                                                                                
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+              P. Salvador, E. Ramos-Cordoba, M. Gimferrer                       
+              Program APOST-3D, Version 3.1, Girona, 2019                       
+                                                                                
+    e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
+                                                                                
+  ------------------------------------------------------------------------------
+    The program has been written by using parts of the program APOST by         
+    I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
+                                                                                
+    The numerical integration utilizes the subroutines for Lebedev              
+    quadrature downloaded from CCL. The appropriate reference is:               
+    V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
+    131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
+                                                                                
+    The program makes use of libxc library when necessary, using the F90        
+    interfaces provided by the authors.                                         
+                   (see http://www.tddft.org/programs/libxc                     
+                                                                                
+    We are extremely grateful for the possibility of using these routines!      
+                                                                                
+   -----------------------------------------------------------------------------
+ Restricted MO formalism
+ KS-DFT type calculation
+ (single det. built up of the Kohn-Sham orbitals)
+ Number of atoms:           5
+ Number of basis functions:          86
+ Total number of primitive gaussians         171
+ Spin density not found in FChk
+ Reconstructing spin density (if any) from MOs
+  
+ nocc          26     nalpha          26     nbeta          26
+  
+ E(SCF/DFT)=  -1488.2914233300880     
+  
+    DENS=   1
+STIFFNES=   4
+RHO_CALC=   0
+EFF_THRE=   1
+      DM=   0
+XC_FUNCT=   0
+X_FUNCTI= 101
+C_FUNCTI= 130
+ THREBOD= 500
+ Fragment:            1
+   1
+ Fragment:            2
+   2   4
+ Fragment:            3
+   3   5
+ No Local Spin Analysis needed for Restricted SD WFs
+
+        (Elapsed time :: initialization        0.0s)
+  -------------------------------------
+  SETTING ATOMIC GRIDS FOR INTEGRATION 
+  -------------------------------------
+  
+ Radial points  :  150
+ Angular points :  590
+ r0 (radial)    :  0.500
+ Using stiffness k :    4
+
+ Static Memory aprox. (GB)    0.90
+ Max allocated memory aprox. (GB)    1.66
+ Total memory usage aprox. (GB)    2.56
+  
+  
+ Using density along atom pairs to set atomic radii.
+ Subdivision :          11
+ Atom pair:    1   2 Ratio:  0.96078
+  
+ Subdivision :          11
+ Atom pair:    1   3 Ratio:  0.96078
+  
+ Subdivision :          21
+ Atom pair:    2   4 Ratio:  0.78571
+  
+ Subdivision :          21
+ Atom pair:    3   5 Ratio:  0.78571
+  
+ Number of grid points:      442500
+ Checking sum of AOs overlap matrices
+ Deviations may not affect overall accuracy of MOs 
+  
+  ---------------------------
+   DOING POPULATION ANALYSIS 
+    Partial atomic charges
+    Atomic spin densities 
+    Bond orders and Valences 
+  ---------------------------
+  
+   
+     ELECTRON POPULATIONS
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1 Fe    24.556790   25.119036
+   2  C     5.586995    5.587505
+   3  C     5.586995    5.587505
+   4  O     8.134610    7.852977
+   5  O     8.134610    7.852977
+  -----------------------------
+     Sum   52.000000   52.000000
+
+
+
+   FRAGMENT ANALYSIS : Electron populations                                     
+  
+              3D-space   Mulliken
+            ----------------------
+   1         24.556790   25.119036
+   2         13.721605   13.440482
+   3         13.721605   13.440482
+            ----------------------
+  Total:    52.000000    52.000000
+   
+     TOTAL ATOMIC CHARGES    
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1 Fe     1.443210    0.880964
+   2  C     0.413005    0.412495
+   3  C     0.413005    0.412495
+   4  O    -0.134610    0.147023
+   5  O    -0.134610    0.147023
+  -----------------------------
+     Sum    2.000000    2.000000
+   
+
+
+
+   FRAGMENT ANALYSIS : Atomic Charges                                           
+  
+              3D-space   Mulliken
+            ----------------------
+   1          1.443210    0.880964
+   2          0.278395    0.559518
+   3          0.278395    0.559518
+            ----------------------
+  Total:     2.000000     2.000000
+  
+           APOST3D  OVERLAP POPULATION MATRIX
+  
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe    24.233545    0.161620    0.161620    0.000002    0.000002
+   2  C     0.161620    5.256402    0.000000    0.168972    0.000000
+   3  C     0.161620    0.000000    5.256402    0.000000    0.168972
+   4  O     0.000002    0.168972    0.000000    7.965636    0.000000
+   5  O     0.000002    0.000000    0.168972    0.000000    7.965636
+   
+
+
+
+   FRAGMENT ANALYSIS : Overlap Populations                                      
+  
+   1         24.233545    0.161623    0.161623
+   2          0.161623   13.559982    0.000000
+   3          0.161623    0.000000   13.559982
+  
+  Total:         51.9999999587581
+  
+ Additional printing :
+  1  1    24.233545
+  1  2     0.161623
+  1  3     0.161623
+  2  1     0.161623
+  2  2    13.559982
+  2  3     0.000000
+  3  1     0.161623
+  3  2     0.000000
+  3  3    13.559982
+  
+
+                     "FUZZY ATOMS" BOND ORDER MATRIX
+
+
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe    22.981416    1.110181    1.110181    0.465194    0.465194
+   2  C     1.110181    3.920738    0.052978    2.113577    0.055777
+   3  C     1.110181    0.052978    3.920738    0.055777    2.113577
+   4  O     0.465194    2.113577    0.055777    6.800746    0.033179
+   5  O     0.465194    0.055777    2.113577    0.033179    6.800746
+   
+    TOTAL VALENCES 
+   
+     Atom     V_A
+  -----------------
+   1 Fe     3.150749
+   2  C     3.332513
+   3  C     3.332513
+   4  O     2.667728
+   5  O     2.667728
+  ------------------
+   
+ VALENCES USED IN BONDS
+ (SUM OF BOND ORDERS)
+   
+     Atom     VB_A
+  -----------------
+   1 Fe     3.150749
+   2  C     3.332513
+   3  C     3.332513
+   4  O     2.667728
+   5  O     2.667728
+  ------------------
+   
+    FREE VALENCES
+  
+     Atom     F_A
+  -----------------
+   1 Fe     0.000000
+   2  C     0.000000
+   3  C     0.000000
+   4  O     0.000000
+   5  O     0.000000
+  ------------------
+
+
+
+   FRAGMENT ANALYSIS : Fuzzy Bond Order                                         
+  
+   1         22.981416    1.575375    1.575375
+   2          1.575375   12.835062    0.197712
+   3          1.575375    0.197712   12.835062
+  
+  Total:         51.9999998951676
+  
+ Additional printing :
+  1  1    22.981416
+  1  2     1.575375
+  1  3     1.575375
+  2  1     1.575375
+  2  2    12.835062
+  2  3     0.197712
+  3  1     1.575375
+  3  2     0.197712
+  3  3    12.835062
+  
+
+(Elapsed time :: population analyses        8.0s)
+   
+ UEFFAO: alpha and beta treated separatedly
+   
+  
+  --------------------------------------
+    DOING EFFAO-3D GENERAL FORMULATION
+  --------------------------------------
+  
+      ALPHA  PART  
+                   
+ ** FRAGMENT    1 ** 
+                   
+ Net occupation for fragment   1  12.11677
+ Net occupation using >0.0010
+ OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
+ OCCUP.   0.9853   0.9817   0.8156   0.8143   0.2759   0.1644   0.0609   0.0120
+ OCCUP.   0.0086   0.0081   0.0018
+                   
+ Gross occupation for fragment   1  12.27815
+ OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
+ OCCUP.   0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
+ OCCUP.   0.0124   0.0117   0.0034
+                   
+ ** FRAGMENT    2 ** 
+                   
+ Net occupation for fragment   2   6.77999
+ Net occupation using >0.0010
+ OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0722
+ OCCUP.   0.0708   0.0060   0.0019
+                   
+ Gross occupation for fragment   2   6.85631
+ OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0837
+ OCCUP.   0.0821   0.0112   0.0046
+                   
+ ** FRAGMENT    3 ** 
+                   
+ Net occupation for fragment   3   6.77999
+ Net occupation using >0.0010
+ OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0722
+ OCCUP.   0.0708   0.0060   0.0019
+                   
+ Gross occupation for fragment   3   6.85631
+ OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0837
+ OCCUP.   0.0821   0.0112   0.0046
+   
+  Total number of eff-AO-s for analysis:           41
+  EOS: Unambiguous integer electron assignation
+  EOS ANALYSIS  FOR ALPHA ELECTRONS
+   Fragm   Elect  Last occ. First unocc 
+  -------------------------------------
+   1   12.00       0.814       0.276
+   2    7.00       0.747       0.072
+   3    7.00       0.747       0.072
+  -------------------------------------
+      RELIABILITY INDEX R(%) =  97.140
+   
+  SKIPPING EFFAOs FOR BETA ELECTRONS
+   
+   
+   
+   FRAGMENT  OXIDATION STATES 
+   
+   Frag   Oxidation State  
+  -------------------------
+   1        2.00
+   2        0.00
+   3        0.00
+  -------------------------
+   Sum   2.0
+   
+       OVERALL RELIABILITY INDEX R(%) =  97.140
+
+(Elapsed time :: effAOs/EOS analysis       11.1s)
+  
+  --------------------------------------
+   DOING MOLECULAR ENERGY DECOMPOSITION 
+  --------------------------------------
+  
+  
+ INFO : Functional name --> Perdew, Burke & Ernzerhof
+ INFO : Reference --> [1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)                                              
+ INFO : Reference --> [2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)                                              
+ INFO : Functional type --> correlation
+ INFO : GGA functional selected
+  
+  
+ INFO : Functional name --> Perdew, Burke & Ernzerhof
+ INFO : Reference --> [1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)                                              
+ INFO : Reference --> [2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)                                              
+ INFO : Functional type --> exchange
+ INFO : GGA functional selected
+  
+ itype,jtype,iop :            2           2           2
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe -2993.006576  -82.772498  -82.772498  -62.036755  -62.036755
+   2  C   -82.772498  -86.628823   -9.509267  -30.440499   -9.257981
+   3  C   -82.772498   -9.509267  -86.628823   -9.257981  -30.440499
+   4  O   -62.036755  -30.440499   -9.257981 -177.552111   -9.898082
+   5  O   -62.036755   -9.257981  -30.440499   -9.898082 -177.552111
+  Electron-nuclei energy :   -3909.7912591729682     
+
+
+
+   FRAGMENT ANALYSIS: Electron-nuclei attraction                                
+  
+   1      -2993.006576 -144.809253 -144.809253
+   2       -144.809253 -294.621433  -37.923311
+   3       -144.809253  -37.923311 -294.621433
+  
+  Total:      -3909.7912591729691
+  
+ Additional printing :
+  1  1 -2993.006576
+  1  2  -144.809253
+  1  3  -144.809253
+  2  1  -144.809253
+  2  2  -294.621433
+  2  3   -37.923311
+  3  1  -144.809253
+  3  2   -37.923311
+  3  3  -294.621433
+  
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe  1260.369838    0.000000    0.000000    0.000000    0.000000
+   2  C     0.000000   37.038642    0.000000    0.000000    0.000000
+   3  C     0.000000    0.000000   37.038642    0.000000    0.000000
+   4  O     0.000000    0.000000    0.000000   73.923435    0.000000
+   5  O     0.000000    0.000000    0.000000    0.000000   73.923435
+  Kinetic energy :    1482.2939922531914     
+
+
+
+   FRAGMENT ANALYSIS: Kinetic energy                                            
+  
+   1       1260.369838    0.000000    0.000000
+   2          0.000000  110.962077    0.000000
+   3          0.000000    0.000000  110.962077
+  
+  Total:       1482.2939922531912
+  
+ Additional printing :
+  1  1  1260.369838
+  1  2     0.000000
+  1  3     0.000000
+  2  1     0.000000
+  2  2   110.962077
+  2  3     0.000000
+  3  1     0.000000
+  3  2     0.000000
+  3  3   110.962077
+  
+  Nuclear repulsion energy :    201.06105456172756     
+  
+  
+(Elapsed time :: enpart one-electron        4.9s)
+  *** DFT MOLECULAR ENERGY DECOMPOSITION *** 
+  
+  DOING BOND ORDER DENSITY APPROACH 
+ Threshold for atom pair calculation :   0.050000
+  
+  CHECKING MO OVERLAPS 
+  
+  
+  USING BODEN FOR ALL ATOM PAIR CONTRIBUTIONS 
+  
+  Integrated BODEN for atoms            1           2  :    1.1101807926908571     
+  
+  Integrated BODEN for atoms            1           3  :    1.1101807926122667     
+  
+  Integrated BODEN for atoms            1           4  :   0.46519387210519964     
+  
+  Integrated BODEN for atoms            1           5  :   0.46519387194443501     
+  
+  Integrated BODEN for atoms            2           3  :    5.2977807574873588E-002
+  
+  Integrated BODEN for atoms            2           4  :    2.1135770296338423     
+  
+  Integrated BODEN for atoms            2           5  :    5.5777265047048469E-002
+  
+  Integrated BODEN for atoms            3           4  :    5.5777264835070742E-002
+  
+  Integrated BODEN for atoms            3           5  :    2.1135770298375132     
+  
+  DIATOMIC XC COMPONENTS 
+  
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe     0.000000   -0.260875   -0.260875   -0.111992   -0.111992
+   2  C    -0.260875    0.000000   -0.004885   -0.603781   -0.006062
+   3  C    -0.260875   -0.004885    0.000000   -0.006062   -0.603781
+   4  O    -0.111992   -0.603781   -0.006062    0.000000    0.000000
+   5  O    -0.111992   -0.006062   -0.603781    0.000000    0.000000
+  
+  PURE DFT ONE-CENTER CONTRIBUTIONS (EXACT) 
+  
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe   -54.964955    0.000000    0.000000    0.000000    0.000000
+   2  C     0.000000   -5.035511    0.000000    0.000000    0.000000
+   3  C     0.000000    0.000000   -5.035511    0.000000    0.000000
+   4  O     0.000000    0.000000    0.000000   -8.324626    0.000000
+   5  O     0.000000    0.000000    0.000000    0.000000   -8.324626
+  Exact one-center decomposition for DFT xc energy :   -81.685228769015879     
+  
+  REARRANGING ATOMIC COMPONENTS 
+  
+  FINAL KS-DFT XC ENERGY COMPONENTS 
+  
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe   -54.592088   -0.260875   -0.260875   -0.111992   -0.111992
+   2  C    -0.260875   -4.597710   -0.004885   -0.603781   -0.006062
+   3  C    -0.260875   -0.004885   -4.597710   -0.006062   -0.603781
+   4  O    -0.111992   -0.603781   -0.006062   -7.963709    0.000000
+   5  O    -0.111992   -0.006062   -0.603781    0.000000   -7.963709
+  Sum of (exact) DFT xc energy components :   -81.685228769015865     
+  
+
+
+
+   FRAGMENT ANALYSIS: Exc Decomposition                                         
+  
+   1        -54.592088   -0.372867   -0.372867
+   2         -0.372867  -13.165200   -0.017008
+   3         -0.372867   -0.017008  -13.165200
+  
+  Total:        -81.6852287690159
+  
+ Additional printing :
+  1  1   -54.592088
+  1  2    -0.372867
+  1  3    -0.372867
+  2  1    -0.372867
+  2  2   -13.165200
+  2  3    -0.017008
+  3  1    -0.372867
+  3  2    -0.017008
+  3  3   -13.165200
+  
+  
+(Elapsed time :: enpart dft       34.3s)
+ SETTING GRID FOR TWO-ELECTRON ENERGY INTEGRATION
+   
+ Radial points:           40
+ Angular points:         146
+ Number of grid points:       29200
+  
+ ##############################
+  Doing two-electron integrals
+ ##############################
+  
+ Rotating for angles :    0.0000000000000000       0.16200000000000001     
+ Number of grid points:       29200
+  
+  *** COULOMB PART *** 
+  
+  Ecoul TERMS 
+  
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe   524.930681   39.454862   39.454862   30.476856   30.476856
+   2  C    39.454862   16.905520    4.515785   14.414373    4.543897
+   3  C    39.454862    4.515785   16.905520    4.543897   14.414373
+   4  O    30.476856   14.414373    4.543897   36.916396    5.051235
+   5  O    30.476856    4.543897   14.414373    5.051235   36.916396
+  Coulomb energy :    819.92151073773471     
+
+
+
+ FRAGMENT ANALYSIS: Coulomb energy                                              
+  
+   1        524.930681   69.931719   69.931719
+   2         69.931719   68.236289   18.654814
+   3         69.931719   18.654814   68.236289
+  
+  Total:        819.9215107377347
+  
+ Additional printing :
+  1  1   524.930681
+  1  2    69.931719
+  1  3    69.931719
+  2  1    69.931719
+  2  2    68.236289
+  2  3    18.654814
+  3  1    69.931719
+  3  2    18.654814
+  3  3    68.236289
+  
+(Elapsed time :: Coulomb energy        1.5s)
+  
+  DFT electron-electron energy :    738.23628196871880     
+  Max error accepted on the two-electron part :   0.25000000000000000     
+
+                     "FUZZY ATOMS" DFT ENERGY COMPONENTS
+
+
+              1 Fe        2  C        3  C        4  O        5  O 
+
+   1 Fe -1262.298145   -0.174727   -0.174727   -0.154215   -0.154215
+   2  C    -0.174727  -37.282370    0.009784   -0.658203   -0.011303
+   3  C    -0.174727    0.009784  -37.282370   -0.011303   -0.658203
+   4  O    -0.154215   -0.658203   -0.011303  -74.675989    0.002047
+   5  O    -0.154215   -0.011303   -0.658203    0.002047  -74.675989
+  
+ SUM OF DFT COMPONENTS :            -1488.1999303893310     
+ Total energy in checkpointfile :   -1488.2914233300880     
+ Integration error (au):            0.09149294
+ Integration error (kcal/mol):         57.41
+
+
+
+   FRAGMENT ANALYSIS: Energy Decomposition                                      
+  
+   1      -1262.298145   -0.328942   -0.328942
+   2         -0.328942 -112.616563   -0.010775
+   3         -0.328942   -0.010775 -112.616563
+  
+  Total:      -1488.1999303893308
+  
+ Additional printing :
+  1  1 -1262.298145
+  1  2    -0.328942
+  1  3    -0.328942
+  2  1    -0.328942
+  2  2  -112.616563
+  2  3    -0.010775
+  3  1    -0.328942
+  3  2    -0.010775
+  3  3  -112.616563
+  
+  
+(Elapsed time :: enpart two-electron        2.3s)
+  
+ ...Normal Termination of APOST-3D... 

@@ -1,0 +1,9 @@
+Test set calculations
+
+n2-cas     # Local spin and Enpart for a singlet CASSCF WF. DM obtained from DMN code
+           # Fchk from Gaussian calculation (no individual energy contributions)
+o2_cas     # EOS, Local spin and Enpart for a triplet CASSCF WF. DM and Fchk obtained from PySCF
+h2o-t-b3lyp # Local spin and Enpart for triplet B3LYP WF 
+h2o-s-hf    # EOS , POLAR and Enpart for a singlet HF WF under an external electric field
+feco2-pbepbe # EOS local spin and Enpart using libxc for singlet KS-DFT
+ruco2-pbepbe # EOS, local spin and Enpart using libxc for singlet KS-DFT with pseudopotential

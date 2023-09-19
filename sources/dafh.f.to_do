@@ -1,0 +1,455 @@
+C WARNING. still using old common's with basis functions
+C needs to be updated
+
+      subroutine dafh_input(nbasis,ndim,nat0,sat)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      integer, intent(in) :: nbasis,ndim,nat0
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /stv/ s(nmax,nmax),t(nmax,nmax)
+      common /iops/iopt(100)
+      common /c_no/ c_no(nmax,nmax),occ_no(nmax,nmax)
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      dimension sat(ndim,ndim,nat0)
+      logical ilog
+
+      allocatable  dm2(:,:,:,:),dm1(:,:),scr(:,:),scr2(:,:),sat_no(:,:)
+
+      icorr=Iopt(26) 
+       
+c Note that Nbasis here is the number of core + active SPIN-orbitals
+c = twice the number of core + active spatial MO-s.
+      allocate  (dm1(nbasis,nbasis), sat_no(nbasis,nbasis))
+
+c nmax to match occ_no
+      allocate (scr(nmax,nmax))
+
+c      call flush
+       open(unit=33,file='dafh.inp')
+
+       do i=1,nbasis
+        do j=1,nbasis
+         dm1(i,j)=0.d0
+        enddo
+       enddo
+
+      rewind 11
+      DO WHILE(.TRUE.)
+       READ(11,END=99) I,J,VVV 
+c       write(*,*) 'pollas',i,j,vvv
+       IF (ABS(VVV).GT.THRES) then
+        dm1(i,j)=dm1(i,j)+VVV
+        dm1(j,i)=dm1(i,j)
+       end if 
+      ENDDO
+
+99    print *,' End on input file with DM1'
+
+      ncore=nbasis/2-ncasorb
+      nbascas=nbasis/2
+      nbac=nbascas-ncore
+      write(*,*) 'pollas', ncasorb,ncore,nbascas 
+      do i=1,nbascas     
+       do k=1,nbascas    
+        occ_no(i,k)=dm1((i-1)*2+1,(k-1)*2+1)+
+     $  dm1((i-1)*2+2,(k-1)*2+2)
+       end do
+      end do
+C diagonalize to get NOs
+      call diagonalize(nmax,Nbascas ,occ_no,scr,0)
+C SORT NOs
+c      do i=1,nbascas
+c       xmax=0.0d0
+c       do j=i,nbascas
+c        if (abs(occ_no(j,j).gt.xmax)) then
+c         xmax=abs(occ_no(j,j))
+c         imax=j
+c        end if
+c       end do
+c       occ_no(imax,imax)=occ_no(i,i)
+c       occ_no(i,i)=xmax       
+c       do k=1,nbascas
+c        xmax=scr(k,i)
+c        scr(k,imax)=scr(k,i)
+c        scr(k,i)=xmax       
+c        end do
+c      end do
+
+       ndum=nbascas-ncore
+
+      write(33,*) ndum,igr,nat,
+     +  "  orbitals basis-functions centres"
+      write(33,'(4f12.8)') (occ_no(i+ncore,i+ncore),i=1,nbac )
+      do i=1,nbac 
+       write(33,*) 'Natural orbital',i
+       write(33,'(5e16.8)') (c_no(k,i+ncore),k=1,igr)
+      end do
+
+      allocate (scr2(igr,igr), sat_no(nbascas,nbascas))
+
+      do iat=1,nat
+
+       do i=1,nbascas  
+        do j=1,nbascas  
+         sat_no(i,j)=0.d0
+        end do
+       end do
+       do i=1,igr     
+        do j=1,nbascas  
+         scr2(i,j)=0.0d0                           
+         do k=1,igr     
+          scr2(i,j)=scr2(i,j)+sat(i,k,iat)*c_no(k,j)
+         end do
+        end do
+       end do
+       do i=1,nbascas  
+        do j=1,nbascas  
+         do k=1,igr     
+          sat_no(i,j)=sat_no(i,j)+scr2(k,j)*c_no(k,i)
+         end do
+        end do
+       end do
+       do i=ncore+1,nbascas  
+       write(33,'(8f10.6)') (sat_no(i,j),j=ncore+1,i)
+       end do
+      end do
+C transfrom DM2
+C trasnformation matrix is scr trasnposed
+
+C LOOPS OVER DM2 ELEMENTS
+      nb=nbascas-ncore
+      allocate(dm2(nb,nb,nb,nb))
+      dm2=0.0d0
+      THRES=1.0d-8
+      icont=0
+      REWIND(12)
+      DO WHILE(.TRUE.)
+      READ(12,END=999) I0,K0,J0,L0,VVV
+      icont=icont+1
+      IF (ABS(VVV).GT.THRES) then
+      I=(I0-1)/2+1-ncore
+      J=(J0-1)/2+1-ncore
+      K=(K0-1)/2+1-ncore
+      L=(L0-1)/2+1-ncore
+      if((I.le.0.or.j.le.0.or.k.le.0.or.l.le.0)) then
+c       write(*,*) 'ignored',i,k,j,l,vvv
+      else
+c       write(*,*) 'doing',i,k,j,l,vvv
+      ilog=.true.
+      if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0))
+     % ilog=.false.
+      IJ0=mod(I0+J0,2)+mod(K0+L0,2)
+      KJ0=mod(K0+J0,2)+mod(I0+L0,2)
+
+        if(IJ0.eq.0)then
+         dm2(i,j,k,l)=dm2(i,j,k,l)+vvv
+         if(ilog) dm2(j,i,l,k)=dm2(j,i,l,k)+vvv
+         if(k0.ne.i0.and.l0.ne.j0) then
+          dm2(k,l,i,j)=dm2(k,l,i,j)+vvv
+          if(ilog) dm2(l,k,j,i)=dm2(l,k,j,i)+vvv
+         end if
+        end if
+        if(KJ0.eq.0) then
+         if(k0.ne.i0) then
+          dm2(k,j,i,l)=dm2(k,j,i,l)-vvv
+          if(ilog) dm2(j,k,l,i)=dm2(j,k,l,i)-vvv
+         end if
+         if(l0.ne.j0) then 
+          dm2(i,l,k,j)=dm2(i,l,k,j)-vvv
+          if(ilog) dm2(l,i,j,k)=dm2(l,i,j,k)-vvv
+         end if
+        end if
+
+       end if 
+      end if 
+      END DO
+999    CONTINUE
+      write(*,*) 'READ DM2: ', icont, 'ELEMENTS'
+C 1st step
+      do i=1,nb
+       do k=1,nb
+        do j=1,nb
+         do mu=1,nb
+          xx=0.0d0
+          do l=1,nb
+           xx=xx+dm2(i,k,j,l)*scr(l+ncore,mu+ncore)
+          end do
+          scr2(mu,mu)=xx
+         end do
+         do mu=1,nb
+          dm2(i,k,j,mu)=scr2(mu,mu)
+         end do
+        end do
+       end do
+      end do
+C 2st step
+      do i=1,nb
+       do k=1,nb
+        do mu=1,nb
+         do nu=1,nb
+          xx=0.0d0
+          do j=1,nb
+           xx=xx+dm2(i,k,j,mu)*scr(j+ncore,nu+ncore)
+          end do
+          scr2(nu,nu)=xx
+         end do
+         do nu=1,nb
+          dm2(i,k,nu,mu)=scr2(nu,nu)
+         end do
+        end do
+       end do
+      end do
+C 3rd step
+      do i=1,nb
+       do nu=1,nb
+        do mu=1,nb
+         do isig=1,nb
+          xx=0.0d0
+          do k=1,nb
+           xx=xx+dm2(i,k,nu,mu)*scr(k+ncore,isig+ncore)
+          end do
+          scr2(isig,isig)=xx
+         end do
+         do isig=1,nb
+          dm2(i,isig,nu,mu)=scr2(isig,isig)
+         end do
+        end do
+       end do
+      end do
+C 4th step
+      do isig=1,nb
+       do nu=1,nb
+        do mu=1,nb
+         do ila=1,nb
+          xx=0.0d0
+          do i=1,nb
+           xx=xx+dm2(i,isig,nu,mu)*scr(i+ncore,ila+ncore)
+          end do
+          scr2(ila,ila)=xx
+         end do
+         do ila=1,nb
+          dm2(ila,isig,nu,mu)=scr2(ila,ila)
+         end do
+        end do
+       end do
+      end do
+C PRINT OUT
+      do ila=1,nb
+       do isig=1,nb
+        do nu=1,nb
+         do mu=1,nb
+         vvv=dm2(ila,isig,nu,mu)
+c         vvv=dm2(ila+ncore,isig+ncore,nu+ncore,mu+ncore)
+         IF (ABS(VVV).GT.THRES) then
+c         write(33,'(4i3,f13.8)')ila,isig,nu,mu,vvv/2.0d0
+         write(33,'(4i3,f13.8)')ila,nu,isig,mu,vvv/2.0d0
+         end if
+         end do
+        end do
+       end do
+      end do
+
+C END OF DM2 PART
+
+      return
+         end 
+
+      
+      subroutine dafh_input_uhf(ndim,nat0,sat)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /stv/ s(nmax,nmax),t(nmax,nmax)
+      common /c/c(nmax,nmax),p(nmax,nmax)
+      common /opensh/ cb(nmax,nmax)   
+      common /iops/iopt(100)
+      common /atlist/iatlist(maxat),icuat
+      dimension sat(ndim,ndim,nat0)
+      allocatable scr2(:,:),sat_no(:,:)
+
+c Note that Nbasis here is the number of core + active SPIN-orbitals
+c = twice the number of core + active spatial MO-s.
+
+       open(unit=33,file='dafh_uhf.inp')
+
+       write(33,*) 'Atomic Orbitals Matrix from ProAIM calculations'
+       write(33,'(a17,I6)') ' Number of atoms:', nat0
+       write(33,'(a30,I6)') ' Number of molecular orbitals:',nalf+nb 
+
+      allocate (scr2(igr,igr), sat_no(nalf,nalf))
+
+      do iat=1,nat  
+
+      do i=1,nalf     
+       do j=1,nalf     
+        sat_no(i,j)=0.d0
+       end do
+      end do
+c    iat=iatlist(iat0)
+
+       do i=1,igr     
+        do j=1,nalf    
+         scr2(i,j)=0.0d0                           
+         do k=1,igr     
+          scr2(i,j)=scr2(i,j)+sat(i,k,iat)*c(k,j)
+         end do
+        end do
+       end do
+       do i=1,nalf     
+        do j=1,nalf     
+         do k=1,igr     
+          sat_no(i,j)=sat_no(i,j)+scr2(k,j)*c(k,i)
+         end do
+        end do
+       end do
+
+       nn=nalf/6
+       mm=mod(nalf,nn)
+       write(33,*) ' '
+       write(33,'(a15,i5)') '      AOM Alpha',   iat 
+       do ii=1,nn
+        do i=1,nalf
+         write(33,'(1x,6f11.7)') (sat_no(i,j),j=(ii-1)*6+1,ii*6)
+        end do
+        if(nn*6.ne.nalf) then
+        write(33,*) ' '
+        write(33,*) ' '
+        end if
+       end do
+       if(mm.ne.0) then
+        do i=1,nalf
+         write(33,'(1x,6f11.7)') (sat_no(i,j),j=nn*6+1,nalf)
+        end do
+       end if
+
+      end do
+
+
+C BETA PART
+      do iat=1,nat  
+
+      do i=1,nb     
+       do j=1,nb     
+        sat_no(i,j)=0.d0
+       end do
+      end do
+c    iat=iatlist(iat0)
+
+       do i=1,igr     
+        do j=1,nb    
+         scr2(i,j)=0.0d0                           
+         do k=1,igr     
+          scr2(i,j)=scr2(i,j)+sat(i,k,iat)*cb(k,j)
+         end do
+        end do
+       end do
+       do i=1,nb     
+        do j=1,nb     
+         do k=1,igr     
+          sat_no(i,j)=sat_no(i,j)+scr2(k,j)*cb(k,i)
+         end do
+        end do
+       end do
+
+       nn=nb/6
+       mm=mod(nb,nn)
+       write(33,*) ' '
+       write(33,'(a14,i5)') '      AOM Beta',   iat 
+       do ii=1,nn
+        do i=1,nb
+         write(33,'(1x,6f11.7)') (sat_no(i,j),j=(ii-1)*6+1,ii*6)
+        end do
+        if(ii*6.ne.nb) then
+        write(33,*) ' '
+        write(33,*) ' '
+        end if
+       end do
+       if(mm.ne.0) then
+        do i=1,nb
+         write(33,'(1x,6f11.7)') (sat_no(i,j),j=nn*6+1,nb)
+        end do
+       end if
+      end do
+
+        write(33,*) ' '
+        write(33,*) ' '
+
+      return
+         end 
+
+      
+      subroutine dafh_input_rhf(ndim,nat0,sat)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /stv/ s(nmax,nmax),t(nmax,nmax)
+      common /c/c(nmax,nmax),p(nmax,nmax)
+      common /opensh/ cb(nmax,nmax)   
+      common /iops/iopt(100)
+      common /atlist/iatlist(maxat),icuat
+      dimension sat(ndim,ndim,nat0)
+      allocatable scr2(:,:),sat_no(:,:)
+
+c Note that Nbasis here is the number of core + active SPIN-orbitals
+c = twice the number of core + active spatial MO-s.
+
+       open(unit=33,file='dafh_rhf.inp')
+
+       write(33,*) 'Atomic Orbitals Matrix from ProAIM calculations'
+       write(33,'(a17,I6)') ' Number of atoms:', nat0
+       write(33,'(a30,I6)') ' Number of molecular orbitals:',nocc    
+
+      allocate (scr2(igr,igr), sat_no(nocc,nocc))
+
+      do iat=1,nat  
+
+      do i=1,nocc     
+       do j=1,nocc     
+        sat_no(i,j)=0.d0
+       end do
+      end do
+c    iat=iatlist(iat0)
+
+       do i=1,igr     
+        do j=1,nocc    
+         scr2(i,j)=0.0d0                           
+         do k=1,igr     
+          scr2(i,j)=scr2(i,j)+sat(i,k,iat)*c(k,j)
+         end do
+        end do
+       end do
+       do i=1,nocc     
+        do j=1,nocc     
+         do k=1,igr     
+          sat_no(i,j)=sat_no(i,j)+scr2(k,j)*c(k,i)
+         end do
+        end do
+       end do
+
+       nn=nocc/6
+       mm=mod(nocc,nn)
+       write(33,*) ' '
+       write(33,'(a9,i5)') '      AOM',   iat 
+       do ii=1,nn
+        do i=1,nocc
+         write(33,'(1x,6f11.7)') (sat_no(i,j),j=(ii-1)*6+1,ii*6)
+        end do
+        if(nn*6.ne.nocc) then
+        write(33,*) ' '
+        write(33,*) ' '
+        end if
+       end do
+       if(mm.ne.0) then
+        do i=1,nocc
+         write(33,'(1x,6f11.7)') (sat_no(i,j),j=nn*6+1,nocc)
+        end do
+       end if
+
+      end do
+
+        write(33,*) ' '
+        write(33,*) ' '
+
+      return
+         end 
+

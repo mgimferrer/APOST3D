@@ -1,0 +1,14 @@
+func_reference.lo: func_reference.c /usr/include/stdc-predef.h ./xc.h ../config.h \
+ ../xc_version.h ./xc_funcs.h ./xc_funcs_removed.h
+
+/usr/include/stdc-predef.h:
+
+./xc.h:
+
+../config.h:
+
+../xc_version.h:
+
+./xc_funcs.h:
+
+./xc_funcs_removed.h:

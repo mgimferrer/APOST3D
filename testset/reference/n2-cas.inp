@@ -1,0 +1,15 @@
+# METODE
+TFVC
+ENPART
+SPIN
+#
+# ENPART
+CASSCF
+CORRELATION
+#
+# DM
+n2-cas.dm1
+n2-cas.dm2
+#
+
+
