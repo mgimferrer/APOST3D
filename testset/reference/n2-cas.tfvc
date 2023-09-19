@@ -1,0 +1,375 @@
+  ------------------------------------------------------------------------------
+                                                                                
+                      Program APOST-3D, Version 2.00                            
+                     --------------------------------                           
+                                                                                
+      Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Available atomic definitions:                                             
+      ----------------------------                                              
+                                                                                
+      Real space:                                                               
+        Becke, J. Chem. Phys. 88 2547 1988                                      
+        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
+        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
+        Topological fuzzy Voronoi cells (TFVC), J Chem Phys, 139 071103 2013    
+        QTAIM, J. Comput. Chem 30 1082 2009                                     
+                                                                                
+      Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
+                                                                                
+                                                                                
+      Calculating:                                                              
+      ------------                                                              
+                                                                                
+        A)  Atomic and overlap populations, bond orders and valences            
+             I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	      
+                                                                                
+        B) Hartree-Fock molecular energy decomposition                          
+           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
+                                                                                
+        C) DFT molecular energy decomposition                                   
+            P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
+                                                                                
+        C) Effective atomic orbitals:                                           
+           I. Mayer, J. Phys. Chem. 100 6249 1996                               
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
+           E. Ramos-Cordoba et.al., J. Chem. Phys. 138 214107 2013              
+                                                                                
+        D) Local spin analysis                                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 8, 1270-1279 2012   
+           E. Ramos-Cordoba et.al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+                                                                                
+        E) Effective Oxidation states analysis                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput.                     
+                                                                                
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+    P. Salvador, E. Ramos-Cordoba, Program APOST-3D, Version 2.00, Girona, 2014 
+                                                                                
+            e-mails: psalse@gmail.com, eloy.raco@gmail.com                      
+                                                                                
+  ------------------------------------------------------------------------------
+    The program has been written by using parts of the program APOST by         
+    I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
+                                                                                
+    The numerical integration utilizes the subroutines for Lebedev              
+    quadrature downloaded from CCL. The appropriate reference is:               
+    V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
+    131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
+                                                                                
+                                                                                
+    We are extremely grateful for the possibility of using these routines!      
+                                                                                
+   -----------------------------------------------------------------------------
+ CAS specification is read:
+ Active electrons :            6
+ Active orbitals  :            6
+  Number of CAS spin-orbitals          20
+     nalpha           7     nbeta           7
+  
+  E(SCF/DFT)=  -109.10013116247021     
+  
+ Number of atoms:           2
+ Number of primitives:         106
+ Number of basis functions:          60
+ Natural orbital occupations (>1.0e-6): 
+   2.00000   2.00000   2.00000   2.00000   1.97435   1.92065   1.92065   0.07922
+   0.07922   0.02591
+
+ (Elapsed time :: processing input files        0.0s)
+  -------------------------------------
+  SETTING ATOMIC GRIDS FOR INTEGRATION 
+  -------------------------------------
+  
+ Radial points  :  150
+ Angular points :  590
+ r0 (radial)    :  0.500
+ Using stiffness k :    4
+
+ Static Memory aprox. (GB)    0.90
+ Max allocated memory aprox. (GB)    0.39
+ Total memory usage aprox. (GB)    1.29
+  
+  
+  
+ Using density along atom pairs to set atomic radii.
+ Subdivision :          21
+ Atom pair:    1   2 Ratio:  1.00000
+  
+  
+  Number of grid points:      177000
+ Checking sum of AOs overlap matrices
+ Deviations may not affect overall accuracy of MOs 
+  -------------------------------
+   POST-HARTREE-FOCK CALCULATION 
+  -------------------------------
+  
+ Number of core + active spin-orbitals :           20
+ Number of electrons :           14
+ Number of basis functions :          60
+  
+  DM1 input starts
+  End on input file with DM1
+  
+  Max. deviation from idempotency=   3.8102867972161114E-002
+  
+ Reconstructing P and Ps matrices from dm1 file
+  Max dif. P from dm1 and from FChk:    1.4808347881256623E-009
+  
+  ---------------------------
+   DOING POPULATION ANALYSIS 
+    Partial atomic charges
+    Atomic spin densities 
+    Bond orders and Valences 
+  ---------------------------
+  
+   
+     ELECTRON POPULATIONS
+   
+   Atom   apost3d    Mulliken
+  -----------------------------
+   1  N   7.000000   7.000000
+   2  N   7.000000   7.000000
+  -----------------------------
+   Sum   14.000000  14.000000
+   
+   
+     TOTAL ATOMIC CHARGES    
+   
+   Atom   apost3d    Mulliken
+  -----------------------------
+   1  N   0.000000   0.000000
+   2  N   0.000000   0.000000
+  -----------------------------
+   Sum    0.000000   0.000000
+   
+  
+
+                     "FUZZY ATOMS" BOND ORDER MATRIX
+
+
+              1  N        2  N 
+
+   1  N     0.000000    2.746840
+   2  N     2.746840    0.000000
+
+
+                         "FUZZY ATOMS" TOTAL VALENCES
+
+  ATOM  VALENCE  ATOM   VALENCE 
+  1  N  3.10232  2  N   3.10232
+
+
+                 VALENCES USED IN BONDS (SUM OF BOND ORDERS)
+
+  1  N  2.74684  2  N   2.74684
+
+
+                              FREE VALENCES
+
+  (In the closed shell RHF case should be small: integration inaccurracy)
+  
+  1  N  0.35548  2  N   0.35548
+  
+ Total number of effectively unpaired electrons:   0.71095525517036096     
+
+                       APOST3D BOND ORDER MATRIX
+  Improved definition by I. Mayer on CPL 554, 83 (2012)
+  
+              1  N        2  N 
+
+   1  N     5.448841    2.786345
+   2  N     2.786345    5.448841
+  
+     
+  NUMBER OF EFF. UNPAIRED ELECTRONS
+   
+   Atom   _u_A
+  -----------------
+   1  N   0.355478
+   2  N   0.355478
+  ------------------
+   Sum    0.710955
+   
+
+    (Elapsed time :: population analysis        2.5s)
+  
+  ---------------------------
+   DOING LOCAL SPIN ANALYSIS 
+         Correlated WF       
+  ---------------------------
+  
+ READ DM2:       147099 ELEMENTS
+  
+                   *** RECOMMENDED FORMULATION *** 
+
+                         APOST3D S^2 DECOMPOSITION (a=3/4)
+
+
+              1  N        2  N 
+
+   1  N     0.098539   -0.098539
+   2  N    -0.098539    0.098539
+  
+    <S^2>=  -3.7131719921035256E-010
+
+                     APOST3D LI/DI MATRIX
+
+
+              1  N        2  N 
+
+   1  N     6.045467    1.909065
+   2  N     1.909065    6.045467
+  
+   Sum   14.000000
+      Elapsed time :: local spin analysis       0.0s)
+ Interatomic distance matrix
+              1  N        2  N 
+
+   1  N     0.000000    2.267671
+   2  N     2.267671    0.000000
+
+  charge-charge from multipole expansion
+              1  N        2  N 
+
+   1  N     0.000000   -0.675128
+   2  N    -0.675128    0.000000
+  charge-dipole from multipole expansion
+              1  N        2  N 
+
+   1  N     0.000000   -0.161576
+   2  N    -0.161576    0.000000
+  dipole-dipole from multipole expansion
+              1  N        2  N 
+
+   1  N     0.000000   -0.064036
+   2  N    -0.064036    0.000000
+  charge-quadrupole from multipole expansion
+              1  N        2  N 
+
+   1  N     0.000000    0.069582
+   2  N     0.069582    0.000000
+  dipole-quadrupole from multipole expansion
+              1  N        2  N 
+
+   1  N     0.000000   -0.069000
+   2  N    -0.069000    0.000000
+  quadrupole-quadrupole from multipole expansion
+              1  N        2  N 
+
+   1  N     0.000000   -0.107444
+   2  N    -0.107444    0.000000
+  total from multipole expansion
+              1  N        2  N 
+
+   1  N     0.000000   -1.007602
+   2  N    -1.007602    0.000000
+
+
+
+
+   FRAGMENT ANALYSIS: Multipole Exc                                             
+  
+  
+  Total:          0.0000000000000
+  
+ Additional printing :
+  
+  
+  --------------------------------------
+   DOING MOLECULAR ENERGY DECOMPOSITION 
+  --------------------------------------
+  
+  Total integrated one-el density from NOs =    13.999999999546432     
+  
+              1  N        2  N 
+
+   1  N  -128.990997  -41.255965
+   2  N   -41.255965 -128.990997
+  Electron-nuclei energy :   -299.23795805225706     
+              1  N        2  N 
+
+   1  N    54.333594    0.000000
+   2  N     0.000000   54.333594
+  Kinetic energy :    108.66718750369975     
+  Nuclear repulsion energy :    21.608069345639219     
+  
+    (Elapsed time :: enpart one-electron        3.2s)
+  SETTING GRID FOR TWO-ELECTRON ENERGY INTEGRATION
+   
+  Radial points:           40
+  Angular points:         146
+  
+  Number of grid points:       11680
+  
+ ##############################
+  Doing two-electron integrals
+ ##############################
+  
+
+        (Elapsed time :: reading dm1/dm2        0.0s)
+  TRACE OF THE DM1 (NORMALIZED TO N) :    14.000000000000000     
+  TRACE OF THE DM2 (NORMALIZED TO N(N-1) :    181.99999999999994     
+  
+  Rotating second set of grid points for angles :    0.0000000000000000       0.16200000000000001     
+  
+  
+  Number of grid points:       11680
+  
+  CHECKING ONE-EL DENSITY 
+  
+  Total integrated one-el dens from 1st-el grid NOs =    13.999923533527523     
+  Total integrated one-el dens from 2nd-el grid NOs =    13.999923533527522     
+  
+
+        (Elapsed time :: making geminals        0.2s)
+  *** EXCHANGE-CORRELATION PART *** 
+  
+
+  (Elapsed time :: Exact-exchange energy        8.7s)
+              1  N        2  N 
+
+   1  N    -6.295144   -0.660994
+   2  N    -0.660994   -6.295144
+  Post-HF Exchange-Corr energy :   -13.251281866474550     
+  
+  *** EXCHANGE PART *** 
+  
+  Two-el integrations for           55  NO pairs 
+ Threshold for atom pair calculation:   0.010000
+  
+  Skipping diatomic exchange integrals for            0
+              1  N        2  N 
+
+   1  N    -6.045933   -0.823287
+   2  N    -0.823287   -6.045933
+  Post-Hartree-Fock exchange energy :   -12.915154289172611     
+  
+  *** COULOMB PART *** 
+
+         (Elapsed time :: Coulomb energy        0.3s)
+              1  N        2  N 
+
+   1  N    26.684561   19.752092
+   2  N    19.752092   26.684561
+  Coulomb energy :    73.121215235116111     
+  
+
+                     "FUZZY ATOMS" DFT ENERGY COMPONENTS
+
+
+              1  N        2  N 
+
+   1  N   -60.313919   -1.380084
+   2  N    -1.380084  -60.313919
+  
+  SUM OF DFT COMPONENTS :            -122.00792212344911     
+  Total energy in checkpointfile :   -109.10013116247021     
+ Integration error (au):          -12.90779096
+ Integration error (kcal/mol):      -8099.75
+    (Elapsed time :: enpart two-electron       19.1s)
+  
+  ...Normal Termination of APOST-3D... 
+                    (Total elapsed time          24.9s)

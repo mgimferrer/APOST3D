@@ -1,0 +1,16 @@
+# METODE
+TFVC
+ENPART
+SPIN
+DM=2
+#
+# ENPART
+CASSCF
+#
+# DM
+o2_cas.dm1
+o2_cas.dm2
+pySCF
+#
+
+
