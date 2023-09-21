@@ -95,8 +95,8 @@ Hartree-Fock molecular energy decomposition:
 
 KS-DFT molecular energy decomposition:
 
-        P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007 \\
-        M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023 \\
+        P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007
+        M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023
 
 Molecular energy decomposition for CAS/DMRG wavefunctions:
 
@@ -164,7 +164,7 @@ Extra options:
         HOMO --- **TODO**
         DEKIN --- **TODO**
         IONIC --- **TODO**
-        TWOELTOLER --- two-electron integration error threshold to control when the zero-error strategy is invoked. Expects a double-precision number after the keyword. Default value selected as 0.25 (in kcal/mol)
+        TWOELTOLER --- Two-electron integration error threshold to control when the zero-error strategy is invoked. Expects a double-precision number after the keyword. Default value selected as 0.25 (in kcal/mol)
         ANALYTIC --- **TODO**
         MOD-GRIDTWOEL --- Modify the integration grid for the two-electron numerical integrations. Required to define an extra section (# GRID)
 
@@ -184,7 +184,7 @@ For Gaussian calculations, it is required an extra action to include the analyti
         G09 -> $PROG/utils/get_energy mol.log >> mol.fchk
         G16 -> $PROG/utils/get_energy_g16 mol.log >> mol.fchk
 
-For .fchk files obtained from pySCF using the apost3d.py, no action is required 
+For .fchk files obtained from pySCF using the apost3d.py extension, no action is required 
 
 Example input for IQA calculation:
 
