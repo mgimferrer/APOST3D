@@ -1,0 +1,7 @@
+# Addint type of files to not be pushed to github. Basically the ones created after compilation of libraries/code #
+
+*.o
+*.mod
+
+
+
