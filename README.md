@@ -41,6 +41,7 @@ Program compilation:
 
 After loading the modules of the intel compilers above mentioned, one has to follow the next instructions:
 
+        tar -xzvf libxc-4.2.3.tar.gz
         cd $LIBXCDIR 
         export CC=icc
         export FC=ifort

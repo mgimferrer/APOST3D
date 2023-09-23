@@ -3,14 +3,15 @@
 ########################################
 
 # Defining variables
-PROG = /home/mgimferrer/APOST3D.4-PGO
+PROG = /home/mgimferrer/APOST3D
 LIBXCDIR = $(PROG)/libxc-4.2.3
 QUADDIR = $(PROG)/lebedev
 #FOR = ifort -Ofast -parallel -qopenmp -qmkl
 #FOR = ifort -Ofast -parallel -qopenmp -qmkl -unroll-aggressive
-FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive
+FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive -qopt-report-phase=par -qopt-report=5
+FOR_INP = ifort
 #SFLAGS = -std=legacy -ffixed-line-length-none -mcmodel=medium -fno-automatic -cpp
-SFLAGS = -xhost -extend-source 132 -mcmodel=medium -qopenmp -parallel
+SFLAGS = -xHost -extend-source 132 -mcmodel=medium
 OFLAGS = -Ofast -xHost -parallel -qopenmp
 #DFLAGS = -fbounds-check -O0 -Wall
 LFLAGS = -L$(LIBXCDIR)/lib -lxcf90 -lxc -I$(LIBXCDIR)/include -parallel -qopenmp
@@ -47,6 +48,8 @@ $(SRCDIR)/modules.o:
 	$(FOR) -c $(SFLAGS) $(OFLAGS) $(SRCDIR)/modules.f90 -o $@
 
 # General rules
+$(OBJDIR)/input2.o : $(SRCDIR)/input2.f $(SRCDIR)/parameter.h
+	$(FOR_INP) -c $(SFLAGS) -I$(LIBXCDIR)/include $< -o $@
 $(OBJDIR)/%.o : $(SRCDIR)/%.f $(SRCDIR)/parameter.h
 	$(FOR) -c $(SFLAGS) $(OFLAGS) -I$(LIBXCDIR)/include $< -o $@
 $(UTILDIR)/%.o : $(UTILDIR)/%.f $(SRCDIR)/parameter.h
@@ -63,14 +66,17 @@ eos_aom : $(UTILDIR)/eos_aom.o
 	$(FOR) $(UTILDIR)/eos_aom.o -o eos_aom 
 
 # Make utils
-util:  gen_hirsh group_frag get_energy eos_alt wfn2fchk 
+#util:  gen_hirsh group_frag get_energy get_energy_g16 eos_alt wfn2fchk 
+util:  get_energy get_energy_g16
 
-gen_hirsh: $(UTILDIR)/gen_hirsh.o $(OBJDIR)/quad.o $(QUAD_OBJ)
-	$(FOR) $(UTILDIR)/gen_hirsh.o $(OBJDIR)/quad.o $(QUAD_OBJ) $(SRCDIR)/modules.o  -o $(UTILDIR)/gen_hirsh
-group_frag: $(UTILDIR)/group_frag.o
-	$(FOR) $(UTILDIR)/group_frag.o -o $(UTILDIR)/group_frag
+#gen_hirsh: $(UTILDIR)/gen_hirsh.o $(OBJDIR)/quad.o $(QUAD_OBJ)
+#	$(FOR) $(UTILDIR)/gen_hirsh.o $(OBJDIR)/quad.o $(QUAD_OBJ) $(SRCDIR)/modules.o  -o $(UTILDIR)/gen_hirsh
+#group_frag: $(UTILDIR)/group_frag.o
+#	$(FOR) $(UTILDIR)/group_frag.o -o $(UTILDIR)/group_frag
 get_energy: $(UTILDIR)/get_energy.o
 	$(FOR) $(UTILDIR)/get_energy.o -o $(UTILDIR)/get_energy
+get_energy_g16: $(UTILDIR)/get_energy_g16.o
+	$(FOR) $(UTILDIR)/get_energy_g16.o -o $(UTILDIR)/get_energy_g16
 #eos_alt: $(UTILDIR)/eos_alt.o 
 #	$(FOR) $(UTILDIR)/eos_alt.o -o $(UTILDIR)/eos_alt
 #wfn2fchk: $(UTILDIR)/wfn2fchk.o  
