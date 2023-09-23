@@ -3,6 +3,9 @@
 
 *.o
 *.mod
-libxc-4.2.3
+*.optrpt
 
+# Also the folder of the libraries, for problems of permission #
+
+libxc-4.2.3
 
