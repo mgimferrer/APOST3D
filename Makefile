@@ -3,7 +3,7 @@
 ########################################
 
 # Defining variables
-PROG = /home/mgimferrer/APOST3D.4
+PROG = /home/mgimferrer/APOST3D
 LIBXCDIR = $(PROG)/libxc-4.2.3
 QUADDIR = $(PROG)/lebedev
 #FOR = ifort -Ofast -parallel -qopenmp -qmkl
