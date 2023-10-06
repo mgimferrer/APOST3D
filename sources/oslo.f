@@ -599,7 +599,7 @@
       ALLOCATE(orbpop(nocc))
       do iorb=1,nocc
         iifrg=infooslo(iorb)
-        call rwf_frg_pop2(iifrg,sat,cosloorth,orbpop)
+        call rwf_frg_pop(iifrg,sat,cosloorth,orbpop)
         write(*,*) " Frg., Spread, Pop. (pre), FOLI, Pop. (ortho): ",iifrg,fspread(iorb),poposlo(iorb),delocoslo(iorb),orbpop(iorb)
       end do
       DEALLOCATE(orbpop)
@@ -616,8 +616,8 @@
         write(*,*) " Orbital",iorb
         write(*,*) " "
         do jfrg=1,icufr
-          call rwf_frg_pop2(jfrg,sat,coslo,orbpop)
-          call rwf_frg_pop2(jfrg,sat,cosloorth,orbpop2)
+          call rwf_frg_pop(jfrg,sat,coslo,orbpop)
+          call rwf_frg_pop(jfrg,sat,cosloorth,orbpop2)
           write(*,*) " Frg., Pop. (non-ortho), FOLI, Pop. (ortho): ",jfrg,orbpop(iorb),delocoslo(iorb),orbpop2(iorb)
         end do
         write(*,*) " "
