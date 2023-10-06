@@ -575,6 +575,15 @@ C READING DM1 and DM2
         if(ii.eq.1) ilow2=3
         call readchar("# OSLO","NAO-BASIS",ii)
         if(ii.eq.1) ilow2=6
+
+!! EXTRA OPTIONS !!
+        
+        call readint("# OSLO","FOLI TOLERANCE",ifolitol,3,1) !! FOLI VALUE TOLERANCE (FOR SELECTION) !!
+        call readint("# OSLO","BRANCH ITERATION",ibranch,0,1) !! VALUE OF THE ITERATION TO INVOKE BRANCHING !!
+        ioslofchk=1
+        call readchar("# OSLO","PRINT NON-ORTHO",ii) !! FOR PRINTING NON-ORTHO OSLOs IN AN EXTRA .fchk FILE !!
+        if(ii.eq.1) ioslofchk=2
+
       end if
 
 !! TO PRINT .fchk FILES FROM QCHEM (MG: FCHK FORMAT IS DIFFERENT THAN GAUSSIAN) !!
@@ -673,7 +682,7 @@ c     iopt(11) =
       iopt(25) = istiff 
       iopt(26) = icorr  
       iopt(27) = isha   
-      iopt(28) = ipca   
+      iopt(28) = ipca 
 c      iopt(29) =  ipnof
       iopt(30) = idafh  
       iopt(31) = inewbec
@@ -717,6 +726,10 @@ c      iopt(89) =
       iopt(93) = iflip
 !! IF QCHEM .fchk USED AS INPUT !!
       iopt(95) = iqchem
+!! OSLO !!
+      iopt(96) = ifolitol
+      iopt(97) = ibranch
+      iopt(98) = ioslofchk
 
 CCCCCCCCCCCCC
 c END OPTIONS LIST
@@ -1482,7 +1495,7 @@ CCCCCCCCCC
 !! GENERAL INDEPENDENTLY OF THE AIM !!
 
         if(kop.eq.0) then 
-          call iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
+          call iterative_oslo_rwf(sat,itotps,wp,omp2,chp,pcoord)
         else 
 !          call iterative_oslo_uwf(sat,itotps,wp,omp2,chp,pcoord)
         end if
