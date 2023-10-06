@@ -15,6 +15,7 @@ c numerical constants
       parameter (pi3=31.0062766802998d0)      
       parameter (pi52=34.98683665524973d0)   
 
+!! Other parameters !!
       parameter (ZERO=0.0d0)
       parameter (HALF=0.5d0)
       parameter (ONE=1.0d0)
@@ -23,3 +24,4 @@ c numerical constants
       parameter (FOUR=4.0d0)
       parameter (FIVE=5.0d0)
 
+      parameter(angtoau=0.52917721067d0) !! From Angstroms to a.u. !!
