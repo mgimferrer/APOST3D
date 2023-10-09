@@ -1479,9 +1479,11 @@ CCCCCCCCCC
 CCCCCCCCCC
 
       if(ioslo.eq.1) then
-        write(*,*) " !!!!!!!!!!!!!!!!!!!!!!!! "
-        write(*,*) " !!! OSLO CALCULATION !!! "
-        write(*,*) " !!!!!!!!!!!!!!!!!!!!!!!! "
+        write(*,*) " "
+        write(*,*) " ********************* "
+        write(*,*) " ENTERING OSLO SECTION "
+        write(*,*) " ********************* "
+        write(*,*) " "
 
 !! COMPUTING sat FOR HILBERT SPACE CASES !!
 
