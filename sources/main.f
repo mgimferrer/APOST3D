@@ -1497,7 +1497,7 @@ CCCCCCCCCC
 !! GENERAL INDEPENDENTLY OF THE AIM !!
 
         if(kop.eq.0) then 
-          call iterative_oslo_rwf(sat,itotps,wp,omp2,chp,pcoord)
+          call rwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         else 
 !          call iterative_oslo_uwf(sat,itotps,wp,omp2,chp,pcoord)
         end if
