@@ -3,7 +3,11 @@
 !! OSLO CALCULATION SUBROUTINES !!
 !! **************************** !!
 
-      subroutine iterative_oslo_rwf(sat,itotps,wp,omp2,chp,pcoord)
+!! FIRST RESTRICTED SUBROUTINES !!
+
+!! ****** !!
+
+      subroutine rwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
 
 !! MG: ONLY ITERATIVE OSLO IMPLEMENTED IN THIS VERSION !!
 !! MG: NON-ITERATIVE PROCEDURE IMPLEMENTED IN DEVELOPMENT VERSION !!
@@ -39,6 +43,7 @@
       allocatable :: cfrgoslo(:,:,:)
       allocatable :: cmat(:,:),pmat(:,:)
       allocatable :: orbpop(:),orbpop2(:),frgpop(:,:),frgspr(:,:)
+      allocatable :: foslo(:,:),foslo2(:,:)
 
       allocatable :: infopop(:,:),infooslo(:),poposlo(:)
       allocatable :: fspread(:),scr(:),deloc(:,:),delocoslo(:)
@@ -577,40 +582,36 @@
       write(*,*) " -------------------------------- "
       write(*,*) " PRINTING FINAL OSLOs INFORMATION "
       write(*,*) " -------------------------------- "
-
-      ! estic aqui
-
-!! DONE UGLY TO USE THE ROUTINES !!
-
-      ALLOCATE(orbpop(nocc))
-      do iorb=1,nocc
-        iifrg=infooslo(iorb)
-        call rwf_frg_pop(iifrg,sat,cosloorth,orbpop)
-        write(*,*) " Frg., Spread, Pop. (pre), FOLI, Pop. (ortho): ",iifrg,fspread(iorb),poposlo(iorb),delocoslo(iorb),orbpop(iorb)
-      end do
-      DEALLOCATE(orbpop)
+      write(*,*) " "
+      write(*,*) " ----------------------------------------- "
+      write(*,*) " Summary of the selected OSLOs (pre-ortho) "
+      write(*,*) " ----------------------------------------- "
       write(*,*) " "
 
-      write(*,*) " "
-      write(*,*) " OSLO populations in all fragments (CHECK)"
-      write(*,*) " FOLI values are of the selected one! "
-      write(*,*) " "
-      ALLOCATE(orbpop(nocc))
-      ALLOCATE(orbpop2(nocc))
-      do iorb=1,nocc
-        write(*,*) " "
-        write(*,*) " Orbital",iorb
-        write(*,*) " "
-        do jfrg=1,icufr
-          call rwf_frg_pop(jfrg,sat,coslo,orbpop)
-          call rwf_frg_pop(jfrg,sat,cosloorth,orbpop2)
-          write(*,*) " Frg., Pop. (non-ortho), FOLI, Pop. (ortho): ",jfrg,orbpop(iorb),delocoslo(iorb),orbpop2(iorb)
+!! MADE A BIT TRICKY... SORRY !!
+      ALLOCATE(orbpop(nocc),orbpop2(nocc))
+      ALLOCATE(foslo(nocc,icufr),foslo2(nocc,icufr))
+      foslo=ZERO
+      foslo2=ZERO
+      do jfrg=1,icufr
+        orbpop=ZERO
+        orbpop2=ZERO
+        call rwf_frg_pop(jfrg,sat,coslo,orbpop) !! FOR THE NON-ORTHOGONAL OSLOs (ORIGINAL) !!
+        call rwf_frg_pop(jfrg,sat,cosloorth,orbpop2) !! FOR THE ORTHOGONALIZED ONES (PRINTING LATER) !!
+        do ii=1,nocc
+          foslo(ii,jfrg)=orbpop(ii)
+          foslo2(ii,jfrg)=orbpop2(ii)
         end do
-        write(*,*) " "
       end do
-      DEALLOCATE(orbpop)
-      DEALLOCATE(orbpop2)
+      call rwf_print_OSLO_final(1,nocc,infooslo,delocoslo,foslo)
+      write(*,*) " ------------------------------------- "
+      write(*,*) " Summary of the selected OSLOs (final) "
+      write(*,*) " ------------------------------------- "
       write(*,*) " "
+      call rwf_print_OSLO_final(0,nocc,infooslo,delocoslo,foslo2) !! FOLI VALUES GIVEN JUST FOR USING SAME ROUTINE !!
+      
+      DEALLOCATE(orbpop,orbpop2)
+      DEALLOCATE(foslo,foslo2)
 
 !! TODO: FINAL DEALLOCATE (IF CONSIDERED RELEVANT) !!
 
@@ -623,6 +624,209 @@
       end
 
 !! ****** !!
+
+      subroutine rwf_frg_pop(ifrg,sat,corb,frgpop)
+
+!! THIS SUBROUTINE COMPUTES FRAGMENT POPULATION ANALYSIS !!
+
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(100)
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+
+      dimension sat(igr,igr,nat)
+      dimension corb(igr,igr),frgpop(nocc)
+
+      allocatable :: orbpop(:,:)
+
+!! LOADING IOPTs !!
+      idofr=iopt(40)
+
+!! ALLOCATING MATRICES !!
+      ALLOCATE(orbpop(nocc,nat))
+
+!! EVALUATING ORBITAL ATOMIC POPULATIONS !!
+      do icenter=1,nat
+        do iorb=1,nocc
+          xx=ZERO
+          do jj=1,igr
+            do kk=1,igr
+              xx=xx+corb(kk,iorb)*sat(kk,jj,icenter)*corb(jj,iorb)
+            end do
+          end do
+          orbpop(iorb,icenter)=xx !! WITHOUT FACTOR OF 2, TO ADD OUTSIDE IF REQUIRED !!
+        end do
+      end do
+
+!! GROUPING BY FRAGMENTS (ifrg) !!
+      if(idofr.eq.1) then
+        do iorb=1,nocc
+          xx=ZERO
+          do icenter=1,nfrlist(ifrg)
+            xx=xx+orbpop(iorb,ifrlist(icenter,ifrg))
+          end do
+          frgpop(iorb)=xx
+        end do
+      end if
+
+!! DEALLOCATING MATRICES !!
+      DEALLOCATE(orbpop)
+  
+      end 
+
+!! ****** !!
+
+      subroutine rwf_orbprint(cmat,pmat,ctype)
+
+!! THIS SUBROUTINE PRINTS ORBITALS IN .fchk FORMAT !!
+!! NOT ELEGANT WAY TO DO IT, BUT WORKS !!
+
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(100)
+      common /filename/name0
+
+      character*80 line
+      character*60 name0,name1
+      character*20 ctype
+
+      dimension cmat(igr,igr),pmat(igr,igr)
+
+      iqchem   = iopt(95)
+      indepigr = int_locate(15,"Number of independ",ilog)
+      norb     = igr*indepigr
+      norbt    = igr*(igr+1)/2
+
+!! NAME OF THE .fchk FILE !!
+      name1=trim(name0)//trim(ctype)//".fchk"
+      open(unit=69,file=name1)
+      rewind(69)
+      rewind(15)
+
+!! PRINTING UNTIL ALPHA MOs !!
+      read(15,'(a80)') line
+      do while(index(line,"Alpha MO co").eq.0)
+        write(69,'(a80)') line
+        read(15,'(a80)') line
+      end do
+
+!! PRINTING THE NEW ONES !!
+      write(69,11) "Alpha MO coefficients","R","N= ",norb
+      write(69,13) ((cmat(ii,jj),ii=1,igr),jj=1,indepigr)
+
+!! NOW LOCATING WHAT IS AFTER IT IN THE ORIGINAL ONE TO CONTINUE !!
+      if(iqchem.eq.0) then
+        do while(index(line,"Orthonormal basis").eq.0)
+          read(15,'(a80)') line
+        end do
+      else
+        do while(index(line,"Alpha Orbital").eq.0)
+          read(15,'(a80)') line
+        end do
+      end if
+
+!! RESTART PRINTING UNTIL NEXT STOP !!
+      do while(index(line,"Total SCF Dens").eq.0)
+        write(69,'(a80)') line
+        read(15,'(a80)') line
+      end do
+
+!! PRINTING THE NEW ONE !!
+      write(69,12) "Total SCF Density","R","N= ",norbt
+      write(69,13) ((pmat(ii,jj),jj=1,ii),ii=1,igr)
+
+!! NOW LOCATING WHAT IS AFTER IT IN THE ORIGINAL ONE TO CONTINUE !!
+      if(iqchem.eq.0) then
+        do while(index(line,"Mulliken Charges").eq.0)
+          read(15,'(a80)') line
+        end do
+      else
+        do while(index(line,"Pure Switching").eq.0)
+          read(15,'(a80)') line
+        end do
+      end if
+
+!! RESTART PRINTING UNTIL THE END !!
+      do while(.true.)
+        write(69,'(a80)') line
+        read(15,'(a80)',end=99) line
+      end do
+99    continue
+      close(69)
+
+!! PRINTING FORMATS !!
+11    FORMAT(a21,22x,a1,3x,a3,i11)
+12    FORMAT(a17,26x,a1,3x,a3,i11)
+13    FORMAT(5(1p,e16.8))
+
+      end
+
+!! ****** !!
+
+      subroutine rwf_print_OSLO_final(iflag,noslo,infooslo,foli,frgpop)
+
+!! ROUTINE FOR PRINTING THE FRAGMENT POPULATIONS AND FOLI FOR EACH OSLO!!
+
+      implicit double precision (a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+
+      dimension infooslo(igr)
+      dimension foli(igr)
+      dimension frgpop(noslo,icufr)
+
+!! TRICK OF THE INTEGER ROUNDING FOR NUMBER OF COLUMNS !!
+      b=noslo/5
+      if(b*5.ne.noslo) b=(noslo/5)+1
+
+!! PRINTING !!
+      dd=1
+      do k=1,b
+
+!! FOR THE LAST PACK OF COLUMNS !!
+        if(k.eq.b) then
+          write(*,'(2x,a13,5(i7,3x))') "OSLO Number :",(jj,jj=dd,noslo)
+          if(iflag.eq.1) write(*,'(2x,a13,5f10.5)') "FOLI Value  :",(foli(jj),jj=dd,noslo)
+          do jfrg=1,icufr
+            write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,noslo)
+          end do
+          write(*,*) " "
+
+!! FOR PACKS OF 5 COLUMNS !!
+        else
+          write(*,'(2x,a13,5(i7,3x))') "OSLO Number :",(jj,jj=dd,dd+4)
+          if(iflag.eq.1) write(*,'(2x,a13,5f10.5)') "FOLI Value  :",(foli(jj),jj=dd,dd+4)
+          do jfrg=1,icufr
+            write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,dd+4)
+          end do
+          write(*,*) " "
+          dd=dd+5
+        end if
+      end do
+
+      end
+
+!! ****** !!
+
+!! NOW UNRESTRICTED SUBROUTINES !!
+
+!! ****** !!
+
+
+
+
+
+
+
+
+
+      
 !! TODO !!
       subroutine iterative_oslo_uwf(sat,itotps,wp,omp2,chp,pcoord)
       use basis_set
@@ -2464,62 +2668,6 @@
       end
   
 ! ******
-  
-
-!! ****** !!
-
-      subroutine rwf_frg_pop(ifrg,sat,corb,frgpop)
-
-!! THIS SUBROUTINE COMPUTES FRAGMENT POPULATION ANALYSIS !!
-
-      implicit double precision(a-h,o-z)
-      include 'parameter.h'
-
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-
-      dimension sat(igr,igr,nat)
-      dimension corb(igr,igr),frgpop(nocc)
-
-      allocatable :: orbpop(:,:)
-
-!! LOADING IOPTs !!
-      idofr=iopt(40)
-
-!! ALLOCATING MATRICES !!
-      ALLOCATE(orbpop(nocc,nat))
-
-!! EVALUATING ORBITAL ATOMIC POPULATIONS !!
-      do icenter=1,nat
-        do iorb=1,nocc
-          xx=ZERO
-          do jj=1,igr
-            do kk=1,igr
-              xx=xx+corb(kk,iorb)*sat(kk,jj,icenter)*corb(jj,iorb)
-            end do
-          end do
-          orbpop(iorb,icenter)=xx !! WITHOUT FACTOR OF 2, TO ADD OUTSIDE IF REQUIRED !!
-        end do
-      end do
-
-!! GROUPING BY FRAGMENTS (ifrg) !!
-      if(idofr.eq.1) then
-        do iorb=1,nocc
-          xx=ZERO
-          do icenter=1,nfrlist(ifrg)
-            xx=xx+orbpop(iorb,ifrlist(icenter,ifrg))
-          end do
-          frgpop(iorb)=xx
-        end do
-      end if
-
-!! DEALLOCATING MATRICES !!
-      DEALLOCATE(orbpop)
-  
-      end 
-
-!! ****** !!
 
       subroutine uwf_frg_pop2(iiss,ifrg,sat,corb,frgpop)
 
@@ -2696,95 +2844,6 @@
       end if
 
       end 
-
-!! ****** !!
-
-      subroutine rwf_orbprint(cmat,pmat,ctype)
-
-!! THIS SUBROUTINE PRINTS ORBITALS IN .fchk FORMAT !!
-!! NOT ELEGANT WAY TO DO IT, BUT WORKS !!
-
-      implicit double precision(a-h,o-z)
-      include 'parameter.h'
-
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
-      common /filename/name0
-
-      character*80 line
-      character*60 name0,name1
-      character*20 ctype
-
-      dimension cmat(igr,igr),pmat(igr,igr)
-
-      iqchem   = iopt(95)
-      indepigr = int_locate(15,"Number of independ",ilog)
-      norb     = igr*indepigr
-      norbt    = igr*(igr+1)/2
-
-!! NAME OF THE .fchk FILE !!
-      name1=trim(name0)//trim(ctype)//".fchk"
-      open(unit=69,file=name1)
-      rewind(69)
-      rewind(15)
-
-!! PRINTING UNTIL ALPHA MOs !!
-      read(15,'(a80)') line
-      do while(index(line,"Alpha MO co").eq.0)
-        write(69,'(a80)') line
-        read(15,'(a80)') line
-      end do
-
-!! PRINTING THE NEW ONES !!
-      write(69,11) "Alpha MO coefficients","R","N= ",norb
-      write(69,13) ((cmat(ii,jj),ii=1,igr),jj=1,indepigr)
-
-!! NOW LOCATING WHAT IS AFTER IT IN THE ORIGINAL ONE TO CONTINUE !!
-      if(iqchem.eq.0) then
-        do while(index(line,"Orthonormal basis").eq.0)
-          read(15,'(a80)') line
-        end do
-      else
-        do while(index(line,"Alpha Orbital").eq.0)
-          read(15,'(a80)') line
-        end do
-      end if
-
-!! RESTART PRINTING UNTIL NEXT STOP !!
-      do while(index(line,"Total SCF Dens").eq.0)
-        write(69,'(a80)') line
-        read(15,'(a80)') line
-      end do
-
-!! PRINTING THE NEW ONE !!
-      write(69,12) "Total SCF Density","R","N= ",norbt
-      write(69,13) ((pmat(ii,jj),jj=1,ii),ii=1,igr)
-
-!! NOW LOCATING WHAT IS AFTER IT IN THE ORIGINAL ONE TO CONTINUE !!
-      if(iqchem.eq.0) then
-        do while(index(line,"Mulliken Charges").eq.0)
-          read(15,'(a80)') line
-        end do
-      else
-        do while(index(line,"Pure Switching").eq.0)
-          read(15,'(a80)') line
-        end do
-      end if
-
-!! RESTART PRINTING UNTIL THE END !!
-      do while(.true.)
-        write(69,'(a80)') line
-        read(15,'(a80)',end=99) line
-      end do
-99    continue
-      close(69)
-
-!! PRINTING FORMATS !!
-11    FORMAT(a21,22x,a1,3x,a3,i11)
-12    FORMAT(a17,26x,a1,3x,a3,i11)
-13    FORMAT(5(1p,e16.8))
-
-      end
 
 !! ****** !!
 
