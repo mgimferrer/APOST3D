@@ -1499,7 +1499,7 @@ CCCCCCCCCC
         if(kop.eq.0) then 
           call rwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         else 
-!          call iterative_oslo_uwf(sat,itotps,wp,omp2,chp,pcoord)
+          call uwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         end if
         DEALLOCATE(wp,omp,omp2,chp,pcoord)
       end if
