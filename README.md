@@ -230,6 +230,12 @@ Extracting OSLOs using other AIMs is controlled by definition of a new section (
         LOWDIN-DAVIDSON --- Lowdin-Davidson AIM
         NAO-BASIS -- Natural Atomic Orbital (NAO) AIM
 
+Extra options:
+
+        FOLI TOLERANCE --- Tolerance value for the OSLO selection within the iterative procedure. Expecting an integer number. Default value of 3 (actual threshold = 10^-(FOLI TOLERANCE))
+        BRANCH ITERATION --- Iteration in which the user invokes the branching. Expecting an integer number. Default value of 0 (no branching). **This part of the code is currently unavailable**
+        PRINT NON-ORTHO --- Asks the code to print the resulting OSLOs (pre-orthogonalization) in a .fchk file. By default only the set of orthogonalized OSLOs are provided 
+
 The OSLOs can be evaluated from wavefunctions obtained with the Q-Chem software. One simply requires to obtain the .fchk file from Q-Chem and add the QCHEM keyword within # METODE
 
 Example input for OSLO calculation:
@@ -241,6 +247,9 @@ Example input for OSLO calculation:
         #
         # OSLO
         LOWDIN
+        FOLI TOLERANCE 3
+        BRANCH ITERATION 0
+        PRINT NON-ORTHO
         #
         # FRAGMENTS
         2
