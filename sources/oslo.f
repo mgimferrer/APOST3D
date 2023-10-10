@@ -147,6 +147,7 @@
       pnocore=pa !! SAVING pa IN pnocore !!
 
 !! INITIAL PRINTING !!
+      write(*,*) " "
       write(*,*) " --------------------------------- "
       write(*,*) " STARTING ITERATIVE OSLO ALGORITHM "
       write(*,*) " --------------------------------- "
@@ -366,6 +367,7 @@
 
 !! DIRTY TRICK !!
           write(*,*) " Continues by tricking the code (overassigned pairs removed) "
+          write(*,*) " Check the final OSs, overassigned electrons have to be afterwards " !! TO DO !!
           write(*,*) " "
           inewcore=inewcore+(nocc-nnelect)
           iaddoslo=iaddoslo+(nocc-nnelect)
@@ -936,6 +938,7 @@
       end do
 
 !! INITIAL PRINTING !!
+      write(*,*) " "
       write(*,*) " --------------------------------- "
       write(*,*) " STARTING ITERATIVE OSLO ALGORITHM "
       write(*,*) " --------------------------------- "
@@ -1153,17 +1156,18 @@
         do ifrg=1,icufr
           nnelect=nnelect+ifrgel(1,ifrg)
         end do
-        write(*,'(2x,a36,x,i3)') "Alpha electron pairs left to assign:",nalf-nnelect
+        write(*,'(2x,a36,x,i3)') "Alpha electrons left to assign:",nalf-nnelect
         write(*,*) " "
 
         if(nalf-nnelect.lt.0) then
-          write(*,*) " ***************************** "
+          write(*,*) " ****************************** "
           write(*,'(2x,a26,x,i3)') "WARNING: OVERASSIGNING BY:",-(nalf-nnelect)
-          write(*,*) " ***************************** "
+          write(*,*) " ****************************** "
           write(*,*) " "
 
 !! DIRTY TRICK !!
           write(*,*) " Continues by tricking the code (overassigned electrons removed) "
+          write(*,*) " Check the final OSs, overassigned electrons have to be afterwards " !! TO DO !!
           write(*,*) " "
           inewcore=inewcore+(nalf-nnelect)
           iaddoslo=iaddoslo+(nalf-nnelect)
@@ -1567,17 +1571,18 @@
         do ifrg=1,icufr
           nnelect=nnelect+ifrgel(2,ifrg)
         end do
-        write(*,'(2x,a36,x,i3)') "Alpha electron pairs left to assign:",nalf-nnelect
+        write(*,'(2x,a36,x,i3)') "Beta electrons left to assign:",nalf-nnelect
         write(*,*) " "
 
         if(nb-nnelect.lt.0) then
-          write(*,*) " ***************************** "
+          write(*,*) " ****************************** "
           write(*,'(2x,a26,x,i3)') "WARNING: OVERASSIGNING BY:",-(nb-nnelect)
-          write(*,*) " ***************************** "
+          write(*,*) " ****************************** "
           write(*,*) " "
 
 !! DIRTY TRICK !!
           write(*,*) " Continues by tricking the code (overassigned electrons removed) "
+          write(*,*) " Check the final OSs, overassigned electrons have to be afterwards " !! TO DO!!
           write(*,*) " "
           inewcore=inewcore+(nb-nnelect)
           iaddoslo=iaddoslo+(nb-nnelect)
@@ -1623,7 +1628,7 @@
 
 !! EVALUATE LINDEP !!
         ilindep=0
-        if(iilindep.gt.0) then
+        if(iilindep.eq.0) then
           SSS=ZERO
           EEE=ZERO
           do ii=1,iselected
