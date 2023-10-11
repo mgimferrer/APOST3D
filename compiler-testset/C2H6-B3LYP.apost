@@ -1,0 +1,770 @@
+  ------------------------------------------------------------------------------
+                                                                                
+                      Program APOST-3D, Version 4                               
+                               04-03-2021                                       
+                     --------------------------------                           
+                                                                                
+      Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Available atomic definitions:                                             
+      ----------------------------                                              
+                                                                                
+      Real space:                                                               
+        Becke, J. Chem. Phys. 88 2547 1988                                      
+        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
+        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
+        Topological fuzzy Voronoi cells (TFVC), J Chem Phys, 139 071103 2013    
+        QTAIM, J. Comput. Chem 30 1082 2009                                     
+                                                                                
+      Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
+                                                                                
+                                                                                
+      Calculating:                                                              
+      ------------                                                              
+                                                                                
+        A)  Atomic and overlap populations, bond orders and valences            
+             I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	      
+                                                                                
+        B) Hartree-Fock molecular energy decomposition                          
+           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
+                                                                                
+        C) KS-DFT molecular energy decomposition                                
+            P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
+           M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
+                                                                                
+        D) Molecular energy decomposition for CAS/DMRG wavefunctions            
+                                                                                
+        E) Effective atomic orbitals:                                           
+           I. Mayer, J. Phys. Chem. 100 6249 1996                               
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
+           E. Ramos-Cordoba et.al., J. Chem. Phys. 138 214107 2013              
+                                                                                
+        F) Local spin analysis                                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 8, 1270-1279 2012   
+           E. Ramos-Cordoba et.al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+                                                                                
+        G) Effective Oxidation states analysis                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 11 1501-1508 2015   
+                                                                                
+        H) Oxidation states from localized orbitals                             
+           M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022         
+                                                                                
+        I) Decomposition of EDA quantities into one- and two-center IQA terms   
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+              P. Salvador, E. Ramos-Cordoba, M. Gimferrer, M. Montilla          
+                Program APOST-3D, Version 4, Girona, 2020                       
+                                                                                
+    e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
+                                                                                
+  ------------------------------------------------------------------------------
+    The program has been written by using parts of the program APOST by         
+    I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
+                                                                                
+    The numerical integration utilizes the subroutines for Lebedev              
+    quadrature downloaded from CCL. The appropriate reference is:               
+    V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
+    131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
+                                                                                
+    The program makes use of libxc library when necessary, using the F90        
+    interfaces provided by the authors.                                         
+                   (see http://www.tddft.org/programs/libxc                     
+                                                                                
+    We are extremely grateful for the possibility of using these routines!      
+                                                                                
+   -----------------------------------------------------------------------------
+    DENS=   1
+ Restricted MO formalism
+ KS-DFT type calculation
+ (single det. built up of the Kohn-Sham orbitals)
+ Number of atoms:           8
+ Number of basis functions:         160
+ Total number of primitive gaussians         206
+ Spin density not found in FChk
+ Reconstructing spin density (if any) from MOs
+  
+ nocc           9     nalpha           9     nbeta           9
+  
+ E(SCF/DFT)=  -79.8656133777344     
+  
+STIFFNES=   4
+RHO_CALC=   0
+EFF_THRE=   1
+      DM=   0
+ THREBOD=  -1
+  RADIAL=  40
+ ANGULAR= 146
+ 
+        (Elapsed time :: initialization        5.4s)
+  
+  -------------------------------------
+  SETTING ATOMIC GRIDS FOR INTEGRATION 
+  -------------------------------------
+  
+ Radial points  :  150
+ Angular points :  590
+ r0 (radial)    :  0.500
+ Using stiffness k :    4
+ Using density along atom pairs to set atomic radii.
+ Subdivision :          21
+ Atom pair:    1   2 Ratio:  1.00000
+  
+ Info: atom pair:    1   3
+ 1 maximum and  1 minima of density between atoms   1 and    3
+ Max:          50 Min:          32
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           32
+ Subdivision :          28
+ Atom pair:    1   3 Ratio:  1.68097
+  
+ Info: atom pair:    1   4
+ 1 maximum and  1 minima of density between atoms   1 and    4
+ Max:          50 Min:          32
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           32
+ Subdivision :          28
+ Atom pair:    1   4 Ratio:  1.68097
+  
+ Info: atom pair:    1   5
+ 1 maximum and  1 minima of density between atoms   1 and    5
+ Max:          50 Min:          32
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           32
+ Subdivision :          28
+ Atom pair:    1   5 Ratio:  1.68097
+  
+ Info: atom pair:    2   6
+ 1 maximum and  1 minima of density between atoms   2 and    6
+ Max:          50 Min:          32
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           32
+ Subdivision :          28
+ Atom pair:    2   6 Ratio:  1.68097
+  
+ Info: atom pair:    2   7
+ 1 maximum and  1 minima of density between atoms   2 and    7
+ Max:          50 Min:          32
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           32
+ Subdivision :          28
+ Atom pair:    2   7 Ratio:  1.68097
+  
+ Info: atom pair:    2   8
+ 1 maximum and  1 minima of density between atoms   2 and    8
+ Max:          50 Min:          32
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           32
+ Subdivision :          28
+ Atom pair:    2   8 Ratio:  1.68097
+  
+ Number of grid points:      708000
+ Checking sum of AOs overlap matrices
+ Deviations may not affect overall accuracy of MOs 
+  
+  ---------------------------
+   DOING POPULATION ANALYSIS 
+    Partial atomic charges
+    Atomic spin densities 
+    Bond orders and Valences 
+  ---------------------------
+  
+   
+     ELECTRON POPULATIONS
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1  C     5.712964    6.180470
+   2  C     5.712964    6.180470
+   3  H     1.095671    0.939840
+   4  H     1.095680    0.939845
+   5  H     1.095680    0.939845
+   6  H     1.095671    0.939840
+   7  H     1.095680    0.939845
+   8  H     1.095680    0.939845
+  -----------------------------
+     Sum   17.999991   18.000000
+   
+     TOTAL ATOMIC CHARGES    
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1  C     0.287036   -0.180470
+   2  C     0.287036   -0.180470
+   3  H    -0.095671    0.060160
+   4  H    -0.095680    0.060155
+   5  H    -0.095680    0.060155
+   6  H    -0.095671    0.060160
+   7  H    -0.095680    0.060155
+   8  H    -0.095680    0.060155
+  -----------------------------
+     Sum    0.000009   -0.000000
+   
+
+                     "FUZZY ATOMS" BOND ORDER MATRIX
+
+
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C     3.702138    0.949832    0.967215    0.967216    0.967216    0.056719
+   2  C     0.949832    3.702138    0.056719    0.056724    0.056724    0.967215
+   3  H     0.967215    0.056719    0.504742    0.062570    0.062570    0.016929
+   4  H     0.967216    0.056724    0.062570    0.504746    0.062574    0.007926
+   5  H     0.967216    0.056724    0.062570    0.062574    0.504746    0.007926
+   6  H     0.056719    0.967215    0.016929    0.007926    0.007926    0.504742
+   7  H     0.056724    0.967216    0.007926    0.016931    0.007927    0.062570
+   8  H     0.056724    0.967216    0.007926    0.007927    0.016931    0.062570
+
+
+
+
+              7  H        8  H 
+
+   1  C     0.056724    0.056724
+   2  C     0.967216    0.967216
+   3  H     0.007926    0.007926
+   4  H     0.016931    0.007927
+   5  H     0.007927    0.016931
+   6  H     0.062570    0.062570
+   7  H     0.504746    0.062574
+   8  H     0.062574    0.504746
+   
+    TOTAL VALENCES 
+   
+     Atom     V_A
+  -----------------
+   1  C     4.021652
+   2  C     4.021652
+   3  H     1.181859
+   4  H     1.181868
+   5  H     1.181868
+   6  H     1.181859
+   7  H     1.181868
+   8  H     1.181868
+  ------------------
+   
+ VALENCES USED IN BONDS
+ (SUM OF BOND ORDERS)
+   
+     Atom     VB_A
+  -----------------
+   1  C     4.021647
+   2  C     4.021647
+   3  H     1.181856
+   4  H     1.181868
+   5  H     1.181868
+   6  H     1.181856
+   7  H     1.181868
+   8  H     1.181868
+  ------------------
+   
+    FREE VALENCES
+  
+     Atom     F_A
+  -----------------
+   1  C     0.000005
+   2  C     0.000005
+   3  H     0.000003
+   4  H     0.000000
+   5  H     0.000000
+   6  H     0.000003
+   7  H     0.000000
+   8  H     0.000000
+  ------------------
+ 
+(Elapsed time :: population analyses      142.3s)
+  
+  --------------------------------------
+   DOING MOLECULAR ENERGY DECOMPOSITION 
+  --------------------------------------
+  
+  
+ INFO : Functional name --> B3LYP
+ INFO : Reference --> [1] P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)                      
+ INFO : Functional type --> exchange-correlation
+ INFO : HYBRID-GGA functional selected
+ INFO : HF-type exchange coeff :   0.200000000000000     
+  
+ itype,jtype,iop :            2           0           2
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C   -88.916680  -23.669559   -5.617967   -5.617981   -5.617981   -2.958872
+   2  C   -23.669559  -88.916680   -2.958872   -2.958952   -2.958952   -5.617967
+   3  H    -5.617967   -2.958872   -1.337652   -0.637027   -0.637027   -0.369485
+   4  H    -5.617981   -2.958952   -0.637027   -1.337660   -0.637042   -0.454558
+   5  H    -5.617981   -2.958952   -0.637027   -0.637042   -1.337660   -0.454558
+   6  H    -2.958872   -5.617967   -0.369485   -0.454558   -0.454558   -1.337652
+   7  H    -2.958952   -5.617981   -0.454558   -0.369496   -0.454563   -0.637027
+   8  H    -2.958952   -5.617981   -0.454558   -0.454563   -0.369496   -0.637027
+
+
+
+
+              7  H        8  H 
+
+   1  C    -2.958952   -2.958952
+   2  C    -5.617981   -5.617981
+   3  H    -0.454558   -0.454558
+   4  H    -0.369496   -0.454563
+   5  H    -0.454563   -0.369496
+   6  H    -0.637027   -0.637027
+   7  H    -1.337660   -0.637042
+   8  H    -0.637042   -1.337660
+  Electron-nuclei energy :   -268.648297714539     
+ Integration error (kcal/mol):     0.03
+  
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    37.720817    0.000000    0.000000    0.000000    0.000000    0.000000
+   2  C     0.000000   37.720817    0.000000    0.000000    0.000000    0.000000
+   3  H     0.000000    0.000000    0.640188    0.000000    0.000000    0.000000
+   4  H     0.000000    0.000000    0.000000    0.640192    0.000000    0.000000
+   5  H     0.000000    0.000000    0.000000    0.000000    0.640192    0.000000
+   6  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.640188
+   7  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+   8  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+
+
+
+
+              7  H        8  H 
+
+   1  C     0.000000    0.000000
+   2  C     0.000000    0.000000
+   3  H     0.000000    0.000000
+   4  H     0.000000    0.000000
+   5  H     0.000000    0.000000
+   6  H     0.000000    0.000000
+   7  H     0.640192    0.000000
+   8  H     0.000000    0.640192
+  Kinetic energy :    79.2827781966925     
+ Integration error (kcal/mol):     0.00
+          
+  Nuclear repulsion energy :    42.2635814694264     
+  
+  
+(Elapsed time :: enpart one-electron     2037.1s)
+  *** DFT MOLECULAR ENERGY DECOMPOSITION *** 
+  
+  DOING BOND ORDER DENSITY APPROACH 
+ Threshold for atom pair calculation :   0.000000
+  
+  CHECKING MO OVERLAPS 
+  
+  
+  USING BODEN FOR ALL ATOM PAIR CONTRIBUTIONS 
+  
+  Integrated BODEN for atoms            1           2  : 
+  0.949837595106157     
+  
+  Integrated BODEN for atoms            1           3  : 
+  0.967212768506305     
+  
+  Integrated BODEN for atoms            1           4  : 
+  0.967217115304617     
+  
+  Integrated BODEN for atoms            1           5  : 
+  0.967217115306343     
+  
+  Integrated BODEN for atoms            1           6  : 
+  5.671386425470495E-002
+  
+  Integrated BODEN for atoms            1           7  : 
+  5.672516944469732E-002
+  
+  Integrated BODEN for atoms            1           8  : 
+  5.672516944499903E-002
+  
+  Integrated BODEN for atoms            2           3  : 
+  5.671386426635602E-002
+  
+  Integrated BODEN for atoms            2           4  : 
+  5.672516945908333E-002
+  
+  Integrated BODEN for atoms            2           5  : 
+  5.672516945938508E-002
+  
+  Integrated BODEN for atoms            2           6  : 
+  0.967212768400883     
+  
+  Integrated BODEN for atoms            2           7  : 
+  0.967217115336092     
+  
+  Integrated BODEN for atoms            2           8  : 
+  0.967217115337817     
+  
+  Integrated BODEN for atoms            3           4  : 
+  6.257044211729028E-002
+  
+  Integrated BODEN for atoms            3           5  : 
+  6.257044212073161E-002
+  
+  Integrated BODEN for atoms            3           6  : 
+  1.692756924619577E-002
+  
+  Integrated BODEN for atoms            3           7  : 
+  7.924994778616525E-003
+  
+  Integrated BODEN for atoms            3           8  : 
+  7.924994778467760E-003
+  
+  Integrated BODEN for atoms            4           5  : 
+  6.257381985996474E-002
+  
+  Integrated BODEN for atoms            4           6  : 
+  7.924994778751747E-003
+  
+  Integrated BODEN for atoms            4           7  : 
+  1.693115423465444E-002
+  
+  Integrated BODEN for atoms            4           8  : 
+  7.926634061558486E-003
+  
+  Integrated BODEN for atoms            5           6  : 
+  7.924994778602956E-003
+  
+  Integrated BODEN for atoms            5           7  : 
+  7.926634061558474E-003
+  
+  Integrated BODEN for atoms            5           8  : 
+  1.693115423527225E-002
+  
+  Integrated BODEN for atoms            6           7  : 
+  6.257044210988834E-002
+  
+  Integrated BODEN for atoms            6           8  : 
+  6.257044211332972E-002
+  
+  Integrated BODEN for atoms            7           8  : 
+  6.257381984882432E-002
+  
+  DIATOMIC XC COMPONENTS 
+  
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C     0.000000   -0.201709   -0.210433   -0.210433   -0.210433   -0.004723
+   2  C    -0.201709    0.000000   -0.004723   -0.004725   -0.004725   -0.210433
+   3  H    -0.210433   -0.004723    0.000000   -0.005595   -0.005595   -0.001399
+   4  H    -0.210433   -0.004725   -0.005595    0.000000   -0.005596   -0.000509
+   5  H    -0.210433   -0.004725   -0.005595   -0.005596    0.000000   -0.000509
+   6  H    -0.004723   -0.210433   -0.001399   -0.000509   -0.000509    0.000000
+   7  H    -0.004725   -0.210433   -0.000509   -0.001399   -0.000509   -0.005595
+   8  H    -0.004725   -0.210433   -0.000509   -0.000509   -0.001399   -0.005595
+
+
+
+
+              7  H        8  H 
+
+   1  C    -0.004725   -0.004725
+   2  C    -0.210433   -0.210433
+   3  H    -0.000509   -0.000509
+   4  H    -0.001399   -0.000509
+   5  H    -0.000509   -0.001399
+   6  H    -0.005595   -0.005595
+   7  H     0.000000   -0.005596
+   8  H    -0.005596    0.000000
+  
+  PURE DFT ONE-CENTER CONTRIBUTIONS (EXACT) 
+  
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    -4.317201    0.000000    0.000000    0.000000    0.000000    0.000000
+   2  C     0.000000   -4.317201    0.000000    0.000000    0.000000    0.000000
+   3  H     0.000000    0.000000   -0.329149    0.000000    0.000000    0.000000
+   4  H     0.000000    0.000000    0.000000   -0.329154    0.000000    0.000000
+   5  H     0.000000    0.000000    0.000000    0.000000   -0.329154    0.000000
+   6  H     0.000000    0.000000    0.000000    0.000000    0.000000   -0.329149
+   7  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+   8  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.000000
+
+
+
+
+              7  H        8  H 
+
+   1  C     0.000000    0.000000
+   2  C     0.000000    0.000000
+   3  H     0.000000    0.000000
+   4  H     0.000000    0.000000
+   5  H     0.000000    0.000000
+   6  H     0.000000    0.000000
+   7  H    -0.329154    0.000000
+   8  H     0.000000   -0.329154
+  Exact one-center decomposition for DFT xc energy :   -10.6093159414795     
+  
+  REARRANGING ATOMIC COMPONENTS 
+  
+  FINAL KS-DFT XC ENERGY COMPONENTS 
+  
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    -3.893610   -0.201709   -0.210433   -0.210433   -0.210433   -0.004723
+   2  C    -0.201709   -3.893610   -0.004723   -0.004725   -0.004725   -0.210433
+   3  H    -0.210433   -0.004723   -0.214767   -0.005595   -0.005595   -0.001399
+   4  H    -0.210433   -0.004725   -0.005595   -0.214771   -0.005596   -0.000509
+   5  H    -0.210433   -0.004725   -0.005595   -0.005596   -0.214771   -0.000509
+   6  H    -0.004723   -0.210433   -0.001399   -0.000509   -0.000509   -0.214767
+   7  H    -0.004725   -0.210433   -0.000509   -0.001399   -0.000509   -0.005595
+   8  H    -0.004725   -0.210433   -0.000509   -0.000509   -0.001399   -0.005595
+
+
+
+
+              7  H        8  H 
+
+   1  C    -0.004725   -0.004725
+   2  C    -0.210433   -0.210433
+   3  H    -0.000509   -0.000509
+   4  H    -0.001399   -0.000509
+   5  H    -0.000509   -0.001399
+   6  H    -0.005595   -0.005595
+   7  H    -0.214771   -0.005596
+   8  H    -0.005596   -0.214771
+  Sum of (exact) DFT xc energy components :   -10.6093159414795     
+  
+  WARNING: HF-exchange part missing 
+  
+  
+(Elapsed time :: enpart dft       75.9s)
+ SETTING GRID FOR TWO-ELECTRON ENERGY INTEGRATION
+   
+ Radial points:           40
+ Angular points:         146
+ Number of grid points:       46720
+  
+ ##############################
+  Doing two-electron integrals
+ ##############################
+  
+ Rotating for angles :   0.000000000000000E+000  0.162000000000000     
+ Number of grid points:       46720
+  
+  *** COULOMB PART *** 
+  
+  Ecoul TERMS 
+  
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    18.410009   11.225575    2.722733    2.723050    2.723050    1.495105
+   2  C    11.225575   18.410009    1.495105    1.494905    1.494905    2.722733
+   3  H     2.722733    1.495105    0.478845    0.338577    0.338577    0.199058
+   4  H     2.723050    1.494905    0.338577    0.478527    0.338589    0.247620
+   5  H     2.723050    1.494905    0.338577    0.338589    0.478527    0.247620
+   6  H     1.495105    2.722733    0.199058    0.247620    0.247620    0.478845
+   7  H     1.494905    2.723050    0.247620    0.199047    0.247601    0.338577
+   8  H     1.494905    2.723050    0.247620    0.247601    0.199047    0.338577
+
+
+
+
+              7  H        8  H 
+
+   1  C     1.494905    1.494905
+   2  C     2.723050    2.723050
+   3  H     0.247620    0.247620
+   4  H     0.199047    0.247601
+   5  H     0.247601    0.199047
+   6  H     0.338577    0.338577
+   7  H     0.478527    0.338589
+   8  H     0.338589    0.478527
+  Coulomb energy :    80.3392145000944     
+(Elapsed time :: Coulomb energy        3.1s)
+  
+  
+  *** PURE EXCHANGE PART *** 
+  
+  Two-el integrations for           90  MO pairs
+ Threshold for atom pair calculation   0.000000
+  Skipping            0  diatomic exchange integrals 
+  
+  HF Ex TERMS  
+  
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    -4.506974   -0.301402   -0.291807   -0.292049   -0.292049   -0.009189
+   2  C    -0.301402   -4.506974   -0.009189   -0.009139   -0.009139   -0.291807
+   3  H    -0.291807   -0.009189   -0.215889   -0.009892   -0.009892   -0.001272
+   4  H    -0.292049   -0.009139   -0.009892   -0.215733   -0.009897   -0.001191
+   5  H    -0.292049   -0.009139   -0.009892   -0.009897   -0.215733   -0.001191
+   6  H    -0.009189   -0.291807   -0.001272   -0.001191   -0.001191   -0.215889
+   7  H    -0.009139   -0.292049   -0.001191   -0.001270   -0.001185   -0.009892
+   8  H    -0.009139   -0.292049   -0.001191   -0.001185   -0.001270   -0.009892
+
+
+
+
+              7  H        8  H 
+
+   1  C    -0.009139   -0.009139
+   2  C    -0.292049   -0.292049
+   3  H    -0.001191   -0.001191
+   4  H    -0.001270   -0.001185
+   5  H    -0.001185   -0.001270
+   6  H    -0.009892   -0.009892
+   7  H    -0.215733   -0.009897
+   8  H    -0.009897   -0.215733
+  Hartree-Fock exchange energy :   -12.4871104848749     
+  
+(Elapsed time :: Exact-exchange energy       79.0s)
+  DFT exchange-correlation energy terms 
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    -4.795004   -0.261989   -0.268794   -0.268843   -0.268843   -0.006561
+   2  C    -0.261989   -4.795004   -0.006561   -0.006553   -0.006553   -0.268794
+   3  H    -0.268794   -0.006561   -0.257945   -0.007574   -0.007574   -0.001653
+   4  H    -0.268843   -0.006553   -0.007574   -0.257917   -0.007575   -0.000747
+   5  H    -0.268843   -0.006553   -0.007574   -0.007575   -0.257917   -0.000747
+   6  H    -0.006561   -0.268794   -0.001653   -0.000747   -0.000747   -0.257945
+   7  H    -0.006553   -0.268843   -0.000747   -0.001653   -0.000746   -0.007574
+   8  H    -0.006553   -0.268843   -0.000747   -0.000746   -0.001653   -0.007574
+
+
+
+
+              7  H        8  H 
+
+   1  C    -0.006553   -0.006553
+   2  C    -0.268843   -0.268843
+   3  H    -0.000747   -0.000747
+   4  H    -0.001653   -0.000746
+   5  H    -0.000746   -0.001653
+   6  H    -0.007574   -0.007574
+   7  H    -0.257917   -0.007575
+   8  H    -0.007575   -0.257917
+  Total exchange-correlation energy :   -13.1067380384545     
+  
+  DFT electron-electron energy :    67.2324764616399     
+  Integration error (kcal/mol) :    -2.45
+  
+  Max error accepted on the two-electron part :   0.000000000000000E+000
+  Rotating for angles :   0.000000000000000E+000  0.182000000000000     
+ Number of grid points:       46720
+   New error after rotation:    -8.89
+  Warning, new error with same sign 
+  Damping parameter:    1.37997479309276     
+  
+(Elapsed time :: Interpolated zero-error       21.4s)
+ **INTERPOLATED TWO-ELECTRON ENERGY COMPONENTS**
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    18.411973   11.225575    2.722733    2.723050    2.723050    1.495105
+   2  C    11.225575   18.411973    1.495105    1.494905    1.494905    2.722733
+   3  H     2.722733    1.495105    0.478925    0.338577    0.338577    0.199058
+   4  H     2.723050    1.494905    0.338577    0.478585    0.338589    0.247620
+   5  H     2.723050    1.494905    0.338577    0.338589    0.478585    0.247620
+   6  H     1.495105    2.722733    0.199058    0.247620    0.247620    0.478925
+   7  H     1.494905    2.723050    0.247620    0.199047    0.247601    0.338577
+   8  H     1.494905    2.723050    0.247620    0.247601    0.199047    0.338577
+
+
+
+
+              7  H        8  H 
+
+   1  C     1.494905    1.494905
+   2  C     2.723050    2.723050
+   3  H     0.247620    0.247620
+   4  H     0.199047    0.247601
+   5  H     0.247601    0.199047
+   6  H     0.338577    0.338577
+   7  H     0.478585    0.338589
+   8  H     0.338589    0.478585
+  Coulomb energy :    80.3435346873269     
+  
+ **INTERPOLATED TWO-ELECTRON ENERGY COMPONENTS**
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    -4.507925   -0.301402   -0.291807   -0.292049   -0.292049   -0.009189
+   2  C    -0.301402   -4.507925   -0.009189   -0.009139   -0.009139   -0.291807
+   3  H    -0.291807   -0.009189   -0.215930   -0.009892   -0.009892   -0.001272
+   4  H    -0.292049   -0.009139   -0.009892   -0.215762   -0.009897   -0.001191
+   5  H    -0.292049   -0.009139   -0.009892   -0.009897   -0.215762   -0.001191
+   6  H    -0.009189   -0.291807   -0.001272   -0.001191   -0.001191   -0.215930
+   7  H    -0.009139   -0.292049   -0.001191   -0.001270   -0.001185   -0.009892
+   8  H    -0.009139   -0.292049   -0.001191   -0.001185   -0.001270   -0.009892
+
+
+
+
+              7  H        8  H 
+
+   1  C    -0.009139   -0.009139
+   2  C    -0.292049   -0.292049
+   3  H    -0.001191   -0.001191
+   4  H    -0.001270   -0.001185
+   5  H    -0.001185   -0.001270
+   6  H    -0.009892   -0.009892
+   7  H    -0.215762   -0.009897
+   8  H    -0.009897   -0.215762
+  HF Exchange energy :   -12.4892105835867     
+  
+  DFT exchange-correlation energy terms 
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C    -4.795195   -0.261989   -0.268794   -0.268843   -0.268843   -0.006561
+   2  C    -0.261989   -4.795195   -0.006561   -0.006553   -0.006553   -0.268794
+   3  H    -0.268794   -0.006561   -0.257953   -0.007574   -0.007574   -0.001653
+   4  H    -0.268843   -0.006553   -0.007574   -0.257923   -0.007575   -0.000747
+   5  H    -0.268843   -0.006553   -0.007574   -0.007575   -0.257923   -0.000747
+   6  H    -0.006561   -0.268794   -0.001653   -0.000747   -0.000747   -0.257953
+   7  H    -0.006553   -0.268843   -0.000747   -0.001653   -0.000746   -0.007574
+   8  H    -0.006553   -0.268843   -0.000747   -0.000746   -0.001653   -0.007574
+
+
+
+
+              7  H        8  H 
+
+   1  C    -0.006553   -0.006553
+   2  C    -0.268843   -0.268843
+   3  H    -0.000747   -0.000747
+   4  H    -0.001653   -0.000746
+   5  H    -0.000746   -0.001653
+   6  H    -0.007574   -0.007574
+   7  H    -0.257923   -0.007575
+   8  H    -0.007575   -0.257923
+  Total exchange-correlation energy:   -13.1071580581969     
+          
+  DFT electron-electron energy :    67.2363766291300     
+  Integration error (kcal/mol) :    -0.00
+          
+
+                     "FUZZY ATOMS" DFT ENERGY COMPONENTS
+
+
+              1  C        2  C        3  H        4  H        5  H        6  H 
+
+   1  C   -37.579084   -0.229886   -0.253751   -0.253500   -0.253500   -0.011299
+   2  C    -0.229886  -37.579084   -0.011299   -0.011538   -0.011538   -0.253751
+   3  H    -0.253751   -0.011299   -0.476492   -0.005324   -0.005324   -0.000574
+   4  H    -0.253500   -0.011538   -0.005324   -0.476806   -0.005322    0.001116
+   5  H    -0.253500   -0.011538   -0.005324   -0.005322   -0.476806    0.001116
+   6  H    -0.011299   -0.253751   -0.000574    0.001116    0.001116   -0.476492
+   7  H    -0.011538   -0.253500    0.001116   -0.000592    0.001095   -0.005324
+   8  H    -0.011538   -0.253500    0.001116    0.001095   -0.000592   -0.005324
+
+
+
+
+              7  H        8  H 
+
+   1  C    -0.011538   -0.011538
+   2  C    -0.253500   -0.253500
+   3  H     0.001116    0.001116
+   4  H    -0.000592    0.001095
+   5  H     0.001095   -0.000592
+   6  H    -0.005324   -0.005324
+   7  H    -0.476806   -0.005322
+   8  H    -0.005322   -0.476806
+  
+ SUM OF DFT COMPONENTS :            -79.8655614192903     
+ Total energy in checkpointfile :   -79.8656133777344     
+ Integration error (au):            0.00005196
+ Integration error (kcal/mol):          0.03
+  
+(Elapsed time :: enpart two-electron      108.4s)
+  
+ ...Normal Termination of APOST-3D... 
