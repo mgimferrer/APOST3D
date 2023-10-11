@@ -248,10 +248,11 @@ C eff-AO-s and EOS
       call readchar("# METODE","EFFAO",ieffao)
       call readchar("# METODE","UEFFAO",idummy)
       if(idummy.eq.1) ieffao=2
-!! TO CHANGE FOR UEOS
+
+!! EFFAOS PAIRED AND UNPAIRED (ONLY) !!
       call readchar("# METODE","EFFAO-U",idummy)
       if(idummy.eq.1) ieffao=3
-!!
+
       call readint("# METODE","EFF_THRESH",ieffthr,1,1)
       call readchar("# METODE","CUBE",icube)
       if(icube.eq.1) then
@@ -260,12 +261,24 @@ C eff-AO-s and EOS
        call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
        call readint("# CUBE","MIN_OCC",kcubthr,0,1)
       end if
+
+!! EOS (STANDARD) !!
       call readchar("# METODE","EOS",ieos)
       if(ieos.eq.1) then 
        iopop=1
        call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
        ieffao=2
       end if
+
+!! EOS FROM THE PAIRED AND UNPAIRED DENSITIES !!
+      call readchar("# METODE","EOS-U",iueos)
+      if(iueos.eq.1) then 
+!       iopop=1
+       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
+       ieffao=3
+      end if
+
+!! OS FROM CENTROIDS !!
       call readchar("# METODE","OS-CENTROID",ieoscent)
 
 c Local spin and methods for correlated WFs
@@ -1164,14 +1177,14 @@ c imulli 2 LOWDIN
 c imulli 3 LOWDIN-DAVIDSON (not implemented)                                   
 c imulli 3 NAO                                    
 
-       if (ieffao.ne.0) then
+      if (ieffao.ne.0) then
 
         if(idofr.eq.0) then
-         icufr=nat
-         do i=1,icufr
-          nfrlist(i)=1
-          ifrlist(1,i)=i                
-         end do
+          icufr=nat
+          do i=1,icufr
+            nfrlist(i)=1
+            ifrlist(1,i)=i                
+          end do
         end if
 
 CCCCCCCCCCCCCCC
@@ -1181,76 +1194,76 @@ CCCCCCCCCCCCCCC
           if(ieffao.eq.1) then
             call ueffaomull_frag(0)
           else if (ieffao.eq.2) then
-           call ueffaomull_frag(1)
-           if (ieos.eq.1) call eos_analysis(0,1,xthresh)
-
-           if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb))then
-            call ueffaomull_frag(2)
-            idobeta=1
-           end if
-           if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+            call ueffaomull_frag(1)
+            if (ieos.eq.1) call eos_analysis(0,1,xthresh)
+            if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
+              call ueffaomull_frag(2)
+              idobeta=1
+            end if
+            if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
           end if
+
 CCCCCCCCCCCCCCC
 C Lowdin      
 CCCCCCCCCCCCCCC
         else if(imulli.gt.1) then
           if(ieffao.eq.1) then
-           call ueffaolow_frag(0)
+            call ueffaolow_frag(0)
           else if (ieffao.eq.2) then
-           call ueffaolow_frag(1)
-           if(ieos.eq.1) call eos_analysis(0,1,xthresh)
-
-           if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb))then
-            call ueffaolow_frag(2)
-            idobeta=1
-           end if
-           if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+            call ueffaolow_frag(1)
+            if(ieos.eq.1) call eos_analysis(0,1,xthresh)
+            if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
+              call ueffaolow_frag(2)
+              idobeta=1
+            end if
+           if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
           end if
+
 CCCCCCCCCCCCCCC
 C 3D-space    
 CCCCCCCCCCCCCCC
         else
 
-C DO EFFAO/UEFFAO for selected atoms only. NO EOS
+!! DOING EFFAO/UEFFAO FOR SELECTED ATOMS ONLY (NO EOS) !!
+          if(idoat.ne.0) then
+            if(ieffao.eq.1) then
+              call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
+            else
+              call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
+              call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
+            end if
 
-         if(idoat.ne.0) then
-          if(ieffao.eq.1) then
-            call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
           else
-            call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
-            call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
+
+!! DOING EFFAO/UEFFAO/EFFAO-U FOR FRAGMENTS/ALL ATOMS !!
+            if(ieffao.eq.1) then
+              call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
+c             call  uefomo(itotps,ndim,omp,chp,sat,wp,omp2,0)
+c             call mhg(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,pa,0)
+c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
+            else if(ieffao.eq.2) then
+            idobeta=0
+            write(*,*) '  '
+            write(*,*) 'UEFFAO: alpha and beta treated separately'
+            write(*,*) '  '
+            call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
+            if(ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
+            if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) then
+              idobeta=1
+              call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
+            end if
+            if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+
+!! EOS-U PART !!
+          else if(ieffao.eq.3) then
+           write(*,*) " "
+           write(*,*) "EFFAO-U: paired and unpaired densities treated separately "
+           write(*,*) " "
+!           call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
+!           if(iueos.eq.1) call eos_analysis(idobeta,2,xthresh)
           end if
-
-         else
-
-C DO EFFAO/UEFFAO for fragments/all atoms
-
-          if(ieffao.eq.1) then
-           call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
-c           call  uefomo(itotps,ndim,omp,chp,sat,wp,omp2,0)
-c           call mhg(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,pa,0)
-c           call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
-          else if (ieffao.eq.2) then
-           idobeta=0
-           write(*,*) '  '
-           write(*,*) 'UEFFAO: alpha and beta treated separatedly'
-           write(*,*) '  '
-           call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
-           if (ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
-
-           if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0))then
-            idobeta=1
-            call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
-           end if
-           if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
-          else if (ieffao.eq.3) then
-           write(*,*) '  '
-           write(*,*) 'EFFAO: from paired and unpaired density '
-           write(*,*) '  '
-           call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
-         end if
         end if
-       end if
+      end if
 
       write(*,*)
       call cpu_time(time2)
