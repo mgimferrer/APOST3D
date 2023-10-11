@@ -1,0 +1,622 @@
+  ------------------------------------------------------------------------------
+                                                                                
+                      Program APOST-3D, Version 4                               
+                               04-03-2021                                       
+                     --------------------------------                           
+                                                                                
+      Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Available atomic definitions:                                             
+      ----------------------------                                              
+                                                                                
+      Real space:                                                               
+        Becke, J. Chem. Phys. 88 2547 1988                                      
+        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
+        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
+        Topological fuzzy Voronoi cells (TFVC), J Chem Phys, 139 071103 2013    
+        QTAIM, J. Comput. Chem 30 1082 2009                                     
+                                                                                
+      Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
+                                                                                
+                                                                                
+      Calculating:                                                              
+      ------------                                                              
+                                                                                
+        A)  Atomic and overlap populations, bond orders and valences            
+             I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	      
+                                                                                
+        B) Hartree-Fock molecular energy decomposition                          
+           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
+                                                                                
+        C) KS-DFT molecular energy decomposition                                
+            P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
+           M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
+                                                                                
+        D) Molecular energy decomposition for CAS/DMRG wavefunctions            
+                                                                                
+        E) Effective atomic orbitals:                                           
+           I. Mayer, J. Phys. Chem. 100 6249 1996                               
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
+           E. Ramos-Cordoba et.al., J. Chem. Phys. 138 214107 2013              
+                                                                                
+        F) Local spin analysis                                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 8, 1270-1279 2012   
+           E. Ramos-Cordoba et.al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+                                                                                
+        G) Effective Oxidation states analysis                                  
+           E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 11 1501-1508 2015   
+                                                                                
+        H) Oxidation states from localized orbitals                             
+           M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022         
+                                                                                
+        I) Decomposition of EDA quantities into one- and two-center IQA terms   
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+              P. Salvador, E. Ramos-Cordoba, M. Gimferrer, M. Montilla          
+                Program APOST-3D, Version 4, Girona, 2020                       
+                                                                                
+    e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
+                                                                                
+  ------------------------------------------------------------------------------
+    The program has been written by using parts of the program APOST by         
+    I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
+                                                                                
+    The numerical integration utilizes the subroutines for Lebedev              
+    quadrature downloaded from CCL. The appropriate reference is:               
+    V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
+    131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
+                                                                                
+    The program makes use of libxc library when necessary, using the F90        
+    interfaces provided by the authors.                                         
+                   (see http://www.tddft.org/programs/libxc                     
+                                                                                
+    We are extremely grateful for the possibility of using these routines!      
+                                                                                
+   -----------------------------------------------------------------------------
+    DENS=   1
+ Restricted MO formalism
+ KS-DFT type calculation
+ (single det. built up of the Kohn-Sham orbitals)
+ Number of atoms:           5
+ Number of basis functions:          43
+ Total number of primitive gaussians          71
+ Spin density not found in FChk
+ Reconstructing spin density (if any) from MOs
+  
+ nocc           9     nalpha           9     nbeta           9
+  
+ E(SCF/DFT)=  -139.628188589857     
+  
+STIFFNES=   4
+RHO_CALC=   0
+EFF_THRE=   1
+      DM=   0
+ Fragment:            1
+   2
+ Fragment:            2
+   1   3   4   5
+FOLI TOL=   3
+BRANCH I=   0
+ 
+        (Elapsed time :: initialization        1.6s)
+  
+  -------------------------------------
+  SETTING ATOMIC GRIDS FOR INTEGRATION 
+  -------------------------------------
+  
+ Radial points  :   40
+ Angular points :  146
+ r0 (radial)    :  0.500
+ Using stiffness k :    4
+ Using density along atom pairs to set atomic radii.
+ Subdivision :          24
+ Atom pair:    1   2 Ratio:  0.52207
+  
+ Info: atom pair:    1   3
+ 1 maximum and  1 minima of density between atoms   1 and    3
+ Max:          50 Min:          33
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           33
+ Subdivision :          19
+ Atom pair:    1   3 Ratio:  1.76243
+  
+ Info: atom pair:    1   4
+ 1 maximum and  1 minima of density between atoms   1 and    4
+ Max:          50 Min:          33
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           33
+ Subdivision :          19
+ Atom pair:    1   4 Ratio:  1.76243
+  
+ Info: atom pair:    1   5
+ 1 maximum and  1 minima of density between atoms   1 and    5
+ Max:          50 Min:          33
+ Inconsistent number of extrema:
+ Selecting minimum closest to midpoint           33
+ Subdivision :          19
+ Atom pair:    1   5 Ratio:  1.76243
+  
+ Number of grid points:       29200
+ Checking sum of AOs overlap matrices
+ Deviations may not affect overall accuracy of MOs 
+  
+  ---------------------------
+   DOING POPULATION ANALYSIS 
+    Partial atomic charges
+    Atomic spin densities 
+    Bond orders and Valences 
+  ---------------------------
+  
+   
+     ELECTRON POPULATIONS
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1  C     5.126631    5.845837
+   2  F     9.721908    9.259127
+   3  H     1.050605    0.965021
+   4  H     1.050654    0.965037
+   5  H     1.050704    0.964978
+  -----------------------------
+     Sum   18.000503   18.000000
+
+
+
+   FRAGMENT ANALYSIS : Electron populations                                     
+  
+              3D-space   Mulliken
+            ----------------------
+   1          9.721908    9.259127
+   2          8.278595    8.740873
+            ----------------------
+  Total:    18.000503    18.000000
+   
+     TOTAL ATOMIC CHARGES    
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1  C     0.873369    0.154163
+   2  F    -0.721908   -0.259127
+   3  H    -0.050605    0.034979
+   4  H    -0.050654    0.034963
+   5  H    -0.050704    0.035022
+  -----------------------------
+     Sum   -0.000503    0.000000
+   
+
+
+
+   FRAGMENT ANALYSIS : Atomic Charges                                           
+  
+              3D-space   Mulliken
+            ----------------------
+   1         -0.721908   -0.259127
+   2          0.721405    0.259127
+            ----------------------
+  Total:    -0.000503     0.000000
+
+                     "FUZZY ATOMS" BOND ORDER MATRIX
+
+
+              1  C        2  F        3  H        4  H        5  H 
+
+   1  C     3.346704    0.812947    0.915475    0.915636    0.916267
+   2  F     0.812947    9.142936    0.115002    0.115018    0.114955
+   3  H     0.915475    0.115002    0.486215    0.049132    0.049102
+   4  H     0.915636    0.115018    0.049132    0.486243    0.049103
+   5  H     0.916267    0.114955    0.049102    0.049103    0.486269
+   
+    TOTAL VALENCES 
+   
+     Atom     V_A
+  -----------------
+   1  C     3.559854
+   2  F     1.157943
+   3  H     1.128782
+   4  H     1.128821
+   5  H     1.128871
+  ------------------
+   
+ VALENCES USED IN BONDS
+ (SUM OF BOND ORDERS)
+   
+     Atom     VB_A
+  -----------------
+   1  C     3.560325
+   2  F     1.157923
+   3  H     1.128712
+   4  H     1.128889
+   5  H     1.129427
+  ------------------
+   
+    FREE VALENCES
+  
+     Atom     F_A
+  -----------------
+   1  C    -0.000472
+   2  F     0.000020
+   3  H     0.000070
+   4  H    -0.000068
+   5  H    -0.000556
+  ------------------
+
+
+
+   FRAGMENT ANALYSIS : Fuzzy Bond Order                                         
+  
+   1          9.142936    1.157923
+   2          1.157923    7.700146
+  
+  Total:         18.0010054905680
+  
+ Additional printing :
+  1  1     9.142936
+  1  2     1.157923
+  2  1     1.157923
+  2  2     7.700146
+  
+ 
+(Elapsed time :: population analyses       13.3s)
+  
+  ********************* 
+  ENTERING OSLO SECTION 
+  ********************* 
+  
+  ------------------------------------- 
+  CHARGE CENTER (R_F) FOR EACH FRAGMENT 
+  ------------------------------------- 
+  
+  Frg:   1 Chg Cent. (xyz):    0.75429   0.00007  -0.00001
+  Frg:   2 Chg Cent. (xyz):   -0.75429  -0.00007   0.00001
+  
+  
+  --------------------------------- 
+  STARTING ITERATIVE OSLO ALGORITHM 
+  --------------------------------- 
+  
+  Tolerance (in delta-FOLI) used for OSLO selection:   0.00100
+  
+  -------------------- 
+  ITERATION NUMBER   1
+  -------------------- 
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   1
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1     14.20213      0.02652      6.30549
+    2     13.53168      0.03984      5.21215
+    3     13.52473      0.03982      5.21473
+    4      6.90674      0.00111     30.02322
+    5      2.42698      0.80434      1.34696
+    6      1.70884      0.97593      1.03691
+    7      1.70826      0.97595      1.03688
+    8      1.27930      0.99746      1.00381
+    9      0.04119      0.99999      1.00002
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   2
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1     12.22932      0.02920      6.02560
+    2      9.50743      0.02835      6.10944
+    3      9.50705      0.02830      6.11555
+    4      8.16951      0.00029     58.26704
+    5      5.10063      0.18387      2.78765
+    6      4.52400      0.95613      1.06846
+    7      4.52040      0.95585      1.06894
+    8      3.46336      0.95775      1.06586
+    9      0.15635      0.99956      1.00067
+  
+  Frg. and Lowest FOLI value:   1   1.00002
+  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.00002
+  
+  ----------------- 
+  SELECTED ORBITALS 
+  ----------------- 
+  
+  Orb., Frg., FOLI:   9  1   1.00002
+  Orb., Frg., FOLI:   9  2   1.00067
+  Number of OSLOs selected:   2
+  delta-FOLI value:    0.00380
+  
+  Electron pairs left to assign:   7
+  
+  ---------------------------- 
+  CHECKING LINIAR DEPENDENCIES 
+  ---------------------------- 
+  
+  Orb., Frag., FOLI   8  1   1.00381
+  Orb., Frag., FOLI   9  1   1.00002
+  Orb., Frag., FOLI   9  2   1.00067
+  Number of OSLOs for LinDep evaluation:   3
+  
+  Lowest eigenvalue obtained (LinDep):    0.99970
+  
+  -------------------- 
+  ITERATION NUMBER   2
+  -------------------- 
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   1
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1     14.20054      0.02647      6.31092
+    2     13.53168      0.03984      5.21215
+    3     13.52473      0.03982      5.21473
+    4      2.43050      0.80507      1.34548
+    5      1.70884      0.97593      1.03691
+    6      1.70826      0.97595      1.03688
+    7      1.27930      0.99746      1.00381
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   2
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1     12.22641      0.02913      6.03217
+    2      9.50743      0.02835      6.10944
+    3      9.50705      0.02830      6.11555
+    4      5.10712      0.18417      2.78614
+    5      4.52400      0.95613      1.06846
+    6      4.52040      0.95585      1.06894
+    7      3.46338      0.95780      1.06578
+  
+  Frg. and Lowest FOLI value:   1   1.00381
+  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.00381
+  
+  ----------------- 
+  SELECTED ORBITALS 
+  ----------------- 
+  
+  Orb., Frg., FOLI:   7  1   1.00381
+  Number of OSLOs selected:   1
+  delta-FOLI value:    0.03307
+  
+  Electron pairs left to assign:   6
+  
+  ---------------------------- 
+  CHECKING LINIAR DEPENDENCIES 
+  ---------------------------- 
+  
+  Orb., Frag., FOLI   5  1   1.03691
+  Orb., Frag., FOLI   6  1   1.03688
+  Orb., Frag., FOLI   7  1   1.00381
+  Number of OSLOs for LinDep evaluation:   3
+  
+  Lowest eigenvalue obtained (LinDep):    1.00000
+  
+  -------------------- 
+  ITERATION NUMBER   3
+  -------------------- 
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   1
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1     14.20054      0.02647      6.31092
+    2     13.53168      0.03984      5.21215
+    3     13.52473      0.03982      5.21473
+    4      2.43050      0.80507      1.34548
+    5      1.70884      0.97593      1.03691
+    6      1.70826      0.97595      1.03688
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   2
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1      9.50743      0.02835      6.10944
+    2      9.50705      0.02830      6.11555
+    3      6.53643      0.19950      2.71381
+    4      4.52400      0.95613      1.06846
+    5      4.52040      0.95586      1.06893
+    6      3.47242      0.96906      1.04773
+  
+  Frg. and Lowest FOLI value:   1   1.03688
+  Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.03688
+  
+  ----------------- 
+  SELECTED ORBITALS 
+  ----------------- 
+  
+  Orb., Frg., FOLI:   5  1   1.03691
+  Orb., Frg., FOLI:   6  1   1.03688
+  Number of OSLOs selected:   2
+  delta-FOLI value:    0.01085
+  
+  Electron pairs left to assign:   4
+  
+  ---------------------------- 
+  CHECKING LINIAR DEPENDENCIES 
+  ---------------------------- 
+  
+  Orb., Frag., FOLI   5  1   1.03691
+  Orb., Frag., FOLI   6  1   1.03688
+  Orb., Frag., FOLI   6  2   1.04773
+  Number of OSLOs for LinDep evaluation:   3
+  
+  Lowest eigenvalue obtained (LinDep):    0.99962
+  
+  -------------------- 
+  ITERATION NUMBER   4
+  -------------------- 
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   1
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1     14.20054      0.02647      6.31092
+    2     13.53168      0.03984      5.21215
+    3     13.52473      0.03982      5.21473
+    4      2.43050      0.80507      1.34548
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   2
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1      6.53643      0.19950      2.71382
+    2      4.60214      0.96042      1.06153
+    3      4.59852      0.96012      1.06204
+    4      3.47242      0.96906      1.04773
+  
+  Frg. and Lowest FOLI value:   2   1.04773
+  Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.04773
+  
+  ----------------- 
+  SELECTED ORBITALS 
+  ----------------- 
+  
+  Orb., Frg., FOLI:   4  2   1.04773
+  Number of OSLOs selected:   1
+  delta-FOLI value:    0.01380
+  
+  Electron pairs left to assign:   3
+  
+  ---------------------------- 
+  CHECKING LINIAR DEPENDENCIES 
+  ---------------------------- 
+  
+  Orb., Frag., FOLI   2  2   1.06153
+  Orb., Frag., FOLI   3  2   1.06204
+  Orb., Frag., FOLI   4  2   1.04773
+  Number of OSLOs for LinDep evaluation:   3
+  
+  Lowest eigenvalue obtained (LinDep):    1.00000
+  
+  -------------------- 
+  ITERATION NUMBER   5
+  -------------------- 
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   1
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1     13.53169      0.03984      5.21215
+    2     13.52474      0.03982      5.21468
+    3      3.00991      0.80051      1.35476
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   2
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1      6.53643      0.19950      2.71382
+    2      4.60214      0.96042      1.06153
+    3      4.59852      0.96012      1.06204
+  
+  Frg. and Lowest FOLI value:   2   1.06153
+  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.06153
+  
+  ----------------- 
+  SELECTED ORBITALS 
+  ----------------- 
+  
+  Orb., Frg., FOLI:   2  2   1.06153
+  Orb., Frg., FOLI:   3  2   1.06204
+  Number of OSLOs selected:   2
+  delta-FOLI value:    0.29323
+  
+  Electron pairs left to assign:   1
+  
+  ---------------------------- 
+  CHECKING LINIAR DEPENDENCIES 
+  ---------------------------- 
+  
+  Orb., Frag., FOLI   3  1   1.35476
+  Orb., Frag., FOLI   2  2   1.06153
+  Orb., Frag., FOLI   3  2   1.06204
+  Number of OSLOs for LinDep evaluation:   3
+  
+  Lowest eigenvalue obtained (LinDep):    0.99952
+  
+  -------------------- 
+  ITERATION NUMBER   6
+  -------------------- 
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   1
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1      3.00991      0.80051      1.35476
+  
+  ------------------------------------ 
+  ORBITAL INFORMATION FOR FRAGMENT   2
+  ------------------------------------ 
+  
+  Orb.     Spread      Frg. Pop.      FOLI 
+    1      6.53643      0.19950      2.71382
+  
+  Frg. and Lowest FOLI value:   1   1.35476
+  Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.35476
+  
+  ----------------- 
+  SELECTED ORBITALS 
+  ----------------- 
+  
+  Orb., Frg., FOLI:   1  1   1.35476
+  Number of OSLOs selected:   1
+  delta-FOLI value:    1.35905
+  
+  Electron pairs left to assign:   0
+  
+  ---------------------------- 
+  CHECKING LINIAR DEPENDENCIES 
+  ---------------------------- 
+  
+  Orb., Frag., FOLI   1  1   1.35476
+  Orb., Frag., FOLI   1  2   2.71382
+  Number of OSLOs for LinDep evaluation:   2
+  
+  LinDep not evaluated in last iteration if only 1 orbital is selected 
+  
+  ---------------------------- 
+  FINAL EOS-like OS ASSIGNMENT 
+  ---------------------------- 
+  
+  FRAG, OS    1 -1
+  FRAG, OS    2  1
+  
+  -------------------------------- 
+  PRINTING FINAL OSLOs INFORMATION 
+  -------------------------------- 
+  
+  ----------------------------------------- 
+  Summary of the selected OSLOs (pre-ortho) 
+  ----------------------------------------- 
+  
+  OSLO Number :      1         2         3         4         5
+  FOLI Value  :   1.00002   1.00067   1.00381   1.03691   1.03688
+  Frg. Pop.  1:   0.99999   0.00043   0.99746   0.97593   0.97595
+  Frg. Pop.  2:   0.00001   0.99956   0.00253   0.02408   0.02401
+  
+  OSLO Number :      6         7         8         9
+  FOLI Value  :   1.04773   1.06153   1.06204   1.35476
+  Frg. Pop.  1:   0.03102   0.03984   0.03982   0.80051
+  Frg. Pop.  2:   0.96906   0.96042   0.96012   0.19950
+  
+  ------------------------------------- 
+  Summary of the selected OSLOs (final) 
+  ------------------------------------- 
+  
+  OSLO Number :      1         2         3         4         5
+  Frg. Pop.  1:   0.99999   0.00043   0.99746   0.97593   0.97595
+  Frg. Pop.  2:   0.00001   0.99956   0.00253   0.02408   0.02401
+  
+  OSLO Number :      6         7         8         9
+  Frg. Pop.  1:   0.03102   0.03984   0.03982   0.80051
+  Frg. Pop.  2:   0.96906   0.96042   0.96012   0.19950
+  
+  
+ ...Normal Termination of APOST-3D... 
