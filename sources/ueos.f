@@ -186,7 +186,7 @@
           end do
           iup0(icase,iicenter)=imaxo
 
-!! WRITE CUBEFILE !! (TO DO)
+!! WRITE CUBEFILE !!
           if(icase2.eq.0) iicase=3
           if(icase2.eq.1) iicase=4
           if(icube.eq.1) call cubegen4(iicenter,iicase)
@@ -218,7 +218,7 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
-      
+
       common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
 
 !! COMMON ADDED FOR EFFAO-U AND EOS-U, FIRST COLUMN FOR PAIRED AND SECOND FOR UNPAIRED !!
