@@ -1,4 +1,6 @@
-      subroutine effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
+!! MG: Pedro, aquesta subrutina ja la pots borrar !!
+!! MG: A oslo.f esta la meva versio (incloent assignacio electrons) !!
+      subroutine old_effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
       use basis_set
       use ao_matrices
       use integration_grid
