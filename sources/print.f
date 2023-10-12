@@ -1721,6 +1721,9 @@ c assuming up to 99 atoms
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
+
+!! COMMON ADDED FOR EFFAO-U AND EOS-U, FIRST COLUMN FOR PAIRED AND SECOND FOR UNPAIRED !!
+      common /ueffao/ up0(2,nmax,nmax),up0net(2,nmax,maxat),up0gro(2,nmax,maxat),iup0(2,maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /iops/iopt(100)
@@ -1755,13 +1758,38 @@ c assuming up to 99 atoms
       jcubthr=iopt(41)
       kcubthr=iopt(42)
 
+!! PREPARING MATRICES FOR WHEN EFFAO-U IS INVOKED (TRICKING THE CODE) !!
+      if(icase.lt.3) then !! ALPHA AND BETA EFOs !!
+        imaxo=ip0(ifrag)
+      else if(icase.eq.3) then !! icase = 3 PAIRED EFOS !!
+        imaxo=iup0(1,ifrg)
+        do jj=1,imaxo
+          do ii=1,igr
+            p0(ii,jj)=up0(1,ii,jj)
+          end do
+          do ifrg=1,icufr
+            p0net(jj,ifrg)=up0net(1,jj,ifrg)
+            p0gro(jj,ifrg)=up0gro(1,jj,ifrg)
+          end do
+        end do
+      else if(icase.eq.3) then !! icase = 4 UNPAIRED EFOS !!
+        imaxo=iup0(2,ifrg)
+        do jj=1,imaxo
+          do ii=1,igr
+            p0(ii,jj)=up0(2,ii,jj)
+          end do
+          do ifrg=1,icufr
+            p0net(jj,ifrg)=up0net(2,jj,ifrg)
+            p0gro(jj,ifrg)=up0gro(2,jj,ifrg)
+          end do
+        end do
+      end if
 
-      allocate(c0(igr,igr))
-      imaxo=ip0(ifrag)
+      ALLOCATE(c0(igr,igr))
       do i=1,igr
-       do j=1,imaxo
-        c0(i,j)=p0(i,j)
-       end do
+        do j=1,imaxo
+          c0(i,j)=p0(i,j)
+        end do
       end do
 c setting actual effos to print, instead
       if(jcubthr.lt.0) then
@@ -1771,11 +1799,13 @@ c setting actual effos to print, instead
        imaxeff=0
        xmaxeff=float(jcubthr)*1.0d-3
        if (icase.eq.0.or.icase.eq.3) xmaxeff=2.0d0*xmaxeff
+
 1      imaxeff= imaxeff+1
        if(p0net(imaxeff,ifrag).ge.xmaxeff) go to 1
        imineff=imaxo+1
        xmineff=float(kcubthr)*1.0d-3   
        if (icase.eq.0.or.icase.eq.3) xmineff=2.0d0*xmineff
+
 2      imineff= imineff - 1
        if(p0net(imineff,ifrag).le.xmineff) go to 2
       end if
@@ -1814,8 +1844,8 @@ c
          end do
         end if
         end if
-        if(icase.eq.3) name2=trim(name2)//"_p"
-        if(icase.eq.4) name2=trim(name2)//"_u"
+        if(icase.eq.3) name2=trim(name2)//"_paired"
+        if(icase.eq.4) name2=trim(name2)//"_unpaired"
 
 c asuming rectangular grid...
        xgrid=0.0d0                 
