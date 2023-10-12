@@ -1721,9 +1721,6 @@ c assuming up to 99 atoms
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
-
-!! COMMON ADDED FOR EFFAO-U AND EOS-U, FIRST COLUMN FOR PAIRED AND SECOND FOR UNPAIRED !!
-      common /ueffao/ up0(2,nmax,nmax),up0net(2,nmax,maxat),up0gro(2,nmax,maxat),iup0(2,maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /iops/iopt(100)
@@ -1758,33 +1755,8 @@ c assuming up to 99 atoms
       jcubthr=iopt(41)
       kcubthr=iopt(42)
 
-!! PREPARING MATRICES FOR WHEN EFFAO-U IS INVOKED (TRICKING THE CODE) !!
-      if(icase.lt.3) then !! ALPHA AND BETA EFOs !!
-        imaxo=ip0(ifrag)
-      else if(icase.eq.3) then !! icase = 3 PAIRED EFOS !!
-        imaxo=iup0(1,ifrg)
-        do jj=1,imaxo
-          do ii=1,igr
-            p0(ii,jj)=up0(1,ii,jj)
-          end do
-          do ifrg=1,icufr
-            p0net(jj,ifrg)=up0net(1,jj,ifrg)
-            p0gro(jj,ifrg)=up0gro(1,jj,ifrg)
-          end do
-        end do
-      else if(icase.eq.3) then !! icase = 4 UNPAIRED EFOS !!
-        imaxo=iup0(2,ifrg)
-        do jj=1,imaxo
-          do ii=1,igr
-            p0(ii,jj)=up0(2,ii,jj)
-          end do
-          do ifrg=1,icufr
-            p0net(jj,ifrg)=up0net(2,jj,ifrg)
-            p0gro(jj,ifrg)=up0gro(2,jj,ifrg)
-          end do
-        end do
-      end if
 
+      imaxo=ip0(ifrag)
       ALLOCATE(c0(igr,igr))
       do i=1,igr
         do j=1,imaxo
@@ -1812,7 +1784,8 @@ c setting actual effos to print, instead
 c
 
       if(imaxeff.gt.imineff) then
-       write(*,*) 'No eff-AOs in the occupation range' 
+       write(*,*) ' No eff-AOs in the occupation range' 
+       write(*,*) " "
        deallocate(c0)
        return
       end if
@@ -1926,6 +1899,7 @@ c approximate normalization of orbital
         end do
        end do
        write(*,'(a25,f7.4)') 'Normalization from cube: ',x0*volume/(igrid(1)*igrid(2)*igrid(3))
+       write(*,*) " "
 
 c      OUTPUT    
 

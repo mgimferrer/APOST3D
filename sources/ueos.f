@@ -20,10 +20,8 @@
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-
-!! COMMON ADDED FOR EFFAO-U AND EOS-U, FIRST COLUMN FOR PAIRED AND SECOND FOR UNPAIRED !!
-      common /ueffao/ up0(2,nmax,nmax),up0net(2,nmax,maxat),up0gro(2,nmax,maxat),iup0(2,maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /iops/iopt(100)
 
@@ -172,24 +170,25 @@
             s0all(ii)=xxx
             xx0=xx0+xxx
           end do
-          write(*,'(2x,a31,i3,f10.5)') " Gross occupation for fragment ",iicenter,xx0
+          write(*,'(2x,a29,x,i3,f10.5)') "Gross occupation for fragment",iicenter,xx0
           write(*,60) (s0all(mu),mu=1,imaxo)
           write(*,*) " "
 
-!! SAVING EFOs AND OCCUPANCIES TO MAKE CUBES AND ASSIGN OSs !!
+!! FOR CUBE CREATION !!
           do kk=1,imaxo
             do mu=1,igr
-              up0(icase,mu,kk)=c0(mu,kk)
+              p0(mu,kk)=c0(mu,kk)
             end do
-            up0net(icase,kk,iicenter)=pp0(kk,kk)
-            up0gro(icase,kk,iicenter)=s0all(kk)
+            p0net(kk,iicenter)=pp0(kk,kk)
+            p0gro(kk,iicenter)=s0all(kk)
           end do
-          iup0(icase,iicenter)=imaxo
-
-!! WRITE CUBEFILE !!
-          if(icase2.eq.0) iicase=3
-          if(icase2.eq.1) iicase=4
+          ip0(iicenter)=imaxo
+          if(icase.eq.1) iicase=3
+          if(icase.eq.2) iicase=4
           if(icube.eq.1) call cubegen4(iicenter,iicase)
+
+!! STORING SOME INFORMATION FOR OSs ASSIGNMENT !!
+! TODO
         end do
       end do
 
@@ -221,8 +220,6 @@
 
       common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
 
-!! COMMON ADDED FOR EFFAO-U AND EOS-U, FIRST COLUMN FOR PAIRED AND SECOND FOR UNPAIRED !!
-      common /ueffao/ up0(2,nmax,nmax),up0net(2,nmax,maxat),up0gro(2,nmax,maxat),iup0(2,maxat)
       common /iops/iopt(100)
 
       dimension occup2(igr),occupg(igr),errnet(maxat)
