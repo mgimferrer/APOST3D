@@ -1259,7 +1259,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
            write(*,*) " "
            write(*,*) "EFFAO-U: paired and unpaired densities treated separately "
            write(*,*) " "
-!           call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
+           call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
 !           if(iueos.eq.1) call eos_analysis(idobeta,2,xthresh)
           end if
         end if
