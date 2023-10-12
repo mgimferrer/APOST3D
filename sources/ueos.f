@@ -172,7 +172,7 @@
             s0all(ii)=xxx
             xx0=xx0+xxx
           end do
-          write(*,'(a31,i3,f10.5)') " Gross occupation for fragment ",iicenter,xx0
+          write(*,'(2x,a31,i3,f10.5)') " Gross occupation for fragment ",iicenter,xx0
           write(*,60) (s0all(mu),mu=1,imaxo)
           write(*,*) " "
 
@@ -199,7 +199,7 @@
       DEALLOCATE(Pno,Uno)
 
 !! PRINTING FORMATS !!
-60    FORMAT(7h OCCUP.   ,8F9.4)
+60    FORMAT(8h  OCCUP. ,8f9.4)
 
       end
 
