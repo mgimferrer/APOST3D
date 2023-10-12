@@ -266,16 +266,16 @@ C eff-AO-s and EOS
       call readchar("# METODE","EOS",ieos)
       if(ieos.eq.1) then 
        iopop=1
-       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
        ieffao=2
+       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
 !! EOS FROM THE PAIRED AND UNPAIRED DENSITIES !!
       call readchar("# METODE","EOS-U",iueos)
       if(iueos.eq.1) then 
-!       iopop=1
-       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
+       iopop=1
        ieffao=3
+       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
 !! OS FROM CENTROIDS !!
@@ -1244,7 +1244,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             else if(ieffao.eq.2) then
             idobeta=0
             write(*,*) '  '
-            write(*,*) 'UEFFAO: alpha and beta treated separately'
+            write(*,*) ' UEFFAO: alpha and beta treated separately'
             write(*,*) '  '
             call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
             if(ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
@@ -1257,7 +1257,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !! EOS-U PART !!
           else if(ieffao.eq.3) then
            write(*,*) " "
-           write(*,*) "EFFAO-U: paired and unpaired densities treated separately "
+           write(*,*) " EFFAO-U: paired and unpaired densities treated separately "
            write(*,*) " "
            call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
 !           if(iueos.eq.1) call eos_analysis(idobeta,2,xthresh)
