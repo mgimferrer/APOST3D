@@ -313,7 +313,6 @@
             occup(imaxocc2,2)=ZERO
             occup(imaxocc3,2)=ZERO
           end if
-          xxdiff=ABS(xmaxocc-(xmaxocc2+xmaxocc3))
           nnn=nnn-2
 
 !! ODD NUMBER OF ELECTRONS LEFT TO ASSIGN: ONLY UNPAIRED !!
@@ -351,8 +350,8 @@
           write(*,*) " ------------------------------------- "
         end if
         write(*,*) " "
-        write(*,*) "  Frag.   Elect   Last occ.   First unocc.  "
-        write(*,*) " ------------------------------------------ "
+        write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
+        write(*,*) " ---------------------------------------- "
 
 !! EVALUATING FIRST AND LAST OCC. FROM EACH FRAGMENT !!
 
@@ -362,12 +361,12 @@
           if(icase.eq.1) nn=infoelec(ifrg,icase)/2
           if(icase.eq.2) nn=infoelec(ifrg,icase)
           if(nn+1.gt.iup0(icase,ifrg)) then 
-            write(*,10) ifrg,infoelec(ifrg,icase),up0gro(icase,nn,ifrg)
+            write(*,10) ifrg,REAL(infoelec(ifrg,icase)),up0gro(icase,nn,ifrg)
           else
             if(nn.ne.0) then
-              write(*,15) ifrg,infoelec(ifrg,icase),up0gro(icase,nn,ifrg),up0gro(icase,nn+1,ifrg)
+              write(*,15) ifrg,REAL(infoelec(ifrg,icase)),up0gro(icase,nn,ifrg),up0gro(icase,nn+1,ifrg)
             else
-              write(*,15) ifrg,infoelec(ifrg,icase),ZERO,up0gro(icase,nn+1,ifrg)
+              write(*,15) ifrg,REAL(infoelec(ifrg,icase)),ZERO,up0gro(icase,nn+1,ifrg)
             end if
           end if
           if(nn.ne.0) then
@@ -386,13 +385,12 @@
             if(nn+1.ne.0.and.up0gro(icase,nn+1,ifrg).gt.xfirst) xfirst=up0gro(icase,nn+1,ifrg)
           end if
         end do 
-        write(*,*) " ------------------------------------------ "
+        write(*,*) " ---------------------------------------- "
 
 !! NOW PAIRED AND UNPAIRED ARE DIFFERENT (FACTOR OF 2 IN POPULATIONS) !!
         if(icase.eq.1) confi=100.0*min(1.0d0,(xlast-xfirst)/TWO+0.5d0)
         if(icase.eq.2) confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
-        write(*,'(a30,f8.3)') 'RELIABILITY INDEX R(%) =',confi
-        write(*,*) " "
+        write(*,'(3x,a24,x,f7.3)') "RELIABILITY INDEX R(%) =",confi
         if(icase.eq.1) confi0=confi
       end do
 
@@ -413,24 +411,23 @@
       write(*,*) "  FRAGMENT OXIDATION STATES  "
       write(*,*) " --------------------------- "
       write(*,*) " "
-      write(*,*) "  Frag   Oxidation State  "
+      write(*,*) "  Frag.  Oxidation State  "
       write(*,*) " ------------------------ "
       do ifrg=1,icufr
         write(*,20) ifrg,oxi(ifrg)
       end do 
       write(*,*) " ------------------------ "
-      write(*,'(a7,f5.1)') "   Sum ",zztot 
-      print *,'  '
+      write(*,'(3x,a4,x,f4.1)') "Sum:",zztot 
+      write(*,*) " "
 
 !! TO BE CHANGED !!
       confi2=min(confi,confi0)
-      write(*,'(a39,f8.3)') " OVERALL RELIABILITY INDEX R(%) =",confi2
+      write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
 
 !! PRINTING FORMATS !!
-10    FORMAT(4x,i3,2x,i3,2x,f12.3,'    < thresh',2f12.3)
-15    FORMAT(4x,i3,2x,i3,2x,2f7.3)
-20    FORMAT(4x,i3,2x,f10.2)
-25    FORMAT(4x,i3,2x,f10.4,2x,f10.4)
+10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3) !tocheck!
+15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
+20    FORMAT(3x,i3,6x,f8.2)
 
       DEALLOCATE(infoelec)
 
