@@ -4,7 +4,7 @@
 
 !! ***** !!
 
-      subroutine effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
+      subroutine effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2,iueos)
 
 !! THIS SUBROUTINE COMPUTES EFFAOs AND THEIR OCC. VALUES FROM THE PAIRED AND UNPAIRED DENSITIES !!
 !! TAKATSUKA'S DEFINITION OF THE UNPAIRED DENSITY USED. HEAD-GORDON's IMPLEMENTATION IN DEVEL VERSION !!
@@ -36,16 +36,20 @@
       allocatable :: SS0(:,:),S0(:,:),Sm(:,:),Splus(:,:),c0(:,:),pp0(:,:)
       allocatable :: d0(:,:),d1(:,:),scr(:),s0all(:)
 
+      allocatable :: iup0(:,:),up0net(:,:,:),up0gro(:,:,:)
+
       icube = iopt(13) 
       iatps = nang*nrad
 
 !! THRESH TO INCLUDE EFFAO OR NOT FOR TOTAL NET POPULATION CALCULATION !!
       xminocc=1.0d-4
 
-      write(*,*) " ------------------------------ "
-      write(*,*) " DOING EFFAO-3D FROM U FUNCTION "
-      write(*,*) " ------------------------------ "
       write(*,*) " "
+      write(*,*) " -------------------------------- "
+      write(*,*) "  DOING EFFAO-3D FROM U FUNCTION  "
+      write(*,*) " -------------------------------- "
+      write(*,*) " "
+      write(*,*) " EFFAO-U: paired and unpaired densities treated separately "
 
 !! EVALUATING U and P (AO BASIS) FROM NOs !!
       nnorb=0
@@ -69,22 +73,23 @@
         end do
       end do
 
-!! EVALUATING EFFAOs !!
+!! ALLOCATING MATRICES FOR EFFAO-U EVALUATION AND OSs IF REQUESTED !!
       ALLOCATE(scr(itotps))
       ALLOCATE(S0(igr,igr),s0all(igr),Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(SS0(igr,igr),c0(igr,igr),pp0(igr,igr))
+      if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr), up0gro(2,igr,icufr))
 
-!! icase = 1 PAIRED EFOs, icase = 2 UNPAIRED EFOs !!
+!! EVALUATING EFFAOs: icase = 1 PAIRED EFOs, icase = 2 UNPAIRED EFOs !!
       do icase=1,2
         if(icase.eq.1) then
-          write(*,*) " ------------------------------ "
-          write(*,*) " EFFAOs FROM THE PAIRED DENSITY "
-          write(*,*) " ------------------------------ "
+          write(*,*) " -------------------------------- "
+          write(*,*) "  EFFAOs FROM THE PAIRED DENSITY  "
+          write(*,*) " -------------------------------- "
           write(*,*) " "
         else if(icase.eq.2) then
-          write(*,*) " -------------------------------- "
-          write(*,*) " EFFAOs FROM THE UNPAIRED DENSITY "
-          write(*,*) " -------------------------------- "
+          write(*,*) " ---------------------------------- "
+          write(*,*) "  EFFAOs FROM THE UNPAIRED DENSITY  "
+          write(*,*) " ---------------------------------- "
           write(*,*) " "
         end if
         do iicenter=1,icufr
@@ -174,28 +179,36 @@
           write(*,60) (s0all(mu),mu=1,imaxo)
           write(*,*) " "
 
-!! FOR CUBE CREATION !!
+!! FOR CUBE CREATION AND TO ASSIGN OSs IF REQUESTED !!
           do kk=1,imaxo
             do mu=1,igr
               p0(mu,kk)=c0(mu,kk)
             end do
             p0net(kk,iicenter)=pp0(kk,kk)
             p0gro(kk,iicenter)=s0all(kk)
+            if(iueos.eq.1) then
+              up0net(icase,kk,iicenter)=pp0(kk,kk)
+              up0gro(icase,kk,iicenter)=s0all(kk)
+            end if
           end do
           ip0(iicenter)=imaxo
+          if(iueos.eq.1) iup0(icase,iicenter)=imaxo
+
+!! CUBE PRINTING !!
           if(icase.eq.1) iicase=3
           if(icase.eq.2) iicase=4
           if(icube.eq.1) call cubegen4(iicenter,iicase)
-
-!! STORING SOME INFORMATION FOR OSs ASSIGNMENT !!
-! TODO
         end do
       end do
+
+!! EXTRACTING OSs IF REQUESTED !!
+      if(iueos.eq.1) call ueos_analysis(iup0,up0gro) !! USING GROSS POPULATIONS FOR ASSIGNMENT !!
 
 !! DEALLOCATING MATRICES !!
       DEALLOCATE(SS0,S0,Splus,Sm)
       DEALLOCATE(scr,c0,pp0,s0all)
       DEALLOCATE(Pno,Uno)
+      DEALLOCATE(iup0,up0net,up0gro)
 
 !! PRINTING FORMATS !!
 60    FORMAT(8h  OCCUP. ,8f9.4)
@@ -204,7 +217,7 @@
 
 !! ****** !!
 
-      subroutine ueos_analysis(xthresh)
+      subroutine ueos_analysis(iup0,up0gro)
 
 !! SUBROUTINE TO ASSIGN PAIRED AND UNPAIRED ELECTRONS TO FRAGMENTS, RESULTING INTO FORMAL OSs !!
 
@@ -212,251 +225,214 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /atlist/iatlist(maxat),icuat
-      common /loba/ oxi(maxat),errsav(maxat),elec(maxat),effpop(maxat)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+      common /loba/ oxi(maxat),errsav(maxat),elec(maxat),effpop(maxat)
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
 
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
+      dimension iup0(2,icufr),up0gro(2,igr,icufr)
 
-      common /iops/iopt(100)
+      allocatable :: infoelec(:,:)
 
-      dimension occup2(igr),occupg(igr),errnet(maxat)
-      dimension qdev(maxat)
+      ALLOCATE(infoelec(maxat,2))
 
+!! ZEROING ELECTRON COUNTING MATRICES !!
+      elec=ZERO
+      infoelec=0 !! STORES NUMBER OF PAIR AND UNPAIR ELECTRONS ASSIGNED TO EACH FRAGMENT !!
 
-      if(idobeta.eq.0.and.icase.eq.2) then
-       write(*,*)'  '
-       write(*,*)' SKIPPING EFFAOs FOR BETA ELECTRONS'
-       write(*,*)'  '
-       lorb(2)=lorb(1)
-       do i=1,lorb(2)
-         occup(i,2)=occup(i,1) 
-         iorbat(i,2)= iorbat(i,1)
-       end do  
-       do i=1,icufr
-        errnet(i)=errsav(i)
-        effpop(i)=effpop(i)*2.0d0
-       end do
-       go to 99
-      else if(icase.eq.2.and.nb.eq.0) then
-       write(*,*)'  '
-       write(*,*)' CALCULATION HAS NO BETA ELECTRONS'
-       write(*,*)'  '
-       do i=1,icufr
-        elec(i)=0.0d0
-       end do
-       go to 99
-      end if
-
-      iorb=0
-      do i=1,icufr
-       elec(i)=0.0d0
-       do k=1,ip0(i)
-        iorb=iorb+1
-        occup(iorb,icase)=p0net(k,i)
-        iorbat(iorb,icase)=i
-       end do 
-      end do  
-      write(*,*)'  '
-      write(*,*) ' Total number of eff-AO-s for analysis: ',iorb
-      lorb(icase)=iorb
-
-      do i=1,iorb-1
-       do j=i+1,iorb
-        if (occup(j,icase).gt.occup(i,icase))then
-         xkk=occup(j,icase)
-         occup(j,icase)=occup(i,icase)
-         occup(i,icase)=xkk
-         xkk=occupg(j)
-         occupg(j)=occupg(i)
-         occupg(i)=xkk
-         ikk=iorbat(j,icase)
-         iorbat(j,icase)=iorbat(i,icase)
-         iorbat(i,icase)=ikk 
-        end if
-       end do  
-      end do 
-
-      k=0
-      nnn=nalf
-      if(icase.eq.2) nnn=nb   
-333   k=k+1
-      if(dabs(occup(nnn,icase)-occup(nnn+k,icase)).lt.thres) go to 333
-      k=k-1
-      if(k.eq.0) then
-       write(*,*) ' EOS: Unambiguous integer electron assignation'
-       do i=1,iorb
-        if(i.le.nnn) then
-        occup2(i)=1.0d0
-        else
-        occup2(i)=0.0d0
-        end if
-       end do 
-      else
-       write(*,*) ' ******************************************'
-       write(*,*) ' EOS: Warning, pseudo-degeneracies detected'
-       write(*,*) ' ******************************************'
-       kk=0
-334    kk=kk+1
-       if(dabs(occup(nnn,icase)-occup(nnn-kk,icase)).lt.thres) go to 334
-       kk=kk-1
-       frac=float(kk+1)/float(kk+k+1)
-       write(*,'(a14,i4,a16,i4,a32)') ' Distributing ',kk+1,' electrons 
-     +over ',kk+k+1,' pseudodegenerate atomic orbitals'
-       do i=1,iorb
-        if(i.lt.nnn-kk) then
-         occup2(i)=1.0d0
-        else if(i.gt.nnn+k) then
-         occup2(i)=0.0d0
-        else
-         occup2(i)=frac 
-        end if
-       end do 
-      end if
-     
-      do i=1,iorb
-       elec(iorbat(i,icase))=elec(iorbat(i,icase))+occup2(i)
-      end do
-
-      if(icase.eq.1) then
-       write(*,*)' EOS ANALYSIS  FOR ALPHA ELECTRONS'
-       do i=1,icuat
-        errsav(i)=errnet(i)
-        effpop(i)=0.0d0
-       end do
-      else if (icase.eq.2) then
-       write(*,*)' EOS ANALYSIS  FOR BETA ELECTRONS'
-      end if
-
-      print *,'  Fragm   Elect  Last occ. First unocc '
-      print *,' -------------------------------------'
-
-       xlast=1.0d0
-       ilast=0
-       do i=1,icufr
-        nn=int(elec(i))
-        if(elec(i)-nn.gt.thresh) nn=nn+1
-        if(nn+1.gt.ip0(i)) then 
-         write(*,10) i,elec(i), p0net(nn,i)
-        else
-         if(nn.ne.0) then
-          write(*,15) i,elec(i), p0net(nn,i),p0net(nn+1,i)
-         else
-          write(*,15) i,elec(i), 0.0d0 , p0net(nn+1,i)
-         end if
-        end if
-        if(nn.ne.0) then
-         if(p0net(nn,i).lt.xlast) then
-          xlast= p0net(nn,i)
-          ilast=i
-         end if
-        end if
-        do j=1,nn
-         effpop(i)= effpop(i) + p0net(j,i)
+!! ALL EFOs IN THE SAME MATRIX !!
+      do icase=1,2 !! 1 = PAIRED, 2 = UNPAIRED !!
+        iorb=0
+        do ii=1,icufr
+          do kk=1,iup0(icase,ii)
+            iorb=iorb+1
+            occup(iorb,icase)=up0gro(icase,kk,ii)
+            iorbat(iorb,icase)=ii
+          end do 
         end do
-       end do 
-
-       xfirst=0.0d0
-       do i=1,icufr
-        if(i.ne.ilast) then
-        nn=int(elec(i))
-        if(elec(i)-nn.gt.thresh) nn=nn+1
-        if(nn+1.ne.0.and.p0net(nn+1,i).gt.xfirst) xfirst= p0net(nn+1,i)
-        end if
-       end do 
-
-      print *,' -------------------------------------'
-      confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
-      write(*,'(a30,f8.3)') 'RELIABILITY INDEX R(%) =',confi
-
-
-c PSS quadratic deviation of the fractional and integer occupations as new fragment indicator
-      print *
-      print *,'(warning in case of fractional occupations)'
-      print *,'  Fragm    Quad Dev '
-      print *,' -------------------'
-      do i=1,icufr
-       nn=int(elec(i))
-       if(elec(i)-nn.gt.thresh) nn=nn+1
-       qdev(i)=0.0d0
-       do k=1,ip0(i)
-        xx=p0gro(k,i)
-        if(k.le.nn) xx=1.0d0-p0gro(k,i)
-        qdev(i)=qdev(i)+xx*xx
-c        write(*,*) 'pollas',i,ip0(i),p0gro(k,i),xx
-       end do
-       qdev(i)=sqrt(qdev(i))
-       write(*,'(I4,5x,f8.4)') i, qdev(i)
+        lorb(icase)=iorb
       end do
-      print *,' -------------------'
-C PSS 
-      if(icase.eq.1) confi0=confi
+      write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",lorb(1)+lorb(2)
 
-99     continue
-       zztot=0.0d0
-       do i=1,icufr
-        if(icase.eq.1) then
-         zzn=0.0d0
-         do j=1,nfrlist(i)
-          zzn=zzn+zn(ifrlist(j,i))
-         end do
-         oxi(i)=zzn-elec(i)
+!! ASSIGNING ELECTRONS: NO FRACTIONARY ASSIGNMENT ALLOWED IN THE CODE (YET), WILL PRINT R(%) = 50 !!
+      nnn=nalf+nb
+      do while(nnn.gt.0)
+
+!! EVEN NUMBER OF ELECTRONS LEFT TO ASSIGN: BOTH PAIRED AND UNPAIRED COMPETE !!
+        if(mod(nnn,2).eq.0) then
+
+!! FIRST PAIRED EFOs !!
+          imaxocc=0
+          xmaxocc=ZERO
+          do ii=1,lorb(1)
+            xx=occup(ii,1)
+
+!! SAVING LARGEST OCC. !! 
+            if(xx.gt.xmaxocc) then
+              xmaxocc=xx
+              imaxocc=ii
+            end if
+          end do
+
+!! NOW UNPAIRED EFOs: SAVING TWO LARGEST OCC. !!
+          imaxocc2=0
+          xmaxocc2=ZERO
+          do ii=1,lorb(2)
+            xx=occup(ii,2) 
+            if(xx.gt.xmaxocc2) then
+              xmaxocc2=xx
+              imaxocc2=ii
+            end if
+          end do
+
+!! NOW SECOND ONE (TRICK, AS THEY ARE NOT ORDERED) !!
+          imaxocc3=0
+          xmaxocc3=ZERO
+          do ii=1,lorb(2)
+            xx=occup(ii,2)
+            if(xx.gt.xmaxocc3.and.ii.ne.imaxocc2) then
+              imaxocc3=ii
+              xmaxocc3=xx
+            end if
+          end do
+          if(xmaxocc.gt.(xmaxocc2+xmaxocc3)) then
+
+!! ASSIGNING A PAIR OF ELECTRONS !!
+            elec(iorbat(imaxocc,1))=elec(iorbat(imaxocc,1))+TWO
+            infoelec(iorbat(imaxocc,1),1)=infoelec(iorbat(imaxocc,1),1)+2
+            occup(imaxocc,1)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
+          else
+
+!! ASSIGNING ONE ELECTRON TO EACH FRAGMENT !!
+            elec(iorbat(imaxocc2,2))=elec(iorbat(imaxocc2,2))+ONE
+            elec(iorbat(imaxocc3,2))=elec(iorbat(imaxocc3,2))+ONE
+            infoelec(iorbat(imaxocc2,2),2)=infoelec(iorbat(imaxocc2,2),2)+1
+            infoelec(iorbat(imaxocc3,2),2)=infoelec(iorbat(imaxocc3,2),2)+1
+
+!! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
+            occup(imaxocc2,2)=ZERO
+            occup(imaxocc3,2)=ZERO
+          end if
+          xxdiff=ABS(xmaxocc-(xmaxocc2+xmaxocc3))
+          nnn=nnn-2
+
+!! ODD NUMBER OF ELECTRONS LEFT TO ASSIGN: ONLY UNPAIRED !!
         else
-         oxi(i)=oxi(i)-elec(i)
-         zztot=zztot+oxi(i)
+          imaxocc=0
+          xmaxocc=ZERO
+          do ii=1,lorb(2)
+            xx=occup(ii,2)
+
+!! SAVING FOR BOTH THE LARGEST AND THE SECOND LARGEST !! 
+            if(xx.gt.xmaxocc) then
+              xmaxocc=xx
+              imaxocc=ii
+            end if
+          end do
+
+!! ASSIGNING A SINGLE ELECTRON !!
+          elec(iorbat(imaxocc,2))=elec(iorbat(imaxocc,2))+ONE
+          infoelec(iorbat(imaxocc,2),2)=infoelec(iorbat(imaxocc,2),2)+1
+          occup(imaxocc,2)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
+          nnn=nnn-1
         end if
-       end do
+      end do
 
-       if(icase.eq.2) then
-      print *,'  '
-      print *,'  '
-      print *,'  FRAGMENT  OXIDATION STATES '
-      print *,'  '
-      print *,'  Frag   Oxidation State  '
-      print *,' -------------------------'
-       do i=1,icufr
-        write(*,20) i,oxi(i)
-       end do 
-      print *,' -------------------------'
-      write(*,'(a7,f5.1)') '   Sum ', zztot 
-      print *,'  '
-      confi=min(confi,confi0)
-      write(*,'(a39,f8.3)') ' OVERALL RELIABILITY INDEX R(%) =',confi
+!! PRINTING INFO !!
+      do icase=1,2
+        write(*,*) " "
+        if(icase.eq.1) then
+          write(*,*) " ----------------------------------- "
+          write(*,*) "  EOS ANALYSIS FOR PAIRED ELECTRONS  "
+          write(*,*) " ----------------------------------- "
+        else if(icase.eq.2) then
+          write(*,*) " ------------------------------------- "
+          write(*,*) "  EOS ANALYSIS FOR UNPAIRED ELECTRONS  "
+          write(*,*) " ------------------------------------- "
+        end if
+        write(*,*) " "
+        write(*,*) "  Frag.   Elect   Last occ.   First unocc.  "
+        write(*,*) " ------------------------------------------ "
 
-c Ignore this part for now
-      if(1.eq.0) then
-      print *,'  '
-      print *,'  '
-      print *,'  FRAGMENT  EFFECTIVE CHARGES AND POPULATIONS '
-      print *,'  '
-      print *,'  Frag     Charge     Population  '  
-      print *,' -------------------------------'
-      zztot=0.0d0
-      do i=1,icufr
-       zzn=0.0d0
-       do j=1,nfrlist(i)
-        zzn=zzn+zn(ifrlist(j,i))
-       end do
-       write(*,25) i,zzn-effpop(i),effpop(i)
+!! EVALUATING FIRST AND LAST OCC. FROM EACH FRAGMENT !!
+
+        xlast=TWO !! PAIRED GROSS POPULATIONS NOT DIVIDED BY TWO NOW !!
+        ilast=0
+        do ifrg=1,icufr
+          if(icase.eq.1) nn=infoelec(ifrg,icase)/2
+          if(icase.eq.2) nn=infoelec(ifrg,icase)
+          if(nn+1.gt.iup0(icase,ifrg)) then 
+            write(*,10) ifrg,infoelec(ifrg,icase),up0gro(icase,nn,ifrg)
+          else
+            if(nn.ne.0) then
+              write(*,15) ifrg,infoelec(ifrg,icase),up0gro(icase,nn,ifrg),up0gro(icase,nn+1,ifrg)
+            else
+              write(*,15) ifrg,infoelec(ifrg,icase),ZERO,up0gro(icase,nn+1,ifrg)
+            end if
+          end if
+          if(nn.ne.0) then
+            if(up0gro(icase,nn,ifrg).lt.xlast) then
+              xlast=up0gro(icase,nn,ifrg)
+              ilast=ifrg
+            end if
+          end if
+        end do 
+
+        xfirst=ZERO
+        do ifrg=1,icufr
+          if(ifrg.ne.ilast) then
+            if(icase.eq.1) nn=infoelec(ifrg,icase)/2
+            if(icase.eq.2) nn=infoelec(ifrg,icase)
+            if(nn+1.ne.0.and.up0gro(icase,nn+1,ifrg).gt.xfirst) xfirst=up0gro(icase,nn+1,ifrg)
+          end if
+        end do 
+        write(*,*) " ------------------------------------------ "
+
+!! NOW PAIRED AND UNPAIRED ARE DIFFERENT (FACTOR OF 2 IN POPULATIONS) !!
+        if(icase.eq.1) confi=100.0*min(1.0d0,(xlast-xfirst)/TWO+0.5d0)
+        if(icase.eq.2) confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
+        write(*,'(a30,f8.3)') 'RELIABILITY INDEX R(%) =',confi
+        write(*,*) " "
+        if(icase.eq.1) confi0=confi
+      end do
+
+!! EXTRACTING OSs !!
+      zztot=ZERO
+      do ifrg=1,icufr
+        zzn=ZERO
+        do jfrg=1,nfrlist(ifrg)
+          zzn=zzn+zn(ifrlist(jfrg,ifrg))
+        end do
+        oxi(ifrg)=zzn-elec(ifrg)
+        zztot=zztot+oxi(ifrg)
+      end do
+
+!! FINAL PRINTING !!
+      write(*,*) " "
+      write(*,*) " --------------------------- "
+      write(*,*) "  FRAGMENT OXIDATION STATES  "
+      write(*,*) " --------------------------- "
+      write(*,*) " "
+      write(*,*) "  Frag   Oxidation State  "
+      write(*,*) " ------------------------ "
+      do ifrg=1,icufr
+        write(*,20) ifrg,oxi(ifrg)
       end do 
-      print *,' -------------------------'
-      end if
-c
+      write(*,*) " ------------------------ "
+      write(*,'(a7,f5.1)') "   Sum ",zztot 
+      print *,'  '
 
-      end if
+!! TO BE CHANGED !!
+      confi2=min(confi,confi0)
+      write(*,'(a39,f8.3)') " OVERALL RELIABILITY INDEX R(%) =",confi2
 
-      do i=1,icufr
-       zzn=0.0d0
-       do j=1,nfrlist(i)
-       end do
-      end do 
+!! PRINTING FORMATS !!
+10    FORMAT(4x,i3,2x,i3,2x,f12.3,'    < thresh',2f12.3)
+15    FORMAT(4x,i3,2x,i3,2x,2f7.3)
+20    FORMAT(4x,i3,2x,f10.2)
+25    FORMAT(4x,i3,2x,f10.4,2x,f10.4)
 
-10    format(i4,2x,f6.2,f12.3,'    < thresh',2f12.3)
-15    format(i4,2x,f6.2,2f12.3)
-20    format(i4,2x,f10.2)
-25    format(i4,2x,f10.4,2x,f10.4)
+      DEALLOCATE(infoelec)
 
       end 
 
