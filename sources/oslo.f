@@ -92,10 +92,12 @@
       end do
 
 !! FRAGMENT LOCALIZATION: IMPORTANT :: R_A VALUE SELECTED IS THE CENTER OF CHARGE BETWEEN FRAGMENT ATOMS !!
-      write(*,*) " ------------------------------------- "
-      write(*,*) " CHARGE CENTER (R_F) FOR EACH FRAGMENT "
-      write(*,*) " ------------------------------------- "
+      write(*,*) " --------------------------------------- "
+      write(*,*) "  CHARGE CENTER (R_F) FOR EACH FRAGMENT  "
+      write(*,*) " --------------------------------------- "
       write(*,*) " "
+      write(*,*) "  Frag.        Charge center (xyz)     "
+      write(*,*) " ------------------------------------- "
       ALLOCATE(Smat(ifrg,igr,igr))
       do ifrg=1,icufr
         xcenter=ZERO
@@ -113,7 +115,7 @@
         xcenter=xcenter/xchg
         ycenter=ycenter/xchg
         zcenter=zcenter/xchg
-        write(*,110) "Frg:",ifrg,"Chg Cent. (xyz):",xcenter*angtoau,ycenter*angtoau,zcenter*angtoau
+        write(*,110) ifrg,xcenter*angtoau,ycenter*angtoau,zcenter*angtoau
 
 !! COMPUTING S ONLY ONCE !!
         do mu=1,igr
@@ -133,7 +135,7 @@
           end do
         end do
       end do
-      write(*,*) " "
+      write(*,*) " ------------------------------------- "
 
 !! PREPARING FOR ITERATIVE PROCESS !!
       ALLOCATE(cmat(igr,igr),cfrgoslo(icufr,igr,igr))
@@ -148,9 +150,9 @@
 
 !! INITIAL PRINTING !!
       write(*,*) " "
-      write(*,*) " --------------------------------- "
-      write(*,*) " STARTING ITERATIVE OSLO ALGORITHM "
-      write(*,*) " --------------------------------- "
+      write(*,*) " ----------------------------------- "
+      write(*,*) "  STARTING ITERATIVE OSLO ALGORITHM  "
+      write(*,*) " ----------------------------------- "
       write(*,*) " "
       write(*,'(2x,a50,f10.5)') "Tolerance (in delta-FOLI) used for OSLO selection:",folitol
       write(*,*) " "
@@ -159,9 +161,9 @@
       iaddoslo=0
       iaddoslo2=0
       do iiter=1,niter
-        write(*,*) " -------------------- "
-        write(*,'(2x,a16,x,i3)') "ITERATION NUMBER",iiter
-        write(*,*) " -------------------- "
+        write(*,*) " ---------------------- "
+        write(*,'(3x,a16,x,i3)') "ITERATION NUMBER",iiter
+        write(*,*) " ---------------------- "
         write(*,*) " "
 
 !! ZEROING THE INVOLVED MATRICES !!
@@ -223,15 +225,17 @@
           end do
 
 !! PRINTING VALUABLE INFORMATION !!
-          write(*,*) " ------------------------------------ "
-          write(*,'(2x,a32,x,i3)') "ORBITAL INFORMATION FOR FRAGMENT",ifrg
-          write(*,*) " ------------------------------------ "
+          write(*,*) " -------------------------------------- "
+          write(*,'(3x,a32,x,i3)') "ORBITAL INFORMATION FOR FRAGMENT",ifrg
+          write(*,*) " -------------------------------------- "
           write(*,*) " "
-          write(*,*) " Orb.     Spread      Frg. Pop.      FOLI "
+          write(*,*) "  Orb.    Spread      Frg. Pop.      FOLI   "
+          write(*,*) " ------------------------------------------ "
           do ii=1,imaxo
             xx=frgpop(ifrg,ii)
             if(xx.gt.1.0d-5) write(*,111) ii,frgspr(ifrg,ii),xx,dsqrt(deloc(ifrg,ii)/xx)
           end do
+          write(*,*) " ------------------------------------------ "
           write(*,*) " "
         end do
         DEALLOCATE(S0)
@@ -272,9 +276,9 @@
         write(*,'(2x,a27,x,i3,f10.5)') "Frg. and Lowest FOLI value:",iifrg,xcutoff
         write(*,'(2x,a56,x,i3,f10.5)') "Frg. and Lowest FOLI value including tolerance (cutoff):",jjfrg,xcutoff
         write(*,*) " "
-        write(*,*) " ----------------- "
-        write(*,*) " SELECTED ORBITALS "
-        write(*,*) " ----------------- "
+        write(*,*) " ------------------- "
+        write(*,*) "  SELECTED ORBITALS  "
+        write(*,*) " ------------------- "
         write(*,*) " "
 
 !! 3) EVALUATING DEGENERACIES !!
@@ -285,9 +289,9 @@
 
 !! BRANCHING (CONTROLLED FROM .inp, DEFAULT = 0) !!
         if(iiter.eq.ibranch) then
-          write(*,*) " ******************************************** "
-          write(*,*) " WARNING: BRANCHING INVOKED IN THIS ITERATION "
-          write(*,*) " ******************************************** "
+          write(*,*) " ********************************************** "
+          write(*,*) "  WARNING: BRANCHING INVOKED IN THIS ITERATION  "
+          write(*,*) " ********************************************** "
           write(*,*) " "
 
 !! MG: TO DO !!
@@ -303,6 +307,8 @@
 !    +      " Fragment : ",infopop(1,iiii)
 !         end do
         else
+          write(*,*) "  Orb.   Frag.   FOLI  "
+          write(*,*) " --------------------- "
           do ifrg=1,icufr
             do iorb=1,nocc
               xx=xcutoff-dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
@@ -313,10 +319,12 @@
                 infopop(1,inewcore)=ifrg
                 infopop(2,inewcore)=iorb
                 scr(inewcore)=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-                write(*,112) "Orb., Frg., FOLI:",infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
+                write(*,112) infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
               end if
             end do
           end do
+          write(*,*) " --------------------- "
+          write(*,*) " "
         end if
         write(*,'(2x,a25,x,i3)') "Number of OSLOs selected:",inewcore
         write(*,'(2x,a17,x,f10.5)') "delta-FOLI value:",xfront-xcutoff
@@ -351,18 +359,9 @@
         write(*,*) " "
 
         if(nocc-nnelect.lt.0) then
-          write(*,*) " ************************************* "
-          write(*,'(2x,a34,x,i3)') "WARNING: OVERASSIGNING BY (pairs):",-(nocc-nnelect)
-          write(*,*) " ************************************* "
-          write(*,*) " "
-
-!! OS PRINTING OF DESPERATION !!
-          write(*,*) " ---------------------- "
-          write(*,*) " EOS-like OS ASSIGNMENT "
-          write(*,*) " ---------------------- "
-          do ifrg=1,icufr
-            write(*,113) "FRAG, OS:",ifrg,iznfrg(ifrg)-2*ifrgel(ifrg)
-          end do
+          write(*,*) " *************************************** "
+          write(*,'(3x,a34,x,i3)') "WARNING: OVERASSIGNING BY (pairs):",-(nocc-nnelect)
+          write(*,*) " *************************************** "
           write(*,*) " "
 
 !! DIRTY TRICK !!
@@ -376,10 +375,12 @@
 
 !! SELECTING THE FIRST OUT FOR EVALUATING LINDEP !!
         clindep=ZERO
-        write(*,*) " ---------------------------- "
-        write(*,*) " CHECKING LINIAR DEPENDENCIES "
-        write(*,*) " ---------------------------- "
+        write(*,*) " ------------------------------ "
+        write(*,*) "  CHECKING LINIAR DEPENDENCIES  "
+        write(*,*) " ------------------------------ "
         write(*,*) " "
+        write(*,*) "  Orb.   Frag.   FOLI  "
+        write(*,*) " --------------------- "
         iselected=0
         do ifrg=1,icufr
           do iorb=1,nocc
@@ -389,13 +390,14 @@
             if(xx.lt.folitol) then
               iselected=iselected+1
               xx2=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-              write(*,112) "Orb., Frag., FOLI:",iorb,ifrg,xx2
+              write(*,112) iorb,ifrg,xx2
               do mu=1,igr
                 clindep(mu,iselected)=cfrgoslo(ifrg,mu,iorb)
               end do
             end if
           end do
         end do
+        write(*,*) " --------------------- "
         write(*,'(2x,a38,x,i3)') "Number of OSLOs for LinDep evaluation:",iselected
         write(*,*) " "
 
@@ -441,13 +443,12 @@
           write(*,*) " "
         end if
         if(ilindep.eq.1) then
-          write(*,*) " ********************************* "
-          write(*,*) " WARNING : LINIAR DEPENDENCY FOUND "
-          write(*,*) " ********************************* "
+          write(*,*) " *********************************** "
+          write(*,*) "  WARNING : LINIAR DEPENDENCY FOUND  "
+          write(*,*) " *********************************** "
           write(*,*) " "
           write(*,'(2x,a27,3f10.5)') "FOLI values and delta-FOLI:",xcutoff,xfront,xfront-xcutoff
           write(*,*) " Selecting largest to proceed "
-          write(*,*) " "
           write(*,*) " RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT "
           write(*,*) " "
         end if
@@ -528,13 +529,16 @@
 666   continue
 
 !! FINAL OS ASSIGNMENT !!
-      write(*,*) " ---------------------------- "
-      write(*,*) " FINAL EOS-like OS ASSIGNMENT "
-      write(*,*) " ---------------------------- "
+      write(*,*) " --------------------------- "
+      write(*,*) "  FRAGMENT OXIDATION STATES  "
+      write(*,*) " --------------------------- "
       write(*,*) " "
+      write(*,*) "  Frag.  Oxidation State  "
+      write(*,*) " ------------------------ "
       do ifrg=1,icufr
-        write(*,113) "FRAG, OS :",ifrg,iznfrg(ifrg)-2*ifrgel(ifrg)
-      end do
+        write(*,20) ifrg,REAL(iznfrg(ifrg)-2*ifrgel(ifrg))
+      end do 
+      write(*,*) " ------------------------ "
       write(*,*) " "
 
 !! PRINTING OF THE .fchk FILES WITH THE OSLOs... TO VISUALIZE !!
@@ -568,13 +572,13 @@
       call rwf_orbprint(cosloorth,poslo,ctype)
 
 !! EVALUATING FINAL POPULATIONS TO COMPARE !!
-      write(*,*) " -------------------------------- "
-      write(*,*) " PRINTING FINAL OSLOs INFORMATION "
-      write(*,*) " -------------------------------- "
+      write(*,*) " ---------------------------------- "
+      write(*,*) "  PRINTING FINAL OSLOs INFORMATION  "
+      write(*,*) " ---------------------------------- "
       write(*,*) " "
-      write(*,*) " ----------------------------------------- "
-      write(*,*) " Summary of the selected OSLOs (pre-ortho) "
-      write(*,*) " ----------------------------------------- "
+      write(*,*) " ------------------------------------------- "
+      write(*,*) "  Summary of the selected OSLOs (pre-ortho)  "
+      write(*,*) " ------------------------------------------- "
       write(*,*) " "
 
 !! MADE A BIT TRICKY... SORRY !!
@@ -593,9 +597,9 @@
         end do
       end do
       call rwf_uwf_print_OSLO_final(1,nocc,delocoslo,foslo)
-      write(*,*) " ------------------------------------- "
-      write(*,*) " Summary of the selected OSLOs (final) "
-      write(*,*) " ------------------------------------- "
+      write(*,*) " --------------------------------------- "
+      write(*,*) "  Summary of the selected OSLOs (final)  "
+      write(*,*) " --------------------------------------- "
       write(*,*) " "
       call rwf_uwf_print_OSLO_final(0,nocc,delocoslo,foslo2) !! FOLI VALUES GIVEN JUST FOR USING SAME ROUTINE !!
       
@@ -605,10 +609,10 @@
 !! TODO: FINAL DEALLOCATE (IF CONSIDERED RELEVANT) !!
 
 !! PRINTING FORMATS !!
-110   FORMAT(x,a5,x,i3,x,a16,x,3f10.5)
-111   FORMAT(2x,i3,3x,f10.5,3x,f10.5,3x,f10.5)
-112   FORMAT(2x,a17,x,2i3,f10.5)
-113   FORMAT(2x,a9,x,2i3)
+110   FORMAT(3x,i3,3x,3f10.5)
+111   FORMAT(3x,i3,2x,f10.5,3x,f10.5,3x,f10.5)
+112   FORMAT(3x,i3,4x,i3,x,f9.5)
+20    FORMAT(3x,i3,6x,f8.2)
 
       end
 
@@ -895,10 +899,12 @@
       end do
 
 !! FRAGMENT LOCALIZATION: IMPORTANT :: R_A VALUE SELECTED IS THE CENTER OF CHARGE BETWEEN FRAGMENT ATOMS !!
-      write(*,*) " ------------------------------------- "
-      write(*,*) " CHARGE CENTER (R_F) FOR EACH FRAGMENT "
-      write(*,*) " ------------------------------------- "
+      write(*,*) " --------------------------------------- "
+      write(*,*) "  CHARGE CENTER (R_F) FOR EACH FRAGMENT  "
+      write(*,*) " --------------------------------------- "
       write(*,*) " "
+      write(*,*) "  Frag.        Charge center (xyz)     "
+      write(*,*) " ------------------------------------- "
       ALLOCATE(Smat(ifrg,igr,igr))
       do ifrg=1,icufr
         xcenter=ZERO
@@ -916,7 +922,7 @@
         xcenter=xcenter/xchg
         ycenter=ycenter/xchg
         zcenter=zcenter/xchg
-        write(*,110) "Frg:",ifrg,"Chg Cent. (xyz):",xcenter*angtoau,ycenter*angtoau,zcenter*angtoau
+        write(*,110) ifrg,xcenter*angtoau,ycenter*angtoau,zcenter*angtoau
 
 !! COMPUTING S ONLY ONCE !!
         do mu=1,igr
@@ -936,12 +942,13 @@
           end do
         end do
       end do
+      write(*,*) " ------------------------------------- "
 
 !! INITIAL PRINTING !!
       write(*,*) " "
-      write(*,*) " --------------------------------- "
-      write(*,*) " STARTING ITERATIVE OSLO ALGORITHM "
-      write(*,*) " --------------------------------- "
+      write(*,*) " ----------------------------------- "
+      write(*,*) "  STARTING ITERATIVE OSLO ALGORITHM  "
+      write(*,*) " ----------------------------------- "
       write(*,*) " "
       write(*,'(2x,a50,f10.5)') "Tolerance (in delta-FOLI) used for OSLO selection:",folitol
       write(*,*) " "
@@ -959,18 +966,18 @@
       pnocore=pa !! SAVING pa IN pnocore !!
 
 !! FIRST ALPHA, THEN BETA !!
-      write(*,*) " ---------- "
-      write(*,*) " ALPHA PART "
-      write(*,*) " ---------- "
+      write(*,*) " ------------ "
+      write(*,*) "  ALPHA PART  "
+      write(*,*) " ------------ "
       write(*,*) " "
 
       ntotcore=0
       iaddoslo=0
       iaddoslo2=0
       do iiter=1,niter
-        write(*,*) " -------------------- "
-        write(*,'(2x,a16,x,i3)') "ITERATION NUMBER",iiter
-        write(*,*) " -------------------- "
+        write(*,*) " ---------------------- "
+        write(*,'(3x,a16,x,i3)') "ITERATION NUMBER",iiter
+        write(*,*) " ---------------------- "
         write(*,*) " "
 
 !! ZEROING THE INVOLVED MATRICES !!
@@ -1032,15 +1039,17 @@
           end do
 
 !! PRINTING VALUABLE INFORMATION !!
-          write(*,*) " ------------------------------------ "
-          write(*,'(2x,a32,x,i3)') "ORBITAL INFORMATION FOR FRAGMENT",ifrg
-          write(*,*) " ------------------------------------ "
+          write(*,*) " -------------------------------------- "
+          write(*,'(3x,a32,x,i3)') "ORBITAL INFORMATION FOR FRAGMENT",ifrg
+          write(*,*) " -------------------------------------- "
           write(*,*) " "
-          write(*,*) " Orb.     Spread      Frg. Pop.      FOLI "
+          write(*,*) "  Orb.    Spread      Frg. Pop.      FOLI   "
+          write(*,*) " ------------------------------------------ "
           do ii=1,imaxo
             xx=frgpop(ifrg,ii)
             if(xx.gt.1.0d-5) write(*,111) ii,frgspr(ifrg,ii),xx,dsqrt(deloc(ifrg,ii)/xx)
           end do
+          write(*,*) " ------------------------------------------ "
           write(*,*) " "
         end do
         DEALLOCATE(S0)
@@ -1081,9 +1090,9 @@
         write(*,'(2x,a27,x,i3,f10.5)') "Frg. and Lowest FOLI value:",iifrg,xcutoff
         write(*,'(2x,a56,x,i3,f10.5)') "Frg. and Lowest FOLI value including tolerance (cutoff):",jjfrg,xcutoff
         write(*,*) " "
-        write(*,*) " ----------------- "
-        write(*,*) " SELECTED ORBITALS "
-        write(*,*) " ----------------- "
+        write(*,*) " ------------------- "
+        write(*,*) "  SELECTED ORBITALS  "
+        write(*,*) " ------------------- "
         write(*,*) " "
 
 !! 3) EVALUATING DEGENERACIES !!
@@ -1094,9 +1103,9 @@
 
 !! BRANCHING (CONTROLLED FROM .inp, DEFAULT = 0) !!
         if(iiter.eq.ibranch) then
-          write(*,*) " ******************************************** "
-          write(*,*) " WARNING: BRANCHING INVOKED IN THIS ITERATION "
-          write(*,*) " ******************************************** "
+          write(*,*) " ********************************************** "
+          write(*,*) "  WARNING: BRANCHING INVOKED IN THIS ITERATION  "
+          write(*,*) " ********************************************** "
           write(*,*) " "
 
 !! MG: TO DO !!
@@ -1112,6 +1121,8 @@
 !    +      " Fragment : ",infopop(1,iiii)
 !         end do
         else
+          write(*,*) "  Orb.   Frag.   FOLI  "
+          write(*,*) " --------------------- "
           do ifrg=1,icufr
             do iorb=1,nalf
               xx=xcutoff-dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
@@ -1122,10 +1133,11 @@
                 infopop(1,inewcore)=ifrg
                 infopop(2,inewcore)=iorb
                 scr(inewcore)=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-                write(*,112) "Orb., Frg., FOLI:",infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
+                write(*,112) infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
               end if
             end do
           end do
+          write(*,*) " --------------------- "
         end if
         write(*,'(2x,a25,x,i3)') "Number of OSLOs selected:",inewcore
         write(*,'(2x,a17,x,f10.5)') "delta-FOLI value:",xfront-xcutoff
@@ -1156,13 +1168,13 @@
         do ifrg=1,icufr
           nnelect=nnelect+ifrgel(1,ifrg)
         end do
-        write(*,'(2x,a36,x,i3)') "Alpha electrons left to assign:",nalf-nnelect
+        write(*,'(2x,a31,x,i3)') "Alpha electrons left to assign:",nalf-nnelect
         write(*,*) " "
 
         if(nalf-nnelect.lt.0) then
-          write(*,*) " ****************************** "
-          write(*,'(2x,a26,x,i3)') "WARNING: OVERASSIGNING BY:",-(nalf-nnelect)
-          write(*,*) " ****************************** "
+          write(*,*) " ******************************** "
+          write(*,'(3x,a26,x,i3)') "WARNING: OVERASSIGNING BY:",-(nalf-nnelect)
+          write(*,*) " ******************************** "
           write(*,*) " "
 
 !! DIRTY TRICK !!
@@ -1176,10 +1188,12 @@
 
 !! SELECTING THE FIRST OUT FOR EVALUATING LINDEP !!
         clindep=ZERO
-        write(*,*) " ---------------------------- "
-        write(*,*) " CHECKING LINIAR DEPENDENCIES "
-        write(*,*) " ---------------------------- "
+        write(*,*) " ------------------------------ "
+        write(*,*) "  CHECKING LINIAR DEPENDENCIES  "
+        write(*,*) " ------------------------------ "
         write(*,*) " "
+        write(*,*) "  Orb.   Frag.   FOLI  "
+        write(*,*) " --------------------- "
         iselected=0
         do ifrg=1,icufr
           do iorb=1,nalf
@@ -1189,13 +1203,14 @@
             if(xx.lt.folitol) then
               iselected=iselected+1
               xx2=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-              write(*,112) "Orb., Frag., FOLI:",iorb,ifrg,xx2
+              write(*,112) iorb,ifrg,xx2
               do mu=1,igr
                 clindep(mu,iselected)=cfrgoslo(ifrg,mu,iorb)
               end do
             end if
           end do
         end do
+        write(*,*) " --------------------- "
         write(*,'(2x,a38,x,i3)') "Number of OSLOs for LinDep evaluation:",iselected
         write(*,*) " "
 
@@ -1241,13 +1256,12 @@
           write(*,*) " "
         end if
         if(ilindep.eq.1) then
-          write(*,*) " ********************************* "
-          write(*,*) " WARNING : LINIAR DEPENDENCY FOUND "
-          write(*,*) " ********************************* "
+          write(*,*) " *********************************** "
+          write(*,*) "  WARNING : LINIAR DEPENDENCY FOUND "
+          write(*,*) " *********************************** "
           write(*,*) " "
           write(*,'(2x,a27,3f10.5)') "FOLI values and delta-FOLI:",xcutoff,xfront,xfront-xcutoff
           write(*,*) " Selecting largest to proceed "
-          write(*,*) " "
           write(*,*) " RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT "
           write(*,*) " "
         end if
@@ -1363,9 +1377,9 @@
       DEALLOCATE(SSS,EEE)
 
 !! NOW BETA !!
-      write(*,*) " --------- "
-      write(*,*) " BETA PART "
-      write(*,*) " --------- "
+      write(*,*) " ----------- "
+      write(*,*) "  BETA PART  "
+      write(*,*) " ----------- "
       write(*,*) " "
 
 !! PREPARING SOME MATRICES !!
@@ -1382,9 +1396,9 @@
       iaddoslo=0
       iaddoslo2=0
       do iiter=1,niter
-        write(*,*) " -------------------- "
-        write(*,'(2x,a16,x,i3)') "ITERATION NUMBER",iiter
-        write(*,*) " -------------------- "
+        write(*,*) " ---------------------- "
+        write(*,'(3x,a16,x,i3)') "ITERATION NUMBER",iiter
+        write(*,*) " ---------------------- "
         write(*,*) " "
 
 !! ZEROING THE INVOLVED MATRICES !!
@@ -1446,15 +1460,17 @@
           end do
 
 !! PRINTING VALUABLE INFORMATION !!
-          write(*,*) " ------------------------------------ "
-          write(*,'(2x,a32,x,i3)') "ORBITAL INFORMATION FOR FRAGMENT",ifrg
-          write(*,*) " ------------------------------------ "
+          write(*,*) " -------------------------------------- "
+          write(*,'(3x,a32,x,i3)') "ORBITAL INFORMATION FOR FRAGMENT",ifrg
+          write(*,*) " -------------------------------------- "
           write(*,*) " "
-          write(*,*) " Orb.     Spread      Frg. Pop.      FOLI "
+          write(*,*) "  Orb.    Spread      Frg. Pop.      FOLI   "
+          write(*,*) " ------------------------------------------ "
           do ii=1,imaxo
             xx=frgpop(ifrg,ii)
             if(xx.gt.1.0d-5) write(*,111) ii,frgspr(ifrg,ii),xx,dsqrt(deloc(ifrg,ii)/xx)
           end do
+          write(*,*) " ------------------------------------------ "
           write(*,*) " "
         end do
         DEALLOCATE(S0)
@@ -1495,9 +1511,9 @@
         write(*,'(2x,a27,x,i3,f10.5)') "Frg. and Lowest FOLI value:",iifrg,xcutoff
         write(*,'(2x,a56,x,i3,f10.5)') "Frg. and Lowest FOLI value including tolerance (cutoff):",jjfrg,xcutoff
         write(*,*) " "
-        write(*,*) " ----------------- "
-        write(*,*) " SELECTED ORBITALS "
-        write(*,*) " ----------------- "
+        write(*,*) " ------------------- "
+        write(*,*) "  SELECTED ORBITALS  "
+        write(*,*) " ------------------- "
         write(*,*) " "
 
 !! 3) EVALUATING DEGENERACIES !!
@@ -1508,9 +1524,9 @@
 
         !! BRANCHING (CONTROLLED FROM .inp, DEFAULT = 0) !!
         if(iiter.eq.ibranch) then
-          write(*,*) " ******************************************** "
-          write(*,*) " WARNING: BRANCHING INVOKED IN THIS ITERATION "
-          write(*,*) " ******************************************** "
+          write(*,*) " ********************************************** "
+          write(*,*) "  WARNING: BRANCHING INVOKED IN THIS ITERATION  "
+          write(*,*) " ********************************************** "
           write(*,*) " "
 
 !! MG: TO DO !!
@@ -1526,6 +1542,8 @@
 !    +      " Fragment : ",infopop(1,iiii)
 !         end do
         else
+          write(*,*) "  Orb.   Frag.   FOLI  "
+          write(*,*) " --------------------- "
           do ifrg=1,icufr
             do iorb=1,nb
               xx=xcutoff-dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
@@ -1537,10 +1555,11 @@
                 infopop(1,inewcore)=ifrg
                 infopop(2,inewcore)=iorb
                 scrb(inewcore)=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-                write(*,112) "Orb., Frg., FOLI:",infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
+                write(*,112) infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
               end if
             end do
           end do
+          write(*,*) " --------------------- "
         end if
         write(*,'(2x,a25,x,i3)') "Number of OSLOs selected:",inewcore
         write(*,'(2x,a17,x,f10.5)') "delta-FOLI value:",xfront-xcutoff
@@ -1571,13 +1590,13 @@
         do ifrg=1,icufr
           nnelect=nnelect+ifrgel(2,ifrg)
         end do
-        write(*,'(2x,a36,x,i3)') "Beta electrons left to assign:",nalf-nnelect
+        write(*,'(2x,a30,x,i3)') "Beta electrons left to assign:",nalf-nnelect
         write(*,*) " "
 
         if(nb-nnelect.lt.0) then
-          write(*,*) " ****************************** "
-          write(*,'(2x,a26,x,i3)') "WARNING: OVERASSIGNING BY:",-(nb-nnelect)
-          write(*,*) " ****************************** "
+          write(*,*) " ******************************** "
+          write(*,'(3x,a26,x,i3)') "WARNING: OVERASSIGNING BY:",-(nb-nnelect)
+          write(*,*) " ******************************** "
           write(*,*) " "
 
 !! DIRTY TRICK !!
@@ -1591,10 +1610,12 @@
 
 !! SELECTING THE FIRST OUT FOR EVALUATING LINDEP !!
         clindep=ZERO
-        write(*,*) " ---------------------------- "
-        write(*,*) " CHECKING LINIAR DEPENDENCIES "
-        write(*,*) " ---------------------------- "
+        write(*,*) " ------------------------------ "
+        write(*,*) "  CHECKING LINIAR DEPENDENCIES  "
+        write(*,*) " ------------------------------ "
         write(*,*) " "
+        write(*,*) "  Orb.   Frag.   FOLI  "
+        write(*,*) " --------------------- "
         iselected=0
         do ifrg=1,icufr
           do iorb=1,nb
@@ -1604,13 +1625,14 @@
             if(xx.lt.folitol) then
               iselected=iselected+1
               xx2=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-              write(*,112) "Orb., Frag., FOLI:",iorb,ifrg,xx2
+              write(*,112) iorb,ifrg,xx2
               do mu=1,igr
                 clindep(mu,iselected)=cfrgoslo(ifrg,mu,iorb)
               end do
             end if
           end do
         end do
+        write(*,*) " --------------------- "
         write(*,'(2x,a38,x,i3)') "Number of OSLOs for LinDep evaluation:",iselected
         write(*,*) " "
 
@@ -1656,13 +1678,12 @@
           write(*,*) " "
         end if
         if(ilindep.eq.1) then
-          write(*,*) " ********************************* "
-          write(*,*) " WARNING : LINIAR DEPENDENCY FOUND "
-          write(*,*) " ********************************* "
+          write(*,*) " *********************************** "
+          write(*,*) "  WARNING : LINIAR DEPENDENCY FOUND  "
+          write(*,*) " *********************************** "
           write(*,*) " "
           write(*,'(2x,a27,3f10.5)') "FOLI values and delta-FOLI:",xcutoff,xfront,xfront-xcutoff
           write(*,*) " Selecting largest to proceed "
-          write(*,*) " "
           write(*,*) " RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT "
           write(*,*) " "
         end if
@@ -1743,13 +1764,16 @@
 667   continue
 
 !! FINAL OS ASSIGNMENT !!
-      write(*,*) " ---------------------------- "
-      write(*,*) " FINAL EOS-like OS ASSIGNMENT "
-      write(*,*) " ---------------------------- "
+      write(*,*) " --------------------------- "
+      write(*,*) "  FRAGMENT OXIDATION STATES  "
+      write(*,*) " --------------------------- "
       write(*,*) " "
+      write(*,*) "  Frag.  Oxidation State  "
+      write(*,*) " ------------------------ "
       do ifrg=1,icufr
-        write(*,113) "FRAG, OS :",ifrg,iznfrg(ifrg)-(ifrgel(1,ifrg)+ifrgel(2,ifrg))
-      end do
+        write(*,20) ifrg,REAL(iznfrg(ifrg)-(ifrgel(1,ifrg)+ifrgel(2,ifrg)))
+      end do 
+      write(*,*) " ------------------------ "
       write(*,*) " "
 
 !! PRINTING OF THE .fchk FILES WITH THE OSLOs... TO VISUALIZE !!
@@ -1784,15 +1808,15 @@
       DEALLOCATE(poslo)
 
 !! EVALUATING FINAL POPULATIONS TO COMPARE !!
-      write(*,*) " -------------------------------- "
-      write(*,*) " PRINTING FINAL OSLOs INFORMATION "
-      write(*,*) " -------------------------------- "
+      write(*,*) " ---------------------------------- "
+      write(*,*) "  PRINTING FINAL OSLOs INFORMATION  "
+      write(*,*) " ---------------------------------- "
       write(*,*) " "
 
 !! FIRST ALPHA !!
-      write(*,*) " ----------------------------------------------- "
-      write(*,*) " Summary of the selected alpha OSLOs (pre-ortho) "
-      write(*,*) " ----------------------------------------------- "
+      write(*,*) " ------------------------------------------------- "
+      write(*,*) "  Summary of the selected alpha OSLOs (pre-ortho)  "
+      write(*,*) " ------------------------------------------------- "
       write(*,*) " "
       ALLOCATE(orbpop(nalf),orbpop2(nalf))
       ALLOCATE(foslo(nalf,icufr),foslo2(nalf,icufr))
@@ -1816,9 +1840,9 @@
         foli(ii)=delocoslo(1,ii)
       end do
       call rwf_uwf_print_OSLO_final(1,nalf,foli,foslo)
-      write(*,*) " ------------------------------------------- "
-      write(*,*) " Summary of the selected alpha OSLOs (final) "
-      write(*,*) " ------------------------------------------- "
+      write(*,*) " --------------------------------------------- "
+      write(*,*) "  Summary of the selected alpha OSLOs (final)  "
+      write(*,*) " --------------------------------------------- "
       write(*,*) " "
       call rwf_uwf_print_OSLO_final(0,nalf,foli,foslo2) !! FOLI VALUES GIVEN JUST FOR USING SAME ROUTINE !!
       DEALLOCATE(orbpop,orbpop2)
@@ -1826,9 +1850,9 @@
       DEALLOCATE(foli)
 
 !! NOW BETA !!
-      write(*,*) " ---------------------------------------------- "
-      write(*,*) " Summary of the selected beta OSLOs (pre-ortho) "
-      write(*,*) " ---------------------------------------------- "
+      write(*,*) " ------------------------------------------------ "
+      write(*,*) "  Summary of the selected beta OSLOs (pre-ortho)  "
+      write(*,*) " ------------------------------------------------ "
       write(*,*) " "
       ALLOCATE(orbpop(nb),orbpop2(nb))
       ALLOCATE(foslo(nb,icufr),foslo2(nb,icufr))
@@ -1852,9 +1876,9 @@
         foli(ii)=delocoslo(2,ii)
       end do
       call rwf_uwf_print_OSLO_final(1,nb,foli,foslo)
-      write(*,*) " ------------------------------------------ "
-      write(*,*) " Summary of the selected beta OSLOs (final) "
-      write(*,*) " ------------------------------------------ "
+      write(*,*) " -------------------------------------------- "
+      write(*,*) "  Summary of the selected beta OSLOs (final)  "
+      write(*,*) " -------------------------------------------- "
       write(*,*) " "
       call rwf_uwf_print_OSLO_final(0,nb,foli,foslo2) !! FOLI VALUES GIVEN JUST FOR USING SAME ROUTINE !!
       DEALLOCATE(orbpop,orbpop2)
@@ -1864,10 +1888,10 @@
 !! TODO: FINAL DEALLOCATE (IF CONSIDERED RELEVANT) !!
 
 !! PRINTING FORMATS !!
-110   FORMAT(x,a5,x,i3,x,a16,x,3f10.5)
-111   FORMAT(2x,i3,3x,f10.5,3x,f10.5,3x,f10.5)
-112   FORMAT(2x,a17,x,2i3,f10.5)
-113   FORMAT(2x,a9,x,2i3)
+110   FORMAT(3x,i3,3x,3f10.5)
+111   FORMAT(3x,i3,2x,f10.5,3x,f10.5,3x,f10.5)
+112   FORMAT(3x,i3,4x,i3,x,f9.5)
+20    FORMAT(3x,i3,6x,f8.2)
 
       end
   

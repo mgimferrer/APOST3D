@@ -1489,9 +1489,9 @@ CCCCCCCCCC
 
       if(ioslo.eq.1) then
         write(*,*) " "
-        write(*,*) " ********************* "
-        write(*,*) " ENTERING OSLO SECTION "
-        write(*,*) " ********************* "
+        write(*,*) " ------------------------------------------------------- "
+        write(*,*) "  DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)  "
+        write(*,*) " ------------------------------------------------------- "
         write(*,*) " "
 
 !! COMPUTING sat FOR HILBERT SPACE CASES !!
