@@ -1242,33 +1242,29 @@ c             call  uefomo(itotps,ndim,omp,chp,sat,wp,omp2,0)
 c             call mhg(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,pa,0)
 c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             else if(ieffao.eq.2) then
-            idobeta=0
-            write(*,*) '  '
-            write(*,*) ' UEFFAO: alpha and beta treated separately'
-            write(*,*) '  '
-            call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
-            if(ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
-            if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) then
-              idobeta=1
-              call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
-            end if
-            if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+              idobeta=0
+              write(*,*) '  '
+              write(*,*) ' UEFFAO: alpha and beta treated separately'
+              write(*,*) '  '
+              call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
+              if(ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
+              if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) then
+                idobeta=1
+                call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
+              end if
+              if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
 
-!! EOS-U PART !!
-          else if(ieffao.eq.3) then
-           write(*,*) " "
-           write(*,*) " EFFAO-U: paired and unpaired densities treated separately "
-           write(*,*) " "
-           call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
-!           if(iueos.eq.1) call eos_analysis(idobeta,2,xthresh)
+!! EOS-U PART: OS ANALYSIS CALLED FROM INSIDE THE ROUTINE !!
+            else if(ieffao.eq.3) then
+              call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2,iueos) 
+            end if
           end if
         end if
-      end if
 
-      write(*,*)
-      call cpu_time(time2)
-      write(*,'(a37,f10.1,a2)')'(Elapsed time :: effAOs/EOS analysis ',time2-time,'s)' 
-      time=time2
+        write(*,*)
+        call cpu_time(time2)
+        write(*,'(a37,f10.1,a2)')'(Elapsed time :: effAOs/EOS analysis ',time2-time,'s)' 
+        time=time2
       end if
 
 CCCCCCCCCCCCCCC
