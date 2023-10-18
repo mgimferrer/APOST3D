@@ -285,35 +285,52 @@
             end if
           end do
 
-!! NOW SECOND ONE (TRICK, AS THEY ARE NOT ORDERED) !!
-          imaxocc3=0
-          xmaxocc3=ZERO
-          do ii=1,lorb(2)
-            xx=occup(ii,2)
-            if(xx.gt.xmaxocc3.and.ii.ne.imaxocc2) then
-              imaxocc3=ii
-              xmaxocc3=xx
-            end if
-          end do
-          if(xmaxocc.gt.(xmaxocc2+xmaxocc3)) then
+!! TRICK FOR IF UNPAIRED IS "VERY UNPAIRED" (HAS TO PLAY ALONE) WITH EVEN NUMBER OF EL. TO ASSIGN !!
+          if(occup(imaxocc2,2).gt.0.75d0) then
 
-!! ASSIGNING A PAIR OF ELECTRONS !!
-            elec(iorbat(imaxocc,1))=elec(iorbat(imaxocc,1))+TWO
-            infoelec(iorbat(imaxocc,1),1)=infoelec(iorbat(imaxocc,1),1)+2
-            occup(imaxocc,1)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
+!! ASSIGNING A SINGLE ELECTRON !!
+            elec(iorbat(imaxocc2,2))=elec(iorbat(imaxocc2,2))+ONE
+            infoelec(iorbat(imaxocc2,2),2)=infoelec(iorbat(imaxocc2,2),2)+1
+            occup(imaxocc2,2)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
+            nnn=nnn-1
+
+!! EVALUATING IF EL. PAIR SPLITTING IS REQUIRED !!
           else
 
+!! NOW SECOND ONE !!
+            imaxocc3=0
+            xmaxocc3=ZERO
+            do ii=1,lorb(2)
+
+!! ONLY IF THEY ARE OF DIFFERENT FRAGMENT !!
+              if(iorbat(imaxocc2,2).ne.iorbat(ii,2)) then
+                xx=occup(ii,2)
+                if(xx.gt.xmaxocc3.and.ii.ne.imaxocc2) then
+                  imaxocc3=ii
+                  xmaxocc3=xx
+                end if
+              end if
+            end do
+            if(xmaxocc.gt.(xmaxocc2+xmaxocc3)) then
+
+!! ASSIGNING A PAIR OF ELECTRONS !!
+              elec(iorbat(imaxocc,1))=elec(iorbat(imaxocc,1))+TWO
+              infoelec(iorbat(imaxocc,1),1)=infoelec(iorbat(imaxocc,1),1)+2
+              occup(imaxocc,1)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
+            else
+
 !! ASSIGNING ONE ELECTRON TO EACH FRAGMENT !!
-            elec(iorbat(imaxocc2,2))=elec(iorbat(imaxocc2,2))+ONE
-            elec(iorbat(imaxocc3,2))=elec(iorbat(imaxocc3,2))+ONE
-            infoelec(iorbat(imaxocc2,2),2)=infoelec(iorbat(imaxocc2,2),2)+1
-            infoelec(iorbat(imaxocc3,2),2)=infoelec(iorbat(imaxocc3,2),2)+1
+              elec(iorbat(imaxocc2,2))=elec(iorbat(imaxocc2,2))+ONE
+              elec(iorbat(imaxocc3,2))=elec(iorbat(imaxocc3,2))+ONE
+              infoelec(iorbat(imaxocc2,2),2)=infoelec(iorbat(imaxocc2,2),2)+1
+              infoelec(iorbat(imaxocc3,2),2)=infoelec(iorbat(imaxocc3,2),2)+1
 
 !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
-            occup(imaxocc2,2)=ZERO
-            occup(imaxocc3,2)=ZERO
+              occup(imaxocc2,2)=ZERO
+              occup(imaxocc3,2)=ZERO
+            end if
+            nnn=nnn-2
           end if
-          nnn=nnn-2
 
 !! ODD NUMBER OF ELECTRONS LEFT TO ASSIGN: ONLY UNPAIRED !!
         else
@@ -375,7 +392,7 @@
               ilast=ifrg
             end if
           end if
-        end do 
+        end do
 
         xfirst=ZERO
         do ifrg=1,icufr
