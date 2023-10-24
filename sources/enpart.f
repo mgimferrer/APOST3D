@@ -305,9 +305,15 @@
       dimension exch_hf(maxat,maxat)
       dimension coul(maxat,maxat)
       character*80 line
+
       allocatable :: chp2(:,:), fij(:,:),xocc(:,:)
       allocatable :: chppha(:,:), wppha(:),pcoordpha(:,:),omppha(:)
       allocatable :: chp2pha(:,:),rhopha(:),omp2pha(:,:),ibaspointpha(:)
+
+!! FOR ENPART PARALLEL !!
+      allocatable :: ijpaircount(:,:)
+      allocatable :: f3ij(:),exch_hfij(:)
+      allocatable :: chp2s(:,:),chp2phas(:,:) !! SWITCHED ORDER OF COLUMNS AND ROWS !!
 
       ihf      =  Iopt(18) 
       idofr    =  Iopt(40)
@@ -345,6 +351,7 @@
       end do
 
       ALLOCATE(chp2(itotps,nocc))
+      ALLOCATE(chp2s(nocc,itotps)) !!TODO
 
 !! TO MOs !!
 
@@ -355,6 +362,7 @@
             xx=xx+c(i,j)*chp(k,i) 
           end do
           chp2(k,j)=xx
+          chp2s(j,k)=xx
         end do
       end do
 
@@ -370,6 +378,7 @@
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
       ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
+      ALLOCATE(chp2phas(nocc,itotps)) !!TODO
 
       call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
@@ -382,6 +391,7 @@
             xx=xx+c(i,j)*chppha(k,i) 
           end do
           chp2pha(k,j)=xx
+          chp2phas(j,k)=xx
         end do
       end do
       end if !MMO- non-analytical skip ends here
@@ -423,26 +433,27 @@
         end do
         call multipolar(nocc,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
         DEALLOCATE(fij,xocc)
+
+!! MG: WHY YOU COMMENTED IT? !!
 c        write(*,*) " MULTIPOLAR APPROACH HF Ex TERMS "
 c        write(*,*) " "
 c        CALL Mprint(Excmp,nat,maxat)
 c        write(*,*) " "
 
+!! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
         write(*,*) " "
         write(*,*) " *** PURE EXCHANGE PART *** "
         write(*,*) " "
         write(*,*) " Two-el integrations for ",nocc*(nocc+1)," MO pairs"
         write(*,'(a37,f10.6)') " Threshold for atom pair calculation : ",threbod
-        iterms=0
+
+!! FIRST ONLY SAME CENTER TERMS !!
         do icenter=1,nat
           do ifut=iatps*(icenter-1)+1,iatps*icenter
             x0=wp(ifut)*omp2(ifut,icenter)
             dx0=pcoord(ifut,1)
             dy0=pcoord(ifut,2)
             dz0=pcoord(ifut,3)
-
-!! SAME CENTER !!
-
             f3=ZERO
             do jfut=iatps*(icenter-1)+1,iatps*icenter
               x1=wppha(jfut)*omp2pha(jfut,icenter)
@@ -453,46 +464,77 @@ c        write(*,*) " "
               if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
                 do i=1,nocc
                   do j=i,nocc
-                    f2=x0*chp2(ifut,i)*chp2(ifut,j)
+                    f2=x0*chp2s(i,ifut)*chp2s(j,ifut)
                     if(i.ne.j) f2=TWO*f2
-                    f3=f3+f2*x1*chp2pha(jfut,i)*chp2pha(jfut,j)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                    f3=f3+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
                   end do
                 end do
               end if
             end do
-            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-f3 
-
-!! PAIRS OF CENTERS !!
-
-            do jcenter=icenter+1,nat
-              bx0=bo(icenter,jcenter)
-              if(bx0.ge.threbod) then
-                f3=ZERO
-                do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-                  x1=wp(jfut)*omp2(jfut,jcenter)
-                  dx1=pcoord(jfut,1)
-                  dy1=pcoord(jfut,2)
-                  dz1=pcoord(jfut,3)
-                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                    do i=1,nocc
-                      do j=i,nocc
-                        f2=x0*chp2(ifut,i)*chp2(ifut,j)
-                        if(i.ne.j) f2=TWO*f2
-                        f3=f3+f2*x1*chp2(jfut,i)*chp2(jfut,j)/dist !! MG: LC-wPBE programmed in version 3.1 !!
-                      end do
-                    end do
-                  end if
-                end do
-                exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-f3
-              else 
-                iterms=iterms+1
-              end if
-            end do
+            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-f3
           end do
         end do
-        write(*,*) " Skipping ",iterms," diatomic exchange integrals "
+
+!! NOW PAIRS OF CENTERS !!
+        iterms=0
+        ipaircounter=0
+        ALLOCATE(ijpaircount(nat*nat,2))
+        do icenter=1,nat
+          do jcenter=icenter+1,nat
+            bx0=bo(icenter,jcenter)
+            if(bx0.ge.threbod) then
+              ipaircounter=ipaircounter+1
+              ijpaircount(ipaircounter,1)=icenter
+              ijpaircount(ipaircounter,2)=jcenter
+             else
+               iterms=iterms+1
+             end if
+          end do
+        end do
+        write(*,*) " Skipping numerical integration for",iterms,"atom pairs "
         write(*,*) " " 
+
+        ALLOCATE(f3ij(ipaircounter))
+        ALLOCATE(exch_hfij(ipaircounter))
+        do numpairnat=1,ipaircounter
+          icenter=ijpaircount(numpairnat,1)
+          jcenter=ijpaircount(numpairnat,2)
+          exch_hfij(numpairnat)=ZERO
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            x0=wp(ifut)*omp2(ifut,icenter)
+            dx0=pcoord(ifut,1)
+            dy0=pcoord(ifut,2)
+            dz0=pcoord(ifut,3)
+            f3ij(numpairnat)=ZERO
+            do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+              x1=wp(jfut)*omp2(jfut,jcenter)
+              dx1=pcoord(jfut,1)
+              dy1=pcoord(jfut,2)
+              dz1=pcoord(jfut,3)
+              dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+              if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
+                do i=1,nocc-1
+                  do j=i+1,nocc
+                    f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut) !! FACTOR OF TWO INCLUDED... i =/ j CASE !!
+                    f3ij(numpairnat)=f3ij(numpairnat)+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                  end do
+                  f2=x0*chp2s(i,ifut)*chp2s(i,ifut) !! i = j TERMS !!
+                  f3ij(numpairnat)=f3ij(numpairnat)+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
+                end do
+                f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut) !! i = j = nocc TERM !!
+                f3ij(numpairnat)=f3ij(numpairnat)+f2*x1*chp2s(nocc,jfut)*chp2s(nocc,jfut)/dist
+              end if
+            end do
+            exch_hfij(numpairnat)=exch_hfij(numpairnat)+f3ij(numpairnat)
+          end do
+        end do
+
+!! RECOVERING TERMS IN THE APPROPRIATE MATRIX !!
+        do numpairnat=1,ipaircounter
+          icenter=ijpaircount(numpairnat,1)
+          jcenter=ijpaircount(numpairnat,2)
+          exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat)
+        end do
 
         exchen_hf=ZERO
         do i=1,nat
@@ -586,6 +628,7 @@ c        write(*,*) " "
             xx=xx+c(i,j)*chppha(k,i) 
           end do
           chp2pha(k,j)=xx
+          chp2phas(j,k)=xx
         end do
       end do
 
@@ -624,7 +667,8 @@ c        write(*,*) " "
             dz0=pcoord(ifut,3)
             do i=1,nocc
               do j=i,nocc
-                f2=x0*chp2(ifut,i)*chp2(ifut,j)
+!                f2=x0*chp2(ifut,i)*chp2(ifut,j)
+                f2=x0*chp2s(i,ifut)*chp2s(j,ifut)
                 if(i.ne.j) f2=TWO*f2
                 f3=ZERO
                 do jfut=iatps*(icenter-1)+1,iatps*icenter
@@ -633,7 +677,8 @@ c        write(*,*) " "
                   dy1=pcoordpha(jfut,2)
                   dz1=pcoordpha(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-8) f3=f3+f2*x1*chp2pha(jfut,i)*chp2pha(jfut,j)/dist !! MG: Could be controlled using the thr2 variable !!
+!                  if(dist.gt.1.0d-8) f3=f3+f2*x1*chp2pha(jfut,i)*chp2pha(jfut,j)/dist !! MG: Could be controlled using the thr2 variable !!
+                  if(dist.gt.1.0d-8) f3=f3+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: Could be controlled using the thr2 variable !!
                 end do
                 coul0(icenter,4)=coul0(icenter,4)-f3                    
               end do
@@ -808,6 +853,7 @@ c        write(*,*) " "
 
       if(ianalytical.eq.0) then
         DEALLOCATE(chp2,chp2pha,rhopha,chppha,wppha,pcoordpha,omppha,omp2pha)
+        DEALLOCATE(chp2s,chp2phas)
       else
 !        DEALLOCATE(chp2,rho) !MMO- rho is no longer allocated in the current version?
         DEALLOCATE(chp2)
