@@ -7,6 +7,12 @@
 *.dyn
 *pgopti*
 
+# Other files #
+
+nohup.out
+compiler-testset/*OSLOs.fchk
+compiler-testset/*.apost*
+
 # Also the folder of the libraries, for problems of permission #
 
 libxc-4.2.3
