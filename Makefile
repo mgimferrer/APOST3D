@@ -1,16 +1,13 @@
-########################################
-# Makefile for APOST-3D program
-########################################
+#############################################
+# MAKEFILE FOR APOST-3D PROGRAM DEVELOPMENT #
+#############################################
 
 # Defining variables
 PROG = /home/mgimferrer/APOST3D
 LIBXCDIR = $(PROG)/libxc-4.2.3
 QUADDIR = $(PROG)/lebedev
-#FOR = ifort -Ofast -parallel -qopenmp -qmkl
-#FOR = ifort -Ofast -parallel -qopenmp -qmkl -unroll-aggressive
-FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive -qopt-report-phase=par -qopt-report=5
+FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive
 FOR_INP = ifort
-#SFLAGS = -std=legacy -ffixed-line-length-none -mcmodel=medium -fno-automatic -cpp
 SFLAGS = -xHost -extend-source 132 -mcmodel=medium
 OFLAGS = -Ofast -xHost -parallel -qopenmp
 #DFLAGS = -fbounds-check -O0 -Wall
