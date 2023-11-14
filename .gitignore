@@ -4,6 +4,8 @@
 *.o
 *.mod
 *.optrpt
+*.dyn
+*pgopti*
 
 # Also the folder of the libraries, for problems of permission #
 
