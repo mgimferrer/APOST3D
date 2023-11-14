@@ -1,0 +1,19 @@
+#!/bin/bash -l
+
+# THIS SCRIPT RUN SOME TESTING CALCULATIONS AS FIRST STEP OF THE PGO #
+
+PROGDIR="/home/mgimferrer/APOST3D"
+TESTDIR="${PROGDIR}/compiler-testset"
+APOST="${PROGDIR}/apost3d"
+
+cd ${TESTDIR}
+echo " Starting diagnostics to compile the code with PGO "
+#for mol in C2H6-B3LYP FECO2-PBEPBE H2O-T-B3LYP O2-CASSCF; do # MG: There is a bug in the casscf enpart code, not using O2 system
+
+for mol in C2H6-B3LYP FECO2-PBEPBE CH3F NiDithiol-wB97xD-BS; do
+  STAT=" Running diagnostics for ${mol} "
+  echo "${STAT}"
+  /usr/bin/time -f " %E real,%U user,%S sys, %P CPU Percentage, %M Max Resident Set Size (Kb)" ${APOST} ${mol} > ${mol}.apost2
+done
+echo " Diagnostics DONE "
+

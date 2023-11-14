@@ -101,7 +101,7 @@ EFF_THRE=   1
  Fragment:            3
    3   5
  
-        (Elapsed time :: initialization        3.0s)
+        (Elapsed time :: initialization        0.0s)
   
   -------------------------------------
   SETTING ATOMIC GRIDS FOR INTEGRATION 
@@ -271,7 +271,7 @@ EFF_THRE=   1
    2          1.575736   12.834987    0.197714
    3          1.575736    0.197714   12.834987
   
-  Total:         52.0005626734638
+  Total:         52.0005626734639
   
  Additional printing :
   1  1    22.981403
@@ -285,9 +285,9 @@ EFF_THRE=   1
   3  3    12.834987
   
  
-(Elapsed time :: population analyses       16.2s)
+(Elapsed time :: population analyses        0.6s)
    
- UEFFAO: alpha and beta treated separatedly
+  UEFFAO: alpha and beta treated separately
    
   
   --------------------------------------
@@ -366,6 +366,6 @@ EFF_THRE=   1
    
        OVERALL RELIABILITY INDEX R(%) =   0.000
  
-(Elapsed time :: effAOs/EOS analysis        2.3s)
+(Elapsed time :: effAOs/EOS analysis        0.7s)
   
  ...Normal Termination of APOST-3D... 
