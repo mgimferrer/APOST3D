@@ -9,6 +9,7 @@
 PROG = /home/mgimferrer/APOST3D
 LIBXCDIR = $(PROG)/libxc-4.2.3
 QUADDIR = $(PROG)/lebedev
+#FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive -prof-use -guide-par ## FOR EXTRA INFO ABOUT PARALLEL LOOPS, REPORT WITH -guide-par ##
 FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive -prof-use
 FOR_INP = ifort
 SFLAGS = -xHost -extend-source 132 -mcmodel=medium
