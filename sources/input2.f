@@ -862,7 +862,7 @@ c correcting for shift in the index of active orbs
       end do
       write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2
       write(*,*) " "
-      call flush
+
       end
 
       subroutine do_potential(zn,vv)

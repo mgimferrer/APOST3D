@@ -1127,7 +1127,7 @@ c      print *,' Wrong n'
 c      stop 12
 c     print *,'  Entering inc'
        print *,' M,N',m,n
-      call flush
+
       do i=1,m
       do j=1,m
       c(i,j)=0.d0
@@ -1145,12 +1145,12 @@ c 10  print *,' Found'
  61   format(2a4)
 c     print *,' Reading orbitals:'
       print *,' '
-c     call flush
+
       kmax=min0(5,n)         
       do i=1,m
       read (15,60,end=220,err=220) ii,(c(i,j),j=1,kmax)
 c     write (*,60) ii,(c(i,j),j=1,kmax)
-c     call flush
+
   60  format(i4,17x,5f10.5)
       if(i.ne.ii) stop 111
       enddo
@@ -1165,7 +1165,7 @@ c     call flush
       do i=1,m
       read (15,60,end=220,err=220) ii,(c(i,j),j=k1,kmax)
 c     write (*,60) ii,(c(i,j),j=k1,kmax)
-c     call flush
+
 c 62  format(1x,i4,5f9.5)
       if(i.ne.ii) stop 112
       enddo
@@ -1192,7 +1192,7 @@ c     print *,'x',x
       print *,' '
       print *,'       Occupied'
       print *,' '
-      call flush
+
       kmax=min0(5,n)
       write(*,61)(j,j=1,kmax)
       l=1
@@ -1245,7 +1245,7 @@ c     goto 1
       data iocc/4H-O  /
       data ivirt/4H-V  /
 c     print *,' Entering outc23'
-c     call flush
+
       kmax=min0(5,n)
       write(23,61)(j,j=1,kmax)
       l=1
@@ -1303,18 +1303,18 @@ c      print *,' Wrong n'
 c      stop 12
 c      print *,' M, N, N1',m,n,n1
 c     print *,'  Entering outc2'
-c     call flush
+
       rewind 23
       rewind 15
 c     print *,'  Entering outc2'
-      call flush
+
 c     iii=1
  11    read(15,150,end=220)ibe
 c     iii=iii+1
 c     write(*,150)ibe
-c     call flush
+
       write(23,150)ibe
-      call flush
+
  150  format(20a4)
       if(ibe(2).eq.mol(1).and.ibe(3).eq.mol(2)) then
       print *,' Calling OUTC23'
