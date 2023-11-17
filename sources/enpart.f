@@ -345,11 +345,11 @@
 
 !! DOING ENERGY PARTITION !!
       npass=2     
-      write(*,*) ' '
-      write(*,*) '##############################'
-      write(*,*) ' Doing two-electron integrals'
-      write(*,*) '##############################'
-      write(*,*) ' '
+      write(*,*) " "
+      write(*,*) " ****************************** "
+      write(*,*) "  Doing two-electron integrals  "
+      write(*,*) " ****************************** "
+      write(*,*) " "
       do i=1,nat
         do j=1,nat
           coul(i,j)=ZERO
@@ -381,7 +381,7 @@
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
       phb=phb12
       pha=ZERO 
-      write(*,*) 'Rotating for angles : ',pha,phb
+      write(*,'(2x,a21,x,f10.6,x,f10.6)') "Rotating for angles :",pha,phb
       itotps=nrad*nang*nat
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
@@ -443,8 +443,8 @@
         write(*,*) " "
         write(*,*) " *** PURE EXCHANGE PART *** "
         write(*,*) " "
-        write(*,*) " Two-el integrations for ",nocc*(nocc+1)," MO pairs"
-        write(*,'(a37,f10.6)') " Threshold for atom pair calculation : ",threbod
+        write(*,'(2x,a22,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
+        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
 
 !! FIRST ONLY SAME CENTER TERMS !!
 !! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
@@ -460,12 +460,12 @@
         ithreads=INT(OMP_GET_NUM_PROCS())
         !$OMP END PARALLEL
         if(ithreadenv.ne.ZERO) then
-          write(*,'(A43,1X,I3,1X,A14,1X,I3,1X,A24)') 'Two-el integration will be distributed over',ithreadenv,'threads out of',
-     &    ithreads,'available hardware cores'
+          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
+     &    ithreads,"available hardware cores"
           ithreads=ithreadenv
         else
-          write(*,'(A43,1X,I3,1X,A14,1X,I3,1X,A24)') 'Two-el integration will be distributed over',ithreads,'threads out of',
-     &    ithreads,'available hardware cores'
+          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
+     &    ithreads,"available hardware cores"
         end if
 
 !! TO ENSURE PROPER SLICING BY THREADS !!
@@ -548,7 +548,7 @@
             end if
           end do
         end do
-        write(*,'(A35,1X,I5,1X,A10)') " Skipping numerical integration for",iterms,"atom pairs"
+        write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
         write(*,*) " "
 
 !! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
@@ -692,7 +692,7 @@
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
       phb=phb22
       pha=ZERO 
-      write(*,*) ' Rotating for angles : ',pha,phb
+      write(*,'(2x,a21,1x,f10.6,1x,f10.6)') "Rotating for angles :",pha,phb
       nat0=nat
       call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
@@ -1234,11 +1234,12 @@
 
 !! DOING ENERGY PARTITION !!
 
-      write(*,*) ' '
-      write(*,*) '##############################'
-      write(*,*) ' Doing two-electron integrals'
-      write(*,*) '##############################'
-      write(*,*) ' '
+      write(*,*) " "
+      write(*,*) " ****************************** "
+      write(*,*) "  Doing two-electron integrals  "
+      write(*,*) " ****************************** "
+      write(*,*) " "
+
       npass=2
       do i=1,nat
         do j=1,nat
