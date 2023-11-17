@@ -1,8 +1,19 @@
+!! **************************** !!
+!! CONVENTIONAL EOS SUBROUTINES !!
+!! **************************** !!
+
+!! ***** !!
+
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
+      
       use integration_grid
-      IMPLICIT REAL*8(A-H,O-Z)
+      
+      implicit real*8(a-h,o-z)
+      
       include 'parameter.h'
+      
       integer,intent(in) :: itotps,ndim
+
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /iops/iopt(100)
@@ -11,182 +22,186 @@
       common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/qat(maxat,2),qsat(maxat,2)
+
       dimension chp(itotps,ndim),omp(itotps),omp2(itotps,nat)
       dimension wp(itotps)
       dimension sat(ndim,ndim,nat)
       dimension pk(ndim,ndim)
-      character*(5) key
-c
-      allocatable s0(:,:), sm(:,:), c0(:,:), splus(:,:), pp0(:,:)
-      allocatable s0all(:),is0all(:)
-      allocatable ::  scr(:)
+
+      allocatable :: s0(:,:),sm(:,:),c0(:,:),splus(:,:),pp0(:,:)
+      allocatable :: s0all(:),is0all(:)
+      allocatable :: scr(:)
 
       ihirsh  = Iopt(6) 
       iallpo  = iopt(7) 
-      ieffao  =  Iopt(12) 
+      ieffao  = Iopt(12) 
       icube   = Iopt(13) 
       ieffthr = Iopt(24) 
-      iatps=nang*nrad
+      iatps   = nang*nrad
 
-      xmaxocc=real(ieffthr)/1000.0d0 
-      key=" "
-      if (icase.eq.1) then
-       key="ALPHA"
+      xminocc=REAL(ieffthr)/1000.0d0 
+
+      write(*,*) " "
+      write(*,*) " ------------------------------------ "
+      write(*,*) "  DOING EFFAO-3D GENERAL FORMULATION  "
+      write(*,*) " ------------------------------------ "
+      write(*,*) " "
+      if(icase.eq.1) then
+        write(*,*) " ------------------------------- "
+        write(*,*) "  EFFAOs FROM THE ALPHA DENSITY  "
+        write(*,*) " ------------------------------- "
       else if(icase.eq.2) then
-        key="BETA "
+        write(*,*) " ------------------------------ "
+        write(*,*) "  EFFAOs FROM THE BETA DENSITY  "
+        write(*,*) " ------------------------------ "
       end if
-
-      print *,' '
-      print *,' --------------------------------------'
-      print *,'   DOING EFFAO-3D GENERAL FORMULATION'
-      print *,' --------------------------------------'
-      print *,' '
-      print *,'     ',key,'  PART  '
-
+      write(*,*) " "
+      
       jocc=0
-      xmaxotot=0.d0
+      xmaxotot=ZERO
 
-      allocate(scr(iatps*nat))
-      allocate (s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
-      allocate (c0(ndim,ndim), pp0(ndim,ndim), is0all(ndim))
+      ALLOCATE(scr(iatps*nat))
+      ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
+      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim),is0all(ndim))
       do iicenter=1,icufr
-
-         do ifut=1,iatps*nat                         
-          scr(ifut)=0.0d0
+        do ifut=1,iatps*nat                         
+          scr(ifut)=ZERO
           do icenter=1,nfrlist(iicenter)
-           scr(ifut)=scr(ifut)+ omp2(ifut,ifrlist(icenter,iicenter))
+            scr(ifut)=scr(ifut)+ omp2(ifut,ifrlist(icenter,iicenter))
           end do
-         end do
+        end do
 
-c Computing Becke atomic NET orbital overlap
-C ALLPOINTS should be default here
-c a distance based screening would be interesting for very large systems
+!! Computing Becke atomic NET orbital overlap !!
+!! ALLPOINTS should be default here !!
+!! a distance based screening would be interesting for very large systems !!
         iallpo0=1
         if(iallpo0.eq.1) then
-        do mu=1,ndim
-         do nu=1,mu
-           x=0.d0
-           do jcenter=1,nat
-            do ifut=iatps*(jcenter-1)+1,iatps*jcenter
-             x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*scr(ifut)*scr(ifut)*omp(ifut)
+          do mu=1,ndim
+            do nu=1,mu
+              x=ZERO
+              do jcenter=1,nat
+                do ifut=iatps*(jcenter-1)+1,iatps*jcenter
+                  x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*scr(ifut)*scr(ifut)*omp(ifut)
+                end do
+              end do
+              s0(mu,nu)=x
+              s0(nu,mu)=x
             end do
-           end do
-           s0(mu,nu)=x
-           s0(nu,mu)=x
-         enddo
-        enddo
+          end do
         else
-        do mu=1,ndim
-         do nu=1,mu
-           x=0.d0
-           do icenter=1,nfrlist(iicenter)
-            jcenter=ifrlist(icenter,iicenter)
-            do ifut=iatps*(jcenter-1)+1,iatps*jcenter
-             x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*scr(ifut)*scr(ifut)*omp(ifut)
+          do mu=1,ndim
+            do nu=1,mu
+              x=ZERO
+              do icenter=1,nfrlist(iicenter)
+                jcenter=ifrlist(icenter,iicenter)
+                do ifut=iatps*(jcenter-1)+1,iatps*jcenter
+                  x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*scr(ifut)*scr(ifut)*omp(ifut)
+                end do
+              end do
+              s0(mu,nu)=x
+              s0(nu,mu)=x
             end do
-           end do
-           s0(mu,nu)=x
-           s0(nu,mu)=x
-         enddo
-        enddo
+          end do
         end if
 
-c make SAA1/2
+!! make SAA1/2 !!
         call build_Smp(igr,S0,Sm,Splus,0)
 
-c tranform block S with P0
+!! transform block S with P0 !!
         do i=1,igr
-         do j=1,igr
-         pp0(i,j)=pk(i,j)
-         end do
-        end do
-       call to_lowdin_basis(igr,Splus,pp0)
-       call diagonalize(igr,igr,pp0,C0,0)
-       call to_AO_basis(igr,igr,Sm,C0)
-
-C But max number of effaos in one center is nocc
-        i=1
-        do while(pp0(i,i).ge.xmaxocc.and.i.le.igr) 
-         imaxo=i
-         i=i+1
-        end do
-        xmaxo=0.0d0
-        do i=1,igr  
-         xmaxo=xmaxo+pp0(i,i)
-        end do
-c
-        xx0=0.0d0
-        xx1=0.0d0
-        do icenter=1,nfrlist(iicenter)
-         xx1=xx0+qat(ifrlist(icenter,iicenter),1)
-         do jcenter=1,nfrlist(iicenter)
-          xx0=xx0+op(ifrlist(icenter,iicenter),ifrlist(jcenter,iicenter))
-         end do
-        end do
-        write(*,*) '                  '
-        write(*,'(a,i4,a)') ' ** FRAGMENT ',iicenter,' ** '
-        write(*,*) '                  '
-
-        write(*,'(a29,i3,f10.5)') ' Net occupation for fragment ',iicenter, xmaxo
-        if(icase.eq.0) then
-        write(*,'(a30,f8.4)') ' Deviation from net population ', xmaxo-xx0 
-        end if
-        write(*,'(a23,f6.4)') ' Net occupation using >',xmaxocc
-        write(*,60) (pp0(mu,mu),mu=1,imaxo)
-60      format(7h OCCUP.   ,8F9.4)
-
-
-c ...calculate gross occupations from orbitals!!!
-
-        xx0=0.0d0
-        do i=1,imaxo
-         xxx=0.0d0
-         xxy=0.0d0
-         do icenter=1,nfrlist(iicenter)
-          jcenter=ifrlist(icenter,iicenter)
-          xx=0.0d0 
-          do j=1,igr                        
-           do k=1,igr
-            xx=xx+c0(k,i)*sat(k,j,jcenter)*c0(j,i)
-           end do
+          do j=1,igr
+            pp0(i,j)=pk(i,j)
           end do
-          xxx=xxx+xx
-         end do
-         xxx=xxx*pp0(i,i)
-         s0all(i)=xxx
-         xx0=xx0+xxx
         end do
-         
-        write(*,*) '                  '
-        write(*,'(a31,i3,f10.5)') ' Gross occupation for fragment ',iicenter, xx0
-        if(icase.eq.0) then
-        write(*,'(a32,f8.4)') ' Deviation from gross population ', xx0-xx1 
-        end if
-        write(*,60) (s0all(mu),mu=1,imaxo)
+        call to_lowdin_basis(igr,Splus,pp0)
+        call diagonalize(igr,igr,pp0,C0,0)
+        call to_AO_basis(igr,igr,Sm,C0)
 
+!! But max number of effaos in one center is nocc !!
+        i=1
+        do while(pp0(i,i).ge.xminocc.and.i.le.igr) 
+          imaxo=i
+          i=i+1
+        end do
+        xmaxo=ZERO
+        do i=1,igr  
+          xmaxo=xmaxo+pp0(i,i)
+        end do
+
+        xx0=ZERO
+        xx1=ZERO
+        do icenter=1,nfrlist(iicenter)
+          xx1=xx0+qat(ifrlist(icenter,iicenter),1)
+          do jcenter=1,nfrlist(iicenter)
+            xx0=xx0+op(ifrlist(icenter,iicenter),ifrlist(jcenter,iicenter))
+          end do
+        end do
+        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
+        write(*,*) " "
+        if(icase.eq.0) write(*,'(2x,a29,x,f8.4)') "Deviation from net population",xmaxo-xx0 !! ITS NEVER ZERO, PEDRO RECHECK main.f AND MODIFY IN GENERAL !!
+        write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",iicenter,xmaxo
+        write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
+        write(*,60) (pp0(mu,mu),mu=1,imaxo)
+        write(*,*) " "
+
+!! ...calculate gross occupations from orbitals !!
+
+        xx0=ZERO
+        do i=1,imaxo
+          xxx=ZERO
+          xxy=ZERO
+          do icenter=1,nfrlist(iicenter)
+            jcenter=ifrlist(icenter,iicenter)
+            xx=ZERO
+            do j=1,igr                        
+              do k=1,igr
+                xx=xx+c0(k,i)*sat(k,j,jcenter)*c0(j,i)
+              end do
+            end do
+            xxx=xxx+xx
+          end do
+          xxx=xxx*pp0(i,i)
+          s0all(i)=xxx
+          xx0=xx0+xxx
+        end do
+        write(*,*) " "
+        write(*,'(2x,a29,x,i3,f10.5)') "Gross occupation for fragment",iicenter,xx0
+        if(icase.eq.0) write(*,'(2x,a31,x,f8.4)') "Deviation from gross population",xx0-xx1
+        write(*,60) (s0all(mu),mu=1,imaxo)
+        write(*,*) " "
 
         do k=1,imaxo           
-         do mu=1,igr                       
-           p0(mu,k)=c0(mu,k)
-         end do
-         p0net(k,iicenter)=pp0(k,k)
-         p0gro(k,iicenter)=s0all(k)
+          do mu=1,igr                       
+            p0(mu,k)=c0(mu,k)
+          end do
+          p0net(k,iicenter)=pp0(k,k)
+          p0gro(k,iicenter)=s0all(k)
         end do
         ip0(iicenter)=imaxo
 
-c  write cube file
+!!  write cube file !!
         if(icube.eq.1) call cubegen4(iicenter,icase)
 
-c end outer loop over fragments
-        end do
-       deallocate (scr,s0, sm, c0,splus,pp0, s0all,is0all)
+!! end outer loop over fragments !!
+      end do
 
-         end
+!! DEALLOCATING !!
+      DEALLOCATE(scr,s0,sm,c0,splus,pp0,s0all,is0all)
+
+!! PRINTING FORMATS !!
+60    FORMAT(8h  OCCUP. ,8f9.4)
+
+      end
+
+!! ****** !!
 
       subroutine eos_analysis(idobeta,icase,thres)
+
       implicit real*8(a-h,o-z)
+      
       include 'parameter.h'
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
+      
+      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /atlist/iatlist(maxat),icuat
       common /iops/iopt(100)
@@ -198,60 +213,61 @@ c end outer loop over fragments
       dimension occup2(igr), occupg(igr), errnet(maxat)
       dimension qdev(maxat)
 
-      ieffthr= Iopt(24) 
-      icorr=Iopt(26) 
+      ieffthr = Iopt(24) 
+      icorr   = Iopt(26) 
 
       if(idobeta.eq.0.and.icase.eq.2) then
-       write(*,*)'  '
-       write(*,*)' SKIPPING EFFAOs FOR BETA ELECTRONS'
-       write(*,*)'  '
-       lorb(2)=lorb(1)
-       do i=1,lorb(2)
-         occup(i,2)=occup(i,1) 
-         iorbat(i,2)= iorbat(i,1)
-       end do  
-       do i=1,icufr
-        errnet(i)=errsav(i)
-        effpop(i)=effpop(i)*2.0d0
-       end do
-       go to 99
+        write(*,*) " "
+        write(*,*) " SKIPPING EFFAOs FOR BETA ELECTRONS "
+        write(*,*) " "
+        lorb(2)=lorb(1)
+        do i=1,lorb(2)
+          occup(i,2)=occup(i,1) 
+          iorbat(i,2)= iorbat(i,1)
+        end do  
+        do i=1,icufr
+          errnet(i)=errsav(i)
+          effpop(i)=effpop(i)*2.0d0
+        end do
+        go to 99
       else if(icase.eq.2.and.nb.eq.0) then
-       write(*,*)'  '
-       write(*,*)' CALCULATION HAS NO BETA ELECTRONS'
-       write(*,*)'  '
-       do i=1,icufr
-        elec(i)=0.0d0
-       end do
-       go to 99
+        write(*,*) " "
+        write(*,*) " CALCULATION HAS NO BETA ELECTRONS "
+        write(*,*) " "
+        do i=1,icufr
+          elec(i)=ZERO
+        end do
+        go to 99
       end if
 
       iorb=0
       do i=1,icufr
-       elec(i)=0.0d0
-       do k=1,ip0(i)
-        iorb=iorb+1
-        occup(iorb,icase)=p0net(k,i)
-        iorbat(iorb,icase)=i
-       end do 
+        elec(i)=ZERO
+        do k=1,ip0(i)
+          iorb=iorb+1
+          occup(iorb,icase)=p0net(k,i)
+          iorbat(iorb,icase)=i
+        end do 
       end do  
-      write(*,*)'  '
-      write(*,*) ' Total number of eff-AO-s for analysis: ',iorb
+      write(*,*) " "
+      write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",iorb
+
       lorb(icase)=iorb
 
       do i=1,iorb-1
-       do j=i+1,iorb
-        if (occup(j,icase).gt.occup(i,icase))then
-         xkk=occup(j,icase)
-         occup(j,icase)=occup(i,icase)
-         occup(i,icase)=xkk
-         xkk=occupg(j)
-         occupg(j)=occupg(i)
-         occupg(i)=xkk
-         ikk=iorbat(j,icase)
-         iorbat(j,icase)=iorbat(i,icase)
-         iorbat(i,icase)=ikk 
-        end if
-       end do  
+        do j=i+1,iorb
+          if (occup(j,icase).gt.occup(i,icase))then
+            xkk=occup(j,icase)
+            occup(j,icase)=occup(i,icase)
+            occup(i,icase)=xkk
+            xkk=occupg(j)
+            occupg(j)=occupg(i)
+            occupg(i)=xkk
+            ikk=iorbat(j,icase)
+            iorbat(j,icase)=iorbat(i,icase)
+            iorbat(i,icase)=ikk 
+          end if
+        end do  
       end do 
 
       k=0
@@ -261,180 +277,484 @@ c end outer loop over fragments
       if(dabs(occup(nnn,icase)-occup(nnn+k,icase)).lt.thres) go to 333
       k=k-1
       if(k.eq.0) then
-       write(*,*) ' EOS: Unambiguous integer electron assignation'
-       do i=1,iorb
-        if(i.le.nnn) then
-        occup2(i)=1.0d0
-        else
-        occup2(i)=0.0d0
-        end if
-       end do 
+        write(*,*) " EOS: Unambiguous integer electron assignation "
+        do i=1,iorb
+          if(i.le.nnn) then
+            occup2(i)=ONE
+          else
+            occup2(i)=ZERO
+          end if
+        end do 
       else
-       write(*,*) ' ******************************************'
-       write(*,*) ' EOS: Warning, pseudo-degeneracies detected'
-       write(*,*) ' ******************************************'
-       kk=0
-334    kk=kk+1
-       if(dabs(occup(nnn,icase)-occup(nnn-kk,icase)).lt.thres) go to 334
-       kk=kk-1
-       frac=float(kk+1)/float(kk+k+1)
-       write(*,'(a14,i4,a16,i4,a32)') ' Distributing ',kk+1,' electrons 
-     +over ',kk+k+1,' pseudodegenerate atomic orbitals'
-       do i=1,iorb
-        if(i.lt.nnn-kk) then
-         occup2(i)=1.0d0
-        else if(i.gt.nnn+k) then
-         occup2(i)=0.0d0
-        else
-         occup2(i)=frac 
-        end if
-       end do 
+        write(*,*) ' ******************************************'
+        write(*,*) ' EOS: Warning, pseudo-degeneracies detected'
+        write(*,*) ' ******************************************'
+        kk=0
+334     kk=kk+1
+        if(dabs(occup(nnn,icase)-occup(nnn-kk,icase)).lt.thres) go to 334
+        kk=kk-1
+        frac=float(kk+1)/float(kk+k+1)
+        write(*,'(2x,a12,x,i4,x,a14,x,i4,x,a30)') "Distributing",kk+1,"electrons over",kk+k+1,
+     +  "pseudodegenerate atomic orbitals"
+        do i=1,iorb
+          if(i.lt.nnn-kk) then
+            occup2(i)=ONE
+          else if(i.gt.nnn+k) then
+            occup2(i)=ZERO
+          else
+            occup2(i)=frac 
+          end if
+        end do 
       end if
      
       do i=1,iorb
-       elec(iorbat(i,icase))=elec(iorbat(i,icase))+occup2(i)
+        elec(iorbat(i,icase))=elec(iorbat(i,icase))+occup2(i)
       end do
 
+!! PRINTING INFO !!
       if(icase.eq.1) then
-       write(*,*)' EOS ANALYSIS  FOR ALPHA ELECTRONS'
-       do i=1,icuat
-        errsav(i)=errnet(i)
-        effpop(i)=0.0d0
-       end do
+        write(*,*) " "
+        write(*,*) " ---------------------------------- "
+        write(*,*) "  EOS ANALYSIS FOR ALPHA ELECTRONS  "
+        write(*,*) " ---------------------------------- "
+        do i=1,icuat
+          errsav(i)=errnet(i)
+          effpop(i)=ZERO
+        end do
       else if (icase.eq.2) then
-       write(*,*)' EOS ANALYSIS  FOR BETA ELECTRONS'
+        write(*,*) " "
+        write(*,*) " --------------------------------- "
+        write(*,*) "  EOS ANALYSIS FOR BETA ELECTRONS  "
+        write(*,*) " --------------------------------- "
       end if
+      write(*,*) " "
+      write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
+      write(*,*) " ---------------------------------------- "
 
-      print *,'  Fragm   Elect  Last occ. First unocc '
-      print *,' -------------------------------------'
-
-       xlast=1.0d0
-       ilast=0
-       do i=1,icufr
+      xlast=ONE
+      ilast=0
+      do i=1,icufr
         nn=int(elec(i))
         if(elec(i)-nn.gt.thresh) nn=nn+1
         if(nn+1.gt.ip0(i)) then 
-         write(*,10) i,elec(i), p0net(nn,i)
+          write(*,10) i,elec(i),p0net(nn,i)
         else
-         if(nn.ne.0) then
-          write(*,15) i,elec(i), p0net(nn,i),p0net(nn+1,i)
-         else
-          write(*,15) i,elec(i), 0.0d0 , p0net(nn+1,i)
-         end if
+          if(nn.ne.0) then
+            write(*,15) i,elec(i),p0net(nn,i),p0net(nn+1,i)
+          else
+            write(*,15) i,elec(i),ZERO,p0net(nn+1,i)
+          end if
         end if
         if(nn.ne.0) then
-         if(p0net(nn,i).lt.xlast) then
-          xlast= p0net(nn,i)
-          ilast=i
-         end if
+          if(p0net(nn,i).lt.xlast) then
+            xlast=p0net(nn,i)
+            ilast=i
+          end if
         end if
         do j=1,nn
-         effpop(i)= effpop(i) + p0net(j,i)
+          effpop(i)=effpop(i)+p0net(j,i)
         end do
-       end do 
+      end do 
 
-       xfirst=0.0d0
-       do i=1,icufr
-        if(i.ne.ilast) then
-        nn=int(elec(i))
-        if(elec(i)-nn.gt.thresh) nn=nn+1
-        if(nn+1.ne.0.and.p0net(nn+1,i).gt.xfirst) xfirst= p0net(nn+1,i)
-        end if
-       end do 
-
-      print *,' -------------------------------------'
-      confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
-      write(*,'(a30,f8.3)') 'RELIABILITY INDEX R(%) =',confi
-
-
-c PSS quadratic deviation of the fractional and integer occupations as new fragment indicator
-      print *
-      print *,'(warning in case of fractional occupations)'
-      print *,'  Fragm    Quad Dev '
-      print *,' -------------------'
+      xfirst=ZERO
       do i=1,icufr
-       nn=int(elec(i))
-       if(elec(i)-nn.gt.thresh) nn=nn+1
-       qdev(i)=0.0d0
-       do k=1,ip0(i)
-        xx=p0gro(k,i)
-        if(k.le.nn) xx=1.0d0-p0gro(k,i)
-        qdev(i)=qdev(i)+xx*xx
-c        write(*,*) 'pollas',i,ip0(i),p0gro(k,i),xx
-       end do
-       qdev(i)=sqrt(qdev(i))
-       write(*,'(I4,5x,f8.4)') i, qdev(i)
+        if(i.ne.ilast) then
+          nn=int(elec(i))
+          if(elec(i)-nn.gt.thresh) nn=nn+1
+          if(nn+1.ne.0.and.p0net(nn+1,i).gt.xfirst) xfirst=p0net(nn+1,i)
+        end if
       end do
-      print *,' -------------------'
-C PSS 
+      write(*,*) " ---------------------------------------- "
+
+      confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
+      write(*,'(3x,a24,x,f7.3)') "RELIABILITY INDEX R(%) =",confi
       if(icase.eq.1) confi0=confi
 
-99     continue
-       zztot=0.0d0
-       do i=1,icufr
+99    continue
+
+      zztot=ZERO
+      do i=1,icufr
         if(icase.eq.1) then
-         zzn=0.0d0
-         do j=1,nfrlist(i)
-          zzn=zzn+zn(ifrlist(j,i))
-         end do
-         oxi(i)=zzn-elec(i)
+          zzn=ZERO
+          do j=1,nfrlist(i)
+            zzn=zzn+zn(ifrlist(j,i))
+          end do
+          oxi(i)=zzn-elec(i)
         else
-         oxi(i)=oxi(i)-elec(i)
-         zztot=zztot+oxi(i)
+          oxi(i)=oxi(i)-elec(i)
+          zztot=zztot+oxi(i)
         end if
-       end do
+      end do
 
-       if(icase.eq.2) then
-      print *,'  '
-      print *,'  '
-      print *,'  FRAGMENT  OXIDATION STATES '
-      print *,'  '
-      print *,'  Frag   Oxidation State  '
-      print *,' -------------------------'
-       do i=1,icufr
-        write(*,20) i,oxi(i)
-       end do 
-      print *,' -------------------------'
-      write(*,'(a7,f5.1)') '   Sum ', zztot 
-      print *,'  '
-      confi=min(confi,confi0)
-      write(*,'(a39,f8.3)') ' OVERALL RELIABILITY INDEX R(%) =',confi
+!! FINAL PRINTING !!
+      if(icase.eq.2) then
+        write(*,*) " "
+        write(*,*) " --------------------------- "
+        write(*,*) "  FRAGMENT OXIDATION STATES  "
+        write(*,*) " --------------------------- "
+        write(*,*) " "
+        write(*,*) "  Frag.  Oxidation State  "
+        write(*,*) " ------------------------ "
+        do ifrg=1,icufr
+          write(*,20) ifrg,oxi(ifrg)
+        end do 
+        write(*,*) " ------------------------ "
+        write(*,'(3x,a4,x,f4.1)') "Sum:",zztot 
+        write(*,*) " "
 
-c Ignore this part for now
-      if(1.eq.0) then
-      print *,'  '
-      print *,'  '
-      print *,'  FRAGMENT  EFFECTIVE CHARGES AND POPULATIONS '
-      print *,'  '
-      print *,'  Frag     Charge     Population  '  
-      print *,' -------------------------------'
-      zztot=0.0d0
-      do i=1,icufr
-       zzn=0.0d0
-       do j=1,nfrlist(i)
-        zzn=zzn+zn(ifrlist(j,i))
-       end do
-       write(*,25) i,zzn-effpop(i),effpop(i)
-      end do 
-      print *,' -------------------------'
-      end if
-c
-
+!! TO BE CHANGED !!
+        confi2=min(confi,confi0)
+        write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
       end if
 
-      do i=1,icufr
-       zzn=0.0d0
-       do j=1,nfrlist(i)
-       end do
-      end do 
+!! PRINTING FORMATS !!
+10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3) !tocheck!
+15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
+20    FORMAT(3x,i3,6x,f8.2)
 
-10    format(i4,2x,f6.2,f12.3,'    < thresh',2f12.3)
-15    format(i4,2x,f6.2,2f12.3)
-20    format(i4,2x,f10.2)
-25    format(i4,2x,f10.4,2x,f10.4)
       end 
 
+!! ****** !!
 
+      subroutine ueffaolow_frag(icase)
+
+      use basis_set
+      use ao_matrices
+
+      implicit real*8(A-H,O-Z)
+
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(100)
+      common /atlist/iatlist(maxat),icuat
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
+      common /nao/unao(nmax,nmax),ssnao(nmax,nmax)
+
+      dimension iao_frag(nmax)
+
+      character*(25) nameout
+
+      allocatable :: s0(:,:), sm(:,:), c0(:,:), splus(:,:), pp0(:,:)
+      allocatable :: s0all(:),is0all(:),efo(:,:),efo2(:)
+
+      ndim    = igr
+      icube   = Iopt(13)
+      ieffthr = Iopt(24)
+      imulli  = Iopt(5)
+
+      iefo=0
+      xminocc=REAL(ieffthr)/1000.0d0
+
+      ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
+      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim),is0all(ndim))
+      ALLOCATE(efo(ndim,ndim),efo2(ndim))
+
+c ao to frag map
+      iao_frag=0
+      do ifrag=1,icufr
+        do icenter=1,nfrlist(ifrag)
+          jcenter=ifrlist(icenter,ifrag)
+          do mu=llim(jcenter),iulim(jcenter)
+            iao_frag(mu)=ifrag
+          end do
+        end do
+      end do
+
+c initializing
+      if(icase.eq.0) then
+        s0=p
+      else if (icase.eq.1) then
+        s0=pa
+      else if (icase.eq.2) then
+        s0=pb
+      end if
+
+      if(imulli.eq.4) then
+c use NA0 to AO matrix
+c warning, transpose...nonsymmetric
+        do i=1,igr
+          do j=1,igr
+            splus(i,j)=ssnao(j,i)
+            sm(i,j)=unao(i,j)
+          end do
+        end do
+      else
+        splus=s12p
+        sm=s12m
+      end if
+      if(icase.eq.1) then
+
+!! TO PRINT ONLY ONCE !!
+        if(imulli.eq.4) then
+          write(*,*) " "
+          write(*,*) " ----------------------------- "
+          write(*,*) "  DOING EFFAO NAO FORMULATION  "
+          write(*,*) " ----------------------------- "
+          write(*,*) " "
+        else
+          write(*,*) " "
+          write(*,*) " -------------------------------- "
+          write(*,*) "  DOING EFFAO LOWDIN FORMULATION  "
+          write(*,*) " -------------------------------- "
+        end if
+        write(*,*) " "
+        write(*,*) " ------------------------------- "
+        write(*,*) "  EFFAOs FROM THE ALPHA DENSITY  "
+        write(*,*) " ------------------------------- "
+      else if(icase.eq.2) then
+        write(*,*) " "
+        write(*,*) " ------------------------------ "
+        write(*,*) "  EFFAOs FROM THE BETA DENSITY  "
+        write(*,*) " ------------------------------ "
+      end if
+      write(*,*) " "
+     
+c tranform P with Splus
+C will back trasnform effaos to ao basis later...then expanded in whole basis functions
+      call to_lowdin_basis(igr,splus,s0)
+
+C LOOP OVER FRAGMENTS
+c easiest way to avois redordering is to perform nat diagonaliztions
+c jocc will control the total number of efos to process
+      jocc=0
+      do ifrag=1,icufr
+c Block diagonal P
+c clean auxiliary pp0 mat
+        pp0=0.0d0
+        do mu=1,igr
+          do nu=1,igr
+            if(iao_frag(mu).eq.ifrag.and.iao_frag(nu).eq.ifrag) pp0(mu,nu)=s0(mu,nu)
+          end do
+        end do
+
+        call diagonalize(igr,igr,pp0,C0,0)
+c backtrasnform. eff.aos expanded over the full basis set
+        call to_AO_basis(igr,igr,sm,C0)
+
+c max number of effaos
+        imaxeff=0
+        do i=1,igr
+          if(iao_frag(i).eq.ifrag) imaxeff=imaxeff+1
+        end do
+
+c actual number of effaos
+        xmaxo=ZERO
+        imaxo=0
+        i=1
+        do while(pp0(i,i).ge.xminocc.and.i.lt.imaxeff) 
+          xmaxo=xmaxo+pp0(i,i)
+          imaxo=i
+          i=i+1
+        end do
+
+!! PRINTING !!
+        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
+        write(*,*) " "
+        write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",ifrag,xmaxo
+        write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
+        write(*,60) (pp0(mu,mu),mu=1,imaxo)
+        write(*,*) " "
+
+c saving efo info for fragment
+c saving all efos and occupations in efo matrix
+        do k=1,imaxo           
+          iefo=iefo+1
+          do mu=1,igr                       
+            p0(mu,k)=c0(mu,k)
+            efo(mu,iefo)=c0(mu,k)
+          end do
+          p0net(k,ifrag)=pp0(k,k)
+          p0gro(k,ifrag)=pp0(k,k)
+          efo2(iefo)=pp0(k,k)
+        end do
+        ip0(ifrag)=imaxo
+
+c OUTPUT ORBITALS FOR VISUALIZATION
+c  write cube file
+        if(icube.eq.1) call cubegen4(ifrag,icase)
+
+c end loop over fragments
+      end do
+
+!! MG: THIS DESERVES BETTER (TO DO) !!
+c print out efo matrix
+      !write(*,*) 'printing ',iefo,' efos'
+      ival=iefo*igr
+      nameout='efo_occ.dat'
+      nameout=adjustl(nameout)
+      if(icase.eq.1) then
+        open(unit=44,file=nameout) 
+        write(44,'(A49,I12)') "Alpha Orbital Energies                     R   N=",iefo
+        write(44,'(5ES16.8)') (efo2(i),i=1,iefo)
+c
+        nameout='efo_coeff.dat'
+        nameout=adjustl(nameout)
+        open(unit=45,file=nameout) 
+        write(45,'(A49,I12)') "Alpha MO coefficients                      R   N=",ival
+        write(45,'(5ES16.8)') ((efo(i,j),i=1,igr),j=1,iefo)
+      else
+        write(44,'(A49,I12)') "Beta Orbital Energies                      R   N=",iefo
+        write(44,'(5ES16.8)') (efo2(i),i=1,iefo)
+        write(45,'(A49,I12)') "Beta MO coefficients                       R   N=",ival
+        write(45,'(5ES16.8)') ((efo(i,j),i=1,igr),j=1,iefo)
+      end if
+      if(icase.eq.2) then
+        close(44)
+        close(45)
+      end if
+
+!! DEALLOCATING !!
+      DEALLOCATE(efo,efo2)
+      DEALLOCATE(s0,sm,c0,splus,pp0,s0all,is0all)
+
+!! PRINTING FORMATS !!
+60    FORMAT(8h  OCCUP. ,8f9.4)
+
+      end
+
+!! ****** !!
+
+      subroutine ueffaomull_frag(icase)
+
+      use basis_set
+      use ao_matrices
+
+      implicit real*8(A-H,O-Z)
+
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(100)
+      common /atlist/iatlist(maxat),icuat
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
+      common  /filename/name0
+
+      character*(60) name0,name
+      character*(80) line  
+
+      dimension iao_frag(nmax)
+
+      allocatable :: s0(:,:),sm(:,:),c0(:,:),splus(:,:),pp0(:,:)
+      allocatable :: s0all(:),is0all(:),pk(:,:)
+
+      ndim    = igr
+      icube   = Iopt(13)
+      ieffthr = Iopt(24)
+
+      xminocc=real(ieffthr)/1000.0d0
+
+      ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
+      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim),is0all(ndim),pk(ndim,ndim)) 
+
+!! INITIALIZING !!
+      if(icase.eq.0) then
+        pk=p
+      else if(icase.eq.1) then
+        write(*,*) " "
+        write(*,*) " ---------------------------------- "
+        write(*,*) "  DOING EFFAO MULLIKEN FORMULATION  "
+        write(*,*) " ---------------------------------- "
+        write(*,*) " "
+        write(*,*) " ------------------------------- "
+        write(*,*) "  EFFAOs FROM THE ALPHA DENSITY  "
+        write(*,*) " ------------------------------- "
+        pk=pa
+      else if(icase.eq.2) then
+        write(*,*) " ------------------------------ "
+        write(*,*) "  EFFAOs FROM THE BETA DENSITY  "
+        write(*,*) " ------------------------------ "
+        pk=pb
+      end if
+      write(*,*) " "
+
+c ao to frag map
+      iao_frag=0
+      do ifrag=1,icufr
+        do icenter=1,nfrlist(ifrag)
+          jcenter=ifrlist(icenter,ifrag)
+          do mu=llim(jcenter),iulim(jcenter)
+            iao_frag(mu)=ifrag
+          end do
+        end do
+      end do
+
+C LOOP OVER FRAGMENTS
+c easiest way to avois redordering is to perform nat diagonaliztions
+c jocc will control the total number of efos to process
+      jocc=0
+      do ifrag=1,icufr
+c Making block-diagonal S  and P matrix (AO)
+        pp0=ZERO
+        s0=ZERO
+        do mu=1,igr
+          do nu=1,igr
+            if(iao_frag(mu).eq.ifrag.and.iao_frag(nu).eq.ifrag) then 
+              pp0(mu,nu)=pk(mu,nu)
+              s0(mu,nu)=s(mu,nu)
+            end if
+          end do
+        end do
+c make S0^1/2
+        call build_Smp(igr,s0,Sm,Splus,0)
+c tranform blovck P0 with Splus
+        call to_lowdin_basis(igr,Splus,pp0)
+        call diagonalize(igr,igr,pp0,C0,0)
+c backtrasnform. eff.aos expanded over the full basis set
+        call to_AO_basis(igr,igr,Sm,C0)
+c max number of effaos
+        imaxeff=0
+        do i=1,igr
+          if(iao_frag(i).eq.ifrag) imaxeff=imaxeff+1
+        end do
+c actual number of effaos
+        xmaxo=ZERO
+        imaxo=0
+        i=1
+        do while(pp0(i,i).ge.xminocc.and.i.lt.imaxeff) 
+          xmaxo=xmaxo+pp0(i,i)
+          imaxo=i
+          i=i+1
+        end do
+
+!! PRINTING !!
+        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
+        write(*,*) " "
+        write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",ifrag,xmaxo
+        write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
+        write(*,60) (pp0(mu,mu),mu=1,imaxo)
+        write(*,*) " "
+
+c saving efo info for fragment
+        do k=1,imaxo           
+          do mu=1,igr                       
+            p0(mu,k)=c0(mu,k)
+          end do
+          p0net(k,ifrag)=pp0(k,k)
+          p0gro(k,ifrag)=pp0(k,k)
+        end do
+        ip0(ifrag)=imaxo
+
+c OUTPUT ORBITALS FOR VISUALIZATION
+c  write cube file
+        if(icube.eq.1) call cubegen4(ifrag,icase)
+
+c end loop over fragments
+      end do
+
+!! DEALLOCATING !!
+      DEALLOCATE(s0, sm, c0,splus,pp0, s0all,is0all,pk)
+
+!! PRINTING FORMATS !!
+60    FORMAT(8h  OCCUP. ,8f9.4)
+
+      end
+
+!! ****** !!
+!! MG: NOT TOUCHED FROM HERE !!
+!! ****** !!
 
       subroutine uefomo(itotps,ndim,omp,chp,sat,wp,omp2,icase)
       use integration_grid
@@ -642,352 +962,8 @@ c end outer loop over fragments
        deallocate (cc0,c0,caux,pp0,s0all,s0,scr)
 
          end
-c                                                                      
-      subroutine ueffaolow_frag(icase)
-      use basis_set
-      use ao_matrices 
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
-      common /atlist/iatlist(maxat),icuat
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
-      common/nao/unao(nmax,nmax),ssnao(nmax,nmax)
-      dimension iao_frag(nmax)
-      character*(5) key
-      character*(25) nameout
+c                              
 
-      allocatable s0(:,:), sm(:,:), c0(:,:), splus(:,:), pp0(:,:)
-      allocatable s0all(:),is0all(:),efo(:,:),efo2(:)
-      ndim=igr
-
-      allocate (s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
-      allocate (c0(ndim,ndim), pp0(ndim,ndim), is0all(ndim))
-
-      allocate (efo(ndim,ndim),efo2(ndim))
-
-      icube=Iopt(13)
-      ieffthr  = Iopt(24)
-      imulli = iopt(5) 
-
-      xmaxocc=real(ieffthr)/1000.0d0
-      iefo=0
-
-      key=" "
-      if (icase.eq.1) then
-       key="ALPHA"
-      else if(icase.eq.2) then
-        key="BETA "
-      end if
-
-c ao to frag map
-      iao_frag=0
-      do ifrag=1,icufr
-       do icenter=1,nfrlist(ifrag)
-        jcenter=ifrlist(icenter,ifrag)
-        do mu=llim(jcenter),iulim(jcenter)
-         iao_frag(mu)=ifrag
-        end do
-       end do
-      end do
-c initializing
-      if (icase.eq.0) then
-       s0=p
-      else if (icase.eq.1) then
-       s0=pa
-      else if (icase.eq.2) then
-       s0=pb
-      end if
-
-      if(imulli.eq.4) then
-c use NA0 to AO matrix
-c warning, transpose...nonsymmetric
-       print *,' '
-       print *,' ------------------------'
-       print *,'    DOING  NAO   EFFAO '
-       print *,' ------------------------'
-       do i=1,igr
-        do j=1,igr
-         splus(i,j)=ssnao(j,i)
-         sm(i,j)=unao(i,j)
-        end do
-       end do
-      else
-       print *,' ------------------------'
-       print *,'  DOING  LOWDIN    EFFAO '
-       print *,' ------------------------'
-       splus=s12p
-       sm=s12m
-      end if
-
-      print *,' '
-      if(icase.ne.0) print *,'     ',key,'  PART  '
-c tranform P with Splus
-C will back trasnform effaos to ao basis later...then expanded in whole basis functions
-      call to_lowdin_basis(igr,splus,s0)
-
-C LOOP OVER FRAGMENTS
-c easiest way to avois redordering is to perform nat diagonaliztions
-c jocc will control the total number of efos to process
-      jocc=0
-      do ifrag=1,icufr
-c Block diagonal P
-c clean auxiliary pp0 mat
-       pp0=0.0d0
-       do mu=1,igr
-        do nu=1,igr
-         if(iao_frag(mu).eq.ifrag.and.iao_frag(nu).eq.ifrag) pp0(mu,nu)=s0(mu,nu)
-        end do
-       end do
-
-       call diagonalize(igr,igr,pp0,C0,0)
-c backtrasnform. eff.aos expanded over the full basis set
-       call to_AO_basis(igr,igr,sm,C0)
-
-c max number of effaos
-       imaxeff=0
-       do i=1,igr
-        if(iao_frag(i).eq.ifrag) imaxeff=imaxeff+1
-       end do
-c actual number of effaos
-       xmaxo=0.0d0
-       imaxo=0
-       i=1
-       do while(pp0(i,i).ge.xmaxocc.and.i.lt.imaxeff) 
-         xmaxo=xmaxo+pp0(i,i)
-         imaxo=i
-         i=i+1
-       end do
-c printing
-       write(*,*) '                  '
-       write(*,'(a,i4,a)') ' ** FRAGMENT ',ifrag,' ** '
-       write(*,*) '                  '
-
-       write(*,'(a29,i3,f10.5)') ' Net occupation for fragment ',ifrag, xmaxo
-c        if(icase.eq.0) then
-c        write(*,'(a30,f8.4)') ' Deviation from net population ', xmaxo -op(icenter,icenter)
-c        end if
-       write(*,'(a23,f6.4)') ' Net occupation using >',xmaxocc
-       write(*,60) (pp0(mu,mu),mu=1,imaxo)
-60     format(1x,7h OCCUP.   ,8F9.4)
-
-c saving efo info for fragment
-c saving all efos and occupations in efo matrix
-        do k=1,imaxo           
-         iefo=iefo+1
-         do mu=1,igr                       
-           p0(mu,k)=c0(mu,k)
-           efo(mu,iefo)=c0(mu,k)
-         end do
-         p0net(k,ifrag)=pp0(k,k)
-         p0gro(k,ifrag)=pp0(k,k)
-         efo2(iefo)=pp0(k,k)
-        end do
-        ip0(ifrag)=imaxo
-
-c OUTPUT ORBITALS FOR VISUALIZATION
-c  write cube file
-        if(icube.eq.1) call cubegen4(ifrag,icase)
-
-c end loop over fragments
-      end do
-c print out efo matrix
-      write(*,*) 'printing ',iefo,' efos'
-      ival=iefo*igr
-      nameout='efo_occ.dat'
-      nameout=adjustl(nameout)
-      if(icase.eq.1) then
-       open(unit=44,file=nameout) 
-       write(44,'(A49,I12)') "Alpha Orbital Energies                     R   N=",iefo
-       write(44,'(5ES16.8)') (efo2(i),i=1,iefo)
-c
-       nameout='efo_coeff.dat'
-       nameout=adjustl(nameout)
-       open(unit=45,file=nameout) 
-       write(45,'(A49,I12)') "Alpha MO coefficients                      R   N=",ival
-       write(45,'(5ES16.8)') ((efo(i,j),i=1,igr),j=1,iefo)
-      else
-       write(44,'(A49,I12)') "Beta Orbital Energies                      R   N=",iefo
-       write(44,'(5ES16.8)') (efo2(i),i=1,iefo)
-       write(45,'(A49,I12)') "Beta MO coefficients                       R   N=",ival
-       write(45,'(5ES16.8)') ((efo(i,j),i=1,igr),j=1,iefo)
-      end if
-      if(icase.eq.2) then
-       close(44)
-       close(45)
-      end if
-      deallocate (efo,efo2)
-
-
-
-       deallocate (s0, sm, c0,splus,pp0, s0all,is0all)
-
-        return
-      end
-      subroutine ueffaomull_frag(icase)
-      use basis_set
-      use ao_matrices 
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
-      common /atlist/iatlist(maxat),icuat
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
-      dimension iao_frag(nmax)
-      common /filename/name0
-      character*(5) key
-      character*(60) name0,name
-      character*(80) line  
-
-      allocatable s0(:,:), sm(:,:), c0(:,:), splus(:,:), pp0(:,:)
-      allocatable s0all(:),is0all(:),pk(:,:)
-      ndim=igr
-
-      allocate (s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
-      allocate (c0(ndim,ndim), pp0(ndim,ndim), is0all(ndim),pk(ndim,ndim)) 
-
-      icube=Iopt(13)
-      ieffthr  = Iopt(24)
-
-      xmaxocc=real(ieffthr)/1000.0d0
-
-c initializing
-      if (icase.eq.0) then
-       key=" "
-       pk=p
-      else if (icase.eq.1) then
-       key="ALPHA"
-       pk=pa
-      else if (icase.eq.2) then
-        key="BETA "
-       pk=pb
-      end if
-
-c ao to frag map
-      iao_frag=0
-      do ifrag=1,icufr
-       do icenter=1,nfrlist(ifrag)
-        jcenter=ifrlist(icenter,ifrag)
-        do mu=llim(jcenter),iulim(jcenter)
-         iao_frag(mu)=ifrag
-        end do
-       end do
-      end do
-
-      print *,' '
-      print *,' ------------------------'
-      print *,'  DOING  MULLIKEN  EFFAO '
-      print *,' ------------------------'
-      print *,' '
-      if(icase.ne.0) print *,'     ',key,'  PART  '
-!      if(icube.eq.1) then
-!       name=trim(name0)//"_efo.fchk"
-!       open(17,file=name,err=9999)
-!       rewind(15)
-!       read(15,'(a80)') line
-!       do while(index(line,"Alpha MO co").eq.0)
-!        read(15,'(a80)') line
-!        write(17,'(a80)') line
-!       end do
-!      end if
-
-
-C LOOP OVER FRAGMENTS
-c easiest way to avois redordering is to perform nat diagonaliztions
-c jocc will control the total number of efos to process
-      jocc=0
-      do ifrag=1,icufr
-c Making block-diagonal S  and P matrix (AO)
-       pp0=0.0d0
-       s0=0.0d0
-       do mu=1,igr
-        do nu=1,igr
-         if(iao_frag(mu).eq.ifrag.and.iao_frag(nu).eq.ifrag) then 
-          pp0(mu,nu)=pk(mu,nu)
-          s0(mu,nu)=s(mu,nu)
-         end if
-        end do
-       end do
-c make S0^1/2
-       call build_Smp(igr,s0,Sm,Splus,0)
-c tranform blovck P0 with Splus
-       call to_lowdin_basis(igr,Splus,pp0)
-       call diagonalize(igr,igr,pp0,C0,0)
-c backtrasnform. eff.aos expanded over the full basis set
-       call to_AO_basis(igr,igr,Sm,C0)
-c max number of effaos
-       imaxeff=0
-       do i=1,igr
-        if(iao_frag(i).eq.ifrag) imaxeff=imaxeff+1
-       end do
-c actual number of effaos
-       xmaxo=0.0d0
-       imaxo=0
-       i=1
-       do while(pp0(i,i).ge.xmaxocc.and.i.lt.imaxeff) 
-         xmaxo=xmaxo+pp0(i,i)
-         imaxo=i
-         i=i+1
-       end do
-c printing
-       write(*,*) '                  '
-       write(*,'(a,i4,a)') ' ** FRAGMENT ',ifrag,' ** '
-       write(*,*) '                  '
-
-       write(*,'(a29,i3,f10.5)') ' Net occupation for fragment ',ifrag, xmaxo
-c        if(icase.eq.0) then
-c        write(*,'(a30,f8.4)') ' Deviation from net population ', xmaxo -op(icenter,icenter)
-c        end if
-       write(*,'(a23,f6.4)') ' Net occupation using >',xmaxocc
-       write(*,60) (pp0(mu,mu),mu=1,imaxo)
-60     format(1x,7h OCCUP.   ,8F9.4)
-
-c saving efo info for fragment
-        do k=1,imaxo           
-         do mu=1,igr                       
-           p0(mu,k)=c0(mu,k)
-         end do
-         p0net(k,ifrag)=pp0(k,k)
-         p0gro(k,ifrag)=pp0(k,k)
-        end do
-        ip0(ifrag)=imaxo
-
-c OUTPUT ORBITALS FOR VISUALIZATION
-c  write cube file
-        if(icube.eq.1) then
-         call cubegen4(ifrag,icase)
-c         write(17,*)((p0(i,j),i=1,igr),j=1,imaxo)
-        end if
-
-c end loop over fragments
-      end do
-c check total numer of EFos printed
-c      if(icube.eq.1) then
-c       do while(index(line,"Orthonormal bas").eq.0)
-c        read(15,'(a80)') line
-c       end do
-c       do 
-c        write(17,'(a80)') line
-c        read(15,'(a80)') line
-c       end do
-c9999   continue
-c       do ifrag=1,nfrag
-c        ntot=ntot+ipo0(ifrag)
-c       end do
-c       rewind(17)
-c       read(17,'(a80)') line
-c       do while(index(line,"Alpha MO co").eq.0)
-c        read(17,'(a80)') line
-c       end do
-c       backspace(17)
-c       write(17,'(a21,22X,a6,i12)')"Alpha MO coefficients","R   N=",ntot
-c       close(17)
-c      end if
-      deallocate (s0, sm, c0,splus,pp0, s0all,is0all,pk)
-
-      end
 
 !!!
 !!! OLD VERSIONS
