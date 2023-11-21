@@ -10,7 +10,7 @@ cd ${TESTDIR}
 
 echo " "
 echo " RUNNING TEST CALCULATIONS FOR PGO COMPILATION (STEP 1) "
-for mol in C2H6-B3LYP FECO2-PBEPBE CH3F; do
+for mol in C2H6-B3LYP FeCO2-PBEPBE CH3F FeO4-2; do
   STAT=" PERFORMING CALCULATION FOR ${mol} "
   echo "${STAT}"
   /usr/bin/time -f " %E real,%U user,%S sys, %P CPU Percentage, %M Max Resident Set Size (Kb)" ${APOST} ${mol} > ${mol}.apost1
