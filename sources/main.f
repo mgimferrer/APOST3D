@@ -176,7 +176,7 @@ CCCCCCCCCCCCCCCCCCCCC
       open (15,file=name,err=9999)
 
 c choose density from fchk file
-      call readint("# METODE","DENS",ndens0,1,1)
+      call readint("# METHOD","DENS",ndens0,1,1)
       iopt(9) = ndens0
       
 C Processing FChk file
@@ -186,43 +186,43 @@ C Processing FChk file
       iwfn=0  
 
 c look for options      
-      call readchar("# METODE","WFN",iwfn)
-      call readchar("# METODE","ALLPOINTS",iallpo)
-      call readchar("# METODE","FULLPRECISION",iaccur)
+      call readchar("# METHOD","WFN",iwfn)
+      call readchar("# METHOD","ALLPOINTS",iallpo)
+      call readchar("# METHOD","FULLPRECISION",iaccur)
 
 C Atoms in molecules
-      call readchar("# METODE","MULLI",imulli)
-      call readchar("# METODE","LOWDIN",ilow)
+      call readchar("# METHOD","MULLI",imulli)
+      call readchar("# METHOD","LOWDIN",ilow)
       if(ilow.eq.1) imulli=2
-      call readchar("# METODE","LOWDIN-DAVIDSON",ilow)
+      call readchar("# METHOD","LOWDIN-DAVIDSON",ilow)
       if(ilow.eq.1) imulli=3
-      call readchar("# METODE","NAO-BASIS",ilow)
+      call readchar("# METHOD","NAO-BASIS",ilow)
       if(ilow.eq.1) imulli=4
-      call readchar("# METODE","LOWDIN-W",ilow)
+      call readchar("# METHOD","LOWDIN-W",ilow)
       if(ilow.eq.1) imulli=5
-      call readchar("# METODE","HIRSH",ihirsh)
-      call readchar("# METODE","HIRSH-IT",ihirsh0)
+      call readchar("# METHOD","HIRSH",ihirsh)
+      call readchar("# METHOD","HIRSH-IT",ihirsh0)
       if(ihirsh0.eq.1) ihirsh=2
-      call readchar("# METODE","BECKE-RHO",ibcp)
-      call readchar("# METODE","NEWBEC",inewbec)
-      call readchar("# METODE","TFVC",itfvc)
+      call readchar("# METHOD","BECKE-RHO",ibcp)
+      call readchar("# METHOD","NEWBEC",inewbec)
+      call readchar("# METHOD","TFVC",itfvc)
       if(itfvc.eq.1) then
         ibcp=1
         inewbec=1
         istiff=4
       end if
-      call readint("# METODE","STIFFNESS",istiff,4,1)
-      call readchar("# METODE","WMATRAD",iradmat)
-      call readchar("# METODE","RMATRAD",iradmat0)
+      call readint("# METHOD","STIFFNESS",istiff,4,1)
+      call readchar("# METHOD","WMATRAD",iradmat)
+      call readchar("# METHOD","RMATRAD",iradmat0)
       if(iradmat0.eq.1) iradmat=2
 
-      call readchar("# METODE","ERF_PROF",ierf)
-      call readreal("# METODE","ERF_PROF",aerf,6.266d0,1)
+      call readchar("# METHOD","ERF_PROF",ierf)
+      call readreal("# METHOD","ERF_PROF",aerf,6.266d0,1)
       if(ierf.eq.1)  istiff=0
 
 c ERC QTAIM input module
-      call readchar("# METODE","QTAIM",iqtaim)
-      call readchar("# METODE","READINT",ireadint)
+      call readchar("# METHOD","QTAIM",iqtaim)
+      call readchar("# METHOD","READINT",ireadint)
       if(ireadint.eq.1) iqtaim=2
       if(iqtaim.eq.1) then
        call readint("# QTAIM","STEP",istep,300,1)
@@ -233,28 +233,28 @@ c ERC QTAIM input module
       end if 
 
 c Miscellaneous options
-      call readchar("# METODE","OPOP",iopop)
-      call readchar("# METODE","SHANNON",isha)
-      call readchar("# METODE","DOINT",idoint)
-      call readchar("# METODE","PCA",ipca)
-      call readchar("# METODE","LAPLACIAN",ilaplacian)
-      call readchar("# METODE","FINEGRID",ifinegrid)
-      call readchar("# METODE","ELCOUNT",ielcount) !MMO- NCTAIM
-      call readint("# METODE","RHO_CALC_AT",iatdens,0,1)
-      call readreal("# METODE","RHO_CALC_RAD",Rmax,0,1) ! MG: typo here!
-      call readchar("# METODE","NOPOPU",inopop)
+      call readchar("# METHOD","OPOP",iopop)
+      call readchar("# METHOD","SHANNON",isha)
+      call readchar("# METHOD","DOINT",idoint)
+      call readchar("# METHOD","PCA",ipca)
+      call readchar("# METHOD","LAPLACIAN",ilaplacian)
+      call readchar("# METHOD","FINEGRID",ifinegrid)
+      call readchar("# METHOD","ELCOUNT",ielcount) !MMO- NCTAIM
+      call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)
+      call readreal("# METHOD","RHO_CALC_RAD",Rmax,0,1) ! MG: typo here!
+      call readchar("# METHOD","NOPOPU",inopop)
  
 C eff-AO-s and EOS
-      call readchar("# METODE","EFFAO",ieffao)
-      call readchar("# METODE","UEFFAO",idummy)
+      call readchar("# METHOD","EFFAO",ieffao)
+      call readchar("# METHOD","UEFFAO",idummy)
       if(idummy.eq.1) ieffao=2
 
 !! EFFAOS PAIRED AND UNPAIRED (ONLY) !!
-      call readchar("# METODE","EFFAO-U",idummy)
+      call readchar("# METHOD","EFFAO-U",idummy)
       if(idummy.eq.1) ieffao=3
 
-      call readint("# METODE","EFF_THRESH",ieffthr,1,1)
-      call readchar("# METODE","CUBE",icube)
+      call readint("# METHOD","EFF_THRESH",ieffthr,1,1)
+      call readchar("# METHOD","CUBE",icube)
       if(icube.eq.1) then
        call locate(16,"# CUBE",ii)
        if(ii.eq.0) stop'Required section # CUBE not found in input file'
@@ -263,32 +263,32 @@ C eff-AO-s and EOS
       end if
 
 !! EOS (STANDARD) !!
-      call readchar("# METODE","EOS",ieos)
+      call readchar("# METHOD","EOS",ieos)
       if(ieos.eq.1) then 
        iopop=1
        ieffao=2
-       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
+       call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
 !! EOS FROM THE PAIRED AND UNPAIRED DENSITIES !!
-      call readchar("# METODE","EOS-U",iueos)
+      call readchar("# METHOD","EOS-U",iueos)
       if(iueos.eq.1) then 
        iopop=1
        ieffao=3
-       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
+       call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
 !! OS FROM CENTROIDS !!
-      call readchar("# METODE","OS-CENTROID",ieoscent)
+      call readchar("# METHOD","OS-CENTROID",ieoscent)
 
 c Local spin and methods for correlated WFs
-      call readchar("# METODE","SPIN",ispin)
-      call readint("# METODE","DM",icorr,0,1)
+      call readchar("# METHOD","SPIN",ispin)
+      call readint("# METHOD","DM",icorr,0,1)
       if(icorr.eq.2) ispin=1
-      call readchar("# METODE","DAFH",idafh)
+      call readchar("# METHOD","DAFH",idafh)
 
 c Energy decomposition options   
-      call readchar("# METODE","ENPART",ienpart )
+      call readchar("# METHOD","ENPART",ienpart )
       if(ienpart.eq.1) then
         xmix=ZERO
         id_xcfunc=0
@@ -361,7 +361,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 !! MG: extended version for 2d, 3d, and more 1d topology in apost3.1-devel of my user... we should check if worth merging !!
         itop=0
         ipairs=0
-        call readchar("# METODE","TOPOLOGY",itop)
+        call readchar("# METHOD","TOPOLOGY",itop)
         if(itop.eq.1) then
           call locate(16,"# ATOM PAIRS DEFINITION",ii)
           if(ii.eq.0) stop " ATOM PAIRS DEFINITION SECTION MISSING "
@@ -393,7 +393,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 !! EDAIQA OPTIONS !!
       iedaiqa=0
       iflip=0
-      call readchar("# METODE","EDAIQA",iedaiqa)
+      call readchar("# METHOD","EDAIQA",iedaiqa)
       if(iedaiqa.eq.1) then
         ii=0
         call locate(16,"# EDAIQA",ii)
@@ -444,7 +444,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
       end if
 
 C NLOPs                       
-      call readchar("# METODE","POLAR",ipolar )
+      call readchar("# METHOD","POLAR",ipolar )
       if(ipolar.eq.1) then
        iaccur=1
 c using file $name.scr as raw output for post-processing
@@ -459,7 +459,7 @@ c using file $name.scr as raw output for post-processing
 
 C Do for restricted number of atoms
       idoat=0
-      call readchar("# METODE","DOATOMS",idoat)
+      call readchar("# METHOD","DOATOMS",idoat)
       if(idoat.eq.1) then
         call locate(16,"# ATOMS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
@@ -474,7 +474,7 @@ C Do for restricted number of atoms
 
 c Do for fragments
       idofr=0
-      call readchar("# METODE","DOFRAGS",idofr)
+      call readchar("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
         call locate(16,"# FRAGMENTS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
@@ -573,10 +573,10 @@ C READING DM1 and DM2
 !! OSLO OPTIONS !!
 
       ioslo=0
-      call readchar("# METODE","OSLO",ioslo)
+      call readchar("# METHOD","OSLO",ioslo)
       if(ioslo.eq.1) then
 
-!! MG: BY DEFAULT REQUIRED THE TFVC AIM IN # METODE (NUMERICAL INTEGRATION). BUT ONE CAN ASK OSLOs USING HILBERT AIMS !!
+!! MG: BY DEFAULT REQUIRED THE TFVC AIM IN # METHOD (NUMERICAL INTEGRATION). BUT ONE CAN ASK OSLOs USING HILBERT AIMS !!
 !! HILBERT AIMS CASES !!
 
         ilow2=0
@@ -602,7 +602,7 @@ C READING DM1 and DM2
 !! TO PRINT .fchk FILES FROM QCHEM (MG: FCHK FORMAT IS DIFFERENT THAN GAUSSIAN) !!
 
       iqchem=0
-      call readchar("# METODE","QCHEM",iqchem)
+      call readchar("# METHOD","QCHEM",iqchem)
 
 !! END OF OSLO OPTIONS !!
 
