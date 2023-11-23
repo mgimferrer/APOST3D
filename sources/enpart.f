@@ -280,12 +280,12 @@
 
       use ao_matrices
       use integration_grid
-      USE OMP_LIB
-      USE IFPORT
+      use OMP_LIB
+      use IFPORT
 
-      IMPLICIT REAL*8(A-H,O-Z)
+      implicit real*8(a-h,o-z)
 
-      integer  external OMP_GET_NUM_PROCS
+      integer external OMP_GET_NUM_PROCS
 
       include 'parameter.h'
       parameter (maxpass=5)
@@ -312,6 +312,7 @@
       dimension coul0(maxat,2*maxpass)
       dimension exch_hf(maxat,maxat)
       dimension coul(maxat,maxat)
+      
       character*80 line
       character*100 threadenv
 
@@ -361,7 +362,7 @@
       end do
 
       ALLOCATE(chp2(itotps,nocc))
-      ALLOCATE(chp2s(nocc,itotps)) !!TODO
+      ALLOCATE(chp2s(nocc,itotps)) !! TODO: CHANGING THAT NEVER USE CHP2 !!
 
 !! TO MOs !!
       do k=1,itotps
@@ -382,7 +383,6 @@
       phb=phb12
       pha=ZERO 
       write(*,'(2x,a21,x,f10.6,x,f10.6)') "Rotating for angles :",pha,phb
-      itotps=nrad*nang*nat
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
       ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
@@ -490,7 +490,7 @@
           istart(ithreads)=iend(ithreads-1)+1
           iend(ithreads)=icenter*iatps
 
-!! THIS TWO CALL ARE CRUCIAL !!
+!! THIS TWO CALLS ARE CRUCIAL !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
           !DIR$ PARALLEL
@@ -586,7 +586,7 @@
                 dz1=pcoord(jfut,3)
                 dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
                 if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
-                chp2snjfut=chp2s(nocc,jfut)
+                  chp2snjfut=chp2s(nocc,jfut)
                   do i=1,nocc-1
                     chp2sijfut=chp2s(i,jfut)
                     chp2siifut=chp2s(i,ifut)
@@ -747,7 +747,7 @@
           istart(ithreads)=iend(ithreads-1)+1
           iend(ithreads)=icenter*iatps
 
-!! AGAIN THIS TWO CALL ARE CRUCIAL !!
+!! AGAIN THE TWO CALLS ARE CRUCIAL !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
           !DIR$ PARALLEL
@@ -989,7 +989,7 @@
 
       end
 
-! *****
+!! ***** !!
 
       subroutine numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
       use ao_matrices
@@ -1180,14 +1180,22 @@
       DEALLOCATE(chp2,scr,chpaux,chp3)
       end
 
-! *****
+!! ***** !!
 
       subroutine numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
+
       use ao_matrices
       use integration_grid
-      IMPLICIT REAL*8(A-H,O-Z)
+      use OMP_LIB
+      use IFPORT
+
+      implicit real*8(a-h,o-z)
+
+      integer external OMP_GET_NUM_PROCS
+
       include 'parameter.h'
       parameter(maxpass=5)
+
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
@@ -1208,39 +1216,46 @@
 
       dimension coul0(maxat,2*maxpass)
       dimension coul(maxat,maxat),exch_hf(maxat,maxat)
+
       character*80 line
+      character*100 threadenv
+
       allocatable :: chppha(:,:), wppha(:),pcoordpha(:,:),omppha(:)
       allocatable :: chp2pha(:,:),omp2pha(:,:),ibaspointpha(:),rhopha(:)
       allocatable :: chp2(:,:), chp2b(:,:), chp2phab(:,:)
       allocatable :: fij(:,:),fijb(:,:),xocc(:,:),xoccb(:,:),Excmpb(:,:)
 
-      ihf      = Iopt(18) 
-      idofr    = Iopt(40)
-      ithrebod = Iopt(44)
-      ipolar   = Iopt(46)
-      ifield   =  Iopt(47) !MMO- adding iopt
-      ianalytical = Iopt(91) !MMO- analytical
-      iatps    = nang*nrad
+!! FOR ENPART PARALLEL !!
+      allocatable :: chp2s(:,:),chp2phas(:,:),chp2bs(:,:),chp2phabs(:,:) !! SWITCHED ORDER OF COLUMNS AND ROWS !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+      allocatable :: exch_hfk(:,:)
+      allocatable :: exch_hfij(:,:)
+      allocatable :: f3k(:)
 
-      thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION !!
+      ihf         = Iopt(18) 
+      idofr       = Iopt(40)
+      ithrebod    = Iopt(44)
+      ipolar      = Iopt(46)
+      ifield      =  Iopt(47) !MMO- adding iopt
+      ianalytical = Iopt(91) !MMO- analytical
+
+      !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
       if(ithrebod.lt.1) then
         threbod=ZERO
       else
         threbod=real(ithrebod)/10000.0d0
       end if
-
-      idoex    = 0
+      idoex=0
       if(xmix.gt.ZERO) idoex=1
+      iatps=nang*nrad
 
 !! DOING ENERGY PARTITION !!
-
+      npass=2
       write(*,*) " "
       write(*,*) " ****************************** "
       write(*,*) "  Doing two-electron integrals  "
       write(*,*) " ****************************** "
       write(*,*) " "
-
-      npass=2
       do i=1,nat
         do j=1,nat
           coul(i,j)=ZERO
@@ -1250,10 +1265,11 @@
           coul0(i,j)=ZERO
         end do
       end do
+
       ALLOCATE(chp2(itotps,nalf),chp2b(itotps,nb))
+      ALLOCATE(chp2s(nalf,itotps),chp2bs(nb,itotps)) !! TODO: CHANGING THAT NEVER USE CHP2 !!
 
 !! TO MOs !!
-
       do k=1,itotps
         do j=1,nalf
           xx=ZERO
@@ -1262,8 +1278,12 @@
             xx=xx+c(i,j)*chp(k,i) 
             if(j.le.nb) xxb=xxb+cb(i,j)*chp(k,i) 
           end do
-          if(j.le.nb)  chp2b(k,j)=xxb
+          if(j.le.nb) then
+            chp2b(k,j)=xxb
+            chp2bs(j,k)=xxb
+          end if
           chp2(k,j)=xx
+          chp2s(j,k)=xx
         end do
       end do
 
@@ -1271,17 +1291,17 @@
 
 !! ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
-
       phb=phb12
       pha=ZERO 
-      write(*,*) " Rotating for angles : ",pha,phb
+      write(*,'(2x,a21,x,f10.6,x,f10.6)') "Rotating for angles :",pha,phb
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
       ALLOCATE(chp2pha(itotps,nalf),rhopha(itotps),chp2phab(itotps,nb))
+      ALLOCATE(chp2phas(nalf,itotps),chp2phabs(nb,itotps))
+
       call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
 !! TO MOs !!
-
       do k=1,itotps
         xtot=ZERO 
         xtotb=ZERO 
@@ -1293,8 +1313,10 @@
             if(j.le.nb) xxb=xxb+cb(i,j)*chppha(k,i) 
           end do
           chp2pha(k,j)=xx
+          chp2phas(j,k)=xx
           if(j.le.nb) then
             chp2phab(k,j)=xxb
+            chp2phabs(j,k)=xxb
             xtotb=xtotb+xxb*xxb
           end if 
           xtot=xtot+xx*xx
@@ -1304,7 +1326,6 @@
       end if !MMO- non-analytical skip ends here
 
 !! COULOMB !!
-
       call cpu_time(xtime)
       if(ianalytical.eq.0) then
         call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
@@ -1317,12 +1338,10 @@
       xtime=xtime2
 
 !! EXCHANGE PART !!
-
       if(ianalytical.eq.0) then !MMO- skip if analytical
       if(idoex.eq.1) then
 
 !! COMPUTING MULTIPOLAR APPROACH HERE !!
-
         norb2=nalf*(nalf+1)/2
         norb2b=nb*(nb+1)/2
         ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
@@ -1358,85 +1377,208 @@
           end do 
         end do 
         DEALLOCATE(fij,fijb,xocc,xoccb,Excmpb)
-        write(*,*) " TOTAL UNRESTRICTED HF Excmp "
-        write(*,*) " "
-        CALL Mprint(Excmp,nat,maxat)
-        write(*,*) " "
 
+!! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
+!! MIMICKING STRATEGY FROM RHF PART !!
         write(*,*) " "
         write(*,*) " *** PURE EXCHANGE PART *** "
-        write(*,*) " Two-el integrations for ",nalf*(nalf+1)," functions"
-        write(*,'(a39,f10.6)') " Threshold for atom pair calculation : ",threbod
-        iterms=0
+        write(*,'(2x,a22,x,i6,x,a9)') "Two-el integrations for",nalf*(nalf+1),"functions"
+        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
+
+!! FIRST ONLY SAME CENTER TERMS !!
+!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
+        call getenv('OMP_NUM_THREADS',threadenv)
+        if(trim(threadenv)=='') then
+          write(*,*) 'OMP_NUM_THREADS not set'
+          ithreadenv=ZERO
+        else
+          read(unit=threadenv,FMT='(I4)') ithreadenv
+        end if
+        !$OMP PARALLEL
+        iprocs=OMP_GET_MAX_THREADS()
+        ithreads=INT(OMP_GET_NUM_PROCS())
+        !$OMP END PARALLEL
+        if(ithreadenv.ne.ZERO) then
+          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
+     &    ithreads,"available hardware cores"
+          ithreads=ithreadenv
+        else
+          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
+     &    ithreads,"available hardware cores"
+        end if
+
+!! TO ENSURE PROPER SLICING BY THREADS !!
+        ALLOCATE(f3k(ithreads))
+        ALLOCATE(exch_hfk(nat,ithreads))
+        ALLOCATE(istart(ithreads),iend(ithreads))
+        itilerest=mod(iatps,ithreads)
+        ispace=(iatps-itilerest)/ithreads
+
+!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
+        exch_hfk=ZERO
+        !DIR$ NOPARALLEL
         do icenter=1,nat
-          do ifut=iatps*(icenter-1)+1,iatps*icenter
-            x0=wp(ifut)*omp2(ifut,icenter)
-            dx0=pcoord(ifut,1)
-            dy0=pcoord(ifut,2)
-            dz0=pcoord(ifut,3)
+          ioffset=(icenter-1)*iatps
+          istart=0
+          iend=0
+          !DIR$ NOPARALLEL
+          do ik=1,(ithreads-1)
+            istart(ik)=ioffset+((ik-1)*ispace)+1
+            iend(ik)=ioffset+(ik*ispace)
+          end do
+          istart(ithreads)=iend(ithreads-1)+1
+          iend(ithreads)=icenter*iatps
 
-!! SAME CENTER !!
-
-            f3=ZERO
-            do jfut=iatps*(icenter-1)+1,iatps*icenter
-              x1=wppha(jfut)*omp2pha(jfut,icenter)
-              dx1=pcoordpha(jfut,1)
-              dy1=pcoordpha(jfut,2)
-              dz1=pcoordpha(jfut,3)
-              dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-              if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                do i=1,nalf
-                  do j=i,nalf
-                    f2=x0*chp2(ifut,i)*chp2(ifut,j)
-                    if(i.ne.j) f2=TWO*f2
-                    f3=f3+f2*x1*chp2pha(jfut,i)*chp2pha(jfut,j)/dist
-                    if(i.le.nb.and.j.le.nb) then
-                      f2b=x0*chp2b(ifut,i)*chp2b(ifut,j)
-                      if(i.ne.j)  f2b=TWO*f2b
-                      f3=f3+f2b*x1*chp2phab(jfut,i)*chp2phab(jfut,j)/dist
+!! THE TWO CALLS ARE CRUCIAL !!
+          call omp_set_dynamic(.false.)
+          call omp_set_num_threads(ithreads)
+          !DIR$ PARALLEL
+          do ik=1,ithreads
+            do ifut=istart(ik),iend(ik)
+              x0=wp(ifut)*omp2(ifut,icenter)
+              dx0=pcoord(ifut,1)
+              dy0=pcoord(ifut,2)
+              dz0=pcoord(ifut,3)
+              f3k(ik)=ZERO
+              do jfut=iatps*(icenter-1)+1,iatps*icenter
+                x1=wppha(jfut)*omp2pha(jfut,icenter)
+                dx1=pcoordpha(jfut,1)
+                dy1=pcoordpha(jfut,2)
+                dz1=pcoordpha(jfut,3)
+                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
+                  do i=1,nalf-1
+                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                    if(i.le.nb) then
+                      f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
+                      f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
                     end if
-                  end do
-                end do
-              end if
-            end do
-            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-f3 
-
-!! PAIRS OF CENTERS !!
-
-            do jcenter=icenter+1,nat
-              bx0=bo(icenter,jcenter)
-              if(bx0.ge.threbod) then
-                f3=ZERO
-                do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-                  x1=wp(jfut)*omp2(jfut,jcenter)
-                  dx1=pcoord(jfut,1)
-                  dy1=pcoord(jfut,2)
-                  dz1=pcoord(jfut,3)
-                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                    do i=1,nalf
-                      do j=i,nalf
-                        f2=x0*chp2(ifut,i)*chp2(ifut,j)
-                        if(i.ne.j)  f2=TWO*f2
-                        f3=f3+f2*x1*chp2(jfut,i)*chp2(jfut,j)/dist
-                        if(i.le.nb.and.j.le.nb) then
-                          f2b=x0*chp2b(ifut,i)*chp2b(ifut,j)
-                          if(i.ne.j)  f2b=TWO*f2b
-                          f3=f3+f2b*x1*chp2b(jfut,i)*chp2b(jfut,j)/dist
-                        end if
-                      end do
+                    do j=i+1,nalf
+                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                      if(j.le.nb) then
+                        f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
+                        f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+                      end if
                     end do
+                  end do
+                  f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
+                  f3k(ik)=f3k(ik)+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
+
+!! FOR THE nalf = nb CASE IT IS REQUIRED TO ADD THIS !!
+                  if(nalf.eq.nb) then
+                    f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
+                    f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
                   end if
-                end do
-                exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-f3
-              else 
-                iterms=iterms+1
-              end if
+                end if
+              end do
+              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
             end do
           end do
         end do
-        write(*,*) " Skipping diatomic exchange integrals for ",iterms
-      
+
+!! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+        do icenter=1,nat
+          do isum=1,ithreads
+             exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+          end do
+        end do
+
+!! NOW PAIRS OF CENTERS !!
+        iterms=0
+        ipaircounter=0
+        ALLOCATE(ijpaircount(nat*nat,2))
+        do icenter=1,nat
+          do jcenter=icenter+1,nat
+            bx0=bo(icenter,jcenter)
+            if(bx0.ge.threbod) then
+              ipaircounter=ipaircounter+1
+              ijpaircount(ipaircounter,1)=icenter
+              ijpaircount(ipaircounter,2)=jcenter
+            else
+              iterms=iterms+1
+            end if
+          end do
+        end do
+        write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
+        write(*,*) " "
+
+!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
+        ALLOCATE(exch_hfij(ipaircounter,ithreads))
+        itilerest=mod(iatps,ithreads)
+        ispace=(iatps-itilerest)/ithreads
+        exch_hfij=ZERO
+        !DIR$ NOPARALLEL
+        do numpairnat=1,ipaircounter
+          icenter=ijpaircount(numpairnat,1)
+          jcenter=ijpaircount(numpairnat,2)
+          ioffset=(icenter-1)*iatps
+          istart=0
+          iend=0
+          !DIR$ NOPARALLEL
+          do ik=1,(ithreads-1)
+            istart(ik)=ioffset+((ik-1)*ispace)+1
+            iend(ik)=ioffset+(ik*ispace)
+          end do
+          istart(ithreads)=iend(ithreads-1)+1
+          iend(ithreads)=icenter*iatps
+          !DIR$ PARALLEL
+          do ik=1,ithreads
+            do ifut=istart(ik),iend(ik)
+              x0=wp(ifut)*omp2(ifut,icenter)
+              dx0=pcoord(ifut,1)
+              dy0=pcoord(ifut,2)
+              dz0=pcoord(ifut,3)
+              f3k(ik)=ZERO
+              do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+                x1=wp(jfut)*omp2(jfut,jcenter)
+                dx1=pcoord(jfut,1)
+                dy1=pcoord(jfut,2)
+                dz1=pcoord(jfut,3)
+                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
+                  do i=1,nalf-1
+                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                    f3k(ik)=f3k(ik)+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
+                    if(i.le.nb) then
+                      f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
+                      f3k(ik)=f3k(ik)+f2b*x1*chp2bs(i,jfut)*chp2bs(i,jfut)/dist
+                    end if
+                    do j=i+1,nalf
+                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                      f3k(ik)=f3k(ik)+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                      if(j.le.nb) then
+                        f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
+                        f3k(ik)=f3k(ik)+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
+                      end if
+                    end do
+                  end do
+                  f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
+                  f3k(ik)=f3k(ik)+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
+
+!! AGAIN, ONLY WHEN nalf = nb !!
+                  if(nalf.eq.nb) then
+                    f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
+                    f3k(ik)=f3k(ik)+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
+                  end if
+                end if
+              end do
+              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3k(ik)
+            end do
+          end do
+        end do
+
+!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+        do numpairnat=1,ipaircounter
+          icenter=ijpaircount(numpairnat,1)
+          jcenter=ijpaircount(numpairnat,2)
+          do isum=1,ithreads
+            exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
+          end do
+        end do   
+
+!! ACCOUNTING IF SOME TERMS COME FROM MULTIPOLAR APPROACH... AND FACTORS... !!
         exchen_hf=ZERO
         do i=1,nat
           exch_hf(i,i)=exch_hf(i,i)/TWO
@@ -1457,7 +1599,6 @@
 
 !! CHECKING THE ACCURACY OF THE TWO ELECTRON PART !!
 !! HF ONLY !!
-
       if(ihf.eq.1) then
         evee=coulen+exchen_hf
         write(*,*) ' Total two-electron part (coul+exch_HF) : ',evee
@@ -1470,7 +1611,6 @@
         end if
 
 !! DFT CASE !!
-
       else
         exchen=ZERO
         do i=1,nat
@@ -1500,22 +1640,19 @@
       end if
 
 !! ZERO ERROR STRATEGY FOR THE VEE PART !!
-
       if(ianalytical.eq.1) twoeltoler=232000
       write(*,*) ' Max error accepted on the two-electron part : ',twoeltoler
       if(abs(twoelerr).gt.twoeltoler) then
 
 !! NOW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
-
         phb=phb22
         pha=ZERO 
-        write(*,*) ' Rotating for angles : ',pha,phb
+        write(*,'(2x,a21,1x,f10.6,1x,f10.6)') "Rotating for angles :",pha,phb
         nat0=nat
         call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
 !! TO MOs !!
-
         do k=1,itotps
           xtot=ZERO 
           xtotb=ZERO 
@@ -1526,9 +1663,9 @@
               xx=xx+c(i,j)*chppha(k,i) 
               if(j.le.nb) xxb=xxb+cb(i,j)*chppha(k,i) 
             end do
-            chp2pha(k,j)=xx
+            chp2phas(j,k)=xx
             if(j.le.nb) then
-              chp2phab(k,j)=xxb
+              chp2phabs(j,k)=xxb
               xtotb=xtotb+xxb*xxb
             end if 
             xtot=xtot+xx*xx
@@ -1537,8 +1674,6 @@
         end do
 
 !! INTERPOLATING ONLY ATOMIC TERMS !!
-
-        f2=ZERO
         do icenter=1,nat
           do ifut=iatps*(icenter-1)+1,iatps*icenter
             x0=wp(ifut)*omp2(ifut,icenter)
@@ -1559,43 +1694,81 @@
         end do
 
 !! EXCHANGE PART !!
-
         if(idoex.eq.1) then
+
+!! AS BEFORE, MORE CONVOLUTED LOOP STRUCTURE !!
+          exch_hfk=ZERO
+          !DIR$ NOPARALLEL
           do icenter=1,nat
-            do ifut=iatps*(icenter-1)+1,iatps*icenter
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3=ZERO
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
-                x1=wppha(jfut)*omp2pha(jfut,icenter)
-                dx1=pcoordpha(jfut,1)
-                dy1=pcoordpha(jfut,2)
-                dz1=pcoordpha(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                  do i=1,nalf
-                    do j=i,nalf
-                      f2=x0*chp2(ifut,i)*chp2(ifut,j)
-                      if(i.ne.j) f2=TWO*f2
-                      f3=f3+f2*x1*chp2pha(jfut,i)*chp2pha(jfut,j)/dist
-                      if(i.le.nb.and.j.le.nb) then
-                        f2b=x0*chp2b(ifut,i)*chp2b(ifut,j)
-                        if(i.ne.j) f2b=TWO*f2b
-                        f3=f3+f2b*x1*chp2phab(jfut,i)*chp2phab(jfut,j)/dist
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
+            !DIR$ NOPARALLEL
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=iend(ithreads-1)+1
+            iend(ithreads)=icenter*iatps
+  
+  !! AGAIN THE TWO CALLS ARE CRUCIAL !!
+            call omp_set_dynamic(.false.)
+            call omp_set_num_threads(ithreads)
+            !DIR$ PARALLEL
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3k(ik)=ZERO
+                do jfut=iatps*(icenter-1)+1,iatps*icenter
+                  x1=wppha(jfut)*omp2pha(jfut,icenter)
+                  dx1=pcoordpha(jfut,1)
+                  dy1=pcoordpha(jfut,2)
+                  dz1=pcoordpha(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
+                    do i=1,nalf-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      if(i.le.nb) then
+                        f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
+                        f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
                       end if
+                      do j=i+1,nalf
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        if(j.le.nb) then
+                          f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
+                          f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+                        end if
+                      end do
                     end do
-                  end do
-                end if
+                    f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
+                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
+
+!! AGAIN, ONLY WHEN nalf = nb !!
+                    if(nalf.eq.nb) then
+                      f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
+                      f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
+                    end if
+                  end if
+                end do
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
               end do
-              coul0(icenter,4)=coul0(icenter,4)-f3/TWO
+            end do
+          end do
+  
+  !! ADDING THE TERMS INTO THE ORIGINAL coul0 MATRIX !!
+          do icenter=1,nat
+            do isum=1,ithreads
+              coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)/TWO
             end do
           end do
         end if
-
-!! CHECKING VALUES (IF ENERGIES ADDED IN fchk FILE) !!
-
+  
+!! CHECKING NEW VALUES !!
         do i=1,nat
           coul0(i,1)=coul(i,i)
           if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
@@ -1612,7 +1785,6 @@
         write(*,*) ' Damping parameter: ',phabest !MMO- not dumping
 
 !! INTERPOLATING ENERGIES AND REPLACING OLD COULOMB AND EXCHANGE TERMS !!
-
         do i=1,nat
           coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
           if(idoex.eq.1) then
@@ -1620,6 +1792,7 @@
           end if
         end do
 
+!! PRINTING !!
         write(*,*) '**INTERPOLATED TWO-ELECTRON ENERGY COMPONENTS**' 
         CALL Mprint(coul,NAT,maxat)
         coulen=ZERO
@@ -1656,6 +1829,7 @@
               exchen=exchen+exch(i,i)
               do j=i+1,nat
 !MMO- commenting the line below this one (instruccions Marti)
+!! MG: THIS IS ALREADY DONE IN THE FIRST ROTATION AND HERE ARE NOT TOUCHED !!
 !                exch(i,j)=exch(i,j)+xmix*exch_hf(i,j)
                 exch(j,i)=exch(i,j)
                 exchen=exchen+exch(i,j)
@@ -1672,7 +1846,6 @@
           end if
 
 !! DFT !! 
-
         else    
           exchen=ZERO
           do i=1,nat
@@ -1684,7 +1857,6 @@
         end if
  
 !! TOTAL TWO ELECTRON PART !!
-
         if(ihf.eq.0) then
           evee=coulen+exchen
           write(*,*) ' DFT electron-electron energy: ',evee             
@@ -1700,7 +1872,6 @@
       end if
 
 !! PRINTING FINAL ETOT !!
-
       if(ihf.eq.1) then
         write(*,*) 'Hartree-Fock electron-electron energy: ',coulen+exchen_hf
         xtot=ZERO
@@ -1766,12 +1937,14 @@
       if(ianalytic.eq.0) then
         DEALLOCATE(chp2,chp2b,chp2pha,rhopha,chp2phab)
         DEALLOCATE(wppha,omppha,omp2pha,chppha,pcoordpha)
+!! MG: DEALLOCATING THE PARALLEL PART MISSING (I'VE BEEN LAZY)
       else
         DEALLOCATE(chp2,chp2b)
       end if
       end
 
-! *****
+!! ***** !!
+
       subroutine polar(itotps,nat0,wp,omp,omp2,pcoord,rho)
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
