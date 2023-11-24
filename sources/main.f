@@ -1272,54 +1272,48 @@ C DO ENERGY DECOMPOSITION
 CCCCCCCCCCCCCCC
 
       if(ienpart.eq.1) then
-      print *,' '
-      print *,' --------------------------------------'
-      print *,'  DOING MOLECULAR ENERGY DECOMPOSITION '
-      print *,' --------------------------------------'
-      print *,' '
+      write(*,*) " "
+      write(*,*) " -------------------------------------- "
+      write(*,*) "  DOING MOLECULAR ENERGY DECOMPOSITION  "
+      write(*,*) " -------------------------------------- "
+      write(*,*) " "
 
-!! CASSCF AND CISD ENERGY DECOMPOSITION !!
-
+!! ONE ELECTRON PART: CASSCF AND CI WFs !!
       if(iposthf.eq.1) then
         call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
         call cpu_time(time2)
         write(*,'(a39,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
         time=time2
 
-!! DFT AND HF ENERGY DECOMPOSITION !!
-
+!! ONE ELECTRON PART: DFT AND HF WFs !!
       else 
 
 !! INITIALIZE DFT FUNCTIONAL FOR INFO AND INITIAL PRINTING !!
-      
       if(id_xfunc.ne.-1) then
         if(id_xcfunc.ne.0) call func_info_print(id_xcfunc,itype)
         if(id_cfunc.ne.0) call func_info_print(id_cfunc,itype)
         if(id_xfunc.ne.0) call func_info_print(id_xfunc,jtype)
         if(itype.ge.jtype) iopt(55) = itype
         if(jtype.gt.itype) iopt(55) = jtype
-        write(*,*) "itype,jtype,iop : ",itype,jtype,iopt(55)
       else
-        write(*,*) "INFO : HF functional selected"
-        write(*,*) "INFO : HF-type exchange coeff : ",xmix
+        write(*,*) " HF functional selected "
+        write(*,'(2x,a29,x,f6.3)') "HF-type exchange coeff:",xmix !! REDUNDANT, BUT OKAY... !!
         write(*,*) " "
       end if
 
-!! INTEGRATING ONE-ELECTRON CONTRIBUTIONS !!
 
+!! RESTRICTED CASE !!
       if(kop.ne.1) then 
         ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
-!! RESTRICTED ONE-ELECTRON PART !!
-
+!! ONE-ELECTRON TERMS !!
         call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
         write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
         time=time2
 
-!! RESTRICTED DFT XC PART !!
-
+!! DFT XC TERM !!
         if(id_xfunc.ne.-1) then
           if(ianalytical.eq.0) then
             call numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
@@ -1332,19 +1326,19 @@ CCCCCCCCCCCCCCC
           time=time2
         end if
         DEALLOCATE(xkdens)
+
+!! UNRESTRICTED CASE !!
       else
         ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
-!! UNRESTRICTED ONE-ELECTRON PART !! 
-
+!! ONE-ELECTRON TERMS !!
         call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
         write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
         time=time2
 
-!! UNRESTRICTED DFT XC PART !!
-
+!! DFT XC TERM !!
         if(id_xfunc.ne.-1) then
           call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
           write(*,*) " "
@@ -1356,69 +1350,66 @@ CCCCCCCCCCCCCCC
       end if 
 
 !! END IF METHOD TYPE !!
-
       end if
       DEALLOCATE(wp,omp,omp2,chp,pcoord,ibaspoint,rho)
 
-!! END OF ONE-ELECTRON PART !!
-!! INTEGRATING TWO-ELECTRON CONTRIBUTIONS !!
-!! TWO-ELECTRON INTEGRATION DEFAULTS !!
+!! TWO-ELECTRON PART !!
 
-      print *,'SETTING GRID FOR TWO-ELECTRON ENERGY INTEGRATION'
+!! TWO-ELECTRON INTEGRATION DEFAULTS !!
+      write(*,*) " "
+      write(*,*) " SETTING GRID FOR TWO-ELECTRON ENERGY INTEGRATION "
+      write(*,*) " "
+
 !! CONTROLLED BY # GRID OPTION (modgrid common) !!
+!! DEFAULT GRID IS NOW 150 590, CAN BE CHANGED TO 40 146 BUT ENSURE TO ALSO MODIGY pha AND phb !!
       nrad=nrad22
       nang=nang22
       rr00=rr0022
-!      nrad=40
-!      nang=146
-!! DEFAULT GRID IS LARGER THAN THIS ONE !!
-!! MG: CAN BE CHANGED TO THE 40 146, BUT ENSURE TO CHANGE ALSO DEFAULTS FOR pha AND phb !!
+
+!! ANALYTICAL CASE !!
+!! MG: TO MODIFY AS NOW DEFAULT GRID IS LARGER THAN THIS ONE !!
       if(ianalytical.eq.1) then
-        write(*,*) 'Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron.'
+        write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
+        write(*,*) " "
         nrad=70
         nang=434
       end if
 
-      print *,'  '
-      print *,'Radial points: ', nrad
-      print *,'Angular points:',nang    
+!! PRINTING INFO !!
+      write(*,*) " "
+      write(*,'(2x,a14,x,i4)') "Radial points:",nrad
+      write(*,'(2x,a15,x,i4)') "Angular points:",nang
+      write(*,*) " "    
 
-
-      iatps=Nang*NRad
+!! GENERATING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATIONS !!
+      iatps=nang*nrad
       itotps=nrad*nang*nat
       call quad(Nrad,Nang) 
-      allocate (wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
-      allocate (pcoord(itotps,3),ibaspoint(itotps),chp(itotps,ndim))
-
-!! GENERATING GRID FOR TWO-EL CONTRIBUTIONS !!
-
+      ALLOCATE(wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
+      ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,ndim))
       call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,0)
 
-!! POST-HF TWO-ELECTRON PART !!
-
+!! CASSCF AND CI WFs !!
       if(iposthf.eq.1) then
-        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: needs a check !!
+!        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
         call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
         write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart two-electron ',time2-time,'s)' 
         time=time2
+
+!! DFT AND HF WFs !!
       else
 
-!! SINGLE-DETERMINANT UNRESTRICTED TWO-ELECTRON PART !!
-
+!! UNRESTRICTED CASE !!
         if(kop.eq.1) then 
           call numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
+
+!! RESTRICTED CASE !!
         else
-
-!! SINGLE-DETERMINANT RESTRICTED TWO-ELECTRON PART !!
-
-          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: needs a check !!
+!          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
           call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
         end if 
-
-!! END OF TWO-ELECTRON PART !!
-
         write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart two-electron ',time2-time,'s)' 
@@ -1443,8 +1434,8 @@ CCCCCCCCCCCC
 !! EDAIQA !!
 CCCCCCCCCCCC
 
+!! MG: TO DO !!
 !! CREATING THE E(< A^0 B^0 >)^AB STATE !!
-
 !     if(iedaiqa.eq.1) then
 !       write(*,*) " "
 !       write(*,*) " Entering EDAIQA Section "
