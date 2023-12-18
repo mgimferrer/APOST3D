@@ -1,39 +1,54 @@
+
+!! ***** !!
+
       subroutine numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
+
       use ao_matrices
       use integration_grid
-      IMPLICIT REAL*8(A-H,O-Z)
+
+      implicit real*8(a-h,o-z)
+
       include 'parameter.h'
-      integer, intent(in) :: ndim,itotps
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+
+      common /nat/nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/coord(3,maxat),zn(maxat),iznuc(maxat)
       common /iops/iopt(100)
-      common/actual/iact,jat,icenter
-      common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
-      common/energ0/ekin0,eelnuc0,evee0,etot0
-      common/exchg/exch(maxat,maxat),xmix
-      common/efield/field(4),edipole
+      common /actual/iact,jat,icenter
+      common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
+      common /energ0/ekin0,eelnuc0,evee0,etot0
+      common /exchg/exch(maxat,maxat),xmix
+      common /efield/field(4),edipole
+
+      integer, intent(in) :: ndim,itotps
+      character*80 line
+
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
-! (TO DO) xkdens = kinetic energy density (MG)
-! (TO DO) Laplacian!
+! TO DO: xkdens = kinetic energy density
+! TO DO: Laplacian!
       dimension xkdens(itotps)
       dimension eto(maxat,maxat)
-      dimension epa(maxat,maxat),ekin(maxat,maxat),dip(maxat,3)
+      dimension epa(maxat,maxat),ekin(maxat,maxat),dip(maxat,3),enuc(maxat,maxat)
       dimension eecp(maxat),ect(maxat,maxat)
       dimension edip(maxat,maxat)
-      character*80 line
 
       allocatable :: chp2(:,:),scr(:),chpaux(:,:)
 
-      idofr   =  Iopt(40)
-      ifield  =  Iopt(47)
-      ipoints =  itotps
-      iatps   =  nang*nrad
+      idofr   = iopt(40)
+      ifield  = iopt(47)
+      ipoints = itotps
+      iatps   = nang*nrad
+      xxdip   = ZERO
+
+      write(*,*) " "
+      write(*,*) " --------------------------- "
+      write(*,*) "  GENERAL ONE-ELECTRON PART  "
+      write(*,*) " --------------------------- "
+      write(*,*) " "
 
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
-      xxdip=0.0d0
-!! TO MOs !!
 
+!! TO MOs !!
       do k=1,ipoints
         xx0=ZERO
         do j=1,nocc
@@ -45,38 +60,36 @@
         end do
       end do
 
-!! MAKING ZERO THE MATRICES !!
+!! ZEROING MATRICES !!
 
-      do i=1,nat
-        do j=1,nat
-          epa(i,j)=ZERO
-          ekin(i,j)=ZERO
-          eto(i,j)=ZERO
-          ect(i,j)=ZERO
-        end do
-      end do
+      epa=ZERO
+      ekin=ZERO
+      enuc=ZERO
+      eto=ZERO
+      ect=ZERO
        
 !! DOING ENERGY PARTITION !!
 !! ONE-ELECTRON PART !!
 
 !! IN CASE OF HAVING PSEUDOPOTENTIAL !!
-
-      call mga_misc(iecp,eecp)
+      call mga_misc(iecp,eecp) !! MAYBE WE SHOULD DO A BETTER VERSION OF THIS... !!
       if(iecp.eq.1) then
-        write(*,*) 'Adding ECP atomic energies to E-N contribution' 
-        do i=1,nat
-          epa(i,i)=eecp(i)
+        write(*,*) " ADDING ECP ATOMIC ENERGIES TO E-N TERMS "
+        do ii=1,nat
+          epa(ii,ii)=eecp(ii)
         end do 
       end if
 
 !! IN CASE OF HAVING AN ELECTRIC FIELD !!
-
-      call field_misc(ifield) !MMO- minor: is it really necessary to call field_misc again? this has been done on main.f, and everything is stored in /common/efield
-      if(ifield.eq.1) then !MMO- fixed the following: xxdip should be initialized as 0.0d0 if there's no field... as xxdip should be used for the printing of integration error (see below)
-        write(*,*) ' '
-        write(*,*) 'The system is under a static electric field' 
-        write(*,'(3(a4,f8.6))') 'Fx=',field(2), 'Fy=',field(3),'Fz=',field(4) 
-        write(*,*) 'Electron-nuclear and nuclear repulsion terms are affected by E. field'
+      !MMO- minor: is it really necessary to call field_misc again? this has been done on main.f, 
+      !MMO- and everything is stored in /common/efield
+      call field_misc(ifield)
+      !MMO- fixed the following: xxdip should be initialized as 0.0d0 if there's no field... 
+      !MMO- as xxdip should be used for the printing of integration error (see below)
+      if(ifield.eq.1) then
+        write(*,*) " The system is under a static electric field "
+        write(*,'(2x,3(x,a3,x,f8.6))') "Fx=",field(2),"Fy=",field(3),"Fz=",field(4)
+        write(*,*) " Electron-nuclear and nuclear repulsion terms are affected by E. field "
         xtot=ZERO
         do icenter=1,nat
           x=ZERO
@@ -100,20 +113,20 @@
         end do
 
 !! ENERGY CONTRIBUTIONS. ELECTRIC FIELD X,Y,Z COMPONENTS ARE ON field(2-4) !!
-
         xtot=ZERO
         do i=1,nat
           edip(i,i)=+dip(i,1)*field(2)+dip(i,2)*field(3)+dip(i,3)*field(4)
           xtot=xtot+ect(i,i)+edip(i,i)
         end do
         xxdip=xtot
-        write(*,*) 'Electronic dipole moment energy term :',xxdip
+        write(*,'(2x,a37,x,f12.6)') "Electronic dipole moment energy term:",xxdip
+        write(*,*) " "
       else
-        xxdip=0.0d0 !MMO- added this else condition
+        !! MG: at the beginning of the subroutine is made zero, necessary again? !!
+        xxdip=ZERO !MMO- added this else condition
       end if
 
 !! ELECTRON-NUCLEI ATTRACTION INTEGRALS !!
-
       xtot=ZERO
       do icenter=1,nat
         do jcenter=1,nat     
@@ -146,31 +159,38 @@
         end do
       end do
       eelnuc=xtot
-      CALL Mprint(epa,NAT,maxat)
-      write(*,*) ' Electron-nuclei energy : ',eelnuc
+
+!! PRINTING MATRIX !!
+      write(*,*) " ----------------------------- "
+      write(*,*) "  ELECTRON-NUCLEAR ATTRACTION  "
+      write(*,*) " ----------------------------- "
+      write(*,*) " "
+      call MPRINT2(epa,nat,maxat)
+      write(*,'(2x,a23,x,f12.6)') "Electron-nuclei energy:",eelnuc
 
 !! CHECKING INTEGRATION ERROR (IF ENERGIES INCLUDED IN .fchk FILE) !!
-
       if(eelnuc0.ne.ZERO) then
-!        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc-eelnuc0)*23.06*27.212 !MMO- original line, commenting
-        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc+xxdip-eelnuc0)*23.06*27.212 !MMO- printing fix: to correctly evaluate error, add xxdip here, because during the decomp process we do not add it to any atomic contributions (we avoid atomic terms related to dipole)
-        write(*,*) ' '
+        !MMO- printing fix: to correctly evaluate error, add xxdip here, because during the decomp process we do not add 
+        !MMO- it to any atomic contributions (we avoid atomic terms related to dipole)
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*23.06*27.212
+        write(*,*) " "
       else
         eelnuc0=eelnuc
+        write(*,*) " "
       end if
-      if (idofr.eq.1) then
+
+!! TO DO: PRINTING BY FRAGS !!
+      if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Electron-nuclei attraction ' 
-        call group_by_frag_mat(1,line ,epa)
+        call group_by_frag_mat(1,line,epa)
       end if
 
 !! GENERATIONG GRID FOR 2nd DERIVATIVE OVER AOs !!
-
       ALLOCATE(chpaux(itotps,igr))
       call dpoints(chpaux,pcoord)
 
 !! TO MOs AND MULTIPLY BY MOs AND SUM OVER MOs USING SCRATCH ARRAY !!
 !! HENCE WE HAVE DENSITY IN scr EXCEPT FOR THE FACTOR OF TWO !!
-
       do k=1,ipoints
         x=ZERO
         do j=1,nocc
@@ -181,9 +201,9 @@
           x=x+chp2(k,j)*xx
         end do
         scr(k)=x
-! (TO DO) Kinetic energy density (MG)
+!! TO DO: Kinetic energy density !!
 !       xkdens(k)=scr(k)
-! (TO DO) Laplacian!
+!! TO DO: Laplacian !!
       end do
 
       xtot=ZERO
@@ -196,42 +216,54 @@
         xtot=xtot+x
       end do
       ekinen=xtot
-      CALL Mprint(ekin,NAT,maxat)
-      write(*,*) ' Kinetic energy : ',ekinen
+
+!! PRINTING MATRIX !!
+      write(*,*) " ---------------- "
+      write(*,*) "  KINETIC ENERGY  "
+      write(*,*) " ---------------- "
+      write(*,*) " "
+      call MPRINT2(ekin,nat,maxat)
+      write(*,'(2x,a15,x,f12.6)') "Kinetic energy:",ekinen
 
 !! CHECKING INTEGRATION ERROR (IF ENERGIES INCLUDED IN .fchk FILE) !!
-
       if(ekin0.ne.ZERO) then
-        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(ekinen-ekin0)*23.06*27.212
-        write(*,*) '         '                       
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*23.06*27.212
+        write(*,*) " "
       else
         ekin0=ekinen  
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy ' 
-        call group_by_frag_mat(1,line ,ekin)
+        call group_by_frag_mat(1,line,ekin)
       end if
       DEALLOCATE(chpaux)
 
 !! ADDING NUCLEAR REPULSION !!
-
-      xtot=ZERO
+      erep=ZERO
       do i=1,nat
         eto(i,i)=ekin(i,i)+epa(i,i)
         do j=i+1,nat
           dist=dsqrt((coord(1,i)-coord(1,j))**TWO+(coord(2,i)-coord(2,j))**TWO+(coord(3,i)-coord(3,j))**TWO)
           eto(i,j)=ekin(i,j)+epa(i,j)+zn(i)*zn(j)/dist
-!          eto(j,i)=epa(i,j)
           eto(j,i)=eto(i,j)
-          xtot=xtot+zn(i)*zn(j)/dist
+
+!! SAVING ALSO FOR PRINTING PURPOSES, I THINK WE SHOULD GIVE IT... COMES FOR FREE !!
+          enuc(i,j)=zn(i)*zn(j)/dist
+          enuc(j,i)=enuc(i,j)
+          erep=erep+zn(i)*zn(j)/dist
         end do
       end do
-      erep=xtot
-      write(*,*) ' Nuclear repulsion energy : ',erep
-      write(*,*) ' '
+
+!! PRINTING MATRIX !!
+      write(*,*) " --------------------------- "
+      write(*,*) "  NUCLEAR-NUCLEAR REPULSION  "
+      write(*,*) " --------------------------- "
+      write(*,*) " "
+      call MPRINT2(enuc,nat,maxat)
+      write(*,'(2x,a25,x,f12.6)') "Nuclear repulsion energy:",erep
+      write(*,*) " "
 
 !! IN CASE OF HAVING AN ELECTRIC FIELD !!
-
       if(ifield.eq.1) then
         xxx=ZERO
         xtot=ZERO
@@ -240,41 +272,43 @@
           ect(i,i)=ect(i,i)+xxx
           xtot=xtot+xxx
         end do
-        write(*,*) ' Nuclear repulsion energy including nuclear dipole : ',erep+xtot
-        write(*,*) ' '
-        write(*,*) ' Nuclear dipole moment energy term: ',xtot
-        write(*,*) ' '
+        write(*,'(2x,a50,x,f12.6)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
+        write(*,*) " "
+        write(*,'(2x,a34,x,f12.6)') "Nuclear dipole moment energy term:",xtot
+        write(*,*) " "
         edipole=xtot+xxdip
-        write(*,*) ' Total dipole moment energy term: ',edipole
-        write(*,*) ' '
-        write(*,*) 'Intrinsic dipole energy contributions (origin independent)'
-        CALL Mprint(edip,NAT,maxat)
-        write(*,*) '         '                       
+        write(*,'(2x,a32,x,f12.6)') "Total dipole moment energy term:",edipole
+        write(*,*) " "
+        write(*,*) " Intrinsic dipole energy contributions (origin independent)"
+        CALL Mprint(edip,nat,maxat)
+        write(*,*) " "
         xtot=ZERO
         do i=1,nat
           xtot=xtot+edip(i,i)
         end do
-        write(*,*) 'Total Intrinsic dipole term :',xtot
-        write(*,*) ' '
-        write(*,*) 'Charge-transfer energy contributions (origin dependent)'
+        write(*,'(2x,a28,x,f12.6)') "Total Intrinsic dipole term:",xtot
+        write(*,*) " "
+        write(*,*) " Charge-transfer energy contributions (origin dependent)"
         CALL Mprint(ect,NAT,maxat)
         write(*,*) ' '
         xtot=ZERO
         do i=1,nat
           xtot=xtot+ect(i,i)
         end do
-        write(*,*) 'Total Charge-Transfer term :',xtot
-        write(*,*) ' '
+        write(*,'(2x,a27,x,f12.6)') "Total Charge-Transfer term:",xtot
+        write(*,*) " "
       end if
 
 !! TOTAL ENERGY UP TO HERE !!
-
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
+
+!! DEALLOCATING !!
       DEALLOCATE(chp2,scr)
+
       end
 
-! *****
+!! ***** !!
 
       subroutine numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
@@ -347,9 +381,9 @@
 !! DOING ENERGY PARTITION !!
       npass=2     
       write(*,*) " "
-      write(*,*) " ****************************** "
-      write(*,*) "  Doing two-electron integrals  "
-      write(*,*) " ****************************** "
+      write(*,*) " --------------------------- "
+      write(*,*) "  GENERAL TWO-ELECTRON PART  "
+      write(*,*) " --------------------------- "
       write(*,*) " "
       do i=1,nat
         do j=1,nat
@@ -382,7 +416,8 @@
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
       phb=phb12
       pha=ZERO 
-      write(*,'(2x,a21,x,f10.6,x,f10.6)') "Rotating for angles :",pha,phb
+      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
+      write(*,*) " "
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
       ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
@@ -410,6 +445,7 @@
       else
         call calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
+      write(*,*) " "
       call cpu_time(xtime2)
       write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)' 
       write(*,*) " "
@@ -632,7 +668,7 @@
         write(*,*) " HF Ex TERMS  "
         write(*,*) " "
         CALL Mprint(exch_hf,nat,maxat)
-        write(*,*) " Hartree-Fock exchange energy : ",exchen_hf
+        write(*,'(2x,a29,x,f12.6)') "Hartree-Fock exchange energy:",exchen_hf
         write(*,*) " "
         call cpu_time(xtime2)
         write(*,'(a39,f10.1,a2)')'(Elapsed time :: Exact-exchange energy ',xtime2-xtime,'s)' 
@@ -789,35 +825,6 @@
           end do
         end do
       end if
-
-
-!        do icenter=1,nat
-!          do ifut=iatps*(icenter-1)+1,iatps*icenter
-!            x0=wp(ifut)*omp2(ifut,icenter)
-!            dx0=pcoord(ifut,1)
-!            dy0=pcoord(ifut,2)
-!            dz0=pcoord(ifut,3)
-!            do i=1,nocc
-!              do j=i,nocc
-!                f2=x0*chp2(ifut,i)*chp2(ifut,j)
-!                f2=x0*chp2s(i,ifut)*chp2s(j,ifut)
-!                if(i.ne.j) f2=TWO*f2
-!                f3=ZERO
-!                do jfut=iatps*(icenter-1)+1,iatps*icenter
-!                  x1=wppha(jfut)*omp2pha(jfut,icenter)
-!                  dx1=pcoordpha(jfut,1)
-!                  dy1=pcoordpha(jfut,2)
-!                  dz1=pcoordpha(jfut,3)
-!                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-!                  if(dist.gt.1.0d-8) f3=f3+f2*x1*chp2pha(jfut,i)*chp2pha(jfut,j)/dist !! MG: Could be controlled using the thr2 variable !!
-!                  if(dist.gt.1.0d-8) f3=f3+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: Could be controlled using the thr2 variable !!
-!                end do
-!                coul0(icenter,4)=coul0(icenter,4)-f3                    
-!              end do
-!            end do
-!          end do
-!        end do
-!      end if
 
 !! CHECKING NEW VALUES !!
       do i=1,nat
@@ -1011,7 +1018,7 @@
 ! (TO DO) Laplacian!
       dimension xkdens(itotps)
 
-      dimension Epa(maxat,maxat),ekin(maxat,maxat)
+      dimension Epa(maxat,maxat),ekin(maxat,maxat),enuc(maxat,maxat)
       dimension eecp(maxat)
       allocatable :: chp2(:,:),scr(:),chpaux(:,:), chp3(:,:)
 
@@ -1019,10 +1026,15 @@
       ipoints =  itotps
       iatps   =  nang*nrad
 
+      write(*,*) " "
+      write(*,*) " --------------------------- "
+      write(*,*) "  GENERAL ONE-ELECTRON PART  "
+      write(*,*) " --------------------------- "
+      write(*,*) " "
+
       ALLOCATE(chp2(itotps,nalf),chp3(itotps,nb))
 
 !! TO MOs !!
-
       do k=1,ipoints
         do j=1,nalf
           xx=ZERO
@@ -1036,20 +1048,19 @@
         end do
       end do
 
+!! ZEROING MATRICES !!
+      epa=ZERO
+      ekin=ZERO
+      eto=ZERO
+      enuc=ZERO
+      
 !! DOING ENERGY PARTITION !!
 !! ONE ELECTRON PART !!
 
-      do i=1,nat
-        do j=1,nat
-          epa(i,j)=ZERO
-          ekin(i,j)=ZERO
-          eto(i,j)=ZERO
-        end do
-      end do
-       
-      call mga_misc(iecp,eecp)
+!! IN CASE OF HAVING PSEUDOPOTENTIAL !!
+      call mga_misc(iecp,eecp) !! MAYBE WE SHOULD DO A BETTER VERSION OF THIS... !!
       if(iecp.eq.1) then
-        write(*,*) 'Adding ECP atomic energies to E-N contribution'
+        write(*,*) " ADDING ECP ATOMIC ENERGIES TO E-N TERMS "
         do i=1,nat       
           epa(i,i)=eecp(i)
         end do 
@@ -1084,15 +1095,20 @@
           xtot=xtot+epa(i,j)
         end do
       end do
-      eelnuc=xtot   
-      CALL Mprint(epa,NAT,maxat)
-      write(*,*) ' Electron-nuclei energy : ',eelnuc
+      eelnuc=xtot
+
+!! PRINTING MATRIX !!
+      write(*,*) " ----------------------------- "
+      write(*,*) "  ELECTRON-NUCLEAR ATTRACTION  "
+      write(*,*) " ----------------------------- "
+      write(*,*) " "
+      call MPRINT2(epa,nat,maxat)
+      write(*,'(2x,a23,x,f12.6)') "Electron-nuclei energy:",eelnuc
 
 !! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE)
-
       if(eelnuc0.ne.ZERO) then
 !        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc-eelnuc0)*23.06*27.212 !MMO- same as restricted case
-        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc+xxdip-eelnuc0)*23.06*27.212
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*23.06*27.212
         write(*,*) ' '
       else
         eelnuc0=eelnuc
@@ -1104,13 +1120,11 @@
       end if
 
 !! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
-
       ALLOCATE(chpaux(itotps,igr))
       call dpoints(chpaux,pcoord)
 
 !! NOW TO MO AND MULTPLY BY MOs AND SUM OVER MOs USING SCRATCH ARRAY !!
 !! HENCE WE HAVE DENSITY IN scr EXCEPT FOR THE FACTOR OF TWO !!
-
       ALLOCATE(scr(itotps))
       do k=1,ipoints
         x=ZERO
@@ -1140,13 +1154,18 @@
         xtot=xtot+x
       end do
       ekinen=xtot
-      CALL Mprint(ekin,NAT,maxat)
-      write(*,*) ' Kinetic energy : ',ekinen
+
+!! PRINTING MATRIX !!
+      write(*,*) " ---------------- "
+      write(*,*) "  KINETIC ENERGY  "
+      write(*,*) " ---------------- "
+      write(*,*) " "
+      call MPRINT2(ekin,nat,maxat)
+      write(*,'(2x,a15,x,f12.6)') "Kinetic energy:",ekinen
 
 !! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE ) !!
-
       if(ekin0.ne.ZERO) then
-        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(ekinen-ekin0)*23.06*27.212
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*23.06*27.212
         write(*,*) '         '                       
       else
         ekin0=ekinen  
@@ -1157,23 +1176,31 @@
       end if
 
 !! ADDING NUCLEAR REPULSION !!
-
-      xtot=ZERO
+      erep=ZERO
       do i=1,nat
         eto(i,i)=ekin(i,i)+epa(i,i)
         do j=i+1,nat
           dist=dsqrt((coord(1,i)-coord(1,j))**2 +(coord(2,i)-coord(2,j))**2+(coord(3,i)-coord(3,j))**2)
           eto(i,j)=ekin(i,j)+epa(i,j)+zn(i)*zn(j)/dist
           eto(j,i)=epa(i,j)
-          xtot=xtot+zn(i)*zn(j)/dist
+
+!! SAVING ALSO FOR PRINTING PURPOSES, I THINK WE SHOULD GIVE IT... COMES FOR FREE !!
+          enuc(i,j)=zn(i)*zn(j)/dist
+          enuc(j,i)=enuc(i,j)
+          erep=erep+zn(i)*zn(j)/dist
         end do
       end do
-      erep=xtot
-      write(*,*) ' Nuclear repulsion energy : ',erep
-      write(*,*) ' '
+
+!! PRINTING MATRIX !!
+      write(*,*) " --------------------------- "
+      write(*,*) "  NUCLEAR-NUCLEAR REPULSION  "
+      write(*,*) " --------------------------- "
+      write(*,*) " "
+      call MPRINT2(enuc,nat,maxat)
+      write(*,'(2x,a25,x,f12.6)') "Nuclear repulsion energy:",erep
+      write(*,*) " "
 
 !! TOTAL ENERGY UP TO HERE !!
-
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
 
@@ -2292,6 +2319,7 @@ c  energetics
 
        end
 
+!! ***** !!
 
       subroutine multipolar(norb,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
       use integration_grid
@@ -2492,7 +2520,7 @@ c  energetics
 
       end
 
-! *****
+!! ***** !!
 
       subroutine calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       use integration_grid
@@ -2570,5 +2598,7 @@ c  energetics
         call group_by_frag_mat(1,line,coul)
       end if
 
-      end 
+      end
+
+!! ***** !!
 
