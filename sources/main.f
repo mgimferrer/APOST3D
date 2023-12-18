@@ -1295,12 +1295,7 @@ CCCCCCCCCCCCCCC
         if(id_xfunc.ne.0) call func_info_print(id_xfunc,jtype)
         if(itype.ge.jtype) iopt(55) = itype
         if(jtype.gt.itype) iopt(55) = jtype
-      else
-        write(*,*) " HF functional selected "
-        write(*,'(2x,a29,x,f6.3)') "HF-type exchange coeff:",xmix !! REDUNDANT, BUT OKAY... !!
-        write(*,*) " "
       end if
-
 
 !! RESTRICTED CASE !!
       if(kop.ne.1) then 
@@ -1308,9 +1303,8 @@ CCCCCCCCCCCCCCC
 
 !! ONE-ELECTRON TERMS !!
         call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
-        write(*,*) " "
         call cpu_time(time2)
-        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
+        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)'
         time=time2
 
 !! DFT XC TERM !!
@@ -1320,7 +1314,6 @@ CCCCCCCCCCCCCCC
           else
             call numint_dft_analytical(ndim,itotps,wp,omp,omp2,chp,eto,pcoord,sat)
           end if
-          write(*,*) " "
           call cpu_time(time2)
           write(*,'(a28,f10.1,a2)')'(Elapsed time :: enpart dft ',time2-time,'s)' 
           time=time2
@@ -1333,7 +1326,6 @@ CCCCCCCCCCCCCCC
 
 !! ONE-ELECTRON TERMS !!
         call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
-        write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
         time=time2
@@ -1341,7 +1333,6 @@ CCCCCCCCCCCCCCC
 !! DFT XC TERM !!
         if(id_xfunc.ne.-1) then
           call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
-          write(*,*) " "
           call cpu_time(time2)
           write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
           time=time2
@@ -1357,7 +1348,9 @@ CCCCCCCCCCCCCCC
 
 !! TWO-ELECTRON INTEGRATION DEFAULTS !!
       write(*,*) " "
-      write(*,*) " SETTING GRID FOR TWO-ELECTRON ENERGY INTEGRATION "
+      write(*,*) " ----------------------------------------------------- "
+      write(*,*) "  SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  "
+      write(*,*) " ----------------------------------------------------- "
       write(*,*) " "
 
 !! CONTROLLED BY # GRID OPTION (modgrid common) !!
@@ -1378,8 +1371,7 @@ CCCCCCCCCCCCCCC
 !! PRINTING INFO !!
       write(*,*) " "
       write(*,'(2x,a14,x,i4)') "Radial points:",nrad
-      write(*,'(2x,a15,x,i4)') "Angular points:",nang
-      write(*,*) " "    
+      write(*,'(2x,a15,x,i4)') "Angular points:",nang  
 
 !! GENERATING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATIONS !!
       iatps=nang*nrad
@@ -1393,7 +1385,6 @@ CCCCCCCCCCCCCCC
       if(iposthf.eq.1) then
 !        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
         call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
-        write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart two-electron ',time2-time,'s)' 
         time=time2
