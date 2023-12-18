@@ -61,7 +61,7 @@ c Building  pcoords
       call rpoints(wp)
       call fpoints(chp,pcoord)
       ipoints=iatps*nat
-      print *,'Number of grid points:',ipoints         
+      write(*,'(2x,a22,x,i9)') 'Number of grid points:',ipoints         
 
 c Building rho 
       do ifut=1,itotps   
