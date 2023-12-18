@@ -158,7 +158,7 @@
           scrx(nu,ii)=xx
         end do
        end do
-c
+
        do ii=1,nocc
         do jj=1,nocc
           xx=ZERO
@@ -282,11 +282,9 @@ c
       xtot=ZERO
       do icenter=1,nat
         x=ZERO
-!! ALLPOINTS INTEGRATION ACTIVATED... !!
+!! ALLPOINTS INTEGRATION !!
         do ifut=1,itotps 
           x=x+wp(ifut)*scr2(ifut)*omp(ifut)*omp2(ifut,icenter)
-c         do ifut=iatps*(icenter-1)+1,iatps*icenter
-c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
         end do
         exch(icenter,icenter)=x
         xtot=xtot+x
@@ -298,7 +296,7 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
       write(*,*) " ----------------------------------------- "
       write(*,*) " "
       call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a35,x,f12.6)') "KS-DFT exchange-correlation energy:",xtot
+      write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
       write(*,*) " "
 
 !! REARRANGING ATOMIC XC COMPONENTS !!
@@ -327,7 +325,7 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
        end do
       end do
       call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a47,x,f12.6)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
+      write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       write(*,*) " "
       if(xmix.gt.ZERO) then
         write(*,*) " WARNING: HF-exchange part missing "
@@ -938,7 +936,7 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
       write(*,*) " ----------------------------------------- "
       write(*,*) " "
       call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a35,x,f12.6)') "KS-DFT exchange-correlation energy:",xtot
+      write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
       write(*,*) " "
 
 !! RECALCULATING ATOMIC XC COMPONENTS !!
@@ -967,7 +965,7 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
         end do
       end do
       call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a47,x,f12.6)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
+      write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       write(*,*) " "
       if(xmix.gt.ZERO) then
         write(*,*) " WARNING: HF-exchange part missing "
