@@ -253,7 +253,7 @@
           end if
         end do
       end do
-      write(*,*) " ---------------------------- "
+      write(*,*) " --------------------------- "
       write(*,*) " "
 
 !! PRINTING !!
@@ -893,7 +893,7 @@
           end if
         end do
       end do
-      write(*,*) " ---------------------------- "
+      write(*,*) " --------------------------- "
       write(*,*) " "
 
 !! PRINTING !!
@@ -1070,7 +1070,7 @@
       write(*,*) "  DENSITY FUNCTIONAL INFORMATION  "
       write(*,*) " -------------------------------- "
       write(*,*) " "
-      write(*,*) " Functional name -->",trim(name_func)
+      write(*,*) " Functional name --> ",trim(name_func)
       ii=0
       call xc_f90_info_refs(xc_info,ii,name_ref)
       do while(ii.ge.0)

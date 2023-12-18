@@ -119,7 +119,7 @@
           xtot=xtot+ect(i,i)+edip(i,i)
         end do
         xxdip=xtot
-        write(*,'(2x,a37,x,f12.6)') "Electronic dipole moment energy term:",xxdip
+        write(*,'(2x,a37,x,f14.7)') "Electronic dipole moment energy term:",xxdip
         write(*,*) " "
       else
         !! MG: at the beginning of the subroutine is made zero, necessary again? !!
@@ -166,20 +166,17 @@
       write(*,*) " ----------------------------- "
       write(*,*) " "
       call MPRINT2(epa,nat,maxat)
-      write(*,'(2x,a23,x,f12.6)') "Electron-nuclei energy:",eelnuc
+      write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
 
 !! CHECKING INTEGRATION ERROR (IF ENERGIES INCLUDED IN .fchk FILE) !!
       if(eelnuc0.ne.ZERO) then
         !MMO- printing fix: to correctly evaluate error, add xxdip here, because during the decomp process we do not add 
         !MMO- it to any atomic contributions (we avoid atomic terms related to dipole)
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*23.06*27.212
-        write(*,*) " "
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
       else
         eelnuc0=eelnuc
-        write(*,*) " "
       end if
-
-!! TO DO: PRINTING BY FRAGS !!
+      write(*,*) " "
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Electron-nuclei attraction ' 
         call group_by_frag_mat(1,line,epa)
@@ -223,15 +220,15 @@
       write(*,*) " ---------------- "
       write(*,*) " "
       call MPRINT2(ekin,nat,maxat)
-      write(*,'(2x,a15,x,f12.6)') "Kinetic energy:",ekinen
+      write(*,'(2x,a15,x,f14.7)') "Kinetic energy:",ekinen
 
 !! CHECKING INTEGRATION ERROR (IF ENERGIES INCLUDED IN .fchk FILE) !!
       if(ekin0.ne.ZERO) then
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*23.06*27.212
-        write(*,*) " "
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*tokcal
       else
         ekin0=ekinen  
       end if
+      write(*,*) " "
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy ' 
         call group_by_frag_mat(1,line,ekin)
@@ -260,7 +257,7 @@
       write(*,*) " --------------------------- "
       write(*,*) " "
       call MPRINT2(enuc,nat,maxat)
-      write(*,'(2x,a25,x,f12.6)') "Nuclear repulsion energy:",erep
+      write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
       write(*,*) " "
 
 !! IN CASE OF HAVING AN ELECTRIC FIELD !!
@@ -272,30 +269,32 @@
           ect(i,i)=ect(i,i)+xxx
           xtot=xtot+xxx
         end do
-        write(*,'(2x,a50,x,f12.6)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
-        write(*,*) " "
-        write(*,'(2x,a34,x,f12.6)') "Nuclear dipole moment energy term:",xtot
-        write(*,*) " "
+        write(*,'(2x,a50,x,f14.7)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
+        write(*,'(2x,a34,x,f14.7)') "Nuclear dipole moment energy term:",xtot
         edipole=xtot+xxdip
-        write(*,'(2x,a32,x,f12.6)') "Total dipole moment energy term:",edipole
+        write(*,'(2x,a32,x,f14.7)') "Total dipole moment energy term:",edipole
         write(*,*) " "
-        write(*,*) " Intrinsic dipole energy contributions (origin independent)"
-        CALL Mprint(edip,nat,maxat)
+        write(*,*) " ----------------------------------------------------------- "
+        write(*,*) "  INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)  "
+        write(*,*) " ----------------------------------------------------------- "
         write(*,*) " "
+        call MPRINT2(edip,nat,maxat)
         xtot=ZERO
         do i=1,nat
           xtot=xtot+edip(i,i)
         end do
-        write(*,'(2x,a28,x,f12.6)') "Total Intrinsic dipole term:",xtot
+        write(*,'(2x,a28,x,f14.7)') "Total Intrinsic dipole term:",xtot
         write(*,*) " "
-        write(*,*) " Charge-transfer energy contributions (origin dependent)"
-        CALL Mprint(ect,NAT,maxat)
-        write(*,*) ' '
+        write(*,*) " -------------------------------------------------------- "
+        write(*,*) "  CHARGE-TRANSFER ENERGY CONTRIBUTION (ORIGIN DEPENDENT)  "
+        write(*,*) " -------------------------------------------------------- "
+        write(*,*) " "
+        call MPRINT2(ect,nat,maxat)
         xtot=ZERO
         do i=1,nat
           xtot=xtot+ect(i,i)
         end do
-        write(*,'(2x,a27,x,f12.6)') "Total Charge-Transfer term:",xtot
+        write(*,'(2x,a27,x,f14.7)') "Total Charge-Transfer term:",xtot
         write(*,*) " "
       end if
 
@@ -417,7 +416,6 @@
       phb=phb12
       pha=ZERO 
       write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
-      write(*,*) " "
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
       ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
@@ -445,7 +443,6 @@
       else
         call calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
-      write(*,*) " "
       call cpu_time(xtime2)
       write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)' 
       write(*,*) " "
@@ -476,8 +473,9 @@
 
 !! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
 !! IMPLEMENTATION PERFORMED THANKS TO Dr. R. OSWALD !!
-        write(*,*) " "
-        write(*,*) " *** PURE EXCHANGE PART *** "
+        write(*,*) " ------------------------------------------------- "
+        write(*,*) "  EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  "
+        write(*,*) " ------------------------------------------------- "
         write(*,*) " "
         write(*,'(2x,a22,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
@@ -486,7 +484,7 @@
 !! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
         call getenv('OMP_NUM_THREADS',threadenv)
         if(trim(threadenv)=='') then
-          write(*,*) 'OMP_NUM_THREADS not set'
+          write(*,*) " OMP_NUM_THREADS not set"
           ithreadenv=ZERO
         else
           read(unit=threadenv,FMT='(I4)') ithreadenv
@@ -665,13 +663,18 @@
             exchen_hf=exchen_hf+exch_hf(i,j)
           end do
         end do
-        write(*,*) " HF Ex TERMS  "
+
+!! PRINTING !!
+        write(*,*) " ----------------------------------------- "
+        write(*,*) "  HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
+        write(*,*) " ----------------------------------------- "
         write(*,*) " "
-        CALL Mprint(exch_hf,nat,maxat)
-        write(*,'(2x,a29,x,f12.6)') "Hartree-Fock exchange energy:",exchen_hf
+        CALL MPRINT2(exch_hf,nat,maxat)
+        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
         write(*,*) " "
         call cpu_time(xtime2)
         write(*,'(a39,f10.1,a2)')'(Elapsed time :: Exact-exchange energy ',xtime2-xtime,'s)' 
+        write(*,*) " "
         xtime=xtime2
       end if
       end if !MMO- non-analytical skip ends here
@@ -680,11 +683,11 @@
 !! HF ONLY !!
       if(ihf.eq.1) then
         evee=coulen+exchen_hf
-        write(*,*) ' Total two-electron part (coul+exch_hf) : ',evee
+        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
         if(evee0.ne.ZERO) then
-          twoelerr=(evee-evee0)*23.06*27.212
-          write(*,'(a33,f8.2)') ' Integration error (kcal/mol) : ',twoelerr
-          write(*,*) ' '
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
+          write(*,*) " "
         else
           evee0=evee    
         end if
@@ -702,25 +705,29 @@
           end do
         end do
         if(idoex.eq.1) then
-          write(*,*) ' DFT exchange-correlation energy terms '
-          CALL Mprint(exch,nat,maxat)
-          write(*,*) ' Total exchange-correlation energy : ',exchen
-          write(*,*) ' '
+          write(*,*) " ------------------------ "
+          write(*,*) "  HYBRID KS-DFT XC TERMS  "
+          write(*,*) " ------------------------ "
+          write(*,*) " "
+          call MPRINT2(exch,nat,maxat)
+          write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
+          write(*,*) " "
         end if
         evee=coulen+exchen
-        write(*,*) ' DFT electron-electron energy : ',evee             
+        write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee            
         if(evee0.ne.ZERO) then
-          twoelerr=(evee-evee0)*23.06*27.212
-          write(*,'(a33,f8.2)') ' Integration error (kcal/mol) : ',twoelerr
-          write(*,*) ' '
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee0=evee
-        end if 
+        end if
+        write(*,*) " "
       end if
 
 !! ZERO ERROR STRATEGY FOR VEE PART !!
       if(ianalytical.eq.1) twoeltoler=232000
-      write(*,*) ' Max error accepted on the two-electron part : ',twoeltoler
+      write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
+      write(*,*) " "
 
       if(abs(twoelerr).gt.twoeltoler) then
 
@@ -728,7 +735,7 @@
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
       phb=phb22
       pha=ZERO 
-      write(*,'(2x,a21,1x,f10.6,1x,f10.6)') "Rotating for angles :",pha,phb
+      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
       nat0=nat
       call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
@@ -836,11 +843,11 @@
         deltaee=deltaee+coul0(i,1)-coul0(i,3)
         if(idoex.eq.1) deltaee=deltaee+xmix*(coul0(i,2)-coul0(i,4))
       end do
-      deltaee=deltaee*23.06*27.212
+      deltaee=deltaee*tokcal
       phabest=ONE-(twoelerr/deltaee)
-      write(*,'(a29,f8.2)') ' New error after rotation: ',twoelerr-deltaee
-      if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) ' Warning, new error with same sign '
-      write(*,*) ' Damping parameter: ',phabest !MMO- not dumping
+      write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
+      if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+      write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest !MMO- not dumping !! ...
 
 !! INTERPOLATING ENERGIES, REPLACING OLD COULOMB AND EXCHANGE TERMS !!
       do i=1,nat
@@ -853,32 +860,39 @@
       xtime=xtime2
 
 !! PRINTING !!
-      write(*,*) '**INTERPOLATED TWO-ELECTRON ENERGY COMPONENTS**' 
-      CALL Mprint(coul,nat,maxat)
+      write(*,*) " "
+      write(*,*) " ------------------------------------------------------- "
+      write(*,*) "  INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
+      write(*,*) " ------------------------------------------------------- "
+      write(*,*) " "
+      call MPRINT2(coul,nat,maxat)
       coulen=ZERO
       do i=1,nat
         do j=i,nat
           coulen=coulen+coul(i,j)
         end do
       end do
-      write(*,*) ' Coulomb energy : ',coulen
-      write(*,*) ' '
+      write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
+      write(*,*) " "
       if (idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: Coulomb energy ' 
         call group_by_frag_mat(1,line,coul)
       end if
 
       if(idoex.eq.1) then
-        write(*,*) '**INTERPOLATED TWO-ELECTRON ENERGY COMPONENTS**' 
-        CALL Mprint(exch_hf,NAT,maxat)
+        write(*,*) " ------------------------------------------------------ "
+        write(*,*) "  INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
+        write(*,*) " ------------------------------------------------------ "
+        write(*,*) " "
+        call MPRINT2(exch_hf,NAT,maxat)
         exchen_hf=ZERO
         do i=1,nat
           do j=i,nat
             exchen_hf=exchen_hf+exch_hf(i,j)
           end do
         end do
-        write(*,*) ' HF Exchange energy : ',exchen_hf
-        write(*,*) ' '
+        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+        write(*,*) " "
 
         if(ihf.ne.1) then
           exchen=ZERO
@@ -889,16 +903,20 @@
               exchen=exchen+exch(i,j)
             end do
           end do
-          write(*,*) ' DFT exchange-correlation energy terms '
-          CALL Mprint(exch,NAT,maxat)
-          write(*,*) ' Total exchange-correlation energy: ',exchen
-          write(*,*) '         '
+
+          write(*,*) " ------------------------------------- "
+          write(*,*) "  INTERPOLATED HYBRID KS-DFT XC TERMS  "
+          write(*,*) " ------------------------------------- "
+          write(*,*) " "
+          call MPRINT2(exch,nat,maxat)
+          write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
+          write(*,*) " "
           if (idofr.eq.1) then
             line=' FRAGMENT ANALYSIS: Final Exc Decomposition ' 
             call group_by_frag_mat(1,line,exch)
           end if
         end if
-       else    
+      else    
         exchen=ZERO
         do i=1,nat
           exchen=exchen+exch(i,i)
@@ -911,23 +929,23 @@
 !! TOTAL TWO-ELECTRON PART !!
       if(ihf.eq.0) then
         evee=coulen+exchen
-        write(*,*) ' DFT electron-electron energy : ',evee             
-        twoelerr=(evee-evee0)*23.06*27.212
-        write(*,'(a33,f8.2)') ' Integration error (kcal/mol) : ',twoelerr
-        write(*,*) '         '
+        write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee             
+        twoelerr=(evee-evee0)*tokcal
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
       else
         evee=coulen+exchen_hf
-        write(*,*) ' Total two-electron part (coul+exch_HF) : ',evee            
-        twoelerr=(evee-evee0)*23.06*27.212
-        write(*,'(a33,f8.2)') ' Integration error (kcal/mol) : ',twoelerr
+        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee            
+        twoelerr=(evee-evee0)*tokcal
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
       end if
+      write(*,*) " "
 
       end if
 
 !! END ZERO ERROR STRATEGY !!
+
 !! FINAL PRINTING !!
       if(ihf.eq.1) then
-        write(*,*) ' Hartree-Fock electron-electron energy : ',coulen+exchen_hf
         xtot=ZERO
         do i=1,nat
           eto(i,i)=eto(i,i)+coul(i,i)+exch_hf(i,i)
@@ -939,20 +957,22 @@
           end do
         end do
         etot=xtot
-        WRITE(*,6343)
- 6343   FORMAT(1x,/21X,'"FUZZY ATOMS" Hartree-Fock ENERGY COMPONENTS'//)
-        CALL Mprint(eto,NAT,maxat)
-        write(*,*) ' '
-        write(*,*)'Total integrated energy  : ',etot  
-        write(*,*)'Total energy in Fchk file: ',escf  
+
+        write(*,*) " -------------------------------------------- "
+        write(*,*) "  FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS  "
+        write(*,*) " -------------------------------------------- "
+        write(*,*) " "
+        call MPRINT2(eto,nat,maxat)
+        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
+        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf  
         if(ifield.eq.1) then
-          write(*,*)'Total dipole energy  : ',edipole
+          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
         end if
-        write(*,'(a34,f12.8)') ' Integration error (au):          ',err
-        write(*,'(a34,f10.2)') ' Integration error (kcal/mol):    ',err*23.06*27.212
+        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       else
         xtot=ZERO
         do i=1,nat
@@ -965,20 +985,22 @@
           end do
         end do
         etot=xtot
-        WRITE(*,6342)
- 6342   FORMAT(1x,/21X,'"FUZZY ATOMS" DFT ENERGY COMPONENTS'//)
-        CALL Mprint(eto,NAT,maxat)
-        write(*,*) ' '
-        write(*,*) 'SUM OF DFT COMPONENTS :          ',etot
-        write(*,*) 'Total energy in checkpointfile : ',escf
+
+        write(*,*) " -------------------------------------- "
+        write(*,*) "  FUZZY ATOMS KS-DFT ENERGY COMPONENTS  "
+        write(*,*) " -------------------------------------- "
+        write(*,*) " "
+        call MPRINT2(eto,nat,maxat)
+        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot  
+        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
         if(ifield.eq.1) then
-          write(*,*)'Total dipole energy  : ',edipole
+          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
         end if
-        write(*,'(a34,f12.8)') ' Integration error (au):          ',err
-        write(*,'(a34,f10.2)') ' Integration error (kcal/mol):    ',err*23.06*27.212
+        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Energy Decomposition' 
@@ -1103,19 +1125,18 @@
       write(*,*) " ----------------------------- "
       write(*,*) " "
       call MPRINT2(epa,nat,maxat)
-      write(*,'(2x,a23,x,f12.6)') "Electron-nuclei energy:",eelnuc
+      write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
 
 !! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE)
       if(eelnuc0.ne.ZERO) then
-!        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc-eelnuc0)*23.06*27.212 !MMO- same as restricted case
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*23.06*27.212
+!        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc-eelnuc0)*tokcal !MMO- same as restricted case
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
         write(*,*) ' '
       else
         eelnuc0=eelnuc
       end if
       if (idofr.eq.1) then
-!        line='   FRAGMENT ANALYSIS: Kinetic energy ' !MMO- commenting original line
-        line='   FRAGMENT ANALYSIS: Electron-nuclei attraction ' !MMO- minor: this is not kinetic
+        line='   FRAGMENT ANALYSIS: Electron-nuclei attraction '
         call group_by_frag_mat(1,line ,epa)
       end if
 
@@ -1161,15 +1182,15 @@
       write(*,*) " ---------------- "
       write(*,*) " "
       call MPRINT2(ekin,nat,maxat)
-      write(*,'(2x,a15,x,f12.6)') "Kinetic energy:",ekinen
+      write(*,'(2x,a15,x,f14.7)') "Kinetic energy:",ekinen
 
 !! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE ) !!
       if(ekin0.ne.ZERO) then
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*23.06*27.212
-        write(*,*) '         '                       
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*tokcal                      
       else
         ekin0=ekinen  
       end if
+      write(*,*) " "
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy ' 
         call group_by_frag_mat(1,line ,ekin)
@@ -1197,7 +1218,7 @@
       write(*,*) " --------------------------- "
       write(*,*) " "
       call MPRINT2(enuc,nat,maxat)
-      write(*,'(2x,a25,x,f12.6)') "Nuclear repulsion energy:",erep
+      write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
       write(*,*) " "
 
 !! TOTAL ENERGY UP TO HERE !!
@@ -1263,7 +1284,7 @@
       idofr       = Iopt(40)
       ithrebod    = Iopt(44)
       ipolar      = Iopt(46)
-      ifield      =  Iopt(47) !MMO- adding iopt
+      ifield      = Iopt(47) !MMO- adding iopt
       ianalytical = Iopt(91) !MMO- analytical
 
       !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
@@ -1279,9 +1300,9 @@
 !! DOING ENERGY PARTITION !!
       npass=2
       write(*,*) " "
-      write(*,*) " ****************************** "
-      write(*,*) "  Doing two-electron integrals  "
-      write(*,*) " ****************************** "
+      write(*,*) " --------------------------- "
+      write(*,*) "  GENERAL TWO-ELECTRON PART  "
+      write(*,*) " --------------------------- "
       write(*,*) " "
       do i=1,nat
         do j=1,nat
@@ -1320,7 +1341,7 @@
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
       phb=phb12
       pha=ZERO 
-      write(*,'(2x,a21,x,f10.6,x,f10.6)') "Rotating for angles :",pha,phb
+      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
       ALLOCATE(chp2pha(itotps,nalf),rhopha(itotps),chp2phab(itotps,nb))
@@ -1407,8 +1428,10 @@
 
 !! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
 !! MIMICKING STRATEGY FROM RHF PART !!
+        write(*,*) " ------------------------------------------------- "
+        write(*,*) "  EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  "
+        write(*,*) " ------------------------------------------------- "
         write(*,*) " "
-        write(*,*) " *** PURE EXCHANGE PART *** "
         write(*,'(2x,a22,x,i6,x,a9)') "Two-el integrations for",nalf*(nalf+1),"functions"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
 
@@ -1416,7 +1439,7 @@
 !! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
         call getenv('OMP_NUM_THREADS',threadenv)
         if(trim(threadenv)=='') then
-          write(*,*) 'OMP_NUM_THREADS not set'
+          write(*,*) " OMP_NUM_THREADS not set"
           ithreadenv=ZERO
         else
           read(unit=threadenv,FMT='(I4)') ithreadenv
@@ -1616,10 +1639,12 @@
             exchen_hf=exchen_hf+exch_hf(i,j)
           end do
         end do
-        write(*,*) " UHF Ex TERMS "
+        write(*,*) " ----------------------------------------- "
+        write(*,*) "  HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
+        write(*,*) " ----------------------------------------- "
         write(*,*) " "
-        call Mprint(exch_hf,nat,maxat)
-        write(*,*) " Hartree-Fock exchange energy : ",exchen_hf
+        call MPRINT2(exch_hf,nat,maxat)
+        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
         write(*,*) " "
       end if
       end if !MMO- non-analytical skip ends here
@@ -1628,11 +1653,11 @@
 !! HF ONLY !!
       if(ihf.eq.1) then
         evee=coulen+exchen_hf
-        write(*,*) ' Total two-electron part (coul+exch_HF) : ',evee
+        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
         if(evee0.ne.ZERO) then
-          twoelerr=(evee-evee0)*23.06*27.212
-          write(*,'(a33,f8.2)') ' Integration error (kcal/mol) : ',twoelerr
-          write(*,*) ' '
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
+          write(*,*) " "
         else
           evee0=evee    
         end if
@@ -1650,32 +1675,37 @@
           end do
         end do
         if(idoex.eq.1) then
-          write(*,*) ' DFT exchange-correlation energy terms '
-          CALL Mprint(exch,NAT,maxat)
-          write(*,*) ' Total exchange-correlation energy : ',exchen
-          write(*,*) ' '
+          write(*,*) " ------------------------ "
+          write(*,*) "  HYBRID KS-DFT XC TERMS  "
+          write(*,*) " ------------------------ "
+          write(*,*) " "
+          call MPRINT2(exch,nat,maxat)
+          write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
+          write(*,*) " "
         end if
         evee=coulen+exchen
-        write(*,*) ' DFT electron-electron energy : ',evee             
+        write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee           
         if(evee0.ne.ZERO) then
-           twoelerr=(evee-evee0)*23.06*27.212
-           write(*,'(a33,f8.2)') ' Integration error (kcal/mol) : ',twoelerr
-           write(*,*) ' '
+           twoelerr=(evee-evee0)*tokcal
+           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee0=evee
-        end if 
+        end if
+        write(*,*) " "
       end if
 
 !! ZERO ERROR STRATEGY FOR THE VEE PART !!
       if(ianalytical.eq.1) twoeltoler=232000
-      write(*,*) ' Max error accepted on the two-electron part : ',twoeltoler
+      write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
+      write(*,*) " "
+
       if(abs(twoelerr).gt.twoeltoler) then
 
 !! NOW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
         phb=phb22
         pha=ZERO 
-        write(*,'(2x,a21,1x,f10.6,1x,f10.6)') "Rotating for angles :",pha,phb
+        write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
         nat0=nat
         call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
@@ -1805,11 +1835,11 @@
           deltaee=deltaee+coul0(i,1)-coul0(i,3)
           if(idoex.eq.1)deltaee=deltaee+xmix*(coul0(i,2)-coul0(i,4))
         end do
-        deltaee=deltaee*23.06*27.212
+        deltaee=deltaee*tokcal
         phabest=ONE-(twoelerr/deltaee)
-        write(*,'(a26,f8.2)') ' New error after rotation: ',twoelerr-deltaee
-        if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) ' Warning, new error with same sign '
-        write(*,*) ' Damping parameter: ',phabest !MMO- not dumping
+        write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
+        if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+        write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest !MMO- not dumping !! ...
 
 !! INTERPOLATING ENERGIES AND REPLACING OLD COULOMB AND EXCHANGE TERMS !!
         do i=1,nat
@@ -1818,38 +1848,43 @@
             exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
           end if
         end do
+        write(*,*) " "
 
 !! PRINTING !!
-        write(*,*) '**INTERPOLATED TWO-ELECTRON ENERGY COMPONENTS**' 
-        CALL Mprint(coul,NAT,maxat)
+        write(*,*) " ------------------------------------------------------- "
+        write(*,*) "  INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
+        write(*,*) " ------------------------------------------------------- "
+        write(*,*) " " 
+        call MPRINT2(coul,nat,maxat)
         coulen=ZERO
         do i=1,nat
           do j=i,nat
             coulen=coulen+coul(i,j)
           end do
         end do
-        write(*,*) ' Coulomb energy : ',coulen
-        write(*,*) ' '
+        write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
+        write(*,*) " "
         if (idofr.eq.1) then
           line='   FRAGMENT ANALYSIS: Coulomb energy ' 
           call group_by_frag_mat(1,line ,coul)
         end if
 
         if(idoex.eq.1) then
-          write(*,*) '**INTERPOLATED TWO-ELECTRON ENERGY COMPONENTS**' 
-          CALL Mprint(exch_hf,NAT,maxat)
+          write(*,*) " ------------------------------------------------------ "
+          write(*,*) "  INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
+          write(*,*) " ------------------------------------------------------ "
+          write(*,*) " "
+          call MPRINT2(exch_hf,nat,maxat)
           exchen_hf=ZERO
           do i=1,nat
             do j=i,nat
               exchen_hf=exchen_hf+exch_hf(i,j)
             end do
           end do
-          write(*,*) ' HF Exchange energy : ',exchen_hf
-          write(*,*) ' '
+          write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          write(*,*) " "
 
-!! HF-TYPE EXCHANGE !!
-
-          if(ihf.ne.0) then
+          if(ihf.ne.1) then
             exchen=ZERO
             do i=1,nat
               exch(i,i)=exch(i,i)+xmix*(exch_hf(i,i)-coul0(i,2))
@@ -1862,17 +1897,19 @@
                 exchen=exchen+exch(i,j)
               end do
             end do
-            write(*,*) ' DFT exchange-correlation energy terms '
-            CALL Mprint(exch,NAT,maxat)
-            write(*,*) ' Total exchange-correlation energy: ',exchen
-            write(*,*) ' '
+
+            write(*,*) " ------------------------------------- "
+            write(*,*) "  INTERPOLATED HYBRID KS-DFT XC TERMS  "
+            write(*,*) " ------------------------------------- "
+            write(*,*) " "
+            call MPRINT2(exch,nat,maxat)
+            write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
+            write(*,*) " "
             if (idofr.eq.1) then
               line='   FRAGMENT ANALYSIS: Final Exc Decomposition ' 
               call group_by_frag_mat(1,line ,exch)
             end if
           end if
-
-!! DFT !! 
         else    
           exchen=ZERO
           do i=1,nat
@@ -1886,21 +1923,22 @@
 !! TOTAL TWO ELECTRON PART !!
         if(ihf.eq.0) then
           evee=coulen+exchen
-          write(*,*) ' DFT electron-electron energy: ',evee             
-          twoelerr=(evee-evee0)*23.06*27.212
-          write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',twoelerr
-          write(*,*) ' '
+          write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee              
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee=coulen+exchen_hf
-          write(*,*) ' Total two-electron part (coul+exch_HF) : ',evee
-          twoelerr=(evee-evee0)*23.06*27.212
-          write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',twoelerr
+          write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee            
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         end if
+        write(*,*) " "
       end if
 
-!! PRINTING FINAL ETOT !!
+!! END ZERO-ERROR STRATEGY !!
+
+!! FINAL PRINTING !!
       if(ihf.eq.1) then
-        write(*,*) 'Hartree-Fock electron-electron energy: ',coulen+exchen_hf
         xtot=ZERO
         do i=1,nat
           eto(i,i)=eto(i,i)+coul(i,i)+exch_hf(i,i)
@@ -1912,21 +1950,24 @@
           end do
         end do
         etot=xtot
-        WRITE(*,6353)
- 6353   FORMAT(1x,/21X,'"FUZZY ATOMS" Hartree-Fock ENERGY COMPONENTS'//)
-        CALL Mprint(eto,NAT,maxat)
-        write(*,*) ' '
-        write(*,*)'Total integrated energy  : ',etot  
-        write(*,*)'Total energy in Fchk file: ',escf  
+
+        write(*,*) " -------------------------------------------- "
+        write(*,*) "  FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS  "
+        write(*,*) " -------------------------------------------- "
+        write(*,*) " "
+        call MPRINT2(eto,nat,maxat)
+        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
+        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf 
+  
 !MMO - added ifield loop, to match restricted
         if(ifield.eq.1) then
-          write(*,*)'Total dipole energy  : ',edipole
+          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
         end if
-        write(*,'(a34,f12.8)') ' Integration error (au):          ',err
-        write(*,'(a34,f10.2)') ' Integration error (kcal/mol):    ',err*23.06*27.212
+        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       else
         xtot=ZERO
         do i=1,nat
@@ -1939,23 +1980,25 @@
           end do
         end do
         etot=xtot
-        WRITE(*,6352)
- 6352   FORMAT(1x,/21X,'"FUZZY ATOMS" DFT ENERGY COMPONENTS'//)
-        CALL Mprint(eto,NAT,maxat)
-        write(*,*) ' '
-        write(*,*) 'SUM OF DFT COMPONENTS :          ',etot
-        write(*,*) 'Total energy in checkpointfile : ',escf
+
+        write(*,*) " -------------------------------------- "
+        write(*,*) "  FUZZY ATOMS KS-DFT ENERGY COMPONENTS  "
+        write(*,*) " -------------------------------------- "
+        write(*,*) " "
+        call MPRINT2(eto,nat,maxat)
+        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot  
+        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
+
 !MMO - added ifield loop, to match restricted
         if(ifield.eq.1) then
-          write(*,*)'Total dipole energy  : ',edipole
+          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
         end if
-        write(*,'(a34,f12.8)') ' Integration error (au):          ',err  
-        write(*,'(a34,f10.2)') ' Integration error (kcal/mol):    ',err*23.06*27.212
+        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       end if
-
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Energy Decomposition' 
         call group_by_frag_mat(1,line ,eto)
@@ -2539,9 +2582,6 @@ c  energetics
       iatps = nrad*nang
       idofr = Iopt(40)
 
-      write(*,*) " "
-      write(*,*) " *** COULOMB PART *** "
-      write(*,*) " "
       f2=ZERO
       do icenter=1,nat
         do ifut=iatps*(icenter-1)+1,iatps*icenter
@@ -2551,7 +2591,6 @@ c  energetics
           dz0=pcoord(ifut,3)
 
 !! SAME CENTER !!
-
           f3=ZERO
           do jfut=iatps*(icenter-1)+1,iatps*icenter
             x1=wppha(jfut)*omp2pha(jfut,icenter)
@@ -2564,7 +2603,6 @@ c  energetics
           coul(icenter,icenter)=coul(icenter,icenter)+f3
 
 !! PAIRS OF CENTERS !!
-
           do jcenter=icenter+1,nat
             f3=ZERO
             do jfut=iatps*(jcenter-1)+1,iatps*jcenter
@@ -2589,10 +2627,16 @@ c  energetics
           coulen=coulen+coul(i,j)
         end do
       end do
-      write(*,*) " Ecoul TERMS "
+
+!! PRINTING !!
       write(*,*) " "
-      CALL Mprint(coul,nat,maxat)
-      write(*,*) " Coulomb energy : ",coulen
+      write(*,*) " ------------------------------------------ "
+      write(*,*) "  COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
+      write(*,*) " ------------------------------------------ "
+      write(*,*) " "
+      call MPRINT2(coul,nat,maxat)
+      write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
+      write(*,*) " "
       if(idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: Coulomb energy '
         call group_by_frag_mat(1,line,coul)
