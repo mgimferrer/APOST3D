@@ -1,4 +1,4 @@
-c
+
 c main limits
       parameter (nmax=8000)
       parameter (maxat=350) 
@@ -30,3 +30,4 @@ c numerical constants
 
 !! Others !!
       parameter(angtoau=0.52917721067d0) !! From Angstroms to a.u. !!
+      parameter(tokcal=627.5096d0) !! From a.u. to kcal/mol !!

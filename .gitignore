@@ -4,6 +4,20 @@
 *.o
 *.mod
 *.optrpt
+*.dyn
+*pgopti*
+
+# Executables
+
+eos_aom
+apost3d-eos
+apost3d
+
+# Other files #
+
+nohup.out
+compiler-testset/*OSLOs*.fchk
+compiler-testset/*.apost*
 
 # Also the folder of the libraries, for problems of permission #
 
