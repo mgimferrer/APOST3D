@@ -126,6 +126,69 @@
       GO TO 1
       END
 
+!! ***** !!
+
+      SUBROUTINE MPRINT2(H,N,ndim)
+      IMPLICIT REAL*8 (A-H,O-Z)
+      include 'parameter.h'
+      integer, intent(in) :: ndim
+      character*100 line
+      common /printout/iaccur
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      DIMENSION H(NDIM,NDIM)
+
+      Dimension mend(92)
+      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O , 
+     $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
+     $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
+     $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
+     $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
+     $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
+     $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sn ,
+     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu , 
+     $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
+     $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
+     $4H Th ,4H Pa ,4H  U   /
+    
+      line="--------------------------------------------------------------------------------"
+
+      K=6
+      NMIN=1
+      NNMAX=MIN0(N,K)
+   62 FORMAT(2X,I3,A4,6F12.6)
+   63 FORMAT(2X,I3,A4,6F20.13)
+   1  if(iaccur.eq.0) then
+      PRINT 666,line
+      PRINT 60, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+      else
+      PRINT 666,line
+      PRINT 61, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+      end if
+   60 FORMAT(10X,6(2X,I3,A4,3X))
+   61 FORMAT(10X,6(6X,I3,A4,7X))
+      PRINT 666,line
+      DO 2 I=1,N
+      if(iaccur.eq.0) then
+      PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+      else
+      PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+      end if
+   2  CONTINUE
+      PRINT 666,line
+      NMIN=NMIN+6
+      K=K+6
+      NNMAX=MIN0(N,K)
+      IF(NNMAX.GE.NMIN) GOTO 71
+      RETURN
+   71 PRINT 66  
+   66 FORMAT(1X)
+      GO TO 1
+
+!! FORMAT FOR THE LINES !!
+  666 FORMAT(2x,a100)
+      END
+
+!! ***** !!
 
 
       SUBROUTINE MPRINTNOAT(H,M,N,mdim,ndim)
