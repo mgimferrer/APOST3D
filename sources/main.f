@@ -1369,7 +1369,6 @@ CCCCCCCCCCCCCCC
       end if
 
 !! PRINTING INFO !!
-      write(*,*) " "
       write(*,'(2x,a14,x,i4)') "Radial points:",nrad
       write(*,'(2x,a15,x,i4)') "Angular points:",nang  
 
