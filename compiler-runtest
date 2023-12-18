@@ -1,0 +1,21 @@
+#!/bin/bash -l
+
+## THE SCRIPT RUNS A BATTERY OF TEST CALCULATIONS FOR GENERATING THE .dyn FILES REQUIRED FOR PGO COMPILATION ##
+
+PROGDIR="/home/mgimferrer/APOST3D"
+TESTDIR="${PROGDIR}/compiler-testset"
+APOST="${PROGDIR}/apost3d"
+
+cd ${TESTDIR}
+
+echo " "
+echo " RUNNING TEST CALCULATIONS FOR PGO COMPILATION (STEP 1) "
+for mol in C2H6-B3LYP FeCO2-PBEPBE CH3F FeO4-2 H2O-T-B3LYP; do
+  STAT=" PERFORMING CALCULATION FOR ${mol} "
+  echo "${STAT}"
+  /usr/bin/time -f " %E real,%U user,%S sys, %P CPU Percentage, %M Max Resident Set Size (Kb)" ${APOST} ${mol} > ${mol}.apost1
+done
+echo " "
+echo " STEP 1 DONE "
+echo " "
+

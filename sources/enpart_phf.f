@@ -266,7 +266,7 @@
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
       DEALLOCATE(chp2,scr)
-      call flush
+      
       end
 
 ! *****
@@ -386,7 +386,6 @@
         rho(ii)=xx
         rhopha(ii)=xxpha
       end do
-      call flush
 
 !! COULOMB PART !!
 
@@ -396,7 +395,6 @@
       write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)'
       write(*,*) " "
       xtime=xtime2
-      call flush 
 
 !! EXCHANGE PART !!
 
@@ -442,7 +440,6 @@
       write(*,'(a40,f10.1,a2)')'(Elapsed time :: PHF Exc energy ',xtime2-xtime,'s)' 
       write(*,*) " "
       xtime=xtime2
-      call flush
       DEALLOCATE(cumulab,ffa1,ffb2)
 
 !! EXCHANGE ENERGY PART ONLY (IF ASKED IN THE INPUT FILE) !!
@@ -499,7 +496,6 @@
         write(*,'(a40,f10.1,a2)')'(Elapsed time :: PHF Ex & Ec energy ',xtime2-xtime,'s)'
         write(*,*) " "
         xtime=xtime2
-        call flush
         DEALLOCATE(cumulab,ffa1,ffb2)
       end if
 
@@ -693,7 +689,6 @@
       end if
       
       DEALLOCATE(chp2,chp3)
-      call flush
  
       end
 

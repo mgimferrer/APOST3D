@@ -405,7 +405,6 @@
             end do
           end do
           write(*,*) " Topology Process (%) : ",REAL(irun)*100.0d0/REAL(ixx)
-          call flush
         end do
         write(*,*) " Difference between Total and Atomic + Diatomic : ",diff
 
@@ -559,16 +558,17 @@
 !       end do 
       end if 
 
-!! DEALLOCATING EVERYTHING HERE !!
-
+!! DEALLOCATING !!
       DEALLOCATE(pgrid,xao,xmo,xmo2,gxchp,gychp,gzchp,omp2,omp)
       DEALLOCATE(pcoord,wp)
-      call flush 
+
+!! PRINTING FORMATS !!
 40    FORMAT(6e13.5)
 41    FORMAT(a8,x,a8,a7,i3,a9,a2,a11,f8.4,a9,f8.4)
 42    FORMAT(i5,3f12.6)
 43    FORMAT(i5,4f12.6)
 44    FORMAT(a8,x,a8,a7,i3,a9,i2,a11,f8.4,a9,f8.4)
+
       end
 
 !*****

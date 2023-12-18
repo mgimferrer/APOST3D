@@ -1,0 +1,82 @@
+
+
+#############################################################
+# MAKEFILE FOR APOST-3D PROGRAM (WITH HIGH-PERFORMANCE PGO) #
+#############################################################
+
+
+## DEFINING VARIABLES ##
+PROG = /home/mgimferrer/APOST3D
+LIBXCDIR = $(PROG)/libxc-4.2.3
+QUADDIR = $(PROG)/lebedev
+#FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive -prof-gen
+FOR = ifort -parallel -qopenmp -unroll-aggressive -prof-gen
+FOR_INP = ifort
+SFLAGS = -xHost -extend-source 132 -mcmodel=medium
+OFLAGS = -Ofast
+LFLAGS = -L$(LIBXCDIR)/lib -lxcf90 -lxc -I$(LIBXCDIR)/include -parallel -qopenmp -prof-gen
+
+SRCDIR = $(PROG)/sources
+OBJDIR = $(PROG)/objects
+UTILDIR = $(PROG)/utils
+SRC_LIST := $(wildcard $(SRCDIR)/*.f) 
+OBJ_LIST := $(SRCDIR)/modules.o $(addprefix $(OBJDIR)/,$(notdir ${SRC_LIST:.f=.o})) 
+LIBXC_OBJ := $(LIBXCDIR)/libxc_funcs.o $(LIBXCDIR)/libxc.o
+QUAD_OBJ := $(QUADDIR)/Lebedev-Laikov.o
+
+OBJ_LIST_EOS := $(SRCDIR)/modules.o $(OBJDIR)/effao.o $(OBJDIR)/util.o $(OBJDIR)/print.o $(OBJDIR)/numint.o $(OBJDIR)/wat.o $(OBJDIR)/input2.o $(OBJDIR)/mulliken.o  $(OBJDIR)/pop.o  $(OBJDIR)/corr.o  $(OBJDIR)/quad.o
+
+
+## MAKEFILE ##
+all: apost3d apost3d-eos eos_aom
+
+apost3d: $(LIBXC_OBJ) $(OBJ_LIST) $(QUAD_OBJ) 
+	$(FOR) $(OBJ_LIST) $(LIBXC_OBJ) $(QUAD_OBJ) $(LFLAGS) -o apost3d 
+
+
+## SPECIFIC RULES FOR LINKING LIBXC F90 FILES ##
+$(LIBXCDIR)/libxc_funcs.mod: $(LIBCXDIR)/libxc_funcs.o $(LIBXCDIR)/libxc_funcs.f90
+	$(FOR) -c $(SFLAGS) $(OFLAGS) $(LIBXCDIR)/libxc_funcs.f90 -o $@ -J$(LIBXCDIR)/include
+$(LIBXCDIR)/libxc_funcs.o: 
+	$(FOR) -c $(SFLAGS) $(OFLAGS) $(LIBXCDIR)/libxc_funcs.f90 -o $@ -J$(LIBXCDIR)/include
+$(LIBXCDIR)/libxc.o: 
+	$(FOR) -c $(SFLAGS) $(OFLAGS) $(LIBXCDIR)/libxc.f90 -o $@ -J$(LIBXCDIR)/include
+
+
+## SPECIFIC RULES FOR LEBEDEV-LAIKOV SUBROUTINES ##
+$(QUADDIR)/Lebedev-Laikov.o: 
+	$(FOR) -c $(SFLAGS) $(OFLAGS) $(QUADDIR)/Lebedev-Laikov.F -o $@
+
+
+## SPECIFIC RULES FOR APOST3D F90 FILES (MODULES) ##
+$(SRCDIR)/modules.o:
+	$(FOR) -c $(SFLAGS) $(OFLAGS) $(SRCDIR)/modules.f90 -o $@
+
+
+## GENERAL RULES ##
+$(OBJDIR)/input2.o : $(SRCDIR)/input2.f $(SRCDIR)/parameter.h
+	$(FOR_INP) -c $(SFLAGS) -I$(LIBXCDIR)/include $< -o $@
+$(OBJDIR)/%.o : $(SRCDIR)/%.f $(SRCDIR)/parameter.h
+	$(FOR) -c $(SFLAGS) $(OFLAGS) -I$(LIBXCDIR)/include $< -o $@
+$(UTILDIR)/%.o : $(UTILDIR)/%.f $(SRCDIR)/parameter.h
+	$(FOR) -c $(SFLAGS) $(OFLAGS) -I$(SRCDIR) $< -o $@
+$(UTILDIR)/%.o : $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h
+	$(FOR) -c $(SFLAGS) $(OFLAGS) -I$(SRCDIR) $< -o $@
+
+
+## MAKE ONLY APOST3D-EOS ##
+apost3d-eos: $(SRCDIR)/modules.o $(UTILDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
+	$(FOR) $(QUAD_OBJ) $(OBJ_LIST_EOS) $(UTILDIR)/main_eos.o -o apost3d-eos 
+
+
+## MAKE ONLY EOS-AOM ##
+eos_aom : $(UTILDIR)/eos_aom.o  
+	$(FOR) $(UTILDIR)/eos_aom.o -o eos_aom 
+
+
+## CLEANING EVERYTHING ##
+clean:
+	rm -rf $(SRCDIR)/*.o $(OBJDIR)/*.o $(UTILDIR)/*.o *.mod *.dyn *pgopti* apost3d apost3d-eos eos_aom
+
+
+## END MAKEFILE_PROFGEN ##

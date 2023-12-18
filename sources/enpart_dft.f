@@ -123,7 +123,7 @@
       idofr    =  Iopt(40)
       ithrebod =  Iopt(44)
       itype    =  Iopt(55)
-      iatps=nang*nrad
+      iatps    =  nang*nrad
 
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
       ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps))
@@ -131,7 +131,6 @@
       ALLOCATE(scrx(igr,nocc))
 
 !! THRESHOLD FOR BODEN CALCULATION USING THE BOND ORDER BETWEEN A PAIR OF ATOMS !!
-
       if(ithrebod.lt.1) then
         threbod=ZERO
       else
@@ -140,11 +139,13 @@
 
 !! EXCHANGE AND CORRELATION FOR DFT !!
 !! BOND ORDER DENSITY !!
-
-      write(*,*) " *** DFT MOLECULAR ENERGY DECOMPOSITION *** "
       write(*,*) " "
-      write(*,*) " DOING BOND ORDER DENSITY APPROACH "
-      write(*,'(a39,f10.6)') " Threshold for atom pair calculation : ",threbod
+      write(*,*) " ------------------------------ "
+      write(*,*) "  RKS-DFT ENERGY DECOMPOSITION  "
+      write(*,*) " ------------------------------ "
+      write(*,*) " "
+      write(*,*) " USING BOND ORDER DENSITY APPROACH "
+      write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
       write(*,*) " "
 
       do iatom=1,nat
@@ -157,7 +158,7 @@
           scrx(nu,ii)=xx
         end do
        end do
-c
+
        do ii=1,nocc
         do jj=1,nocc
           xx=ZERO
@@ -171,8 +172,6 @@ c
       end do
 
 !! CHECKING !!
-
-      write(*,*) " CHECKING MO OVERLAPS "
       do ii=1,nocc                 
         do jj=ii,nocc
           x=ZERO
@@ -182,14 +181,12 @@ c
           end do
           if(abs(x).gt.1.0d-3) then
             write(*,*) ii,jj,xx
-            stop " Problem with MOs overlaps "
+            stop " PROBLEM WITH MOs OVERLAPS "
           end if
         end do
       end do
-      write(*,*) " "
 
 !! chp2 : MOs, chpd : MO DERIVATIVES !!
-
       do k=1,itotps
        do j=1,nocc
          xx=ZERO
@@ -203,16 +200,18 @@ c
       if(itype.gt.1) call grdrho(pcoord,chpd)
 
 !! CALCULATING XC MATRIX USING BODEN !!
-
+      write(*,*) " --------------------------------------- "
+      write(*,*) "  BOND ORDER DENSITY FOR ALL ATOM PAIRS  "
+      write(*,*) " --------------------------------------- "
       write(*,*) " "
-      write(*,*) " USING BODEN FOR ALL ATOM PAIR CONTRIBUTIONS "
-      write(*,*) " "
+      write(*,*) " --------------------------- "
+      write(*,*) "  Atom   Atom   BODEN value  "
+      write(*,*) " --------------------------- "
       x0=ZERO
       do iatom=1,nat
         do jatom=iatom+1,nat
 
 !! COMPUTING BODEN FOR ATOMIC PAIRS (CONTROLLED BY THREBOD)
-
           bx0=bo(iatom,jatom)
           if(bx0.ge.threbod) then
             x1=ZERO
@@ -230,40 +229,37 @@ c
                 end do
 
 !! DEFINING A-B BODEN AS A-B + B-A, HENCE FACTOR OF 2
-
                 scr_a(jfut)=ff2
                 if(iatom.ne.jatom) scr_a(jfut)=TWO*ff2
                 x1=x1+x2*scr_a(jfut)
               end do
             end do
-            write(*,*) " Integrated BODEN for atoms ",iatom, jatom," : ",x1
-            write(*,*) " "
+            write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,x1
 
 !! GRADIENT OF BODEN CALCULATED FOR GGA FUNCTIONALS !!
 !! scr_a : BODEN FOR A GIVEN ATOM PAIR, scr : SIGMA BODEN scr2 : XC FUNCTIONAL VALUE !!
 ! Laplacian of the BODEN required for the MGGA functionals. NOT IMPLEMENTED
-
             if(itype.gt.1) call grdboden(itotps,omp2,chp2,chpd,scr,iatom,jatom,sab)
             call xc(itotps,scr_a,scr,scr2) 
 
 !! ALLPOINTS INTEGRATION !!
- 
-            x1=ZERO
+             x1=ZERO
             do icenter=1,nat
               do ifut=iatps*(icenter-1)+1,iatps*icenter
                 x1=x1+wp(ifut)*scr2(ifut)*omp2(ifut,icenter)*omp(ifut)
               end do
             end do
             exch2(iatom,jatom)=x1
-          else 
-!            exch2(iatom,jatom)=(ONE-xmix)*Excmp(iatom,jatom)
           end if
         end do
       end do
+      write(*,*) " --------------------------- "
+      write(*,*) " "
 
 !! PRINTING !!
-
-      write(*,*) " DIATOMIC XC COMPONENTS "
+      write(*,*) " --------------------------------------- "
+      write(*,*) "  DIATOMIC PURE KS-DFT XC TERMS (BODEN)  "
+      write(*,*) " --------------------------------------- "
       write(*,*) " "
       exchen=ZERO
       do ii=1,nat
@@ -272,7 +268,7 @@ c
          exchen=exchen+exch2(ii,jj)
        end do
       end do
-      CALL Mprint(exch2,nat,maxat)
+      call MPRINT2(exch2,nat,maxat)
       write(*,*) " "
 
       if(itype.gt.1) then
@@ -282,28 +278,28 @@ c
 
 !! CALCULATE "EXACT" (ONE-CENTER) XC ENERGY !! 
 !! Laplacian for the MGGA functionals can be calculated using LAPLACIAN subroutine (qtaim.f). NOT IMPLEMENTED
-
       call xc(itotps,rho,scr,scr2) 
       xtot=ZERO
       do icenter=1,nat
         x=ZERO
-!! ALLPOINTS INTEGRATION ACTIVATED... !!
+!! ALLPOINTS INTEGRATION !!
         do ifut=1,itotps 
           x=x+wp(ifut)*scr2(ifut)*omp(ifut)*omp2(ifut,icenter)
-c         do ifut=iatps*(icenter-1)+1,iatps*icenter
-c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
         end do
         exch(icenter,icenter)=x
         xtot=xtot+x
       end do
-      write(*,*) " PURE DFT ONE-CENTER CONTRIBUTIONS (EXACT) "
+
+!! PRINTING THE "PURE" ONCE-CENTER TERMS !!
+      write(*,*) " ----------------------------------------- "
+      write(*,*) "  PURE KS-DFT XC ONE-CENTER TERMS (EXACT)  "
+      write(*,*) " ----------------------------------------- "
       write(*,*) " "
-      CALL Mprint(exch,NAT,maxat)
-      write(*,*) " Exact one-center decomposition for DFT xc energy : ",xtot
+      call MPRINT2(exch,nat,maxat)
+      write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
       write(*,*) " "
 
 !! REARRANGING ATOMIC XC COMPONENTS !!
-
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
       write(*,*) " "
       do ii=1,nat
@@ -318,17 +314,18 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
       end do
 
 !! PRINTING !!
-
+      write(*,*) " ---------------------------------------------------------- "
+      write(*,*) "  FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS  "
+      write(*,*) " ---------------------------------------------------------- "
+      write(*,*) " "
       exchen=ZERO
       do ii=1,nat
        do jj=ii,nat
          exchen=exchen+exch(ii,jj)
        end do
       end do
-      write(*,*) " FINAL KS-DFT XC ENERGY COMPONENTS "
-      write(*,*) " "
-      call Mprint(exch,nat,maxat)
-      write(*,*) " Sum of (exact) DFT xc energy components : ",exchen
+      call MPRINT2(exch,nat,maxat)
+      write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       write(*,*) " "
       if(xmix.gt.ZERO) then
         write(*,*) " WARNING: HF-exchange part missing "
@@ -340,7 +337,6 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
       end if
 
 !! ACCUMULATING INTO THE ETO MATRIX !!
-
       xtot=ZERO
       do ii=1,nat
         eto(ii,ii)=eto(ii,ii)+exch(ii,ii)
@@ -355,7 +351,7 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
       DEALLOCATE(chp2,scr,scr_a,rho_a,scr2,sab,chpd,scrx)
       end
 
-! *****
+!! ***** !!
 
       subroutine sigma(pcoord,chp2,scr)
       use basis_set
@@ -373,7 +369,6 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
       ALLOCATE(chpd(ipoints,igr),chp(ipoints,igr))
 
 !! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
-
       do kk=1,ipoints    
         scr(kk)=ZERO
       end do
@@ -415,7 +410,6 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
          enddo
         
 !! TO MOs !!
-        
          do k=1,ipoints
            do j=1,nocc
              xx=ZERO
@@ -433,14 +427,15 @@ c           x=x+wp(ifut)*scr2(ifut)*omp(ifut)
           end do
          end do
       end do
-c
+
       do kk=1,ipoints
        scr(kk)=16.0d0*scr(kk)
       end do
       deallocate(chpd,chp)
       end
 
-! *****
+!! ***** !!
+
       subroutine grdrho(pcoord,chpd)
       use basis_set
       use ao_matrices
@@ -455,7 +450,6 @@ c
       ALLOCATE(chp(itotps,igr)) 
 
 !! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
-
       do ixyz=1,3
          do irun=1,itotps 
           do iact=1,nbasis
@@ -507,6 +501,8 @@ c
       DEALLOCATE(chp) 
       end
 
+!! ***** !!
+
       subroutine ugrdrho(pcoord,chpd,chpbd)
       use basis_set
       use ao_matrices
@@ -522,7 +518,6 @@ c
       ALLOCATE(chp(itotps,igr)) 
 
 !! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
-
       do ixyz=1,3
          do irun=1,itotps 
           do iact=1,nbasis
@@ -580,7 +575,8 @@ c
       end do
       DEALLOCATE(chp) 
       end
-! *****
+
+!! ***** !!
 
       subroutine grdboden(itotps,omp2,chp2,chpd,scr,iat,kat,sab)
       use integration_grid
@@ -592,7 +588,6 @@ c
       dimension sab(nocc,nocc,nat)
 
 !! GENERATING GRID FOR BODEN DERIVATIVE !!
-
       do kk=1,itotps    
         scr(kk)=ZERO
       end do
@@ -618,7 +613,7 @@ c
       end do
       end
 
-! *****
+!! ***** !!
 
       subroutine xc_uks(npt,scr_ab,scr,scr2)
       use xc_f90_types_m
@@ -648,7 +643,6 @@ c
 !! scr_ab = RHO (ORDER: ALPHA, BETA) !!
 !! scr = SIGMA RHO (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
 !! scr2 = EXC (MULTIPLICATION BY RHO REMAINING) !!
-
       if(id_xcfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xcfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -667,7 +661,6 @@ c
       end if 
 
 !! CORRELATION SEPARATED !!
-
       if(id_cfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_cfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -686,7 +679,6 @@ c
       end if 
 
 !! EXCHANGE SEPARATED !!
-
       if(id_xfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -706,14 +698,13 @@ c
 
 !! MULTIPLYING BY RHO !! 
 !! EXCHANGE AND CORRELATION TOGETHER !!
-
       do ii=1,npt
         scr2(ii)=(scr2c(ii)+scr2(ii))*(scr_ab(1,ii)+scr_ab(2,ii))
       end do
       DEALLOCATE(scr2c)
       end 
 
-! *****
+!! ***** !!
 
       subroutine numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
       use ao_matrices
@@ -756,7 +747,6 @@ c
       ALLOCATE(scr2(itotps))
 
 !! BUILDING RHO AND ACCUMULATING IN THE SAME VECTOR. (ORDER: ALPHA, BETA) !!
-
       do kk=1,itotps
         xx0=ZERO
         xx0b=ZERO
@@ -779,15 +769,16 @@ c
       end do
 
 !! EXCHANGE AND CORRELATION FOR DFT !!
-
       write(*,*) " "
-      write(*,*) " DOING BOND ORDER DENSITY APPROACH "
+      write(*,*) " ------------------------------ "
+      write(*,*) "  UKS-DFT ENERGY DECOMPOSITION  "
+      write(*,*) " ------------------------------ "
       write(*,*) " "
-      write(*,'(a39,f10.6)') " Threshold for atom pair calculation : ",threbod
+      write(*,*) " USING BOND ORDER DENSITY APPROACH "
+      write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
       write(*,*) " "
 
 !! sab FOR ALPHA, sab2 FOR BETA !!
-
       do iatom=1,nat
         do ii=1,nalf
           do jj=ii,nalf
@@ -808,8 +799,6 @@ c
       end do
 
 !! CHECKING ALPHA AND BETA OVERLAPS !! 
-
-      write(*,*) " CHECKING ALPHA OVERLAPS "
       do ii=1,nalf
         do jj=ii,nalf
           xa=ZERO
@@ -819,11 +808,10 @@ c
           end do
           if(abs(xa).gt.1.0d-3) then
             write(*,*) ii,jj,xa
-            stop " Problem with alpha overlaps "
+            stop " PROBLEM WITH ALPHA MOs OVERLAPS "
           end if
         end do
       end do
-      write(*,*) " CHECKING BETA OVERLAPS "
       do ii=1,nb
         do jj=ii,nb
           xb=ZERO
@@ -833,21 +821,22 @@ c
           end do
           if(abs(xa).gt.1.0d-3) then
             write(*,*) ii,jj,xb
-            stop " Problem with beta overlaps "
+            stop " PROBLEM WITH ALPHA MOs OVERLAPS "
           end if
         end do
       end do
-      write(*,*) " "
 
 !! CALCULATING RHO GRADIENTS !!
-
       if(itype.ne.1) call ugrdrho(pcoord,chpd,chpbd)
 
-!! CALCULATIONF APPROXIMATED XC MATRIX USING BODEN !!
-
+!! CALCULATING APPROXIMATED XC MATRIX USING BODEN !!
+      write(*,*) " --------------------------------------- "
+      write(*,*) "  BOND ORDER DENSITY FOR ALL ATOM PAIRS  "
+      write(*,*) " --------------------------------------- "
       write(*,*) " "
-      write(*,*) " USING BODEN FOR ALL ATOM PAIR CONTRIBUTIONS "
-      write(*,*) " "
+      write(*,*) " --------------------------- "
+      write(*,*) "  Atom   Atom   BODEN value  "
+      write(*,*) " --------------------------- "
       x0=ZERO
       do iatom=1,nat
         do jatom=iatom+1,nat
@@ -889,11 +878,9 @@ c
                 xxb=xxb+x2*scr_bod(2,jfut)
               end do
             end do
-            write(*,*) " Integrated BODEN for atoms ",iatom, jatom," : ",xx+xxb
-            write(*,*) " "
+            write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,xx+xxb
 
 !! BODEN GRADIENT FOR UNRESTRICTED GGA FUNCTIONALS !!
-
             if(itype.ne.1) call grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iatom,jatom,sab,sab2)
             call xc_uks(itotps,scr_bod,scrall,scr2)
             x1=ZERO
@@ -903,12 +890,17 @@ c
               end do
             end do
             exch2(iatom,jatom)=x1
-          else 
-!            exch2(iatom,jatom)=(ONE-xmix)*Excmp(iatom,jatom)
           end if
         end do
       end do
+      write(*,*) " --------------------------- "
+      write(*,*) " "
 
+!! PRINTING !!
+      write(*,*) " --------------------------------------- "
+      write(*,*) "  DIATOMIC PURE KS-DFT XC TERMS (BODEN)  "
+      write(*,*) " --------------------------------------- "
+      write(*,*) " "
       exchen=ZERO
       do ii=1,nat
         exchen=exchen+exch2(ii,ii)
@@ -919,13 +911,10 @@ c
           end if 
         end do
       end do
+      CALL MPRINT2(exch2,nat,maxat)
       write(*,*) " "
-      write(*,*) " DIATOMIC XC COMPONENTS "
-      write(*,*) " "
-      CALL Mprint(exch2,nat,maxat)
 
 !! CALCULATE "EXACT" UNRESTRICTED XC ENERGY !!
-
       if(itype.ne.1) then
         ideriv=0
         call sigma_uks(pcoord,chp2,chp3,scrall)
@@ -942,15 +931,15 @@ c
       end do
 
 !! PRINTING !!
-
-      write(*,*) " PURE DFT ONE-CENTER CONTRIBTIONS (EXACT) "
+      write(*,*) " ----------------------------------------- "
+      write(*,*) "  PURE KS-DFT XC ONE-CENTER TERMS (EXACT)  "
+      write(*,*) " ----------------------------------------- "
       write(*,*) " "
-      CALL Mprint(exch,NAT,maxat)
-      write(*,*) " Exact unrestricted DFT xc energy : ",xtot
+      call MPRINT2(exch,nat,maxat)
+      write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
       write(*,*) " "
 
 !! RECALCULATING ATOMIC XC COMPONENTS !!
-
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
       write(*,*) " "
       do ii=1,nat
@@ -964,31 +953,30 @@ c
         exch(ii,ii)=exch(ii,ii)-x0/TWO
       end do
 
-!! CHECKING !!
-
+!! FINAL PRINTING !!
+      write(*,*) " ---------------------------------------------------------- "
+      write(*,*) "  FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS  "
+      write(*,*) " ---------------------------------------------------------- "
+      write(*,*) " "
       exchen=ZERO
       do ii=1,nat
         do jj=ii,nat
           exchen=exchen+exch(ii,jj)
         end do
       end do
-
-!! FINAL PRINTING !!
-
-      write(*,*) " FINAL XC ENERGY COMPONENTS : "
+      call MPRINT2(exch,nat,maxat)
+      write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       write(*,*) " "
-      CALL Mprint(exch,NAT,maxat)
-      write(*,*) " Sum of KS-DFT xc energy components :",exchen
-      write(*,*) " "
-      if(xmix.ne.ZERO) write(*,*) " WARNING: Exact HF exchange missing"
-      write(*,*) " "
+      if(xmix.gt.ZERO) then
+        write(*,*) " WARNING: HF-exchange part missing "
+        write(*,*) " "
+      end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Exc Decomposition' 
         call group_by_frag_mat(1,line,exch)
       end if
 
 !! ACCUMULATING IN ETO !!
-
       xtot=ZERO
       do ii=1,nat
         eto(ii,ii)=eto(ii,ii)+exch(ii,ii)
@@ -1002,7 +990,7 @@ c
       DEALLOCATE(chp2,rho,scr_bod,chpd,chpbd,sab2,scrall,chp3,sab,scr2)
       end 
 
-! *****
+!! ***** !!
 
       subroutine grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iat,kat,sab,sab2)
       use ao_matrices
@@ -1015,7 +1003,6 @@ c
       dimension sab(nalf,nalf,nat),sab2(nb,nb,nat),omp2(itotps,nat)
 
 !! GENERATING SIGMA BOND ORDER DENSITY VECTOR !!
-
       do kk=1,itotps
         scrall(1,kk)=ZERO
         scrall(2,kk)=ZERO
@@ -1023,7 +1010,6 @@ c
       end do
 
 !! CALCULATING AND ACCUMULATING SIGMA BODEN (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
-
       do ixyz=1,3
         do irun=1,itotps
           w1=omp2(irun,iat)
@@ -1054,18 +1040,24 @@ c
       end if
       end
 
-! *****
+!! ***** !!
 
       subroutine func_info_print(id_func,itype)
+
       use xc_f90_types_m
       use xc_f90_lib_m
+
       implicit real*8(a-h,o-z)
+
       TYPE(xc_f90_pointer_t) :: xc_func
       TYPE(xc_f90_pointer_t) :: xc_info
+
       include 'parameter.h'
+
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common/exchg/exch(maxat,maxat),xmix
       common /iops/iopt(100)
+
       character*120 name_ref        
       character*80 name_func
 
@@ -1073,25 +1065,29 @@ c
       if(kop.eq.1) call xc_f90_func_init(xc_func,xc_info,id_func,XC_POLARIZED)
       call xc_f90_hyb_exx_coef(xc_func,xmix)
       call xc_f90_info_name(xc_info,name_func)
+
+      write(*,*) " -------------------------------- "
+      write(*,*) "  DENSITY FUNCTIONAL INFORMATION  "
+      write(*,*) " -------------------------------- "
       write(*,*) " "
-      write(*,*) "INFO : Functional name --> ",trim(name_func)
+      write(*,*) " Functional name --> ",trim(name_func)
       ii=0
       call xc_f90_info_refs(xc_info,ii,name_ref)
       do while(ii.ge.0)
-        write(*,'(x,a22,i1,a2,a120)') "INFO : Reference --> [",ii,"] ",name_ref
+        write(*,'(2x,a15,i1,a1,x,a120)') "Reference --> [",ii,"]",name_ref
         call xc_f90_info_refs(xc_info,ii,name_ref)
       end do
       select case(xc_f90_info_kind(xc_info))
         case(XC_EXCHANGE)
-          write(*,*) "INFO : Functional type --> exchange"
+          write(*,*) " Functional type --> exchange"
         case(XC_CORRELATION)
-          write(*,*) "INFO : Functional type --> correlation"
+          write(*,*) " Functional type --> correlation"
         case(XC_EXCHANGE_CORRELATION)
-          write(*,*) "INFO : Functional type --> exchange-correlation"
+          write(*,*) " Functional type --> exchange-correlation"
         case(XC_KINETIC)
-          write(*,*) "INFO : Functional type --> kinetic energy"
+          write(*,*) " Functional type --> kinetic energy"
         case default
-          write(*,*) "WARNING : Functional type --> unknown"
+          write(*,*) " Functional type --> unknown"
       end select
 
 !! itype = 1 LDA, 2 GGA, 3 META-GGA. FOR HYB XMIX > 0. itype SAVED IN IOPT(55) !!
@@ -1099,38 +1095,38 @@ c
       itype=0
       select case(xc_f90_info_family(xc_info))
         case(XC_FAMILY_UNKNOWN)
-          write(*,*) "WARNING : Family of the functional unknown"
+          write(*,*) " Family of the functional unknown"
           stop
         case(XC_FAMILY_NONE)
-          write(*,*) "WARNING : Non-Family identified functional"
+          write(*,*) " Non-Family identified functional"
           stop
         case(XC_FAMILY_LDA)
-          write(*,*) "INFO : LDA functional selected"
+          write(*,*) " LDA functional selected"
           itype=1
         case(XC_FAMILY_GGA)
-          write(*,*) "INFO : GGA functional selected"
+          write(*,*) " GGA functional selected"
           itype=2
         case(XC_FAMILY_HYB_GGA)
-          write(*,*) "INFO : HYBRID-GGA functional selected"
-          write(*,*) "INFO : HF-type exchange coeff : ",xmix
+          write(*,*) " HYBRID-GGA functional selected"
+          write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
           itype=2
         case(XC_FAMILY_MGGA)
-          write(*,*) "INFO : META-GGA functional selected"
+          write(*,*) " META-GGA functional selected"
           itype=3
-          write(*,*) "WARNING : META-GGA still in development!!!"
-         stop
+          write(*,*) " META-GGA still in development!!!" !! MG: TO DO LIST !!
+          stop
         case(XC_FAMILY_HYB_MGGA)
-          write(*,*) "INFO : HYBRID-META-GGA functional selected"
-          write(*,*) "INFO : HF-type exchange coeff : ",xmix
+          write(*,*) " HYBRID-META-GGA functional selected"
+          write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
           itype=3
-          write(*,*) "WARNING : META-GGA still in development!!!"
+          write(*,*) " META-GGA still in development!!!" !! MG: TO DO LIST !!
           stop
       end select
       call xc_f90_func_end(xc_func)
-      write(*,*) " "
+
       end 
 
-! *****
+!! ***** !!
 
       subroutine sigma_uks(pcoord,chp2,chp3,scr)
       use basis_set
@@ -1150,7 +1146,6 @@ c
       ALLOCATE(chpd(ipoints,igr),chp(ipoints,igr),chpbd(ipoints,igr))
 
 !! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
-
       do kk=1,ipoints
        do jj=1,3
         scr(jj,kk)=ZERO
@@ -1193,8 +1188,7 @@ c
           enddo
          enddo
          
-!! TO MOs !!
-         
+!! TO MOs !!  
          do k=1,ipoints
            do j=1,nalf
              xx=ZERO
@@ -1209,7 +1203,6 @@ c
          end do
 
 !! CALCULATION OF SIGMA FOR COUPLING WITH LIBXC LIBRARIES (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
-
          do k=1,ipoints
            do i=1,nalf
              do j=1,nalf
@@ -1229,4 +1222,4 @@ c
       DEALLOCATE(chpd,chpbd,chp)
       end 
 
-
+!! ***** !!

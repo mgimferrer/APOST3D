@@ -176,7 +176,7 @@ CCCCCCCCCCCCCCCCCCCCC
       open (15,file=name,err=9999)
 
 c choose density from fchk file
-      call readint("# METODE","DENS",ndens0,1,1)
+      call readint("# METHOD","DENS",ndens0,1,1)
       iopt(9) = ndens0
       
 C Processing FChk file
@@ -186,43 +186,43 @@ C Processing FChk file
       iwfn=0  
 
 c look for options      
-      call readchar("# METODE","WFN",iwfn)
-      call readchar("# METODE","ALLPOINTS",iallpo)
-      call readchar("# METODE","FULLPRECISION",iaccur)
+      call readchar("# METHOD","WFN",iwfn)
+      call readchar("# METHOD","ALLPOINTS",iallpo)
+      call readchar("# METHOD","FULLPRECISION",iaccur)
 
 C Atoms in molecules
-      call readchar("# METODE","MULLI",imulli)
-      call readchar("# METODE","LOWDIN",ilow)
+      call readchar("# METHOD","MULLI",imulli)
+      call readchar("# METHOD","LOWDIN",ilow)
       if(ilow.eq.1) imulli=2
-      call readchar("# METODE","LOWDIN-DAVIDSON",ilow)
+      call readchar("# METHOD","LOWDIN-DAVIDSON",ilow)
       if(ilow.eq.1) imulli=3
-      call readchar("# METODE","NAO-BASIS",ilow)
+      call readchar("# METHOD","NAO-BASIS",ilow)
       if(ilow.eq.1) imulli=4
-      call readchar("# METODE","LOWDIN-W",ilow)
+      call readchar("# METHOD","LOWDIN-W",ilow)
       if(ilow.eq.1) imulli=5
-      call readchar("# METODE","HIRSH",ihirsh)
-      call readchar("# METODE","HIRSH-IT",ihirsh0)
+      call readchar("# METHOD","HIRSH",ihirsh)
+      call readchar("# METHOD","HIRSH-IT",ihirsh0)
       if(ihirsh0.eq.1) ihirsh=2
-      call readchar("# METODE","BECKE-RHO",ibcp)
-      call readchar("# METODE","NEWBEC",inewbec)
-      call readchar("# METODE","TFVC",itfvc)
+      call readchar("# METHOD","BECKE-RHO",ibcp)
+      call readchar("# METHOD","NEWBEC",inewbec)
+      call readchar("# METHOD","TFVC",itfvc)
       if(itfvc.eq.1) then
         ibcp=1
         inewbec=1
         istiff=4
       end if
-      call readint("# METODE","STIFFNESS",istiff,4,1)
-      call readchar("# METODE","WMATRAD",iradmat)
-      call readchar("# METODE","RMATRAD",iradmat0)
+      call readint("# METHOD","STIFFNESS",istiff,4,1)
+      call readchar("# METHOD","WMATRAD",iradmat)
+      call readchar("# METHOD","RMATRAD",iradmat0)
       if(iradmat0.eq.1) iradmat=2
 
-      call readchar("# METODE","ERF_PROF",ierf)
-      call readreal("# METODE","ERF_PROF",aerf,6.266d0,1)
+      call readchar("# METHOD","ERF_PROF",ierf)
+      call readreal("# METHOD","ERF_PROF",aerf,6.266d0,1)
       if(ierf.eq.1)  istiff=0
 
 c ERC QTAIM input module
-      call readchar("# METODE","QTAIM",iqtaim)
-      call readchar("# METODE","READINT",ireadint)
+      call readchar("# METHOD","QTAIM",iqtaim)
+      call readchar("# METHOD","READINT",ireadint)
       if(ireadint.eq.1) iqtaim=2
       if(iqtaim.eq.1) then
        call readint("# QTAIM","STEP",istep,300,1)
@@ -233,49 +233,62 @@ c ERC QTAIM input module
       end if 
 
 c Miscellaneous options
-      call readchar("# METODE","OPOP",iopop)
-      call readchar("# METODE","SHANNON",isha)
-      call readchar("# METODE","DOINT",idoint)
-      call readchar("# METODE","PCA",ipca)
-      call readchar("# METODE","LAPLACIAN",ilaplacian)
-      call readchar("# METODE","FINEGRID",ifinegrid)
-      call readchar("# METODE","ELCOUNT",ielcount) !MMO- NCTAIM
-      call readint("# METODE","RHO_CALC_AT",iatdens,0,1)
-      call readreal("# METODE","RHO_CALC_RAD",Rmax,0,1) ! MG: typo here!
-      call readchar("# METODE","NOPOPU",inopop)
+      call readchar("# METHOD","OPOP",iopop)
+      call readchar("# METHOD","SHANNON",isha)
+      call readchar("# METHOD","DOINT",idoint)
+      call readchar("# METHOD","PCA",ipca)
+      call readchar("# METHOD","LAPLACIAN",ilaplacian)
+      call readchar("# METHOD","FINEGRID",ifinegrid)
+      call readchar("# METHOD","ELCOUNT",ielcount) !MMO- NCTAIM
+      call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)
+      call readreal("# METHOD","RHO_CALC_RAD",Rmax,0,1) ! MG: typo here!
+      call readchar("# METHOD","NOPOPU",inopop)
  
 C eff-AO-s and EOS
-      call readchar("# METODE","EFFAO",ieffao)
-      call readchar("# METODE","UEFFAO",idummy)
+      call readchar("# METHOD","EFFAO",ieffao)
+      call readchar("# METHOD","UEFFAO",idummy)
       if(idummy.eq.1) ieffao=2
-!! TO CHANGE FOR UEOS
-      call readchar("# METODE","EFFAO-U",idummy)
+
+!! EFFAOS PAIRED AND UNPAIRED (ONLY) !!
+      call readchar("# METHOD","EFFAO-U",idummy)
       if(idummy.eq.1) ieffao=3
-!!
-      call readint("# METODE","EFF_THRESH",ieffthr,1,1)
-      call readchar("# METODE","CUBE",icube)
+
+      call readint("# METHOD","EFF_THRESH",ieffthr,1,1)
+      call readchar("# METHOD","CUBE",icube)
       if(icube.eq.1) then
        call locate(16,"# CUBE",ii)
        if(ii.eq.0) stop'Required section # CUBE not found in input file'
        call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
        call readint("# CUBE","MIN_OCC",kcubthr,0,1)
       end if
-      call readchar("# METODE","EOS",ieos)
+
+!! EOS (STANDARD) !!
+      call readchar("# METHOD","EOS",ieos)
       if(ieos.eq.1) then 
        iopop=1
-       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
        ieffao=2
+       call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
-      call readchar("# METODE","OS-CENTROID",ieoscent)
+
+!! EOS FROM THE PAIRED AND UNPAIRED DENSITIES !!
+      call readchar("# METHOD","EOS-U",iueos)
+      if(iueos.eq.1) then 
+       iopop=1
+       ieffao=3
+       call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
+      end if
+
+!! OS FROM CENTROIDS !!
+      call readchar("# METHOD","OS-CENTROID",ieoscent)
 
 c Local spin and methods for correlated WFs
-      call readchar("# METODE","SPIN",ispin)
-      call readint("# METODE","DM",icorr,0,1)
+      call readchar("# METHOD","SPIN",ispin)
+      call readint("# METHOD","DM",icorr,0,1)
       if(icorr.eq.2) ispin=1
-      call readchar("# METODE","DAFH",idafh)
+      call readchar("# METHOD","DAFH",idafh)
 
 c Energy decomposition options   
-      call readchar("# METODE","ENPART",ienpart )
+      call readchar("# METHOD","ENPART",ienpart )
       if(ienpart.eq.1) then
         xmix=ZERO
         id_xcfunc=0
@@ -348,7 +361,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 !! MG: extended version for 2d, 3d, and more 1d topology in apost3.1-devel of my user... we should check if worth merging !!
         itop=0
         ipairs=0
-        call readchar("# METODE","TOPOLOGY",itop)
+        call readchar("# METHOD","TOPOLOGY",itop)
         if(itop.eq.1) then
           call locate(16,"# ATOM PAIRS DEFINITION",ii)
           if(ii.eq.0) stop " ATOM PAIRS DEFINITION SECTION MISSING "
@@ -380,7 +393,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 !! EDAIQA OPTIONS !!
       iedaiqa=0
       iflip=0
-      call readchar("# METODE","EDAIQA",iedaiqa)
+      call readchar("# METHOD","EDAIQA",iedaiqa)
       if(iedaiqa.eq.1) then
         ii=0
         call locate(16,"# EDAIQA",ii)
@@ -431,7 +444,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
       end if
 
 C NLOPs                       
-      call readchar("# METODE","POLAR",ipolar )
+      call readchar("# METHOD","POLAR",ipolar )
       if(ipolar.eq.1) then
        iaccur=1
 c using file $name.scr as raw output for post-processing
@@ -446,7 +459,7 @@ c using file $name.scr as raw output for post-processing
 
 C Do for restricted number of atoms
       idoat=0
-      call readchar("# METODE","DOATOMS",idoat)
+      call readchar("# METHOD","DOATOMS",idoat)
       if(idoat.eq.1) then
         call locate(16,"# ATOMS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
@@ -461,7 +474,7 @@ C Do for restricted number of atoms
 
 c Do for fragments
       idofr=0
-      call readchar("# METODE","DOFRAGS",idofr)
+      call readchar("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
         call locate(16,"# FRAGMENTS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
@@ -560,10 +573,10 @@ C READING DM1 and DM2
 !! OSLO OPTIONS !!
 
       ioslo=0
-      call readchar("# METODE","OSLO",ioslo)
+      call readchar("# METHOD","OSLO",ioslo)
       if(ioslo.eq.1) then
 
-!! MG: BY DEFAULT REQUIRED THE TFVC AIM IN # METODE (NUMERICAL INTEGRATION). BUT ONE CAN ASK OSLOs USING HILBERT AIMS !!
+!! MG: BY DEFAULT REQUIRED THE TFVC AIM IN # METHOD (NUMERICAL INTEGRATION). BUT ONE CAN ASK OSLOs USING HILBERT AIMS !!
 !! HILBERT AIMS CASES !!
 
         ilow2=0
@@ -589,7 +602,7 @@ C READING DM1 and DM2
 !! TO PRINT .fchk FILES FROM QCHEM (MG: FCHK FORMAT IS DIFFERENT THAN GAUSSIAN) !!
 
       iqchem=0
-      call readchar("# METODE","QCHEM",iqchem)
+      call readchar("# METHOD","QCHEM",iqchem)
 
 !! END OF OSLO OPTIONS !!
 
@@ -1164,14 +1177,14 @@ c imulli 2 LOWDIN
 c imulli 3 LOWDIN-DAVIDSON (not implemented)                                   
 c imulli 3 NAO                                    
 
-       if (ieffao.ne.0) then
+      if (ieffao.ne.0) then
 
         if(idofr.eq.0) then
-         icufr=nat
-         do i=1,icufr
-          nfrlist(i)=1
-          ifrlist(1,i)=i                
-         end do
+          icufr=nat
+          do i=1,icufr
+            nfrlist(i)=1
+            ifrlist(1,i)=i                
+          end do
         end if
 
 CCCCCCCCCCCCCCC
@@ -1181,81 +1194,77 @@ CCCCCCCCCCCCCCC
           if(ieffao.eq.1) then
             call ueffaomull_frag(0)
           else if (ieffao.eq.2) then
-           call ueffaomull_frag(1)
-           if (ieos.eq.1) call eos_analysis(0,1,xthresh)
-
-           if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb))then
-            call ueffaomull_frag(2)
-            idobeta=1
-           end if
-           if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+            call ueffaomull_frag(1)
+            if (ieos.eq.1) call eos_analysis(0,1,xthresh)
+            if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
+              call ueffaomull_frag(2)
+              idobeta=1
+            end if
+            if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
           end if
+
 CCCCCCCCCCCCCCC
 C Lowdin      
 CCCCCCCCCCCCCCC
         else if(imulli.gt.1) then
           if(ieffao.eq.1) then
-           call ueffaolow_frag(0)
+            call ueffaolow_frag(0)
           else if (ieffao.eq.2) then
-           call ueffaolow_frag(1)
-           if(ieos.eq.1) call eos_analysis(0,1,xthresh)
-
-           if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb))then
-            call ueffaolow_frag(2)
-            idobeta=1
-           end if
-           if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+            call ueffaolow_frag(1)
+            if(ieos.eq.1) call eos_analysis(0,1,xthresh)
+            if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
+              call ueffaolow_frag(2)
+              idobeta=1
+            end if
+           if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
           end if
+
 CCCCCCCCCCCCCCC
 C 3D-space    
 CCCCCCCCCCCCCCC
         else
 
-C DO EFFAO/UEFFAO for selected atoms only. NO EOS
+!! DOING EFFAO/UEFFAO FOR SELECTED ATOMS ONLY (NO EOS) !!
+          if(idoat.ne.0) then
+            if(ieffao.eq.1) then
+              call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
+            else
+              call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
+              call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
+            end if
 
-         if(idoat.ne.0) then
-          if(ieffao.eq.1) then
-            call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
           else
-            call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
-            call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
+
+!! DOING EFFAO/UEFFAO/EFFAO-U FOR FRAGMENTS/ALL ATOMS !!
+            if(ieffao.eq.1) then
+              call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
+c             call  uefomo(itotps,ndim,omp,chp,sat,wp,omp2,0)
+c             call mhg(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,pa,0)
+c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
+            else if(ieffao.eq.2) then
+              idobeta=0
+              write(*,*) '  '
+              write(*,*) ' UEFFAO: alpha and beta treated separately'
+              write(*,*) '  '
+              call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
+              if(ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
+              if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) then
+                idobeta=1
+                call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
+              end if
+              if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+
+!! EOS-U PART: OS ANALYSIS CALLED FROM INSIDE THE ROUTINE !!
+            else if(ieffao.eq.3) then
+              call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2,iueos) 
+            end if
           end if
-
-         else
-
-C DO EFFAO/UEFFAO for fragments/all atoms
-
-          if(ieffao.eq.1) then
-           call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
-c           call  uefomo(itotps,ndim,omp,chp,sat,wp,omp2,0)
-c           call mhg(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,pa,0)
-c           call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
-          else if (ieffao.eq.2) then
-           idobeta=0
-           write(*,*) '  '
-           write(*,*) 'UEFFAO: alpha and beta treated separatedly'
-           write(*,*) '  '
-           call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
-           if (ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
-
-           if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0))then
-            idobeta=1
-            call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
-           end if
-           if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
-          else if (ieffao.eq.3) then
-           write(*,*) '  '
-           write(*,*) 'EFFAO: from paired and unpaired density '
-           write(*,*) '  '
-           call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2)
-         end if
         end if
-       end if
 
-      write(*,*)
-      call cpu_time(time2)
-      write(*,'(a37,f10.1,a2)')'(Elapsed time :: effAOs/EOS analysis ',time2-time,'s)' 
-      time=time2
+        write(*,*)
+        call cpu_time(time2)
+        write(*,'(a37,f10.1,a2)')'(Elapsed time :: effAOs/EOS analysis ',time2-time,'s)' 
+        time=time2
       end if
 
 CCCCCCCCCCCCCCC
@@ -1263,82 +1272,67 @@ C DO ENERGY DECOMPOSITION
 CCCCCCCCCCCCCCC
 
       if(ienpart.eq.1) then
-      print *,' '
-      print *,' --------------------------------------'
-      print *,'  DOING MOLECULAR ENERGY DECOMPOSITION '
-      print *,' --------------------------------------'
-      print *,' '
+      write(*,*) " "
+      write(*,*) " -------------------------------------- "
+      write(*,*) "  DOING MOLECULAR ENERGY DECOMPOSITION  "
+      write(*,*) " -------------------------------------- "
+      write(*,*) " "
 
-!! CASSCF AND CISD ENERGY DECOMPOSITION !!
-
+!! ONE ELECTRON PART: CASSCF AND CI WFs !!
       if(iposthf.eq.1) then
         call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
         call cpu_time(time2)
         write(*,'(a39,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
         time=time2
 
-!! DFT AND HF ENERGY DECOMPOSITION !!
-
+!! ONE ELECTRON PART: DFT AND HF WFs !!
       else 
 
 !! INITIALIZE DFT FUNCTIONAL FOR INFO AND INITIAL PRINTING !!
-      
       if(id_xfunc.ne.-1) then
         if(id_xcfunc.ne.0) call func_info_print(id_xcfunc,itype)
         if(id_cfunc.ne.0) call func_info_print(id_cfunc,itype)
         if(id_xfunc.ne.0) call func_info_print(id_xfunc,jtype)
         if(itype.ge.jtype) iopt(55) = itype
         if(jtype.gt.itype) iopt(55) = jtype
-        write(*,*) "itype,jtype,iop : ",itype,jtype,iopt(55)
-      else
-        write(*,*) "INFO : HF functional selected"
-        write(*,*) "INFO : HF-type exchange coeff : ",xmix
-        write(*,*) " "
       end if
 
-!! INTEGRATING ONE-ELECTRON CONTRIBUTIONS !!
-
+!! RESTRICTED CASE !!
       if(kop.ne.1) then 
         ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
-!! RESTRICTED ONE-ELECTRON PART !!
-
+!! ONE-ELECTRON TERMS !!
         call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
-        write(*,*) " "
         call cpu_time(time2)
-        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
+        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)'
         time=time2
 
-!! RESTRICTED DFT XC PART !!
-
+!! DFT XC TERM !!
         if(id_xfunc.ne.-1) then
           if(ianalytical.eq.0) then
             call numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
           else
             call numint_dft_analytical(ndim,itotps,wp,omp,omp2,chp,eto,pcoord,sat)
           end if
-          write(*,*) " "
           call cpu_time(time2)
           write(*,'(a28,f10.1,a2)')'(Elapsed time :: enpart dft ',time2-time,'s)' 
           time=time2
         end if
         DEALLOCATE(xkdens)
+
+!! UNRESTRICTED CASE !!
       else
         ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
-!! UNRESTRICTED ONE-ELECTRON PART !! 
-
+!! ONE-ELECTRON TERMS !!
         call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
-        write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
         time=time2
 
-!! UNRESTRICTED DFT XC PART !!
-
+!! DFT XC TERM !!
         if(id_xfunc.ne.-1) then
           call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
-          write(*,*) " "
           call cpu_time(time2)
           write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
           time=time2
@@ -1347,69 +1341,65 @@ CCCCCCCCCCCCCCC
       end if 
 
 !! END IF METHOD TYPE !!
-
       end if
       DEALLOCATE(wp,omp,omp2,chp,pcoord,ibaspoint,rho)
 
-!! END OF ONE-ELECTRON PART !!
-!! INTEGRATING TWO-ELECTRON CONTRIBUTIONS !!
-!! TWO-ELECTRON INTEGRATION DEFAULTS !!
+!! TWO-ELECTRON PART !!
 
-      print *,'SETTING GRID FOR TWO-ELECTRON ENERGY INTEGRATION'
+!! TWO-ELECTRON INTEGRATION DEFAULTS !!
+      write(*,*) " "
+      write(*,*) " ----------------------------------------------------- "
+      write(*,*) "  SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  "
+      write(*,*) " ----------------------------------------------------- "
+      write(*,*) " "
+
 !! CONTROLLED BY # GRID OPTION (modgrid common) !!
+!! DEFAULT GRID IS NOW 150 590, CAN BE CHANGED TO 40 146 BUT ENSURE TO ALSO MODIGY pha AND phb !!
       nrad=nrad22
       nang=nang22
       rr00=rr0022
-!      nrad=40
-!      nang=146
-!! DEFAULT GRID IS LARGER THAN THIS ONE !!
-!! MG: CAN BE CHANGED TO THE 40 146, BUT ENSURE TO CHANGE ALSO DEFAULTS FOR pha AND phb !!
+
+!! ANALYTICAL CASE !!
+!! MG: TO MODIFY AS NOW DEFAULT GRID IS LARGER THAN THIS ONE !!
       if(ianalytical.eq.1) then
-        write(*,*) 'Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron.'
+        write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
+        write(*,*) " "
         nrad=70
         nang=434
       end if
 
-      print *,'  '
-      print *,'Radial points: ', nrad
-      print *,'Angular points:',nang    
+!! PRINTING INFO !!
+      write(*,'(2x,a14,x,i4)') "Radial points:",nrad
+      write(*,'(2x,a15,x,i4)') "Angular points:",nang  
 
-
-      iatps=Nang*NRad
+!! GENERATING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATIONS !!
+      iatps=nang*nrad
       itotps=nrad*nang*nat
       call quad(Nrad,Nang) 
-      allocate (wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
-      allocate (pcoord(itotps,3),ibaspoint(itotps),chp(itotps,ndim))
-
-!! GENERATING GRID FOR TWO-EL CONTRIBUTIONS !!
-
+      ALLOCATE(wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
+      ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,ndim))
       call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,0)
 
-!! POST-HF TWO-ELECTRON PART !!
-
+!! CASSCF AND CI WFs !!
       if(iposthf.eq.1) then
-        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: needs a check !!
+!        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
         call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
-        write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart two-electron ',time2-time,'s)' 
         time=time2
+
+!! DFT AND HF WFs !!
       else
 
-!! SINGLE-DETERMINANT UNRESTRICTED TWO-ELECTRON PART !!
-
+!! UNRESTRICTED CASE !!
         if(kop.eq.1) then 
           call numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
+
+!! RESTRICTED CASE !!
         else
-
-!! SINGLE-DETERMINANT RESTRICTED TWO-ELECTRON PART !!
-
-          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: needs a check !!
+!          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
           call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
         end if 
-
-!! END OF TWO-ELECTRON PART !!
-
         write(*,*) " "
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart two-electron ',time2-time,'s)' 
@@ -1434,8 +1424,8 @@ CCCCCCCCCCCC
 !! EDAIQA !!
 CCCCCCCCCCCC
 
+!! MG: TO DO !!
 !! CREATING THE E(< A^0 B^0 >)^AB STATE !!
-
 !     if(iedaiqa.eq.1) then
 !       write(*,*) " "
 !       write(*,*) " Entering EDAIQA Section "
@@ -1480,9 +1470,9 @@ CCCCCCCCCC
 
       if(ioslo.eq.1) then
         write(*,*) " "
-        write(*,*) " ********************* "
-        write(*,*) " ENTERING OSLO SECTION "
-        write(*,*) " ********************* "
+        write(*,*) " ------------------------------------------------------- "
+        write(*,*) "  DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)  "
+        write(*,*) " ------------------------------------------------------- "
         write(*,*) " "
 
 !! COMPUTING sat FOR HILBERT SPACE CASES !!
