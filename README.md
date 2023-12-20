@@ -64,10 +64,14 @@ The `APOST-3D` documentation is hosted [here](DOCUMENTATION.md).
 ## Citations
 ------------
 
+### Cite `APOST-3D`
+
 The following paper should be cited in publications utilizing `APOST-3D`:
 
 - XX
 
+
+### Cite implemented methods
 
 For atomic and overlap populations, bond orders and valences:
 
