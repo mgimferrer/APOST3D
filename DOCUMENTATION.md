@@ -11,11 +11,60 @@ The program makes use of `Libxc` library when necessary, using the F90 interface
 We are extremely grateful for the possibility of using these routines!
 
 
-## Manual
+## Shortcuts
 
-### Shortcuts
-
+* [General structure](#general-structure)
+* [Specific keywords and description](#specific-keywords-and-description)
 * [Input examples](#input-examples)
+
+
+## General structure
+
+To succesfully perform chemical bonding calculations using `APOST-3D`, the user requires minimum two files with the same name, but different extension: 
+
+1. `name-input.fchk`: Gaussian-type formatted checkpoint file. Can be directly obtained from the Gaussian or Q-Chem packages
+
+1. `name-input.inp`: Input file for `APOST-3D` requesting the type of calculation the user desire to perform.
+
+### Input structure
+
+The input file mandatorily requires of a # METHOD section, which collects the keywords of the Atom in Molecule (AIM) method desired to use, the type of analysis to be performed and so forth. It is structured as follows:
+
+```
+# METHOD
+AIM         ## Keyword for the Atom in Molecule definition ##
+ANALYSIS    ## Keyword for the analysis to be performed    ##
+OTHERS      ## Keywords extra within METHOD section        ##
+#
+```
+
+Then, each ANALYSIS and/or OTHERS keyword within the # METHOD section will require the inclusion of its own section, namely # ANALYSIS OR # OTHERS. This leads to a general input such as:
+
+```
+# METHOD
+AIM         ## Keyword for the Atom in Molecule definition ##
+ANALYSIS    ## Keyword for the analysis to be performed    ##
+OTHERS      ## Keyword/s extra within METHOD section       ##
+#
+# ANALYSIS
+KEY1        ## List of keywords ##
+KEY2
+#
+# OTHERS
+KEY1        ## List of keywords ##
+KEY2
+#
+```
+
+The name will depend on the actual keyword, see the detailed list of keywords (and its description) in [here](#specific-keywords-and-description)
+
+**Important**: Each section must be terminated with # at the end of the list of keywords as shown above. Keywords outside a section are ignored by `APOST-3D`
+
+
+## Specific keywords and description
+
+### Section: # METHOD
+
 
 
 
@@ -24,30 +73,10 @@ We are extremely grateful for the possibility of using these routines!
 
 
 
-* Available atomic definitions
 
-Real-space:
+### Section: # ENPART
 
-        Becke, J. Chem. Phys. 88 2547 1988
-        Hirshfeld, Theor. Chim. Acta 44  129 1977
-        Hirshfeld-Iterative, J Chem Phys 126 144111 2007
-        Topological fuzzy Voronoi cells (TFVC), J Chem Phys, 139 071103 2013
-        QTAIM, J. Comput. Chem 30 1082 2009
-
-Hilbert-space:
-
-        Mulliken
-        Lowdin
-        Davidson-Lowdin
-        Natural Atomic Orbitals (NAO)
-
-
-
-
-
-* Molecular energy decomposition in the real-space (IQA)
-
-The IQA decomposition requires the keyword ENPART within the # METODE section. This keyword is independent of the WF-type. ENPART keyword needs (mandatory) of the fragments definition (DOFRAGS keyword). Then, the definition of a new section within the .inp file is required, namely # ENPART, including the combination of keywords mentioned below. The keywords to add will depend on the user purpose
+The IQA decomposition requires of the ENPART keyword within # METHOD section. This keyword is independent of the WF-type. ENPART keyword needs (mandatory) of the fragments definition (DOFRAGS keyword). Then, the definition of a new section within the .inp file is required, namely # ENPART, including the combination of keywords mentioned below. The keywords to add will depend on the user purpose
 
 Specific keywords for single-determinant wavefunction (Hartree-Fock) decomposition:
 
@@ -101,33 +130,7 @@ For Gaussian calculations, it is required an extra action to include the analyti
 
 For .fchk files obtained from pySCF using the apost3d.py extension, no action is required 
 
-Example input for IQA calculation:
 
-        # METODE
-        TFVC
-        DOFRAGS
-        ENPART
-        #
-        # ENPART
-        LIBRARY
-        EX_FUNCTIONAL 106
-        EC_FUNCTIONAL 132
-        THREBOD -1
-        MOD-GRIDTWOEL
-        #
-        # FRAGMENTS
-        2
-        1
-        1
-        -1
-        #
-        # GRID
-        RADIAL 150
-        ANGULAR 590
-        rr00 0.5
-        phb1 0.169
-        phb2 0.170
-        #
 
 * EDAIQA
 
@@ -154,27 +157,101 @@ The OSLOs can be evaluated from wavefunctions obtained with the Q-Chem software.
 
 
 
-### Input examples
+## Input examples
 
+In this section, example input files with the most commonly used keywords are provided for each type of calculation `APOST-3D` can perform. More flexibility and options are allowed, being the full list of keywords for each type of calculation collected [here](#specific-keywords-and-description)
 
+The code allows the user to perform more than one type of calculation with the same input file
 
-1. Oxidation States Localized Orbitals (OSLO)
+### Molecular energy decomposition in the real-space (ENPART)
 
-        # METODE
-        TFVC
-        DOFRAGS
-        OSLO
-        #
-        # OSLO
-        LOWDIN
-        FOLI TOLERANCE 3
-        BRANCH ITERATION 0
-        PRINT NON-ORTHO
-        #
-        # FRAGMENTS
-        2
-        1
-        1
-        -1
-        #
+```
+# METHOD
+TFVC
+ENPART
+DOFRAGS
+#
+# ENPART
+LIBRARY
+EX_FUNCTIONAL 106
+EC_FUNCTIONAL 132
+THREBOD -1
+MOD-GRIDTWOEL
+#
+# FRAGMENTS
+2
+1
+1
+-1
+#
+# GRID
+RADIAL 150
+ANGULAR 590
+rr00 0.5
+phb1 0.169
+phb2 0.170
+#
+```
 
+### EDAIQA
+
+_ONGOING_
+
+### Local Spin Analysis (LSA)
+
+```
+# METHOD
+TFVC
+SPIN
+DOFRAGS
+#
+# FRAGMENTS
+2
+1
+35
+-1
+#
+```
+
+### Effective Oxidation States (EOS) Analysis
+
+```
+# METHOD
+NAO-BASIS
+EOS
+DOFRAGS
+CUBE
+#
+# FRAGMENTS
+2
+1
+35
+-1
+#
+# CUBE
+MAX_OCC=700
+MIN_OCC=300
+#
+```
+
+### Oxidation States Localized Orbitals (OSLO)
+
+```
+# METODE
+TFVC
+OSLO
+DOFRAGS
+#
+# OSLO
+LOWDIN
+FOLI TOLERANCE 3
+BRANCH ITERATION 0
+PRINT NON-ORTHO
+#
+# FRAGMENTS
+2
+1
+1
+-1
+#
+```
