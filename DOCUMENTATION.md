@@ -1,13 +1,28 @@
-## Documentation
--------------
+# Documentation
+
+## General information
 
 The program has been written by using parts of the program APOST by I. Mayer and A. Hamza, Budapest, 2000-2003
 
 The numerical integration utilizes the subroutines for Lebedev quadrature downloaded from CCL. The appropriate reference is: V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999
 
-The program makes use of libxc library when necessary, using the F90 interfaces provided by the authors (see http://www.tddft.org/programs/libxc)
+The program makes use of `Libxc` library when necessary, using the F90 interfaces provided by the authors (see http://www.tddft.org/programs/libxc)
 
 We are extremely grateful for the possibility of using these routines!
+
+
+## Manual
+
+### Shortcuts
+
+* [Input examples](#input-examples)
+
+
+
+**ONGOING**
+
+
+
 
 * Available atomic definitions
 
@@ -26,52 +41,8 @@ Hilbert-space:
         Davidson-Lowdin
         Natural Atomic Orbitals (NAO)
 
-* Calculating
-
-Atomic and overlap populations, bond orders and valences:
-
-        I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
-
-Hartree-Fock molecular energy decomposition:
-
-        P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001
-        P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
-
-KS-DFT molecular energy decomposition:
-
-        P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007
-        M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023
-
-Molecular energy decomposition for CAS/DMRG wavefunctions:
-
-Effective atomic orbitals:
-
-        I. Mayer, J. Phys. Chem. 100 6249 1996
-        I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
-        E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
-
-Local spin analysis:
-
-        E. Ramos-Cordoba et al., J. Chem. Theor. Comput. 8, 1270-1279 2012
-        E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
-
-Effective oxidation states analysis:
-
-        E. Ramos-Cordoba et al., J. Chem. Theor. Comput. 11 1501-1508 2015
-
-Oxidation states from localized orbitals:
-
-        M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022
-
-Decomposition of EDA quantities into one- and two-center IQA terms:
-
-        M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
 
 
-### Manual
-----------
-
-**ONGOING**
 
 
 * Molecular energy decomposition in the real-space (IQA)
@@ -181,7 +152,13 @@ Extra options:
 
 The OSLOs can be evaluated from wavefunctions obtained with the Q-Chem software. One simply requires to obtain the .fchk file from Q-Chem and add the QCHEM keyword within # METODE
 
-Example input for OSLO calculation:
+
+
+### Input examples
+
+
+
+1. Oxidation States Localized Orbitals (OSLO)
 
         # METODE
         TFVC
