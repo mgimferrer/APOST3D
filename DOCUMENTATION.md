@@ -20,15 +20,16 @@ We are extremely grateful for the possibility of using these routines!
 
 ## General structure
 
-To succesfully perform chemical bonding calculations using `APOST-3D`, the user requires minimum two files with the same name, but different extension: 
+To succesfully perform chemical bonding calculations using `APOST-3D`, the user requires the following two files: 
 
 1. `name-input.fchk`: Gaussian-type formatted checkpoint file. Can be directly obtained from the Gaussian or Q-Chem packages
 
 1. `name-input.inp`: Input file for `APOST-3D` requesting the type of calculation the user desire to perform.
 
+
 ### Input structure
 
-The input file mandatorily requires of a # METHOD section, which collects the keywords of the Atom in Molecule (AIM) method desired to use, the type of analysis to be performed and so forth. It is structured as follows:
+The input file mandatorily requires of a # METHOD section, which collects the keywords of the Atom in Molecule (AIM) method desired to use, the type of analysis to be performed and other options available to the user (e.g. generation of cube files). The section is structured as follows:
 
 ```
 # METHOD
@@ -49,14 +50,16 @@ OTHERS      ## Keyword/s extra within METHOD section       ##
 # ANALYSIS
 KEY1        ## List of keywords ##
 KEY2
+...
 #
 # OTHERS
 KEY1        ## List of keywords ##
 KEY2
+...
 #
 ```
 
-The name will depend on the actual keyword, see the detailed list of keywords (and its description) in [here](#specific-keywords-and-description)
+The name will depend on the actual ANALYSIS and OTHERS keywords, see the detailed list of keywords together with its description in [here](#specific-keywords-and-description)
 
 **Important**: Each section must be terminated with # at the end of the list of keywords as shown above. Keywords outside a section are ignored by `APOST-3D`
 
@@ -65,96 +68,172 @@ The name will depend on the actual keyword, see the detailed list of keywords (a
 
 ### Section: # METHOD
 
+In this section, the keywords associated to the # METHOD section are described
 
+#### Supported AIM definitions
 
+| Keyword         | Description |
+| -------         | ----------- |
+| MULLIKEN        | Hilbert-space Mulliken |
+| LOWDIN          | Hilbert-space Lowdin |
+| LOWDIN-DAVIDSON | Hilbert-space Lowdin-Davidson |
+| NAO-BASIS       | Hilbert-space based on Natural Atomic Orbitals |
+| HIRSH           | Real-space Hirshfeld |
+| HIRSH-IT        | Real-space Hirshfeld iterative |
+| BECKE-RHO       | Real-space Becke-rho |
+| TFVC            | Real-space Topological Fuzzy Voronoi Cells |
+| | |
 
-**ONGOING**
+#### Chemical bonding analysis implemented
 
+| Keyword     | Description |
+| -------     | ----------- |
+| EFFAO       | Effective Atomic/Fragment Orbitals |
+| EFFAO-U     | Effective Atomic/Fragment Orbitals from the paired and unpaired density functions |
+| EOS         | Effective Oxidation States (EOS) analysis |
+| EOS-U       | Effective Oxidation States analysis from the paired and unpaired density functions (EOS-U) |
+| OS-CENTROID | Oxidation states from centroids of localized orbitals |
+| OSLO        | Oxidation States Localized Orbitals (OSLO). Requires definition of the # OSLO section |
+| SPIN        | Local Spin Analysis (LSA) |
+| ENPART      | Real-space molecular energy decomposition. Requires definition of the # ENPART section |
+| EDAIQA      | Real-space molecular energy decomposition of Energy Decomposition Analysis (EDA) terms. Requires definition of the # EDAIQA section |
+| POLAR       |   |
+| | |
 
+#### Others
 
+| Keyword | Description |
+| ------- | ----------- |
+| DOFRAGS | Definition of molecular fragments for the calculations. Requires definition of the # FRAGMENTS section |
+| CUBE    | Plots cube-type files of the EFOs from EOS and EOS-U calculations. Requires definition of # CUBE section |
+| DM      |   |
+| QCHEM   | Required if the .fchk file comes from a Q-Chem calculation |
+| | |
 
+### Section: # ANALYSIS
 
-### Section: # ENPART
+In this section, the keywords associated to the different # ANALYSIS sections are described. Not all ANALYSIS keywords in # METHOD require the definition of its own section in the input file (see section [# METHOD](#section--method)) 
 
-The IQA decomposition requires of the ENPART keyword within # METHOD section. This keyword is independent of the WF-type. ENPART keyword needs (mandatory) of the fragments definition (DOFRAGS keyword). Then, the definition of a new section within the .inp file is required, namely # ENPART, including the combination of keywords mentioned below. The keywords to add will depend on the user purpose
+#### Oxidation states localized orbitals (OSLO)
 
-Specific keywords for single-determinant wavefunction (Hartree-Fock) decomposition:
+**Important:** It is mandatory to include the TFVC keyword in # METHOD independently of the AIM desired to use for the OSLO calculation (technical reasons). Extracting OSLOs using alternative AIMs is controlled in this section (# OSLO)
 
-        HF --- Decomposition of the Hartree-Fock energy
-  
-Specific keywords for single-determinant wavefunction (KS-DFT) decomposition:
+List of supported AIM definitions:
 
-        LDA --- Decomposition of the LDA energy
-        BP86 --- Decomposition of the BP86 energy
-        B3LYP --- Decomposition of the B3LYP energy
+| Keyword         | Description |
+| -------         | ----------- |
+| MULLIKEN        | Hilbert-space Mulliken |
+| LOWDIN          | Hilbert-space Lowdin |
+| LOWDIN-DAVIDSON | Hilbert-space Lowdin-Davidson |
+| NAO-BASIS       | Hilbert-space based on Natural Atomic Orbitals |
+| | |
 
-A general way to define the functional is possible. It requires entering the exchange and correlation (or exchange-correlation) functional ID as provided by the libxc libraries. Specific keywords:
-
-        LIBRARY --- Decomposition of the molecular energy using the combination of exchange and correlation functional desired (if supported by libxc libraries). Mandatory to introduce the ID of the functional using the EXC_FUNCTIONAL, EX_FUNCTIONAL and/or EC_FUNCTIONAL KEYWORDS. For the full list of functionals (and IDs), we guide the user to check libxc libraries
-        EXC_FUNCTIONAL --- Exchange-correlation functional ID if functional considered of exchange-correlation type
-        EX_FUNCTIONAL --- Exchange functional ID if functional considered of exchange type
-        EC_FUNCTIONAL --- Correlation functional ID if functional considered of correlation type
-
-Specific keywords for multi-determinant wavefunction (CASSCF, DMRG) decomposition:
-
-        CASSCF --- Decomposition of the CASSCF energy. Requires of the .dm1 and .dm2 files introduced in the # DM section (see XX)
-        CISD --- Decomposition of the CISD energy. Requires of the .dm1 and .dm2 files introduced in the # DM section (see XX)
-        CORRELATION --- Decomposition of the exchange and correlation energies, separately. By default the code decompose exchange-correlation altogether
+Extracting the OSLOs with TFVC do not require the addition of an extra keyword
 
 Extra options:
 
-        THREBOD --- Bond order density threshold which decides if evaluating the KS-DFT exchange-correlation between a pair of atoms or not. Expecting an integer number. Value lower than 0 sets the threshold to zero. Default value of 100 (actual threshold = THREBOD/10000.0d0)
-        EXACT --- **TODO**
-        HOMO --- **TODO**
-        DEKIN --- **TODO**
-        IONIC --- **TODO**
-        TWOELTOLER --- Two-electron integration error threshold to control when the zero-error strategy is invoked. Expects a double-precision number after the keyword. Default value selected as 0.25 (in kcal/mol)
-        ANALYTIC --- **TODO**
-        MOD-GRIDTWOEL --- Modify the integration grid for the two-electron numerical integrations. Required to define an extra section (# GRID)
+| Keyword          | Description |
+| -------          | ----------- |
+| FOLI TOLERANCE   | Tolerance value for the OSLO selection within the iterative procedure. Expecting an integer number. Default value of 3 (threshold = 10^-(FOLI TOLERANCE)) |
+| BRANCH ITERATION | Iteration in which the user invokes the branching. Expecting an integer number. Default value of 0 (no branching). **This part of the code is currently unavailable** |
+| PRINT NON-ORTHO  | Asks the code to print the resulting OSLOs (pre-orthogonalization) in a .fchk file. By default, only the final set of orthogonalized OSLOs is provided |
+| | |
 
-Modification of the two-electron integration grid (# GRID section):
+#### Real-space molecular energy decomposition (# ENPART)
 
-        RADIAL --- Number of radial points. Expecting an integer number. Default value of 150
-        ANGULAR --- Number of angular points according to the Levedev-Laikov spherical grids. Expecting an integer number. Default value of 590
-        rr00 --- Distance value where half of the radial points have been distributed. Expecting a double precision number. Default value of 0.5
-        phb1 --- First rotation angle in radians of the second-electron grid points (two-electron zero-error strategy). Expecting a double precision number. Default value of 0.169
-        phb2 --- Second rotation angle in radians of the second-electron grid points (two-electron zero-error strategy). Expecting a double precision number. Default value of 0.170
+Currently, the code supports the following molecular energy decomposition for the following methods:
 
-Additional information:
+| Keyword | Description |
+| ------- | ----------- |
+| HF      | Decomposition of the Hartree-Fock energy |
+| LDA     | Decomposition of the LDA energy |
+| BP86    | Decomposition of the BP86 energy |
+| B3LYP   | Decomposition of the B3LYP energy |
+| CASSCF  | Decomposition of the CASSCF energy. Requires of the .dm1 and .dm2 files introduced in the # DM section (see [here](#higher-in-order-density-matrices-inputs--dm)) |
+| CISD    | Decomposition of the CISD energy. Requires of the .dm1 and .dm2 files introduced in the # DM section (see [here](#higher-in-order-density-matrices-inputs--dm)) |
+| | |
 
-For Gaussian calculations, it is required an extra action to include the analytic energies from the .log file to the .fchk if desired to make use of the two-electron zero-error strategy. In particular:
+In the KS-DFT case, a general way to define the functional is possible. It requires entering the exchange and correlation (or exchange-correlation) functional ID as provided by the `Libxc` libraries. To do so, the following keywords are required:
 
-        INFO: #p must be included in input file from the Gaussian calculation 
-        G09 -> $PROG/utils/get_energy mol.log >> mol.fchk
-        G16 -> $PROG/utils/get_energy_g16 mol.log >> mol.fchk
+| Keyword        | Description |
+| -------        | ----------- |
+| LIBRARY        | Decomposition of the molecular energy using the combination of exchange and correlation functional desired (if supported by `Libxc`). Mandatory to introduce the ID of the functional using the EXC_FUNCTIONAL, EX_FUNCTIONAL and/or EC_FUNCTIONAL keywords. For the full list of functionals (and IDs), we guide the user to check `Libxc` libraries |
+| EXC_FUNCTIONAL | Exchange-correlation functional ID for exchange-correlation-type functionals |
+| EX_FUNCTIONAL  | Exchange functional ID for exchange-type functionals |
+| EC_FUNCTIONAL  | Correlation functional ID for correlation-type functionals |
+| | |
+
+Extra options:
+
+| Keyword       | Description |
+| -------       | ----------- |
+| CORRELATION   | For correlated wavefunctions, decomposition of the exchange and correlation energies, separately. By default the code decompose exchange-correlation altogether |
+| THREBOD       | Bond order density (BODEN) threshold to skip evaluating the exact KS-DFT exchange-correlation between a pair of atoms. Multipolar approach is invoked for atom pairs with boden lower than the threshold. Expecting an integer number. Value lower than 0 sets the threshold to zero. Default value of 100 (threshold = THREBOD/10000.0d0) |
+| EXACT         |  |
+| ANALYTIC      |  |
+| TWOELTOLER    | Two-electron integration error threshold to control when the zero-error strategy is invoked. Expects a double-precision number after the keyword. Default value selected as 0.25 (in kcal/mol) |
+| MOD-GRIDTWOEL | Modify the integration grid for the two-electron numerical integrations. Requires to define the # GRID section (see [here](#modification-of-the-two-electron-integration-grid--grid)) |
+| | |
+
+**Important additional information:** For Gaussian calculations, it is required an extra action to include the analytic energies from the .log file to the .fchk if desired to make use of the two-electron zero-error strategy. In particular:
+
+* #p must be included in input file from the Gaussian calculation 
+* G09 -> $PROG/utils/get_energy mol.log >> mol.fchk
+* G16 -> $PROG/utils/get_energy_g16 mol.log >> mol.fchk
 
 For .fchk files obtained from pySCF using the apost3d.py extension, no action is required 
 
+### Section: # OTHERS
 
+In this section, the keywords associated to the different # OTHERS sections are described. Not all OTHERS keywords in # METHOD require the definition of its own section in the input file (see section [# METHOD](#section--method)) 
 
-* EDAIQA
+#### Cube generation (# CUBE)
 
-**TODO**
+| Keyword | Description |
+| ------- | ----------- |
+| MAX_OCC | Maximal EFO occupancy value for generating their cube files. Expecting an integer number from 0 to 1000. Default value of 0 (value = MIN_OCC/1000)  |
+| MIN_OCC | Minimal EFO occupancy value for generating their cube file. Expecting an integer number from 0 to 1000. Default value of 0 (value = MIN_OCC/1000) |
+| | |
 
-* Oxidation states localized orbitals (OSLO)
+#### Modification of the two-electron integration grid (# GRID)
 
-The calculation of the oxidation states localized orbitals (OSLO) requires to include the OSLO keyword within the # METODE section. It is **mandatory** to include the TFVC keyword in # METODE, independently of the AIM desired to use for the OSLO calculation (technical reasons)
+| Keyword | Description |
+| ------- | ----------- |
+| RADIAL  | Number of radial points. Expecting an integer number. Default value of 150 |
+| ANGULAR | Number of angular points according to the Levedev-Laikov spherical grids. Expecting an integer number. Default value of 590 |
+| rr00    | Distance value where half of the radial points have been distributed. Expecting a double precision number. Default value of 0.5 |
+| phb1    | First rotation angle in radians of the second-electron grid points (two-electron zero-error strategy). Expecting a double precision number. Default value of 0.169 |
+| phb2    | Second rotation angle in radians of the second-electron grid points (two-electron zero-error strategy). Expecting a double precision number. Default value of 0.170 |
+| | |
 
-Extracting OSLOs using other AIMs is controlled by definition of a new section (# OSLO) in the .inp file. The AIMs supported to date are: 
+#### Higher in order density matrices inputs (# DM)
 
-        MULLIKEN --- Mulliken AIM
-        LOWDIN --- Lowdin AIM
-        LOWDIN-DAVIDSON --- Lowdin-Davidson AIM
-        NAO-BASIS -- Natural Atomic Orbital (NAO) AIM
+This section requires first to add the keyword of the code where the .dm1 and .dm2 files where obtained. Then, their names ordered (.dm1 first) must be declared
 
-Extra options:
+| Keyword | Description |
+| ------- | ----------- |
+| pySCF | dm1 and dm2 files from pySCF |
+| | |
 
-        FOLI TOLERANCE --- Tolerance value for the OSLO selection within the iterative procedure. Expecting an integer number. Default value of 3 (actual threshold = 10^-(FOLI TOLERANCE))
-        BRANCH ITERATION --- Iteration in which the user invokes the branching. Expecting an integer number. Default value of 0 (no branching). **This part of the code is currently unavailable**
-        PRINT NON-ORTHO --- Asks the code to print the resulting OSLOs (pre-orthogonalization) in a .fchk file. By default only the set of orthogonalized OSLOs are provided 
+#### Fragment definition (# FRAGMENTS)
 
-The OSLOs can be evaluated from wavefunctions obtained with the Q-Chem software. One simply requires to obtain the .fchk file from Q-Chem and add the QCHEM keyword within # METODE
+This section requires to declare the number of fragments, and then for each fragment the number of atoms and the list of atoms constituting the fragment (atom numbers).
 
+Illustrative example:
+
+```
+# FRAGMENTS
+3         ## Number of fragments            ##
+1         ## Number of atoms for fragment 1 ##
+1         ## Atom list for fragment 1       ##
+2         ## Number of atoms for fragment 2 ##
+3 5       ## Atom list for fragment 2       ##
+3         ## Number of atoms for fragment 3 ##
+2 4 6     ## Atom list for fragment 3       ##
+#
+```
+
+For the last fragment, the user can directly add -1 instead of the number of atoms and the list of atom numbers
 
 
 ## Input examples
