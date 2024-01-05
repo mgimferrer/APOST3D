@@ -141,5 +141,4 @@ For decomposition of EDA quantities into one- and two-center IQA terms:
 
 ## Bug reports and feature requests
 
-Please submit tickets on the [issues](https://github.com/mgimferrer/APOST3D/issues) page.
-
+Please submit tickets on the [issues](https://github.com/mgimferrer/APOST3D/issues) page, and/or send an email to mgimferrer18@gmail.com and pedro.salvador@udg.edu
