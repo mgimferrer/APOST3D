@@ -20,16 +20,26 @@ Computational Chemistry Software developed by P. Salvador's research group from 
 
 #### Prerequisites for manual installation
 
+Compilation of the code is through execution of Makefiles. Hence, it is required that the machine has installed `make`. This can be easily achieved by executing the command
+```bash 
+sudo apt install make
+```
+
+Appropriate compilers and libraries are also required. For the sake of simplicity, we recommend to install and use the following Intel oneAPI toolkits:
+
 1. Intel oneAPI Base Toolkit
 1. Intel oneAPI HPC Toolkit
 
-Intel Toolkits are available free of charge [here](https://www.intel.com/content/www/us/en/developer/tools/oneapi/toolkits.html#base-kit)
+The Intel Toolkits are available free of charge, and a tutorial for their installation (together with module creation) provided by Intel can be found [here](https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-0/apt.html)
 
 #### Program compilation
 
-1. Download source code from Github repository
-1. Load the Intel oneAPI modules
-1. Set variable PROG to the destination folder in `Makefile_profgen` and `Makefile_profuse`
+1. Download source code from Github repository, easily achievable with `git` using the command
+```bash
+git clone https://github.com/mgimferrer/APOST3D.git
+```
+2. Load the Intel oneAPI modules compiler/latest and mkl/latest
+1. Set variable PROG to the destination folder in `Makefile_profgen`, `Makefile_profuse`, `compiler-runtest` and `compiler-runtest2`.
 1. Set variable OMP_NUM_THREADS in `make_compile.sh` to the desired number of cores (recommended maximum of a node, for parallelization purposes)
 1. Compile the provided `Libxc` libraries (see compilation instructions [here](#compilation-of-libxc-libraries))
 1. Move back to $PROG and execute the `make_compile.sh` script
@@ -47,11 +57,13 @@ Intel Toolkits are available free of charge [here](https://www.intel.com/content
 The `APOST-3D` program runs by using the `apost3d` executable located in $PROG. It is highly recommended to run the code issuing the following commands
 ```bash
 ## Load the oneAPI toolkits, name to be adapted to the one of your cluster/computer ##
-module load modules-oneAPI  
+module load compiler/latest
+module load mkl/latest
 
 ## Number of cores desired to use ##
 export OMP_NUM_THREADS=48
 export KMP_STACKSIZE=100m
+ulimit -s unlimited
 
 ## Execute the program ##
 $PROG/apost3d name-input > name-output.apost
