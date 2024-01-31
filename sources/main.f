@@ -72,7 +72,7 @@ c      131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.
 c                                                                                  
 C      The program makes use of libxc library when necessary, using the F90        
 c      interfaces provided by the authors.                                         
-c                     (see http://www.tddft.org/programs/libxc                     
+c                     (see http://www.tddft.org/programs/libxc)                     
 c                                                                                  
 c      We are extremely grateful for the possibility of using these routines!      
 c      -----------------------------------------------------------------------------c

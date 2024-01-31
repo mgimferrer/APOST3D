@@ -72,7 +72,7 @@
       write(*,'(a80)') '                                                                              '
       write(*,'(a80)') '  The program makes use of libxc library when necessary, using the F90        '
       write(*,'(a80)') '  interfaces provided by the authors.                                         '
-      write(*,'(a80)') '                 (see http://www.tddft.org/programs/libxc                     '
+      write(*,'(a80)') '                 (see http://www.tddft.org/programs/libxc)                    '
       write(*,'(a80)') '                                                                              '
       write(*,'(a80)') '  We are extremely grateful for the possibility of using these routines!      '
       write(*,'(a80)') '                                                                              '
