@@ -2,9 +2,9 @@
 
 ## THE SCRIPT RUNS A BATTERY OF TEST CALCULATIONS FOR GENERATING THE .dyn FILES REQUIRED FOR PGO COMPILATION ##
 
-PROGDIR="/home/mgimferrer/APOST3D"
-TESTDIR="${PROGDIR}/compiler-testset"
-APOST="${PROGDIR}/apost3d"
+PROG="/home/mgimferrer/APOST3D"
+TESTDIR="${PROG}/compiler-testset"
+APOST="${PROG}/apost3d"
 
 cd ${TESTDIR}
 
