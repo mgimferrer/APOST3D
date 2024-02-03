@@ -195,6 +195,26 @@ Sample input files are provided with the most common types of analyses currently
 
 ```
 # METHOD
+NAO-BASIS
+EOS
+DOFRAGS
+CUBE
+#
+# FRAGMENTS
+2
+1
+35
+-1
+#
+# CUBE
+MAX_OCC=700
+MIN_OCC=300
+#
+```
+
+### Example 2
+```
+# METHOD
 TFVC
 ENPART
 DOFRAGS
@@ -222,7 +242,7 @@ phb2 0.170
 ```
 Here, the IQA decomposition of the KS-DFT energy is requested. Functional id=106 (B88) and id=132 (P86) correspond to the well-known BP86 functional. The AIM requested is TFC and fragments have been defined. In particular,  the system is split into two fragments: fragment 1 consists of atom 1, and fragment 2 gathers the rest of atoms of the molecule. The diatomic xc energy components are computed exactly for all atomic pairs. User-specific options for the decomposition of the two-electron energy are given in GRID block section (in this case they coincide with the default *strongly recommended* values).
 
-### Example 2
+
 
 _ONGOING_
 
@@ -244,24 +264,7 @@ DOFRAGS
 
 ### Effective Oxidation States (EOS) Analysis
 
-```
-# METHOD
-NAO-BASIS
-EOS
-DOFRAGS
-CUBE
-#
-# FRAGMENTS
-2
-1
-35
--1
-#
-# CUBE
-MAX_OCC=700
-MIN_OCC=300
-#
-```
+
 
 ### Oxidation States Localized Orbitals (OSLO)
 
