@@ -1,8 +1,8 @@
 <p align="center"><img width=25.0% src="https://github.com/mgimferrer/APOST3D/blob/master/media/logo-apost.png"></p>
 
-## Real-space and Hilbert-space tools for wave function analysis
+## Chemical concepts from wave function analysis 
 
-Computational Chemistry Software developed by P. Salvador's research group from the University of Girona (UdG)
+A Fortran-based code developed at the Universitat de Girona (UdG) by P. Salvador and collaborators.
 
 
 ## Shortcuts
