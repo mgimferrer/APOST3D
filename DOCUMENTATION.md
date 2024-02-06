@@ -77,7 +77,7 @@ Some WF tools or options require additional block sections for tool-specific opt
 | CUBE     | Plots cube-type files of the Effective Atomic/Fragment Orbitals. Requires additional # CUBE block section |
 | DENS=*val* | Integer *val* controls which of the P-matrices present in the fchk file is to be used. Default *val*=1 |
 | QCHEM    | Required if the .fchk file originates from a Q-Chem calculation (different ordering of sections within)|
-| DM=*val*   | Integer *val* indicates files with the matrix representation of the RDM1 and RDM2 in MO basis will be provided (only for correlated WF methods). Requires additional # DM block section. If *val*=1 the RDM1 file will be provided. *val*=2 indicates both RDM1 and RMD2 files will be provided. These files can be generated using an auxiliary function provided in *apost3d.py*.|
+| DM=*val*   | Integer *val* indicates files with the matrix representation of the RDM1 and RDM2 in MO basis will be provided (only for correlated WF methods). Requires additional # DM block section. If *val*=1 the RDM1 file will be provided. *val*=2 indicates both RDM1 and RMD2 files will be provided. These files can be generated using an auxiliary function provided in *apost3d.py*|
 | | |
 
 ### Block section # OSLO
@@ -133,7 +133,7 @@ Extra options:
 | Keyword       | Description |
 | -------       | ----------- |
 | CORRELATION   | For correlated wavefunctions, decomposition of the exchange and correlation energies separately. By default, the code decomposes exchange-correlation altogether |
-| THREBOD=*val*    | Integer *val* sets a threshold for computing exactly the diatomic exchange-correlation terms. If the bond order between a pair of atoms is smaller than the threshold, an approximate multipolar approach is used instead. Default *val*=100 (actual threshold used *val*/10000.) |
+| THREBOD=*val*    | Integer *val* sets a threshold for computing exactly the diatomic exchange-correlation terms. If the bond order between a pair of atoms is smaller than the threshold, an approximate multipolar approach is used instead. Default *val*=100 (actual threshold used *val*/10000.0d0) |
 | ANALYTIC      |  Perform semianalytical integration of the two-electron energy (decomposition into one-center terms only) (under development)|
 | TWOELTOLER=*val*| Real *val* sets the threshold (in kcal/mol) for activating the zero-error scheme on the two-electron energy. Default *val*=0.25d0 |
 | MOD-GRIDTWOEL | User-defined integration setup for the two-electron energy. Requires additional # GRID block section  |
@@ -150,8 +150,8 @@ For .fchk files obtained from pySCF no action is required.
 
 | Keyword | Description |
 | ------- | ----------- |
-| MAX_OCC=*val* | Maximal EFO occupation for generating its cube files. Integer *val* is in the range [0,1000] and the occupation is defined as *val*/1000.)  |
-| MIN_OCC=*val* | Minimal EFO occupation for generating the cube file. val is an integer in the range [0,1000] and the occupation is defined as *val*/1000.)  |
+| MAX_OCC=*val* | Maximal EFO occupation for generating its cube files. Integer *val* is in the [0, 1000] range and the occupation is defined as *val*/1000.0d0)  |
+| MIN_OCC=*val* | Minimal EFO occupation for generating the cube file. val is an integer in the [0, 1000] range and the occupation is defined as *val*/1000.0d0)  |
 | | |
 
 ### Block section # GRID 
@@ -159,11 +159,12 @@ For .fchk files obtained from pySCF no action is required.
 | Keyword | Description |
 | ------- | ----------- |
 | RADIAL=*val*  | Integer number of radial grid points. Default *val*=150 |
-| ANGULAR=*val* | Integer number of angular grid points according to the Lebedev-Laikov spherical grids. Default *val*=590. Other recommended values: 146, 434, or 974. |
-| rr00=*val*   | Double-precision variable that sets the distance that contains half of the radial integration points. It corresponds to the value of *rm* in eq 25 of [Becke's multicenter integration scheme] (https://doi.org/10.1063/1.454033). Default *val*=0.5d0 |
+| ANGULAR=*val* | Integer number of angular grid points according to the Lebedev-Laikov spherical grids. Default *val*=590. Other recommended values: 146, 434, or 974 |
+| rr00=*val*   | Double-precision variable that sets the distance that contains half of the radial integration points. It corresponds to the value of *rm* in Eq. 25 of [Becke's multicenter integration scheme] (https://doi.org/10.1063/1.454033). Default *val*=0.5d0 |
 | phb1=*val*    | Double-precision value for the first rotation angle (in radians) of the grid for the second electron coordinates. Default *val*=0.169 |
 | phb2=*val*    | Double-precision value for the second rotation angle (in radians) for the zero-error strategy). Default *val*=0.170 |
 | | |
+
 **Important additional information:** The default values of phb1 and phb2 have been optimized for a (150,590) grid. Changing the radial or angular points would require recalibration of the phb1 and phb2 values.
 
 ### Block section # DM
@@ -206,7 +207,7 @@ CUBE
 # FRAGMENTS
 2
 1
-35
+1
 -1
 #
 # CUBE
@@ -214,6 +215,12 @@ MAX_OCC=700
 MIN_OCC=300
 #
 ```
+
+In this example, the evaluation of the effective oxidation states is requested, together with the cube generation of the effective fragment orbitals with net occupancies within the [0.300,0.700] range.
+
+The AIM requested is NAO-BASIS. which requires of an additional .nao file with the transformation matrix from the original AO to NAO basis. This file corresponds to the X file generated, for instance,  with the NBO code coupled to Gaussian. In a Gaussian input file, the user must add the *pop=(full,nboread)* keyword, together with the *$NBO AONAO=W $END* additional line at the end of the file. Renaming the mol.x to mol.nao is mandatory.
+
+Fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 1, and fragment 2 gathers the rest of atoms of the molecule. 
 
 
 ### Example 2
@@ -246,7 +253,9 @@ phb2 0.170
 #
 ```
 
-In this example, the IQA decomposition of the KS-DFT energy is requested. Functional ID=106 (B88) and ID=132 (P86) correspond to the well-known BP86 functional. The AIM requested is TFCV and fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 1, and fragment 2 gathers the rest of atoms of the molecule. The diatomic xc energy components are computed exactly for all atomic pairs. User-specific options for the decomposition of the two-electron energy are given in GRID block section (in this case they coincide with the default *strongly recommended* values).
+In this example, the IQA decomposition of the KS-DFT energy is requested. Functional ID=106 (B88) and ID=132 (P86) correspond to the well-known BP86 functional. 
+
+The AIM requested is TFCV and fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 1, and fragment 2 gathers the rest of atoms of the molecule. The diatomic xc energy components are computed exactly for all atomic pairs. User-specific options for the decomposition of the two-electron energy are given in GRID block section (in this case they coincide with the default *strongly recommended* values).
 
 
 ### Example 3
@@ -271,7 +280,11 @@ pySCF
 #
 ```
 
-In this example, the local spin analysis of a correlated WF (e.g. CASSCF) from a pySCF run is requested. The AIM requested is TFVC and fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 35, and fragment 2 gathers the rest of atoms of the molecule. The DM1 and DM2 files are mandatory for this type of analysis, being defined in the DM section. The order is important.
+In this example, the local spin analysis of a correlated WF (e.g. CASSCF) from a pySCF run is requested. 
+
+The files containing the information of the RDM1 and RDM2 are mandatory for this type of analysis. They can be obtained from a pySCF run using the *apost3d.py* utility, as described above. The DM section contains the name of the two files (with extension).
+
+The AIM requested is TFVC and fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 35, and fragment 2 gathers the rest of atoms of the molecule.
 
 
 ### Example 4
@@ -298,7 +311,11 @@ PRINT NON-ORTHO
 #
 ```
 
-In this example, the elucidation of OS using the OSLO method is requested. The AIM requested for the numerical integration is TFVC (mandatory for OSLO calculation) and fragments have been defined. In particular, the system is split into three fragments: fragment 1 consists of atom 1, fragment 2 consists of two atoms (2 and 3), and fragment 3 gathers the rest of atoms of the molecule. The AIM requested for FOLI values evaluation is LOWDIN, and the tolerance value for its selection is 3 (real(10^-3), default value). Printing of the selected OSLOs pre-orthogonalization (non-orthogonal if two or more OSLOs are selected in the same iteration AND belong to different fragments) is invoked. As a result, a new .fchk file is created containing these OSLOs.
+In this example, the evaluation of the oxidation states using the OSLO method is requested. 
+
+The AIM requested for the numerical integration is TFVC (mandatory for OSLO calculation) and fragments have been defined. In particular, the system is split into three fragments: fragment 1 consists of atom 1, fragment 2 consists of two atoms (2 and 3), and fragment 3 gathers the rest of atoms of the molecule. 
+
+The AIM requested for FOLI values evaluation is LOWDIN, and the tolerance value for its selection is 3 (real(10^-3), default value). Printing of the selected OSLOs pre-orthogonalization (non-orthogonal if two or more OSLOs are selected in the same iteration AND belong to different fragments) is invoked. As a result, a new .fchk file is created containing these OSLOs.
 
 
 
@@ -320,7 +337,9 @@ DOFRAGS
 #
 ```
 
-In this example, the elucidation of OS using the EOS method and the local spin analysis are requested from a single-determinant broken-symmetry WF (local spin analysis with correlated WFs requires of the DM1 and DM2 files, see Example 3). The AIM requested is TFVC and fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 1, and fragment 2 of atoms 2-6 (the system has 6 atoms).
+In this example, the evaluation of the effective oxidation states and the local spin analysis. For correlated (multireference) WFs, the local spin analysis requires the information of the RDM1 and RDM2 (see Example 3). 
+
+The AIM requested is TFVC and fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 1, and fragment 2 of atoms 2-6 (the system has 6 atoms).
 
 
 ### Real-case examples
