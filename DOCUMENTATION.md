@@ -218,7 +218,7 @@ MIN_OCC=300
 
 In this example, the evaluation of the effective oxidation states is requested, together with the cube generation of the effective fragment orbitals with net occupancies within the [0.300,0.700] range.
 
-The AIM requested is NAO-BASIS. which requires of an additional .nao file with the transformation matrix from the original AO to NAO basis. This file corresponds to the X file generated, for instance,  with the NBO code coupled to Gaussian. In a Gaussian input file, the user must add the *pop=(full,nboread)* keyword, together with the *$NBO AONAO=W $END* additional line at the end of the file. Renaming the mol.x to mol.nao is mandatory.
+The AIM requested is NAO-BASIS. which requires of an additional inputname.nao file with the transformation matrix from the original AO to NAO basis. This file corresponds to the FILE.33 file generated, for instance,  with Gaussian coupled to the NBO software. For this aim, in a Gaussian input file the user must add the *pop=(full,nboread)* keyword, together with the *$NBO AONAO=W $END* additional line at the end of the file. This generates the FILE.33 file to be renamed as inputname.nao.
 
 Fragments have been defined. In particular, the system is split into two fragments: fragment 1 consists of atom 1, and fragment 2 gathers the rest of atoms of the molecule. 
 
