@@ -55,6 +55,8 @@ export APOST3D_PATH="/home/user/APOST3D"
 
 5. Compile the provided `Libxc` libraries by executing the `compile_libxc.sh` script
 
+**Important:** In case of using Intel oneAPI toolkits (compilers) olders than the 2024 version, change *export CC=icx* for *export CC=icc* in `compile_libxc.sh` 
+
 **Important:** To date it is not possible to couple `APOST-3D` with newer `Libxc` libraries than the provided due to internal changes on the `Libxc` modules. We will work on that as soon as possible!
 
 6. Move back to $APOST3D_PATH and execute the `make_compile.sh` script
