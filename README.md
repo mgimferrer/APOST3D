@@ -38,27 +38,40 @@ The Intel Toolkits are available free of charge, and a tutorial for their instal
 ```bash
 git clone https://github.com/mgimferrer/APOST3D.git
 ```
-2. Load the Intel oneAPI modules compiler/latest and mkl/latest
-1. Set variable PROG to the destination folder in `Makefile_profgen`, `Makefile_profuse`, `compiler-runtest` and `compiler-runtest2`.
-1. Set variable OMP_NUM_THREADS in `make_compile.sh` to the desired number of cores (recommended maximum of a node, for parallelization purposes)
-1. Compile the provided `Libxc` libraries (see compilation instructions [here](#compilation-of-libxc-libraries))
-1. Move back to $PROG and execute the `make_compile.sh` script
 
-#### Compilation of Libxc libraries
+2. Load the installed Intel oneAPI toolkits. In case of using modules, one only has to load the compiler/latest and mkl/latest modules. Alternatively, one can load them using the command
+```bash
+source /opt/intel/oneapi/setvars.sh intel64
+```
 
-1. Set variable PROG to the destination folder in `compile_libxc.sh`
-1. Execute the `compile_libxc.sh` script
+**Important:** This command is used in case that the toolkits have been installed in /opt/. If not the case, change the path to where they have been installed.
+
+3. Set variable APOST3D_PATH to the destination folder (e.g. /home/user/APOST3D) as
+```bash
+export APOST3D_PATH="/home/user/APOST3D"
+```
+
+4. Set variable OMP_NUM_THREADS in `make_compile.sh` to the desired number of cores (recommended maximum of a node, for parallelization purposes)
+
+5. Compile the provided `Libxc` libraries by executing the `compile_libxc.sh` script
 
 **Important:** To date it is not possible to couple `APOST-3D` with newer `Libxc` libraries than the provided due to internal changes on the `Libxc` modules. We will work on that as soon as possible!
+
+6. Move back to $APOST3D_PATH and execute the `make_compile.sh` script
 
 
 ## How to use
  
-The `APOST-3D` program runs by using the `apost3d` executable located in $PROG. It is highly recommended to run the code issuing the following commands
+The `APOST-3D` program runs by using the `apost3d` executable located in $APOST3D_PATH. It is highly recommended to run the code issuing the following commands
 ```bash
 ## Load the oneAPI toolkits, name to be adapted to the one of your cluster/computer ##
+## In case of using modules ##
 module load compiler/latest
 module load mkl/latest
+
+## Alternatively: ##
+## Remember changing the path in case of installation in another location, see Program compilation section ##
+source /opt/intel/oneapi/setvars.sh intel64
 
 ## Number of cores desired to use ##
 export OMP_NUM_THREADS=48
@@ -66,7 +79,7 @@ export KMP_STACKSIZE=100m
 ulimit -s unlimited
 
 ## Execute the program ##
-$PROG/apost3d name-input > name-output.apost
+$APOST3D_PATH/apost3d name-input > name-output.apost
 ```
 
 **Important**: The input extension (.inp) is mandatory for the name-input file, but has not to be included in the command line. Detailed description of the input file format, together with the options available is provided [here](DOCUMENTATION.md)
