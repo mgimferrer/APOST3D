@@ -1,5 +1,5 @@
-# Addint type of files to not be pushed to github. Basically the ones created after compilation of libraries/code #
-# Feel free to add more types if desired #
+## Addint type of files to not be pushed to github. Basically the ones created after compilation of libraries/code ##
+## Feel free to add more types if desired/required                                                                 ##
 
 *.o
 *.mod
@@ -7,19 +7,27 @@
 *.dyn
 *pgopti*
 
-# Executables
+
+## Executables ##
 
 eos_aom
 apost3d-eos
 apost3d
 
-# Other files #
+
+## Other files ##
 
 nohup.out
 compiler-testset/*OSLOs*.fchk
 compiler-testset/*.apost*
 
-# Also the folder of the libraries, for problems of permission #
+
+## Ignored the pycache folder, its created when the user executes the apost3d.py util ##
+
+utils/__pycache__
+
+
+## Also the folder of the libraries, for problems of permission ##
 
 libxc-4.2.3
 
