@@ -566,7 +566,7 @@ c cas cisd specifications
        if (icorr.eq.2) then
         norb=nspinorb/2
         allocate (dm2(norb,norb,norb,norb))
-        call dm2input(idmrg,dm1,dm2)
+        call dm2input_dmn(dm1,dm2)
        end if
       end if
 
