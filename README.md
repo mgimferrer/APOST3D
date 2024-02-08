@@ -58,6 +58,8 @@ export APOST3D_PATH="/home/user/APOST3D"
  
 The `APOST-3D` program runs using the `apost3d` executable located in $APOST3D_PATH. 
 ```bash
+## Load the compiler (alternatively, load the appropriate modules) ##
+source /opt/intel/oneapi/setvars.sh intel64
 ## Set number of threads, stacksize and limits ##
 export OMP_NUM_THREADS=48
 export KMP_STACKSIZE=100m
