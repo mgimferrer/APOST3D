@@ -883,7 +883,7 @@
         write(*,*) "  INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
         write(*,*) " ------------------------------------------------------ "
         write(*,*) " "
-        call MPRINT2(exch_hf,NAT,maxat)
+        call MPRINT2(exch_hf,nat,maxat)
         exchen_hf=ZERO
         do i=1,nat
           do j=i,nat
@@ -910,7 +910,7 @@
           call MPRINT2(exch,nat,maxat)
           write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
           write(*,*) " "
-          if (idofr.eq.1) then
+          if(idofr.eq.1) then
             line=' FRAGMENT ANALYSIS: Final Exc Decomposition ' 
             call group_by_frag_mat(1,line,exch)
           end if
