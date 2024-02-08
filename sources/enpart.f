@@ -61,13 +61,12 @@
       end do
 
 !! ZEROING MATRICES !!
-
       epa=ZERO
       ekin=ZERO
       enuc=ZERO
       eto=ZERO
       ect=ZERO
-       
+
 !! DOING ENERGY PARTITION !!
 !! ONE-ELECTRON PART !!
 
@@ -97,13 +96,13 @@
           z=ZERO
           zztop=ZERO
           do ifut=iatps*(icenter-1)+1,iatps*icenter
-           distx=pcoord(ifut,1)
-           disty=pcoord(ifut,2)
-           distz=pcoord(ifut,3)
-           x=x+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distx
-           y=y+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*disty
-           z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
-           zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
+            distx=pcoord(ifut,1)
+            disty=pcoord(ifut,2)
+            distz=pcoord(ifut,3)
+            x=x+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distx
+            y=y+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*disty
+            z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
+            zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
           end do
           dip(icenter,1)=-x+zztop*coord(1,icenter)    
           dip(icenter,2)=-y+zztop*coord(2,icenter)    
@@ -146,7 +145,7 @@
           end do
           xtot=xtot+x
           epa(icenter,jcenter)=epa(icenter,jcenter)-x
-         end do
+        end do
       end do
 
       xtot=ZERO
