@@ -20,62 +20,45 @@ A Fortran-based code developed at the Universitat de Girona (UdG) by P. Salvador
 
 #### Prerequisites for manual installation
 
-Compilation of the code is through execution of Makefiles. Hence, it is required that the machine has installed `make`. This can be easily achieved by executing the command
-```bash 
-sudo apt install make
-```
+The code is currently set to be compiled using *make* and the following Intel oneAPI toolkits (available free of charge [here](https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2024-0/apt.html)):
+- Intel oneAPI Base Toolkit
+- Intel oneAPI HPC Toolkit
 
-Appropriate compilers and libraries are also required. For the sake of simplicity, we recommend to install and use the following Intel oneAPI toolkits:
+#### Compilation with profiling
 
-1. Intel oneAPI Base Toolkit
-1. Intel oneAPI HPC Toolkit
-
-The Intel Toolkits are available free of charge, and a tutorial for their installation (together with module creation) provided by Intel can be found [here](https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-0/apt.html)
-
-#### Program compilation
-
-1. Download source code from Github repository, easily achievable with `git` using the command
+1. Download source code from Github repository, for instance 
 ```bash
 git clone https://github.com/mgimferrer/APOST3D.git
 ```
 
-2. Load the installed Intel oneAPI toolkits. In case of using modules, one only has to load the compiler/latest and mkl/latest modules. Alternatively, one can load them using the command
+2. Load the installed Intel oneAPI toolkits. 
 ```bash
 source /opt/intel/oneapi/setvars.sh intel64
 ```
 
-**Important:** This command is used in case that the toolkits have been installed in /opt/. If not the case, change the path to where they have been installed.
-
-3. Set variable APOST3D_PATH to the destination folder (e.g. /home/user/APOST3D) as
+**Important:** The compiler is installed by default in /opt. Change the path above to the appropriate location otherwise. Alternatively, load the appropriate modules created during the installation. 
+ 
+3. Set variable APOST3D_PATH to the destination folder (e.g. /home/user/APOST3D) 
 ```bash
 export APOST3D_PATH="/home/user/APOST3D"
 ```
+4. Compile the provided `Libxc` libraries by executing the `compile_libxc.sh` script
 
-4. Set variable OMP_NUM_THREADS in `make_compile.sh` to the desired number of cores (recommended maximum of a node, for parallelization purposes)
-
-5. Compile the provided `Libxc` libraries by executing the `compile_libxc.sh` script
-
-**Important:** In case of using Intel oneAPI toolkits (compilers) olders than the 2024 version, change *export CC=icx* for *export CC=icc* in `compile_libxc.sh` 
+**Important:** In case of using Intel oneAPI toolkits older than the 2024 version, replace *export CC=icx* by *export CC=icc* in `compile_libxc.sh` 
 
 **Important:** To date it is not possible to couple `APOST-3D` with newer `Libxc` libraries than the provided due to internal changes on the `Libxc` modules. We will work on that as soon as possible!
 
-6. Move back to $APOST3D_PATH and execute the `make_compile.sh` script
+5. Set variable OMP_NUM_THREADS in `make_compile.sh` to the maximum number of threads (recommended the maximum in the machine) 
 
+6. Execute the `make_compile.sh` script
+   
+**Important:** This will first compile the code and run a series of tests (for about ca. 10 min) for profiling. A second compilation is then carried out using the profiling information (.dyn files), generating an `apost3d` executable that will run in using up to the number of threads defined in step #5. The tests are executed again, providing information about the profiled execution times.  
 
 ## How to use
  
-The `APOST-3D` program runs by using the `apost3d` executable located in $APOST3D_PATH. It is highly recommended to run the code issuing the following commands
+The `APOST-3D` program runs using the `apost3d` executable located in $APOST3D_PATH. 
 ```bash
-## Load the oneAPI toolkits, name to be adapted to the one of your cluster/computer ##
-## In case of using modules ##
-module load compiler/latest
-module load mkl/latest
-
-## Alternatively: ##
-## Remember changing the path in case of installation in another location, see Program compilation section ##
-source /opt/intel/oneapi/setvars.sh intel64
-
-## Number of cores desired to use ##
+## Set number of threads, stacksize and limits ##
 export OMP_NUM_THREADS=48
 export KMP_STACKSIZE=100m
 ulimit -s unlimited
@@ -84,12 +67,12 @@ ulimit -s unlimited
 $APOST3D_PATH/apost3d name-input > name-output.apost
 ```
 
-**Important**: The input extension (.inp) is mandatory for the name-input file, but has not to be included in the command line. Detailed description of the input file format, together with the options available is provided [here](DOCUMENTATION.md)
+**Important**: A name-input.fchk and name-input.inp files must be in the folder. A detailed description of the input file format is provided in the Documentation.
 
 
 ## Documentation
 
-The `APOST-3D` documentation is hosted [here](DOCUMENTATION.md).
+The `APOST-3D` documentation is [here](DOCUMENTATION.md).
 
 
 ## Citations
@@ -98,7 +81,7 @@ The `APOST-3D` documentation is hosted [here](DOCUMENTATION.md).
 
 The following paper should be cited in publications utilizing `APOST-3D`:
 
-* X, Y, Z, _submitted_, **2024**
+* P. Salvador, E. Ramos-Cordoba, M. Montilla and M. Gimferrer, _submitted_, **2024**
   DOI: [XX](XX)
 
 
