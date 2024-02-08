@@ -717,10 +717,13 @@
 !! ***** !!
 
       subroutine monadic_diag(ic,itotps,chp2,chp2pha,dm1,dm2,cumulab,fij,fijb)
+
       IMPLICIT REAL*8(A-H,O-Z)
+
       include 'parameter.h'
+
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /cas/ icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
 
       dimension :: chp2(itotps,norb),chp2pha(itotps,norb)
       dimension :: dm1(nspinorb,nspinorb),dm2(norb,norb,norb,norb)
@@ -731,16 +734,15 @@
       allocatable :: sfdm1(:,:),psdm1(:,:) 
 
 !! TRANSFORMATION OF THE DM2 INTO THE CUMMULANT (XC IF ic = 0, X IF ic = 1 AND C IF ic = 2) !!
-
       ALLOCATE(cumul(norb,norb,norb,norb))
       ALLOCATE(sfdm1(norb,norb),psdm1(norb,norb))
 
-C P AND Ps in MO basis
+!! P AND Ps in MO basis !!
       do i=1,norb
-       do k=1,norb
-        sfdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)+dm1((i-1)*2+2,(k-1)*2+2)
-        psdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)-dm1((i-1)*2+2,(k-1)*2+2)
-       end do
+        do k=1,norb
+          sfdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)+dm1((i-1)*2+2,(k-1)*2+2)
+          psdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)-dm1((i-1)*2+2,(k-1)*2+2)
+        end do
       end do
 
       do ii=1,norb
@@ -763,9 +765,9 @@ C P AND Ps in MO basis
       end do 
 
       DEALLOCATE(sfdm1,psdm1)
+
 !! GROUPING TERMS FOR J >/ I AND L >/ K, NECESSARY FOR COMPACTING LATER !!
 !! COMPACTING INDEXES FOR THE CUMULANT (I,J --> IJ AND K,L --> KL) !!
-
       ij=1
       do ii=1,norb
         do jj=ii,norb
@@ -785,14 +787,12 @@ C P AND Ps in MO basis
       DEALLOCATE(cumul)
 
 !! DIAGONALIZING THE CORRESPONDING CUMULANT !!
-
       norb2=norb*(norb+1)/2
       ALLOCATE(eigenmat(norb2,norb2))
       call diagonalize(norb2,norb2,cumulab,eigenmat,0)
 
 !! FINISHING INDEX COMPACTATION !!
 !! PRODUCT OF ORBITALS FROM FIRST GRID IN fa1, FROM SECOND (ROTATED) IN fb2 !!
-
       ALLOCATE(fa1(itotps,norb2),fb2(itotps,norb2))
       do ifut=1,itotps
         ij=1
@@ -806,7 +806,6 @@ C P AND Ps in MO basis
       end do  
 
 !! TRANSFORMATION OF fa1 AND fb2 FROM DIAGONALIZATION OF COMPACTED EXCHANGE-CORRELATION CUMULANT !!
-
       do ifut=1,itotps
         do ii=1,norb2
           xx=ZERO
@@ -823,12 +822,16 @@ C P AND Ps in MO basis
 
       end 
 
-! *****
+!! ***** !!
 
       subroutine numint_two_pmon(itotps,iorb2,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,cumulab,ffa1,ffb2,ef)
+
       use integration_grid
+
       IMPLICIT REAL*8(A-H,O-Z)
+
       include 'parameter.h'
+
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /iops/iopt(100)
@@ -836,12 +839,11 @@ C P AND Ps in MO basis
       dimension :: wp(itotps),wppha(itotps),pcoord(itotps,3),pcoordpha(itotps,3)
       dimension :: omp2(itotps,nat),omp2pha(itotps,nat),cumulab(iorb2,iorb2)
       dimension :: ffa1(itotps,iorb2),ffb2(itotps,iorb2)
-
       dimension :: ef(maxat,maxat)
 
+      ithrebod = iopt(44)
       iatps    = nrad*nang
       iterms   = 0
-      ithrebod = Iopt(44)
 
       !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
       if(ithrebod.lt.1) then
@@ -850,8 +852,11 @@ C P AND Ps in MO basis
         threbod=real(ithrebod)/10000.0d0
       end if
       
-      write(*,*) " Two-el integrations for ",iorb2," MO pairs "
-      write(*,'(a38,f10.6)') " Threshold for atom pair calculation : ",threbod
+!! ADAPTED PRINTING FOR NOT PRINTING WHEN PERFORMS THE ZES !!
+      if(ithrebod.lt.10000) then
+        write(*,'(2x,a22,x,i6,x,a8)') "Two-el integrations for",iorb2,"MO pairs"
+        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
+      end if
 
 !! TWO-EL NUMERICAL INTEGRATION FOR PHF and HF Exc, Ex and Ec !!
 
@@ -892,7 +897,7 @@ C P AND Ps in MO basis
                 dy1=pcoord(jfut,2)
                 dz1=pcoord(jfut,3)
                 dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12 ) then
+                if(dist.gt.1.0d-12) then
                   xxw=x0*x1/dist
                   do ij=1,iorb2
                     f3=f3+cumulab(ij,ij)*xxw*ffa1(ifut,ij)*ffa1(jfut,ij)
@@ -911,7 +916,4 @@ C P AND Ps in MO basis
 
       end 
 
-! *****
-
-
-
+!! ***** !!
