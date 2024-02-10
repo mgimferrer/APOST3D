@@ -352,7 +352,7 @@ For creating the required .fchk, .dm1 and .dm2 files from a pySCF run, one needs
 As example, we provide an input of a CASSCF(2,2) calculation for the HF molecular system in the singlet spin state.
 
 ```
-from pyscf import gto, scf, lib, mcscf, fci, dft, mrpt, lo
+from pyscf import gto, scf, mcscf
 import apost3d as apost
 
 molname = 'HF-CASSCF'
@@ -371,7 +371,6 @@ mol.max_memory=40000
 mol.build()
 
 # Calculate RHF reference (guess) #
-print('Pseudo symmetry %s' % mol.groupname)
 mf = scf.RHF(mol)
 mf.kernel()
 
@@ -397,7 +396,7 @@ For single-determinant calculations (Hartree-Fock or KS-DFT), the user only requ
 For illustrative purposes, one can create the .fchk file from a Hartree-Fock calculation as
 
 ```
-from pyscf import gto, scf, lib, mcscf, fci, dft, mrpt, lo
+from pyscf import gto, scf
 import apost3d as apost
 
 molname = 'HF-Hartree-Fock'
@@ -415,8 +414,7 @@ mol.verbose=4
 mol.max_memory=40000
 mol.build()
 
-# Calculate RHF reference (guess) #
-print('Pseudo symmetry %s' % mol.groupname)
+# Calculate RHF  #
 mf = scf.RHF(mol)
 mf.kernel()
 
