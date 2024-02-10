@@ -347,7 +347,7 @@ A battery of real-case examples of calculations are provided in the $APOST3D_PAT
 
 For creating the required .fchk, .dm1 and .dm2 files from a pySCF run, one needs to use the util *apost3d.py* provided in the $APOST3D_PATH/utils folder. 
 
-**Important:** For its use, it is mandatory to add the $APOST3D_PATH/utils path into the user's PYTHONPATH within the .bashrc file.
+**Important:** Add the location of apost3d.py file to PYTHONPATH env variable, for instance `export PYTHONPATH=$PYTHONPATH:$APOST3D_PATH/utils` .
 
 As example, we provide an input of a CASSCF(2,2) calculation for the HF molecular system in the singlet spin state.
 
