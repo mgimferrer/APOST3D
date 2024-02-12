@@ -228,7 +228,7 @@
         ekin0=ekinen  
       end if
       write(*,*) " "
-      if (idofr.eq.1) then
+      if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy ' 
         call group_by_frag_mat(1,line,ekin)
       end if
@@ -258,6 +258,10 @@
       call MPRINT2(enuc,nat,maxat)
       write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
       write(*,*) " "
+      if(idofr.eq.1) then
+        line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
+        call group_by_frag_mat(1,line,enuc)
+      end if
 
 !! IN CASE OF HAVING AN ELECTRIC FIELD !!
       if(ifield.eq.1) then
@@ -873,7 +877,7 @@
       end do
       write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
       write(*,*) " "
-      if (idofr.eq.1) then
+      if(idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: Coulomb energy ' 
         call group_by_frag_mat(1,line,coul)
       end if
@@ -1001,7 +1005,7 @@
         write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       end if
-      if (idofr.eq.1) then
+      if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Energy Decomposition' 
         call group_by_frag_mat(1,line,eto)
       end if
@@ -1134,7 +1138,7 @@
       else
         eelnuc0=eelnuc
       end if
-      if (idofr.eq.1) then
+      if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Electron-nuclei attraction '
         call group_by_frag_mat(1,line ,epa)
       end if
@@ -1190,7 +1194,7 @@
         ekin0=ekinen  
       end if
       write(*,*) " "
-      if (idofr.eq.1) then
+      if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy ' 
         call group_by_frag_mat(1,line ,ekin)
       end if
@@ -1863,7 +1867,7 @@
         end do
         write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
         write(*,*) " "
-        if (idofr.eq.1) then
+        if(idofr.eq.1) then
           line='   FRAGMENT ANALYSIS: Coulomb energy ' 
           call group_by_frag_mat(1,line ,coul)
         end if
@@ -1904,7 +1908,7 @@
             call MPRINT2(exch,nat,maxat)
             write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
             write(*,*) " "
-            if (idofr.eq.1) then
+            if(idofr.eq.1) then
               line='   FRAGMENT ANALYSIS: Final Exc Decomposition ' 
               call group_by_frag_mat(1,line ,exch)
             end if
@@ -1998,7 +2002,7 @@
         write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       end if
-      if (idofr.eq.1) then
+      if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Energy Decomposition' 
         call group_by_frag_mat(1,line ,eto)
       end if
