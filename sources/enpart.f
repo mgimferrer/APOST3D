@@ -331,12 +331,12 @@
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /iops/iopt(100)
-      common/actual/iact,jat,icenter
-      common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
-      common/energ0/ekin0,eelnuc0,evee0,etot0
-      common/exchg/exch(maxat,maxat),xmix
-      common/twoel/twoeltoler
-      common/efield/field(4),edipole
+      common /actual/iact,jat,icenter
+      common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
+      common /energ0/ekin0,eelnuc0,evee0,etot0
+      common /exchg/exch(maxat,maxat),xmix
+      common /twoel/twoeltoler
+      common /efield/field(4),edipole
 !! FROM # GRID SECTION !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
       common /modgrid2/thr3
@@ -565,7 +565,7 @@
 !! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
         do icenter=1,nat
           do isum=1,ithreads
-             exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
           end do
         end do
 
@@ -754,6 +754,7 @@
       end do
 
 !! DOING INTEGRATIONS FOR ONLY THE ATOMIC TERMS !!
+!! MG: CAN ALSO BEEN DONE WITH BETTER SCALING... IF NECESSARY !!
       do icenter=1,nat
         do ifut=iatps*(icenter-1)+1,iatps*icenter
           x0=wp(ifut)*omp2(ifut,icenter)
@@ -928,7 +929,7 @@
           end do
         end do
       end if
- 
+
 !! TOTAL TWO-ELECTRON PART !!
       if(ihf.eq.0) then
         evee=coulen+exchen
@@ -1534,7 +1535,7 @@
 !! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
         do icenter=1,nat
           do isum=1,ithreads
-             exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
           end do
         end do
 
@@ -1689,8 +1690,8 @@
         evee=coulen+exchen
         write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee           
         if(evee0.ne.ZERO) then
-           twoelerr=(evee-evee0)*tokcal
-           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee0=evee
         end if
@@ -1922,7 +1923,7 @@
             end do
           end do
         end if
- 
+
 !! TOTAL TWO ELECTRON PART !!
         if(ihf.eq.0) then
           evee=coulen+exchen
@@ -2569,58 +2570,176 @@ c  energetics
 !! ***** !!
 
       subroutine calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
+
       use integration_grid
+      use OMP_LIB
+      use IFPORT
+
       IMPLICIT REAL*8(A-H,O-Z)
+
+      integer external OMP_GET_NUM_PROCS
+
       include 'parameter.h'
-      character*80 line
+
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(100)
-      common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
+      common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /modgrid2/thr3 !! We can make that the distance threshold is controlled using this !!
 
       dimension :: wp(itotps),wppha(itotps),pcoord(itotps,3),pcoordpha(itotps,3)
       dimension :: omp2(itotps,nat),omp2pha(itotps,nat),rho(itotps),rhopha(itotps)
       dimension :: coul(maxat,maxat)
 
+      character*80 line
+      character*100 threadenv
+      
+      !! FOR ENPART PARALLEL !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+      allocatable :: ecoul_k(:,:)
+      allocatable :: ecoul_ij(:,:)
+      allocatable :: f3k(:)
+
       iatps = nrad*nang
-      idofr = Iopt(40)
+      idofr = iopt(40)
 
-      f2=ZERO
+!! MIMICKING HF PART !!
+!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
+      call getenv('OMP_NUM_THREADS',threadenv)
+      if(trim(threadenv)=='') then
+        write(*,*) " OMP_NUM_THREADS not set"
+        ithreadenv=ZERO
+      else
+        read(unit=threadenv,FMT='(I4)') ithreadenv
+      end if
+      !$OMP PARALLEL
+      iprocs=OMP_GET_MAX_THREADS()
+      ithreads=INT(OMP_GET_NUM_PROCS())
+      !$OMP END PARALLEL
+      if(ithreadenv.ne.ZERO) then
+        write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
+     &  ithreads,"available hardware cores"
+        ithreads=ithreadenv
+      else
+        write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
+     &  ithreads,"available hardware cores"
+      end if
+
+!! TO ENSURE PROPER SLICING BY THREADS !!
+      ALLOCATE(f3k(ithreads))
+      ALLOCATE(ecoul_k(nat,ithreads))
+      ALLOCATE(istart(ithreads),iend(ithreads))
+      itilerest=mod(iatps,ithreads)
+      ispace=(iatps-itilerest)/ithreads
+
+!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
+      coul=ZERO
+      ecoul_k=ZERO
+      !DIR$ NOPARALLEL
       do icenter=1,nat
-        do ifut=iatps*(icenter-1)+1,iatps*icenter
-          x0=wp(ifut)*omp2(ifut,icenter)
-          dx0=pcoord(ifut,1)
-          dy0=pcoord(ifut,2)
-          dz0=pcoord(ifut,3)
+        ioffset=(icenter-1)*iatps
+        istart=0
+        iend=0
+        !DIR$ NOPARALLEL
+        do ik=1,(ithreads-1)
+          istart(ik)=ioffset+((ik-1)*ispace)+1
+          iend(ik)=ioffset+(ik*ispace)
+        end do
+        istart(ithreads)=iend(ithreads-1)+1
+        iend(ithreads)=icenter*iatps
 
-!! SAME CENTER !!
-          f3=ZERO
-          do jfut=iatps*(icenter-1)+1,iatps*icenter
-            x1=wppha(jfut)*omp2pha(jfut,icenter)
-            dx1=pcoordpha(jfut,1)
-            dy1=pcoordpha(jfut,2)
-            dz1=pcoordpha(jfut,3)
-            dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-            if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist !! MG: Could be controlled using the thr2 variable !!
+!! THIS TWO CALLS ARE CRUCIAL !!
+        call omp_set_dynamic(.false.)
+        call omp_set_num_threads(ithreads)
+        !DIR$ PARALLEL
+        do ik=1,ithreads
+          do ifut=istart(ik),iend(ik)
+            x0=wp(ifut)*omp2(ifut,icenter)
+            dx0=pcoord(ifut,1)
+            dy0=pcoord(ifut,2)
+            dz0=pcoord(ifut,3)
+            f3k(ik)=ZERO
+            do jfut=iatps*(icenter-1)+1,iatps*icenter
+              x1=wppha(jfut)*omp2pha(jfut,icenter)
+              dx1=pcoordpha(jfut,1)
+              dy1=pcoordpha(jfut,2)
+              dz1=pcoordpha(jfut,3)
+              dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+              if(dist.gt.1.0d-12) f3k(ik)=f3k(ik)+rho(ifut)*rhopha(jfut)*x1*x0/dist
+            end do
+            ecoul_k(icenter,ik)=ecoul_k(icenter,ik)+f3k(ik)
           end do
-          coul(icenter,icenter)=coul(icenter,icenter)+f3
+        end do
+      end do
 
-!! PAIRS OF CENTERS !!
-          do jcenter=icenter+1,nat
-            f3=ZERO
+!! ADDING THE TERMS INTO THE ORIGINAL coul MATRIX !!
+!! FACTOR OF TWO ACCOUNTED BELOW !!
+      do icenter=1,nat
+        do isum=1,ithreads
+          coul(icenter,icenter)=coul(icenter,icenter)+ecoul_k(icenter,isum)
+        end do
+      end do
+
+!! NOW PAIRS OF CENTERS (HERE ALL HAS TO BE COMPUTED) !!
+      ipaircounter=0
+      ALLOCATE(ijpaircount(nat*nat,2))
+      do icenter=1,nat
+        do jcenter=icenter+1,nat
+          ipaircounter=ipaircounter+1
+          ijpaircount(ipaircounter,1)=icenter
+          ijpaircount(ipaircounter,2)=jcenter
+        end do
+      end do
+
+!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
+      ALLOCATE(ecoul_ij(ipaircounter,ithreads))
+      itilerest=mod(iatps,ithreads)
+      ispace=(iatps-itilerest)/ithreads
+      ecoul_ij=ZERO
+      !DIR$ NOPARALLEL
+      do numpairnat=1,ipaircounter
+        icenter=ijpaircount(numpairnat,1)
+        jcenter=ijpaircount(numpairnat,2)
+        ioffset=(icenter-1)*iatps
+        istart=0
+        iend=0
+        !DIR$ NOPARALLEL
+        do ik=1,(ithreads-1)
+          istart(ik)=ioffset+((ik-1)*ispace)+1
+          iend(ik)=ioffset+(ik*ispace)
+        end do
+        istart(ithreads)=iend(ithreads-1)+1
+        iend(ithreads)=icenter*iatps
+        !DIR$ PARALLEL
+        do ik=1,ithreads
+          do ifut=istart(ik),iend(ik)
+            x0=wp(ifut)*omp2(ifut,icenter)
+            dx0=pcoord(ifut,1)
+            dy0=pcoord(ifut,2)
+            dz0=pcoord(ifut,3)
+            f3k(ik)=ZERO
             do jfut=iatps*(jcenter-1)+1,iatps*jcenter
               x1=wp(jfut)*omp2(jfut,jcenter)
               dx1=pcoord(jfut,1)
               dy1=pcoord(jfut,2)
               dz1=pcoord(jfut,3)
               dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-              if(dist.gt.1.0d-12 ) f3=f3+rho(ifut)*rho(jfut)*x1*x0/dist !! MG: Could be controlled using the thr2 variable !!
+              if(dist.gt.1.0d-12) f3k(ik)=f3k(ik)+rho(ifut)*rho(jfut)*x1*x0/dist
             end do
-            coul(icenter,jcenter)=coul(icenter,jcenter)+f3
+            ecoul_ij(numpairnat,ik)=ecoul_ij(numpairnat,ik)+f3k(ik)
           end do
         end do
       end do
 
+!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+      do numpairnat=1,ipaircounter
+        icenter=ijpaircount(numpairnat,1)
+        jcenter=ijpaircount(numpairnat,2)
+        do isum=1,ithreads
+          coul(icenter,jcenter)=coul(icenter,jcenter)+ecoul_ij(numpairnat,isum)
+        end do
+      end do
+
+!! FACTOR OF TWO USED HERE !!
       coulen=ZERO
       do i=1,nat
         coul(i,i)=coul(i,i)/TWO
