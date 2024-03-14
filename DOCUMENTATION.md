@@ -75,6 +75,7 @@ Some WF tools or options require additional block sections for tool-specific opt
 | Keyword | Description |
 | ------- | ----------- |
 | DOFRAGS  | Definition of molecular fragments for the calculations. Requires additional # FRAGMENTS block section |
+| DOINT    | Generate *.int files for each atom with the Atomic Overlap Matrices in MO basis for the given AIM. These can be read with ESI program |
 | CUBE     | Plots cube-type files of the Effective Atomic/Fragment Orbitals. Requires additional # CUBE block section |
 | DENS=*val* | Integer *val* controls which of the P-matrices present in the fchk file is to be used. Default *val*=1 |
 | QCHEM    | Required if the .fchk file originates from a Q-Chem calculation (different ordering of sections within)|
