@@ -393,7 +393,7 @@ c Building Pa and Pb matrix from dm1
       dif=0.0d0
       do i=1,igr 
        do j=1,igr  
-        dif=amax1(dif,dabs((pa(i,j)+pb(i,j))-p(i,j)))
+        dif=dmax1(dif,dabs((pa(i,j)+pb(i,j))-p(i,j)))
         p(i,j)=pa(i,j)+pb(i,j)
        end do 
       end do 
@@ -402,6 +402,186 @@ c Building Pa and Pb matrix from dm1
 
 
       deallocate(scr)
+      end
+!!!
+      subroutine dm2input_pyscf(dm1,dm2)
+      use ao_matrices
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(100)
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      dimension dm2(norb,norb,norb,norb)
+      dimension dm1(nspinorb,nspinorb)
+      character*80 line
+      real*8 vvv
+      logical ilog
+
+! At the moment will read the full spinless rdm2 from file *.dm2, as
+! produced by write_dm12 function in apost3d.py 
+
+      dm2=0.0d0
+
+      ninact=(nspinorb-ncasorb*2)
+      ncore=ninact/2
+      iorb=ncore+ncasorb
+      if(iorb.ne.norb) stop 'inconsistency in norb'
+      write(*,*) 'Reconstructing rdm2 for ',ncore,' inactive orbitals'
+      write(*,*) 'Active orbitals : ', ncasorb
+      write(*,*) 'Total spinless rdm2 dimension : ', norb
+
+! reading active space
+      rewind(12)
+      read(12,*) 
+      icount=0
+      do while(.true.)
+        read(12,*,end=999) ii,jj,kk,ll,vvv
+        dm2(ii+ncore,kk+ncore,jj+ncore,ll+ncore)=vvv
+        icount=icount+1
+      end do
+999   continue
+      write(*,*) 'rdm2 elements read:',icount
+
+! reconstructing core and core-active blocks
+! with spin resolved dm1
+
+!! ALPHA-ALPHA AND BETA-BETA CASES !!
+
+        do ispin=1,2
+          do ii=1,ncore
+            do jj=1,ncore
+              dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+ONE
+              dm2(ii,jj,jj,ii)=dm2(ii,jj,jj,ii)-ONE
+            end do 
+            do kk=ncore+1,iorb
+              do ll=ncore+1,iorb
+               dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+               dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+               dm2(ii,ll,kk,ii)=dm2(ii,ll,kk,ii)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+               dm2(kk,ii,ii,ll)=dm2(kk,ii,ii,ll)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+              end do 
+            end do 
+          end do 
+        end do 
+
+!! ALPHA-BETA CASE !!
+
+        do ii=1,ncore
+          dm2(ii,ii,ii,ii)=dm2(ii,ii,ii,ii)+TWO
+          do jj=1,ncore
+            if(jj.ne.ii) dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+TWO
+          end do
+          do kk=ncore+1,iorb
+            do ll=ncore+1,iorb
+              dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+1,2*(ll-1)+1)
+              dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+2,2*(ll-1)+2)
+              dm2(ii,ii,ll,kk)=dm2(ii,ii,ll,kk)+dm1(2*(ll-1)+2,2*(kk-1)+2)
+              dm2(ll,kk,ii,ii)=dm2(ll,kk,ii,ii)+dm1(2*(ll-1)+1,2*(kk-1)+1)
+            end do
+          end do
+        end do
+
+!! CHECKING DM2 !!
+
+       xx2=ZERO
+       do ii=1,ncore
+         do jj=1,ncore
+           xx2=xx2+dm2(ii,ii,jj,jj)
+         end do
+       end do
+       write(*,*) 'Trace of inactive orbitals: ',xx2
+       xx2=ZERO
+       do ii=ncore+1,norb
+         do jj=ncore+1,norb
+           xx2=xx2+dm2(ii,ii,jj,jj)
+         end do
+       end do
+       write(*,*) 'Trace of active orbitals: ',xx2
+       xx2=ZERO
+       do ii=1,norb
+         do jj=1,norb
+           xx2=xx2+dm2(ii,ii,jj,jj)
+         end do
+       end do
+       nelect=nalf+nb
+       write(*,*) " "
+       write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2,nelect*(nelect-1)
+       write(*,*) " "
+      end
+
+      subroutine dm2input_dmn(dm1,dm2)
+      use ao_matrices
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(100)
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      dimension dm2(norb,norb,norb,norb)
+      dimension dm1(nspinorb,nspinorb)
+      character*80 line
+      logical ilog
+
+      thres   = 1.0d-8
+
+!! PREPARATING FOR DM1 AND DM2 READING !!
+
+       dm2=ZERO
+
+!! READING THE DM2(1,2,1,2) MATRIX BUT SAVING AS DM2(1,1,2,2), IMPORTANT FOR LATER ON !!
+
+c reading full rdm2 spin-separated as given by  DMN code
+c reading only i<=j, k<=l, i<=k elements and reconstructing full rdm2
+c reading from formatted (unreadable) dm2 file
+
+      rewind(12)
+      do while(.true.)
+       read(12,end=999) i0,k0,j0,l0,vvv
+       if(abs(vvv).gt.thres) then
+         ii=(i0-1)/2+1
+         kk=(k0-1)/2+1
+         jj=(j0-1)/2+1
+         ll=(l0-1)/2+1
+         ilog=.true.
+         if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.
+
+!! IJ0 FOR THE AAAA, ABAB,BABA AND BBBB TERMS !!
+!! KJ0 FOR THE ABBA AND BAAB TERMS !!
+
+         ij0=mod(i0+j0,2)+mod(k0+l0,2)
+         kj0=mod(k0+j0,2)+mod(i0+l0,2)
+         if(ij0.eq.0)then
+           dm2(ii,jj,kk,ll)=dm2(ii,jj,kk,ll)+vvv
+           if(ilog) dm2(jj,ii,ll,kk)=dm2(jj,ii,ll,kk)+vvv
+           if(k0.ne.i0.and.l0.ne.j0) then
+            dm2(kk,ll,ii,jj)=dm2(kk,ll,ii,jj)+vvv
+             if(ilog) dm2(ll,kk,jj,ii)=dm2(ll,kk,jj,ii)+vvv
+           end if
+         end if
+         if(kj0.eq.0) then
+           if(k0.ne.i0) then
+             dm2(kk,jj,ii,ll)=dm2(kk,jj,ii,ll)-vvv
+             if(ilog) dm2(jj,kk,ll,ii)=dm2(jj,kk,ll,ii)-vvv
+           end if
+           if(l0.ne.j0) then
+             dm2(ii,ll,kk,jj)=dm2(ii,ll,kk,jj)-vvv
+             if(ilog) dm2(ll,ii,jj,kk)=dm2(ll,ii,jj,kk)-vvv
+          end if
+         end if
+       end if
+      end do
+
+999   continue
+
+!! CHECKING DM2 !!
+
+      xx2=ZERO
+      do ii=1,norb
+        do jj=1,norb
+          xx2=xx2+dm2(ii,ii,jj,jj)
+        end do
+      end do
+      write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2
+      write(*,*) " "
       end
 
 ! *****
@@ -679,190 +859,6 @@ C*****************************************************************
       end if
 99    real_locate=0
 2     continue
-      end
-
-
-      subroutine dm2input(idmrg,dm1,dm2)
-      use ao_matrices
-      implicit real*8(a-h,o-z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
-      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
-      dimension dm2(norb,norb,norb,norb)
-      dimension dm1(nspinorb,nspinorb)
-      character*80 line
-      logical ilog
-
-      iorca    = Iopt(43)
-      ipyscf   = Iopt(87)
-      ispinsep = Iopt(88)
-
-      thres   = 1.0d-8
-
-!! PREPARATING FOR DM1 AND DM2 READING !!
-
-      do ii=1,norb
-        do jj=1,norb
-          do kk=1,norb
-            do ll=1,norb
-              dm2(ii,jj,kk,ll)=ZERO
-            end do 
-          end do 
-        end do 
-      end do
-
-
-!! READING THE DM2(1,2,1,2) MATRIX BUT SAVING AS DM2(1,1,2,2), IMPORTANT FOR LATER ON !!
-
-c reading full rdm2 spin-separated as given by  DMN code
-c reading only i<=j, k<=l, i<=k elements and reconstructing full rdm2
-c reading from formatted dm2 file
-
-       if(ipyscf.ne.1.and.iorca.ne.1) then
-          rewind(12)
-          do while(.true.)
-            read(12,end=999) i0,k0,j0,l0,vvv
-            if(abs(vvv).gt.thres) then
-              ii=(i0-1)/2+1
-              kk=(k0-1)/2+1
-              jj=(j0-1)/2+1
-              ll=(l0-1)/2+1
-              ilog=.true.
-              if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.
-
-!! IJ0 FOR THE AAAA, ABAB,BABA AND BBBB TERMS !!
-!! KJ0 FOR THE ABBA AND BAAB TERMS !!
-
-              ij0=mod(i0+j0,2)+mod(k0+l0,2)
-              kj0=mod(k0+j0,2)+mod(i0+l0,2)
-              if(ij0.eq.0)then
-                dm2(ii,jj,kk,ll)=dm2(ii,jj,kk,ll)+vvv
-                if(ilog) dm2(jj,ii,ll,kk)=dm2(jj,ii,ll,kk)+vvv
-                if(k0.ne.i0.and.l0.ne.j0) then
-                  dm2(kk,ll,ii,jj)=dm2(kk,ll,ii,jj)+vvv
-                  if(ilog) dm2(ll,kk,jj,ii)=dm2(ll,kk,jj,ii)+vvv
-                end if
-              end if
-              if(kj0.eq.0) then
-                if(k0.ne.i0) then
-                  dm2(kk,jj,ii,ll)=dm2(kk,jj,ii,ll)-vvv
-                  if(ilog) dm2(jj,kk,ll,ii)=dm2(jj,kk,ll,ii)-vvv
-                end if
-                if(l0.ne.j0) then
-                  dm2(ii,ll,kk,jj)=dm2(ii,ll,kk,jj)-vvv
-                  if(ilog) dm2(ll,ii,jj,kk)=dm2(ll,ii,jj,kk)-vvv
-                end if
-              end if
-            end if
-          end do
-
-        else
-
-c reading active-space rdm2 spin-separated as given by PySCF/ORCA
-
-        ninact=(nspinorb-ncasorb*2)
-        ncore=ninact/2
-c        iorb=ncore+ncasorb
-
-c reconstructing core and core-active blocks
-
-!! ALPHA-ALPHA AND BETA-BETA CASES !!
-
-        do ispin=1,2
-          do ii=1,ncore
-            do jj=1,ncore
-              dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+ONE
-              dm2(ii,jj,jj,ii)=dm2(ii,jj,jj,ii)-ONE
-            end do 
-            do kk=ncore+1,norb
-              do ll=ncore+1,norb
-               dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(ii,ll,kk,ii)=dm2(ii,ll,kk,ii)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(kk,ii,ii,ll)=dm2(kk,ii,ii,ll)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-              end do 
-            end do 
-          end do 
-        end do 
-
-!! ALPHA-BETA CASE !!
-
-        do ii=1,ncore
-          dm2(ii,ii,ii,ii)=dm2(ii,ii,ii,ii)+TWO
-          do jj=1,ncore
-            if(jj.ne.ii) dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+TWO
-          end do
-          do kk=ncore+1,norb
-            do ll=ncore+1,norb
-              dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+1,2*(ll-1)+1)
-              dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+2,2*(ll-1)+2)
-              dm2(ii,ii,ll,kk)=dm2(ii,ii,ll,kk)+dm1(2*(ll-1)+2,2*(kk-1)+2)
-              dm2(ll,kk,ii,ii)=dm2(ll,kk,ii,ii)+dm1(2*(ll-1)+1,2*(kk-1)+1)
-            end do
-          end do
-        end do
-
-!! NOW ACTIVE-ACTIVE !!
-
-c reading only i<=j, k<=l, i<=k elements and reconstructing full rdm2
-c reading from unformatted dm2 file
-c correcting for shift in the index of active orbs
-
-        rewind(12)
-        read(12,*) line
-        do while(.true.)
-         read(12,*,end=999) i0,k0,j0,l0,vvv
-         if(abs(vvv).gt.thres) then
-          if(idmrg.eq.0) then
-            ii=(i0-1)/2+1+ncore
-            jj=(j0-1)/2+1+ncore
-            kk=(k0-1)/2+1+ncore
-            ll=(l0-1)/2+1+ncore
-            ilog=.true.
-            if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.
-            ij0=mod(i0+j0,2)+mod(k0+l0,2)
-            kj0=mod(k0+j0,2)+mod(i0+l0,2)
-            if(ij0.eq.0)then
-              dm2(ii,jj,kk,ll)=dm2(ii,jj,kk,ll)+vvv
-              if(ilog) dm2(jj,ii,ll,kk)=dm2(jj,ii,ll,kk)+vvv
-              if(k0.ne.i0.and.l0.ne.j0) then
-                dm2(kk,ll,ii,jj)=dm2(kk,ll,ii,jj)+vvv
-                if(ilog) dm2(ll,kk,jj,ii)=dm2(ll,kk,jj,ii)+vvv
-              end if
-            end if
-            if(kj0.eq.0) then
-              if(k0.ne.i0) then
-                dm2(kk,jj,ii,ll)=dm2(kk,jj,ii,ll)-vvv
-                if(ilog) dm2(jj,kk,ll,ii)=dm2(jj,kk,ll,ii)-vvv
-              end if
-              if(l0.ne.j0) then
-                dm2(ii,ll,kk,jj)=dm2(ii,ll,kk,jj)-vvv
-                if(ilog) dm2(ll,ii,jj,kk)=dm2(ll,ii,jj,kk)-vvv
-              end if
-            end if
-           else ! reading spinless rdm2 all elements
-             ii=i0+ncore
-             jj=j0+ncore
-             kk=k0+ncore
-             ll=l0+ncore
-             dm2(ii,jj,kk,ll)=vvv
-           end if
-         end if
-       end do
-999   end if
-
-!! CHECKING DM2 !!
-
-      xx2=ZERO
-      do ii=1,norb
-        do jj=1,norb
-          xx2=xx2+dm2(ii,ii,jj,jj)
-        end do
-      end do
-      write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2
-      write(*,*) " "
-
       end
 
       subroutine do_potential(zn,vv)

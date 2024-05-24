@@ -349,12 +349,21 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 
 !! ADDING GRID TUNNING FOR TWO-EL INTEGRATION !!
         call readchar("# ENPART","MOD-GRIDTWOEL",iigrid)
-        call readint("# GRID","RADIAL",nrad22,150,1)
-        call readint("# GRID","ANGULAR",nang22,590,1)
-        call readreal("# GRID","rr00",rr0022,0.5d0,1)
-        call readreal("# GRID","phb1",phb12,0.169d0,1)
-        call readreal("# GRID","phb2",phb22,0.170d0,1)
-        call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
+        if(iigrid.eq.1) then
+         call readint("# GRID","RADIAL",nrad22,150,1)
+         call readint("# GRID","ANGULAR",nang22,590,1)
+         call readreal("# GRID","rr00",rr0022,0.5d0,1)
+         call readreal("# GRID","phb1",phb12,0.169d0,1)
+         call readreal("# GRID","phb2",phb22,0.170d0,1)
+         call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
+        else ! defaults
+         nrad22=70
+         nang22=434
+         rr0022=0.5
+         phb12=0.200d0
+         phb22=0.210d0
+         thr3=1.0d-12
+        end  if
 
 !! FOR TOPOLOGY CALCULATION !!
 !! MG: needs to be properly checked... done long time ago !!
@@ -863,9 +872,14 @@ c cas cisd specifications
        allocate (dm1(nspinorb,nspinorb))
        call dm1input(dm1)
        if (icorr.eq.2) then
+        print *,'DM2 input starts'
         norb=nspinorb/2
         allocate (dm2(norb,norb,norb,norb))
-        call dm2input(idmrg,dm1,dm2)
+        if(iorca.eq.1.or.ipyscf.eq.1) then
+         call dm2input_pyscf(dm1,dm2)
+        else
+         call dm2input_dmn(dm1,dm2)
+        end if
        end if
       end if
 

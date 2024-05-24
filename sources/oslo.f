@@ -376,7 +376,7 @@
 !! SELECTING THE FIRST OUT FOR EVALUATING LINDEP !!
         clindep=ZERO
         write(*,*) " ------------------------------ "
-        write(*,*) "  CHECKING LINIAR DEPENDENCIES  "
+        write(*,*) "  CHECKING LINEAR DEPENDENCIES  "
         write(*,*) " ------------------------------ "
         write(*,*) " "
         write(*,*) "  Orb.   Frag.   FOLI  "
@@ -444,7 +444,7 @@
         end if
         if(ilindep.eq.1) then
           write(*,*) " *********************************** "
-          write(*,*) "  WARNING : LINIAR DEPENDENCY FOUND  "
+          write(*,*) "  WARNING : LINEAR DEPENDENCY FOUND  "
           write(*,*) " *********************************** "
           write(*,*) " "
           write(*,'(2x,a27,3f10.5)') "FOLI values and delta-FOLI:",xcutoff,xfront,xfront-xcutoff
