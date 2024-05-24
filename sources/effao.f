@@ -229,6 +229,7 @@
           errnet(i)=errsav(i)
           effpop(i)=effpop(i)*2.0d0
         end do
+        confi=confi0
         go to 99
       else if(icase.eq.2.and.nb.eq.0) then
         write(*,*) " "
@@ -403,7 +404,7 @@
         write(*,*) " "
 
 !! TO BE CHANGED !!
-        confi2=min(confi,confi0)
+        confi2=dmin1(confi,confi0)
         write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
       end if
 
