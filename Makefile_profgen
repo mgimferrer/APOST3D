@@ -6,9 +6,8 @@
 
 
 ## DEFINING VARIABLES ##
-PROG = /home/mgimferrer/APOST3D
-LIBXCDIR = $(PROG)/libxc-4.2.3
-QUADDIR = $(PROG)/lebedev
+LIBXCDIR = $(APOST3D_PATH)/libxc-4.2.3
+QUADDIR = $(APOST3D_PATH)/lebedev
 #FOR = ifort -Ofast -parallel -qopenmp -unroll-aggressive -prof-gen
 FOR = ifort -parallel -qopenmp -unroll-aggressive -prof-gen
 FOR_INP = ifort
@@ -16,9 +15,9 @@ SFLAGS = -xHost -extend-source 132 -mcmodel=medium
 OFLAGS = -Ofast
 LFLAGS = -L$(LIBXCDIR)/lib -lxcf90 -lxc -I$(LIBXCDIR)/include -parallel -qopenmp -prof-gen
 
-SRCDIR = $(PROG)/sources
-OBJDIR = $(PROG)/objects
-UTILDIR = $(PROG)/utils
+SRCDIR = $(APOST3D_PATH)/sources
+OBJDIR = $(APOST3D_PATH)/objects
+UTILDIR = $(APOST3D_PATH)/utils
 SRC_LIST := $(wildcard $(SRCDIR)/*.f) 
 OBJ_LIST := $(SRCDIR)/modules.o $(addprefix $(OBJDIR)/,$(notdir ${SRC_LIST:.f=.o})) 
 LIBXC_OBJ := $(LIBXCDIR)/libxc_funcs.o $(LIBXCDIR)/libxc.o

@@ -855,33 +855,35 @@ CCCCCCCCCCCCCCCCC
 
 c cas cisd specifications
       nelec=nalf+nb
-      if(icorr.ne.0) then 
-       print *,' -------------------------------'
-       print *,'  POST-HARTREE-FOCK CALCULATION '
-       print *,' -------------------------------'
-       print *,' '
+      if(icorr.ne.0) then
+        print *,' -------------------------------'
+        print *,'  POST-HARTREE-FOCK CALCULATION '
+        print *,' -------------------------------'
+        print *,' '
 
-       if(icisd.eq.1) nspinorb=nbasis*2
+        if(icisd.eq.1) nspinorb=nbasis*2
 
-       print *,'Number of core + active spin-orbitals : ',nspinorb
-       print *,'Number of electrons : ',nelec
-       print *,'Number of basis functions :',nbasis
-       print *,' '
+        print *,'Number of core + active spin-orbitals : ',nspinorb
+        print *,'Number of electrons : ',nelec
+        print *,'Number of basis functions :',nbasis
+        print *,' '
 
-       print *,'DM1 input starts'
-       allocate (dm1(nspinorb,nspinorb))
-       call dm1input(dm1)
-       if (icorr.eq.2) then
-        print *,'DM2 input starts'
-        norb=nspinorb/2
-        allocate (dm2(norb,norb,norb,norb))
-        if(iorca.eq.1.or.ipyscf.eq.1) then
-         call dm2input_pyscf(dm1,dm2)
-        else
-         call dm2input_dmn(dm1,dm2)
+
+        print *,'DM1 input starts'
+        ALLOCATE(dm1(nspinorb,nspinorb))
+        call dm1input(dm1)
+        if(icorr.eq.2) then
+          print *,'DM2 input starts'
+          norb=nspinorb/2
+          ALLOCATE(dm2(norb,norb,norb,norb))
+          if(iorca.eq.1.or.ipyscf.eq.1) then
+            call dm2input_pyscf(dm1,dm2)
+          else
+            call dm2input_dmn(dm1,dm2)
+          end if
         end if
-       end if
       end if
+
 
 CCCCCCCCCCCCCCCCC
 c END CORRELATED WFs INPUT 

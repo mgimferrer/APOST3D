@@ -129,7 +129,9 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
     for i in angular_momentum:
         if i > highest_angular_mom:
             highest_angular_mom = i
-
+    if highest_angular_mom >3 :
+      print('CAN NOT HANDLE G-TYPE FUNCTIONS')
+      exit()
 #shells per atom
     ctr_total = mol.bas_nprim(range(0,mol.nbas))       
     highest_contraction = 0    
@@ -142,6 +144,7 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
             if angular_momentum[i] > 1:
                 angular_momentum[i] = angular_momentum[i]*-1 
            
+
 #Creating map array for reordering basis functions 
 # For Cartesian basis functions
     if mol.cart == True:
@@ -182,6 +185,7 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
                 imap[contador] -= 1
             elif i.find('fzzz') != -1:
                 imap[contador] -= 5
+# ara les G
             contador += 1
 
     else:
@@ -204,25 +208,25 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
             elif i.find('dx2-y2') != -1:
                 imap[contador] -= 4
 
-            elif i.find('fy^3') != -1:
+            elif i.find('f-3') != -1:
                 imap[contador] += 3
-            elif i.find('fxyz') != -1:
+            elif i.find('f-2') != -1:
                 imap[contador] += 3
-            elif  i.find('fyz^2') != -1:
+            elif  i.find('f-1') != -1:
                 imap[contador] += 0
-            elif i.find('fz^3') != -1:
+            elif i.find('f+0') != -1 or i.find('f 0') != -1:
                 imap[contador] += 2
-            elif i.find('fxz^2') != -1:
+            elif i.find('f+1') != -1 or i.find('f 1') != -1 :
                 imap[contador] -= 3
-            elif i.find('fzx^2') != -1:
+            elif i.find('f+2') != -1 or i.find('f 2') != -1:
                 imap[contador] += 1
-            elif i.find('fx^3') != -1:
+            elif i.find('f+3') != -1 or i.find('f 3') != -1:
                 imap[contador] -= 6
 
+# ara les G
             contador +=1
 
 ## End basis functions section
-
 
 ####################
 ## WRITTING FCHK  ##
@@ -347,7 +351,7 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
     print('\n'.join(''.join(nums[i:i+5]) for i in range(0, len(nums), 5)),file=nameHandle) 
 
 # some irrelevant stuff
-    print('Constraint Structure'.ljust(43)+'R   N=',"%11i"%(3*natoms),file=nameHandle)
+#    print('Constraint Structure'.ljust(43)+'R   N=',"%11i"%(3*natoms),file=nameHandle)
     print('Num ILSW'.ljust(43)+'I     ',"%11i"% (0),file=nameHandle)
     print('ILSW'.ljust(43)+'I   N=',"%11i"%(0),file=nameHandle)
     print('Num RLSW'.ljust(43)+'I     ',"%11i"% (0),file=nameHandle)
@@ -481,218 +485,11 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
 ## end write_fchk ##
 ####################
 
-
-#######################
-## init write_fulldm ##
-#######################
-import numpy
-from pyscf import mcscf,fci
-def write_fulldm(mol, mycas, titol,myhf=None):
-
-
-    ''' Write in two separate files rdm1s and rdm2s for the cas object'''
-    label=str(type(mycas))
-    fci=ccsd=cas=0
-    if label.find("FCI") != -1: fci=1
-    if label.find("CCSD") != -1: ccsd=1
-    if label.find("CASSCF") != -1: cas=1
-
-# Variables
-    toler=1.0e-10
-    if fci == 1:
-     nelec = mol.nelec
-     ncore = 0
-     nelecas = mycas.nelec
-     nmo = int(mycas.norb)
-     ncas = nmo
-    elif cas == 1:
-     ncore = mycas.ncore
-     ncas = int(mycas.ncas)
-     nelecas = mycas.nelecas
-     nmo = ncore+ncas
-    elif ccsd ==1:
-     nelec=mol.nelec
-     ncore=0
-     nelecas=mol.nelectron    
-# Spin resolved rdm1 AND rdm2 of the active space
-    if fci == 1:
-     casdm1s, casdm2s  = mycas.make_rdm12s(mycas.ci,nmo,nelec)
-    else:
-     casdm1s, casdm2s  = mycas.fcisolver.make_rdm12s(mycas.ci,ncas, mycas.nelecas)
-
-# Making the FULL RDM1 and RDM2
-    nocc = ncas + ncore
-    idx = numpy.arange(ncore) # generate range to ncore
-
-# rdm1s
-    nameHandle =open(titol+'.dm1', 'w')
-    print('mcscf spin resolved full rdm1 for ',nelecas,'electrons in',ncas,'active orbitals and',nmo,'active+core MOs',file=nameHandle)
-    for  spincase in (0,1):   
-      fdm1a = numpy.zeros((nmo,nmo))
-      fdm1a[idx,idx] = 1.0e0
-      fdm1a[ncore:nocc,ncore:nocc] = casdm1s[spincase]
-#print spin resolved full rdm1 
-      for i in range(nmo):
-        for j in range(i,nmo):
-          if abs(fdm1a[i][j]) >= (toler): 
-            print(2*i+1+spincase,2*j+1+spincase,'{:22.15E}'.format(fdm1a[i][j]),file=nameHandle)
-    nameHandle.close()
-
-#
-# rdm2s
-#
-    nameHandle =open(titol+'.dm2', 'w')
-    print('mcscf spin resolved full rdm2 for ',nelecas,'electrons in',ncas,'active orbitals and',nmo,'active+core MOs',file=nameHandle)
-# same spin block
-    for  case in (0,1):   
-      fdm2a = numpy.zeros((nmo,nmo,nmo,nmo))
-      fdm2a[ncore:nocc,ncore:nocc,ncore:nocc,ncore:nocc] = casdm2s[2*case]
-      for i in range(ncore):
-          for j in range(ncore):
-              fdm2a[i,i,j,j] += 1.0e0
-              fdm2a[i,j,j,i] += -1.0e0
-          fdm2a[i,i,ncore:nocc,ncore:nocc] = fdm2a[ncore:nocc,ncore:nocc,i,i] =casdm1s[case]
-          fdm2a[i,ncore:nocc,ncore:nocc,i] = fdm2a[ncore:nocc,i,i,ncore:nocc] = -casdm1s[case]
-# printing i <= j , k <= l and i <= k
-      for i in range(nmo):
-        for j in range(i,nmo):
-          for k in range(i,nmo):
-            for l in range(k,nmo):
-              if abs(fdm2a[i,k,j,l]) >= toler:
-                print(2*i+1+case,2*j+1+case,2*k+1+case,2*l+1+case,'{:22.15E}'.format(fdm2a[i,k,j,l]),file=nameHandle)
-
-# odd spin block
-    fdm2a = numpy.zeros((nmo,nmo,nmo,nmo))
-    fdm2a[ncore:nocc,ncore:nocc,ncore:nocc,ncore:nocc] = casdm2s[1]
-    for i in range(ncore):
-          fdm2a[i,i,i,i] = 1.0e0
-          for j in range(ncore):
-                 if j != i :
-                   fdm2a[i,i,j,j] = 1.0e0
-          fdm2a[i,i,ncore:nocc,ncore:nocc] = casdm1s[0]
-          fdm2a[ncore:nocc,ncore:nocc,i,i] = casdm1s[1] 
-
-# printing final elements where i' <= j' , k' <= l' and i' <= k'
-    for i in range(nmo):
-      for j in range(i,nmo):
-        for k in range(i,nmo):
-          for l in range(k,nmo):
-            if abs(fdm2a[i,k,j,l]) >= toler: #abab
-              print(2*i+1,2*j+2,2*k+1,2*l+2,'{:22.15E}'.format(fdm2a[i,k,j,l]),file=nameHandle)
-            if (abs(fdm2a[j,l,i,k]) and i!=j and k!=l) >= toler: #baba
-                print(2*i+2,2*j+1,2*k+2,2*l+1,'{:22.15E}'.format(fdm2a[j,l,i,k]),file=nameHandle)
-            if (abs(fdm2a[i,l,j,k])>=toler and k!=l) : #abba
-              print(2*i+1,2*j+2,2*k+2,2*l+1,'{:22.15E}'.format(-fdm2a[i,l,j,k]),file=nameHandle)
-            if (abs(fdm2a[j,k,i,l])>=toler and i!=j and i!=k): #baab
-              print(2*i+2,2*j+1,2*k+1,2*l+2,'{:22.15E}'.format(-fdm2a[j,k,i,l]),file=nameHandle)
-    print(0,file=nameHandle)
-
-######################
-## end write_fulldm ##
-######################
-
-###################
-## init write_dm_old ##
-###################
-from pyscf import mcscf,cc
-import numpy
-def write_dm_old(mol, mycas, titol):
-
-# Variables #
-    label=str(type(mycas))
-    cas=ccsd=0
-    if label.find("CASSCF") != -1: cas=1  
-    if label.find("CCSD") != -1  : ccsd=1
-    toler=1.0e-12
-
-    if (cas == 1):
-     ncore = mycas.ncore
-     ncas = int(mycas.ncas)
-     nelecas = mycas.nelecas
-     dmrg = False
-     if (mycas.ci.any() == 0) : dmrg = True # it appears this is the only way to tell
-     if(dmrg):
-      casdm1s=mycas.fcisolver.make_rdm1s(0,ncas,nelecas)
-      dm1,dm2=mycas.fcisolver.make_rdm12(0,ncas,nelecas)
-     else: 
-# Spin resolved rdm1 AND rdm2 of the active space
-      casdm1s, casdm2s  = mycas.fcisolver.make_rdm12s(mycas.ci,mycas.ncas, mycas.nelecas,reorder=True)
-# trying for CCSD. only rdm1 for closed-shell..should call uccsd
-    else: 
-     ncore = 0 
-     ncas = mycas.get_nmo()
-     dmrg = False
-     casdm1s = [0,0]
-     casdm1s[0] = casdm1s[1] = mycas.make_rdm1()/2
-#     casdm2s = [0,0,0]
-#     casdm2s[0] = casdm2s[1] = casdm2s[2] = mycas.make_rdm2()/2
-
-# rdm1s
-    nameHandle =open(titol+'.dm1', 'w')
-    if( cas == 1) :
-      print('mcscf spin resolved rdm1 for ',nelecas,'electrons in',ncas,'orbitals',file=nameHandle)
-    else:
-      print('ccsd spin resolved rdm1 for ',ncas,'orbitals',file=nameHandle)
-
-    for case in (0,1):   
-      for i in range(ncas):
-        for j in range(i,ncas):
-          if abs(casdm1s[case][i,j]) >= (toler): 
-            print(2*i+1+case,2*j+1+case,'{:22.15E}'.format(casdm1s[case][i,j]),file=nameHandle)
-    nameHandle.close()
-
-    if(ccsd !=1) :
-#
-# rdm2s; printing only i<=j, k<=l and i<=k for [ijkl] elements in [1212] convention
-#
-     nameHandle =open(titol+'.dm2', 'w')
-     if(dmrg): 
-      print('dmrg spinless rdm2 for ',nelecas,'electrons in',ncas,'orbitals',file=nameHandle)
-      for i in range(ncas):
-        for j in range(ncas):
-          for k in range(ncas):
-            for l in range(ncas):
-              if abs(dm2[i,k,j,l]) >= toler:
-                print(i+1,j+1,k+1,l+1,'{:22.15E}'.format(dm2[i,k,j,l]),file=nameHandle)
-
-     else: 
-      if( cas == 1) :
-       print('mcscf spin resolved rdm2 for ',nelecas,'electrons in',ncas,'orbitals',file=nameHandle)
-      else:
-       print('ccsd spin resolved rdm2 for ',ncas,'orbitals',file=nameHandle)
-   
-# same spin block
-      for  case in (0,1):   
-       for i in range(ncas):
-        for j in range(i,ncas):
-          for k in range(i,ncas):
-            for l in range(k,ncas):
-              if abs(casdm2s[2*case][i,k,j,l]) >= toler:
-                print(2*i+1+case,2*j+1+case,2*k+1+case,2*l+1+case,'{:22.15E}'.format(casdm2s[2*case][i,k,j,l]),file=nameHandle)
-# odd spin block
-      for i in range(ncas):
-       for j in range(i,ncas):
-         for k in range(i,ncas):
-           for l in range(k,ncas):
-            if abs(casdm2s[case][i,k,j,l]) >= toler: #abab
-              print(2*i+1,2*j+2,2*k+1,2*l+2,'{:22.15E}'.format(casdm2s[case][i,k,j,l]),file=nameHandle)
-            if (abs(casdm2s[case][j,l,i,k]) and i!=j and k!=l) >= toler: #baba
-                print(2*i+2,2*j+1,2*k+2,2*l+1,'{:22.15E}'.format(casdm2s[case][j,l,i,k]),file=nameHandle)
-            if (abs(casdm2s[case][i,l,j,k])>=toler and k!=l) : #abba
-              print(2*i+1,2*j+2,2*k+2,2*l+1,'{:22.15E}'.format(-casdm2s[case][i,l,j,k]),file=nameHandle)
-            if (abs(casdm2s[case][j,k,i,l])>=toler and i!=j and i!=k): #baab
-              print(2*i+2,2*j+1,2*k+1,2*l+2,'{:22.15E}'.format(-casdm2s[case][j,k,i,l]),file=nameHandle)
-      print(0,file=nameHandle)
-
-##################
-## end write_dm_old ##
-##################
-
 ###################
 ## init write_dm12 ##
 ###################
 from pyscf import mcscf,fci
-import numpy
+#import numpy
 def write_dm12(mol, mycas, titol):
 
 # Variables #
@@ -741,9 +538,6 @@ def write_dm12(mol, mycas, titol):
      nameHandle =open(titol+'.dm2', 'w')
      print('spinless rdm2 for ',nelecas,'electrons in',ncas,'orbitals',file=nameHandle)
      for i in range(ncas):
-#      for j in range(i,ncas):
-#        for k in range(i,ncas):
-#          for l in range(k,ncas):
        for j in range(ncas):
          for k in range(ncas):
            for l in range(ncas):
