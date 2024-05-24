@@ -14,7 +14,14 @@ apost3d-eos
 apost3d
 
 # Other files #
-
+DOCUMENTATION.md
+README.md
+Makefile_profgen
+Makefile_profuse
+compile_libxc.sh
+compiler-runtest
+compiler-runtest2
+make_compile.sh
 nohup.out
 compiler-testset/*OSLOs*.fchk
 compiler-testset/*.apost*
