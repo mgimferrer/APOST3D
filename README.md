@@ -83,8 +83,8 @@ The `APOST-3D` documentation is [here](DOCUMENTATION.md).
 
 The following paper should be cited in publications utilizing `APOST-3D`:
 
-* P. Salvador, E. Ramos-Cordoba, M. Montilla and M. Gimferrer, _submitted_, **2024**
-  DOI: [XX](XX)
+* P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer, *J. Chem. Phys.*, **2024**, 160, 172502
+  DOI: [10.1063/5.0206187](https://doi.org/10.1063/5.0206187)
 
 
 ### Cite implemented methods
