@@ -854,7 +854,7 @@
       
 !! ADAPTED PRINTING FOR NOT PRINTING WHEN PERFORMS THE ZES !!
       if(ithrebod.lt.10000) then
-        write(*,'(2x,a22,x,i6,x,a8)') "Two-el integrations for",iorb2,"MO pairs"
+        write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",iorb2,"MO pairs"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
       end if
 
