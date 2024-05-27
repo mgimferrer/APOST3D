@@ -480,7 +480,7 @@
         write(*,*) "  EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  "
         write(*,*) " ------------------------------------------------- "
         write(*,*) " "
-        write(*,'(2x,a22,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
+        write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
 
 !! FIRST ONLY SAME CENTER TERMS !!
