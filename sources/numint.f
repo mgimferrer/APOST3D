@@ -370,10 +370,10 @@ c Computing  atomic orbital overlap
          end do
 
        if(iallpo.eq.0) then
-        do mu=1,ndim
-         do nu=1,mu
-          do icenter=1,nat
-           x=0.d0
+        do icenter=1,nat
+         do mu=1,ndim
+          do nu=1,mu
+           x=ZERO
            do ifut=iatps*(icenter-1)+1,iatps*icenter
             x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*omp2(ifut,icenter)
            end do
