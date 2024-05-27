@@ -75,6 +75,7 @@ Some WF tools or options require additional block sections for tool-specific opt
 | Keyword | Description |
 | ------- | ----------- |
 | DOFRAGS  | Definition of molecular fragments for the calculations. Requires additional # FRAGMENTS block section |
+| DOINT    | Generate *.int files for each atom with the Atomic Overlap Matrices in MO basis for the given AIM. These can be read with ESI program |
 | CUBE     | Plots cube-type files of the Effective Atomic/Fragment Orbitals. Requires additional # CUBE block section |
 | DENS=*val* | Integer *val* controls which of the P-matrices present in the fchk file is to be used. Default *val*=1 |
 | QCHEM    | Required if the .fchk file originates from a Q-Chem calculation (different ordering of sections within)|
@@ -345,14 +346,14 @@ A battery of real-case examples of calculations are provided in the $APOST3D_PAT
 
 ## Extracting .fchk, .dm1 and .dm2 files from pySCF
 
-For creating the required .fchk, .dm1 and .dm2 files from a pySCF run, one needs to use the util *apost3d.py* provided in the $APOST3D_PATH/utils folder. 
-
-**Important:** For its use, it is mandatory to add the $APOST3D_PATH/utils path into the user's PYTHONPATH within the .bashrc file.
-
+The *apost3d.py* file provided in $APOST3D_PATH/utils folder collects several functions for creating .fchk, .dm1 and .dm2 files from a pySCF run. The location of the file must be added to the PYTHONPATH variable, for instance by doing
+```
+export PYTHONPATH=$PYTHONPATH:$APOST3D_PATH/utils
+```
 As example, we provide an input of a CASSCF(2,2) calculation for the HF molecular system in the singlet spin state.
 
 ```
-from pyscf import gto, scf, lib, mcscf, fci, dft, mrpt, lo
+from pyscf import gto, scf, mcscf
 import apost3d as apost
 
 molname = 'HF-CASSCF'
@@ -371,7 +372,6 @@ mol.max_memory=40000
 mol.build()
 
 # Calculate RHF reference (guess) #
-print('Pseudo symmetry %s' % mol.groupname)
 mf = scf.RHF(mol)
 mf.kernel()
 
@@ -397,7 +397,7 @@ For single-determinant calculations (Hartree-Fock or KS-DFT), the user only requ
 For illustrative purposes, one can create the .fchk file from a Hartree-Fock calculation as
 
 ```
-from pyscf import gto, scf, lib, mcscf, fci, dft, mrpt, lo
+from pyscf import gto, scf
 import apost3d as apost
 
 molname = 'HF-Hartree-Fock'
@@ -415,8 +415,7 @@ mol.verbose=4
 mol.max_memory=40000
 mol.build()
 
-# Calculate RHF reference (guess) #
-print('Pseudo symmetry %s' % mol.groupname)
+# Calculate RHF  #
 mf = scf.RHF(mol)
 mf.kernel()
 
