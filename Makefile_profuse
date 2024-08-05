@@ -72,6 +72,20 @@ eos_aom : $(UTILDIR)/eos_aom.o
 	$(FOR) $(UTILDIR)/eos_aom.o -o eos_aom 
 
 
+## ONGOING ##
+## MAKE UTILS ##
+util: group_frag get_energy get_energy_g16 gen_hirsh 
+
+gen_hirsh: $(UTILDIR)/gen_hirsh.o $(OBJDIR)/quad.o $(QUAD_OBJ)
+	$(FOR) $(UTILDIR)/gen_hirsh.o $(OBJDIR)/quad.o $(QUAD_OBJ) $(SRCDIR)/modules.o $(OBJDIR)/input2.o $(OBJDIR)/util.o -o $(UTILDIR)/gen_hirsh
+group_frag: $(UTILDIR)/group_frag.o
+	$(FOR) $(UTILDIR)/group_frag.o -o $(UTILDIR)/group_frag
+get_energy: $(UTILDIR)/get_energy.o
+	$(FOR) $(UTILDIR)/get_energy.o -o $(UTILDIR)/get_energy
+get_energy_g16: $(UTILDIR)/get_energy_g16.o
+	$(FOR) $(UTILDIR)/get_energy_g16.o -o $(UTILDIR)/get_energy_g16
+
+
 ## CLEANING ##
 clean:
 	rm -fr $(SRCDIR)/*.o $(OBJDIR)/*.o $(UTILDIR)/*.o *.mod apost3d apost3d-eos eos_aom
