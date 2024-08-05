@@ -67,29 +67,29 @@ c     *(maxbasisf,maxbasisf),nbasf,shelltypes(maxshells)
       call reading(12,"$Gaussian",nlines, gaussinp)
       
 
-      call locate(12,"$Atoms")
+      call locate2(12,"$Atoms")
       read(12,*) natoms
       do i=1,natoms
        read(12,*) atoms(i),(charge(i,j),multipl(i,j),j=1,chargestates)
       end do
 
-      call locate(12,"$Title")
+      call locate2(12,"$Title")
       read(12,'(a80)') title 
 
 !
 ! inlezen gegevens voor grid
-      call locate(12,"$Grid")
+      call locate2(12,"$Grid")
       read(12,*) nrad,nang
 
 ! get G03 location
-      call locate(12,"$GaussLocal")
+      call locate2(12,"$GaussLocal")
       read(12,'(a80)') glocal
 
       idens=0
       irohf=0
       icalc=0
       igauss=0
-      call locate(12,"$Options")
+      call locate2(12,"$Options")
       read(12,'(a80)') line  
       if(index(line,"NOCALC").ne.0) icalc=1
       if(index(line,"DENS2").ne.0) idens=1
@@ -564,7 +564,7 @@ c looking for gaussian
 
 
 
-      subroutine locate(iunit,keyword)
+      subroutine locate2(iunit,keyword)
       IMPLICIT DOUBLE PRECISION (a-h,o-z)
       CHARACTER (len=80) :: line     
       CHARACTER*(*)  keyword 
