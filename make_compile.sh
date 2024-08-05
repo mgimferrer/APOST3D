@@ -5,7 +5,7 @@
 
 ## EXPORTS REQUIRED FOR PARALLELIZATION PURPOSES ##
 ## NUMBER OF CORES, SET TO THE MAXIMUM OF THE NODE (RECOMMENDATION) ##
-export NUM_THREADS=$(grep -c ^processor /proc/cpuinfo)
+export NUM_THREADS=48
 export KMP_STACKSIZE=100m
 ulimit -s unlimited
 
