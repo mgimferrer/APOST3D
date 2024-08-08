@@ -16,7 +16,6 @@ apost3d
 
 
 ## Other files ##
-make_compile.sh
 nohup.out
 compiler-testset/*OSLOs*.fchk
 compiler-testset/*.apost*
