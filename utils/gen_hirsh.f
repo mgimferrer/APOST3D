@@ -1,5 +1,7 @@
       PROGRAM gen_hirs
 
+      use integration_grid
+
       IMPLICIT DOUBLE PRECISION (a-h,o-z)
 
       INTEGER, PARAMETER :: maxat=20
@@ -43,8 +45,8 @@
       
       DOUBLE PRECISION :: x 
       DOUBLE PRECISION, DIMENSION (NMAX) :: radial     
-       common /quadrat/th(1000),ph(1000),w(1000),wr(500),Xr(500)
-       common/pha2/pha,phb,rr00
+!      common /quadrat/th(1000),ph(1000),w(1000),wr(500),Xr(500)
+!      common/pha2/pha,phb,rr00
 
 c      common /density/nsh,nprimi,primexp(maxshells,maxpmaxshells,
 c     *maxprimicoeffrimicoeff),
@@ -65,11 +67,11 @@ c     *(maxbasisf,maxbasisf),nbasf,shelltypes(maxshells)
      *IOSTAT=status)
 
       call reading(12,"$Gaussian",nlines, gaussinp)
-      
 
       call locate2(12,"$Atoms")
       read(12,*) natoms
       do i=1,natoms
+!!! to modify here !!
        read(12,*) atoms(i),(charge(i,j),multipl(i,j),j=1,chargestates)
       end do
 
