@@ -1,7 +1,7 @@
 c-----------------------------------------------------------------------------
 c                                                                                  
 c                        Program APOST-3D, Version 4                               
-c                                 31-07-2023                                       
+c                                 12-03-2025                                       
 c                       --------------------------------                           
 c                                                                                  
 c        Real-space and Hilbert-space tools for wave function analysis             
@@ -13,7 +13,7 @@ c        Real space:
 c          Becke, J. Chem. Phys. 88 2547 1988                                      
 c          Hirshfeld, Theor. Chim. Acta 44  129 1977                               
 c          Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
-c          Topological fuzzy Voronoi cells (TFVC), J Chem Phys, 139 071103 2013    
+c          Topological fuzzy Voronoi cells (TFVC), J Chem Phys 139 071103 2013    
 c          QTAIM, J. Comput. Chem 30 1082 2009                                     
 c                                                                                  
 c        Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
@@ -22,7 +22,7 @@ c
 c        Calculating:                                                              
 c        ------------                                                              
 c                                                                                  
-c          A)  Atomic and overlap populations, bond orders and valences            
+c          A) Atomic and overlap populations, bond orders and valences            
 c             I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	      
 c                                                                                  
 c          B) Hartree-Fock molecular energy decomposition                          
@@ -38,29 +38,34 @@ c
 c          E) Effective atomic orbitals:                                           
 c             I. Mayer, J. Phys. Chem. 100 6249 1996                               
 c             I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
-c             E. Ramos-Cordoba et.al., J. Chem. Phys. 138 214107 2013              
+c             E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
 c                                                                                  
 c          F) Local spin analysis                                                  
-c             E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 8, 1270-1279 2012   
-c             E. Ramos-Cordoba et.al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+c             E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012   
+c             E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
 c                                                                                  
 c          G) Effective Oxidation states analysis                                  
-c             E. Ramos-Cordoba et.al., J. Chem. Theor. Comput. 11 1501-1508 2015   
+c             E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
 c
 c          H) Oxidation states from localized orbitals
+c             M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020
+c             M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
 c             M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022
 c
 c          I) Decomposition of EDA quantities into one- and two-center IQA terms
 c             M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+c
+c          J) Origin-independent decomposition of static polarizabilities
+c             M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021
 c                                                                                  
 c                                                                                  
 c        Cite this program as:                                                     
 C        ---------------------                                                     
-c                P. Salvador, E. Ramos-Cordoba, M. Gimferrer, M. Montilla          
-c                Program APOST-3D, Version 4, Girona, 2020                       
+c          P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer 
+c          J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                     
 c                                                                                  
 c      e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
-C                                                                                  
+c                                                                                  
 c----------------------------------------------------------------------------------
 c      The program has been written by using parts of the program APOST by         
 c      I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
@@ -75,6 +80,7 @@ c      interfaces provided by the authors.
 c                     (see http://www.tddft.org/programs/libxc)                     
 c                                                                                  
 c      We are extremely grateful for the possibility of using these routines!      
+c
 c      -----------------------------------------------------------------------------c
       use basis_set    
       use ao_matrices
@@ -281,6 +287,9 @@ C eff-AO-s and EOS
 !! OS FROM CENTROIDS !!
       call readchar("# METHOD","OS-CENTROID",ieoscent)
 
+!! OS FROM LOCALIZED ORBITALS (LOBA) !!
+      call readchar("# METHOD","LOBA",iloba)
+
 c Local spin and methods for correlated WFs
       call readchar("# METHOD","SPIN",ispin)
       call readint("# METHOD","DM",icorr,0,1)
@@ -363,7 +372,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
          phb12=0.200d0
          phb22=0.210d0
          thr3=1.0d-12
-        end  if
+        end if
 
 !! FOR TOPOLOGY CALCULATION !!
 !! MG: needs to be properly checked... done long time ago !!
@@ -616,6 +625,10 @@ C READING DM1 and DM2
 !! END OF OSLO OPTIONS !!
 
 
+!! X-RAY SCATTERING FACTORS !!
+      call readchar("# METHOD","SCATT-FACT",iscattfact)
+
+
 CCCCCCCCCCCCCCCCCCCCCCCCC
 C END PROCESSING INP FILE 
 CCCCCCCCCCCCCCCCCCCCCCCCC
@@ -752,6 +765,8 @@ c      iopt(89) =
       iopt(96) = ifolitol
       iopt(97) = ibranch
       iopt(98) = ioslofchk
+!! LOBA !!
+      iopt(99) = iloba
 
 CCCCCCCCCCCCC
 c END OPTIONS LIST
@@ -830,8 +845,9 @@ CCCCCCCCCCCCCCC
 C DO OS FROM LOCALIZED MOs
 CCCCCCCCCCCCCCC
 
+!! CENTROIDS !!
       if(ieoscent.eq.1) then
-        write(*,*) 'Doing OS from localized orbitals...'
+        write(*,*) 'Doing OS from centroids of localized orbitals...'
         call eos_centroid(itotps,chp,wp,omp,pcoord)
         stop
       end if
@@ -1191,7 +1207,7 @@ c ieffao 3 paired/unpaired eff-AOs
 c imulli 1 MULLIKEN                                 
 c imulli 2 LOWDIN                                   
 c imulli 3 LOWDIN-DAVIDSON (not implemented)                                   
-c imulli 3 NAO                                    
+c imulli 4 NAO                                    
 
       if (ieffao.ne.0) then
 
@@ -1281,6 +1297,27 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         call cpu_time(time2)
         write(*,'(a37,f10.1,a2)')'(Elapsed time :: effAOs/EOS analysis ',time2-time,'s)' 
         time=time2
+      end if
+
+CCCCCCCCCCCCCCC
+C LOCALIZED ORBITALS BONDING ANALYSIS (LOBA)
+CCCCCCCCCCCCCCC
+
+      if(iloba.eq.1) then
+        write(*,*) " "
+        write(*,*) " ------------------------------------------------- "
+        write(*,*) "  DOING LOCALIZED ORBITAL BONDING ANALYSIS (LOBA)  "
+        write(*,*) " ------------------------------------------------- "
+        write(*,*) " "
+
+!! HILBERT-SPACE !!
+        if(imulli.gt.0) then
+          write(*,*) " LOBA NOT IMPLEMENTED FOR HILBERT-SPACE "
+          stop
+        end if
+
+!! REAL-SPACE !!
+        if(imulli.eq.0) call eos_loba(sat)
       end if
 
 CCCCCCCCCCCCCCC
@@ -1513,6 +1550,24 @@ CCCCCCCCCC
 CCCCCCCCCCCCCCCCC
 !! END OF OSLO !!
 CCCCCCCCCCCCCCCCC
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!! X-RAY SCATTERING FACTORS !!
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+      if(iscattfact.eq.1) then
+        write(*,*) " "
+        write(*,*) " ------------------------------------- "
+        write(*,*) "  EVALUATING X-RAY SCATTERING FACTORS  "
+        write(*,*) " ------------------------------------- "
+        write(*,*) " "
+        call scattering_factors(itotps,wp,rho,omp2,pcoord)
+      end if
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!! END OF X-RAY SCATTERING FACTORS !!
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 
       print *,' '
