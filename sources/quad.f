@@ -3,36 +3,18 @@
        implicit double precision(a-h,o-z)
        double precision x(1000),y(1000),z(1000)
 
-       PI=datan(1.0d0)*4.0d0 
+       PI=datan(1.0d0)*4.0d0
+       r=rr00
 
-        r=rr00
-
-c         READ(*,*)Nrad
-         CALL LEGZO(Nrad0,XR,WR)
-         do i=1,nrad0
-          wR(i)=2.0*r*wr(i)/(1.0-Xr(i))**2
-          XR(i)=R*(Xr(i)+1.0)/(1.0-Xr(i))
-c       if(XR(i).lt.0)then 
-c        wR(i)=2.0*r*wr(i)/(1.0-Xr(i))**2
-c        XR(i)=R*(Xr(i)+1.0)/(1.0-Xr(i))
-c       else
-c        a0=R
-c        a1=2.0d0*Rmax
-c        a2=(-Rmax-3.0d0*R)
-c        a3=2.0d0*R
-c        XR(i)=a0+a1*XR(i)+a2*XR(i)**2.d0+a3*XR(i)**3.d0
-c        wR(i)=wr(i)*(a1+2.0d0*a2*XR(i)+3.0d0*a3*XR(i)**2)
-c       end if
-c        write(*,*)i,xr(i)
-c       wR(i)=r*wr(i)/2.0
-c       XR(i)=R*(Xr(i)+1.0)/2.0
+!! CLEANED VERSION OF THE SUBROUTINE !!
+!! DIFFERENT RADIAL QUADRATURES/DISTRIBUTIONS IN OLDER DEVELOPMENT (M. Gimferrer) VERSIONS !!
+       CALL LEGZO(Nrad0,XR,WR)
+       do i=1,nrad0
+         wR(i)=2.0d0*r*wr(i)/(1.0d0-Xr(i))**2.0d0
+         XR(i)=R*(Xr(i)+1.0d0)/(1.0d0-Xr(i))
        end do
 
-c      WRITE(*,*)'Please enter angular points '
-c      WRITE(*,*)'6,14,26,38,50,74,86,110,146,170,194,230,266,302'
-c      WRITE(*,*)'350,434,590,770,974'
-c      READ(*,*)Npoints
- 
+!! LEBEDEV-LAIKOV ANGULAR PART !!
        if(npoints.eq.6)     CALL LD0006(X,Y,Z,W,N)
        if(npoints.eq.14)    CALL LD0014(X,Y,Z,W,N)
        if(npoints.eq.26)    CALL LD0026(X,Y,Z,W,N)
@@ -52,44 +34,24 @@ c      READ(*,*)Npoints
        if(npoints.eq.590)   CALL LD0590(X,Y,Z,W,N)
        if(npoints.eq.770)   CALL LD0770(X,Y,Z,W,N)
        if(npoints.eq.974)   CALL LD0974(X,Y,Z,W,N)
-      
-c angular mesh
+
        do iang=1,npoints
-        xx=x(iang)
-        yy=y(iang)
-        zz=z(iang)
-        th(iang)=dacos(zz)
-        if(dsin(th(iang)).ne.0.0) then 
-!        if(ABS(dsin(th(iang))).gt.1E-20) then 
-         xs=xx/dsin(th(iang))
-         if(xs.gt.1.0d0) xs=1.0d0
-         if(xs.lt.-1.0d0) xs=-1.0d0
-         ph(iang)=dacos(xs)
-c        if(yy.lt.0.0) ph(iang)=ph(iang)+Pi
-         if(yy.lt.0.0) ph(iang)=-ph(iang)
-        else
+         xx=x(iang)
+         yy=y(iang)
+         zz=z(iang)
+         th(iang)=dacos(zz)
+         if(dsin(th(iang)).ne.0.0) then 
+           xs=xx/dsin(th(iang))
+           if(xs.gt.1.0d0) xs=1.0d0
+           if(xs.lt.-1.0d0) xs=-1.0d0
+           ph(iang)=dacos(xs)
+           if(yy.lt.0.0) ph(iang)=-ph(iang)
+         else
          ph(iang)=0.0
-        end if
+         end if
        end do
 
-c      vol=0.0
-c      do i=1,nrad
-c       do j=1,npoints
-c        vol=vol+funct(xr(i),th(j),ph(j))*(xr(i)**2.0)*wr(i)*w(j)
-c       end do
-c      end do
-c      vol=4.0*Pi*vol
-c      write(*,*) '3D integ ', vol
-c
        end
-
-cfunction funct(R,th,ph)
-c       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-cPI=datan(1.0d0)*4.0d0 
-
-cxx=exp(-R)
-cfunct=xx*xx
-cend
 
 c###############################################################
 
