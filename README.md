@@ -24,6 +24,8 @@ The code is currently set to be compiled using *make* and the following Intel on
 - Intel oneAPI Base Toolkit
 - Intel oneAPI HPC Toolkit
 
+**Important**: The newest version of oneAPI (2025) do not include the `ifort` compiler by default, which is mandatory to compile `APOST-3D`. One can install `ifort` from the 2024 oneAPI kit on-top of the latest release, or directly install the intel oneAPI toolkits from 2024 (recommended). 
+
 #### Compilation with profiling
 
 1. Download source code from Github repository, for instance 
@@ -110,11 +112,6 @@ For KS-DFT molecular energy decomposition:
 
 For CAS/DMRG molecular energy decomposition:
 
-For origin-independent decomposition of static polarizabilities:
-
-* M. Montilla, J. M. Luis and P. Salvador, *J. Chem. Theor. Comput.*, **2021**, 17, 1098-1105
-  DOI: [10.1021/acs.jctc.0c00926](https://doi.org/10.1021/acs.jctc.0c00926)
-
 For effective atomic/fragment orbitals:
 
 * I. Mayer, *J. Phys. Chem.*, **1996**, 100, 6249
@@ -142,6 +139,8 @@ For oxidation states from localized orbitals:
 
 * M. Gimferrer, G. Comas-Vila and P. Salvador, *Molecules*, **2020**, 25, 234
   DOI: [10.3390/molecules25010234](https://doi.org/10.3390/molecules25010234)
+* M. Gimferrer, J. Van der Mynsbrugge, A. T. Bell, P. Salvador and M. Head-Gordon *Inorg. Chem.*, **2020**, 59, 15410-15420
+  DOI: [10.1021/acs.inorgchem.0c02405](https://doi.org/10.1021/acs.inorgchem.0c02405)
 * M. Gimferrer, A. Aldossary, P. Salvador and M. Head-Gordon, *J. Chem. Theor. Comput.*, **2022**, 18, 309-322
   DOI: [10.1021/acs.jctc.1c01011](https://doi.org/10.1021/acs.jctc.1c01011)
 
@@ -149,6 +148,11 @@ For decomposition of EDA quantities into one- and two-center IQA terms:
 
 * M. Gimferrer, S. Danes, D. M. Andrada and P. Salvador, *J. Chem. Theory Comput.*, **2023**, 19, 3469-3485
   DOI: [10.1021/acs.jctc.3c00143](https://doi.org/10.1021/acs.jctc.3c00143)
+
+For origin-independent decomposition of static polarizabilities:
+
+* M. Montilla, J. M. Luis and P. Salvador, *J. Chem. Theor. Comput.*, **2021**, 17, 1098-1105
+  DOI: [10.1021/acs.jctc.0c00926](https://doi.org/10.1021/acs.jctc.0c00926)
 
 
 ## Bug reports and feature requests

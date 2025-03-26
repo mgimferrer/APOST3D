@@ -6,8 +6,8 @@
 
       subroutine effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2,iueos)
 
-!! THIS SUBROUTINE COMPUTES EFFAOs AND THEIR OCC. VALUES FROM THE PAIRED AND UNPAIRED DENSITIES !!
-!! TAKATSUKA'S DEFINITION OF THE UNPAIRED DENSITY USED. HEAD-GORDON's IMPLEMENTATION IN DEVEL VERSION !!
+      !! THIS SUBROUTINE COMPUTES EFFAOs AND THEIR OCC. VALUES FROM THE PAIRED AND UNPAIRED DENSITIES !!
+      !! TAKATSUKA'S DEFINITION OF THE UNPAIRED DENSITY USED. HEAD-GORDON's IMPLEMENTATION IN DEVEL VERSION !!
 
       use basis_set
       use ao_matrices
@@ -41,7 +41,7 @@
       icube = iopt(13) 
       iatps = nang*nrad
 
-!! THRESH TO INCLUDE EFFAO OR NOT FOR TOTAL NET POPULATION CALCULATION !!
+      !! THRESH TO INCLUDE EFFAO OR NOT FOR TOTAL NET POPULATION CALCULATION !!
       xminocc=1.0d-4
 
       write(*,*) " "
@@ -51,7 +51,7 @@
       write(*,*) " "
       write(*,*) " EFFAO-U: paired and unpaired densities treated separately "
 
-!! EVALUATING U and P (AO BASIS) FROM NOs !!
+      !! EVALUATING U and P (AO BASIS) FROM NOs !!
       nnorb=0
       do ii=1,igr
         if(occ_no(ii,ii).ge.thresh) nnorb=nnorb+1
@@ -73,13 +73,13 @@
         end do
       end do
 
-!! ALLOCATING MATRICES FOR EFFAO-U EVALUATION AND OSs IF REQUESTED !!
+      !! ALLOCATING MATRICES FOR EFFAO-U EVALUATION AND OSs IF REQUESTED !!
       ALLOCATE(scr(itotps))
       ALLOCATE(S0(igr,igr),s0all(igr),Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(SS0(igr,igr),c0(igr,igr),pp0(igr,igr))
       if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr), up0gro(2,igr,icufr))
 
-!! EVALUATING EFFAOs: icase = 1 PAIRED EFOs, icase = 2 UNPAIRED EFOs !!
+      !! EVALUATING EFFAOs: icase = 1 PAIRED EFOs, icase = 2 UNPAIRED EFOs !!
       do icase=1,2
         if(icase.eq.1) then
           write(*,*) " -------------------------------- "
@@ -92,9 +92,10 @@
           write(*,*) " ---------------------------------- "
           write(*,*) " "
         end if
+
         do iicenter=1,icufr
 
-!! W_A (A = fragA) EVALUATION !!
+          !! W_A (A = fragA) EVALUATION !!
           scr=ZERO
           do ifut=1,itotps  
             do icenter=1,nfrlist(iicenter)
@@ -102,11 +103,11 @@
             end do
           end do
 
-!! SAA1/2 !!
+          !! SAA1/2 !!
           do mu=1,igr
             do nu=1,mu
 
-!! ALLPOINTS INTEGRATION !!
+              !! ALLPOINTS INTEGRATION !!
               xx=ZERO
               do jcenter=1,nat
                 do ifut=iatps*(jcenter-1)+1,iatps*jcenter
@@ -119,7 +120,7 @@
           end do
           call build_Smp(igr,S0,Sm,Splus,0)
 
-!! TAKATSUKA DEFINITION !!
+          !! TAKATSUKA DEFINITION !!
           do ii=1,igr
             do jj=1,igr
               if(icase.eq.1) pp0(ii,jj)=Pno(ii,jj)-Uno(ii,jj)
@@ -131,7 +132,7 @@
           call diagonalize(igr,igr,pp0,c0,0)
           call to_AO_basis(igr,igr,Sm,c0)
 
-!! TRUNCATING MAX NUMBER OF EFOs WITH xminocc !!
+          !! TRUNCATING MAX NUMBER OF EFOs WITH xminocc !!
           ii=1
           do while(pp0(ii,ii).ge.xminocc.and.ii.le.igr) 
             imaxo=ii
@@ -157,7 +158,7 @@
           write(*,60) (pp0(mu,mu),mu=1,imaxo)
           write(*,*) " "
 
-!! COMPUTING GROSS OCC. !!
+          !! COMPUTING GROSS OCC. !!
           xx0=ZERO
           do ii=1,imaxo
             xxx=ZERO
@@ -179,7 +180,7 @@
           write(*,60) (s0all(mu),mu=1,imaxo)
           write(*,*) " "
 
-!! FOR CUBE CREATION AND TO ASSIGN OSs IF REQUESTED !!
+          !! FOR CUBE CREATION AND TO ASSIGN OSs IF REQUESTED !!
           do kk=1,imaxo
             do mu=1,igr
               p0(mu,kk)=c0(mu,kk)
@@ -194,23 +195,23 @@
           ip0(iicenter)=imaxo
           if(iueos.eq.1) iup0(icase,iicenter)=imaxo
 
-!! CUBE PRINTING !!
+          !! CUBE PRINTING !!
           if(icase.eq.1) iicase=3
           if(icase.eq.2) iicase=4
           if(icube.eq.1) call cubegen4(iicenter,iicase)
         end do
       end do
 
-!! EXTRACTING OSs IF REQUESTED !!
+      !! EXTRACTING OSs IF REQUESTED !!
       if(iueos.eq.1) call ueos_analysis(iup0,up0gro) !! USING GROSS POPULATIONS FOR ASSIGNMENT !!
 
-!! DEALLOCATING MATRICES !!
+      !! DEALLOCATING MATRICES !!
       DEALLOCATE(SS0,S0,Splus,Sm)
       DEALLOCATE(scr,c0,pp0,s0all)
       DEALLOCATE(Pno,Uno)
       DEALLOCATE(iup0,up0net,up0gro)
 
-!! PRINTING FORMATS !!
+      !! PRINTING FORMATS !!
 60    FORMAT(8h  OCCUP. ,8f9.4)
 
       end
@@ -219,7 +220,7 @@
 
       subroutine ueos_analysis(iup0,up0gro)
 
-!! SUBROUTINE TO ASSIGN PAIRED AND UNPAIRED ELECTRONS TO FRAGMENTS, RESULTING INTO FORMAL OSs !!
+      !! SUBROUTINE TO ASSIGN PAIRED AND UNPAIRED ELECTRONS TO FRAGMENTS, RESULTING INTO FORMAL OSs !!
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -232,15 +233,13 @@
 
       dimension iup0(2,icufr),up0gro(2,igr,icufr)
 
-      allocatable :: infoelec(:,:)
+      allocatable :: tmp_occup(:),tmp_iorbat(:)
+      allocatable :: elec2(:,:),elec_id(:,:)
+      allocatable :: tmp_elec_id(:,:)
+      allocatable :: elec_frg_count(:,:)
 
-      ALLOCATE(infoelec(maxat,2))
 
-!! ZEROING ELECTRON COUNTING MATRICES !!
-      elec=ZERO
-      infoelec=0 !! STORES NUMBER OF PAIR AND UNPAIR ELECTRONS ASSIGNED TO EACH FRAGMENT !!
-
-!! ALL EFOs IN THE SAME MATRIX !!
+      !! ALL EFOs IN THE SAME MATRIX !!
       do icase=1,2 !! 1 = PAIRED, 2 = UNPAIRED !!
         iorb=0
         do ii=1,icufr
@@ -254,107 +253,180 @@
       end do
       write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",lorb(1)+lorb(2)
 
-!! ASSIGNING ELECTRONS: NO FRACTIONARY ASSIGNMENT ALLOWED IN THE CODE (YET), WILL PRINT R(%) = 50 !!
-      nnn=nalf+nb
-      do while(nnn.gt.0)
+      !! SORTING BY DECREASING OCC VALUE !!
+      do icase=1,2
+        write(*,*) " "
+        write(*,*) "icase: ",icase
 
-!! EVEN NUMBER OF ELECTRONS LEFT TO ASSIGN: BOTH PAIRED AND UNPAIRED COMPETE !!
-        if(mod(nnn,2).eq.0) then
+        !! 1) COPYING IN TEMPORARY VECTORS !!
+        ALLOCATE(tmp_occup(lorb(icase)))
+        ALLOCATE(tmp_iorbat(lorb(icase)))
+        do ii=1,lorb(icase)
+          tmp_occup(ii)=occup(ii,icase)
+          tmp_iorbat(ii)=iorbat(ii,icase)
+        end do
 
-!! FIRST PAIRED EFOs !!
-          imaxocc=0
-          xmaxocc=ZERO
-          do ii=1,lorb(1)
-            xx=occup(ii,1)
+        !! 2) ORDERING PAIRED AND UNPAIRED EFOs BY DECREASING OCCUPATION VALUE !!
+        do ii=1,lorb(icase)-1
+          do jj=ii+1,lorb(icase)
+            if(tmp_occup(ii).lt.tmp_occup(jj)) then
 
-!! SAVING LARGEST OCC. !! 
-            if(xx.gt.xmaxocc) then
-              xmaxocc=xx
-              imaxocc=ii
+              !! SWAPPING OCC. VALUES !!
+              tmp_swap=tmp_occup(ii)
+              tmp_occup(ii)=tmp_occup(jj)
+              tmp_occup(jj)=tmp_swap
+        
+              !! ALSO REORDERING FRAG. INFO FOR CONSISTENCY !!
+              tmp_swap=tmp_iorbat(ii)
+              tmp_iorbat(ii)=tmp_iorbat(jj)
+              tmp_iorbat(jj)=tmp_swap
             end if
           end do
+        end do
+    
+        !! UPDATING THE MAIN ARRAYS AFTER SORTING !!
+        do ii=1,lorb(icase)
+          occup(ii,icase)=tmp_occup(ii)
+          iorbat(ii,icase)=tmp_iorbat(ii)
+        end do
+        DEALLOCATE(tmp_occup,tmp_iorbat)
 
-!! NOW UNPAIRED EFOs: SAVING TWO LARGEST OCC. !!
-          imaxocc2=0
-          xmaxocc2=ZERO
-          do ii=1,lorb(2)
-            xx=occup(ii,2) 
-            if(xx.gt.xmaxocc2) then
-              xmaxocc2=xx
-              imaxocc2=ii
-            end if
-          end do
+        !! checking
+        write(*,*) "occ,frg"
+        do ii=1,lorb(icase)
+          write(*,*) occup(ii,icase),iorbat(ii,icase)
+        end do
 
-!! TRICK FOR IF UNPAIRED IS "VERY UNPAIRED" (HAS TO PLAY ALONE) WITH EVEN NUMBER OF EL. TO ASSIGN !!
-          if(occup(imaxocc2,2).gt.0.75d0) then
-
-!! ASSIGNING A SINGLE ELECTRON !!
-            elec(iorbat(imaxocc2,2))=elec(iorbat(imaxocc2,2))+ONE
-            infoelec(iorbat(imaxocc2,2),2)=infoelec(iorbat(imaxocc2,2),2)+1
-            occup(imaxocc2,2)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
-            nnn=nnn-1
-
-!! EVALUATING IF EL. PAIR SPLITTING IS REQUIRED !!
-          else
-
-!! NOW SECOND ONE !!
-            imaxocc3=0
-            xmaxocc3=ZERO
-            do ii=1,lorb(2)
-
-!! ONLY IF THEY ARE OF DIFFERENT FRAGMENT !!
-              if(iorbat(imaxocc2,2).ne.iorbat(ii,2)) then
-                xx=occup(ii,2)
-                if(xx.gt.xmaxocc3.and.ii.ne.imaxocc2) then
-                  imaxocc3=ii
-                  xmaxocc3=xx
-                end if
-              end if
-            end do
-            if(xmaxocc.gt.(xmaxocc2+xmaxocc3)) then
-
-!! ASSIGNING A PAIR OF ELECTRONS !!
-              elec(iorbat(imaxocc,1))=elec(iorbat(imaxocc,1))+TWO
-              infoelec(iorbat(imaxocc,1),1)=infoelec(iorbat(imaxocc,1),1)+2
-              occup(imaxocc,1)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
-            else
-
-!! ASSIGNING ONE ELECTRON TO EACH FRAGMENT !!
-              elec(iorbat(imaxocc2,2))=elec(iorbat(imaxocc2,2))+ONE
-              elec(iorbat(imaxocc3,2))=elec(iorbat(imaxocc3,2))+ONE
-              infoelec(iorbat(imaxocc2,2),2)=infoelec(iorbat(imaxocc2,2),2)+1
-              infoelec(iorbat(imaxocc3,2),2)=infoelec(iorbat(imaxocc3,2),2)+1
-
-!! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
-              occup(imaxocc2,2)=ZERO
-              occup(imaxocc3,2)=ZERO
-            end if
-            nnn=nnn-2
-          end if
-
-!! ODD NUMBER OF ELECTRONS LEFT TO ASSIGN: ONLY UNPAIRED !!
-        else
-          imaxocc=0
-          xmaxocc=ZERO
-          do ii=1,lorb(2)
-            xx=occup(ii,2)
-
-!! SAVING FOR BOTH THE LARGEST AND THE SECOND LARGEST !! 
-            if(xx.gt.xmaxocc) then
-              xmaxocc=xx
-              imaxocc=ii
-            end if
-          end do
-
-!! ASSIGNING A SINGLE ELECTRON !!
-          elec(iorbat(imaxocc,2))=elec(iorbat(imaxocc,2))+ONE
-          infoelec(iorbat(imaxocc,2),2)=infoelec(iorbat(imaxocc,2),2)+1
-          occup(imaxocc,2)=ZERO !! ZEROING FOR NOT BEING INVOLVED IN NEXT ITERATION !!
-          nnn=nnn-1
-        end if
       end do
 
-!! PRINTING INFO !!
+      !! CREATING MATRIX OF IDEAL OCCUPATIONS !!
+      ALLOCATE(elec_id(lorb(1),2)) !! ALLOCATED TO lorb(1) FOR SIMPLICITY !!
+      ALLOCATE(elec2(lorb(1),2)) !! SAME HERE !!
+      elec_id=ZERO
+      elec2=occup
+
+      !! ASSIGNING ELECTRONS !!
+      nnn=nalf+nb
+
+      !! UNPAIRED IN CASE OF ALPHA =/ BETA !!
+      nunp=nalf-nb
+      write(*,*) "Number of for sure unpaired electrons: ",nunp
+      if(nunp.ne.0) then
+        do ii=1,nunp
+          elec_id(ii,2)=ONE
+          nnn=nnn-1
+        end do
+      end if
+
+      npair=nnn/2
+      !! check
+      write(*,*) "NUMBER OF EL. PAIRS TO ASSIGN: ",npair
+
+      !! PAIRED FOR THE REST !!
+      do ii=1,npair
+        elec_id(ii,1)=TWO
+        nnn=nnn-2
+      end do
+
+      !! check
+      write(*,*) "END NUMBER OF EL. PAIRS TO ASSIGN: ",nnn/2
+
+      !! EVALUATING RMSD BETWEEN OCC. AND IDEAL ONES !!
+      xrmsd=ZERO
+      do icase=1,2
+        do ii=1,lorb(icase)
+          xx1=(elec2(ii,icase)-elec_id(ii,icase))
+          xx1=xx1*xx1
+          xrmsd=xrmsd+xx1
+        end do
+      end do
+      xrmsd=xrmsd/REAL(nalf+nb)
+      xrmsd=dsqrt(xrmsd)
+
+      !! check
+      write(*,*) "INITIAL RMSD: ",xrmsd
+
+      write(*,*) " "
+      write(*,*) " Number of pairs: ",npair
+      write(*,*) " "
+
+      !! NOW GIVING THE LAST ELECTRON PAIR FROM THE PAIRED DENSITY TO THE MOST OCC. UNPAIRED, ITERATIVELY !!
+      ALLOCATE(tmp_elec_id(lorb(1),2))
+      tmp_elec_id=elec_id
+      do while(npair.gt.0)
+
+        !! REMOVING LEAST OCCUPIED PAIRED EFO !!
+        write(*,*) " Unoccupying paired EFOs with occ value of: ",elec2(npair,1)
+        tmp_elec_id(npair,1)=ZERO
+
+        !! ASSIGNING TO THE TWO MOST OCCUPIED UNPAIRED EFOs (BUT AVOIDING THE ALREADY FILLED) !!
+        tmp_elec_id(nunp+1,2)=ONE
+        tmp_elec_id(nunp+2,2)=ONE
+        write(*,*) " Occupying unpaired EFOs with occ value of: ",elec2(nunp+1,2),elec2(nunp+2,2)
+
+        !! EVALUATING AGAIN THE RMSD !!
+        xrmsd2=ZERO
+        do icase=1,2
+          do ii=1,lorb(icase)
+            xx1=(elec2(ii,icase)-tmp_elec_id(ii,icase))
+            xx1=xx1*xx1
+            xrmsd2=xrmsd2+xx1
+          end do
+        end do
+        xrmsd2=xrmsd2/REAL(nalf+nb)
+        xrmsd2=dsqrt(xrmsd2)
+        
+        !check!
+        write(*,*) " New RMSD: ",xrmsd2
+        write(*,*) " "
+
+
+        !! IF NEW RMSD IS LOWER, SAVE ASSIGNMENT !!
+        if((xrmsd2-xrmsd).lt.ZERO) then
+          elec_id=tmp_elec_id
+          xrmsd=xrmsd2
+
+        !! IF NEW RMSD IS LARGER, STOP THE PROCESS !!
+        else
+          write(*,*) " Lowest RMSD found "
+          write(*,*) " "
+          go to 69
+        end if
+
+        !! FOR SHIFTING PROPERLY IN THE VECTOR !!
+        nunp=nunp+2
+        npair=npair-1
+      end do
+69    continue
+      DEALLOCATE(tmp_elec_id)
+
+      !! NOW WE HAVE THE ELECTRONIC ASIGNATION THAT MINIMIZES RMSD !!
+      !! INTRODUCING IT INTO THE "ORIGINAL" EOS MACHINERY !!
+
+      !! EVALUATING HOW MANY ELECTRONS WERE ASSIGNED TO EACH FRAGMENT !!
+      !! ALSO COUNTING HOW MANY PAIRED AND UNPAIRED FOR LATER ON !!
+      ALLOCATE(elec_frg_count(icufr,2))
+      elec=ZERO
+      elec_frg_count=ZERO
+      do icase=1,2
+        do ii=1,lorb(icase)
+          if(elec_id(ii,icase).gt.ZERO) then
+            ifrg=iorbat(ii,icase)
+            elec(ifrg)=elec(ifrg)+elec_id(ii,icase)
+            elec_frg_count(ifrg,icase)=elec_frg_count(ifrg,icase)+elec_id(ii,icase)
+            write(*,*) "elec_id,ifrg: ",elec_id(ii,icase),ifrg
+          end if
+        end do
+      end do
+      write(*,*) " "
+      write(*,*) " Printing electrons assigned separately, for check"
+      write(*,*) " "
+      do ifrg=1,icufr
+        write(*,*) "Fragment, paired e, unpaired e: ",ifrg,elec_frg_count(ifrg,1),elec_frg_count(ifrg,2)
+      end do
+      write(*,*) " "
+
+      !! PRINTING INFO !!
       do icase=1,2
         write(*,*) " "
         if(icase.eq.1) then
@@ -370,20 +442,32 @@
         write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
         write(*,*) " ---------------------------------------- "
 
-!! EVALUATING FIRST AND LAST OCC. FROM EACH FRAGMENT !!
+        !! EVALUATING FIRST AND LAST OCC. FROM EACH FRAGMENT !!
 
-        xlast=TWO !! PAIRED GROSS POPULATIONS NOT DIVIDED BY TWO NOW !!
+        if(icase.eq.1) xlast=TWO
+        if(icase.eq.2) xlast=ONE
         ilast=0
         do ifrg=1,icufr
-          if(icase.eq.1) nn=infoelec(ifrg,icase)/2
-          if(icase.eq.2) nn=infoelec(ifrg,icase)
-          if(nn+1.gt.iup0(icase,ifrg)) then 
-            write(*,10) ifrg,REAL(infoelec(ifrg,icase)),up0gro(icase,nn,ifrg)
+
+          !! CONDITIONS HAVE TO APPLY HERE !!
+          if(icase.eq.1) then
+            nn=INT(elec_frg_count(ifrg,icase))/2
+            if(elec_frg_count(ifrg,icase)/TWO-nn.gt.thresh) nn=nn+1
+          end if 
+          if(icase.eq.2) then
+            nn=INT(elec_frg_count(ifrg,icase))
+            if(elec_frg_count(ifrg,icase)-nn.gt.thresh) nn=nn+1
+          end if
+
+!          write(*,*) "nn,elec_frg_count,iup0: ",nn,elec_frg_count(ifrg,icase),iup0(icase,ifrg)
+
+          if(nn+1.gt.iup0(icase,ifrg)) then
+            write(*,10) ifrg,elec_frg_count(ifrg,icase),up0gro(icase,nn,ifrg)
           else
             if(nn.ne.0) then
-              write(*,15) ifrg,REAL(infoelec(ifrg,icase)),up0gro(icase,nn,ifrg),up0gro(icase,nn+1,ifrg)
+              write(*,15) ifrg,elec_frg_count(ifrg,icase),up0gro(icase,nn,ifrg),up0gro(icase,nn+1,ifrg)
             else
-              write(*,15) ifrg,REAL(infoelec(ifrg,icase)),ZERO,up0gro(icase,nn+1,ifrg)
+              write(*,15) ifrg,elec_frg_count(ifrg,icase),ZERO,up0gro(icase,nn+1,ifrg)
             end if
           end if
           if(nn.ne.0) then
@@ -392,26 +476,39 @@
               ilast=ifrg
             end if
           end if
-        end do
-
+        end do 
+  
         xfirst=ZERO
         do ifrg=1,icufr
           if(ifrg.ne.ilast) then
-            if(icase.eq.1) nn=infoelec(ifrg,icase)/2
-            if(icase.eq.2) nn=infoelec(ifrg,icase)
+
+            !! CONDITIONS HAVE TO APPLY HERE, AGAIN !!
+            if(icase.eq.1) then
+              nn=INT(elec_frg_count(ifrg,icase))/2
+              if(elec_frg_count(ifrg,icase)/TWO-nn.gt.thresh) nn=nn+1
+            end if 
+            if(icase.eq.2) then
+              nn=INT(elec_frg_count(ifrg,icase))
+              if(elec_frg_count(ifrg,icase)-nn.gt.thresh) nn=nn+1
+            end if
             if(nn+1.ne.0.and.up0gro(icase,nn+1,ifrg).gt.xfirst) xfirst=up0gro(icase,nn+1,ifrg)
           end if
-        end do 
+        end do
         write(*,*) " ---------------------------------------- "
 
-!! NOW PAIRED AND UNPAIRED ARE DIFFERENT (FACTOR OF 2 IN POPULATIONS) !!
-        if(icase.eq.1) confi=100.0*min(1.0d0,(xlast-xfirst)/TWO+0.5d0)
-        if(icase.eq.2) confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
+        write(*,*) "xlast, xfirst: ",xlast,xfirst
+
+        !! NOW PAIRED AND UNPAIRED ARE DIFFERENT (FACTOR OF 2 IN POPULATIONS) !!
+        if(icase.eq.1) confi=100.0*dmin1(1.0d0,(xlast-xfirst)/TWO+0.5d0)
+        if(icase.eq.2) confi=100.0*dmin1(1.0d0,xlast-xfirst+0.5d0)
         write(*,'(3x,a24,x,f7.3)') "RELIABILITY INDEX R(%) =",confi
-        if(icase.eq.1) confi0=confi
+        if(icase.eq.1) then
+          write(*,*) "  INFO: (PAIRED) OCC. VALUES HALVED IN R(%) CALCULATION "
+          confi0=confi
+        end if
       end do
 
-!! EXTRACTING OSs !!
+      !! EXTRACTING OSs !!
       zztot=ZERO
       do ifrg=1,icufr
         zzn=ZERO
@@ -422,7 +519,7 @@
         zztot=zztot+oxi(ifrg)
       end do
 
-!! FINAL PRINTING !!
+      !! FINAL PRINTING !!
       write(*,*) " "
       write(*,*) " --------------------------- "
       write(*,*) "  FRAGMENT OXIDATION STATES  "
@@ -437,16 +534,17 @@
       write(*,'(3x,a4,x,f4.1)') "Sum:",zztot 
       write(*,*) " "
 
-!! TO BE CHANGED !!
-      confi2=min(confi,confi0)
+      confi2=dmin1(confi,confi0)
       write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
+      write(*,'(2x,a34,x,f7.3)') "ELECTRONIC ASSIGNMENT RMSD VALUE =",xrmsd
 
-!! PRINTING FORMATS !!
-10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3) !tocheck!
+      !! DEALLOCATING MATRICES !!
+      DEALLOCATE(elec_id,elec2,elec_frg_count)
+
+      !! PRINTING FORMATS !!
+10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3)
 15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
 20    FORMAT(3x,i3,6x,f8.2)
-
-      DEALLOCATE(infoelec)
 
       end 
 
