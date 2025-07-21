@@ -617,10 +617,11 @@ C READING DM1 and DM2
 
       end if
 
-!! TO PRINT .fchk FILES FROM QCHEM (MG: FCHK FORMAT IS DIFFERENT THAN GAUSSIAN) !!
-
+!! TO PRINT .fchk FILES FROM QCHEM or MOKIT (MG: FCHK FORMAT IS DIFFERENT THAN GAUSSIAN) !!
       iqchem=0
       call readchar("# METHOD","QCHEM",iqchem)
+      imokit=0
+      call readchar("# METHOD","MOKIT",imokit)
 
 !! END OF OSLO OPTIONS !!
 
@@ -761,6 +762,7 @@ c      iopt(89) =
       iopt(93) = iflip
 !! IF QCHEM .fchk USED AS INPUT !!
       iopt(95) = iqchem
+      iopt(79) = imokit !! MG: Temporarily !!
 !! OSLO !!
       iopt(96) = ifolitol
       iopt(97) = ibranch
