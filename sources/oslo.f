@@ -1917,6 +1917,7 @@
       dimension cmat(igr,igr),pmat(igr,igr)
 
       iqchem   = iopt(95)
+      imokit   = iopt(79)
       indepigr = int_locate(15,"Number of independ",ilog)
       norb     = igr*indepigr
       norbt    = igr*(igr+1)/2
@@ -1961,11 +1962,11 @@
         write(69,13) ((cmat(ii,jj),ii=1,igr),jj=1,indepigr)
 
 !! NOW LOCATING WHAT IS AFTER IT IN THE ORIGINAL ONE TO CONTINUE !!
-        if(iqchem.eq.0) then
+        if(iqchem.eq.0.and.imokit.eq.0) then
           do while(index(line,"Orthonormal basis").eq.0)
             read(15,'(a80)') line
           end do
-        else
+        else if(iqchem.eq.1) then
           do while(index(line,"Alpha Orbital").eq.0)
             read(15,'(a80)') line
           end do
@@ -1987,11 +1988,11 @@
       write(69,13) ((pmat(ii,jj),jj=1,ii),ii=1,igr)
 
 !! NOW LOCATING WHAT IS AFTER IT IN THE ORIGINAL ONE TO CONTINUE !!
-      if(iqchem.eq.0) then
+      if(iqchem.eq.0.and.imokit.eq.0) then
         do while(index(line,"Mulliken Charges").eq.0)
           read(15,'(a80)') line
         end do
-      else
+      else if(iqchem.eq.1) then
         do while(index(line,"Pure Switching").eq.0)
           read(15,'(a80)') line
         end do
