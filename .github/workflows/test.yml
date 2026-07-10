@@ -1,0 +1,73 @@
+name: APOST-3D build & test
+
+# Runs the gfortran build and the full regression test suite (tests/manifest.json)
+# on every push/PR to master and MAJOR-UPDATE, plus manual runs.
+#
+# IMPORTANT: this workflow never needs to change when tests are added or
+# removed. `make test` discovers every case from tests/manifest.json at run
+# time, so adding a new test is purely a data change:
+#   1. drop SystemName.fchk / SystemName.inp into compiler-testset/
+#   2. add a reference tests/reference/SystemName.apost
+#   3. add an entry to tests/manifest.json
+#   4. commit — CI picks it up automatically, no workflow edits required.
+#
+# Expensive cases should be tagged "slow" in the manifest and excluded from
+# the default `make test` run (see CLAUDE.md planned work); this workflow
+# intentionally only runs the default (fast) tier to keep CI quick.
+
+"on":
+  push:
+    branches: [master, MAJOR-UPDATE]
+  pull_request:
+    branches: [master, MAJOR-UPDATE]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      APOST3D_PATH: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install gfortran/gcc/make
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gfortran gcc make
+          gfortran --version
+
+      - name: Cache libxc-4.2.3 build
+        id: libxc-cache
+        uses: actions/cache@v4
+        with:
+          path: libxc-4.2.3
+          # Cache key includes the compiler version: a gfortran upgrade on the
+          # runner image must invalidate the cache (.mod files aren't
+          # portable across compiler versions — see CLAUDE.md known issues).
+          key: libxc-4.2.3-${{ runner.os }}-${{ hashFiles('libxc-4.2.3.tar.gz') }}-gfortran-${{ hashFiles('.github/workflows/test.yml') }}
+
+      - name: Build libxc-4.2.3
+        if: steps.libxc-cache.outputs.cache-hit != 'true'
+        run: bash compile_libxc.sh
+
+      - name: Build APOST-3D
+        run: bash make_compile.sh
+
+      - name: Run regression test suite
+        run: make test-only VERBOSE=1
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: tests/report/
+          retention-days: 30
+
+      - name: Keyword coverage report
+        if: always()
+        run: make coverage
