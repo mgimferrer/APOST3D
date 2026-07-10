@@ -247,7 +247,7 @@ c Miscellaneous options
       call readchar("# METHOD","FINEGRID",ifinegrid)
       call readchar("# METHOD","ELCOUNT",ielcount) !MMO- NCTAIM
       call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)
-      call readreal("# METHOD","RHO_CALC_RAD",Rmax,0,1) ! MG: typo here!
+      call readreal("# METHOD","RHO_CALC_RAD",Rmax,0.0d0,1) ! fixed: was 0 (integer), must be REAL*8
       call readchar("# METHOD","NOPOPU",inopop)
  
 C eff-AO-s and EOS
