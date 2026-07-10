@@ -1,6 +1,21 @@
 
 c main limits
-      parameter (nmax=8000)
+c nmax was 8000 through the ifort/PGO era. On gfortran/macOS (Apple Silicon,
+c confirmed on macOS 26.5.1) the resulting ~2.6GB of static BSS from the
+c nmax*nmax COMMON arrays in effao.f/mulliken.f/qtaim.f (/effao/, /nao/,
+c /stv/) makes apost3d/apost3d-eos fail to even launch: dyld cannot map its
+c shared cache alongside such a large fixed data segment ("dyld cache '(null)'
+c not loaded: syscall to map cache into shared region failed"). Confirmed by
+c bisection: nmax=8000 fails to launch, nmax=2000 launches fine.
+c
+c Lowered to 3000 as an interim default (still ~9x more basis functions than
+c any current test case needs) until those COMMON blocks are converted to
+c ALLOCATABLE (see CLAUDE.md Known Issues / Planned Work) — the proper fix,
+c which removes this compile-time cap entirely rather than just picking a
+c smaller magic number. Until then, a system requiring more than nmax basis
+c functions will silently overrun these fixed-size arrays (undefined
+c behavior, not a clean bounds-checked error) rather than failing loudly.
+      parameter (nmax=3000)
       parameter (maxat=350) 
 c other limits and equivalences 
       parameter (maxp=10000,maxg=nmax,maxc=36) 
