@@ -317,7 +317,6 @@
       use ao_matrices
       use integration_grid
       use OMP_LIB
-      use IFPORT
 
       implicit real*8(a-h,o-z)
 
@@ -524,7 +523,7 @@
             istart(ik)=ioffset+((ik-1)*ispace)+1
             iend(ik)=ioffset+(ik*ispace)
           end do
-          istart(ithreads)=iend(ithreads-1)+1
+          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
 
 !! THIS TWO CALLS ARE CRUCIAL !!
@@ -605,7 +604,7 @@
             istart(ik)=ioffset+((ik-1)*ispace)+1
             iend(ik)=ioffset+(ik*ispace)
           end do
-          istart(ithreads)=iend(ithreads-1)+1
+          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
           !DIR$ PARALLEL
           do ik=1,ithreads
@@ -791,7 +790,7 @@
             istart(ik)=ioffset+((ik-1)*ispace)+1
             iend(ik)=ioffset+(ik*ispace)
           end do
-          istart(ithreads)=iend(ithreads-1)+1
+          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
 
 !! AGAIN THE TWO CALLS ARE CRUCIAL !!
@@ -1239,7 +1238,6 @@
       use ao_matrices
       use integration_grid
       use OMP_LIB
-      use IFPORT
 
       implicit real*8(a-h,o-z)
 
@@ -1480,7 +1478,7 @@
             istart(ik)=ioffset+((ik-1)*ispace)+1
             iend(ik)=ioffset+(ik*ispace)
           end do
-          istart(ithreads)=iend(ithreads-1)+1
+          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
 
 !! THE TWO CALLS ARE CRUCIAL !!
@@ -1575,7 +1573,7 @@
             istart(ik)=ioffset+((ik-1)*ispace)+1
             iend(ik)=ioffset+(ik*ispace)
           end do
-          istart(ithreads)=iend(ithreads-1)+1
+          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
           !DIR$ PARALLEL
           do ik=1,ithreads
@@ -1769,7 +1767,7 @@
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
             end do
-            istart(ithreads)=iend(ithreads-1)+1
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
             iend(ithreads)=icenter*iatps
   
   !! AGAIN THE TWO CALLS ARE CRUCIAL !!
@@ -2573,7 +2571,6 @@ c  energetics
 
       use integration_grid
       use OMP_LIB
-      use IFPORT
 
       IMPLICIT REAL*8(A-H,O-Z)
 
@@ -2644,7 +2641,7 @@ c  energetics
           istart(ik)=ioffset+((ik-1)*ispace)+1
           iend(ik)=ioffset+(ik*ispace)
         end do
-        istart(ithreads)=iend(ithreads-1)+1
+        istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
 
 !! THIS TWO CALLS ARE CRUCIAL !!
@@ -2707,7 +2704,7 @@ c  energetics
           istart(ik)=ioffset+((ik-1)*ispace)+1
           iend(ik)=ioffset+(ik*ispace)
         end do
-        istart(ithreads)=iend(ithreads-1)+1
+        istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
         !DIR$ PARALLEL
         do ik=1,ithreads
