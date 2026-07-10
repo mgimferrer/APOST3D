@@ -99,6 +99,10 @@ def parse_args():
                    help="Run only tests whose name contains STR")
     p.add_argument("--tags",       default=None, metavar="LIST",
                    help="Comma-separated tags (OR); run only matching tests")
+    p.add_argument("--exclude-tags", default=None, metavar="LIST",
+                   help="Comma-separated tags; skip tests carrying any of "
+                        "these (applied after --tags/--filter). Used by "
+                        "'make test' to skip the 'slow' tier by default.")
     p.add_argument("--update-ref", action="store_true",
                    help="Regenerate reference outputs and manifest ref values")
     p.add_argument("--nthreads",   default="1", metavar="N",
@@ -581,6 +585,18 @@ def main():
         tests = [t for t in tests if set(t.get("tags", [])) & wanted]
         if not tests:
             print(yellow(f"No tests match --tags {args.tags!r}"))
+            sys.exit(0)
+
+    # ── Exclude by tags (e.g. 'slow') ───────────────────────────────────────
+    if args.exclude_tags:
+        unwanted = {t.strip().lower() for t in args.exclude_tags.split(",")}
+        before = len(tests)
+        tests = [t for t in tests if not (set(t.get("tags", [])) & unwanted)]
+        skipped = before - len(tests)
+        if skipped:
+            print(dim(f"Skipping {skipped} test(s) tagged {sorted(unwanted)}"))
+        if not tests:
+            print(yellow(f"No tests remain after --exclude-tags {args.exclude_tags!r}"))
             sys.exit(0)
 
     # ── Validate binary ──────────────────────────────────────────────────────

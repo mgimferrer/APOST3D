@@ -158,9 +158,12 @@ util: eos_aom
 #   VERBOSE=1       show check details even for passing checks
 #
 # Examples:
-#   make test
+#   make test                # fast tier only (excludes tests tagged 'slow')
 #   make test FILTER=H2O
 #   make test TAGS=enpart
+#   make test TAGS=slow      # explicitly asking for a tag overrides the
+#                             # default 'slow' exclusion
+#   make test-full           # everything, fast + slow, no exclusion
 #   make test VERBOSE=1
 #   make update-ref          # regenerate reference outputs after intentional change
 
@@ -175,6 +178,9 @@ TEST_NTHREADS?= 1
 _TEST_FILTER  := $(if $(FILTER),--filter $(FILTER),)
 _TEST_TAGS    := $(if $(TAGS),--tags $(TAGS),)
 _TEST_VERBOSE := $(if $(VERBOSE),--verbose,)
+# Default tier: skip tests tagged 'slow' unless the caller explicitly asked
+# for tags (e.g. TAGS=slow) or ran 'make test-full'.
+_TEST_EXCLUDE := $(if $(TAGS),,--exclude-tags slow)
 
 test: all
 	@echo ""
@@ -184,7 +190,7 @@ test: all
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
 	  --nthreads $(TEST_NTHREADS) \
-	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_VERBOSE)
+	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE)
 
 ## Run tests WITHOUT rebuilding first (useful during test development)
 test-only:
@@ -195,7 +201,20 @@ test-only:
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
 	  --nthreads $(TEST_NTHREADS) \
+	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE)
+
+## Run EVERYTHING, including tests tagged 'slow' — no exclusion applied.
+test-full: all
+	@echo ""
+	python3 $(TEST_RUNNER) \
+	  --binary   $(APOST3D_PATH)/apost3d \
+	  --inputs   $(TEST_INPUTS) \
+	  --manifest $(TEST_MANIFEST) \
+	  --ref      $(TEST_REF) \
+	  --nthreads $(TEST_NTHREADS) \
 	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_VERBOSE)
+
+.PHONY: test-full
 
 ## Regenerate reference outputs and manifest ref values from a fresh run
 update-ref: all
