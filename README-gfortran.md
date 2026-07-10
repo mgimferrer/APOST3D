@@ -166,8 +166,10 @@ Reports are written to `tests/report/last_run.txt` and `last_run.html`.
 
 | Command | Description |
 |---|---|
-| `make test` | Build + run all tests |
-| `make test-only` | Run tests without rebuilding |
+| `make test` | Build + run the fast-tier tests (excludes tests tagged `slow`) |
+| `make test-only` | Run fast-tier tests without rebuilding |
+| `make test-full` | Build + run every test, including the `slow` tier |
+| `make test TAGS=slow` | Run just the `slow` tier (e.g. `C2H6-B3LYP`) |
 | `make test FILTER=H2O` | Run only tests whose name contains `H2O` |
 | `make test TAGS=enpart` | Run only tests tagged `enpart` |
 | `make test TAGS=enpart,oslo` | Run tests tagged `enpart` OR `oslo` |
@@ -191,6 +193,7 @@ python3 tests/run_tests.py --no-color 2>&1 | tee test.log
 | `CH3F` | Fluoromethane, RKS DFT — TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `FeCO2-PBEPBE` | Iron dicarbonyl⁺, UKS PBE — TFVC, fragment EOS | `dft eos effao tfvc uks fragments openshell` |
 | `FeO4-2` | Ferrate(VI)²⁻, UKS — TFVC, QCHEM interface, OSLO+EOS | `dft eos oslo tfvc uks fragments openshell qchem` |
+| `C2H6-B3LYP` | Ethane, RKS B3LYP — full ENPART, THREBOD/MOD-GRIDTWOEL (~85s) | `dft enpart tfvc rks threbod slow` — **slow tier**, run via `make test-full` or `make test TAGS=slow` |
 
 ### Adding a new test case
 

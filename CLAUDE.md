@@ -367,7 +367,7 @@ Input files (`.fchk`, `.inp`, auxiliary `.fchk`) remain in `compiler-testset/`.
 ### Running the tests
 
 ```bash
-# Full build + all tests (recommended after any code change):
+# Full build + fast-tier tests (recommended after any code change):
 make test
 
 # Build + tests with more threads:
@@ -375,6 +375,12 @@ make test TEST_NTHREADS=4
 
 # Run without rebuilding:
 make test-only
+
+# Everything, including the 'slow' tier (e.g. C2H6-B3LYP):
+make test-full
+
+# Just the slow tier:
+make test TAGS=slow
 
 # Run a single test by name:
 make test FILTER=H2O
@@ -388,8 +394,14 @@ make test VERBOSE=1
 # Invoke the runner directly with full options:
 python3 tests/run_tests.py --filter CH3F --verbose
 python3 tests/run_tests.py --tags oslo,eos
+python3 tests/run_tests.py --exclude-tags slow
 python3 tests/run_tests.py --no-color 2>&1 | tee test.log
 ```
+
+`make test`/`make test-only` exclude tests tagged `slow` by default (via
+`--exclude-tags slow`), *unless* `TAGS=...` is given explicitly — so
+`make test TAGS=slow` runs just the slow tier, not fast+slow. `make
+test-full` always runs everything, unfiltered.
 
 The runner exits with code 0 if all tests pass, 1 if any fail — suitable for
 CI systems (GitHub Actions, etc.).
@@ -402,10 +414,10 @@ CI systems (GitHub Actions, etc.).
 | `CH3F` | RKS DFT | TFVC, fragment OSLO analysis | `dft oslo tfvc rks fragments` |
 | `FeCO2-PBEPBE` | UKS PBE | TFVC, fragment EOS (open-shell) | `dft eos effao tfvc uks fragments openshell` |
 | `FeO4-2` | UKS, Q-Chem | TFVC, QCHEM interface, OSLO+EOS (open-shell) | `dft eos oslo tfvc uks fragments openshell qchem` |
-| `C2H6-B3LYP` | RKS B3LYP | TFVC, ENPART, fragments, THREBOD | excluded: runtime > 5 min |
+| `C2H6-B3LYP` | RKS B3LYP | TFVC, full ENPART (DFT+IQA), THREBOD/MOD-GRIDTWOEL, 8 atoms/160 basis fns | `dft enpart tfvc rks threbod slow` — **slow tier**, excluded from default `make test` (~85s single-threaded on Apple Silicon, confirmed working July 2026 — the ">5 min" estimate from the ifort/PGO era no longer applies to the gfortran build). Run via `make test TAGS=slow` or `make test-full`. |
 | `O2-CASSCF` | CASSCF | TFVC, SPIN, ENPART CASSCF, DM=2 | excluded: segfault (see Known Issues #12) |
 
-**Validation notes:** All four active tests produce Normal Termination and
+**Validation notes:** All four fast-tier tests (plus `C2H6-B3LYP` in the slow tier) produce Normal Termination and
 numerical values within floating-point rounding of the ifort/PGO reference
 outputs. Differences are confined to the last 1–4 digits of 7-decimal
 quantities — attributable to compiler and architecture differences
@@ -622,7 +634,7 @@ Tasks to be worked on progressively in this branch:
 - [x] **Makefile module dependency fix (July 2026)**: `$(SRCDIR)/modules.o` had no prerequisites and per-file object rules didn't depend on it, so editing `modules.f90` (or rebuilding under a different gfortran version) silently failed to trigger recompilation of files that `use` those modules. Fixed: `modules.o` now depends on `modules.f90`, and every object rule (main sources, `input2.o`, utils) depends on `modules.o`. Verified: touching `modules.f90` now correctly triggers a full dependent rebuild instead of "Nothing to be done".
 - [x] **Build preflight + compiler-drift check (July 2026)**: `make_compile.sh` now checks `gfortran` is present and >= 10 up front with a clear actionable error (was previously a raw `Error 127` mid-build-log). It also stamps the compiler identity used for each build in `objects/.gfortran_version` and automatically forces `make clean` if the compiler changes since the last build (catches the exact "module file created by a different version of GNU Fortran" failure mode — file-mtime-based Make dependencies can't detect a compiler swap on their own). Verified with a simulated version change.
 - [x] **CI (GitHub Actions) (July 2026)**: `.github/workflows/test.yml` builds libxc + APOST-3D and runs `make test-only` on a fresh Ubuntu runner on every push/PR to `master`/`MAJOR-UPDATE`, plus manual dispatch. Caches the libxc build (keyed to invalidate on compiler/tarball change). Uploads `tests/report/` as a build artifact and runs `make coverage`. By design the workflow never needs editing to add/remove tests — it just runs whatever `tests/manifest.json` defines; adding a test is purely a data change (input files + reference output + manifest entry). Not yet exercised on real GitHub infrastructure (needs a push to verify).
-- [ ] **"slow" test tier**: Add a `slow` tag to `tests/manifest.json` so expensive cases (e.g. `C2H6-B3LYP`, full THREBOD+MOD-GRIDTWOEL ENPART) can be included in the suite without being run by default — e.g. `make test` runs the fast tier, `make test TAGS=slow` or `make test-full` runs everything. Blocked on confirming actual runtime on real hardware (see Known Issues).
+- [x] **"slow" test tier (July 2026)**: `C2H6-B3LYP` confirmed working (~85s single-threaded on the reporting machine, Normal Termination, 10/10 checks pass) — added to `tests/manifest.json` tagged `slow`, with `tests/reference/C2H6-B3LYP.apost`. `run_tests.py` gained `--exclude-tags`; `make test`/`test-only` now pass `--exclude-tags slow` by default (only when `TAGS` isn't explicitly given), and a new `make test-full` target runs everything unfiltered. `make test TAGS=slow` runs just the slow tier. Keyword coverage unchanged (17/82) — `C2H6-B3LYP` exercises already-covered keywords at larger scale, doesn't add new ones. `O2-CASSCF` remains excluded entirely (segfault, Known Issue #12), not just tagged slow.
 - [ ] **Hosted documentation (Read the Docs)**: Once `DOCUMENTATION.md`/`CLAUDE.md` grow further, publish them via Sphinx + MyST-parser (consumes existing Markdown near-verbatim) on readthedocs.org — free for open-source, auto-rebuilds on push via GitHub webhook, gives versioned docs (useful once `master` and `MAJOR-UPDATE` diverge further). Low incremental cost given docs are already Markdown-first.
 
 ---
