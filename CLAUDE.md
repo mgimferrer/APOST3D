@@ -24,17 +24,16 @@ APOST3D/
 ├── objects/            # Compiled object files (.o) — not tracked in git
 ├── utils/              # Auxiliary standalone programs and scripts
 ├── lebedev/            # Lebedev-Laikov angular quadrature routines
-├── libxc-4.2.3/        # Bundled libxc library (version 4.2.3, pinned)
+├── libxc-4.2.3/        # Bundled libxc library (version 4.2.3, pinned; rebuilt by compile_libxc.sh)
 ├── libxc-4.2.3.tar.gz  # Tarball for re-extraction
-├── compiler-testset/   # Input files (.fchk, .inp, .dm1, .dm2) for test runs
-├── compiler-runtest    # Script: runs test suite (step 1, generates .dyn files)
-├── compiler-runtest2   # Script: runs test suite (step 2, validates PGO build)
+├── compiler-testset/   # Input files (.fchk, .inp, .dm1, .dm2) for regression tests
+├── tests/              # Regression test suite (runner, manifest, reference outputs)
 ├── media/              # Logo and images for GitHub/documentation
-├── Makefile_profgen    # Makefile for step 1 of PGO compilation
-├── Makefile_profuse    # Makefile for step 2 of PGO compilation
-├── make_compile.sh     # Master compilation script (runs both steps + utils)
-├── compile_libxc.sh    # Script to build the bundled libxc library
+├── Makefile            # gfortran build (Phase 0)
+├── compile_libxc.sh    # Script to build the bundled libxc library with gfortran
+├── make_compile.sh     # Master compilation script (single-step gfortran build)
 ├── README.md           # GitHub README
+├── README-gfortran.md  # Full build and installation guide
 ├── DOCUMENTATION.md    # User documentation (input keywords, output format)
 └── LICENSE
 ```
@@ -75,7 +74,6 @@ APOST3D/
 - `devel.f` — contains old/deprecated code and developer notes; should be cleaned up
 - `modules.f90.to_do` — future module restructuring work
 - `dafh.f.to_do` — Domain-based analysis of Fermi holes (planned)
-- `wat.f.old` — old version of weight function routines
 
 ---
 
@@ -133,7 +131,6 @@ The main program and most subroutines communicate through a set of named COMMON 
 | `/modgrid/` | `nrad22`, `nang22`, `rr0022`, `phb12`, `phb22` — secondary grid for two-electron integrals |
 | `/edaiqa/` | `xen`, `xcoul`, `xnn` — EDA-IQA energy terms |
 | `/efield/` | `field(4)`, `edipole` — external electric field |
-| `/iops/` | `iopt(100)` — 100-element integer option array |
 | `/printout/` | `iaccur` — output precision flag |
 | `/filename/` | `name0` — base name of the input files |
 
@@ -170,9 +167,8 @@ The input parser stores all user-selected keywords as integers in `iopt(100)`. K
 ### Running the program
 
 ```bash
-export OMP_NUM_THREADS=48
-export KMP_STACKSIZE=100m
-ulimit -s unlimited
+export OMP_NUM_THREADS=1          # Phase 0: single core
+ulimit -s unlimited               # prevent stack overflow
 $APOST3D_PATH/apost3d name-input > name-output.apost
 ```
 
@@ -275,44 +271,52 @@ The main numerical flow:
 
 ## Compilation System
 
-### Prerequisites
-- Intel oneAPI toolkits (2024 recommended; 2025 drops `ifort` by default)
-  - Intel oneAPI Base Toolkit
-  - Intel oneAPI HPC Toolkit
-- Environment: `source /opt/intel/oneapi/setvars.sh intel64`
+### Phase 0: gfortran build (current, MAJOR-UPDATE branch)
+
+The code now builds with GCC/gfortran — no Intel toolchain required.
+See `README-gfortran.md` for full installation instructions.
+
+**Prerequisites**
+- GCC/gfortran ≥ 10 (GCC 12+ recommended; GCC 15 tested)
+  - macOS: `brew install gcc`
+  - Linux: `sudo apt install gfortran gcc make`
 - Environment variable `APOST3D_PATH` must be set
 
-### Build targets (both Makefiles)
+**Build sequence**
+```bash
+export APOST3D_PATH=/path/to/APOST3D
+
+# 1. Build libxc-4.2.3 (once)
+bash $APOST3D_PATH/compile_libxc.sh
+
+# 2. Build APOST-3D
+bash $APOST3D_PATH/make_compile.sh          # or with --clean
+```
+
+**Build targets** (`Makefile`)
 - `apost3d` — main executable
 - `apost3d-eos` — standalone EOS executable (subset of sources)
 - `eos_aom` — utility executable (`utils/eos_aom.f90`)
 
-### Two-step PGO compilation (`make_compile.sh`)
-1. **Step 1** (`Makefile_profgen`): compile with `-prof-gen` flag; run test suite to generate `.dyn` profiling files
-2. **Step 2** (`Makefile_profuse`): recompile with `-prof-use -Ofast` using the profiling data; run test suite again to validate
+**Key compiler flags**
+| Flag | Reason |
+|------|--------|
+| `-O3 -ffast-math` | High optimisation (matches old `-Ofast`) |
+| `-march=native` | Tune for build CPU; remove for cross-compilation |
+| `-fopenmp` | Required by `use OMP_LIB`; code runs single-threaded in Phase 0 |
+| `-fbacktrace` | Stack trace on runtime errors |
+| `-ffixed-line-length-132` | Allow legacy fixed-form lines up to 132 chars |
+| `-fallow-argument-mismatch` | Accept implicit-interface rank mismatches (ifort silently tolerated these; required for UHF `chp2b` scalar/array mismatch in RHF call paths never reached at runtime) |
+| `-O1` for `input2.f` | Avoid floating-point parsing issues at high optimisation |
 
-### Key compiler flags
-- `-parallel -qopenmp` — Intel auto-parallelization + OpenMP (both enabled)
-- `-unroll-aggressive` — aggressive loop unrolling
-- `-xHost` — optimize for the current CPU architecture
-- `-extend-source 132` — allow fixed-form lines up to 132 characters
-- `-mcmodel=medium` — for large binary/data
-- `FOR_INP = ifort` (without `-Ofast`) — `input2.f` compiled without aggressive optimization to avoid parsing issues
+**Parallelization (Phase 0)**
+- `OMP_NUM_THREADS=1` (single-core; explicit OpenMP directives planned for Phase 1)
+- Always run with `ulimit -s unlimited` to prevent stack overflow
 
-### Parallelization
-- Runtime threads: `OMP_NUM_THREADS` (recommended: set to max cores on node)
-- Stack size: `KMP_STACKSIZE=100m`, `ulimit -s unlimited`
-- Intel auto-parallelization + OpenMP are both used. The `-parallel` flag lets ifort auto-parallelize loops.
-
-### Environment variable
-```bash
-export APOST3D_PATH="/path/to/APOST3D"
-```
-
-### Utils compilation
-```bash
-make -f Makefile_profuse util
-```
+**macOS note**
+On macOS 26 (Tahoe) and later, GCC-compiled binaries require an ad-hoc code
+signature to access the dyld shared cache. `make_compile.sh`
+runs `codesign --force --sign -` automatically after the build.
 
 ---
 
@@ -324,7 +328,6 @@ make -f Makefile_profuse util
 | `main_eos.f` | Main program for the standalone `apost3d-eos` executable |
 | `eos_aom.f90` | Standalone EOS-AOM (atom/orbital mapping) utility |
 | `eos_alt.f90` | Alternative EOS calculation |
-| `eos_aom.f90` | EOS from atomic overlap matrix |
 | `gen_hirsh.f` | Generate Hirshfeld promolecular densities |
 | `get_energy.f` | Extract energy values from output files |
 | `get_energy_g16.f` | Same, for Gaussian 16 outputs |
@@ -335,18 +338,231 @@ make -f Makefile_profuse util
 
 ---
 
-## Test Suite (`compiler-testset/`)
+## Test Suite
 
-Used for PGO profiling and regression testing. Five test systems:
+### Overview
 
-| System | Wavefunction | Features tested |
-|--------|-------------|-----------------|
-| `H2O-T-B3LYP` | RKS B3LYP | TFVC, ENPART with DFT, SPIN, MOD-GRIDTWOEL |
-| `C2H6-B3LYP` | RKS B3LYP | TFVC, ENPART, fragments, THREBOD |
-| `CH3F` | (DFT) | TFVC, ENPART |
-| `FeCO2-PBEPBE` | UKS PBE | TFVC, DOFRAGS, EOS (open-shell, fragments) |
-| `FeO4-2` | UKS | TFVC, DOFRAGS, OSLO, QCHEM, fragment-based OSLO |
-| `O2-CASSCF` | CASSCF | TFVC, SPIN, ENPART CASSCF, DM=2 (external RDMs from PySCF) |
+The regression test suite lives in `tests/` and is driven by a Python runner
+(`tests/run_tests.py`) that reads a structured manifest (`tests/manifest.json`).
+It runs the `apost3d` binary on each test case, extracts named numerical
+quantities from the output using regex patterns, and compares them against
+reference values with configurable tolerances.
+
+```
+tests/
+├── run_tests.py      # Python test runner (pure stdlib, no pip install needed)
+├── manifest.json     # Registry of all test cases and their checks
+├── reference/        # Validated reference .apost output files
+│   ├── H2O-T-B3LYP.apost
+│   ├── CH3F.apost
+│   ├── FeCO2-PBEPBE.apost
+│   └── FeO4-2.apost
+└── report/           # Auto-generated after each run (gitignored)
+    ├── last_run.txt
+    └── last_run.html
+```
+
+Input files (`.fchk`, `.inp`, auxiliary `.fchk`) remain in `compiler-testset/`.
+
+### Running the tests
+
+```bash
+# Full build + all tests (recommended after any code change):
+make test
+
+# Build + tests with more threads:
+make test TEST_NTHREADS=4
+
+# Run without rebuilding:
+make test-only
+
+# Run a single test by name:
+make test FILTER=H2O
+
+# Run all tests tagged "enpart":
+make test TAGS=enpart
+
+# Verbose output (show check details even for passing checks):
+make test VERBOSE=1
+
+# Invoke the runner directly with full options:
+python3 tests/run_tests.py --filter CH3F --verbose
+python3 tests/run_tests.py --tags oslo,eos
+python3 tests/run_tests.py --no-color 2>&1 | tee test.log
+```
+
+The runner exits with code 0 if all tests pass, 1 if any fail — suitable for
+CI systems (GitHub Actions, etc.).
+
+### Active test cases
+
+| System | Wavefunction | Features tested | Tags |
+|--------|-------------|-----------------|------|
+| `H2O-T-B3LYP` | RKS B3LYP | TFVC, ENPART (DFT + IQA matrix), SPIN | `dft enpart spin tfvc rks` |
+| `CH3F` | RKS DFT | TFVC, fragment OSLO analysis | `dft oslo tfvc rks fragments` |
+| `FeCO2-PBEPBE` | UKS PBE | TFVC, fragment EOS (open-shell) | `dft eos effao tfvc uks fragments openshell` |
+| `FeO4-2` | UKS, Q-Chem | TFVC, QCHEM interface, OSLO+EOS (open-shell) | `dft eos oslo tfvc uks fragments openshell qchem` |
+| `C2H6-B3LYP` | RKS B3LYP | TFVC, ENPART, fragments, THREBOD | excluded: runtime > 5 min |
+| `O2-CASSCF` | CASSCF | TFVC, SPIN, ENPART CASSCF, DM=2 | excluded: segfault (see Known Issues #12) |
+
+**Validation notes:** All four active tests produce Normal Termination and
+numerical values within floating-point rounding of the ifort/PGO reference
+outputs. Differences are confined to the last 1–4 digits of 7-decimal
+quantities — attributable to compiler and architecture differences
+(x86-64 ifort PGO vs aarch64 gfortran).
+
+### Tolerance tiers
+
+Checks in `manifest.json` use `tol_abs` (absolute tolerance). Three tiers are
+used consistently:
+
+| Tier | `tol_abs` | Used for |
+|------|-----------|---------|
+| tight | `1e-4` or `1e-5` | Total energies, integration errors |
+| normal | `1e-3` | Atomic charges, spin populations, bond orders, IQA energies |
+| loose | `5e-3` or `0.05` | OSLO FOLI values, EOS electron counts, reliability indices |
+
+### `manifest.json` — check format
+
+Each check in the `"checks"` list of a test entry is a JSON object:
+
+```json
+{
+  "label":       "Human-readable name shown in terminal output",
+  "type":        "float",        // "float" (default), "present", or "absent"
+  "section":     "REGEX",        // optional: search only after this marker in output
+  "pattern":     "REGEX",        // regex with exactly one capture group (float type)
+                                 // or just a search pattern (present/absent type)
+  "match_index": 1,              // optional: which findall() match to use (1-based)
+  "ref":         -76.2241116,    // reference value (float type only)
+  "tol_abs":     1e-4            // absolute tolerance (float type only)
+}
+```
+
+**Check types:**
+- `"float"` (default): extract a number via `re.findall(pattern, text)[match_index-1]`, compare with `ref ± tol_abs`.
+- `"present"`: check that `pattern` appears anywhere in the output (or section). Fail if not found.
+- `"absent"`: check that `pattern` does NOT appear. Fail if found.
+
+**`section` field:** When present, the runner finds the first occurrence of `section`
+in the output text, then restricts the search to the text that follows it. This
+is essential when the same pattern appears multiple times (e.g. atom tables in
+multiple analysis sections).
+
+### How to add a new test
+
+1. **Prepare inputs.** Place `SystemName.fchk` and `SystemName.inp` in
+   `compiler-testset/`. For OSLO calculations also add the `*-OSLOs.fchk`
+   and/or `*-OSLOs-preortho.fchk` files.
+
+2. **Generate a reference output.** Run the code once:
+   ```bash
+   cd compiler-testset
+   ulimit -s unlimited
+   ../apost3d SystemName > SystemName.apost 2>&1
+   ```
+   Verify it terminates normally, then copy the output:
+   ```bash
+   cp compiler-testset/SystemName.apost tests/reference/SystemName.apost
+   ```
+
+3. **Add an entry to `tests/manifest.json`.** Copy an existing entry and adapt:
+   ```json
+   {
+     "name": "SystemName",
+     "description": "One-line description of what this tests",
+     "tags": ["dft", "enpart"],          // pick from existing tags or add new ones
+     "timeout": 300,                      // seconds; be generous
+     "extra_input_files": [],             // e.g. ["SystemName-OSLOs.fchk"]
+     "checks": [
+       { "label": "Normal Termination", "type": "present",
+         "pattern": "Normal Termination" },
+       { "label": "Total KS-DFT energy (au)",
+         "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+         "ref": -123.4567890, "tol_abs": 1e-4 },
+       ...
+     ]
+   }
+   ```
+   Add the entry to the `"tests"` array. The order determines execution order.
+
+4. **Verify the patterns match.** Run:
+   ```bash
+   python3 tests/run_tests.py --filter SystemName
+   ```
+   All checks should pass against the reference. If a pattern fails, open the
+   `.apost` file and locate the line — then adjust the pattern or add a
+   `section` anchor.
+
+5. **Commit everything.** Add and commit:
+   - `compiler-testset/SystemName.fchk`
+   - `compiler-testset/SystemName.inp`
+   - `tests/reference/SystemName.apost`
+   - Updated `tests/manifest.json`
+
+### Updating reference outputs
+
+After an intentional code change that alters numerical output (bug fix, new
+algorithm), regenerate all references:
+
+```bash
+make update-ref
+```
+
+This re-runs all tests, writes new `.apost` files to `tests/reference/`, and
+updates the `"ref"` values in `manifest.json` automatically. Commit the updated
+files as part of the same PR that contains the code change.
+
+### Keyword coverage tracking
+
+The test suite tracks which APOST-3D input keywords are exercised by the active
+tests. This is stored in two places:
+
+- **`tests/keywords.json`** — master registry of every keyword APOST-3D accepts,
+  organised by category (`partitioning`, `population`, `orbital`, `energy`,
+  `analysis`, `selection`, `interface`, `grid`, `output`). Each entry carries:
+  - `id` — unique identifier used in manifest `keywords` lists (sub-keywords use
+    `SECTION/keyword` notation, e.g. `ENPART/B3LYP`)
+  - `key` — exact string as it appears in the `.inp` file
+  - `section` — the `.inp` section it belongs to (`# METHOD`, `# ENPART`, …)
+  - `description` — one-line explanation
+  - `priority` — `high` / `medium` / `low` (whether this capability urgently
+    needs a test)
+
+- **`manifest.json` `"keywords"` field** — manually curated list of keyword ids
+  that each test case exercises. This is the authoritative source; update it
+  whenever you add or modify a test.
+
+Generate the coverage report:
+
+```bash
+make coverage                          # full coloured report
+make coverage UNCOVERED=1              # only untested keywords
+make coverage PRIORITY=high UNCOVERED=1  # high-priority gaps only
+make coverage CATEGORY=energy          # single category
+make coverage FORMAT=json              # machine-readable JSON
+python3 tests/coverage.py --help       # all options
+```
+
+**Current status (4 active tests):** 17 / 82 keywords covered (20%).
+High-priority gaps include: `BECKE-RHO`, `HIRSH`, `HIRSH-IT`, `QTAIM`,
+`MULLI`, `LOWDIN`, `EFFAO`, `EOS-U`, `LOBA`, `POLAR`, `EDAIQA`,
+`ENPART/HF`, `ENPART/CASSCF`, `DM/PYSCF`, `DM/ORCA`, `MOKIT`, `ORCA`.
+
+#### Adding a keyword to the registry
+
+When a new keyword is added to the source code:
+
+1. Add an entry to `tests/keywords.json`:
+   ```json
+   { "id": "NEWKEYWORD", "key": "NEWKEYWORD", "section": "# METHOD",
+     "category": "analysis",
+     "description": "One-line description",
+     "priority": "high" }
+   ```
+2. If you add a test that exercises it, add its `id` to that test's `keywords`
+   list in `manifest.json`.
+3. Run `make coverage` to verify the registry is consistent.
 
 ---
 
@@ -358,9 +574,9 @@ These are issues identified during code review that should be addressed in the M
 
 2. **Mixed Fortran standards**: Source files mix old fixed-form Fortran 77 style (`.f`) with some modern F90 constructs. Conventions are inconsistent (implicit typing `IMPLICIT REAL*8(A-H,O-Z)` used throughout, `REAL*8` instead of `REAL(KIND=8)`, etc.).
 
-3. **Compiler dependency**: Currently hard-wired to Intel `ifort` with Intel-specific flags (`-prof-gen`, `-prof-use`, `-parallel`, `-qopenmp`, `-xHost`). Intel oneAPI 2025 drops `ifort`. Migration to `ifx` (Intel's new compiler) or a standard compiler (`gfortran` + OpenMP) is required.
+3. **Compiler dependency**: ~~Hard-wired to Intel `ifort`.~~ **Resolved in Phase 0** — `Makefile` and helper scripts replace the ifort/PGO build with a portable gfortran build.
 
-4. **Auto-parallelization**: The current parallelization relies entirely on Intel's auto-parallelizer (`-parallel`). This should be replaced with explicit OpenMP directives for portability and predictability.
+4. **Auto-parallelization**: ~~Relies on Intel's auto-parallelizer (`-parallel`).~~ **Partially resolved in Phase 0** — gfortran build uses `-fopenmp` with `OMP_NUM_THREADS=1`. Explicit `!$OMP PARALLEL DO` directives on the numerical integration loops are planned for Phase 1.
 
 5. **`parameter.h` as include file**: Array size limits are set at compile time via `parameter.h`. Migrating to dynamic allocation throughout (and removing the fixed-size COMMON arrays) would remove all these limits.
 
@@ -376,20 +592,25 @@ These are issues identified during code review that should be addressed in the M
 
 11. **`TO CHANGE` / `TO DO` markers**: Several `!! TO CHANGE !!` and `! TO DO:` annotations exist in the code marking incomplete implementations (e.g., kinetic energy density for meta-GGA, `xkdens` allocation in `main.f`).
 
+12. **O2-CASSCF segfault**: The CASSCF test case (`O2-CASSCF`, TFVC + SPIN + ENPART + DM=2 with PySCF RDMs) crashes with a segfault in `main.f:898` immediately after printing "POST-HARTREE-FOCK CALCULATION / Number of core + active spin-orbitals: 26". No reference output exists for this case. The crash occurs with both `-O3` and `-O0 -fbounds-check`, and with unlimited stack, suggesting a pointer/allocation issue in the CASSCF ENPART path rather than a stack overflow. Needs investigation.
+
+13. **`istart`/`iend` out-of-bounds bug (fixed in Phase 0)**: In `enpart.f`, the parallel grid-slicing code in `numint_two`, `numint_two_uhf`, and `calc_coul` contained `istart(ithreads)=iend(ithreads-1)+1` which accesses `iend(0)` when `ithreads=1`. ifort coincidentally read zero from heap memory; gfortran does not, causing integration errors for multi-atom systems. Fixed by replacing with `istart(ithreads)=ioffset+((ithreads-1)*ispace)+1` in all 8 occurrences.
+
 ---
 
 ## Planned Work (MAJOR-UPDATE Branch)
 
 Tasks to be worked on progressively in this branch:
 
-- [ ] **Compiler migration**: Replace `ifort` with `ifx` or `gfortran`, remove PGO and Intel-specific flags, create a portable Makefile
-- [ ] **Explicit OpenMP parallelization**: Replace Intel auto-parallelizer with explicit `!$OMP PARALLEL DO` directives on the key numerical integration loops
-- [ ] **Module migration**: Convert remaining COMMON blocks to F90 module variables
-- [ ] **Code homogenization**: Consistent style, naming conventions, indentation, implicit-none throughout
-- [ ] **Comment and documentation**: Add subroutine headers documenting purpose, arguments, and references
-- [ ] **Test infrastructure**: Convert `compiler-testset` into a proper regression test suite with reference outputs and automated comparison
-- [ ] **Dead code removal**: Clean up `devel.f`, `.to_do` files, `wat.f.old`
-- [ ] **libxc upgrade**: Investigate and implement compatibility with libxc >= 5.x
+- [x] **Compiler migration (Phase 0, May 2026)**: `Makefile`, `compile_libxc.sh`, `make_compile.sh` replace the ifort/PGO build. GCC 15 / gfortran tested on Linux (aarch64) and macOS 26 (arm64). Removed `use IFPORT` from `enpart.f`. Fixed latent `istart`/`iend(0)` out-of-bounds bug in two-electron ENPART routines (see Known Issues #13).
+- [x] **Test infrastructure (Phase 0, May 2026)**: `tests/run_tests.py` + `tests/manifest.json` provide structured regression testing with per-quantity tolerance-based comparison, colored terminal output, HTML/text reports, `--filter`/`--tags`/`--update-ref` flags, and `make test` / `make update-ref` targets. 4 of 6 systems active (H2O-T-B3LYP, CH3F, FeCO2-PBEPBE, FeO4-2); C2H6-B3LYP excluded (runtime > 5 min), O2-CASSCF excluded (segfault, see Known Issues #12).
+- [ ] **O2-CASSCF segfault**: Investigate and fix the crash in the CASSCF ENPART path (main.f:898).
+- [ ] **Explicit OpenMP parallelization (Phase 1)**: Replace single-threaded Phase 0 build with explicit `!$OMP PARALLEL DO` directives on the key numerical integration loops in `enpart.f`, `numint.f`, `wat.f`.
+- [ ] **Module migration**: Convert remaining COMMON blocks to F90 module variables.
+- [ ] **Code homogenization**: Consistent style, naming conventions, indentation, `IMPLICIT NONE` throughout.
+- [ ] **Comment and documentation**: Add subroutine headers documenting purpose, arguments, and references.
+- [ ] **Dead code removal**: Clean up `devel.f`, `.to_do` files, `wat.f.old`.
+- [ ] **libxc upgrade**: Investigate and implement compatibility with libxc >= 5.x.
 
 ---
 
@@ -398,7 +619,7 @@ Tasks to be worked on progressively in this branch:
 - **Main branch**: `master` — stable, matches public GitHub release
 - **Development branch**: `MAJOR-UPDATE` — all major refactoring work (current branch)
 - **Past branches**: `IQA-CASSCF`, `psalse` (merged or in progress)
-- **Convention**: Work incrementally on `MAJOR-UPDATE`, with frequent commits. Test after each significant change using the `compiler-testset` inputs.
+- **Convention**: Work incrementally on `MAJOR-UPDATE`, with frequent commits. Run `make test` after every significant change. When output changes intentionally, run `make update-ref` and commit the updated references together with the code change.
 
 ---
 
