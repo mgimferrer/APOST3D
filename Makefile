@@ -102,25 +102,37 @@ $(LIBXCDIR)/libxc.o: $(LIBXCDIR)/libxc_funcs.o
 	  $(LIBXCDIR)/libxc.f90 -o $@
 
 ## F90 MODULES (must be compiled first — other sources USE these modules)
-$(SRCDIR)/modules.o:
+# Depends on modules.f90 itself so that editing it (or a `make clean`
+# regenerating it under a different compiler) correctly triggers a rebuild.
+# Produces modules.o AND the .mod interface files (ao_matrices.mod,
+# basis_set.mod, integration_grid.mod) together in the same recipe, written
+# to $(APOST3D_PATH) (no -J given, so gfortran uses the cwd — this Makefile
+# is always invoked with `make -C $(APOST3D_PATH)`).
+$(SRCDIR)/modules.o: $(SRCDIR)/modules.f90
 	$(FC) -c $(FFLAGS) $(LIBXC_INC) \
 	  $(SRCDIR)/modules.f90 -o $@
 
 ## input2.f compiled WITHOUT -ffast-math to avoid floating-point parsing issues
-$(OBJDIR)/input2.o: $(SRCDIR)/input2.f $(SRCDIR)/parameter.h
+# Depends on modules.o so that a stale/incompatible .mod (e.g. left over from
+# a different gfortran version) forces a recompile instead of a confusing
+# "module file created by a different version of GNU Fortran" error.
+$(OBJDIR)/input2.o: $(SRCDIR)/input2.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
 	$(FC_INP) -c -O1 $(SFLAGS) $(DBGFLAGS) \
 	  $(LIBXC_INC) \
 	  $(SRCDIR)/input2.f -o $@
 
 ## GENERAL RULE for all other .f sources
-$(OBJDIR)/%.o: $(SRCDIR)/%.f $(SRCDIR)/parameter.h
+# Depends on modules.o for the same reason as input2.o above (see comment).
+$(OBJDIR)/%.o: $(SRCDIR)/%.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
 	$(FC) -c $(FFLAGS) $(LIBXC_INC) $< -o $@
 
 ## UTILS
-$(UTILDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h
+# Also depend on modules.o: several utils (e.g. eos_aom.f90, eos_alt.f90)
+# USE the same F90 modules as the main sources.
+$(UTILDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
 	$(FC) -c $(FFLAGS) -I$(SRCDIR) $< -o $@
 
-$(UTILDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h
+$(UTILDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
 	$(FC) -c $(FFLAGS) -I$(SRCDIR) $< -o $@
 
 ## STANDALONE EOS EXECUTABLE
