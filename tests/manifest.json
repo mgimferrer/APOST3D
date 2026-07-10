@@ -83,6 +83,84 @@
     },
 
     {
+      "name": "C2H6-B3LYP",
+      "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT+IQA) with THREBOD/MOD-GRIDTWOEL on an 8-atom, 160-basis-function system. Tagged 'slow' (~85s single-threaded) — excluded from the default 'make test' tier, included via 'make test TAGS=slow' or 'make test-full'.",
+      "tags": ["dft", "enpart", "tfvc", "rks", "threbod", "slow"],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART", "ENPART/B3LYP", "ENPART/THREBOD", "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL", "GRID/ANGULAR", "GRID/PHB1", "GRID/PHB2"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total KS-DFT energy (au)",
+          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -79.8655614,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.0000520,
+          "tol_abs": 1e-5
+        },
+        {
+          "label": "C TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.287036,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "H TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.095671,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C-C TFVC bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "1\\s+C\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.949832,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C total valence",
+          "section": "TOTAL VALENCES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 4.021652,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Electron-nuclei energy (au)",
+          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -268.6482977,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Kinetic energy (au)",
+          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 79.2827782,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "KS-DFT electron-electron energy (au)",
+          "pattern": "KS-DFT electron-electron energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 67.2363766,
+          "tol_abs": 1e-3
+        }
+      ]
+    },
+
+    {
       "name": "CH3F",
       "description": "Fluoromethane, RKS DFT — TFVC populations, fragment OSLO analysis",
       "tags": ["dft", "oslo", "tfvc", "rks", "fragments"],
