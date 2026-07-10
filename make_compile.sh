@@ -156,23 +156,35 @@ make -f "$MAKEFILE" -C "$APOST3D_PATH" all
 echo ""
 
 # ------------------------------------------------------------------------------
-# Ad-hoc code signing (required on macOS 26+ Tahoe beta for GCC-compiled bins)
-# codesign is a no-op on Linux, so this is safe cross-platform.
+# Ad-hoc code signing (required on macOS, especially Apple Silicon, for
+# GCC-compiled binaries to be allowed to map the dyld shared cache — without
+# this, launching the binary fails with something like:
+#   dyld[...]: Library not loaded: /usr/lib/libSystem.B.dylib
+#              ... (no such file, no dyld cache)
+# which looks like a missing-library problem but is actually a missing/
+# invalid code signature. codesign doesn't exist on Linux, so this whole
+# block is skipped there — safe cross-platform.
 # ------------------------------------------------------------------------------
 if command -v codesign &>/dev/null; then
   echo "--- Ad-hoc code signing (macOS) ---"
   for bin in apost3d apost3d-eos eos_aom; do
     if [[ -x "$APOST3D_PATH/$bin" ]]; then
-      codesign --force --sign - "$APOST3D_PATH/$bin" && \
-        echo "  signed: $bin" || \
-        echo "  warning: codesign failed for $bin (non-fatal)"
+      # Clear extended attributes first (e.g. a stray com.apple.quarantine
+      # flag, which can prevent an ad-hoc signature from being trusted).
+      xattr -c "$APOST3D_PATH/$bin" 2>/dev/null || true
+      if codesign --force --sign - "$APOST3D_PATH/$bin" 2>&1; then
+        echo "  signed: $bin"
+      else
+        echo "  ERROR: codesign failed for $bin — it will likely fail to run."
+        echo "         Try manually:  codesign --force --sign - $APOST3D_PATH/$bin"
+      fi
     fi
   done
   echo ""
 fi
 
 # ------------------------------------------------------------------------------
-# Verify binaries
+# Verify binaries exist
 # ------------------------------------------------------------------------------
 echo "--- Binaries produced ---"
 for bin in apost3d apost3d-eos eos_aom; do
@@ -183,6 +195,49 @@ for bin in apost3d apost3d-eos eos_aom; do
   fi
 done
 echo ""
+
+# ------------------------------------------------------------------------------
+# Smoke test: actually LAUNCH each binary, not just check the file exists.
+# A binary can exist, be executable, and still fail to launch (wrong
+# architecture, missing/invalid code signature, missing shared library) —
+# that only shows up at process-start time. Catching it here, once, with a
+# clear message, is a lot friendlier than the test suite reporting the same
+# dyld failure independently for every single test case.
+# All three are invoked with no arguments and stdin redirected from
+# /dev/null: apost3d and apost3d-eos read argc, print a usage/STOP message,
+# and exit immediately without touching stdin; eos_aom is defensively given
+# /dev/null too in case it ever prompts.
+# ------------------------------------------------------------------------------
+echo "--- Smoke test (launching each binary) ---"
+SMOKE_FAILED=0
+for bin in apost3d apost3d-eos eos_aom; do
+  bin_path="$APOST3D_PATH/$bin"
+  [[ -x "$bin_path" ]] || continue
+  smoke_out="$("$bin_path" < /dev/null 2>&1 || true)"
+  if echo "$smoke_out" | grep -qi "dyld\|Library not loaded\|Killed\|Segmentation fault\|Trace/BPT"; then
+    echo "  ✗  $bin failed to launch:"
+    echo "$smoke_out" | sed 's/^/       /'
+    SMOKE_FAILED=1
+  elif [[ -z "$smoke_out" ]]; then
+    echo "  ?  $bin produced no output (unexpected, but not a known failure signature)"
+  else
+    echo "  ✓  $bin launches correctly"
+  fi
+done
+echo ""
+
+if [[ "$SMOKE_FAILED" -eq 1 ]]; then
+  echo "============================================================"
+  echo "  WARNING: one or more binaries failed to launch"
+  echo "============================================================"
+  echo "  On macOS this is almost always a code-signing / Gatekeeper"
+  echo "  issue, not a compilation problem. Try, then re-run this script:"
+  echo "    xattr -cr $APOST3D_PATH"
+  echo "    codesign --force --sign - $APOST3D_PATH/apost3d"
+  echo "    codesign --force --sign - $APOST3D_PATH/apost3d-eos"
+  echo "    codesign --force --sign - $APOST3D_PATH/eos_aom"
+  echo ""
+fi
 
 echo "============================================================"
 echo "  Build complete: $(date)"
