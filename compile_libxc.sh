@@ -63,6 +63,38 @@ fi
 
 echo "Using C compiler  : $CC_CMD  ($(${CC_CMD} --version | head -1))"
 echo "Using FC compiler : $FC_CMD  ($(${FC_CMD} --version | head -1))"
+
+# ------------------------------------------------------------------------------
+# Force the platform-native ar/ranlib.
+#
+# libxc's own build (autotools) picks whatever `ar` it finds first on PATH.
+# On macOS this can end up being a GNU `ar` (e.g. from Homebrew binutils, or
+# bundled alongside a Homebrew GCC toolchain), which writes archives in GNU
+# format (a member literally named "/" holding the symbol table). Apple's
+# system `ld` only understands the BSD archive format (a `__.SYMDEF` member)
+# and fails with "archive member '/' not a mach-o file" when linking against
+# a GNU-format .a — this is a toolchain mismatch, not a code problem, and it
+# only shows up at link time (compiling and archiving both "succeed").
+#
+# Fix: explicitly force Apple's own /usr/bin/ar + /usr/bin/ranlib on macOS
+# (always present via Xcode Command Line Tools, always BSD-format, always
+# compatible with Apple's ld). On Linux, GNU ar/ranlib is correct and
+# expected, so just use whatever's on PATH there.
+# ------------------------------------------------------------------------------
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  AR_CMD=/usr/bin/ar
+  RANLIB_CMD=/usr/bin/ranlib
+  if [[ ! -x "$AR_CMD" ]]; then
+    echo "ERROR: $AR_CMD not found — install Xcode Command Line Tools:"
+    echo "  xcode-select --install"
+    exit 1
+  fi
+else
+  AR_CMD=$(command -v ar || echo ar)
+  RANLIB_CMD=$(command -v ranlib || echo ranlib)
+fi
+echo "Using AR          : $AR_CMD"
+echo "Using RANLIB      : $RANLIB_CMD"
 echo ""
 
 # ------------------------------------------------------------------------------
@@ -88,6 +120,8 @@ cd "$LIBXCDIR"
 echo "Running configure ..."
 CC="$CC_CMD" \
 FC="$FC_CMD" \
+AR="$AR_CMD" \
+RANLIB="$RANLIB_CMD" \
 CFLAGS="-O3" \
 FCFLAGS="-O3 -ffixed-line-length-132" \
   ./configure --prefix="$LIBXCDIR" --enable-shared=no
@@ -103,6 +137,17 @@ echo ""
 
 echo "Installing into $LIBXCDIR ..."
 make install
+echo ""
+
+# ------------------------------------------------------------------------------
+# Safety net: regenerate the archive symbol table with the platform-native
+# ranlib, regardless of what AR/RANLIB the internal build actually used for
+# each .a (belt-and-braces against the GNU-vs-BSD archive mismatch above).
+# ------------------------------------------------------------------------------
+echo "Re-indexing archives with $RANLIB_CMD ..."
+for a in "$LIBXCDIR"/lib/*.a; do
+  [[ -f "$a" ]] && "$RANLIB_CMD" "$a"
+done
 echo ""
 
 # ------------------------------------------------------------------------------
