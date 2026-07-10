@@ -596,6 +596,8 @@ These are issues identified during code review that should be addressed in the M
 
 13. **`istart`/`iend` out-of-bounds bug (fixed in Phase 0)**: In `enpart.f`, the parallel grid-slicing code in `numint_two`, `numint_two_uhf`, and `calc_coul` contained `istart(ithreads)=iend(ithreads-1)+1` which accesses `iend(0)` when `ithreads=1`. ifort coincidentally read zero from heap memory; gfortran does not, causing integration errors for multi-atom systems. Fixed by replacing with `istart(ithreads)=ioffset+((ithreads-1)*ispace)+1` in all 8 occurrences.
 
+14. **libxc archive format mismatch on macOS (fixed in Phase 0, July 2026)**: `compile_libxc.sh` let autotools pick whatever `ar` it found on PATH. On macOS this can resolve to a GNU-format `ar` (e.g. bundled with a Homebrew GCC toolchain, or from Homebrew binutils), which writes archives with a GNU-style symbol table (a member literally named `/`). Apple's system `ld` only understands the BSD archive format (`__.SYMDEF`) and fails at *link time* — not compile or archive time — with `ld: archive member '/' not a mach-o file in '.../libxc-4.2.3/lib/libxc.a'`. This is a toolchain mismatch, not a code bug; `libxcf90.a`/`libxcf03.a` (built via libtool) were unaffected, only the core `libxc.a` (archived directly). Fixed by forcing `AR=/usr/bin/ar RANLIB=/usr/bin/ranlib` (Apple's native, BSD-format, always present via Xcode CLT) into libxc's `./configure` on Darwin, plus a post-`make install` `ranlib` pass on every `.a` as a safety net. Linux is unaffected (GNU ar/ranlib is correct there and unchanged by this fix). Not independently verified end-to-end on macOS — needs confirmation after a real rebuild.
+
 ---
 
 ## Planned Work (MAJOR-UPDATE Branch)
