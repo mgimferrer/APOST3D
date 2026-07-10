@@ -66,6 +66,30 @@ if [[ ! -f "$LIBXC_A" ]]; then
 fi
 
 # ------------------------------------------------------------------------------
+# gfortran preflight: must exist and be >= 10 (required for
+# -fallow-argument-mismatch, used throughout the Makefile).
+# ------------------------------------------------------------------------------
+if ! command -v gfortran &>/dev/null; then
+  echo "ERROR: gfortran not found on PATH."
+  echo "       Install with:"
+  echo "         macOS:  brew install gcc"
+  echo "         Ubuntu: sudo apt install gfortran"
+  exit 1
+fi
+
+GFORTRAN_VERSION_FULL="$(gfortran --version | head -1)"
+GFORTRAN_VERSION_MAJOR="$(gfortran -dumpversion | cut -d. -f1)"
+
+if [[ ! "$GFORTRAN_VERSION_MAJOR" =~ ^[0-9]+$ ]] || (( GFORTRAN_VERSION_MAJOR < 10 )); then
+  echo "ERROR: gfortran >= 10 is required (found: $GFORTRAN_VERSION_FULL)."
+  echo "       -fallow-argument-mismatch was introduced in GCC 10."
+  echo "       Install a newer gfortran, e.g.:"
+  echo "         macOS:  brew install gcc"
+  echo "         Ubuntu: sudo apt install gfortran-12"
+  exit 1
+fi
+
+# ------------------------------------------------------------------------------
 # Environment
 # ------------------------------------------------------------------------------
 export APOST3D_PATH
@@ -79,10 +103,37 @@ echo "  APOST-3D gfortran build"
 echo "============================================================"
 echo "  APOST3D_PATH : $APOST3D_PATH"
 echo "  Makefile     : $MAKEFILE"
+echo "  Compiler     : $GFORTRAN_VERSION_FULL"
 echo "  OMP threads  : $OMP_NUM_THREADS"
 echo "  Started      : $(date)"
 echo "============================================================"
 echo ""
+
+# ------------------------------------------------------------------------------
+# Compiler-identity drift check.
+#
+# gfortran .mod files are NOT portable across compiler versions ("Cannot read
+# module file ... created by a different version of GNU Fortran"). The
+# Makefile's file-timestamp dependencies can't detect "same source, different
+# compiler" — only a change in the *compiler itself* triggers this. So we
+# stamp the compiler identity used for the last build and compare it here;
+# if it changed (new gfortran version, switched machines, etc.) we force a
+# clean before rebuilding instead of letting a cryptic module-version error
+# surface mid-build.
+# ------------------------------------------------------------------------------
+COMPILER_STAMP="$APOST3D_PATH/objects/.gfortran_version"
+
+if [[ -f "$COMPILER_STAMP" ]]; then
+  PREV_VERSION="$(cat "$COMPILER_STAMP")"
+  if [[ "$PREV_VERSION" != "$GFORTRAN_VERSION_FULL" ]] && [[ "$CLEAN" -ne 1 ]]; then
+    echo "--- Compiler change detected ---"
+    echo "  Previous build : $PREV_VERSION"
+    echo "  Current        : $GFORTRAN_VERSION_FULL"
+    echo "  Forcing 'make clean' to avoid stale/incompatible .mod files."
+    echo ""
+    CLEAN=1
+  fi
+fi
 
 # ------------------------------------------------------------------------------
 # Optional clean
@@ -92,6 +143,10 @@ if [[ "$CLEAN" -eq 1 ]]; then
   make -f "$MAKEFILE" -C "$APOST3D_PATH" clean
   echo ""
 fi
+
+# Record the compiler identity used for this build (written after clean so a
+# failed/interrupted build doesn't falsely mark the stamp as up to date).
+echo "$GFORTRAN_VERSION_FULL" > "$COMPILER_STAMP"
 
 # ------------------------------------------------------------------------------
 # Build main binary + standalone EOS + utility
