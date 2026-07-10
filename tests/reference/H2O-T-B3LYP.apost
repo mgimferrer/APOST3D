@@ -1,0 +1,512 @@
+  ------------------------------------------------------------------------------
+                                                                                
+                      Program APOST-3D, Version 4                               
+                               12-03-2025                                       
+                     --------------------------------                           
+                                                                                
+      Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Available atomic definitions:                                             
+      ----------------------------                                              
+                                                                                
+      Real space:                                                               
+        Becke, J. Chem. Phys. 88 2547 1988                                      
+        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
+        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
+        Topological fuzzy Voronoi cells (TFVC), J Chem Phys 139 071103 2013     
+        QTAIM, J. Comput. Chem 30 1082 2009                                     
+                                                                                
+      Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
+                                                                                
+                                                                                
+      Calculating:                                                              
+      ------------                                                              
+                                                                                
+        A) Atomic and overlap populations, bond orders and valences             
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	        
+                                                                                
+        B) Hartree-Fock molecular energy decomposition                          
+           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
+                                                                                
+        C) KS-DFT molecular energy decomposition                                
+            P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
+           M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
+                                                                                
+        D) Molecular energy decomposition for CAS/DMRG wavefunctions            
+                                                                                
+        E) Effective atomic orbitals:                                           
+           I. Mayer, J. Phys. Chem. 100 6249 1996                               
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
+                                                                                
+        F) Local spin analysis                                                  
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+                                                                                
+        G) Effective Oxidation states analysis                                  
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
+                                                                                
+        H) Oxidation states from localized orbitals                             
+           M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020      
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
+           M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022         
+                                                                                
+        I) Decomposition of EDA quantities into one- and two-center IQA terms   
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
+                                                                                
+        J) Origin-independent decomposition of static polarizabilities          
+           M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021      
+                                                                                
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
+                                                                                
+    e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
+                                                                                
+  ------------------------------------------------------------------------------
+    The program has been written by using parts of the program APOST by         
+    I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
+                                                                                
+    The numerical integration utilizes the subroutines for Lebedev              
+    quadrature downloaded from CCL. The appropriate reference is:               
+    V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
+    131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
+                                                                                
+    The program makes use of libxc library when necessary, using the F90        
+    interfaces provided by the authors.                                         
+                   (see http://www.tddft.org/programs/libxc)                    
+                                                                                
+    We are extremely grateful for the possibility of using these routines!      
+                                                                                
+   -----------------------------------------------------------------------------
+    DENS=   1
+ Unrestricted MO formalism
+ KS-DFT type calculation
+ (single det. built up of the Kohn-Sham orbitals)
+ Number of atoms:           3
+ Number of basis functions:          58
+ Total number of primitive gaussians          86
+  
+ nocc           5     nalpha           6     nbeta           4
+  
+ E(SCF/DFT)=  -76.2241107966790     
+  
+STIFFNES=   4
+RHO_CALC=   0
+EFF_THRE=   1
+      DM=   0
+ THREBOD=  -1
+  RADIAL=  40
+ ANGULAR= 146
+ Natural orbital occupations (>1.0e-6): 
+   2.00000   1.99969   1.99944   1.99824   1.00000   1.00000   0.00176   0.00056
+   0.00031
+ Checking NO overlap matrix 
+ 
+        (Elapsed time :: initialization        0.0s)
+  
+  -------------------------------------
+  SETTING ATOMIC GRIDS FOR INTEGRATION 
+  -------------------------------------
+  
+ Radial points  :  150
+ Angular points :  590
+ r0 (radial)    :  0.500
+ Using stiffness k :    4
+ Using density along atom pairs to set atomic radii.
+ Subdivision :          25
+ Atom pair:    1   2 Ratio:  2.62319
+  
+ Subdivision :          25
+ Atom pair:    1   3 Ratio:  2.62319
+  
+  Number of grid points:    265500
+ Checking sum of AOs overlap matrices
+ Deviations may not affect overall accuracy of MOs 
+  
+  ---------------------------
+   DOING POPULATION ANALYSIS 
+    Partial atomic charges
+    Atomic spin densities 
+    Bond orders and Valences 
+  ---------------------------
+  
+   
+     ELECTRON POPULATIONS
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1  O     8.551876    8.045576
+   2  H     0.724062    0.977212
+   3  H     0.724062    0.977212
+  -----------------------------
+     Sum   10.000000   10.000000
+   
+     TOTAL ATOMIC CHARGES    
+   
+   Atom   apost3d      Mulliken
+  -----------------------------
+   1  O    -0.551876   -0.045576
+   2  H     0.275938    0.022788
+   3  H     0.275938    0.022788
+  -----------------------------
+     Sum    0.000000   -0.000000
+   
+   
+      SPIN POPULATIONS
+   
+   Atom   apost3D      Mulliken
+  -----------------------------
+   1  O     1.235156    0.934712
+   2  H     0.382422    0.532644
+   3  H     0.382422    0.532644
+  -----------------------------
+     Sum    2.000000    2.000000
+   
+
+                     "FUZZY ATOMS" BOND ORDER MATRIX
+
+
+              1  O        2  H        3  H 
+
+   1  O     7.844140    0.707736    0.707736
+   2  H     0.707736    0.290114    0.160158
+   3  H     0.707736    0.160158    0.290114
+   
+    TOTAL VALENCES 
+   
+     Atom     V_A
+  -----------------
+   1  O     2.486310
+   2  H     1.010009
+   3  H     1.010009
+  ------------------
+   
+ VALENCES USED IN BONDS
+ (SUM OF BOND ORDERS)
+   
+     Atom     VB_A
+  -----------------
+   1  O     1.415472
+   2  H     0.867895
+   3  H     0.867895
+  ------------------
+   
+    FREE VALENCES
+  
+     Atom     F_A
+  -----------------
+   1  O     1.070838
+   2  H     0.142115
+   3  H     0.142115
+  ------------------
+ 
+(Elapsed time :: population analyses        2.7s)
+  
+  ---------------------------
+   DOING LOCAL SPIN ANALYSIS 
+    Single-determinant case  
+  ---------------------------
+  
+   
+  EFFECTIVELY UNPAIRED ELECTRONS
+   
+     Atom     u_A
+  -----------------
+   1  O     1.287250
+   2  H     0.361616
+   3  H     0.361616
+  ------------------
+ Sum check N_D =   2.01048
+  
+
+                     "FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)
+
+
+              1  O        2  H        3  H 
+
+   1  O     1.079130    0.091036    0.091036
+   2  H     0.091036    0.272245    0.008738
+   3  H     0.091036    0.008738    0.272245
+  
+ Sum check  <S^2> =    2.00524
+  
+
+                     "FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX
+
+
+              1  O        2  H        3  H 
+
+   1  O     1.609933   -0.174365   -0.174365
+   2  H    -0.174365    0.597705   -0.051322
+   3  H    -0.174365   -0.051322    0.597705
+  
+ Sum check  <S^2> =    2.00524
+  
+  
+  -------------------------------------- 
+   DOING MOLECULAR ENERGY DECOMPOSITION  
+  -------------------------------------- 
+  
+  -------------------------------- 
+   DENSITY FUNCTIONAL INFORMATION  
+  -------------------------------- 
+  
+  Functional name --> B3LYP
+  Reference --> [1] P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)                      
+  Functional type --> exchange-correlation
+  HYBRID-GGA functional selected
+  HF-type exchange coeff --> 0.200
+  
+  --------------------------- 
+   GENERAL ONE-ELECTRON PART  
+  --------------------------- 
+  
+  ----------------------------- 
+   ELECTRON-NUCLEAR ATTRACTION  
+  ----------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O  -180.767003   -5.852109   -5.852109
+    2  H    -5.852109   -0.867130   -0.296934
+    3  H    -5.852109   -0.296934   -0.867130
+  --------------------------------------------------------------------------------                    
+  Electron-nuclei energy:   -194.5024157
+  Integration error (kcal/mol):    -0.00
+  
+  ---------------- 
+   KINETIC ENERGY  
+  ---------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    74.964483    0.000000    0.000000
+    2  H     0.000000    0.437282    0.000000
+    3  H     0.000000    0.000000    0.437282
+  --------------------------------------------------------------------------------                    
+  Kinetic energy:     75.8390458
+  Integration error (kcal/mol):    -0.00
+  
+  --------------------------- 
+   NUCLEAR-NUCLEAR REPULSION  
+  --------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O     0.000000    3.529920    3.529920
+    2  H     3.529920    0.000000    0.225241
+    3  H     3.529920    0.225241    0.000000
+  --------------------------------------------------------------------------------                    
+  Nuclear repulsion energy:      7.2850801
+  
+(Elapsed time :: enpart one-electron        1.8s)
+  
+  ------------------------------ 
+   UKS-DFT ENERGY DECOMPOSITION  
+  ------------------------------ 
+  
+  USING BOND ORDER DENSITY APPROACH 
+  Threshold for atom pair calculation:   0.000000
+  
+  --------------------------------------- 
+   BOND ORDER DENSITY FOR ALL ATOM PAIRS  
+  --------------------------------------- 
+  
+  --------------------------- 
+   Atom   Atom   BODEN value  
+  --------------------------- 
+      1      2     0.7077362
+      1      3     0.7077362
+      2      3     0.1601584
+  --------------------------- 
+  
+  --------------------------------------- 
+   DIATOMIC PURE KS-DFT XC TERMS (BODEN)  
+  --------------------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O     0.000000   -0.137896   -0.137896
+    2  H    -0.137896    0.000000   -0.019314
+    3  H    -0.137896   -0.019314    0.000000
+  --------------------------------------------------------------------------------                    
+  
+  ----------------------------------------- 
+   PURE KS-DFT XC ONE-CENTER TERMS (EXACT)  
+  ----------------------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    -7.020697    0.000000    0.000000
+    2  H     0.000000   -0.191139    0.000000
+    3  H     0.000000    0.000000   -0.191139
+  --------------------------------------------------------------------------------                    
+  KS-DFT exchange-correlation energy:     -7.4029752
+  
+  REARRANGING ATOMIC COMPONENTS 
+  
+  ---------------------------------------------------------- 
+   FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS  
+  ---------------------------------------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    -6.882801   -0.137896   -0.137896
+    2  H    -0.137896   -0.112534   -0.019314
+    3  H    -0.137896   -0.019314   -0.112534
+  --------------------------------------------------------------------------------                    
+  Sum of pure KS-DFT exchange-correlation energy:     -7.4029752
+  
+  WARNING: HF-exchange part missing 
+  
+(Elapsed time :: enpart one-electron        7.6s)
+  
+  ----------------------------------------------------- 
+   SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  
+  ----------------------------------------------------- 
+  
+  Radial points:   40
+  Angular points:  146
+  Number of grid points:     17520
+  
+  --------------------------- 
+   GENERAL TWO-ELECTRON PART  
+  --------------------------- 
+  
+  Rotating for angles:   0.000000   0.162000
+  Number of grid points:     17520
+  OMP_NUM_THREADS not set
+  Two-el integration will be distributed over  48 threads out of  48 available hardware cores
+  
+  ------------------------------------------ 
+   COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
+  ------------------------------------------ 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    39.306344    2.257893    2.257893
+    2  H     2.257893    0.198739    0.098720
+    3  H     2.257893    0.098720    0.198739
+  --------------------------------------------------------------------------------                    
+  Coulomb energy:     44.3183281
+  
+(Elapsed time :: Coulomb energy        2.2s)
+  
+  ------------------------------------------------- 
+   EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  
+  ------------------------------------------------- 
+  
+  Two-el integrations fo     42 functions
+  Threshold for atom pair calculation    0.000000
+  OMP_NUM_THREADS not set
+  Two-el integration will be distributed over  48 threads out of  48 available hardware cores
+  Skipping numerical integration for     0 atom pairs
+  
+  ----------------------------------------- 
+   HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  
+  ----------------------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    -8.165691   -0.178089   -0.178089
+    2  H    -0.178089   -0.112406   -0.012889
+    3  H    -0.178089   -0.012889   -0.112406
+  --------------------------------------------------------------------------------                    
+  Hartree-Fock exchange energy:     -8.7595694
+  
+  ------------------------ 
+   HYBRID KS-DFT XC TERMS  
+  ------------------------ 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    -8.515940   -0.173514   -0.173514
+    2  H    -0.173514   -0.135015   -0.021892
+    3  H    -0.173514   -0.021892   -0.135015
+  --------------------------------------------------------------------------------                    
+  Total exchange-correlation energy:     -9.1548890
+  
+  KS-DFT electron-electron energy (au):     35.1634391
+  Integration error (kcal/mol):     5.81
+  
+  Max error accepted on the two-electron part (kcal/mol):     0.00
+  
+  Rotating for angles:   0.000000   0.182000
+  Number of grid points:     17520
+  New error after rotation:    -0.81
+  Damping parameter:      0.1229626
+  
+  ------------------------------------------------------- 
+   INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
+  ------------------------------------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    39.296189    2.257893    2.257893
+    2  H     2.257893    0.198667    0.098720
+    3  H     2.257893    0.098720    0.198667
+  --------------------------------------------------------------------------------                    
+  Coulomb energy:     44.3080300
+  
+  ------------------------------------------------------ 
+   INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  
+  ------------------------------------------------------ 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    -8.160592   -0.178089   -0.178089
+    2  H    -0.178089   -0.112362   -0.012889
+    3  H    -0.178089   -0.012889   -0.112362
+  --------------------------------------------------------------------------------                    
+  Hartree-Fock exchange energy:     -8.7543828
+  
+  ------------------------------------- 
+   INTERPOLATED HYBRID KS-DFT XC TERMS  
+  ------------------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O    -8.514920   -0.173514   -0.173514
+    2  H    -0.173514   -0.135006   -0.021892
+    3  H    -0.173514   -0.021892   -0.135006
+  --------------------------------------------------------------------------------                    
+  Total exchange-correlation energy:     -9.1538517
+  
+  KS-DFT electron-electron energy:     35.1541783
+  Integration error (kcal/mol):     0.00
+  
+  -------------------------------------- 
+   FUZZY ATOMS KS-DFT ENERGY COMPONENTS  
+  -------------------------------------- 
+  
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O   -75.021251   -0.237810   -0.237810
+    2  H    -0.237810   -0.366187    0.005134
+    3  H    -0.237810    0.005134   -0.366187
+  --------------------------------------------------------------------------------                    
+  Total KS-DFT energy      :    -76.2241116
+  Total energy in Fchk file:    -76.2241108
+  Integration error (au):     -0.0000008
+  Integration error (kcal/mol):    -0.00
+  
+(Elapsed time :: enpart two-electron       32.7s)
+  
+ ...Normal Termination of APOST-3D... 

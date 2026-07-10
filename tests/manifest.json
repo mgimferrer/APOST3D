@@ -1,0 +1,271 @@
+{
+  "tests": [
+    {
+      "name": "H2O-T-B3LYP",
+      "description": "Water molecule, RKS B3LYP / aug-cc-pVTZ — TFVC populations, ENPART (DFT), local spin",
+      "tags": ["dft", "enpart", "spin", "tfvc", "rks"],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "SPIN",
+        "ENPART", "ENPART/B3LYP", "ENPART/THREBOD", "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL", "GRID/ANGULAR", "GRID/PHB1", "GRID/PHB2"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total KS-DFT energy (au)",
+          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -76.2241116,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -8e-07,
+          "tol_abs": 1e-5
+        },
+        {
+          "label": "O TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.551876,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "H TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.275938,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "O spin population",
+          "section": "SPIN POPULATIONS",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.235156,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "H spin population",
+          "section": "SPIN POPULATIONS",
+          "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.382422,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "O-H TFVC bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "1\\s+O\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.707736,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "O IQA self-energy (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -75.021251,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "O-H IQA interaction (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.237810,
+          "tol_abs": 1e-3
+        }
+      ]
+    },
+
+    {
+      "name": "CH3F",
+      "description": "Fluoromethane, RKS DFT — TFVC populations, fragment OSLO analysis",
+      "tags": ["dft", "oslo", "tfvc", "rks", "fragments"],
+      "timeout": 600,
+      "extra_input_files": ["CH3F-OSLOs.fchk", "CH3F-OSLOs-preortho.fchk"],
+      "keywords": [
+        "TFVC",
+        "OSLO", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION", "OSLO/PRINT-NON-ORTHO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C TFVC electron population",
+          "section": "ELECTRON POPULATIONS",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 5.126631,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "F TFVC electron population",
+          "section": "ELECTRON POPULATIONS",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 9.721908,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.873369,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "F TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.721908,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C-F bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "1\\s+C\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.812947,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "OSLO 1 FOLI value",
+          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
+          "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00002,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "OSLO 9 FOLI value (most delocalized)",
+          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
+          "pattern": "1\\.06204\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.35476,
+          "tol_abs": 5e-3
+        }
+      ]
+    },
+
+    {
+      "name": "FeCO2-PBEPBE",
+      "description": "Iron dicarbonyl cation, UKS PBE/PBE — TFVC, fragment EOS analysis (open-shell)",
+      "tags": ["dft", "eos", "effao", "tfvc", "uks", "fragments", "openshell"],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Fe TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.443242,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.412799,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "O TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "4\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.134560,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe EOS alpha electrons (frag 1)",
+          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 12.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Fe fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "EOS reliability index R(%)",
+          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 97.142,
+          "tol_abs": 0.5
+        }
+      ]
+    },
+
+    {
+      "name": "FeO4-2",
+      "description": "Ferrate(VI) dianion, UKS — TFVC, QCHEM interface, fragment OSLO + EOS",
+      "tags": ["dft", "eos", "oslo", "tfvc", "uks", "fragments", "openshell", "qchem"],
+      "timeout": 600,
+      "extra_input_files": ["FeO4-2-OSLOs.fchk"],
+      "keywords": [
+        "TFVC",
+        "OSLO", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION",
+        "DOFRAGS",
+        "QCHEM"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Fe TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.611910,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "O TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.903168,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 6.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "O OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -2.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "OSLO 1 FOLI value",
+          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
+          "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00010,
+          "tol_abs": 1e-3
+        }
+      ]
+    }
+  ]
+}
