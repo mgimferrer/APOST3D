@@ -20,35 +20,35 @@
       common /atomrad/atr(maxat),dist(maxat,maxat)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /chi/chi
       common /achi/achi(maxat,maxat),ibcp
- 
+
       dimension r(maxat)
- 
+
       RR(x,y,z)=dsqrt(x**2+y**2+z**2)
- 
+
       do i=1,nat
        r(i)=RR(x-coord(1,i),y-coord(2,i),z-coord(3,i))
       enddo
       p=1.d0
       do j=1,nat
-       if(j.ne.ii) then   
+       if(j.ne.ii) then
         if (ibcp.eq.1) then
          chi=achi(ii,j)
         else
          chi=atr(ii)/atr(j)
         endif
         amu=(r(ii)-r(j))/dist(ii,j)
-        p=p*sbecke(amu)
+c       chi is passed explicitly (not via COMMON) so that pp/sbecke are
+c       safe to call from a parallel (OpenMP) region -- see wat/sbecke history.
+        p=p*sbecke(amu,chi)
        end if
       end do
       pp=p
       return
       end
 
-      function sbecke(amu)
+      function sbecke(amu,chi)
       implicit real*8 (a-h,o-z)
-      common /chi/chi
       common /iops/iopt(100)
       common /erf/aerf,ierf
 
