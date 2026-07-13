@@ -1,3 +1,29 @@
+!! ********************************************************************* !!
+!! subroutine: prenumint                                                 !!
+!! purpose: builds the atom-centered numerical integration grid, the     !!
+!!   value of every basis function at every grid point, the electron     !!
+!!   density at every grid point, and the becke/tfvc (or hirshfeld)      !!
+!!   atomic weight of every grid point for every atom. called once per   !!
+!!   iteration, right after build_integration_grid(); feeds numint_sat,  !!
+!!   numint_one and numint_two. !!
+!! arguments:                                                            !!
+!!   ndim      (in)  -- number of basis functions (leading dim of chp)   !!
+!!   itotps    (in)  -- total number of grid points (nat*iatps)          !!
+!!   nat0      (in)  -- number of atoms (leading dim of omp2)            !!
+!!   wp        (out) -- integration weight of each grid point            !!
+!!   omp       (out) -- becke/tfvc weight of each point for its own atom !!
+!!   omp2      (out) -- becke/tfvc (or hirshfeld) weight of each point   !!
+!!                       for every atom                                  !!
+!!   chp       (out) -- value of each basis function at each grid point  !!
+!!   rho       (out) -- electron density at each grid point              !!
+!!   pcoord    (out) -- xyz coordinates of each grid point               !!
+!!   ibaspoint (--)   -- qtaim basin assignment; unused here, the qtaim   !!
+!!                       grid-building block below is disabled           !!
+!!   iiter     (in)  -- scf iteration counter, only read by the          !!
+!!                       hirshfeld-iterative (ihirsh=2) branch           !!
+!! notes: the rho-building and weight-building loops are !$omp parallel  !!
+!!   do -- see the comment at each loop for the thread-safety argument.  !!
+!! ********************************************************************* !!
       subroutine prenumint(ndim,itotps,nat0,wp,omp,omp2,chp,rho,pcoord,ibaspoint,iiter)
       use basis_set, only: coord
       use ao_matrices
@@ -28,11 +54,6 @@ c IOPS
 
       if(iqtaim.eq.1) iallpo=1
       iatps=Nang*NRad
-
-!! wp(i) = integration weight of the ith grid point !!
-!! chp(i,j) = value of the jth atomic orbital at the ith grid point !!
-!! omp(i) = becke/tfvc weight of the ith point for the atom it belongs to !!
-!! coord(3,i) = xyz coordinates of ith atom !!
 
 c Building  pcoords
       ifut=1
@@ -343,6 +364,39 @@ c PSS
 CC
 CC
 CC
+!! ********************************************************************* !!
+!! subroutine: numint_sat                                                !!
+!! purpose: integrates the atomic-orbital overlap matrix per atom (sat)  !!
+!!   over the numerical grid built by prenumint. runs unconditionally    !!
+!!   for every calculation that does not request mulliken/lowdin/nao     !!
+!!   analysis (see main.f, "integrate atomic overlap by default") --     !!
+!!   ENPART, EOS, OSLO, bond orders and populations all consume sat.     !!
+!!   three mutually-exclusive integration schemes, selected by iallpo/   !!
+!!   iqtaim (from iopt): same-center only (iallpo=0), full multi-center  !!
+!!   (iallpo=1), and qtaim-basin (iqtaim=1).                             !!
+!! arguments:                                                            !!
+!!   ndim      (in)  -- number of basis functions (leading dim of sat)   !!
+!!   itotps    (in)  -- total number of grid points (nat*iatps)          !!
+!!   nat0      (in)  -- number of atoms (leading dim of omp2/sat)        !!
+!!   wp        (in)  -- integration weight of each grid point            !!
+!!   omp       (in)  -- becke/tfvc weight of each point for its own atom !!
+!!   omp2      (in)  -- becke/tfvc (or hirshfeld) weight of each point   !!
+!!                       for every atom                                  !!
+!!   chp       (in)  -- value of each basis function at each grid point  !!
+!!   ibaspoint (in)  -- qtaim basin assignment per grid point (qtaim     !!
+!!                       branch only)                                    !!
+!!   sat       (out) -- per-atom atomic-orbital overlap matrix           !!
+!! notes: the same-center-only and full-multi-center branches are        !!
+!!   !$omp parallel do -- see the comment at each loop for the           !!
+!!   thread-safety argument. the qtaim-basin branch is left serial: it   !!
+!!   writes to a data-dependent sat(mu,nu,icenter) index (icenter comes   !!
+!!   from ibaspoint(jfut), not from the loop variable), so different     !!
+!!   grid points can target the same sat entry -- a real race if         !!
+!!   parallelized naively. it is also currently untested (no QTAIM test  !!
+!!   in manifest.json) and ibaspoint is never populated in prenumint     !!
+!!   (the qtaim grid-building call is commented out there), so this      !!
+!!   branch is not reachable with valid data today regardless.           !!
+!! ********************************************************************* !!
       subroutine numint_sat(ndim,itotps,nat0,wp,omp,omp2,chp,ibaspoint,sat)
       use basis_set, only :s
       use ao_matrices
@@ -368,13 +422,6 @@ c IOPS
       iatps=nrad*nang
 
       if(iqtaim.eq.1) iallpo=1
-c
-c igr= number of basis functions
-c iatps = number of grid points per atom
-c wp(i) = integration weight of the ith grid point
-c chp(i,j) = value of the jth atomic orbital at the ith grid point
-c omp(i) =  becke weight of the ith point of the atom to which the point belongs
-c coord(3,i) = xyz coordinates of ith atom
 
 c Computing  atomic orbital overlap
          do mu=1,ndim
@@ -386,6 +433,13 @@ c Computing  atomic orbital overlap
          end do
 
        if(iallpo.eq.0) then
+!! parallel over (icenter,mu): each (icenter,mu,nu) triple accumulates !!
+!! its own reduction into the local x and writes only its own          !!
+!! sat(mu,nu,icenter)/sat(nu,mu,icenter) -- no two iterations touch the !!
+!! same sat element, and wp/chp/omp2 are shared, read-only inputs, so   !!
+!! this is safe as a plain parallel do. nu (inner, triangular in mu)    !!
+!! stays a serial loop nested inside each parallel (icenter,mu) pair.   !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,mu,nu,ifut,x)
         do icenter=1,nat
          do mu=1,ndim
           do nu=1,mu
@@ -393,17 +447,24 @@ c Computing  atomic orbital overlap
            do ifut=iatps*(icenter-1)+1,iatps*icenter
             x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*omp2(ifut,icenter)
            end do
-           sat(mu,nu,icenter)=x 
-           sat(nu,mu,icenter)=x 
+           sat(mu,nu,icenter)=x
+           sat(nu,mu,icenter)=x
           enddo
          enddo
         enddo
+!$OMP END PARALLEL DO
        end if
 
        if(iallpo.eq.1.and.iqtaim.eq.0) then
+!! same reasoning as the iallpo=0 branch above: parallel over          !!
+!! (icenter,mu), each (icenter,mu,nu) triple only ever writes its own  !!
+!! sat(mu,nu,icenter). this branch is the expensive one (an extra      !!
+!! jcenter/jfut sum over the whole grid per triple), so it's the       !!
+!! biggest win of the two. !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,mu,nu,jcenter,jfut,x)
         do icenter=1,nat
          do mu=1,ndim
-          do nu=1, mu 
+          do nu=1, mu
            x=0.d0
            do jcenter=1,nat
             do jfut=iatps*(jcenter-1)+1,iatps*jcenter
@@ -414,6 +475,7 @@ c Computing  atomic orbital overlap
           end do
          end do
         end do
+!$OMP END PARALLEL DO
 
        else if (iqtaim.eq.1) then
 
