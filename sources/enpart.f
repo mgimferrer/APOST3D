@@ -529,7 +529,15 @@
 !! THIS TWO CALLS ARE CRUCIAL !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
-          !DIR$ PARALLEL
+!! MG/CLAUDE: restored real OpenMP parallelization here -- the old !DIR$
+!! PARALLEL directive is an Intel-ifort-only auto-parallelization hint that
+!! gfortran does not understand, so this loop has been running serially
+!! since the migration off ifort. The istart/iend chunking already
+!! partitions the work by 'ik' with a private accumulator slot per ik
+!! (f3k(ik), exch_hfk(icenter,ik)), which is exactly the data layout an
+!! OMP PARALLEL DO over ik needs -- no restructuring required, just the
+!! actual directive. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
@@ -559,6 +567,7 @@
               exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
             end do
           end do
+!$OMP END PARALLEL DO
         end do
 
 !! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
@@ -606,7 +615,10 @@
           end do
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
-          !DIR$ PARALLEL
+!! MG/CLAUDE: same fix as the same-center block above -- real OMP PARALLEL
+!! DO in place of the dead !DIR$ PARALLEL Intel directive. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  chp2snifut,chp2snjfut,chp2sijfut,chp2siifut,i,j,f2)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
@@ -640,6 +652,7 @@
               exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3k(ik)
             end do
           end do
+!$OMP END PARALLEL DO
         end do
 
 !! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
@@ -796,7 +809,9 @@
 !! AGAIN THE TWO CALLS ARE CRUCIAL !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
-          !DIR$ PARALLEL
+!! MG/CLAUDE: same fix as above -- real OMP PARALLEL DO in place of the
+!! dead !DIR$ PARALLEL Intel directive. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
@@ -826,6 +841,7 @@
               exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
             end do
           end do
+!$OMP END PARALLEL DO
         end do
 
 !! ADDING THE TERMS INTO THE ORIGINAL coul0 MATRIX !!
@@ -1484,7 +1500,11 @@
 !! THE TWO CALLS ARE CRUCIAL !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
-          !DIR$ PARALLEL
+!! MG/CLAUDE: restored real OpenMP parallelization here -- see the RHF
+!! twin (numint_two) above for the full explanation. Same fix, same
+!! already-safe per-ik data layout (f3k(ik), exch_hfk(icenter,ik)). !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  i,j,f2,f2b)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
@@ -1528,6 +1548,7 @@
               exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
             end do
           end do
+!$OMP END PARALLEL DO
         end do
 
 !! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
@@ -1575,7 +1596,9 @@
           end do
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
-          !DIR$ PARALLEL
+!! MG/CLAUDE: same fix as the same-center block above. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  i,j,f2,f2b)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
@@ -1619,6 +1642,7 @@
               exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3k(ik)
             end do
           end do
+!$OMP END PARALLEL DO
         end do
 
 !! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
@@ -1773,7 +1797,9 @@
   !! AGAIN THE TWO CALLS ARE CRUCIAL !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-            !DIR$ PARALLEL
+!! MG/CLAUDE: same fix as above. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  i,j,f2,f2b)
             do ik=1,ithreads
               do ifut=istart(ik),iend(ik)
                 x0=wp(ifut)*omp2(ifut,icenter)
@@ -1817,8 +1843,9 @@
                 exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
               end do
             end do
+!$OMP END PARALLEL DO
           end do
-  
+
   !! ADDING THE TERMS INTO THE ORIGINAL coul0 MATRIX !!
           do icenter=1,nat
             do isum=1,ithreads
@@ -2647,7 +2674,10 @@ c  energetics
 !! THIS TWO CALLS ARE CRUCIAL !!
         call omp_set_dynamic(.false.)
         call omp_set_num_threads(ithreads)
-        !DIR$ PARALLEL
+!! MG/CLAUDE: restored real OpenMP parallelization here -- see numint_two
+!! (same file) for the full explanation; same fix, same already-safe
+!! per-ik data layout (f3k(ik), ecoul_k(icenter,ik)). !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
         do ik=1,ithreads
           do ifut=istart(ik),iend(ik)
             x0=wp(ifut)*omp2(ifut,icenter)
@@ -2666,6 +2696,7 @@ c  energetics
             ecoul_k(icenter,ik)=ecoul_k(icenter,ik)+f3k(ik)
           end do
         end do
+!$OMP END PARALLEL DO
       end do
 
 !! ADDING THE TERMS INTO THE ORIGINAL coul MATRIX !!
@@ -2706,7 +2737,8 @@ c  energetics
         end do
         istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
-        !DIR$ PARALLEL
+!! MG/CLAUDE: same fix as the same-center block above. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
         do ik=1,ithreads
           do ifut=istart(ik),iend(ik)
             x0=wp(ifut)*omp2(ifut,icenter)
@@ -2725,6 +2757,7 @@ c  energetics
             ecoul_ij(numpairnat,ik)=ecoul_ij(numpairnat,ik)+f3k(ik)
           end do
         end do
+!$OMP END PARALLEL DO
       end do
 
 !! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
