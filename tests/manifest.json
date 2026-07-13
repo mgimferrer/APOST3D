@@ -165,7 +165,7 @@
       "description": "Fluoromethane, RKS DFT — TFVC populations, fragment OSLO analysis",
       "tags": ["dft", "oslo", "tfvc", "rks", "fragments"],
       "timeout": 600,
-      "extra_input_files": ["CH3F-OSLOs.fchk", "CH3F-OSLOs-preortho.fchk"],
+      "extra_input_files": [],
       "keywords": [
         "TFVC",
         "OSLO", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION", "OSLO/PRINT-NON-ORTHO",
@@ -295,7 +295,7 @@
       "description": "Ferrate(VI) dianion, UKS — TFVC, QCHEM interface, fragment OSLO + EOS",
       "tags": ["dft", "eos", "oslo", "tfvc", "uks", "fragments", "openshell", "qchem"],
       "timeout": 600,
-      "extra_input_files": ["FeO4-2-OSLOs.fchk"],
+      "extra_input_files": [],
       "keywords": [
         "TFVC",
         "OSLO", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION",
