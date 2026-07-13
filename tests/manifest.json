@@ -268,6 +268,66 @@
           "tol_abs": 1e-3
         },
         {
+          "label": "Fe fragment EFO net occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 12.11696,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe fragment EFO gross occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 12.27814,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C fragment EFO net occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 6.77991,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C fragment EFO gross occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 6.85638,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe frag 1 EFO 11 net occupation",
+          "section": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\r?\\n\\s*Net occupation using[^\\n]*\\r?\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
+          "match_index": 11,
+          "ref": 0.8156,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Fe frag 1 EFO 11 gross occupation",
+          "section": "Gross occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\r?\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
+          "match_index": 11,
+          "ref": 0.8381,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "C frag 2 EFO 7 net occupation",
+          "section": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\r?\\n\\s*Net occupation using[^\\n]*\\r?\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
+          "match_index": 7,
+          "ref": 0.7473,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "C frag 2 EFO 7 gross occupation",
+          "section": "Gross occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\r?\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
+          "match_index": 7,
+          "ref": 0.7870,
+          "tol_abs": 1e-4
+        },
+        {
           "label": "Fe EOS alpha electrons (frag 1)",
           "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
