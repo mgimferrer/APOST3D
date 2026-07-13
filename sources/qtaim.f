@@ -19,9 +19,9 @@ C needs to be updated
       end
 
       function gxfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp), ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -83,9 +83,9 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       return
       end
       function gyfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp), ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -125,9 +125,9 @@ c      print *,'f',iact,f
       end
 
       function gzfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp),ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -436,9 +436,9 @@ c     $  2.0d0+(x(3)-coordnna(3,iiat))**2.0d0)
       end 
 
       function hxxfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp), ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -476,9 +476,9 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       end
       
       function hyyfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp),ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -517,9 +517,9 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
 
 
       function hzzfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp),ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -595,9 +595,9 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
 
 
       function hxyfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp),ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -639,9 +639,9 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       end
 
       function hxzfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp),ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)
@@ -683,9 +683,9 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       end
 
       function hzyfunct(x,y,z)
+      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /stv/ sp(nmax,nmax),tt(nmax,nmax)
       common /nat/ nat,igr,ifg,idum(4)
       common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp),ifill(nmax),ifiul(nmax)
       common /coeff/coeff(maxp,maxc)

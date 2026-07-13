@@ -12,6 +12,7 @@
       use basis_set
       use ao_matrices
       use integration_grid
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -21,7 +22,6 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /iops/iopt(100)
 

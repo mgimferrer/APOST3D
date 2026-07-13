@@ -167,11 +167,11 @@ c            cross-check
 !
       subroutine tonao(sat)
       use basis_set
+      use nao_mod, only: unao,ssnao !! replaces common /nao/ -- see modules.f90 !!
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /iops/iopt(100)
       common /filename/name0
-      common/nao/unao(nmax,nmax),ssnao(nmax,nmax)
       character*60 name0,name3
       dimension sat(nbasis,nbasis,natoms)
 
