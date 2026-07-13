@@ -87,7 +87,9 @@ apost3d: $(LIBXC_OBJ) $(OBJ_LIST) $(QUAD_OBJ)
 	  -o $(APOST3D_PATH)/apost3d
 
 ## LEBEDEV QUADRATURE OBJECT
-$(QUADDIR)/Lebedev-Laikov.o:
+## Not tracked in git (build artifact) — depends on its source so editing
+## Lebedev-Laikov.F actually triggers a rebuild (same class of fix as modules.o).
+$(QUADDIR)/Lebedev-Laikov.o: $(QUADDIR)/Lebedev-Laikov.F
 	$(FC) -c $(FFLAGS) $(QUADDIR)/Lebedev-Laikov.F -o $@
 
 ## LIBXC F90 INTERFACE OBJECTS
