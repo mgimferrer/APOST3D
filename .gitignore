@@ -39,3 +39,6 @@ tests/__pycache__
 tests/report/
 ## Misc
 nohup.out
+## AI-assistant reference doc — local working reference, not part of the
+## published repo (architecture notes, known issues, planned-work tracking).
+CLAUDE.md
