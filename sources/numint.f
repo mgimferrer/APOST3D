@@ -29,12 +29,12 @@ c IOPS
       if(iqtaim.eq.1) iallpo=1
       iatps=Nang*NRad
 
-c wp(i) = integration weight of the ith grid point
-c chp(i,j) = value of the jth atomic orbital at the ith grid point
-c omp(i) =  becke weight of the ith point of the atom to which the point belongs
-c coord(3,i) = xyz coordinates of ith atom
+!! wp(i) = integration weight of the ith grid point !!
+!! chp(i,j) = value of the jth atomic orbital at the ith grid point !!
+!! omp(i) = becke/tfvc weight of the ith point for the atom it belongs to !!
+!! coord(3,i) = xyz coordinates of ith atom !!
 
-c Building  pcoords 
+c Building  pcoords
       ifut=1
       do icenter=1,nat
        do k=1,nrad 
@@ -63,8 +63,13 @@ c Building  pcoords
       ipoints=iatps*nat
       write(*,'(2x,a22,x,i9)') 'Number of grid points:',ipoints         
 
-c Building rho 
-      do ifut=1,itotps   
+c Building rho
+!! parallel over grid points: each ifut only reads the shared, read-only !!
+!! density matrix p and its own row chp(ifut,:), and writes only its own !!
+!! rho(ifut) -- no dependency between iterations, so a plain parallel do !!
+!! over ifut is safe. !!
+!$OMP PARALLEL DO PRIVATE(ifut,mu,nu,x)
+      do ifut=1,itotps
         x=0.0d0
         do mu=1,igr
          do nu=mu+1,igr
@@ -74,10 +79,21 @@ c Building rho
         end do
         rho(ifut)=x
       end do
+!$OMP END PARALLEL DO
 c Building aim weights for all gridpoints
-       ifut=1
+!! parallel over (icenter,k) grid-point pairs. ifut is now computed !!
+!! directly from icenter/k instead of carried as a serially-incremented !!
+!! counter, since a plain "ifut=ifut+1" is not safe once the loop is !!
+!! split across threads -- the computed form gives the exact same values !!
+!! (icenter=1,k=1..iatps -> ifut=1..iatps, icenter=2 -> ifut=iatps+1..2*iatps, !!
+!! etc.) as the original serial counter, so results are unchanged. each !!
+!! iteration writes only its own omp(ifut)/omp2(ifut,:) and reads shared, !!
+!! read-only data (pcoord); wat()/wathirsh() are themselves thread-safe !!
+!! (no shared mutable state -- see wat.f, chi is now a passed argument). !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,k,ifut,xx0,yy0,zz0,jcenter)
        do icenter=1,nat
         do k=1,iatps
+          ifut=(icenter-1)*iatps+k
           xx0=pcoord(ifut,1)
           yy0=pcoord(ifut,2)
           zz0=pcoord(ifut,3)
@@ -89,9 +105,9 @@ c Building aim weights for all gridpoints
            end if
           end do
           omp(ifut)=wat(icenter,xx0,yy0,zz0)
-          ifut=ifut+1
         enddo
        enddo
+!$OMP END PARALLEL DO
        if(ihirsh.eq.2) then 
          call wathirshit3(rho,iatps,wp,omp2,nat0,iiter)
        end if
