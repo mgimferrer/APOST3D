@@ -158,6 +158,8 @@ util: eos_aom
 #   TAGS=<list>     run only tests that carry one of these comma-separated tags
 #   NTHREADS=<n>    OMP_NUM_THREADS for test runs (default: 1)
 #   VERBOSE=1       show check details even for passing checks
+#   KEEP=1          save each test's raw .apost output to tests/report/outputs/
+#                   instead of discarding it with the run's temp directory
 #
 # Examples:
 #   make test                # fast tier only (excludes tests tagged 'slow')
@@ -167,6 +169,7 @@ util: eos_aom
 #                             # default 'slow' exclusion
 #   make test-full           # everything, fast + slow, no exclusion
 #   make test VERBOSE=1
+#   make test KEEP=1         # inspect tests/report/outputs/<name>.apost afterwards
 #   make update-ref          # regenerate reference outputs after intentional change
 
 TESTS_DIR    := $(APOST3D_PATH)/tests
@@ -180,6 +183,7 @@ TEST_NTHREADS?= 1
 _TEST_FILTER  := $(if $(FILTER),--filter $(FILTER),)
 _TEST_TAGS    := $(if $(TAGS),--tags $(TAGS),)
 _TEST_VERBOSE := $(if $(VERBOSE),--verbose,)
+_TEST_KEEP    := $(if $(KEEP),--keep-output,)
 # Default tier: skip tests tagged 'slow' unless the caller explicitly asked
 # for tags (e.g. TAGS=slow) or ran 'make test-full'.
 _TEST_EXCLUDE := $(if $(TAGS),,--exclude-tags slow)
@@ -192,7 +196,7 @@ test: all
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
 	  --nthreads $(TEST_NTHREADS) \
-	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE)
+	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE) $(_TEST_KEEP)
 
 ## Run tests WITHOUT rebuilding first (useful during test development)
 test-only:
@@ -203,7 +207,7 @@ test-only:
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
 	  --nthreads $(TEST_NTHREADS) \
-	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE)
+	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE) $(_TEST_KEEP)
 
 ## Run EVERYTHING, including tests tagged 'slow' — no exclusion applied.
 test-full: all
@@ -214,7 +218,7 @@ test-full: all
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
 	  --nthreads $(TEST_NTHREADS) \
-	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_VERBOSE)
+	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_VERBOSE) $(_TEST_KEEP)
 
 .PHONY: test-full
 

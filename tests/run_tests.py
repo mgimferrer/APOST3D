@@ -44,6 +44,9 @@ Options
   --nthreads N      OMP_NUM_THREADS (default: 1)
   --verbose         Show check details for passing checks too
   --no-color        Disable ANSI colour output
+  --keep-output[=DIR]  Save each test's raw .apost output (each test runs in
+                    a throwaway temp dir that's normally deleted on exit;
+                    default location: tests/report/outputs/)
 """
 
 import argparse
@@ -111,6 +114,11 @@ def parse_args():
                    help="Show check details even for passing checks")
     p.add_argument("--no-color",   action="store_true",
                    help="Disable ANSI colour output")
+    p.add_argument("--keep-output", nargs="?", const=True, default=False,
+                   metavar="DIR",
+                   help="Save each test's raw .apost output (default: "
+                        "<tests>/report/outputs/) instead of discarding it "
+                        "with the run's temp directory")
     return p.parse_args()
 
 
@@ -246,9 +254,16 @@ def evaluate_check(output: str, check: dict) -> dict:
 # ── Test execution ────────────────────────────────────────────────────────────
 
 
-def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str) -> dict:
+def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
+             keep_output_dir: Path = None) -> dict:
     """
     Execute one test case and return a result dict.
+
+    Each run happens in its own throwaway temp directory (auto-deleted on
+    exit) so tests never leave .apost files behind in compiler-testset/ or
+    tests/. Pass keep_output_dir to additionally copy the raw <name>.apost
+    output there before it's deleted — useful for manually inspecting a run
+    (make test KEEP=1).
 
     The binary is invoked as:
         cd <rundir> && apost3d <name>
@@ -313,6 +328,10 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str) -> dict:
 
         elapsed = time.time() - t0
         output  = outfile.read_text(errors="replace")
+
+        if keep_output_dir is not None:
+            keep_output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy(outfile, keep_output_dir / f"{name}.apost")
 
         # Evaluate all checks
         check_results = [evaluate_check(output, c) for c in test.get("checks", [])]
@@ -599,6 +618,13 @@ def main():
             print(yellow(f"No tests remain after --exclude-tags {args.exclude_tags!r}"))
             sys.exit(0)
 
+    # ── Resolve --keep-output ────────────────────────────────────────────────
+    keep_output_dir = None
+    if args.keep_output is True:
+        keep_output_dir = _tests_dir() / "report" / "outputs"
+    elif args.keep_output:
+        keep_output_dir = Path(args.keep_output)
+
     # ── Validate binary ──────────────────────────────────────────────────────
     if not binary.exists() or not os.access(str(binary), os.X_OK):
         print(red(f"ERROR: binary not found or not executable: {binary}"),
@@ -613,6 +639,7 @@ def main():
         f"  APOST-3D Test Suite  ·  {len(tests)} test(s)"
         f"  ·  {args.nthreads} thread(s)"
         + ("  ·  verbose" if args.verbose else "")
+        + (f"  ·  keeping output -> {keep_output_dir}" if keep_output_dir else "")
     )
     print("═" * 64)
     print()
@@ -628,7 +655,7 @@ def main():
         print(f"  [{idx:2d}/{len(tests)}]  {bold(name):<30s} {tags}")
         sys.stdout.flush()
 
-        result = run_test(test, binary, input_dir, args.nthreads)
+        result = run_test(test, binary, input_dir, args.nthreads, keep_output_dir)
         results.append(result)
 
         print_test_result(result, test, idx, len(tests), args.verbose)

@@ -175,6 +175,7 @@ Reports are written to `tests/report/last_run.txt` and `last_run.html`.
 | `make test TAGS=enpart,oslo` | Run tests tagged `enpart` OR `oslo` |
 | `make test VERBOSE=1` | Show check details for passing tests too |
 | `make test TEST_NTHREADS=4` | Use 4 OMP threads per test |
+| `make test KEEP=1` | Save each test's raw `.apost` output to `tests/report/outputs/` (each test normally runs in a throwaway temp dir that's deleted on exit) |
 | `make update-ref` | Regenerate reference outputs after intentional code changes |
 
 You can also invoke the runner directly for more options:
