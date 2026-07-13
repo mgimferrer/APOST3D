@@ -151,7 +151,7 @@ done
 echo ""
 
 # ------------------------------------------------------------------------------
-# Copy F90 interfaces needed by Makefile_gfortran
+# Copy F90 interfaces needed by the main Makefile
 # ------------------------------------------------------------------------------
 cp src/libxc_funcs.f90 "$LIBXCDIR/"
 cp src/libxc.f90       "$LIBXCDIR/"
@@ -165,5 +165,4 @@ echo "            $LIBXCDIR/libxc.f90"
 echo "============================================================"
 echo ""
 echo "Next step:"
-echo "  mkdir -p \$APOST3D_PATH/objects"
-echo "  make -f \$APOST3D_PATH/Makefile_gfortran -C \$APOST3D_PATH all"
+echo "  bash \$APOST3D_PATH/make_compile.sh"
