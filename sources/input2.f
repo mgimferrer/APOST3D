@@ -1,6 +1,9 @@
-      subroutine input  
+      subroutine input
       use basis_set
       use ao_matrices
+      use effao_mod, only: allocate_effao
+      use nao_mod, only: allocate_nao
+      use stv_mod, only: allocate_stv
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -59,6 +62,13 @@ ccccccccccccccccccccccccccccc
       nat=natoms
 
       call build_ao_matrices(igr) !MMO- WIP!
+
+      !! allocated here, right alongside build_ao_matrices, since igr and !!
+      !! nat are both known from this point on -- see modules.f90 for what !!
+      !! each of these three replaces (former common /effao/, /nao/, /stv/) !!
+      call allocate_effao(igr,nat)
+      call allocate_nao(igr)
+      call allocate_stv(igr)
 
       igr0=int_locate(15,"Number of independ",ilog)
       if(igr.ne.igr0) write(*,*) 'WARNING, some basis functions have bee

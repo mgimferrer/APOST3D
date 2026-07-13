@@ -564,3 +564,97 @@
    END SUBROUTINE build_integration_grid
 
    END MODULE integration_grid
+
+
+   !! ********************************************************************* !!
+   !! module: effao_mod                                                     !!
+   !! purpose: replaces the legacy 'common /effao/' block (nmax x nmax,     !!
+   !!   fixed at compile time regardless of the real system size). holds    !!
+   !!   the effective-atomic-orbital population matrices used by effao.f,   !!
+   !!   print.f and ueos.f. allocated to the actual (igr,nat) once those    !!
+   !!   are known from the .fchk, so there is no silent size cap anymore.   !!
+   !! ********************************************************************* !!
+   MODULE effao_mod
+   real*8, allocatable :: p0(:,:)    !! p0(igr,igr)    -- effective AO population matrix
+   real*8, allocatable :: p0net(:,:) !! p0net(igr,nat) -- net population, per basis fn/atom
+   real*8, allocatable :: p0gro(:,:) !! p0gro(igr,nat) -- gross population, per basis fn/atom
+   integer, allocatable :: ip0(:)    !! ip0(nat)       -- per-atom effective AO bookkeeping
+
+   CONTAINS
+
+   !! --------------------------------------------------------------------- !!
+   !! subroutine: allocate_effao                                            !!
+   !! purpose: allocate the effao_mod arrays to the real system size.       !!
+   !!   call once, right after igr/nat become known -- see input2.f, next   !!
+   !!   to the existing call to build_ao_matrices(igr), which follows the   !!
+   !!   same pattern for the ao_matrices module above.                      !!
+   !! arguments:                                                            !!
+   !!   igr (in) -- number of basis functions                               !!
+   !!   nat (in) -- number of atoms                                         !!
+   !! --------------------------------------------------------------------- !!
+   SUBROUTINE allocate_effao(igr,nat)
+   integer, intent(in) :: igr,nat
+
+   allocate(p0(igr,igr),p0net(igr,nat),p0gro(igr,nat),ip0(nat))
+
+   END SUBROUTINE allocate_effao
+
+   END MODULE effao_mod
+
+
+   !! ********************************************************************* !!
+   !! module: nao_mod                                                       !!
+   !! purpose: replaces the legacy 'common /nao/' block (same nmax x nmax   !!
+   !!   cap as effao_mod above). holds the natural-atomic-orbital matrices  !!
+   !!   used by effao.f and mulliken.f.                                     !!
+   !! ********************************************************************* !!
+   MODULE nao_mod
+   real*8, allocatable :: unao(:,:)  !! unao(igr,igr)  -- natural AO transformation matrix
+   real*8, allocatable :: ssnao(:,:) !! ssnao(igr,igr) -- overlap matrix in the NAO basis
+
+   CONTAINS
+
+   !! --------------------------------------------------------------------- !!
+   !! subroutine: allocate_nao                                              !!
+   !! purpose: allocate the nao_mod arrays to the real system size. call    !!
+   !!   once, right after igr becomes known -- see allocate_effao above.    !!
+   !! arguments:                                                            !!
+   !!   igr (in) -- number of basis functions                               !!
+   !! --------------------------------------------------------------------- !!
+   SUBROUTINE allocate_nao(igr)
+   integer, intent(in) :: igr
+
+   allocate(unao(igr,igr),ssnao(igr,igr))
+
+   END SUBROUTINE allocate_nao
+
+   END MODULE nao_mod
+
+
+   !! ********************************************************************* !!
+   !! module: stv_mod                                                       !!
+   !! purpose: replaces the legacy 'common /stv/' block (same nmax x nmax   !!
+   !!   cap as effao_mod above). holds the QTAIM overlap/kinetic-energy-    !!
+   !!   related matrices used by qtaim.f.                                   !!
+   !! ********************************************************************* !!
+   MODULE stv_mod
+   real*8, allocatable :: sp(:,:) !! sp(igr,igr) -- QTAIM overlap-related matrix
+   real*8, allocatable :: tt(:,:) !! tt(igr,igr) -- QTAIM kinetic-energy-related matrix
+
+   CONTAINS
+
+   !! --------------------------------------------------------------------- !!
+   !! subroutine: allocate_stv                                              !!
+   !! purpose: allocate the stv_mod arrays to the real system size. call    !!
+   !!   once, right after igr becomes known -- see allocate_effao above.    !!
+   !! arguments:                                                            !!
+   !!   igr (in) -- number of basis functions                               !!
+   !! --------------------------------------------------------------------- !!
+   SUBROUTINE allocate_stv(igr)
+   integer, intent(in) :: igr
+
+   allocate(sp(igr,igr),tt(igr,igr))
+
+   END SUBROUTINE allocate_stv
+
+   END MODULE stv_mod

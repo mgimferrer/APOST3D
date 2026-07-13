@@ -5,9 +5,10 @@
 !! ***** !!
 
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
-      
+
       use integration_grid
-      
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+
       implicit real*8(a-h,o-z)
       
       include 'parameter.h'
@@ -19,7 +20,6 @@
       common /iops/iopt(100)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/qat(maxat,2),qsat(maxat,2)
 
@@ -197,11 +197,12 @@
 
       subroutine eos_analysis(idobeta,icase,thres)
 
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+
       implicit real*8(a-h,o-z)
-      
+
       include 'parameter.h'
-      
-      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
+
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /atlist/iatlist(maxat),icuat
       common /iops/iopt(100)
@@ -421,6 +422,8 @@
 
       use basis_set
       use ao_matrices
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+      use nao_mod, only: unao,ssnao !! replaces common /nao/ -- see modules.f90 !!
 
       implicit real*8(A-H,O-Z)
 
@@ -430,8 +433,6 @@
       common /iops/iopt(100)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
-      common /nao/unao(nmax,nmax),ssnao(nmax,nmax)
 
       dimension iao_frag(nmax)
 
@@ -621,6 +622,7 @@ c
 
       use basis_set
       use ao_matrices
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
 
       implicit real*8(A-H,O-Z)
 
@@ -630,7 +632,6 @@ c
       common /iops/iopt(100)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common  /filename/name0
 
       character*(60) name0,name
@@ -760,6 +761,7 @@ c end loop over fragments
       subroutine uefomo(itotps,ndim,omp,chp,sat,wp,omp2,icase)
       use integration_grid
       use ao_matrices, only :c,cb
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       integer,intent(in) :: itotps,ndim
@@ -768,7 +770,6 @@ c end loop over fragments
       common /iops/iopt(100)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/qat(maxat,2),qsat(maxat,2)
       dimension chp(itotps,ndim),omp(itotps),omp2(itotps,nat)
@@ -971,11 +972,11 @@ c
 !!!
       subroutine ueffaomull2(p,icase)
       use basis_set
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(100)
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /atlist/iatlist(maxat),icuat
 !      dimension p(nmax,nmax)
@@ -1161,12 +1162,12 @@ c end loop over atoms
       subroutine ueffaolow2(p,icase)
       use basis_set
       use integration_grid
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(100)
       common /atlist/iatlist(maxat),icuat
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
 !      dimension p(nmax,nmax)
       character*(5) key
@@ -1366,6 +1367,7 @@ c end loop over atoms
 
       subroutine ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
       use integration_grid
+      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       integer,intent(in) :: itotps,ndim
@@ -1373,7 +1375,6 @@ c end loop over atoms
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /iops/iopt(100)
       common /atlist/iatlist(maxat),icuat
-      common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/qat(maxat,2),qsat(maxat,2)
       dimension chp(itotps,ndim),omp(itotps),omp2(itotps,nat)
