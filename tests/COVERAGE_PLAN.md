@@ -4,7 +4,8 @@ Working plan for building out `tests/manifest.json` toward a solid regression
 suite. Derived by reading the actual keyword dispatch in `sources/main.f`
 (`readchar`/`iopt` wiring) and the downstream subroutines it calls — not just
 the keyword list — so the compatibility/redundancy notes below reflect what
-the code actually does, not just what's documented in `DOCUMENTATION.md`.
+the code actually does, not just what's documented on the
+[hosted docs site](https://apost3d.readthedocs.io).
 
 **Status: 2026-07-13.** Current suite has 5 tests (17/82 keywords covered per
 `make coverage`). This plan is the map for closing that gap. Nothing here has
