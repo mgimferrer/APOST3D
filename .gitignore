@@ -44,3 +44,5 @@ nohup.out
 ## AI-assistant reference doc — local working reference, not part of the
 ## published repo (architecture notes, known issues, planned-work tracking).
 CLAUDE.md
+## Sphinx build output (Read the Docs builds this itself; not tracked)
+docs/build/
