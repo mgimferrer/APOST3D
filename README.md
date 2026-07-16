@@ -7,50 +7,20 @@ A Fortran-based code developed at the Universitat de Girona (UdG) by P. Salvador
 Builds with **GCC/gfortran** — free, open-source, and available on every Linux
 distribution (no Intel compiler or license required).
 
+📖 **Full documentation:** https://apost3d.readthedocs.io
+
 ## Shortcuts
 
 * [Installation](#installation)
 * [How to use](#how-to-use)
 * [Running the test suite](#running-the-test-suite)
-* [Troubleshooting](#troubleshooting)
 * [Documentation](#documentation)
 * [Cite the code](#citations)
 * [Bug reports and feature requests](#bug-reports-and-feature-requests)
 
 ## Installation
 
-### Prerequisites
-
-GCC/gfortran **10 or newer** (12+ recommended), plus `make`.
-
-**Debian / Ubuntu / Linux Mint**
-```bash
-sudo apt update
-sudo apt install gfortran gcc make
-```
-
-**Fedora / RHEL / Rocky Linux**
-```bash
-sudo dnf install gcc-gfortran gcc make
-```
-
-**openSUSE**
-```bash
-sudo zypper install gcc-fortran gcc make
-```
-
-**macOS (via Homebrew)**
-```bash
-brew install gcc
-# gfortran ships bundled with gcc, as e.g. gfortran-14
-```
-
-Verify the version before continuing:
-```bash
-gfortran --version   # must be >= 10.0
-```
-
-### Building from source
+Requires GCC/gfortran **10 or newer** (12+ recommended) and `make`.
 
 ```bash
 # 1. Clone the repository
@@ -67,165 +37,43 @@ bash compile_libxc.sh
 bash make_compile.sh
 ```
 
-`make_compile.sh` is the recommended entry point — it checks your gfortran
-version up front, calls the `Makefile` for you, and (on macOS) ad-hoc
-code-signs the binaries and smoke-tests that they actually launch, catching
-the most common install problems immediately with a clear message instead of
-a cryptic failure on your first real calculation.
-
-Useful flags:
-```bash
-bash make_compile.sh --clean        # force a full rebuild
-bash make_compile.sh --nthreads 8   # OMP_NUM_THREADS to use for test runs
-bash make_compile.sh --help
-```
-
-If you'd rather drive `make` directly (custom build setups, CI, etc.):
-```bash
-make -C $APOST3D_PATH all      # build apost3d, apost3d-eos, eos_aom
-make -C $APOST3D_PATH clean    # remove all objects and binaries
-```
-
-### Verify the install
-
-```bash
-make -C $APOST3D_PATH test
-```
-
-See [Running the test suite](#running-the-test-suite) below — a clean pass
-across all active tests is the best confirmation your build is sound.
+Per-distro prerequisite commands, useful `make_compile.sh` flags, driving
+`make` directly, and verifying the install are covered in the
+[Installation](https://apost3d.readthedocs.io/en/latest/installation.html)
+page of the full documentation.
 
 ## How to use
 
 ```bash
-export OMP_NUM_THREADS=1     # single-core for now; see note below
 ulimit -s unlimited          # the code uses large stack-allocated arrays
+export OMP_NUM_THREADS=4     # set to the number of cores you want to use
 
 $APOST3D_PATH/apost3d jobname > jobname.apost 2>&1
 ```
 
 `jobname.fchk` and `jobname.inp` must be present in the working directory.
-Correlated-wavefunction analyses (CASSCF, DMRG) also need `jobname.dm1`/`.dm2`
-(1-/2-RDMs in the MO basis).
+Correlated-wavefunction analyses (CASSCF, DMRG) also need `jobname.dm1`/`.dm2`.
 
-| File | Contents |
-|---|---|
-| `jobname.fchk` | Gaussian formatted checkpoint (wavefunction data) |
-| `jobname.inp` | APOST-3D keyword input |
-| `jobname.dm1` | 1-RDM in MO basis (CASSCF/DMRG only) |
-| `jobname.dm2` | 2-RDM in MO basis (CASSCF/DMRG only) |
-
-A detailed description of the input file format and all available keywords is
-in the [Documentation](#documentation).
-
-**On threads**: explicit OpenMP parallelization of the numerical integration
-routines is planned but not yet implemented — `OMP_NUM_THREADS=1` is the
-correct setting for now regardless of how many cores are available.
+The full input-file format and keyword reference is in the
+[Documentation](#documentation).
 
 ## Running the test suite
-
-A regression test suite validates numerical output against reference values
-for a handful of representative systems (RKS/UKS DFT, fragment analysis,
-OSLO, EOS, QCHEM interface). It's the fastest way to confirm a build is
-working correctly, and the main safety net when modifying the code.
 
 ```bash
 make test          # fast tier (~2 min)
 make test-full      # everything, including the slower C2H6-B3LYP case
 ```
 
-```
-════════════════════════════════════════════════════════════════
-  APOST-3D Test Suite  ·  4 test(s)  ·  1 thread(s)
-════════════════════════════════════════════════════════════════
-
-  [ 1/4]  H2O-T-B3LYP                    dft enpart spin tfvc rks
-           (10s)
-           ✓  Normal Termination
-           ✓  Total KS-DFT energy (au)              got -76.22411   ref -76.22411   Δ 0.0e+00
-           ...
-           PASSED  (10/10 checks)
-  ...
-════════════════════════════════════════════════════════════════
-  ✓  H2O-T-B3LYP                          10s
-  ✓  CH3F                                  0s
-  ✓  FeCO2-PBEPBE                          0s
-  ✓  FeO4-2                                2s
-
-  4 PASSED   (12s total)
-════════════════════════════════════════════════════════════════
-```
-
-| Command | Description |
-|---|---|
-| `make test` | Build + run the fast-tier tests (excludes tests tagged `slow`) |
-| `make test-only` | Run fast-tier tests without rebuilding |
-| `make test-full` | Build + run every test, including the `slow` tier |
-| `make test TAGS=slow` | Run just the `slow` tier (e.g. `C2H6-B3LYP`) |
-| `make test FILTER=H2O` | Run only tests whose name contains `H2O` |
-| `make test TAGS=enpart` | Run only tests tagged `enpart` |
-| `make test VERBOSE=1` | Show check details for passing tests too |
-| `make test KEEP=1` | Save each test's raw `.apost` output to `tests/report/outputs/` |
-| `make update-ref` | Regenerate reference outputs after an intentional code change |
-
-Or invoke the runner directly for more options:
-```bash
-python3 tests/run_tests.py --help
-```
-
-### Active test cases
-
-| System | Description | Tags |
-|--------|-------------|------|
-| `H2O-T-B3LYP` | Water, RKS B3LYP — TFVC, ENPART (DFT+IQA), local spin | `dft enpart spin tfvc rks` |
-| `CH3F` | Fluoromethane, RKS DFT — TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
-| `FeCO2-PBEPBE` | Iron dicarbonyl⁺, UKS PBE — TFVC, fragment EOS (open-shell) | `dft eos effao tfvc uks fragments openshell` |
-| `FeO4-2` | Ferrate(VI)²⁻, UKS — TFVC, QCHEM interface, OSLO+EOS | `dft eos oslo tfvc uks fragments openshell qchem` |
-| `C2H6-B3LYP` | Ethane, RKS B3LYP — full ENPART, THREBOD/MOD-GRIDTWOEL (~85s) | `... slow` — `make test-full` or `make test TAGS=slow` |
-
-### Adding a new test case
-
-1. Place `SystemName.fchk` and `SystemName.inp` in `compiler-testset/`.
-2. Generate and sanity-check a reference run:
-   ```bash
-   cd compiler-testset && ulimit -s unlimited
-   ../apost3d SystemName > SystemName.apost 2>&1   # confirm "Normal Termination"
-   cp SystemName.apost ../tests/reference/SystemName.apost
-   ```
-3. Add an entry to `tests/manifest.json` (copy an existing similar test and
-   adapt the tags, patterns, and reference values).
-4. `python3 tests/run_tests.py --filter SystemName` until the checks pass.
-5. Commit the input files, the reference output, and the manifest entry together.
-
-## Troubleshooting
-
-**`STOP The required input filename is missing`**
-Normal — the program requires a job name argument (`apost3d jobname`).
-
-**Segmentation fault on large jobs**
-Run `ulimit -s unlimited` before launching; the code uses large stack-allocated arrays.
-
-**`cannot find -lxcf90` or `-lxc`**
-libxc wasn't built, or `APOST3D_PATH` isn't set. Re-run `bash compile_libxc.sh`
-with `APOST3D_PATH` exported.
-
-**Compiler version too old**
-`gfortran --version` must report 10 or newer (`-fallow-argument-mismatch`
-requires GCC 10+).
-
-**macOS: binary fails to launch (`dyld`, "Library not loaded", killed on start)**
-`make_compile.sh` ad-hoc code-signs and smoke-tests all three binaries
-automatically. If it still fails, or you rebuilt without it:
-```bash
-xattr -cr $APOST3D_PATH
-codesign --force --sign - $APOST3D_PATH/apost3d
-codesign --force --sign - $APOST3D_PATH/apost3d-eos
-codesign --force --sign - $APOST3D_PATH/eos_aom
-```
+Test options, the active test list, and how to add a new test case are
+covered in the
+[Running the test suite](https://apost3d.readthedocs.io/en/latest/testing.html)
+page of the full documentation.
 
 ## Documentation
 
-The `APOST-3D` documentation is [here](DOCUMENTATION.md).
+Full documentation — installation, usage, the complete input-file keyword
+reference, worked examples, and troubleshooting — is hosted at
+**https://apost3d.readthedocs.io**.
 
 ## Citations
 
