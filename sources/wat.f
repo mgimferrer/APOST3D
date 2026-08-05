@@ -183,8 +183,8 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
 C Print if there are maxima or no minima along interatomic axis
       if(ncmax.ne.0.or.ncmin.eq.0)then
       write(*,'(a18,2i4)')' Info: atom pair: ',iatom,jatom
-      write(*,32)ncmax,' maximum and ',ncmin,' minima of density between
-     $ atoms ',iatom,' and ',jatom 
+      write(*,32)ncmax,' maximum and ',ncmin,
+     $' minima of density between atoms',iatom,' and ',jatom
       write(*,*)'Max:',(kmax(i),i=1,ncmax),'Min:',(kmin(i),i=1,ncmin)
 32    format(i2,a13,i2,a32,i4,a5,i4)
       endif
