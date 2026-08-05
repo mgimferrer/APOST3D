@@ -11,9 +11,9 @@ name: APOST-3D build & test
 #   3. add an entry to tests/manifest.json
 #   4. commit — CI picks it up automatically, no workflow edits required.
 #
-# Expensive cases should be tagged "slow" in the manifest and excluded from
-# the default `make test` run (see CLAUDE.md planned work); this workflow
-# intentionally only runs the default (fast) tier to keep CI quick.
+# `make test` always runs every case, no tiers — see CLAUDE.md. NTHREADS is
+# set to the runner's core count to exercise the OpenMP paths and keep CI
+# reasonably quick.
 
 "on":
   push:
@@ -58,7 +58,7 @@ jobs:
         run: bash make_compile.sh
 
       - name: Run regression test suite
-        run: make test-only VERBOSE=1
+        run: make test NTHREADS=$(nproc)
 
       - name: Upload test reports
         if: always()

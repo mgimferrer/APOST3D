@@ -6,47 +6,62 @@ OSLO, EOS, QCHEM interface). It's the fastest way to confirm a build is
 working correctly, and the main safety net when modifying the code.
 
 ```bash
-make test          # fast tier (~2 min)
-make test-full      # everything, including the slower C2H6-B3LYP case
+make test               # build (if needed) + run the entire suite, 1 thread
+make test NTHREADS=4    # same, using 4 threads
+```
+
+`make test` always runs every case in `tests/manifest.json` — there are no
+fast/slow tiers to remember or opt into. If a test ever becomes a real
+bottleneck, the fix is to speed up or rework that specific test, not to
+exclude it from the default run.
+
+```{admonition} Same flag for building and testing
+:class: tip
+
+`NTHREADS=<n>` is the one flag `make test` takes, and it's spelled and
+means exactly the same thing as `bash make_compile.sh NTHREADS=<n>` — see
+[Installation](installation.md).
 ```
 
 ```text
 ════════════════════════════════════════════════════════════════
-  APOST-3D Test Suite  ·  4 test(s)  ·  1 thread(s)
+  APOST-3D Test Suite  ·  5 test(s)  ·  4 thread(s)
 ════════════════════════════════════════════════════════════════
 
-  [ 1/4]  H2O-T-B3LYP                    dft enpart spin tfvc rks
-           (10s)
+  [ 1/5]  H2O-T-B3LYP                    dft enpart spin tfvc rks
+           (4s)
            ✓  Normal Termination
            ✓  Total KS-DFT energy (au)              got -76.22411   ref -76.22411   Δ 0.0e+00
            ...
            PASSED  (10/10 checks)
   ...
 ════════════════════════════════════════════════════════════════
-  ✓  H2O-T-B3LYP                          10s
-  ✓  CH3F                                  0s
-  ✓  FeCO2-PBEPBE                          0s
-  ✓  FeO4-2                                2s
+  ✓  H2O-T-B3LYP                          4s
+  ✓  CH3F                                 0s
+  ✓  FeCO2-PBEPBE                         0s
+  ✓  FeO4-2                               1s
+  ✓  C2H6-B3LYP                          22s
 
-  4 PASSED   (12s total)
+  5 PASSED   (27s total)
 ════════════════════════════════════════════════════════════════
 ```
 
 | Command | Description |
 |---|---|
-| `make test` | Build + run the fast-tier tests (excludes tests tagged `slow`) |
-| `make test-only` | Run fast-tier tests without rebuilding |
-| `make test-full` | Build + run every test, including the `slow` tier |
-| `make test TAGS=slow` | Run just the `slow` tier (e.g. `C2H6-B3LYP`) |
-| `make test FILTER=H2O` | Run only tests whose name contains `H2O` |
-| `make test TAGS=enpart` | Run only tests tagged `enpart` |
-| `make test VERBOSE=1` | Show check details for passing tests too |
-| `make test KEEP=1` | Save each test's raw `.apost` output to `tests/report/outputs/` |
-| `make update-ref` | Regenerate reference outputs after an intentional code change |
+| `make test` | Build (if needed) + run every test, 1 thread |
+| `make test NTHREADS=<n>` | Same, using `<n>` threads |
+| `make update-ref [NTHREADS=<n>]` | Regenerate reference outputs after an intentional code change |
+| `make help` | List all available make targets and flags |
 
-Or invoke the runner directly for more options:
+For narrower runs during test development — a single test by name, a tag
+filter, verbose per-check output, keeping the raw `.apost` output — call
+the runner directly instead of going through `make`:
 
 ```bash
+python3 tests/run_tests.py --filter H2O
+python3 tests/run_tests.py --tags enpart
+python3 tests/run_tests.py --verbose
+python3 tests/run_tests.py --keep-output
 python3 tests/run_tests.py --help
 ```
 
@@ -58,7 +73,9 @@ python3 tests/run_tests.py --help
 | `CH3F` | Fluoromethane, RKS DFT — TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `FeCO2-PBEPBE` | Iron dicarbonyl⁺, UKS PBE — TFVC, fragment EOS (open-shell), including per-EFO net/gross occupation checks | `dft eos effao tfvc uks fragments openshell` |
 | `FeO4-2` | Ferrate(VI)²⁻, UKS — TFVC, QCHEM interface, OSLO+EOS | `dft eos oslo tfvc uks fragments openshell qchem` |
-| `C2H6-B3LYP` | Ethane, RKS B3LYP — full ENPART, THREBOD/MOD-GRIDTWOEL (~85s) | `... slow` — `make test-full` or `make test TAGS=slow` |
+| `C2H6-B3LYP` | Ethane, RKS B3LYP — full ENPART, THREBOD/MOD-GRIDTWOEL, ~85s single-threaded | `dft enpart tfvc rks threbod` |
+
+All five run every time `make test` is invoked.
 
 ## Adding a new test case
 

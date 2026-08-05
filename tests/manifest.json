@@ -84,8 +84,8 @@
 
     {
       "name": "C2H6-B3LYP",
-      "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT+IQA) with THREBOD/MOD-GRIDTWOEL on an 8-atom, 160-basis-function system. Tagged 'slow' (~85s single-threaded) — excluded from the default 'make test' tier, included via 'make test TAGS=slow' or 'make test-full'.",
-      "tags": ["dft", "enpart", "tfvc", "rks", "threbod", "slow"],
+      "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT+IQA) with THREBOD/MOD-GRIDTWOEL on an 8-atom, 160-basis-function system. ~85s single-threaded; part of the default 'make test' run like every other case (use NTHREADS=n to speed it up).",
+      "tags": ["dft", "enpart", "tfvc", "rks", "threbod"],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [

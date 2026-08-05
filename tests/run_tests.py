@@ -8,11 +8,13 @@ reference values with configurable tolerances.
 
 Usage
 -----
-  # Run all tests (from repo root or tests/ directory):
-  python3 tests/run_tests.py
-
-  # Run after a fresh build:
+  # Build + run the ENTIRE suite (the one documented way to run tests):
   make test
+  make test NTHREADS=4        # same flag as 'bash make_compile.sh NTHREADS=4'
+
+  # Run this script directly for narrower, ad hoc runs during development
+  # (from repo root or tests/ directory):
+  python3 tests/run_tests.py
 
   # Run a single test by name substring:
   python3 tests/run_tests.py --filter H2O
@@ -39,6 +41,8 @@ Options
                     (default: <tests>/reference/)
   --filter  STR     Only run tests whose name contains STR (case-insensitive)
   --tags    LIST    Comma-separated tags; only run tests that have at least one
+  --exclude-tags LIST  Comma-separated tags; skip tests carrying any of these
+                    (applied after --tags/--filter)
   --update-ref      Re-run all tests, write new reference outputs, and update
                     ref values in manifest.json from the fresh output
   --nthreads N      OMP_NUM_THREADS (default: 1)
@@ -104,8 +108,9 @@ def parse_args():
                    help="Comma-separated tags (OR); run only matching tests")
     p.add_argument("--exclude-tags", default=None, metavar="LIST",
                    help="Comma-separated tags; skip tests carrying any of "
-                        "these (applied after --tags/--filter). Used by "
-                        "'make test' to skip the 'slow' tier by default.")
+                        "these (applied after --tags/--filter). Not used by "
+                        "'make test', which always runs every case — this is "
+                        "purely a script-level convenience for ad hoc runs.")
     p.add_argument("--update-ref", action="store_true",
                    help="Regenerate reference outputs and manifest ref values")
     p.add_argument("--nthreads",   default="1", metavar="N",
