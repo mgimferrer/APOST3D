@@ -268,7 +268,7 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
     exit) so tests never leave .apost files behind in compiler-testset/ or
     tests/. Pass keep_output_dir to additionally copy the raw <name>.apost
     output there before it's deleted — useful for manually inspecting a run
-    (make test KEEP=1).
+    (python3 tests/run_tests.py --keep-output).
 
     The binary is invoked as:
         cd <rundir> && apost3d <name>
