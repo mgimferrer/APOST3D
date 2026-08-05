@@ -37,8 +37,12 @@ bash compile_libxc.sh
 bash make_compile.sh
 ```
 
-Per-distro prerequisite commands, useful `make_compile.sh` flags, driving
-`make` directly, and verifying the install are covered in the
+Both `make_compile.sh` and `make test` accept the same `NTHREADS=<n>` flag
+for the number of cores to use (e.g. `bash make_compile.sh NTHREADS=4`).
+Run `bash make_compile.sh help` or `make help` to see all available flags.
+
+Per-distro prerequisite commands, driving `make` directly, and verifying
+the install are covered in the
 [Installation](https://apost3d.readthedocs.io/en/latest/installation.html)
 page of the full documentation.
 
@@ -60,12 +64,13 @@ The full input-file format and keyword reference is in the
 ## Running the test suite
 
 ```bash
-make test          # fast tier (~2 min)
-make test-full      # everything, including the slower C2H6-B3LYP case
+make test               # build (if needed) + run the entire suite, 1 thread
+make test NTHREADS=4    # same, using 4 threads
 ```
 
-Test options, the active test list, and how to add a new test case are
-covered in the
+`make test` always runs every case — there are no fast/slow tiers to
+remember. The active test list, the check format, and how to add a new
+test case are covered in the
 [Running the test suite](https://apost3d.readthedocs.io/en/latest/testing.html)
 page of the full documentation.
 

@@ -59,12 +59,23 @@ code-signs the binaries and smoke-tests that they actually launch, catching
 the most common install problems immediately with a clear message instead of
 a cryptic failure on your first real calculation.
 
-Useful flags:
+`make_compile.sh` takes the same arguments a `make` invocation would — bare
+words for actions, `KEY=value` for parameters — rather than its own set of
+dashed flags:
 
 ```bash
-bash make_compile.sh --clean        # force a full rebuild
-bash make_compile.sh --nthreads 8   # OMP_NUM_THREADS to use for test runs
-bash make_compile.sh --help
+bash make_compile.sh clean          # force a full rebuild
+bash make_compile.sh NTHREADS=8     # OMP_NUM_THREADS to report/export
+bash make_compile.sh clean NTHREADS=8
+bash make_compile.sh help           # list all available arguments
+```
+
+```{admonition} Same flag for building and testing
+:class: tip
+
+`NTHREADS=<n>` means the same thing and is spelled the same way whether
+you're building (`bash make_compile.sh NTHREADS=4`) or running the test
+suite (`make test NTHREADS=4`) — see [Running the test suite](testing.md).
 ```
 
 If you'd rather drive `make` directly (custom build setups, CI, etc.):
@@ -72,6 +83,7 @@ If you'd rather drive `make` directly (custom build setups, CI, etc.):
 ```bash
 make -C $APOST3D_PATH all      # build apost3d, apost3d-eos, eos_aom
 make -C $APOST3D_PATH clean    # remove all objects and binaries
+make -C $APOST3D_PATH help     # list all available targets and flags
 ```
 
 ## Verify the install
@@ -80,5 +92,5 @@ make -C $APOST3D_PATH clean    # remove all objects and binaries
 make -C $APOST3D_PATH test
 ```
 
-See [Running the test suite](testing.md) — a clean pass across all active
-tests is the best confirmation your build is sound.
+See [Running the test suite](testing.md) — a clean pass across the whole
+suite is the best confirmation your build is sound.

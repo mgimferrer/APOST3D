@@ -7,12 +7,21 @@
 #
 # Usage:
 #   export APOST3D_PATH=/path/to/APOST3D   # or edit DEFAULT below
-#   bash make_compile.sh [--nthreads N] [--clean] [--help]
+#   bash make_compile.sh [clean] [NTHREADS=N] [help]
 #
-# Options:
-#   --nthreads <N>  OMP_NUM_THREADS for test runs (default: all logical CPUs)
-#   --clean         Run 'make clean' before building
-#   --help          Show this message
+# Arguments (same grammar as `make`: bare words are actions, KEY=value sets
+# a parameter — and NTHREADS is spelled identically to `make test NTHREADS=N`):
+#   clean         Run 'make clean' before building
+#   NTHREADS=<N>  OMP_NUM_THREADS to report/export after the build, and to
+#                 use if you go on to run the test suite (default: all
+#                 logical CPUs)
+#   help          Show this message (also: --help, -h)
+#
+# Examples:
+#   bash make_compile.sh
+#   bash make_compile.sh NTHREADS=4
+#   bash make_compile.sh clean NTHREADS=4
+#   bash make_compile.sh help
 # ==============================================================================
 
 set -euo pipefail
@@ -26,17 +35,26 @@ CLEAN=0
 NTHREADS=""
 
 # ------------------------------------------------------------------------------
-# Argument parsing
+# Argument parsing — bare words are actions, KEY=value sets a parameter,
+# mirroring `make <target> VAR=value`.
 # ------------------------------------------------------------------------------
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --nthreads) NTHREADS="$2"; shift 2 ;;
-    --clean)    CLEAN=1; shift ;;
-    --help)
-      sed -n '2,15p' "$0" | sed 's/^# \{0,2\}//'
+for arg in "$@"; do
+  case "$arg" in
+    help|--help|-h)
+      sed -n '2,25p' "$0" | sed 's/^# \{0,2\}//'
       exit 0
       ;;
-    *) echo "Unknown option: $1"; exit 1 ;;
+    clean)
+      CLEAN=1
+      ;;
+    NTHREADS=*)
+      NTHREADS="${arg#NTHREADS=}"
+      ;;
+    *)
+      echo "Unknown argument: $arg"
+      echo "Run 'bash make_compile.sh help' for usage."
+      exit 1
+      ;;
   esac
 done
 
@@ -249,8 +267,8 @@ echo "  export OMP_NUM_THREADS=$NTHREADS"
 echo "  cd /path/to/input/files"
 echo "  $APOST3D_PATH/apost3d jobname > jobname.apost 2>&1"
 echo ""
-echo "To run the regression test suite (fast tier):"
-echo "  make -C $APOST3D_PATH test-only"
+echo "To run the full regression test suite:"
+echo "  make -C $APOST3D_PATH test NTHREADS=$NTHREADS"
 echo ""
-echo "To include slow tests (e.g. C2H6-B3LYP) too:"
-echo "  make -C $APOST3D_PATH test-full"
+echo "For all available make targets and flags:"
+echo "  make -C $APOST3D_PATH help"

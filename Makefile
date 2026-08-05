@@ -1,9 +1,10 @@
 
 ###############################################################
-# MAKEFILE FOR APOST-3D — gfortran build (Phase 0)           #
+# MAKEFILE FOR APOST-3D — gfortran build                     #
 # Replaces Intel ifort/PGO build with portable gfortran.     #
 # No Profile-Guided Optimisation, no Intel-specific flags.   #
-# Single-core build (Phase 0). OpenMP will be added later.   #
+# Built with -fopenmp; OMP_NUM_THREADS controls runtime      #
+# parallelism (see `make test NTHREADS=n` / `make help`).    #
 ###############################################################
 
 ## --------------------------------------------------------- ##
@@ -151,42 +152,28 @@ eos_aom: $(UTILDIR)/eos_aom.o
 util: eos_aom
 
 ## TEST SUITE
-# Run the full regression test suite after building.
+# Build (if needed) and run the ENTIRE regression test suite — every case in
+# tests/manifest.json, every time. No fast/slow tiers: if a test becomes a
+# problem it gets fixed or rewritten, not quietly excluded by default.
 #
-# Variables (all optional):
-#   FILTER=<name>   run only tests whose name contains <name>
-#   TAGS=<list>     run only tests that carry one of these comma-separated tags
-#   NTHREADS=<n>    OMP_NUM_THREADS for test runs (default: 1)
-#   VERBOSE=1       show check details even for passing checks
-#   KEEP=1          save each test's raw .apost output to tests/report/outputs/
-#                   instead of discarding it with the run's temp directory
+# The only flag: NTHREADS=<n>, OMP_NUM_THREADS for the test runs (default: 1).
+# Same name, same meaning as make_compile.sh's NTHREADS=<n> — see `make help`.
 #
 # Examples:
-#   make test                # fast tier only (excludes tests tagged 'slow')
-#   make test FILTER=H2O
-#   make test TAGS=enpart
-#   make test TAGS=slow      # explicitly asking for a tag overrides the
-#                             # default 'slow' exclusion
-#   make test-full           # everything, fast + slow, no exclusion
-#   make test VERBOSE=1
-#   make test KEEP=1         # inspect tests/report/outputs/<name>.apost afterwards
+#   make test                # build (if needed) + run everything, 1 thread
+#   make test NTHREADS=4     # same, using 4 threads
 #   make update-ref          # regenerate reference outputs after intentional change
+#
+# For narrower runs during test development (single test by name, a tag
+# filter, verbose per-check output, keeping raw .apost output) call the
+# runner directly — see `python3 tests/run_tests.py --help`.
 
 TESTS_DIR    := $(APOST3D_PATH)/tests
 TEST_RUNNER  := $(TESTS_DIR)/run_tests.py
 TEST_INPUTS  := $(APOST3D_PATH)/compiler-testset
 TEST_MANIFEST:= $(TESTS_DIR)/manifest.json
 TEST_REF     := $(TESTS_DIR)/reference
-TEST_NTHREADS?= 1
-
-# Build optional flags from make variables
-_TEST_FILTER  := $(if $(FILTER),--filter $(FILTER),)
-_TEST_TAGS    := $(if $(TAGS),--tags $(TAGS),)
-_TEST_VERBOSE := $(if $(VERBOSE),--verbose,)
-_TEST_KEEP    := $(if $(KEEP),--keep-output,)
-# Default tier: skip tests tagged 'slow' unless the caller explicitly asked
-# for tags (e.g. TAGS=slow) or ran 'make test-full'.
-_TEST_EXCLUDE := $(if $(TAGS),,--exclude-tags slow)
+NTHREADS     ?= 1
 
 test: all
 	@echo ""
@@ -195,32 +182,7 @@ test: all
 	  --inputs   $(TEST_INPUTS) \
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
-	  --nthreads $(TEST_NTHREADS) \
-	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE) $(_TEST_KEEP)
-
-## Run tests WITHOUT rebuilding first (useful during test development)
-test-only:
-	@echo ""
-	python3 $(TEST_RUNNER) \
-	  --binary   $(APOST3D_PATH)/apost3d \
-	  --inputs   $(TEST_INPUTS) \
-	  --manifest $(TEST_MANIFEST) \
-	  --ref      $(TEST_REF) \
-	  --nthreads $(TEST_NTHREADS) \
-	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_EXCLUDE) $(_TEST_VERBOSE) $(_TEST_KEEP)
-
-## Run EVERYTHING, including tests tagged 'slow' — no exclusion applied.
-test-full: all
-	@echo ""
-	python3 $(TEST_RUNNER) \
-	  --binary   $(APOST3D_PATH)/apost3d \
-	  --inputs   $(TEST_INPUTS) \
-	  --manifest $(TEST_MANIFEST) \
-	  --ref      $(TEST_REF) \
-	  --nthreads $(TEST_NTHREADS) \
-	  $(_TEST_FILTER) $(_TEST_TAGS) $(_TEST_VERBOSE) $(_TEST_KEEP)
-
-.PHONY: test-full
+	  --nthreads $(NTHREADS)
 
 ## Regenerate reference outputs and manifest ref values from a fresh run
 update-ref: all
@@ -230,7 +192,7 @@ update-ref: all
 	  --inputs   $(TEST_INPUTS) \
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
-	  --nthreads $(TEST_NTHREADS) \
+	  --nthreads $(NTHREADS) \
 	  --update-ref
 
 ## Show which APOST-3D keywords are covered / uncovered by the current test suite
@@ -258,8 +220,6 @@ coverage:
 	python3 $(COVERAGE_SCRIPT) \
 	  $(_COV_CATEGORY) $(_COV_PRIORITY) $(_COV_UNCOV) $(_COV_FORMAT)
 
-.PHONY: test test-only update-ref coverage
-
 ## CLEAN
 clean:
 	rm -f $(SRCDIR)/modules.o \
@@ -273,5 +233,33 @@ clean:
 	      $(APOST3D_PATH)/apost3d \
 	      $(APOST3D_PATH)/apost3d-eos \
 	      $(APOST3D_PATH)/eos_aom
+
+## HELP
+# `make` itself intercepts any --flag before a Makefile ever sees it, so
+# there's no such thing as `make test --nthreads`/`make --info` — this bare
+# 'help' target is the closest equivalent, and the same word works the same
+# way for the build script: `bash make_compile.sh help`.
+help:
+	@echo "APOST-3D — available make targets and flags"
+	@echo ""
+	@echo "  make all                    Build apost3d, apost3d-eos, eos_aom"
+	@echo "  make clean                  Remove all build objects and binaries"
+	@echo "  make test [NTHREADS=n]      Build (if needed) and run the full"
+	@echo "                              regression test suite. NTHREADS sets"
+	@echo "                              OMP_NUM_THREADS for the test runs"
+	@echo "                              (default: 1). Same flag as"
+	@echo "                              'bash make_compile.sh NTHREADS=n'."
+	@echo "  make update-ref [NTHREADS=n]"
+	@echo "                              Regenerate reference outputs + manifest"
+	@echo "                              ref values after an intentional change."
+	@echo "  make coverage [CATEGORY=c] [PRIORITY=p] [UNCOVERED=1] [FORMAT=json]"
+	@echo "                              Show which input keywords are covered"
+	@echo "                              by the current test suite."
+	@echo "  make help                   Show this message"
+	@echo ""
+	@echo "For narrower test runs (single test, tag filter, verbose output),"
+	@echo "call the runner directly: python3 tests/run_tests.py --help"
+
+.PHONY: test update-ref coverage help
 
 ## END Makefile
