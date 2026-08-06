@@ -32,6 +32,19 @@ provided, using these additional keywords:
 | TWOELTOLER=*val* | Real *val* sets the threshold (in kcal/mol) for activating the zero-error scheme on the two-electron energy. Default *val*=0.25d0 |
 | MOD-GRIDTWOEL | User-defined integration setup for the two-electron energy. Requires an additional `# GRID` block section |
 
+```{admonition} MOD-GRIDTWOEL is required to apply a # GRID block
+:class: warning
+
+The `# GRID` block (`RADIAL`/`ANGULAR`/`rr00`/`phb1`/`phb2`) is only read
+if `MOD-GRIDTWOEL` is also present in `# ENPART`. Without it, `# GRID` is
+not consulted at all — even if the block is present in the input file —
+and the code falls back to the same defaults you'd get by specifying
+`MOD-GRIDTWOEL` with an empty `# GRID` block: `RADIAL 150`, `ANGULAR 590`,
+`phb1 0.169`, `phb2 0.170`. If you write a `# GRID` block but forget
+`MOD-GRIDTWOEL`, APOST-3D prints a warning to say so and confirm the
+defaults it used instead — watch for it if you're tuning the grid.
+```
+
 ```{admonition} Zero-error scheme
 :class: note
 
