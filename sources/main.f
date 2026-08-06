@@ -365,13 +365,41 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
          call readreal("# GRID","phb1",phb12,0.169d0,1)
          call readreal("# GRID","phb2",phb22,0.170d0,1)
          call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
-        else ! defaults
-         nrad22=70
-         nang22=434
+        else ! defaults -- safe integration setup (150/590/0.169/0.170)
+         nrad22=150
+         nang22=590
          rr0022=0.5
-         phb12=0.200d0
-         phb22=0.210d0
+         phb12=0.169d0
+         phb22=0.170d0
          thr3=1.0d-12
+
+!! Warn if a # GRID block exists in the input but is being silently
+!! ignored because MOD-GRIDTWOEL wasn't set -- otherwise RADIAL/ANGULAR/
+!! phb1/phb2 are never read at all and nothing tells the user their
+!! values were discarded. Scan the file directly here rather than via
+!! 'locate', which always prints a "section not found" message on a
+!! miss -- that would fire on every ENPART run that never intended to
+!! use # GRID in the first place. !!
+         igridpresent=0
+         rewind(16)
+         iiscan=0
+         do while(iiscan.eq.0)
+          read(16,"(a80)",end=234) linia
+          if(index(linia,"# GRID").ne.0) then
+           igridpresent=1
+           iiscan=1
+          end if
+         end do
+234      continue
+         if(igridpresent.eq.1) then
+          write(*,*) " "
+          write(*,*) "WARNING: a # GRID block was found in the input, but MOD-GRIDTWOEL"
+          write(*,*) "was not set in # ENPART -- its RADIAL/ANGULAR/phb1/phb2 values are"
+          write(*,*) "being IGNORED. Using the default integration setup instead (RADIAL"
+          write(*,*) "150, ANGULAR 590, phb1 0.169, phb2 0.170). Add MOD-GRIDTWOEL to"
+          write(*,*) "# ENPART to apply your # GRID settings."
+          write(*,*) " "
+         end if
         end if
 
 !! FOR TOPOLOGY CALCULATION !!

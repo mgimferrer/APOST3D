@@ -25,6 +25,15 @@ grid. Changing the radial or angular points requires recalibration of
 `phb1` and `phb2`.
 ```
 
+```{admonition} Only consulted with MOD-GRIDTWOEL
+:class: note
+
+This block only takes effect for `# ENPART` if `MOD-GRIDTWOEL` is also set
+there — see [Block section # ENPART](enpart.md). Without it, `# GRID` is
+silently not read at all (a warning is printed if a `# GRID` block is
+present but unused).
+```
+
 ## Block section # DM
 
 Include in the first line the filename of the RDM1 (`.dm1`). If `DM=2` was
