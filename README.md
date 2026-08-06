@@ -2,7 +2,7 @@
 
 ## Chemical concepts from wave function analysis
 
-A Fortran-based code developed at the Universitat de Girona (UdG) by P. Salvador and collaborators.
+A Fortran-based code developed at the Universitat de Girona (UdG) by the group of P. Salvador, M. Gimferrer and collaborators.
 
 Builds with **GCC/gfortran** — free, open-source, and available on every Linux
 distribution (no Intel compiler or license required).
@@ -37,14 +37,9 @@ bash compile_libxc.sh
 bash make_compile.sh
 ```
 
-Both `make_compile.sh` and `make test` accept the same `NTHREADS=<n>` flag
-for the number of cores to use (e.g. `bash make_compile.sh NTHREADS=4`).
-Run `bash make_compile.sh help` or `make help` to see all available flags.
+Both `make_compile.sh` and `make test` accept the same `NTHREADS=<n>` flag for the number of cores to use (e.g. `bash make_compile.sh NTHREADS=4`). Run `bash make_compile.sh help` or `make help` to see all available flags.
 
-Per-distro prerequisite commands, driving `make` directly, and verifying
-the install are covered in the
-[Installation](https://apost3d.readthedocs.io/en/latest/installation.html)
-page of the full documentation.
+Per-distro prerequisite commands, driving `make` directly, and verifying the install are covered in the [Installation](https://apost3d.readthedocs.io/en/latest/installation.html) page of the full documentation.
 
 ## How to use
 
@@ -55,8 +50,7 @@ export OMP_NUM_THREADS=4     # set to the number of cores you want to use
 $APOST3D_PATH/apost3d jobname > jobname.apost 2>&1
 ```
 
-`jobname.fchk` and `jobname.inp` must be present in the working directory.
-Correlated-wavefunction analyses (CASSCF, DMRG) also need `jobname.dm1`/`.dm2`.
+`jobname.fchk` and `jobname.inp` must be present in the working directory. Correlated-wavefunction analyses (CASSCF, DMRG) also need `jobname.dm1`/`.dm2`.
 
 The full input-file format and keyword reference is in the
 [Documentation](#documentation).
@@ -68,17 +62,11 @@ make test               # build (if needed) + run the entire suite, 1 thread
 make test NTHREADS=4    # same, using 4 threads
 ```
 
-`make test` always runs every case — there are no fast/slow tiers to
-remember. The active test list, the check format, and how to add a new
-test case are covered in the
-[Running the test suite](https://apost3d.readthedocs.io/en/latest/testing.html)
-page of the full documentation.
+`make test` always runs every case. The active test list, the check format, and how to add a new test case are covered in the [Running the test suite](https://apost3d.readthedocs.io/en/latest/testing.html) page of the full documentation.
 
 ## Documentation
 
-Full documentation — installation, usage, the complete input-file keyword
-reference, worked examples, and troubleshooting — is hosted at
-**https://apost3d.readthedocs.io**.
+Full documentation — installation, usage, the complete input-file keyword reference, worked examples, and troubleshooting — is hosted at **https://apost3d.readthedocs.io**.
 
 ## Citations
 
