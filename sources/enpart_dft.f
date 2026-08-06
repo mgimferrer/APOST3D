@@ -130,6 +130,9 @@
       ALLOCATE(sab(nocc,nocc,nat),chpd(itotps,nocc,3))
       ALLOCATE(scrx(igr,nocc))
 
+!! ZEROING exch2 MATRIX !!
+      exch2=ZERO
+
 !! THRESHOLD FOR BODEN CALCULATION USING THE BOND ORDER BETWEEN A PAIR OF ATOMS !!
       if(ithrebod.lt.1) then
         threbod=ZERO
@@ -745,6 +748,9 @@
       ALLOCATE(chpd(itotps,nalf,3),chpbd(itotps,nb,3),sab2(nb,nb,nat))
       ALLOCATE(scrall(3,itotps),chp3(itotps,nb),sab(nalf,nalf,nat))
       ALLOCATE(scr2(itotps))
+
+!! ZEROING exch2 MATRIX !!
+      exch2=ZERO
 
 !! BUILDING RHO AND ACCUMULATING IN THE SAME VECTOR. (ORDER: ALPHA, BETA) !!
       do kk=1,itotps
