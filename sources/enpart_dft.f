@@ -218,14 +218,26 @@
           bx0=bo(iatom,jatom)
           if(bx0.ge.threbod) then
             x1=ZERO
+!! MG/CLAUDE: BODEN build -- ff2 is already a genuine per-grid-point local
+!! scalar and scr_a(jfut) is written at a unique index per iteration (no
+!! thread ever touches another thread's jfut), the same safe shape already
+!! parallelized in prenumint/numint_sat -- no false-sharing risk like the
+!! exch2 kernel had. x1 here is diagnostic-only (reset and recomputed by
+!! the ALLPOINTS INTEGRATION loop below before being stored in exch2), so
+!! a standard REDUCTION is exactly right for it. jfut is computed inside
+!! the loop body (rather than used as the inner loop's bounds) because
+!! gfortran's COLLAPSE requires the inner loop bounds to be loop-invariant
+!! -- 'iatps*(icenter-1)+1,iatps*icenter' isn't, 'jloc=1,iatps' is. !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jloc,jfut,x2,wa,wb,ff2,i,j,ff) REDUCTION(+:x1)
             do icenter=1,nat
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
+              do jloc=1,iatps
+                jfut=iatps*(icenter-1)+jloc
                 x2=wp(jfut)*omp(jfut)
                 wa=omp2(jfut,iatom)
                 wb=omp2(jfut,jatom)
                 ff2=ZERO
                 do i=1,nocc
-                  do j=1,nocc 
+                  do j=1,nocc
                     ff=sab(i,j,jatom)*wa+sab(j,i,iatom)*wb
                     ff2=ff2+ff*chp2(jfut,i)*chp2(jfut,j)
                   end do
@@ -237,21 +249,25 @@
                 x1=x1+x2*scr_a(jfut)
               end do
             end do
+!$OMP END PARALLEL DO
             write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,x1
 
 !! GRADIENT OF BODEN CALCULATED FOR GGA FUNCTIONALS !!
 !! scr_a : BODEN FOR A GIVEN ATOM PAIR, scr : SIGMA BODEN scr2 : XC FUNCTIONAL VALUE !!
 ! Laplacian of the BODEN required for the MGGA functionals. NOT IMPLEMENTED
             if(itype.gt.1) call grdboden(itotps,omp2,chp2,chpd,scr,iatom,jatom,sab)
-            call xc(itotps,scr_a,scr,scr2) 
+            call xc(itotps,scr_a,scr,scr2)
 
 !! ALLPOINTS INTEGRATION !!
              x1=ZERO
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
             do icenter=1,nat
-              do ifut=iatps*(icenter-1)+1,iatps*icenter
+              do iloc=1,iatps
+                ifut=iatps*(icenter-1)+iloc
                 x1=x1+wp(ifut)*scr2(ifut)*omp2(ifut,icenter)*omp(ifut)
               end do
             end do
+!$OMP END PARALLEL DO
             exch2(iatom,jatom)=x1
           end if
         end do
@@ -853,8 +869,15 @@
           if(bx0.ge.threbod) then
             xx=ZERO
             xxb=ZERO
+!! MG/CLAUDE: same false-sharing-free parallelization as the RHF twin
+!! (numint_dft) above -- ff2/ff2b are genuine per-grid-point local scalars,
+!! scr_bod(:,jfut) is written at a unique index per iteration, xx/xxb are
+!! plain reductions. jfut computed inside the loop body, same reason as
+!! the RHF twin above (gfortran's COLLAPSE needs loop-invariant bounds). !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jloc,jfut,x2,wa,wb,ff2,ff2b,ii,jj,ff,ffb) REDUCTION(+:xx,xxb)
             do icenter=1,nat
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
+              do jloc=1,iatps
+                jfut=iatps*(icenter-1)+jloc
                 x2=wp(jfut)*omp(jfut)
                 wa=omp2(jfut,iatom)
                 wb=omp2(jfut,jatom)
@@ -864,7 +887,7 @@
                   do jj=1,nalf
                     ff=sab(ii,jj,jatom)*wa+sab(jj,ii,iatom)*wb
                     ff2=ff2+ff*chp2(jfut,ii)*chp2(jfut,jj)
-                    if(jj.le.nb.and.ii.le.nb) then 
+                    if(jj.le.nb.and.ii.le.nb) then
                       ffb=sab2(ii,jj,jatom)*wa+sab2(jj,ii,iatom)*wb
                       ff2b=ff2b+ffb*chp3(jfut,ii)*chp3(jfut,jj)
                     end if
@@ -884,17 +907,21 @@
                 xxb=xxb+x2*scr_bod(2,jfut)
               end do
             end do
+!$OMP END PARALLEL DO
             write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,xx+xxb
 
 !! BODEN GRADIENT FOR UNRESTRICTED GGA FUNCTIONALS !!
             if(itype.ne.1) call grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iatom,jatom,sab,sab2)
             call xc_uks(itotps,scr_bod,scrall,scr2)
             x1=ZERO
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
             do icenter=1,nat
-              do ifut=iatps*(icenter-1)+1,iatps*icenter
+              do iloc=1,iatps
+                ifut=iatps*(icenter-1)+iloc
                 x1=x1+wp(ifut)*scr2(ifut)*omp2(ifut,icenter)*omp(ifut)
               end do
             end do
+!$OMP END PARALLEL DO
             exch2(iatom,jatom)=x1
           end if
         end do
