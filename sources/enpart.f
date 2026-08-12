@@ -537,14 +537,25 @@
 !! (f3k(ik), exch_hfk(icenter,ik)), which is exactly the data layout an
 !! OMP PARALLEL DO over ik needs -- no restructuring required, just the
 !! actual directive. !!
-!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2)
+!! MG/CLAUDE: f3k(ik) used to be written on every innermost i/j iteration --
+!! O(nocc^2) shared-array writes per grid point, all landing on an array
+!! that's SHARED (not PRIVATE) across threads, just index-partitioned by ik.
+!! Adjacent ik slots sit in the same cache line, so this hammered the same
+!! handful of cache lines from every thread continuously -- a false-sharing
+!! pattern that got far more expensive once the loop actually ran in
+!! parallel under gfortran/libgomp. f3loc is a genuine PRIVATE scalar: it
+!! absorbs the whole i/j accumulation in a register, and f3k(ik)/exch_hfk
+!! are only touched once per ifut, exactly as exch_hfk already was. Same
+!! terms, same order, no numerical change -- purely removes redundant
+!! shared-memory traffic from the hot loop. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
               dx0=pcoord(ifut,1)
               dy0=pcoord(ifut,2)
               dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
+              f3loc=ZERO
               do jfut=iatps*(icenter-1)+1,iatps*icenter
                 x1=wppha(jfut)*omp2pha(jfut,icenter)
                 dx1=pcoordpha(jfut,1)
@@ -554,17 +565,17 @@
                 if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
                   do i=1,nocc-1
                     f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                    f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
                     do j=i+1,nocc
                       f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
                     end do
                   end do
                   f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
+                  f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
                 end if
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
+              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
             end do
           end do
 !$OMP END PARALLEL DO
@@ -617,8 +628,11 @@
           iend(ithreads)=icenter*iatps
 !! MG/CLAUDE: same fix as the same-center block above -- real OMP PARALLEL
 !! DO in place of the dead !DIR$ PARALLEL Intel directive. !!
+!! MG/CLAUDE: same false-sharing fix as the same-center block above --
+!! f3loc is a genuine PRIVATE scalar absorbing the i/j accumulation;
+!! exch_hfij is only touched once per ifut instead of once per i/j pair. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
-!$OMP&  chp2snifut,chp2snjfut,chp2sijfut,chp2siifut,i,j,f2)
+!$OMP&  chp2snifut,chp2snjfut,chp2sijfut,chp2siifut,i,j,f2,f3loc)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
@@ -626,7 +640,7 @@
               dy0=pcoord(ifut,2)
               dz0=pcoord(ifut,3)
               chp2snifut=chp2s(nocc,ifut)
-              f3k(ik)=ZERO
+              f3loc=ZERO
               do jfut=iatps*(jcenter-1)+1,iatps*jcenter
                 x1=wp(jfut)*omp2(jfut,jcenter)
                 dx1=pcoord(jfut,1)
@@ -640,16 +654,16 @@
                     chp2siifut=chp2s(i,ifut)
                     do j=i+1,nocc
                       f2=TWO*x0*chp2siifut*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2sijfut*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                      f3loc=f3loc+f2*x1*chp2sijfut*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
                     end do
                     f2=x0*chp2siifut*chp2siifut
-                    f3k(ik)=f3k(ik)+f2*x1*chp2sijfut*chp2sijfut/dist
+                    f3loc=f3loc+f2*x1*chp2sijfut*chp2sijfut/dist
                   end do
                   f2=x0*chp2snifut*chp2snifut
-                  f3k(ik)=f3k(ik)+f2*x1*chp2snjfut*chp2snjfut/dist
+                  f3loc=f3loc+f2*x1*chp2snjfut*chp2snjfut/dist
                 end if
               end do
-              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3k(ik)
+              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
             end do
           end do
 !$OMP END PARALLEL DO
@@ -811,14 +825,14 @@
           call omp_set_num_threads(ithreads)
 !! MG/CLAUDE: same fix as above -- real OMP PARALLEL DO in place of the
 !! dead !DIR$ PARALLEL Intel directive. !!
-!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2)
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
               dx0=pcoord(ifut,1)
               dy0=pcoord(ifut,2)
               dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
+              f3loc=ZERO
               do jfut=iatps*(icenter-1)+1,iatps*icenter
                 x1=wppha(jfut)*omp2pha(jfut,icenter)
                 dx1=pcoordpha(jfut,1)
@@ -828,17 +842,17 @@
                 if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
                   do i=1,nocc-1
                     f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                    f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
                     do j=i+1,nocc
                       f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
                     end do
                   end do
                   f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
+                  f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
                 end if
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
+              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
             end do
           end do
 !$OMP END PARALLEL DO
@@ -1503,15 +1517,18 @@
 !! MG/CLAUDE: restored real OpenMP parallelization here -- see the RHF
 !! twin (numint_two) above for the full explanation. Same fix, same
 !! already-safe per-ik data layout (f3k(ik), exch_hfk(icenter,ik)). !!
+!! MG/CLAUDE: false-sharing fix -- see the RHF twin (numint_two) above for
+!! the full explanation. f3loc is a genuine PRIVATE scalar; exch_hfk is
+!! only touched once per ifut instead of on every i/j iteration. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
-!$OMP&  i,j,f2,f2b)
+!$OMP&  i,j,f2,f2b,f3loc)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
               dx0=pcoord(ifut,1)
               dy0=pcoord(ifut,2)
               dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
+              f3loc=ZERO
               do jfut=iatps*(icenter-1)+1,iatps*icenter
                 x1=wppha(jfut)*omp2pha(jfut,icenter)
                 dx1=pcoordpha(jfut,1)
@@ -1521,31 +1538,31 @@
                 if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
                   do i=1,nalf-1
                     f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                    f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
                     if(i.le.nb) then
                       f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                      f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
+                      f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
                     end if
                     do j=i+1,nalf
                       f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
                       if(j.le.nb) then
                         f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                        f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+                        f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
                       end if
                     end do
                   end do
                   f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
+                  f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
 
 !! FOR THE nalf = nb CASE IT IS REQUIRED TO ADD THIS !!
                   if(nalf.eq.nb) then
                     f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                    f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
+                    f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
                   end if
                 end if
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
+              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
             end do
           end do
 !$OMP END PARALLEL DO
@@ -1596,16 +1613,17 @@
           end do
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
-!! MG/CLAUDE: same fix as the same-center block above. !!
+!! MG/CLAUDE: false-sharing fix -- same as the same-center block above,
+!! f3loc is a genuine PRIVATE scalar. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
-!$OMP&  i,j,f2,f2b)
+!$OMP&  i,j,f2,f2b,f3loc)
           do ik=1,ithreads
             do ifut=istart(ik),iend(ik)
               x0=wp(ifut)*omp2(ifut,icenter)
               dx0=pcoord(ifut,1)
               dy0=pcoord(ifut,2)
               dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
+              f3loc=ZERO
               do jfut=iatps*(jcenter-1)+1,iatps*jcenter
                 x1=wp(jfut)*omp2(jfut,jcenter)
                 dx1=pcoord(jfut,1)
@@ -1615,31 +1633,31 @@
                 if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
                   do i=1,nalf-1
                     f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
+                    f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
                     if(i.le.nb) then
                       f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                      f3k(ik)=f3k(ik)+f2b*x1*chp2bs(i,jfut)*chp2bs(i,jfut)/dist
+                      f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(i,jfut)/dist
                     end if
                     do j=i+1,nalf
                       f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                      f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
                       if(j.le.nb) then
                         f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                        f3k(ik)=f3k(ik)+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
+                        f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
                       end if
                     end do
                   end do
                   f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
+                  f3loc=f3loc+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
 
 !! AGAIN, ONLY WHEN nalf = nb !!
                   if(nalf.eq.nb) then
                     f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                    f3k(ik)=f3k(ik)+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
+                    f3loc=f3loc+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
                   end if
                 end if
               end do
-              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3k(ik)
+              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
             end do
           end do
 !$OMP END PARALLEL DO
@@ -1797,16 +1815,17 @@
   !! AGAIN THE TWO CALLS ARE CRUCIAL !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-!! MG/CLAUDE: same fix as above. !!
+!! MG/CLAUDE: false-sharing fix -- same as the earlier blocks in this
+!! subroutine, f3loc is a genuine PRIVATE scalar. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
-!$OMP&  i,j,f2,f2b)
+!$OMP&  i,j,f2,f2b,f3loc)
             do ik=1,ithreads
               do ifut=istart(ik),iend(ik)
                 x0=wp(ifut)*omp2(ifut,icenter)
                 dx0=pcoord(ifut,1)
                 dy0=pcoord(ifut,2)
                 dz0=pcoord(ifut,3)
-                f3k(ik)=ZERO
+                f3loc=ZERO
                 do jfut=iatps*(icenter-1)+1,iatps*icenter
                   x1=wppha(jfut)*omp2pha(jfut,icenter)
                   dx1=pcoordpha(jfut,1)
@@ -1816,31 +1835,31 @@
                   if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
                     do i=1,nalf-1
                       f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
                       if(i.le.nb) then
                         f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                        f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
+                        f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
                       end if
                       do j=i+1,nalf
                         f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                        f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
                         if(j.le.nb) then
                           f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                          f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+                          f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
                         end if
                       end do
                     end do
                     f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
+                    f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
 
 !! AGAIN, ONLY WHEN nalf = nb !!
                     if(nalf.eq.nb) then
                       f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                      f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
+                      f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
                     end if
                   end if
                 end do
-                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
               end do
             end do
 !$OMP END PARALLEL DO
