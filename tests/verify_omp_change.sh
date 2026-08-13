@@ -52,9 +52,11 @@ restore_stash() {
 trap restore_stash EXIT
 
 # Lines that legitimately vary run-to-run / thread-count-to-thread-count
-# (elapsed-time prints, thread-count announcements) -- not numerical
-# results, so ignore them when diffing.
-NOISE_PATTERN='Elapsed time|distributed over|threads out of'
+# (timing prints, thread-count announcements) -- not numerical results,
+# so ignore them when diffing. TIMING CPU/WALL is the current format
+# (timing_mod, added 2026-08-13); the old "Elapsed time" format it
+# replaced is kept here too in case any output still uses it.
+NOISE_PATTERN='TIMING (CPU|WALL)|Elapsed time|distributed over|threads out of'
 
 filter() { grep -Ev "$NOISE_PATTERN" "$1"; }
 

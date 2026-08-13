@@ -10,11 +10,11 @@ c bisection: nmax=8000 fails to launch, nmax=2000 launches fine.
 c
 c Lowered to 3000 as an interim default (still ~9x more basis functions than
 c any current test case needs) until those COMMON blocks are converted to
-c ALLOCATABLE (see CLAUDE.md Known Issues / Planned Work) — the proper fix,
-c which removes this compile-time cap entirely rather than just picking a
-c smaller magic number. Until then, a system requiring more than nmax basis
-c functions will silently overrun these fixed-size arrays (undefined
-c behavior, not a clean bounds-checked error) rather than failing loudly.
+c ALLOCATABLE -- the proper fix, which removes this compile-time cap
+c entirely rather than just picking a smaller magic number. Until then, a
+c system requiring more than nmax basis functions will silently overrun
+c these fixed-size arrays (undefined behavior, not a clean bounds-checked
+c error) rather than failing loudly.
       parameter (nmax=3000)
       parameter (maxat=350) 
 c other limits and equivalences 

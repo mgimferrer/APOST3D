@@ -11,9 +11,9 @@ name: APOST-3D build & test
 #   3. add an entry to tests/manifest.json
 #   4. commit — CI picks it up automatically, no workflow edits required.
 #
-# `make test` always runs every case, no tiers — see CLAUDE.md. NTHREADS is
-# set to the runner's core count to exercise the OpenMP paths and keep CI
-# reasonably quick.
+# `make test` always runs every case, no tiers. NTHREADS is set to the
+# runner's core count to exercise the OpenMP paths and keep CI reasonably
+# quick.
 
 "on":
   push:
@@ -47,7 +47,7 @@ jobs:
           path: libxc-4.2.3
           # Cache key includes the compiler version: a gfortran upgrade on the
           # runner image must invalidate the cache (.mod files aren't
-          # portable across compiler versions — see CLAUDE.md known issues).
+          # portable across compiler versions).
           key: libxc-4.2.3-${{ runner.os }}-${{ hashFiles('libxc-4.2.3.tar.gz') }}-gfortran-${{ hashFiles('.github/workflows/test.yml') }}
 
       - name: Build libxc-4.2.3
