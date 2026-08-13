@@ -1,6 +1,6 @@
-!! ***************************************************** !!
-!! REAL-SPACE / HILBERT-SPACE EOS SUBROUTINES             !!
-!! live, feed the shared eos_analysis decision routine:   !!
+!! ******************************************************* !!
+!! REAL-SPACE / HILBERT-SPACE EOS SUBROUTINES              !!
+!! live, feed the shared eos_analysis decision routine:    !!
 !!   ueffao3d_frag   -- real-space (3D grid) fragment EFOs !!
 !!   eos_analysis    -- EFO occupations -> electron counts !!
 !!                       -> fragment oxidation states      !!
@@ -10,7 +10,7 @@
 !!                       EFOs                              !!
 !! see the LEGACY / UNREVIEWED banner further down for the !!
 !! rest of this file's subroutines (effao.f, 2026-08-14).  !!
-!! ***************************************************** !!
+!! ******************************************************* !!
 
 !! ***** !!
 
@@ -19,7 +19,7 @@
    !! purpose: computes real-space (3D grid) effective fragment orbitals    !!
    !!   (EFOs) for EOS/EFFAO, one fragment at a time. Results are stored    !!
    !!   into effao_mod (p0/p0net/p0gro/ip0), not returned via arguments.    !!
-   !! arguments (all read-only):                                           !!
+   !! arguments (all read-only):                                            !!
    !!   itotps (in) -- total number of grid points (nat*iatps)              !!
    !!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
    !!   omp    (in) -- becke/tfvc weight of each grid point for its own atom!!
@@ -27,7 +27,7 @@
    !!   sat    (in) -- per-atom AO overlap matrix (from numint_sat)         !!
    !!   wp     (in) -- integration weight of each grid point                !!
    !!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for   !!
-   !!                  every atom                                          !!
+   !!                  every atom                                           !!
    !!   pk     (in) -- density matrix to project onto fragment EFOs (p for  !!
    !!                  closed-shell, pa/pb for alpha/beta)                  !!
    !!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta                      !!
@@ -79,8 +79,8 @@
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
       ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
 
-!! per-fragment loop kept serial on purpose: icufr can be small on a    !!
-!! large system, so the loops INSIDE each iteration are threaded instead.!!
+!! per-fragment loop kept serial on purpose: icufr can be small on a      !!
+!! large system, so the loops INSIDE each iteration are threaded instead. !!
       do iicenter=1,icufr
 
 !! scr(ifut): fragment's total becke/tfvc weight at each grid point.    !!
@@ -174,11 +174,10 @@
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,*) " "
 
-!! gross occupation of each EFO via sat (all atoms), scaled by its net  !!
-!! occupation. info-only print here -- eos_analysis moving to gross-only !!
-!! selection is the agreed next step, not done in this pass.            !!
-!! parallel over i: independent per EFO, writes only s0all(i); xx0 is a !!
-!! genuine REDUCTION. c0/sat/pp0/nfrlist/ifrlist shared, read-only.     !!
+!! gross occupation of each EFO via sat (all atoms), scaled by its net   !!
+!! occupation -- this is what eos_analysis now sorts/selects on.         !!
+!! parallel over i: independent per EFO, writes only s0all(i); xx0 is a  !!
+!! genuine REDUCTION. c0/sat/pp0/nfrlist/ifrlist shared, read-only.      !!
         xx0=ZERO
 !$OMP PARALLEL DO PRIVATE(i,icenter,jcenter,j,k,xx,xxx) REDUCTION(+:xx0)
         do i=1,imaxo
@@ -227,8 +226,17 @@
       end
 
 
-!! ****** !!
-
+      !! ********************************************************************* !!
+      !! subroutine: eos_analysis                                              !!
+      !! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
+      !!   electron counts per fragment (EOS), then derives oxidation states.  !!
+      !!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
+      !! arguments:                                                            !!
+      !!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
+      !!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
+      !!   thres   (in) -- degeneracy threshold for integer electron count     !!
+      !! author: PSalse, ERaco, MGimf                                          !!
+      !! ********************************************************************* !!
       subroutine eos_analysis(idobeta,icase,thres)
 
       use effao_mod, only: p0,p0net,p0gro,ip0
@@ -238,38 +246,24 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /atlist/iatlist(maxat),icuat
-      common /iops/iopt(100)
       common /loba/ oxi(maxat),errsav(maxat),elec(maxat),effpop(maxat)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
 
-      dimension occup2(igr), occupg(igr), errnet(maxat)
-      dimension qdev(maxat)
-
-      ieffthr = Iopt(24) 
-      icorr   = Iopt(26) 
+      dimension occup2(igr)
 
       if(idobeta.eq.0.and.icase.eq.2) then
-        write(*,*) " "
-        write(*,*) " SKIPPING EFFAOs FOR BETA ELECTRONS "
-        write(*,*) " "
+        call print_box('SKIPPING EFFAOs FOR BETA ELECTRONS')
         lorb(2)=lorb(1)
         do i=1,lorb(2)
-          occup(i,2)=occup(i,1) 
+          occup(i,2)=occup(i,1)
           iorbat(i,2)= iorbat(i,1)
-        end do  
-        do i=1,icufr
-          errnet(i)=errsav(i)
-          effpop(i)=effpop(i)*2.0d0
         end do
         confi=confi0
         go to 99
       else if(icase.eq.2.and.nb.eq.0) then
-        write(*,*) " "
-        write(*,*) " CALCULATION HAS NO BETA ELECTRONS "
-        write(*,*) " "
+        call print_box('CALCULATION HAS NO BETA ELECTRONS')
         do i=1,icufr
           elec(i)=ZERO
         end do
@@ -281,54 +275,59 @@
         elec(i)=ZERO
         do k=1,ip0(i)
           iorb=iorb+1
-          occup(iorb,icase)=p0net(k,i)
+          occup(iorb,icase)=p0gro(k,i)
           iorbat(iorb,icase)=i
-        end do 
-      end do  
+        end do
+      end do
       write(*,*) " "
       write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",iorb
 
       lorb(icase)=iorb
 
+!! pool every fragment's EFOs into one list, sorted by occupation        !!
+!! (descending); iorbat tracks which fragment each slot came from.       !!
       do i=1,iorb-1
         do j=i+1,iorb
           if (occup(j,icase).gt.occup(i,icase))then
             xkk=occup(j,icase)
             occup(j,icase)=occup(i,icase)
             occup(i,icase)=xkk
-            xkk=occupg(j)
-            occupg(j)=occupg(i)
-            occupg(i)=xkk
             ikk=iorbat(j,icase)
             iorbat(j,icase)=iorbat(i,icase)
-            iorbat(i,icase)=ikk 
+            iorbat(i,icase)=ikk
           end if
-        end do  
-      end do 
+        end do
+      end do
 
+!! nnn is the LO EFO index in the pooled, sorted list (alpha/beta          !!
+!! electron count); k/kk scan outward from it for EFOs within thres of     !!
+!! occup(nnn) -- a quasi-degenerate block spanning the occupied/unoccupied !!
+!! boundary, which occup2 below turns into fractional occupations.         !!
       k=0
       nnn=nalf
-      if(icase.eq.2) nnn=nb   
+      if(icase.eq.2) nnn=nb
+!! nnn+k/nnn-kk below are not bounds-checked against 1..iorb -- possible    !!
+!! out-of-range read if nnn is within k/kk of iorb or 1. Not fixed here,    !!
+!! needs sign-off.                                                          !!
 333   k=k+1
       if(dabs(occup(nnn,icase)-occup(nnn+k,icase)).lt.thres) go to 333
       k=k-1
       if(k.eq.0) then
-        write(*,*) " EOS: Unambiguous integer electron assignation "
+        write(*,*) "EOS: Unambiguous integer electron assignation"
         do i=1,iorb
           if(i.le.nnn) then
             occup2(i)=ONE
           else
             occup2(i)=ZERO
           end if
-        end do 
+        end do
       else
-        write(*,*) ' ******************************************'
-        write(*,*) ' EOS: Warning, pseudo-degeneracies detected'
-        write(*,*) ' ******************************************'
+        call print_box('EOS: WARNING, PSEUDO-DEGENERACIES DETECTED')
         kk=0
 334     kk=kk+1
         if(dabs(occup(nnn,icase)-occup(nnn-kk,icase)).lt.thres) go to 334
         kk=kk-1
+!! split 1 electron evenly across the kk+k+1 quasi-degenerate EFOs !!
         frac=float(kk+1)/float(kk+k+1)
         write(*,'(2x,a12,x,i4,x,a14,x,i4,x,a30)') "Distributing",kk+1,"electrons over",kk+k+1,
      +  "pseudodegenerate atomic orbitals"
@@ -338,70 +337,61 @@
           else if(i.gt.nnn+k) then
             occup2(i)=ZERO
           else
-            occup2(i)=frac 
+            occup2(i)=frac
           end if
-        end do 
+        end do
       end if
-     
+
       do i=1,iorb
         elec(iorbat(i,icase))=elec(iorbat(i,icase))+occup2(i)
       end do
 
-!! PRINTING INFO !!
       if(icase.eq.1) then
-        write(*,*) " "
-        write(*,*) " ---------------------------------- "
-        write(*,*) "  EOS ANALYSIS FOR ALPHA ELECTRONS  "
-        write(*,*) " ---------------------------------- "
-        do i=1,icuat
-          errsav(i)=errnet(i)
-          effpop(i)=ZERO
-        end do
+        call print_box('EOS ANALYSIS FOR ALPHA ELECTRONS')
       else if (icase.eq.2) then
-        write(*,*) " "
-        write(*,*) " --------------------------------- "
-        write(*,*) "  EOS ANALYSIS FOR BETA ELECTRONS  "
-        write(*,*) " --------------------------------- "
+        call print_box('EOS ANALYSIS FOR BETA ELECTRONS')
       end if
-      write(*,*) " "
       write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
       write(*,*) " ---------------------------------------- "
 
+!! xlast: worst (smallest) "last occupied EFO" gross occupation across    !!
+!! fragments -- the weakest-defined occupied/unoccupied boundary.         !!
       xlast=ONE
       ilast=0
       do i=1,icufr
         nn=int(elec(i))
         if(elec(i)-nn.gt.thresh) nn=nn+1
-        if(nn+1.gt.ip0(i)) then 
-          write(*,10) i,elec(i),p0net(nn,i)
+        if(nn+1.gt.ip0(i)) then
+          write(*,10) i,elec(i),p0gro(nn,i),'     -'
         else
           if(nn.ne.0) then
-            write(*,15) i,elec(i),p0net(nn,i),p0net(nn+1,i)
+            write(*,15) i,elec(i),p0gro(nn,i),p0gro(nn+1,i)
           else
-            write(*,15) i,elec(i),ZERO,p0net(nn+1,i)
+            write(*,15) i,elec(i),ZERO,p0gro(nn+1,i)
           end if
         end if
         if(nn.ne.0) then
-          if(p0net(nn,i).lt.xlast) then
-            xlast=p0net(nn,i)
+          if(p0gro(nn,i).lt.xlast) then
+            xlast=p0gro(nn,i)
             ilast=i
           end if
         end if
-        do j=1,nn
-          effpop(i)=effpop(i)+p0net(j,i)
-        end do
-      end do 
+      end do
 
+!! xfirst: best (largest) "first unoccupied EFO" occupation among the     !!
+!! other fragments -- how close the runner-up comes to being occupied.    !!
       xfirst=ZERO
       do i=1,icufr
         if(i.ne.ilast) then
           nn=int(elec(i))
           if(elec(i)-nn.gt.thresh) nn=nn+1
-          if(nn+1.ne.0.and.p0net(nn+1,i).gt.xfirst) xfirst=p0net(nn+1,i)
+          if(nn+1.ne.0.and.p0gro(nn+1,i).gt.xfirst) xfirst=p0gro(nn+1,i)
         end if
       end do
       write(*,*) " ---------------------------------------- "
 
+!! reliability index: 100% if the occupied/unoccupied gap is >=0.5,      !!
+!! scaled down as xlast and xfirst get closer together.                  !!
       confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
       write(*,'(3x,a24,x,f7.3)') "RELIABILITY INDEX R(%) =",confi
       if(icase.eq.1) confi0=confi
@@ -422,33 +412,27 @@
         end if
       end do
 
-!! FINAL PRINTING !!
       if(icase.eq.2) then
-        write(*,*) " "
-        write(*,*) " --------------------------- "
-        write(*,*) "  FRAGMENT OXIDATION STATES  "
-        write(*,*) " --------------------------- "
-        write(*,*) " "
+        call print_box('FRAGMENT OXIDATION STATES')
         write(*,*) "  Frag.  Oxidation State  "
         write(*,*) " ------------------------ "
         do ifrg=1,icufr
           write(*,20) ifrg,oxi(ifrg)
-        end do 
+        end do
         write(*,*) " ------------------------ "
-        write(*,'(3x,a4,x,f4.1)') "Sum:",zztot 
+        write(*,'(3x,a22,x,f6.1)') "Total oxidation state:",zztot
         write(*,*) " "
 
-!! TO BE CHANGED !!
         confi2=dmin1(confi,confi0)
         write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
       end if
 
-!! PRINTING FORMATS !!
-10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3) !tocheck!
+!! printing formats !!
+10    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,a6)
 15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
 20    FORMAT(3x,i3,6x,f8.2)
 
-      end 
+      end
 
 !! ****** !!
 

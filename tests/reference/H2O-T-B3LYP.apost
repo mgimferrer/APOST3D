@@ -92,7 +92,7 @@
   
  nocc           5     nalpha           6     nbeta           4
   
- E(SCF/DFT)=  -76.2241107966790     
+ E(SCF/DFT)=  -76.224110796678957     
   
 STIFFNES=   4
 RHO_CALC=   0
@@ -105,8 +105,9 @@ EFF_THRE=   1
    2.00000   1.99969   1.99944   1.99824   1.00000   1.00000   0.00176   0.00056
    0.00031
  Checking NO overlap matrix 
- 
-        (Elapsed time :: initialization        0.0s)
+
+ TIMING CPU  :: initialization                                    0.01 s
+ TIMING WALL :: initialization                                    0.01 s
   
   -------------------------------------
   SETTING ATOMIC GRIDS FOR INTEGRATION 
@@ -126,6 +127,8 @@ EFF_THRE=   1
   Number of grid points:    265500
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
+ TIMING CPU  :: atomic definition                                 1.17 s
+ TIMING WALL :: atomic definition                                 0.54 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -203,8 +206,9 @@ EFF_THRE=   1
    2  H     0.142115
    3  H     0.142115
   ------------------
- 
-(Elapsed time :: population analyses        2.7s)
+
+ TIMING CPU  :: population analyses                               0.00 s
+ TIMING WALL :: population analyses                               0.00 s
   
   ---------------------------
    DOING LOCAL SPIN ANALYSIS 
@@ -306,7 +310,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      7.2850801
   
-(Elapsed time :: enpart one-electron        1.8s)
+ TIMING CPU  :: enpart one-electron                               0.30 s
+ TIMING WALL :: enpart one-electron                               0.30 s
   
   ------------------------------ 
    UKS-DFT ENERGY DECOMPOSITION  
@@ -369,7 +374,8 @@ EFF_THRE=   1
   
   WARNING: HF-exchange part missing 
   
-(Elapsed time :: enpart one-electron        7.6s)
+ TIMING CPU  :: enpart dft                                        1.29 s
+ TIMING WALL :: enpart dft                                        1.26 s
   
   ----------------------------------------------------- 
    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  
@@ -385,8 +391,7 @@ EFF_THRE=   1
   
   Rotating for angles:   0.000000   0.162000
   Number of grid points:     17520
-  OMP_NUM_THREADS not set
-  Two-el integration will be distributed over  48 threads out of  48 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   
   ------------------------------------------ 
    COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
@@ -401,7 +406,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Coulomb energy:     44.3183281
   
-(Elapsed time :: Coulomb energy        2.2s)
+ TIMING CPU  :: Coulomb energy                                    0.24 s
+ TIMING WALL :: Coulomb energy                                    0.04 s
   
   ------------------------------------------------- 
    EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  
@@ -409,8 +415,7 @@ EFF_THRE=   1
   
   Two-el integrations fo     42 functions
   Threshold for atom pair calculation    0.000000
-  OMP_NUM_THREADS not set
-  Two-el integration will be distributed over  48 threads out of  48 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   Skipping numerical integration for     0 atom pairs
   
   ----------------------------------------- 
@@ -507,6 +512,7 @@ EFF_THRE=   1
   Integration error (au):     -0.0000008
   Integration error (kcal/mol):    -0.00
   
-(Elapsed time :: enpart two-electron       32.7s)
+ TIMING CPU  :: enpart two-electron                               7.61 s
+ TIMING WALL :: enpart two-electron                               1.11 s
   
  ...Normal Termination of APOST-3D... 

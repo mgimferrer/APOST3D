@@ -94,7 +94,7 @@
   
  nocc          30     nalpha          30     nbeta          30
   
- E(SCF/DFT)=  0.000000000000000E+000
+ E(SCF/DFT)=   0.0000000000000000     
   
 STIFFNES=   4
 RHO_CALC=   0
@@ -112,8 +112,9 @@ EFF_THRE=   1
    5
 FOLI TOL=   3
 BRANCH I=   0
- 
-        (Elapsed time :: initialization        0.1s)
+
+ TIMING CPU  :: initialization                                    0.04 s
+ TIMING WALL :: initialization                                    0.04 s
   
   -------------------------------------
   SETTING ATOMIC GRIDS FOR INTEGRATION 
@@ -139,6 +140,8 @@ BRANCH I=   0
   Number of grid points:     29200
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
+ TIMING CPU  :: atomic definition                                 0.80 s
+ TIMING WALL :: atomic definition                                 0.24 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -256,7 +259,7 @@ BRANCH I=   0
    4          1.549239    0.198812    0.198812    7.795666    0.268367
    5          1.549239    0.198812    0.198812    0.268367    7.795666
   
-  Total:         60.0015279681231
+  Total:         60.0015279681234
   
  Additional printing :
   1  1    21.289929
@@ -285,8 +288,9 @@ BRANCH I=   0
   5  4     0.268367
   5  5     7.795666
   
- 
-(Elapsed time :: population analyses        2.1s)
+
+ TIMING CPU  :: population analyses                               0.01 s
+ TIMING WALL :: population analyses                               0.01 s
   
   ------------------------------------------------------- 
    DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)  
@@ -1188,7 +1192,7 @@ BRANCH I=   0
   ------------------------------------------ 
   
   Frg. and Lowest FOLI value:   1   1.10765
-  Frg. and Lowest FOLI value including tolerance (cutoff):   5   1.10765
+  Frg. and Lowest FOLI value including tolerance (cutoff):   3   1.10765
   
   ------------------- 
    SELECTED ORBITALS  
@@ -1710,5 +1714,7 @@ BRANCH I=   0
   Frg. Pop.  4:   0.02096   0.00921   0.00921   0.69064   0.00644
   Frg. Pop.  5:   0.77075   0.00921   0.00921   0.00644   0.69064
   
+ TIMING CPU  :: OSLO analysis                                     1.60 s
+ TIMING WALL :: OSLO analysis                                     1.47 s
   
  ...Normal Termination of APOST-3D... 

@@ -344,7 +344,7 @@
         {
           "label": "EOS reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 97.142,
+          "ref": 96.598,
           "tol_abs": 0.5
         }
       ]

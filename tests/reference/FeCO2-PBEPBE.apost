@@ -94,7 +94,7 @@
   
  nocc          26     nalpha          26     nbeta          26
   
- E(SCF/DFT)=  -1488.29142333009     
+ E(SCF/DFT)=  -1488.2914233300880     
   
 STIFFNES=   4
 RHO_CALC=   0
@@ -106,8 +106,9 @@ EFF_THRE=   1
    2   4
  Fragment:            3
    3   5
- 
-        (Elapsed time :: initialization        0.0s)
+
+ TIMING CPU  :: initialization                                    0.01 s
+ TIMING WALL :: initialization                                    0.01 s
   
   -------------------------------------
   SETTING ATOMIC GRIDS FOR INTEGRATION 
@@ -133,6 +134,8 @@ EFF_THRE=   1
   Number of grid points:     29200
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
+ TIMING CPU  :: atomic definition                                 0.25 s
+ TIMING WALL :: atomic definition                                 0.10 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -210,7 +213,7 @@ EFF_THRE=   1
    2          0.161590   13.560098    0.000000
    3          0.161590    0.000000   13.560098
   
-  Total:         52.0001353945020
+  Total:         52.0001353945019
   
  Additional printing :
   1  1    24.233578
@@ -277,7 +280,7 @@ EFF_THRE=   1
    2          1.575736   12.834987    0.197714
    3          1.575736    0.197714   12.834987
   
-  Total:         52.0005626734639
+  Total:         52.0005626734637
   
  Additional printing :
   1  1    22.981403
@@ -290,91 +293,95 @@ EFF_THRE=   1
   3  2     0.197714
   3  3    12.834987
   
- 
-(Elapsed time :: population analyses        0.6s)
+
+ TIMING CPU  :: population analyses                               0.00 s
+ TIMING WALL :: population analyses                               0.00 s
    
   UEFFAO: alpha and beta treated separately
    
+
+  --------------------------------------
+    DOING EFFAO-3D GENERAL FORMULATION
+  --------------------------------------
+
+
+  ---------------------------------
+    EFFAOs FROM THE ALPHA DENSITY
+  ---------------------------------
+
+  ** FRAGMENT 1 **
   
-  ------------------------------------ 
-   DOING EFFAO-3D GENERAL FORMULATION  
-  ------------------------------------ 
-  
-  ------------------------------- 
-   EFFAOs FROM THE ALPHA DENSITY  
-  ------------------------------- 
-  
-  ** FRAGMENT   1 **
-  
-  Net occupation for fragment   1   12.11696
+  Net occupation for fragment      1   12.11696
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
   OCCUP.   0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
   OCCUP.   0.0086   0.0081   0.0018
   
-  
-  Gross occupation for fragment   1  12.27814
+  Gross occupation for fragment    1   12.27814
   OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
   OCCUP.   0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
   OCCUP.   0.0124   0.0117   0.0034
   
-  ** FRAGMENT   2 **
+  ** FRAGMENT 2 **
   
-  Net occupation for fragment   2    6.77991
+  Net occupation for fragment      2    6.77991
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
   OCCUP.   0.0708   0.0060   0.0019
   
-  
-  Gross occupation for fragment   2   6.85638
+  Gross occupation for fragment    2    6.85638
   OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
   OCCUP.   0.0822   0.0112   0.0047
   
-  ** FRAGMENT   3 **
+  ** FRAGMENT 3 **
   
-  Net occupation for fragment   3    6.77991
+  Net occupation for fragment      3    6.77991
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
   OCCUP.   0.0708   0.0060   0.0019
   
-  
-  Gross occupation for fragment   3   6.85638
+  Gross occupation for fragment    3    6.85638
   OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
   OCCUP.   0.0822   0.0112   0.0047
   
   
   Total number of eff-AO-s for analysis:   41
-  EOS: Unambiguous integer electron assignation 
-  
-  ---------------------------------- 
-   EOS ANALYSIS FOR ALPHA ELECTRONS  
-  ---------------------------------- 
-  
+ EOS: Unambiguous integer electron assignation
+
+  ------------------------------------
+    EOS ANALYSIS FOR ALPHA ELECTRONS
+  ------------------------------------
+
    Frag.  Elect.  Last occ.  First unocc.  
   ---------------------------------------- 
-     1    12.00     0.814     0.276
-     2     7.00     0.747     0.072
-     3     7.00     0.747     0.072
+     1    12.00     0.837     0.321
+     2     7.00     0.787     0.084
+     3     7.00     0.787     0.084
   ---------------------------------------- 
-   RELIABILITY INDEX R(%) =  97.142
-  
-  SKIPPING EFFAOs FOR BETA ELECTRONS 
-  
-  
-  --------------------------- 
-   FRAGMENT OXIDATION STATES  
-  --------------------------- 
-  
+   RELIABILITY INDEX R(%) =  96.598
+
+  --------------------------------------
+    SKIPPING EFFAOs FOR BETA ELECTRONS
+  --------------------------------------
+
+
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
    Frag.  Oxidation State  
   ------------------------ 
      1          2.00
      2          0.00
      3          0.00
   ------------------------ 
-   Sum:  2.0
+   Total oxidation state:    2.0
   
-  OVERALL RELIABILITY INDEX R(%) =  97.142
- 
-(Elapsed time :: effAOs/EOS analysis        0.7s)
+  OVERALL RELIABILITY INDEX R(%) =  96.598
+
+ TIMING CPU  :: EFFAO computation                                 0.18 s
+ TIMING WALL :: EFFAO computation                                 0.04 s
+ TIMING CPU  :: EOS analysis                                      0.00 s
+ TIMING WALL :: EOS analysis                                      0.00 s
   
  ...Normal Termination of APOST-3D... 
