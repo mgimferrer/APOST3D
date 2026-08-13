@@ -1,18 +1,80 @@
-!! **************************** !!
-!! CONVENTIONAL EOS SUBROUTINES !!
-!! **************************** !!
+!! ***************************************************** !!
+!! REAL-SPACE / HILBERT-SPACE EOS SUBROUTINES             !!
+!! live, feed the shared eos_analysis decision routine:   !!
+!!   ueffao3d_frag   -- real-space (3D grid) fragment EFOs !!
+!!   eos_analysis    -- EFO occupations -> electron counts !!
+!!                       -> fragment oxidation states      !!
+!!   ueffaolow_frag  -- Lowdin/NAO Hilbert-space fragment  !!
+!!                       EFOs                              !!
+!!   ueffaomull_frag -- Mulliken Hilbert-space fragment    !!
+!!                       EFOs                              !!
+!! see the LEGACY / UNREVIEWED banner further down for the !!
+!! rest of this file's subroutines (effao.f, 2026-08-14).  !!
+!! ***************************************************** !!
 
 !! ***** !!
 
+   !! ********************************************************************* !!
+   !! subroutine: ueffao3d_frag                                             !!
+   !! purpose: computes the real-space (3D numerical-integration) effective !!
+   !!   fragment orbitals (EFOs) used by EOS/EFFAO, one fragment at a time: !!
+   !!   builds the Becke/TFVC-weighted net atomic-orbital overlap block for !!
+   !!   the fragment, symmetrically orthogonalizes it (S^-1/2, S^+1/2),     !!
+   !!   diagonalizes the given density matrix (pk) in that basis to get     !!
+   !!   the fragment's EFOs and their net occupations, then also computes   !!
+   !!   each EFO's gross occupation against sat (the full atomic-orbital    !!
+   !!   overlap matrix). results are NOT returned via arguments -- they     !!
+   !!   are stored per fragment into effao_mod's p0/p0net/p0gro/ip0 for     !!
+   !!   eos_analysis (oxidation-state assignment) and print.f (cube-file    !!
+   !!   generation) to consume afterwards.                                 !!
+   !! arguments (all read-only -- see purpose note on how results leave):   !!
+   !!   itotps (in) -- total number of grid points (nat*iatps)              !!
+   !!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
+   !!   omp    (in) -- becke/tfvc weight of each grid point for its own atom!!
+   !!   chp    (in) -- basis-function values at each grid point             !!
+   !!   sat    (in) -- per-atom AO overlap matrix (from numint_sat), used   !!
+   !!                  for the gross-occupation projection                  !!
+   !!   wp     (in) -- integration weight of each grid point                !!
+   !!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for   !!
+   !!                  every atom                                          !!
+   !!   pk     (in) -- density matrix to project onto fragment EFOs (p for  !!
+   !!                  closed-shell, pa/pb for alpha/beta)                  !!
+   !!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta -- selects the       !!
+   !!                  printed header and enables the icase.eq.0-only       !!
+   !!                  "deviation from population" diagnostic below         !!
+   !! notes:                                                                !!
+   !!   - loops over all icufr fragments (common /frlist/), one full        !!
+   !!     build_Smp+diagonalize per fragment -- serial, not currently OMP-  !!
+   !!     parallelized (see CLAUDE.md Parallelization Status: OSLO/EFFAO    !!
+   !!     diagonalization -- each fragment's work is independent, so the    !!
+   !!     outer loop is the natural parallelization target, NOT SDIAG2      !!
+   !!     itself; the shared effao_mod p0(:,:) scratch array would need to  !!
+   !!     become per-fragment first, see the discussion this was raised in).!!
+   !!   - the number of EFOs kept per fragment (imaxo) is capped by nocc    !!
+   !!     and by the EFF_THRESH occupation cutoff (xminocc, from iopt(24)). !!
+   !!   - gross occupations (p0gro) are stored in the SAME per-fragment     !!
+   !!     order as net (p0net) -- i.e. largest net occupation first, as     !!
+   !!     produced by diagonalize(); gross values are not independently     !!
+   !!     re-sorted here. print.f's cube generation and the per-fragment    !!
+   !!     printout below both read that net-sorted order.                  !!
+   !!   - known issue: the icase.eq.0 "Deviation from net population" print !!
+   !!     is never exactly zero as expected. Suspected cause found while    !!
+   !!     documenting this routine (2026-08-14, not yet fixed -- numerical  !!
+   !!     code, needs sign-off first): xx1 below is computed as             !!
+   !!     xx1=xx0+qat(...) inside the fragment-atom loop, entangled with    !!
+   !!     the unrelated running sum xx0 (the op-matrix double-sum), instead !!
+   !!     of accumulating independently as xx1=xx1+qat(...).                !!
+   !! author: PSalse, ERaco, MGimf                                          !!
+   !! ********************************************************************* !!
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
 
       use integration_grid
-      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+      use effao_mod, only: p0,p0net,p0gro,ip0
 
       implicit real*8(a-h,o-z)
-      
+
       include 'parameter.h'
-      
+
       integer,intent(in) :: itotps,ndim
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -29,17 +91,14 @@
       dimension pk(ndim,ndim)
 
       allocatable :: s0(:,:),sm(:,:),c0(:,:),splus(:,:),pp0(:,:)
-      allocatable :: s0all(:),is0all(:)
+      allocatable :: s0all(:)
       allocatable :: scr(:)
 
-      ihirsh  = Iopt(6) 
-      iallpo  = iopt(7) 
-      ieffao  = Iopt(12) 
-      icube   = Iopt(13) 
-      ieffthr = Iopt(24) 
+      icube   = Iopt(13)
+      ieffthr = Iopt(24)
       iatps   = nang*nrad
 
-      xminocc=REAL(ieffthr)/1000.0d0 
+      xminocc=REAL(ieffthr)/1000.0d0
 
       write(*,*) " "
       write(*,*) " ------------------------------------ "
@@ -56,24 +115,32 @@
         write(*,*) " ------------------------------ "
       end if
       write(*,*) " "
-      
-      jocc=0
-      xmaxotot=ZERO
 
       ALLOCATE(scr(iatps*nat))
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
-      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim),is0all(ndim))
+      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
+
+!! one full diagonalization per fragment -- see the parallelization note !!
+!! in the header above for why this loop, not SDIAG2, is the target.    !!
       do iicenter=1,icufr
-        do ifut=1,iatps*nat                         
+
+!! scr(ifut): this fragment's total becke/tfvc weight at each grid point !!
+!! (sum of omp2 over the fragment's own atoms), used below to build the  !!
+!! fragment-block overlap. !!
+        do ifut=1,iatps*nat
           scr(ifut)=ZERO
           do icenter=1,nfrlist(iicenter)
             scr(ifut)=scr(ifut)+ omp2(ifut,ifrlist(icenter,iicenter))
           end do
         end do
 
-!! Computing Becke atomic NET orbital overlap !!
-!! ALLPOINTS should be default here !!
-!! a distance based screening would be interesting for very large systems !!
+!! computing the fragment's net atomic-orbital overlap block (s0), integrated !!
+!! over the whole molecular grid (iallpo0=1, i.e. ALLPOINTS) rather than just !!
+!! the fragment's own atoms -- that's the intended default here; a distance- !!
+!! based screening of the outer jcenter/ifut sum would help for very large   !!
+!! systems but isn't implemented. the iallpo0=0 branch below is dead in      !!
+!! practice (iallpo0 is a local constant, never read from input) but kept    !!
+!! for reference since it's the fragment-local-only variant of the same sum. !!
         iallpo0=1
         if(iallpo0.eq.1) then
           do mu=1,ndim
@@ -104,10 +171,12 @@
           end do
         end if
 
-!! make SAA1/2 !!
+!! S^-1/2 and S^+1/2 of the fragment overlap block !!
         call build_Smp(igr,S0,Sm,Splus,0)
 
-!! transform block S with P0 !!
+!! transform the density matrix into that orthogonalized fragment basis, !!
+!! diagonalize to get the fragment's EFOs (c0) and net occupations       !!
+!! (pp0 diagonal), then bring the EFO coefficients back to the AO basis. !!
         do i=1,igr
           do j=1,igr
             pp0(i,j)=pk(i,j)
@@ -117,17 +186,24 @@
         call diagonalize(igr,igr,pp0,C0,0)
         call to_AO_basis(igr,igr,Sm,C0)
 
-!! But max number of effaos in one center is nocc !!
+!! keep at most nocc EFOs per fragment, and only those above the         !!
+!! EFF_THRESH net-occupation cutoff (xminocc) -- diagonalize() already   !!
+!! sorted pp0's diagonal in decreasing order, so this is a simple prefix.!!
         i=1
-        do while(pp0(i,i).ge.xminocc.and.i.le.igr) 
+        do while(pp0(i,i).ge.xminocc.and.i.le.igr)
           imaxo=i
           i=i+1
         end do
         xmaxo=ZERO
-        do i=1,igr  
+        do i=1,igr
           xmaxo=xmaxo+pp0(i,i)
         end do
 
+!! xx0: sum of overlap populations (op) over all fragment-atom pairs, for !!
+!! comparison against the EFOs' total net occupation (xmaxo) below.       !!
+!! xx1: intended as the fragment's total atomic population (sum of qat    !!
+!! over the fragment's atoms) for the same comparison -- see the KNOWN    !!
+!! ISSUE note in the header above, this accumulation looks suspect.       !!
         xx0=ZERO
         xx1=ZERO
         do icenter=1,nfrlist(iicenter)
@@ -138,22 +214,26 @@
         end do
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
         write(*,*) " "
-        if(icase.eq.0) write(*,'(2x,a29,x,f8.4)') "Deviation from net population",xmaxo-xx0 !! ITS NEVER ZERO, PEDRO RECHECK main.f AND MODIFY IN GENERAL !!
+        if(icase.eq.0) write(*,'(2x,a29,x,f8.4)') "Deviation from net population",xmaxo-xx0
         write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",iicenter,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,*) " "
 
-!! ...calculate gross occupations from orbitals !!
-
+!! gross occupation of each kept EFO: project it through sat (the full   !!
+!! atomic-orbital overlap matrix, all atoms) rather than just the        !!
+!! fragment block used for net above, then scale by the EFO's own net    !!
+!! occupation. printed here for information alongside net -- downstream, !!
+!! eos_analysis is the one that actually decides which of the two to use !!
+!! (see the 2026-08-14 discussion: it currently uses net, moving to      !!
+!! gross-only is the agreed next step, not done in this pass).           !!
         xx0=ZERO
         do i=1,imaxo
           xxx=ZERO
-          xxy=ZERO
           do icenter=1,nfrlist(iicenter)
             jcenter=ifrlist(icenter,iicenter)
             xx=ZERO
-            do j=1,igr                        
+            do j=1,igr
               do k=1,igr
                 xx=xx+c0(k,i)*sat(k,j,jcenter)*c0(j,i)
               end do
@@ -170,8 +250,11 @@
         write(*,60) (s0all(mu),mu=1,imaxo)
         write(*,*) " "
 
-        do k=1,imaxo           
-          do mu=1,igr                       
+!! storing this fragment's EFO coefficients, net and gross occupations   !!
+!! into effao_mod for eos_analysis/print.f to consume -- see the header  !!
+!! note on p0 not (yet) being safe to parallelize across fragments as-is.!!
+        do k=1,imaxo
+          do mu=1,igr
             p0(mu,k)=c0(mu,k)
           end do
           p0net(k,iicenter)=pp0(k,k)
@@ -179,25 +262,24 @@
         end do
         ip0(iicenter)=imaxo
 
-!!  write cube file !!
+!! optional: write a cube file for this fragment's EFOs (# CUBE section) !!
         if(icube.eq.1) call cubegen4(iicenter,icase)
 
-!! end outer loop over fragments !!
-      end do
+      end do !! end of the per-fragment loop !!
 
-!! DEALLOCATING !!
-      DEALLOCATE(scr,s0,sm,c0,splus,pp0,s0all,is0all)
+      DEALLOCATE(scr,s0,sm,c0,splus,pp0,s0all)
 
-!! PRINTING FORMATS !!
+!! printing format !!
 60    FORMAT(8h  OCCUP. ,8f9.4)
 
       end
+
 
 !! ****** !!
 
       subroutine eos_analysis(idobeta,icase,thres)
 
-      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+      use effao_mod, only: p0,p0net,p0gro,ip0
 
       implicit real*8(a-h,o-z)
 
@@ -754,9 +836,20 @@ c end loop over fragments
 
       end
 
-!! ****** !!
-!! MG: NOT TOUCHED FROM HERE !!
-!! ****** !!
+!! ***************************************************** !!
+!! LEGACY / UNREVIEWED                                    !!
+!! checked codebase-wide 2026-08-14 for live call sites:  !!
+!!   uefomo       -- DEAD: only call site is commented    !!
+!!                    out (main.f)                        !!
+!!   ueffaomull2  -- DEAD: zero call sites anywhere        !!
+!!   ueffaolow2   -- DEAD: zero call sites anywhere        !!
+!!   ueffao3d     -- LIVE, but not EOS: single-atom EFFAOs !!
+!!                    (no fragments, no oxidation-state    !!
+!!                    assignment), used by the DOATOMS     !!
+!!                    pathway                              !!
+!! see CLAUDE.md Known Issues for removal-candidate status !!
+!! of the three dead ones.                                !!
+!! ***************************************************** !!
 
       subroutine uefomo(itotps,ndim,omp,chp,sat,wp,omp2,icase)
       use integration_grid
