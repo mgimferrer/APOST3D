@@ -1,3 +1,27 @@
+   !! ********************************************************************* !!
+   !! subroutine: print_box                                                 !!
+   !! purpose: prints text inside a rule sized to fit it, e.g.:             !!
+   !!            ------------------------------                             !!
+   !!              DOING EFFAO-3D GENERAL FORMULATION                       !!
+   !!            ------------------------------                             !!
+   !!   replaces hand-counted dashes (routinely out of sync with the        !!
+   !!   label) with a single call.                                         !!
+   !! arguments:                                                            !!
+   !!   text (in) -- title to print, no leading/trailing padding needed     !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
+      SUBROUTINE print_box(text)
+      IMPLICIT NONE
+      character(len=*), intent(in) :: text
+      integer :: n
+
+      n=len_trim(text)+4
+      write(*,'(/,2x,a)')  repeat('-',n)
+      write(*,'(2x,2x,a)') trim(text)
+      write(*,'(2x,a,/)')  repeat('-',n)
+
+      END SUBROUTINE print_box
+
       SUBROUTINE VPRINT(H,N,ndim,jdim)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'

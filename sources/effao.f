@@ -99,6 +99,7 @@
       allocatable :: s0(:,:),sm(:,:),c0(:,:),splus(:,:),pp0(:,:)
       allocatable :: s0all(:)
       allocatable :: scr(:)
+      character(len=30) :: lbl30
 
       icube   = Iopt(13)
       ieffthr = Iopt(24)
@@ -106,21 +107,12 @@
 
       xminocc=REAL(ieffthr)/1000.0d0
 
-      write(*,*) " "
-      write(*,*) " ------------------------------------ "
-      write(*,*) "  DOING EFFAO-3D GENERAL FORMULATION  "
-      write(*,*) " ------------------------------------ "
-      write(*,*) " "
+      call print_box('DOING EFFAO-3D GENERAL FORMULATION')
       if(icase.eq.1) then
-        write(*,*) " ------------------------------- "
-        write(*,*) "  EFFAOs FROM THE ALPHA DENSITY  "
-        write(*,*) " ------------------------------- "
+        call print_box('EFFAOs FROM THE ALPHA DENSITY')
       else if(icase.eq.2) then
-        write(*,*) " ------------------------------ "
-        write(*,*) "  EFFAOs FROM THE BETA DENSITY  "
-        write(*,*) " ------------------------------ "
+        call print_box('EFFAOs FROM THE BETA DENSITY')
       end if
-      write(*,*) " "
 
       ALLOCATE(scr(iatps*nat))
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
@@ -211,10 +203,11 @@
             xx0=xx0+op(ifrlist(icenter,iicenter),ifrlist(jcenter,iicenter))
           end do
         end do
-        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
+        write(*,'(2x,a,1x,i0,1x,a)') "** FRAGMENT",iicenter,"**"
         write(*,*) " "
         if(icase.eq.0) write(*,'(2x,a29,x,f8.4)') "Deviation from net population",xmaxo-xx0
-        write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",iicenter,xmaxo
+        lbl30="Net occupation for fragment"
+        write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,*) " "
@@ -243,8 +236,8 @@
           xx0=xx0+xxx
         end do
 !$OMP END PARALLEL DO
-        write(*,*) " "
-        write(*,'(2x,a29,x,i3,f10.5)') "Gross occupation for fragment",iicenter,xx0
+        lbl30="Gross occupation for fragment"
+        write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
         if(icase.eq.0) write(*,'(2x,a31,x,f8.4)') "Deviation from gross population",xx0-xx1
         write(*,60) (s0all(mu),mu=1,imaxo)
         write(*,*) " "
