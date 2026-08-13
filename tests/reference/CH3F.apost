@@ -94,7 +94,7 @@
   
  nocc           9     nalpha           9     nbeta           9
   
- E(SCF/DFT)=  -139.628188589857     
+ E(SCF/DFT)=  -139.62818858985679     
   
 STIFFNES=   4
 RHO_CALC=   0
@@ -106,8 +106,9 @@ EFF_THRE=   1
    1   3   4   5
 FOLI TOL=   3
 BRANCH I=   0
- 
-        (Elapsed time :: initialization        0.0s)
+
+ TIMING CPU  :: initialization                                    0.00 s
+ TIMING WALL :: initialization                                    0.00 s
   
   -------------------------------------
   SETTING ATOMIC GRIDS FOR INTEGRATION 
@@ -148,6 +149,8 @@ BRANCH I=   0
   Number of grid points:     29200
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
+ TIMING CPU  :: atomic definition                                 0.09 s
+ TIMING WALL :: atomic definition                                 0.04 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -256,7 +259,7 @@ BRANCH I=   0
    1          9.142936    1.157923
    2          1.157923    7.700146
   
-  Total:         18.0010054907675
+  Total:         18.0010054907676
   
  Additional printing :
   1  1     9.142936
@@ -264,8 +267,9 @@ BRANCH I=   0
   2  1     1.157923
   2  2     7.700146
   
- 
-(Elapsed time :: population analyses        0.2s)
+
+ TIMING CPU  :: population analyses                               0.00 s
+ TIMING WALL :: population analyses                               0.00 s
   
   ------------------------------------------------------- 
    DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)  
@@ -695,5 +699,7 @@ BRANCH I=   0
   Frg. Pop.  1:   0.03102   0.03984   0.03982   0.80051
   Frg. Pop.  2:   0.96906   0.96042   0.96012   0.19950
   
+ TIMING CPU  :: OSLO analysis                                     0.03 s
+ TIMING WALL :: OSLO analysis                                     0.03 s
   
  ...Normal Termination of APOST-3D... 

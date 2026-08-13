@@ -104,7 +104,8 @@ EFF_THRE=   1
   RADIAL=  40
  ANGULAR= 146
 
-        (Elapsed time :: initialization        0.0s)
+ TIMING CPU  :: initialization                                    0.02 s
+ TIMING WALL :: initialization                                    0.02 s
   
   -------------------------------------
   SETTING ATOMIC GRIDS FOR INTEGRATION 
@@ -119,7 +120,7 @@ EFF_THRE=   1
  Atom pair:    1   2 Ratio:  1.00000
   
  Info: atom pair:    1   3
- 1 maximum and  1 minima of density between         1 and    3
+ 1 maximum and  1 minima of density between atoms   1 and    3
  Max:          50 Min:          32
  Inconsistent number of extrema:
  Selecting minimum closest to midpoint           32
@@ -127,7 +128,7 @@ EFF_THRE=   1
  Atom pair:    1   3 Ratio:  1.68097
   
  Info: atom pair:    1   4
- 1 maximum and  1 minima of density between         1 and    4
+ 1 maximum and  1 minima of density between atoms   1 and    4
  Max:          50 Min:          32
  Inconsistent number of extrema:
  Selecting minimum closest to midpoint           32
@@ -135,7 +136,7 @@ EFF_THRE=   1
  Atom pair:    1   4 Ratio:  1.68097
   
  Info: atom pair:    1   5
- 1 maximum and  1 minima of density between         1 and    5
+ 1 maximum and  1 minima of density between atoms   1 and    5
  Max:          50 Min:          32
  Inconsistent number of extrema:
  Selecting minimum closest to midpoint           32
@@ -143,7 +144,7 @@ EFF_THRE=   1
  Atom pair:    1   5 Ratio:  1.68097
   
  Info: atom pair:    2   6
- 1 maximum and  1 minima of density between         2 and    6
+ 1 maximum and  1 minima of density between atoms   2 and    6
  Max:          50 Min:          32
  Inconsistent number of extrema:
  Selecting minimum closest to midpoint           32
@@ -151,7 +152,7 @@ EFF_THRE=   1
  Atom pair:    2   6 Ratio:  1.68097
   
  Info: atom pair:    2   7
- 1 maximum and  1 minima of density between         2 and    7
+ 1 maximum and  1 minima of density between atoms   2 and    7
  Max:          50 Min:          32
  Inconsistent number of extrema:
  Selecting minimum closest to midpoint           32
@@ -159,7 +160,7 @@ EFF_THRE=   1
  Atom pair:    2   7 Ratio:  1.68097
   
  Info: atom pair:    2   8
- 1 maximum and  1 minima of density between         2 and    8
+ 1 maximum and  1 minima of density between atoms   2 and    8
  Max:          50 Min:          32
  Inconsistent number of extrema:
  Selecting minimum closest to midpoint           32
@@ -169,6 +170,8 @@ EFF_THRE=   1
   Number of grid points:    708000
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
+ TIMING CPU  :: atomic definition                                21.86 s
+ TIMING WALL :: atomic definition                                 5.46 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -280,7 +283,8 @@ EFF_THRE=   1
    8  H     0.000000
   ------------------
 
-(Elapsed time :: population analyses       12.8s)
+ TIMING CPU  :: population analyses                               0.01 s
+ TIMING WALL :: population analyses                               0.01 s
   
   -------------------------------------- 
    DOING MOLECULAR ENERGY DECOMPOSITION  
@@ -395,7 +399,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     42.2635815
   
-(Elapsed time :: enpart one-electron        2.1s)
+ TIMING CPU  :: enpart one-electron                               2.11 s
+ TIMING WALL :: enpart one-electron                               2.13 s
   
   ------------------------------ 
    RKS-DFT ENERGY DECOMPOSITION  
@@ -537,7 +542,8 @@ EFF_THRE=   1
   
   WARNING: HF-exchange part missing 
   
-(Elapsed time :: enpart dft       10.8s)
+ TIMING CPU  :: enpart dft                                       11.54 s
+ TIMING WALL :: enpart dft                                       11.01 s
   
   ----------------------------------------------------- 
    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  
@@ -553,7 +559,7 @@ EFF_THRE=   1
   
   Rotating for angles:   0.000000   0.162000
   Number of grid points:     46720
-  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   
   ------------------------------------------ 
    COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
@@ -586,7 +592,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Coulomb energy:     80.3392145
   
-(Elapsed time :: Coulomb energy        1.1s)
+ TIMING CPU  :: Coulomb energy                                    1.51 s
+ TIMING WALL :: Coulomb energy                                    0.24 s
   
   ------------------------------------------------- 
    EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  
@@ -594,7 +601,7 @@ EFF_THRE=   1
   
   Two-el integrations for     90 MO pairs
   Threshold for atom pair calculation    0.000500
-  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   Skipping numerical integration for     0 atom pairs
   
   ----------------------------------------- 
@@ -628,7 +635,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -12.4871105
   
-(Elapsed time :: Exact-exchange energy       44.2s)
+ TIMING CPU  :: Exact-exchange energy                            25.55 s
+ TIMING WALL :: Exact-exchange energy                             3.43 s
   
   ------------------------ 
    HYBRID KS-DFT XC TERMS  
@@ -672,7 +680,8 @@ EFF_THRE=   1
   WARNING: New error with same sign
   Damping parameter:      1.3799748
   
-(Elapsed time :: Interpolated zero-error       11.4s)
+ TIMING CPU  :: Interpolated zero-error                           6.59 s
+ TIMING WALL :: Interpolated zero-error                           1.16 s
   
   ------------------------------------------------------- 
    INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
@@ -804,6 +813,7 @@ EFF_THRE=   1
   Integration error (au):      0.0000520
   Integration error (kcal/mol):     0.03
   
-(Elapsed time :: enpart two-electron       57.9s)
+ TIMING CPU  :: enpart two-electron                              35.45 s
+ TIMING WALL :: enpart two-electron                               5.35 s
   
  ...Normal Termination of APOST-3D... 
