@@ -301,6 +301,7 @@
 
       use ao_matrices
       use integration_grid
+      use timing_mod
 
       implicit real*8(a-h,o-z)
 
@@ -416,11 +417,14 @@
 
 !! COULOMB PART !!
       call cpu_time(xtime)
+      call get_wall_time(wxtime)
       call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       call cpu_time(xtime2)
-      write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)'
+      call get_wall_time(wxtime2)
+      call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
       write(*,*) " "
       xtime=xtime2
+      wxtime=wxtime2
 
 !! EXCHANGE-CORRELATION PART !!
       write(*,*) " ------------------------------------------------------------------ "
@@ -457,9 +461,11 @@
       write(*,'(2x,a46,x,f14.7)') "Post-Hartree-Fock exchange-correlation energy:",exch_corr
       write(*,*) " "
       call cpu_time(xtime2)
-      write(*,'(a40,f10.1,a2)')'(Elapsed time :: PHF Exc energy ',xtime2-xtime,'s)' 
+      call get_wall_time(wxtime2)
+      call print_timer('PHF Exc energy',xtime2-xtime,wxtime2-wxtime)
       write(*,*) " "
       xtime=xtime2
+      wxtime=wxtime2
       DEALLOCATE(cumulab,ffa1,ffb2)
 
 !! EXCHANGE ENERGY PART ONLY (IF ASKED IN THE INPUT FILE) !!
@@ -512,9 +518,11 @@
 
 !! TIMINGS... !!
         call cpu_time(xtime2)
-        write(*,'(a40,f10.1,a2)')'(Elapsed time :: PHF Ex & Ec energy ',xtime2-xtime,'s)'
+        call get_wall_time(wxtime2)
+        call print_timer('PHF Ex & Ec energy',xtime2-xtime,wxtime2-wxtime)
         write(*,*) " "
         xtime=xtime2
+        wxtime=wxtime2
         DEALLOCATE(cumulab,ffa1,ffb2)
       end if
 

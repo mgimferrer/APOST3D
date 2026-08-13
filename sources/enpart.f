@@ -317,6 +317,7 @@
       use ao_matrices
       use integration_grid
       use OMP_LIB
+      use timing_mod
 
       implicit real*8(a-h,o-z)
 
@@ -440,15 +441,18 @@
 
 !! COULOMB PART !!
       call cpu_time(xtime)
+      call get_wall_time(wxtime)
       if(ianalytical.eq.0) then
         call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       else
         call calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
       call cpu_time(xtime2)
-      write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)' 
+      call get_wall_time(wxtime2)
+      call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
       write(*,*) " "
       xtime=xtime2
+      wxtime=wxtime2
 
 !! IN CASE OF HAVING HF-TYPE EXCHANGE !!
       if(ianalytical.eq.0) then !MMO- skip if analytical
@@ -702,9 +706,11 @@
         write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
         write(*,*) " "
         call cpu_time(xtime2)
-        write(*,'(a39,f10.1,a2)')'(Elapsed time :: Exact-exchange energy ',xtime2-xtime,'s)' 
+        call get_wall_time(wxtime2)
+        call print_timer('Exact-exchange energy',xtime2-xtime,wxtime2-wxtime)
         write(*,*) " "
         xtime=xtime2
+        wxtime=wxtime2
       end if
       end if !MMO- non-analytical skip ends here
 
@@ -889,8 +895,10 @@
       end do
       write(*,*) " "
       call cpu_time(xtime2)
-      write(*,'(a41,f10.1,a2)')'(Elapsed time :: Interpolated zero-error ',xtime2-xtime,'s)' 
+      call get_wall_time(wxtime2)
+      call print_timer('Interpolated zero-error',xtime2-xtime,wxtime2-wxtime)
       xtime=xtime2
+      wxtime=wxtime2
 
 !! PRINTING !!
       write(*,*) " "
@@ -1268,6 +1276,7 @@
       use ao_matrices
       use integration_grid
       use OMP_LIB
+      use timing_mod
 
       implicit real*8(a-h,o-z)
 
@@ -1407,15 +1416,18 @@
 
 !! COULOMB !!
       call cpu_time(xtime)
+      call get_wall_time(wxtime)
       if(ianalytical.eq.0) then
         call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       else
         CALL calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
       call cpu_time(xtime2)
-      write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)'
+      call get_wall_time(wxtime2)
+      call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
       write(*,*) " "
       xtime=xtime2
+      wxtime=wxtime2
 
 !! EXCHANGE PART !!
       if(ianalytical.eq.0) then !MMO- skip if analytical
