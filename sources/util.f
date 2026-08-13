@@ -413,24 +413,17 @@ c X(N,M)
 
    !! ********************************************************************* !!
    !! subroutine: diagonalize                                               !!
-   !! purpose: symmetric eigensolver used everywhere in the codebase (every !!
-   !!   diagonalization in the program goes through this one subroutine --  !!
-   !!   oslo.f, effao.f, qtaim.f, mulliken.f, etc, ~36 call sites). Uses    !!
-   !!   LAPACK's dsyevd (2026-08-15, replaces the old hand-rolled SDIAG2    !!
-   !!   path, kept below as old_diagonalize/SDIAG2, unused, as a backup --  !!
-   !!   not deleted pending PSalse/MGimf review).                          !!
+   !! purpose: symmetric eigensolver used everywhere in the codebase (~36   !!
+   !!   call sites). Uses LAPACK's dsyevd; old_diagonalize/SDIAG2 below is  !!
+   !!   the pre-2026-08-15 hand-rolled version, kept as an unused backup.   !!
    !! arguments:                                                            !!
    !!   M     (in)    -- leading declared dimension of a0/x (LDA)          !!
-   !!   N     (in)    -- actual matrix order to diagonalize (N<=M -- only   !!
-   !!                    the N-by-N leading block of a0 is used)           !!
-   !!   A0    (inout) -- in: symmetric matrix to diagonalize. out: zeroed   !!
-   !!                    except the diagonal, which holds the N eigenvalues!!
+   !!   N     (in)    -- actual matrix order to diagonalize (N<=M)          !!
+   !!   A0    (inout) -- in: matrix to diagonalize. out: zeroed except the  !!
+   !!                    diagonal, which holds the N eigenvalues           !!
    !!   X     (out)   -- eigenvectors as columns, same order as A0's diag   !!
-   !!   ival  (in)    -- 0 in every current call site (sorted descending,   !!
-   !!                    matching old_diagonalize's convention exactly);    !!
-   !!                    nonzero is accepted but left in LAPACK's ascending !!
-   !!                    order -- SDIAG2's unsorted mode had no direct      !!
-   !!                    LAPACK equivalent, and nothing currently uses it.  !!
+   !!   ival  (in)    -- 0 everywhere today (sorted descending); nonzero    !!
+   !!                    is left in LAPACK's ascending order instead        !!
    !! author: MGimf                                                         !!
    !! ********************************************************************* !!
         Subroutine diagonalize(M,N,A0,X,ival)
@@ -470,11 +463,8 @@ c X(N,M)
 
    !! ********************************************************************* !!
    !! subroutine: old_diagonalize                                           !!
-   !! purpose: the SDIAG2-based symmetric eigensolver this codebase used    !!
-   !!   before switching to LAPACK (see diagonalize above). Kept intact,    !!
-   !!   unused, as a backup pending PSalse/MGimf review -- not deleted.     !!
-   !!   Same interface/behavior as diagonalize; safe to swap back in by     !!
-   !!   renaming if ever needed.                                           !!
+   !! purpose: SDIAG2-based eigensolver, unused, kept as a backup for       !!
+   !!   diagonalize above (same interface -- swap back in by renaming).     !!
    !! author: I. Mayer                                                      !!
    !! ********************************************************************* !!
         Subroutine old_diagonalize(M,N,A0,X,ival)

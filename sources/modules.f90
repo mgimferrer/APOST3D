@@ -667,16 +667,9 @@
 
    !! ********************************************************************* !!
    !! module: timing_mod                                                    !!
-   !! purpose: uniform, grep-friendly instrumentation for the coarse        !!
-   !!   per-section timers in main.f/enpart.f/enpart_phf.f. cpu_time()      !!
-   !!   alone is misleading for OMP code: both gfortran/libgomp and         !!
-   !!   ifort/libiomp5 sum it across every thread, so it reports CPU-       !!
-   !!   seconds, not wall-clock -- a section that parallelizes well prints  !!
-   !!   a BIGGER number for finishing in LESS real time, and a serial       !!
-   !!   section prints a SMALLER number despite taking longer. printing     !!
-   !!   wall-clock (system_clock) alongside it, rather than instead of it,  !!
-   !!   keeps both: cpu_time still shows total work done, system_clock      !!
-   !!   shows what the user actually waited for.                            !!
+   !! purpose: grep-friendly CPU + wall-clock timers for main.f/enpart.f/   !!
+   !!   enpart_phf.f (cpu_time() alone is misleading for OMP code -- it's   !!
+   !!   thread-summed, not wall-clock).                                    !!
    !! author: MGimf                                                         !!
    !! ********************************************************************* !!
    MODULE timing_mod
@@ -684,10 +677,8 @@
 
    !! ********************************************************************* !!
    !! subroutine: get_wall_time                                             !!
-   !! purpose: wall-clock reading via system_clock, in seconds. uses        !!
-   !!   integer*8 counters -- the default-kind counter on many platforms    !!
-   !!   wraps around in well under an hour, which would silently corrupt    !!
-   !!   deltas on the multi-hour/multi-day cluster runs this is meant for.  !!
+   !! purpose: wall-clock reading via system_clock (seconds). integer*8     !!
+   !!   counters avoid the default kind's sub-hour wraparound.              !!
    !! arguments:                                                            !!
    !!   twall (out) -- current wall-clock reading, seconds                  !!
    !! author: MGimf                                                         !!
@@ -704,17 +695,13 @@
 
    !! ********************************************************************* !!
    !! subroutine: print_timer                                               !!
-   !! purpose: single fixed-format print for every section timer, so        !!
-   !!   `grep "TIMING"` reliably finds and machine-parses all of them       !!
-   !!   regardless of caller. cpu and wall are printed as two separate      !!
-   !!   lines (not two columns), each independently greppable.              !!
+   !! purpose: fixed-format "TIMING CPU/WALL :: label value" print, so      !!
+   !!   `grep "TIMING"` finds every timer regardless of caller.             !!
    !! arguments:                                                            !!
-   !!   label (in) -- section name (kept <=40 chars so the numeric column   !!
-   !!                 never shifts between call sites)                      !!
-   !!   tcpu  (in) -- cpu_time() delta for this section, seconds (summed    !!
-   !!                 across OMP threads -- see module purpose note above)  !!
-   !!   twall (in) -- get_wall_time() delta for this section, true          !!
-   !!                 wall-clock, seconds                                   !!
+   !!   label (in) -- section name (<=40 chars, keeps the value column      !!
+   !!                 fixed across call sites)                              !!
+   !!   tcpu  (in) -- cpu_time() delta, seconds (thread-summed)             !!
+   !!   twall (in) -- get_wall_time() delta, seconds (true wall-clock)      !!
    !! author: MGimf                                                         !!
    !! ********************************************************************* !!
    SUBROUTINE print_timer(label,tcpu,twall)
