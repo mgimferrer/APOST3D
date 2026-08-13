@@ -723,10 +723,7 @@
    real*8, intent(in) :: tcpu,twall
    character(len=40) :: label40
 
-!! character assignment left-justifies + blank-pads to len=40 (unlike the A40 !!
-!! write edit descriptor below, which right-justifies when given a shorter   !!
-!! string) -- padding here first keeps the numeric column at a fixed offset  !!
-!! regardless of label length, so the output stays awk/cut-column-parseable. !!
+!! assignment left-justifies+pads (unlike A40 on write, which right-justifies). !!
    label40=label
 
    write(*,'(1x,a,a40,f14.2,a2)') 'TIMING CPU  :: ',label40,tcpu,' s'

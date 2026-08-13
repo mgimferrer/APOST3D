@@ -126,14 +126,10 @@
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
       ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
 
-!! per-fragment loop, kept serial on purpose -- see the header note above !!
-!! on why the loops INSIDE each iteration are the parallelization target, !!
-!! not this one.                                                         !!
+!! per-fragment loop kept serial on purpose -- see header note above.   !!
       do iicenter=1,icufr
 
-!! scr(ifut): this fragment's total becke/tfvc weight at each grid point !!
-!! (sum of omp2 over the fragment's own atoms), used below to build the  !!
-!! fragment-block overlap. !!
+!! scr(ifut): fragment's total becke/tfvc weight at each grid point.    !!
         do ifut=1,iatps*nat
           scr(ifut)=ZERO
           do icenter=1,nfrlist(iicenter)
@@ -141,25 +137,14 @@
           end do
         end do
 
-!! computing the fragment's net atomic-orbital overlap block (s0), integrated !!
-!! over the whole molecular grid (iallpo0=1, i.e. ALLPOINTS) rather than just !!
-!! the fragment's own atoms -- that's the intended default here; a distance- !!
-!! based screening of the outer jcenter/ifut sum would help for very large   !!
-!! systems but isn't implemented. the iallpo0=0 branch below is dead in      !!
-!! practice (iallpo0 is a local constant, never read from input) but kept    !!
-!! for reference since it's the fragment-local-only variant of the same sum. !!
+!! net AO overlap block (s0), ALLPOINTS integration (iallpo0=1).        !!
+!! iallpo0=0 branch below is dead code (local constant, never 0).       !!
         iallpo0=1
         if(iallpo0.eq.1) then
-!! parallel over mu: for a given mu, the inner nu=1,mu loop writes only   !!
-!! s0(mu,1:mu) and s0(1:mu,mu) -- no other mu writes those same entries   !!
-!! (element (a,b) with a<b is written only when the outer index reaches   !!
-!! max(a,b)), so different mu iterations never race. nu stays a serial   !!
-!! loop nested inside each parallel mu iteration (bounds depend on mu,    !!
-!! so it can't be COLLAPSEd -- see the prenumint convention in numint.f). !!
-!! wp/chp/scr/omp are shared, read-only inputs; x is a private scalar.    !!
-!! this is the dominant cost in the subroutine (O(ndim^2 x itotps)) and   !!
-!! scales with system size, unlike the outer fragment loop -- see the    !!
-!! header note on why this is the actual parallelization target.         !!
+!! parallel over mu: each mu writes only its own s0(mu,*)/s0(*,mu), no  !!
+!! two mu iterations collide. nu nested serial (bounds depend on mu).   !!
+!! wp/chp/scr/omp shared read-only, x private. dominant cost here.      !!
+
 !$OMP PARALLEL DO PRIVATE(mu,nu,jcenter,ifut,x)
           do mu=1,ndim
             do nu=1,mu
@@ -193,9 +178,8 @@
 !! S^-1/2 and S^+1/2 of the fragment overlap block !!
         call build_Smp(igr,S0,Sm,Splus,0)
 
-!! transform the density matrix into that orthogonalized fragment basis, !!
-!! diagonalize to get the fragment's EFOs (c0) and net occupations       !!
-!! (pp0 diagonal), then bring the EFO coefficients back to the AO basis. !!
+!! transform pk into the orthogonalized fragment basis, diagonalize to  !!
+!! get the EFOs (c0) and net occupations (pp0 diagonal), back to AO.    !!
         do i=1,igr
           do j=1,igr
             pp0(i,j)=pk(i,j)
@@ -205,9 +189,8 @@
         call diagonalize(igr,igr,pp0,C0,0)
         call to_AO_basis(igr,igr,Sm,C0)
 
-!! keep at most nocc EFOs per fragment, and only those above the         !!
-!! EFF_THRESH net-occupation cutoff (xminocc) -- diagonalize() already   !!
-!! sorted pp0's diagonal in decreasing order, so this is a simple prefix.!!
+!! keep EFOs above the EFF_THRESH cutoff (xminocc); pp0's diagonal is   !!
+!! already sorted decreasing, so this is a simple prefix.               !!
         i=1
         do while(pp0(i,i).ge.xminocc.and.i.le.igr)
           imaxo=i
@@ -218,11 +201,8 @@
           xmaxo=xmaxo+pp0(i,i)
         end do
 
-!! xx0: sum of overlap populations (op) over all fragment-atom pairs, for !!
-!! comparison against the EFOs' total net occupation (xmaxo) below.       !!
-!! xx1: intended as the fragment's total atomic population (sum of qat    !!
-!! over the fragment's atoms) for the same comparison -- see the KNOWN    !!
-!! ISSUE note in the header above, this accumulation looks suspect.       !!
+!! xx0: op-matrix sum for the fragment; xx1: meant to be the qat sum,   !!
+!! same comparison -- see KNOWN ISSUE in header, xx1 looks buggy.       !!
         xx0=ZERO
         xx1=ZERO
         do icenter=1,nfrlist(iicenter)
@@ -239,18 +219,11 @@
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,*) " "
 
-!! gross occupation of each kept EFO: project it through sat (the full   !!
-!! atomic-orbital overlap matrix, all atoms) rather than just the        !!
-!! fragment block used for net above, then scale by the EFO's own net    !!
-!! occupation. printed here for information alongside net -- downstream, !!
-!! eos_analysis is the one that actually decides which of the two to use !!
-!! (see the 2026-08-14 discussion: it currently uses net, moving to      !!
-!! gross-only is the agreed next step, not done in this pass).           !!
-!! parallel over i: each EFO's gross occupation is independent -- writes  !!
-!! only its own s0all(i), and xx0 (the fragment total) is a genuine OMP   !!
-!! REDUCTION, not a shared accumulator written directly. c0/sat/pp0/      !!
-!! nfrlist/ifrlist are shared, read-only; icenter/jcenter/j/k/xx/xxx are  !!
-!! private per iteration.                                                !!
+!! gross occupation of each EFO via sat (all atoms), scaled by its net  !!
+!! occupation. info-only print here -- eos_analysis moving to gross-only !!
+!! selection is the agreed next step, not done in this pass.            !!
+!! parallel over i: independent per EFO, writes only s0all(i); xx0 is a !!
+!! genuine REDUCTION. c0/sat/pp0/nfrlist/ifrlist shared, read-only.     !!
         xx0=ZERO
 !$OMP PARALLEL DO PRIVATE(i,icenter,jcenter,j,k,xx,xxx) REDUCTION(+:xx0)
         do i=1,imaxo
@@ -276,9 +249,7 @@
         write(*,60) (s0all(mu),mu=1,imaxo)
         write(*,*) " "
 
-!! storing this fragment's EFO coefficients, net and gross occupations   !!
-!! into effao_mod for eos_analysis/print.f to consume -- see the header  !!
-!! note on p0 not (yet) being safe to parallelize across fragments as-is.!!
+!! store this fragment's EFOs/occupations into effao_mod (see header).  !!
         do k=1,imaxo
           do mu=1,igr
             p0(mu,k)=c0(mu,k)

@@ -893,10 +893,8 @@ CCCCCCCCCCCCCCCCCCC
 C END OF PREPARATION FOR NUMERICAL INTEGRATIONS
 CCCCCCCCCCCCCCCCCCC
 
-!! HOW LONG IT TOOK TO PARTITION THE DENSITY INTO ATOMIC DOMAINS -- COVERS !!
-!! BOTH BRANCHES ABOVE: HILBERT-SPACE (tomull/tolow/tonao/tolow2) AND     !!
-!! REAL-SPACE (build_integration_grid+prenumint+numint_sat, TFVC/Becke/  !!
-!! Hirshfeld/etc via wat.f) -- whichever AIM scheme was actually run.    !!
+!! atomic-domain partition time, covers both branches above (Hilbert    !!
+!! and real-space).                                                     !!
       call cpu_time(time2)
       call get_wall_time(wtime2)
       call print_timer('atomic definition',time2-time,wtime2-wtime)
@@ -1255,12 +1253,8 @@ c imulli 4 NAO
 
       if (ieffao.ne.0) then
 
-!! ACCUMULATORS TO SEPARATE EOS-ANALYSIS TIME FROM EFFAO-COMPUTATION TIME  !!
-!! BELOW (SEE THE TWO print_timer CALLS AT THE END OF THIS BLOCK) -- ADDED !!
-!! TO EACH eos_analysis CALL SITE SO IT WORKS REGARDLESS OF WHICH imulli/  !!
-!! ieffao BRANCH ACTUALLY RUNS. NOT WIRED UP FOR ieffao.eq.3 (EOS-U):      !!
-!! effao3d_u CALLS ITS EOS ANALYSIS INTERNALLY (ueos.f), SO THAT PATH      !!
-!! REPORTS ALL ITS TIME AS 'EFFAO computation' -- HONEST, JUST NOT SPLIT.  !!
+!! accumulate eos_analysis time separately (see print_timer calls below). !!
+!! not wired up for ieffao.eq.3 (EOS-U) -- effao3d_u times as EFFAO only. !!
         xeos_cpu=ZERO
         xeos_wall=ZERO
 
@@ -1648,12 +1642,7 @@ CCCCCCCCCC
         write(*,*) " ------------------------------------------------------- "
         write(*,*) " "
 
-!! MINIMAL SINGLE TIMER FOR THE WHOLE OSLO BLOCK (SAT-FOR-HILBERT-SPACE   !!
-!! STEP + THE ITERATIVE ALGORITHM ITSELF) -- CURRENTLY ZERO VISIBILITY,   !!
-!! AND rwf_iterative_oslo/uwf_iterative_oslo'S do iiter=1,niter LOOP IS   !!
-!! THE STEEPEST-SCALING UNPARALLELIZED CONSTRUCT IN THE CODEBASE (RE-RUNS !!
-!! A FULL SDIAG2 DIAGONALIZATION PER FRAGMENT EVERY ITERATION). NOT SPLIT !!
-!! FURTHER FOR NOW.                                                      !!
+!! single timer for the whole OSLO block -- previously zero visibility. !!
       call cpu_time(time)
       call get_wall_time(wtime)
 
