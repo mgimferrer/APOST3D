@@ -34,10 +34,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install gfortran/gcc/make
+      - name: Install gfortran/gcc/make/openblas
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y gfortran gcc make
+          sudo apt-get install -y gfortran gcc make libopenblas-dev
           gfortran --version
 
       - name: Cache libxc-4.2.3 build

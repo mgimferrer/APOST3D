@@ -84,6 +84,37 @@ if [[ ! -f "$LIBXC_A" ]]; then
 fi
 
 # ------------------------------------------------------------------------------
+# OpenBLAS preflight: diagonalize() in util.f needs LAPACK's dsyevd. Actually
+# try to link against it (same logic the Makefile uses for OPENBLAS_LIB)
+# rather than just checking for a file, since that's what will actually be
+# needed at build time.
+# ------------------------------------------------------------------------------
+OPENBLAS_PREFIX="$(brew --prefix openblas 2>/dev/null || true)"
+if [[ -n "$OPENBLAS_PREFIX" ]]; then
+  OPENBLAS_LDFLAGS="-L$OPENBLAS_PREFIX/lib -lopenblas"
+else
+  OPENBLAS_LDFLAGS="-lopenblas"
+fi
+
+OPENBLAS_TEST_DIR="$(mktemp -d)"
+cat > "$OPENBLAS_TEST_DIR/t.f90" <<'EOF'
+program t
+  external dsyevd
+  print *, "ok"
+end program t
+EOF
+if ! gfortran "$OPENBLAS_TEST_DIR/t.f90" $OPENBLAS_LDFLAGS -o "$OPENBLAS_TEST_DIR/t" &>/dev/null; then
+  echo "ERROR: could not link against OpenBLAS (needed for LAPACK's dsyevd,"
+  echo "       used by diagonalize() in sources/util.f). Install it with:"
+  echo "         macOS:  brew install openblas"
+  echo "         Ubuntu: sudo apt install libopenblas-dev"
+  echo "         Fedora: sudo dnf install openblas-devel"
+  rm -rf "$OPENBLAS_TEST_DIR"
+  exit 1
+fi
+rm -rf "$OPENBLAS_TEST_DIR"
+
+# ------------------------------------------------------------------------------
 # gfortran preflight: must exist and be >= 10 (required for
 # -fallow-argument-mismatch, used throughout the Makefile).
 # ------------------------------------------------------------------------------

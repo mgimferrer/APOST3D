@@ -411,8 +411,73 @@ c X(N,M)
         end
 
 
-**********************************7*********************************
+   !! ********************************************************************* !!
+   !! subroutine: diagonalize                                               !!
+   !! purpose: symmetric eigensolver used everywhere in the codebase (every !!
+   !!   diagonalization in the program goes through this one subroutine --  !!
+   !!   oslo.f, effao.f, qtaim.f, mulliken.f, etc, ~36 call sites). Uses    !!
+   !!   LAPACK's dsyevd (2026-08-15, replaces the old hand-rolled SDIAG2    !!
+   !!   path, kept below as old_diagonalize/SDIAG2, unused, as a backup --  !!
+   !!   not deleted pending PSalse/MGimf review).                          !!
+   !! arguments:                                                            !!
+   !!   M     (in)    -- leading declared dimension of a0/x (LDA)          !!
+   !!   N     (in)    -- actual matrix order to diagonalize (N<=M -- only   !!
+   !!                    the N-by-N leading block of a0 is used)           !!
+   !!   A0    (inout) -- in: symmetric matrix to diagonalize. out: zeroed   !!
+   !!                    except the diagonal, which holds the N eigenvalues!!
+   !!   X     (out)   -- eigenvectors as columns, same order as A0's diag   !!
+   !!   ival  (in)    -- 0 in every current call site (sorted descending,   !!
+   !!                    matching old_diagonalize's convention exactly);    !!
+   !!                    nonzero is accepted but left in LAPACK's ascending !!
+   !!                    order -- SDIAG2's unsorted mode had no direct      !!
+   !!                    LAPACK equivalent, and nothing currently uses it.  !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
         Subroutine diagonalize(M,N,A0,X,ival)
+        implicit double precision(a-h,o-z)
+        include 'parameter.h'
+        integer, intent(in) :: M,N,ival
+        dimension x(M,M),a0(M,M)
+        double precision, allocatable :: w(:),work(:),acopy(:,:)
+        integer :: lwork,liwork,info
+        integer, allocatable :: iwork(:)
+
+        allocate(acopy(N,N),w(N))
+        acopy(1:N,1:N)=a0(1:N,1:N)
+
+!! workspace query, then the real call !!
+        allocate(work(1),iwork(1))
+        call dsyevd('V','U',N,acopy,N,w,work,-1,iwork,-1,info)
+        lwork=int(work(1))
+        liwork=iwork(1)
+        deallocate(work,iwork)
+        allocate(work(max(1,lwork)),iwork(max(1,liwork)))
+        call dsyevd('V','U',N,acopy,N,w,work,lwork,iwork,liwork,info)
+        if(info.ne.0) stop 'dsyevd failed to converge in diagonalize'
+
+!! dsyevd returns ascending order; every caller expects descending      !!
+!! (old_diagonalize/SDIAG2's convention) -- reverse both eigenvalues    !!
+!! and the matching eigenvector columns while copying out.             !!
+        a0(1:N,1:N)=0.0d0
+        do i=1,N
+         a0(i,i)=w(N-i+1)
+         x(1:N,i)=acopy(1:N,N-i+1)
+        end do
+
+        deallocate(acopy,w,work,iwork)
+        return
+        end
+
+   !! ********************************************************************* !!
+   !! subroutine: old_diagonalize                                           !!
+   !! purpose: the SDIAG2-based symmetric eigensolver this codebase used    !!
+   !!   before switching to LAPACK (see diagonalize above). Kept intact,    !!
+   !!   unused, as a backup pending PSalse/MGimf review -- not deleted.     !!
+   !!   Same interface/behavior as diagonalize; safe to swap back in by     !!
+   !!   renaming if ever needed.                                           !!
+   !! author: I. Mayer                                                      !!
+   !! ********************************************************************* !!
+        Subroutine old_diagonalize(M,N,A0,X,ival)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
         integer, intent(in) :: M,N
@@ -421,7 +486,7 @@ c X(N,M)
 
         call sdiag2(a0,m,n,d,ival)
         do i=1,n
-         do j=1,n 
+         do j=1,n
           x(j,i)=a0(j,i)
           a0(j,i)=0.d0
          end do
