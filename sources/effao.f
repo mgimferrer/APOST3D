@@ -16,60 +16,21 @@
 
    !! ********************************************************************* !!
    !! subroutine: ueffao3d_frag                                             !!
-   !! purpose: computes the real-space (3D numerical-integration) effective !!
-   !!   fragment orbitals (EFOs) used by EOS/EFFAO, one fragment at a time: !!
-   !!   builds the Becke/TFVC-weighted net atomic-orbital overlap block for !!
-   !!   the fragment, symmetrically orthogonalizes it (S^-1/2, S^+1/2),     !!
-   !!   diagonalizes the given density matrix (pk) in that basis to get     !!
-   !!   the fragment's EFOs and their net occupations, then also computes   !!
-   !!   each EFO's gross occupation against sat (the full atomic-orbital    !!
-   !!   overlap matrix). results are NOT returned via arguments -- they     !!
-   !!   are stored per fragment into effao_mod's p0/p0net/p0gro/ip0 for     !!
-   !!   eos_analysis (oxidation-state assignment) and print.f (cube-file    !!
-   !!   generation) to consume afterwards.                                 !!
-   !! arguments (all read-only -- see purpose note on how results leave):   !!
+   !! purpose: computes real-space (3D grid) effective fragment orbitals    !!
+   !!   (EFOs) for EOS/EFFAO, one fragment at a time. Results are stored    !!
+   !!   into effao_mod (p0/p0net/p0gro/ip0), not returned via arguments.    !!
+   !! arguments (all read-only):                                           !!
    !!   itotps (in) -- total number of grid points (nat*iatps)              !!
    !!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
    !!   omp    (in) -- becke/tfvc weight of each grid point for its own atom!!
    !!   chp    (in) -- basis-function values at each grid point             !!
-   !!   sat    (in) -- per-atom AO overlap matrix (from numint_sat), used   !!
-   !!                  for the gross-occupation projection                  !!
+   !!   sat    (in) -- per-atom AO overlap matrix (from numint_sat)         !!
    !!   wp     (in) -- integration weight of each grid point                !!
    !!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for   !!
    !!                  every atom                                          !!
    !!   pk     (in) -- density matrix to project onto fragment EFOs (p for  !!
    !!                  closed-shell, pa/pb for alpha/beta)                  !!
-   !!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta -- selects the       !!
-   !!                  printed header and enables the icase.eq.0-only       !!
-   !!                  "deviation from population" diagnostic below         !!
-   !! notes:                                                                !!
-   !!   - loops over all icufr fragments (common /frlist/), one full        !!
-   !!     build_Smp+diagonalize per fragment. the outer loop itself stays   !!
-   !!     serial ON PURPOSE (2026-08-15 design revision): icufr can be      !!
-   !!     small on a large system (e.g. 3 fragments on 200 atoms), which    !!
-   !!     would cap an outer-loop PARALLEL DO at 3 threads regardless of    !!
-   !!     core count. instead, the overlap-block build and gross-occupation!!
-   !!     projection INSIDE each iteration are each parallelized with the  !!
-   !!     full thread count -- both scale with system size (ndim/igr), not !!
-   !!     fragment count, so this generalizes correctly whether icufr is   !!
-   !!     small or large. the diagonalization itself (build_Smp/diagonalize)!!
-   !!     stays serial per fragment either way -- SDIAG2 doesn't           !!
-   !!     parallelize internally; the real fix there is a threaded/        !!
-   !!     BLAS-LAPACK eigensolver (planned, not started).                  !!
-   !!   - the number of EFOs kept per fragment (imaxo) is capped by nocc    !!
-   !!     and by the EFF_THRESH occupation cutoff (xminocc, from iopt(24)). !!
-   !!   - gross occupations (p0gro) are stored in the SAME per-fragment     !!
-   !!     order as net (p0net) -- i.e. largest net occupation first, as     !!
-   !!     produced by diagonalize(); gross values are not independently     !!
-   !!     re-sorted here. print.f's cube generation and the per-fragment    !!
-   !!     printout below both read that net-sorted order.                  !!
-   !!   - known issue: the icase.eq.0 "Deviation from net population" print !!
-   !!     is never exactly zero as expected. Suspected cause found while    !!
-   !!     documenting this routine (2026-08-14, not yet fixed -- numerical  !!
-   !!     code, needs sign-off first): xx1 below is computed as             !!
-   !!     xx1=xx0+qat(...) inside the fragment-atom loop, entangled with    !!
-   !!     the unrelated running sum xx0 (the op-matrix double-sum), instead !!
-   !!     of accumulating independently as xx1=xx1+qat(...).                !!
+   !!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta                      !!
    !! author: PSalse, ERaco, MGimf                                          !!
    !! ********************************************************************* !!
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
@@ -118,7 +79,8 @@
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
       ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
 
-!! per-fragment loop kept serial on purpose -- see header note above.   !!
+!! per-fragment loop kept serial on purpose: icufr can be small on a    !!
+!! large system, so the loops INSIDE each iteration are threaded instead.!!
       do iicenter=1,icufr
 
 !! scr(ifut): fragment's total becke/tfvc weight at each grid point.    !!
@@ -133,10 +95,10 @@
 !! iallpo0=0 branch below is dead code (local constant, never 0).       !!
         iallpo0=1
         if(iallpo0.eq.1) then
+
 !! parallel over mu: each mu writes only its own s0(mu,*)/s0(*,mu), no  !!
 !! two mu iterations collide. nu nested serial (bounds depend on mu).   !!
 !! wp/chp/scr/omp shared read-only, x private. dominant cost here.      !!
-
 !$OMP PARALLEL DO PRIVATE(mu,nu,jcenter,ifut,x)
           do mu=1,ndim
             do nu=1,mu
@@ -194,7 +156,7 @@
         end do
 
 !! xx0: op-matrix sum for the fragment; xx1: meant to be the qat sum,   !!
-!! same comparison -- see KNOWN ISSUE in header, xx1 looks buggy.       !!
+!! same comparison -- xx1=xx0+qat(...) looks buggy, not fixed yet.      !!
         xx0=ZERO
         xx1=ZERO
         do icenter=1,nfrlist(iicenter)

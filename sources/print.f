@@ -1,11 +1,6 @@
    !! ********************************************************************* !!
    !! subroutine: print_box                                                 !!
-   !! purpose: prints text inside a rule sized to fit it, e.g.:             !!
-   !!            ------------------------------                             !!
-   !!              DOING EFFAO-3D GENERAL FORMULATION                       !!
-   !!            ------------------------------                             !!
-   !!   replaces hand-counted dashes (routinely out of sync with the        !!
-   !!   label) with a single call.                                         !!
+   !! purpose: prints text inside a rule auto-sized to fit it.              !!
    !! arguments:                                                            !!
    !!   text (in) -- title to print, no leading/trailing padding needed     !!
    !! author: MGimf                                                         !!
