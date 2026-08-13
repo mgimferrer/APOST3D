@@ -48,17 +48,37 @@ FFLAGS    = $(OPTFLAGS) $(DBGFLAGS) $(OMPFLAGS) $(SFLAGS)
 LIBXC_INC = -I$(LIBXCDIR)/include
 LIBXC_LIB = -L$(LIBXCDIR)/lib -lxcf90 -lxc -lm
 
-## OPENBLAS (BLAS/LAPACK) — diagonalize() in util.f uses dsyevd. Homebrew
-## keeps openblas keg-only on macOS (Accelerate.framework already provides
-## a BLAS/LAPACK, so Homebrew won't symlink openblas into the default
-## search path) — auto-detect its prefix via brew when available. On Linux
-## (apt/dnf package, or an HPC `module load openblas`), the standard
-## system/module search paths already work, so -lopenblas alone is enough.
-OPENBLAS_DIR := $(shell brew --prefix openblas 2>/dev/null)
-ifeq ($(OPENBLAS_DIR),)
-OPENBLAS_LIB = -lopenblas
-else
+## OPENBLAS (BLAS/LAPACK) — diagonalize() in util.f uses dsyevd. Layered
+## detection so a build never fails just because OpenBLAS lives somewhere
+## unexpected -- each step is a fallback for the one above it:
+##   1. OPENBLAS_DIR set on the command line/environment -> always wins,
+##      for any nonstandard install (custom prefix, HPC module that
+##      doesn't export the right paths, etc).
+##   2. pkg-config -- the actual standards-based mechanism most package
+##      managers (apt, dnf, conda, spack) register a .pc file for,
+##      wherever the library really lives.
+##   3. Homebrew's keg-only prefix on macOS (Accelerate.framework already
+##      provides a system BLAS/LAPACK, so Homebrew won't symlink openblas
+##      into the default search path or PKG_CONFIG_PATH) -- fed into
+##      pkg-config's own search path so step 2 catches it uniformly
+##      rather than needing a separate code path.
+##   4. Bare -lopenblas -- last resort, relying on the default linker
+##      search path or an HPC `module load` that already exported
+##      LIBRARY_PATH/LD_LIBRARY_PATH.
+ifdef OPENBLAS_DIR
 OPENBLAS_LIB = -L$(OPENBLAS_DIR)/lib -lopenblas
+else
+BREW_OPENBLAS_PREFIX := $(shell brew --prefix openblas 2>/dev/null)
+ifneq ($(BREW_OPENBLAS_PREFIX),)
+export PKG_CONFIG_PATH := $(BREW_OPENBLAS_PREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+endif
+ifeq ($(shell command -v pkg-config >/dev/null 2>&1 && pkg-config --exists openblas 2>/dev/null && echo yes),yes)
+OPENBLAS_LIB := $(shell pkg-config --libs openblas)
+else ifneq ($(BREW_OPENBLAS_PREFIX),)
+OPENBLAS_LIB = -L$(BREW_OPENBLAS_PREFIX)/lib -lopenblas
+else
+OPENBLAS_LIB = -lopenblas
+endif
 endif
 
 ## LEBEDEV OBJECT
