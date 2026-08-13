@@ -2,35 +2,55 @@
 
 ## Prerequisites
 
-GCC/gfortran **10 or newer** (12+ recommended), plus `make`.
+GCC/gfortran **10 or newer** (12+ recommended), `make`, and **OpenBLAS**
+(BLAS/LAPACK — `diagonalize()` in `sources/util.f` uses LAPACK's `dsyevd`
+for every diagonalization in the program). Free and open-source
+throughout — no Intel compiler, no MKL, no license of any kind required,
+matching the same reasoning behind the ifort → gfortran move itself.
 
 **Debian / Ubuntu / Linux Mint**
 
 ```bash
 sudo apt update
-sudo apt install gfortran gcc make
+sudo apt install gfortran gcc make libopenblas-dev
 ```
 
 **Fedora / RHEL / Rocky Linux**
 
 ```bash
-sudo dnf install gcc-gfortran gcc make
+sudo dnf install gcc-gfortran gcc make openblas-devel
 ```
 
 **openSUSE**
 
 ```bash
-sudo zypper install gcc-fortran gcc make
+sudo zypper install gcc-fortran gcc make openblas-devel
 ```
 
 **macOS (via Homebrew)**
 
 ```bash
-brew install gcc
+brew install gcc openblas
 # gfortran ships bundled with gcc, e.g. as gfortran-14
 ```
 
-Verify the version before continuing:
+```{admonition} macOS: openblas is keg-only
+:class: note
+
+Homebrew won't symlink `openblas` into the default search path on macOS,
+since Apple's Accelerate framework already provides a system BLAS/LAPACK.
+`make_compile.sh`/the `Makefile` auto-detect the Homebrew prefix via
+`brew --prefix openblas` and link against that directly — no manual
+`LDFLAGS`/`CPPFLAGS` exports needed.
+```
+
+**HPC clusters**: OpenBLAS is close to universally available as a module
+(`module load openblas` or similar) alongside or instead of vendor math
+libraries — check `module avail` on your system. As long as `-lopenblas`
+resolves (module-provided `LIBRARY_PATH`/`LD_LIBRARY_PATH` is normally
+enough), no other setup is required.
+
+Verify the versions before continuing:
 
 ```bash
 gfortran --version   # must be >= 10.0

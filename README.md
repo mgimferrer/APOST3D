@@ -20,7 +20,10 @@ distribution (no Intel compiler or license required).
 
 ## Installation
 
-Requires GCC/gfortran **10 or newer** (12+ recommended) and `make`.
+Requires GCC/gfortran **10 or newer** (12+ recommended), `make`, and
+**OpenBLAS** (BLAS/LAPACK — e.g. `brew install openblas` on macOS,
+`apt install libopenblas-dev` on Debian/Ubuntu). Free and open-source
+throughout — no Intel compiler, no MKL, no license of any kind required.
 
 ```bash
 # 1. Clone the repository

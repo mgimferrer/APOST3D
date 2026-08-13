@@ -48,6 +48,19 @@ FFLAGS    = $(OPTFLAGS) $(DBGFLAGS) $(OMPFLAGS) $(SFLAGS)
 LIBXC_INC = -I$(LIBXCDIR)/include
 LIBXC_LIB = -L$(LIBXCDIR)/lib -lxcf90 -lxc -lm
 
+## OPENBLAS (BLAS/LAPACK) — diagonalize() in util.f uses dsyevd. Homebrew
+## keeps openblas keg-only on macOS (Accelerate.framework already provides
+## a BLAS/LAPACK, so Homebrew won't symlink openblas into the default
+## search path) — auto-detect its prefix via brew when available. On Linux
+## (apt/dnf package, or an HPC `module load openblas`), the standard
+## system/module search paths already work, so -lopenblas alone is enough.
+OPENBLAS_DIR := $(shell brew --prefix openblas 2>/dev/null)
+ifeq ($(OPENBLAS_DIR),)
+OPENBLAS_LIB = -lopenblas
+else
+OPENBLAS_LIB = -L$(OPENBLAS_DIR)/lib -lopenblas
+endif
+
 ## LEBEDEV OBJECT
 QUAD_OBJ  = $(QUADDIR)/Lebedev-Laikov.o
 
@@ -84,7 +97,7 @@ all: apost3d apost3d-eos eos_aom
 apost3d: $(LIBXC_OBJ) $(OBJ_LIST) $(QUAD_OBJ)
 	$(FC) $(FFLAGS) \
 	  $(OBJ_LIST) $(LIBXC_OBJ) $(QUAD_OBJ) \
-	  $(LIBXC_LIB) \
+	  $(LIBXC_LIB) $(OPENBLAS_LIB) \
 	  -o $(APOST3D_PATH)/apost3d
 
 ## LEBEDEV QUADRATURE OBJECT
@@ -142,6 +155,7 @@ $(UTILDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
 apost3d-eos: $(SRCDIR)/modules.o $(UTILDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
 	$(FC) $(FFLAGS) \
 	  $(QUAD_OBJ) $(OBJ_LIST_EOS) $(UTILDIR)/main_eos.o \
+	  $(OPENBLAS_LIB) \
 	  -o $(APOST3D_PATH)/apost3d-eos
 
 ## EOS-AOM UTILITY
