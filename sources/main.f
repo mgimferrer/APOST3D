@@ -893,6 +893,16 @@ CCCCCCCCCCCCCCCCCCC
 C END OF PREPARATION FOR NUMERICAL INTEGRATIONS
 CCCCCCCCCCCCCCCCCCC
 
+!! HOW LONG IT TOOK TO PARTITION THE DENSITY INTO ATOMIC DOMAINS -- COVERS !!
+!! BOTH BRANCHES ABOVE: HILBERT-SPACE (tomull/tolow/tonao/tolow2) AND     !!
+!! REAL-SPACE (build_integration_grid+prenumint+numint_sat, TFVC/Becke/  !!
+!! Hirshfeld/etc via wat.f) -- whichever AIM scheme was actually run.    !!
+      call cpu_time(time2)
+      call get_wall_time(wtime2)
+      call print_timer('atomic definition',time2-time,wtime2-wtime)
+      time=time2
+      wtime=wtime2
+
 
 CCCCCCCCCCCCCCCCC
 c CORRELATED WFs INPUT
@@ -1245,6 +1255,15 @@ c imulli 4 NAO
 
       if (ieffao.ne.0) then
 
+!! ACCUMULATORS TO SEPARATE EOS-ANALYSIS TIME FROM EFFAO-COMPUTATION TIME  !!
+!! BELOW (SEE THE TWO print_timer CALLS AT THE END OF THIS BLOCK) -- ADDED !!
+!! TO EACH eos_analysis CALL SITE SO IT WORKS REGARDLESS OF WHICH imulli/  !!
+!! ieffao BRANCH ACTUALLY RUNS. NOT WIRED UP FOR ieffao.eq.3 (EOS-U):      !!
+!! effao3d_u CALLS ITS EOS ANALYSIS INTERNALLY (ueos.f), SO THAT PATH      !!
+!! REPORTS ALL ITS TIME AS 'EFFAO computation' -- HONEST, JUST NOT SPLIT.  !!
+        xeos_cpu=ZERO
+        xeos_wall=ZERO
+
         if(idofr.eq.0) then
           icufr=nat
           do i=1,icufr
@@ -1261,12 +1280,28 @@ CCCCCCCCCCCCCCC
             call ueffaomull_frag(0)
           else if (ieffao.eq.2) then
             call ueffaomull_frag(1)
-            if (ieos.eq.1) call eos_analysis(0,1,xthresh)
+            if (ieos.eq.1) then
+              call cpu_time(xeos1)
+              call get_wall_time(wxeos1)
+              call eos_analysis(0,1,xthresh)
+              call cpu_time(xeos2)
+              call get_wall_time(wxeos2)
+              xeos_cpu=xeos_cpu+(xeos2-xeos1)
+              xeos_wall=xeos_wall+(wxeos2-wxeos1)
+            end if
             if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
               call ueffaomull_frag(2)
               idobeta=1
             end if
-            if (ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+            if (ieos.eq.1) then
+              call cpu_time(xeos1)
+              call get_wall_time(wxeos1)
+              call eos_analysis(idobeta,2,xthresh)
+              call cpu_time(xeos2)
+              call get_wall_time(wxeos2)
+              xeos_cpu=xeos_cpu+(xeos2-xeos1)
+              xeos_wall=xeos_wall+(wxeos2-wxeos1)
+            end if
           end if
 
 CCCCCCCCCCCCCCC
@@ -1277,12 +1312,28 @@ CCCCCCCCCCCCCCC
             call ueffaolow_frag(0)
           else if (ieffao.eq.2) then
             call ueffaolow_frag(1)
-            if(ieos.eq.1) call eos_analysis(0,1,xthresh)
+            if(ieos.eq.1) then
+              call cpu_time(xeos1)
+              call get_wall_time(wxeos1)
+              call eos_analysis(0,1,xthresh)
+              call cpu_time(xeos2)
+              call get_wall_time(wxeos2)
+              xeos_cpu=xeos_cpu+(xeos2-xeos1)
+              xeos_wall=xeos_wall+(wxeos2-wxeos1)
+            end if
             if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
               call ueffaolow_frag(2)
               idobeta=1
             end if
-           if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+           if(ieos.eq.1) then
+              call cpu_time(xeos1)
+              call get_wall_time(wxeos1)
+              call eos_analysis(idobeta,2,xthresh)
+              call cpu_time(xeos2)
+              call get_wall_time(wxeos2)
+              xeos_cpu=xeos_cpu+(xeos2-xeos1)
+              xeos_wall=xeos_wall+(wxeos2-wxeos1)
+           end if
           end if
 
 CCCCCCCCCCCCCCC
@@ -1313,12 +1364,28 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
               write(*,*) ' UEFFAO: alpha and beta treated separately'
               write(*,*) '  '
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
-              if(ieos.eq.1) call eos_analysis(idobeta,1,xthresh)
+              if(ieos.eq.1) then
+                call cpu_time(xeos1)
+                call get_wall_time(wxeos1)
+                call eos_analysis(idobeta,1,xthresh)
+                call cpu_time(xeos2)
+                call get_wall_time(wxeos2)
+                xeos_cpu=xeos_cpu+(xeos2-xeos1)
+                xeos_wall=xeos_wall+(wxeos2-wxeos1)
+              end if
               if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) then
                 idobeta=1
                 call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
               end if
-              if(ieos.eq.1) call eos_analysis(idobeta,2,xthresh)
+              if(ieos.eq.1) then
+                call cpu_time(xeos1)
+                call get_wall_time(wxeos1)
+                call eos_analysis(idobeta,2,xthresh)
+                call cpu_time(xeos2)
+                call get_wall_time(wxeos2)
+                xeos_cpu=xeos_cpu+(xeos2-xeos1)
+                xeos_wall=xeos_wall+(wxeos2-wxeos1)
+              end if
 
 !! EOS-U PART: OS ANALYSIS CALLED FROM INSIDE THE ROUTINE !!
             else if(ieffao.eq.3) then
@@ -1330,7 +1397,8 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         write(*,*)
         call cpu_time(time2)
         call get_wall_time(wtime2)
-        call print_timer('effAOs/EOS analysis',time2-time,wtime2-wtime)
+        call print_timer('EFFAO computation',(time2-time)-xeos_cpu,(wtime2-wtime)-xeos_wall)
+        call print_timer('EOS analysis',xeos_cpu,xeos_wall)
         time=time2
         wtime=wtime2
       end if
@@ -1580,6 +1648,13 @@ CCCCCCCCCC
         write(*,*) " ------------------------------------------------------- "
         write(*,*) " "
 
+!! MINIMAL SINGLE TIMER FOR THE WHOLE OSLO BLOCK (SAT-FOR-HILBERT-SPACE   !!
+!! STEP + THE ITERATIVE ALGORITHM ITSELF) -- CURRENTLY ZERO VISIBILITY,   !!
+!! AND THIS IS THE ROUTINE FLAGGED IN CLAUDE.md AS THE STEEPEST-SCALING   !!
+!! UNPARALLELIZED CONSTRUCT. NOT SPLIT FURTHER FOR NOW (SEE DISCUSSION).  !!
+      call cpu_time(time)
+      call get_wall_time(wtime)
+
 !! COMPUTING sat FOR HILBERT SPACE CASES !!
 
         if(ilow2.ne.0) then
@@ -1591,11 +1666,16 @@ CCCCCCCCCC
 
 !! GENERAL INDEPENDENTLY OF THE AIM !!
 
-        if(kop.eq.0) then 
+        if(kop.eq.0) then
           call rwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
-        else 
+        else
           call uwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         end if
+
+      call cpu_time(time2)
+      call get_wall_time(wtime2)
+      call print_timer('OSLO analysis',time2-time,wtime2-wtime)
+
         DEALLOCATE(wp,omp,omp2,chp,pcoord)
       end if
 
