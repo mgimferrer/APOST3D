@@ -84,16 +84,38 @@ if [[ ! -f "$LIBXC_A" ]]; then
 fi
 
 # ------------------------------------------------------------------------------
-# OpenBLAS preflight: diagonalize() in util.f needs LAPACK's dsyevd. Actually
-# try to link against it (same logic the Makefile uses for OPENBLAS_LIB)
-# rather than just checking for a file, since that's what will actually be
-# needed at build time.
+# OpenBLAS preflight: diagonalize() in util.f needs LAPACK's dsyevd. Same
+# layered detection as the Makefile's OPENBLAS_LIB -- each a fallback for
+# the one above it:
+#   1. OPENBLAS_DIR set in the environment -> always wins (nonstandard
+#      install, HPC module that doesn't export the right paths, etc).
+#   2. pkg-config -- the standards-based mechanism most package managers
+#      (apt, dnf, conda, spack) register a .pc file for.
+#   3. Homebrew's keg-only prefix on macOS, also fed into pkg-config's own
+#      search path so step 2 catches it uniformly.
+#   4. Bare -lopenblas, relying on the default linker search path or an
+#      HPC `module load` that already exported LIBRARY_PATH/LD_LIBRARY_PATH.
+# Actually links a test program (not just checks for a file), since that's
+# what will actually be needed at build time.
 # ------------------------------------------------------------------------------
-OPENBLAS_PREFIX="$(brew --prefix openblas 2>/dev/null || true)"
-if [[ -n "$OPENBLAS_PREFIX" ]]; then
-  OPENBLAS_LDFLAGS="-L$OPENBLAS_PREFIX/lib -lopenblas"
+if [[ -n "${OPENBLAS_DIR:-}" ]]; then
+  OPENBLAS_LDFLAGS="-L$OPENBLAS_DIR/lib -lopenblas"
+  OPENBLAS_METHOD="OPENBLAS_DIR override ($OPENBLAS_DIR)"
 else
-  OPENBLAS_LDFLAGS="-lopenblas"
+  BREW_OPENBLAS_PREFIX="$(brew --prefix openblas 2>/dev/null || true)"
+  if [[ -n "$BREW_OPENBLAS_PREFIX" ]]; then
+    export PKG_CONFIG_PATH="$BREW_OPENBLAS_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+  fi
+  if command -v pkg-config &>/dev/null && pkg-config --exists openblas 2>/dev/null; then
+    OPENBLAS_LDFLAGS="$(pkg-config --libs openblas)"
+    OPENBLAS_METHOD="pkg-config"
+  elif [[ -n "$BREW_OPENBLAS_PREFIX" ]]; then
+    OPENBLAS_LDFLAGS="-L$BREW_OPENBLAS_PREFIX/lib -lopenblas"
+    OPENBLAS_METHOD="Homebrew prefix ($BREW_OPENBLAS_PREFIX)"
+  else
+    OPENBLAS_LDFLAGS="-lopenblas"
+    OPENBLAS_METHOD="default linker search path"
+  fi
 fi
 
 OPENBLAS_TEST_DIR="$(mktemp -d)"
@@ -105,13 +127,18 @@ end program t
 EOF
 if ! gfortran "$OPENBLAS_TEST_DIR/t.f90" $OPENBLAS_LDFLAGS -o "$OPENBLAS_TEST_DIR/t" &>/dev/null; then
   echo "ERROR: could not link against OpenBLAS (needed for LAPACK's dsyevd,"
-  echo "       used by diagonalize() in sources/util.f). Install it with:"
+  echo "       used by diagonalize() in sources/util.f)."
+  echo "       Tried via: $OPENBLAS_METHOD"
+  echo "       Install it with:"
   echo "         macOS:  brew install openblas"
   echo "         Ubuntu: sudo apt install libopenblas-dev"
   echo "         Fedora: sudo dnf install openblas-devel"
+  echo "       Nonstandard install location? Point at it directly:"
+  echo "         export OPENBLAS_DIR=/path/to/openblas"
   rm -rf "$OPENBLAS_TEST_DIR"
   exit 1
 fi
+echo "  OpenBLAS found via: $OPENBLAS_METHOD"
 rm -rf "$OPENBLAS_TEST_DIR"
 
 # ------------------------------------------------------------------------------

@@ -40,8 +40,7 @@ brew install gcc openblas
 Homebrew won't symlink `openblas` into the default search path on macOS,
 since Apple's Accelerate framework already provides a system BLAS/LAPACK.
 `make_compile.sh`/the `Makefile` auto-detect the Homebrew prefix via
-`brew --prefix openblas` and link against that directly — no manual
-`LDFLAGS`/`CPPFLAGS` exports needed.
+`brew --prefix openblas` — no manual `LDFLAGS`/`CPPFLAGS` exports needed.
 ```
 
 **HPC clusters**: OpenBLAS is close to universally available as a module
@@ -49,6 +48,26 @@ since Apple's Accelerate framework already provides a system BLAS/LAPACK.
 libraries — check `module avail` on your system. As long as `-lopenblas`
 resolves (module-provided `LIBRARY_PATH`/`LD_LIBRARY_PATH` is normally
 enough), no other setup is required.
+
+```{admonition} OpenBLAS lives somewhere nonstandard?
+:class: tip
+
+Both `make_compile.sh` and the `Makefile` try, in order: an explicit
+`OPENBLAS_DIR` you set yourself, then `pkg-config` (covers most
+conda/spack/package-manager installs automatically, wherever they
+actually are), then Homebrew's prefix on macOS, then a bare `-lopenblas`
+relying on the default linker search path. If none of those resolve —
+a custom-built copy in a one-off location, say — just point at it
+directly and every step above is skipped:
+
+    export OPENBLAS_DIR=/path/to/openblas   # expects lib/ and include/ under it
+    bash make_compile.sh
+
+`make_compile.sh` actually links a test program against whichever method
+it picks before touching the rest of the build, so a misconfigured
+`OPENBLAS_DIR` fails immediately with a clear message rather than deep
+into compilation.
+```
 
 Verify the versions before continuing:
 
