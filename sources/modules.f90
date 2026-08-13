@@ -573,6 +573,7 @@
    !!   the effective-atomic-orbital population matrices used by effao.f,   !!
    !!   print.f and ueos.f. allocated to the actual (igr,nat) once those    !!
    !!   are known from the .fchk, so there is no silent size cap anymore.   !!
+   !! author: MGimf                                                         !!
    !! ********************************************************************* !!
    MODULE effao_mod
    real*8, allocatable :: p0(:,:)    !! p0(igr,igr)    -- effective AO population matrix
@@ -582,7 +583,7 @@
 
    CONTAINS
 
-   !! --------------------------------------------------------------------- !!
+   !! ********************************************************************* !!
    !! subroutine: allocate_effao                                            !!
    !! purpose: allocate the effao_mod arrays to the real system size.       !!
    !!   call once, right after igr/nat become known -- see input2.f, next   !!
@@ -591,7 +592,8 @@
    !! arguments:                                                            !!
    !!   igr (in) -- number of basis functions                               !!
    !!   nat (in) -- number of atoms                                         !!
-   !! --------------------------------------------------------------------- !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
    SUBROUTINE allocate_effao(igr,nat)
    integer, intent(in) :: igr,nat
 
@@ -607,6 +609,7 @@
    !! purpose: replaces the legacy 'common /nao/' block (same nmax x nmax   !!
    !!   cap as effao_mod above). holds the natural-atomic-orbital matrices  !!
    !!   used by effao.f and mulliken.f.                                     !!
+   !! author: MGimf                                                         !!
    !! ********************************************************************* !!
    MODULE nao_mod
    real*8, allocatable :: unao(:,:)  !! unao(igr,igr)  -- natural AO transformation matrix
@@ -614,13 +617,14 @@
 
    CONTAINS
 
-   !! --------------------------------------------------------------------- !!
+   !! ********************************************************************* !!
    !! subroutine: allocate_nao                                              !!
    !! purpose: allocate the nao_mod arrays to the real system size. call    !!
    !!   once, right after igr becomes known -- see allocate_effao above.    !!
    !! arguments:                                                            !!
    !!   igr (in) -- number of basis functions                               !!
-   !! --------------------------------------------------------------------- !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
    SUBROUTINE allocate_nao(igr)
    integer, intent(in) :: igr
 
@@ -643,13 +647,14 @@
 
    CONTAINS
 
-   !! --------------------------------------------------------------------- !!
+   !! ********************************************************************* !!
    !! subroutine: allocate_stv                                              !!
    !! purpose: allocate the stv_mod arrays to the real system size. call    !!
    !!   once, right after igr becomes known -- see allocate_effao above.    !!
    !! arguments:                                                            !!
    !!   igr (in) -- number of basis functions                               !!
-   !! --------------------------------------------------------------------- !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
    SUBROUTINE allocate_stv(igr)
    integer, intent(in) :: igr
 
@@ -658,3 +663,75 @@
    END SUBROUTINE allocate_stv
 
    END MODULE stv_mod
+
+
+   !! ********************************************************************* !!
+   !! module: timing_mod                                                    !!
+   !! purpose: uniform, grep-friendly instrumentation for the coarse        !!
+   !!   per-section timers in main.f/enpart.f/enpart_phf.f. cpu_time()      !!
+   !!   alone is misleading for OMP code: both gfortran/libgomp and         !!
+   !!   ifort/libiomp5 sum it across every thread, so it reports CPU-       !!
+   !!   seconds, not wall-clock -- a section that parallelizes well prints  !!
+   !!   a BIGGER number for finishing in LESS real time, and a serial       !!
+   !!   section prints a SMALLER number despite taking longer. printing     !!
+   !!   wall-clock (system_clock) alongside it, rather than instead of it,  !!
+   !!   keeps both: cpu_time still shows total work done, system_clock      !!
+   !!   shows what the user actually waited for.                            !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
+   MODULE timing_mod
+   CONTAINS
+
+   !! ********************************************************************* !!
+   !! subroutine: get_wall_time                                             !!
+   !! purpose: wall-clock reading via system_clock, in seconds. uses        !!
+   !!   integer*8 counters -- the default-kind counter on many platforms    !!
+   !!   wraps around in well under an hour, which would silently corrupt    !!
+   !!   deltas on the multi-hour/multi-day cluster runs this is meant for.  !!
+   !! arguments:                                                            !!
+   !!   twall (out) -- current wall-clock reading, seconds                  !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
+   SUBROUTINE get_wall_time(twall)
+   IMPLICIT REAL*8(A-H,O-Z)
+   integer*8 :: icount,icount_rate
+   real*8, intent(out) :: twall
+
+   call system_clock(count=icount,count_rate=icount_rate)
+   twall=real(icount,8)/real(icount_rate,8)
+
+   END SUBROUTINE get_wall_time
+
+   !! ********************************************************************* !!
+   !! subroutine: print_timer                                               !!
+   !! purpose: single fixed-format print for every section timer, so        !!
+   !!   `grep "TIMING"` reliably finds and machine-parses all of them       !!
+   !!   regardless of caller. cpu and wall are printed as two separate      !!
+   !!   lines (not two columns), each independently greppable.              !!
+   !! arguments:                                                            !!
+   !!   label (in) -- section name (kept <=40 chars so the numeric column   !!
+   !!                 never shifts between call sites)                      !!
+   !!   tcpu  (in) -- cpu_time() delta for this section, seconds (summed    !!
+   !!                 across OMP threads -- see module purpose note above)  !!
+   !!   twall (in) -- get_wall_time() delta for this section, true          !!
+   !!                 wall-clock, seconds                                   !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
+   SUBROUTINE print_timer(label,tcpu,twall)
+   IMPLICIT REAL*8(A-H,O-Z)
+   character(len=*), intent(in) :: label
+   real*8, intent(in) :: tcpu,twall
+   character(len=40) :: label40
+
+!! character assignment left-justifies + blank-pads to len=40 (unlike the A40 !!
+!! write edit descriptor below, which right-justifies when given a shorter   !!
+!! string) -- padding here first keeps the numeric column at a fixed offset  !!
+!! regardless of label length, so the output stays awk/cut-column-parseable. !!
+   label40=label
+
+   write(*,'(1x,a,a40,f14.2,a2)') 'TIMING CPU  :: ',label40,tcpu,' s'
+   write(*,'(1x,a,a40,f14.2,a2)') 'TIMING WALL :: ',label40,twall,' s'
+
+   END SUBROUTINE print_timer
+
+   END MODULE timing_mod

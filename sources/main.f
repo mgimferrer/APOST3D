@@ -82,9 +82,10 @@ c
 c      We are extremely grateful for the possibility of using these routines!      
 c
 c      -----------------------------------------------------------------------------c
-      use basis_set    
+      use basis_set
       use ao_matrices
       use integration_grid
+      use timing_mod
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 c general parameters
@@ -149,6 +150,7 @@ C
 
 
       call cpu_time(time)
+      call get_wall_time(wtime)
 
 CCCCCCCCCCCCCCCCCCCCCC
 C PROCESSING ARGUMENTS
@@ -803,8 +805,10 @@ c Natural orbitals from P-matrix in FChk
 
       write(*,*)
       call cpu_time(time2)
-      write(*,'(a40,f10.1,a2)')'(Elapsed time :: initialization ',time2-time,'s)' 
+      call get_wall_time(wtime2)
+      call print_timer('initialization',time2-time,wtime2-wtime)
       time=time2
+      wtime=wtime2
 
 C density at the iatdens atom
       if(iatdens.ne.0) call atdens_int(Rmax,iatdens) 
@@ -1121,8 +1125,10 @@ CCCCCCCCCCCCCCC
 c
       write(*,*)
       call cpu_time(time2)
-      write(*,'(a37,f10.1,a2)')'(Elapsed time :: population analyses ',time2-time,'s)' 
+      call get_wall_time(wtime2)
+      call print_timer('population analyses',time2-time,wtime2-wtime)
       time=time2
+      wtime=wtime2
 
 CCCCCCCCCCCCCCC
 C Local Spin decomp for single-determinant WF
@@ -1157,8 +1163,10 @@ CCCCCCCCCCCCCCC
        print *,' '
        call spincorr(sat,dm1,dm2)
        call cpu_time(time2)
-       write(*,'(a37,f10.1,a2)')'(Elapsed time :: local spin analysis',time2-time,'s)' 
+       call get_wall_time(wtime2)
+       call print_timer('local spin analysis',time2-time,wtime2-wtime)
        time=time2
+       wtime=wtime2
       end if
 
 CCCCCCCCCCCCCCC
@@ -1321,8 +1329,10 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
         write(*,*)
         call cpu_time(time2)
-        write(*,'(a37,f10.1,a2)')'(Elapsed time :: effAOs/EOS analysis ',time2-time,'s)' 
+        call get_wall_time(wtime2)
+        call print_timer('effAOs/EOS analysis',time2-time,wtime2-wtime)
         time=time2
+        wtime=wtime2
       end if
 
 CCCCCCCCCCCCCCC
@@ -1361,8 +1371,10 @@ CCCCCCCCCCCCCCC
       if(iposthf.eq.1) then
         call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
         call cpu_time(time2)
-        write(*,'(a39,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
+        call get_wall_time(wtime2)
+        call print_timer('enpart one-electron',time2-time,wtime2-wtime)
         time=time2
+        wtime=wtime2
 
 !! ONE ELECTRON PART: DFT AND HF WFs !!
       else 
@@ -1383,8 +1395,10 @@ CCCCCCCCCCCCCCC
 !! ONE-ELECTRON TERMS !!
         call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
         call cpu_time(time2)
-        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)'
+        call get_wall_time(wtime2)
+        call print_timer('enpart one-electron',time2-time,wtime2-wtime)
         time=time2
+        wtime=wtime2
 
 !! DFT XC TERM !!
         if(id_xfunc.ne.-1) then
@@ -1394,8 +1408,10 @@ CCCCCCCCCCCCCCC
             call numint_dft_analytical(ndim,itotps,wp,omp,omp2,chp,eto,pcoord,sat)
           end if
           call cpu_time(time2)
-          write(*,'(a28,f10.1,a2)')'(Elapsed time :: enpart dft ',time2-time,'s)' 
+          call get_wall_time(wtime2)
+          call print_timer('enpart dft',time2-time,wtime2-wtime)
           time=time2
+          wtime=wtime2
         end if
         DEALLOCATE(xkdens)
 
@@ -1406,15 +1422,21 @@ CCCCCCCCCCCCCCC
 !! ONE-ELECTRON TERMS !!
         call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
         call cpu_time(time2)
-        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
+        call get_wall_time(wtime2)
+        call print_timer('enpart one-electron',time2-time,wtime2-wtime)
         time=time2
+        wtime=wtime2
 
 !! DFT XC TERM !!
         if(id_xfunc.ne.-1) then
           call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
           call cpu_time(time2)
-          write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart one-electron ',time2-time,'s)' 
+          call get_wall_time(wtime2)
+!! MG label fix: this timer sits after numint_dft_uks (the DFT XC term), not the !!
+!! one-electron term -- was mislabeled "enpart one-electron" like its neighbours. !!
+          call print_timer('enpart dft',time2-time,wtime2-wtime)
           time=time2
+          wtime=wtime2
         end if
         DEALLOCATE(xkdens)
       end if 
@@ -1464,8 +1486,10 @@ CCCCCCCCCCCCCCC
 !        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
         call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
         call cpu_time(time2)
-        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart two-electron ',time2-time,'s)' 
+        call get_wall_time(wtime2)
+        call print_timer('enpart two-electron',time2-time,wtime2-wtime)
         time=time2
+        wtime=wtime2
 
 !! DFT AND HF WFs !!
       else
@@ -1478,11 +1502,13 @@ CCCCCCCCCCCCCCC
         else
 !          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
           call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
-        end if 
+        end if
         write(*,*) " "
         call cpu_time(time2)
-        write(*,'(a37,f10.1,a2)')'(Elapsed time :: enpart two-electron ',time2-time,'s)' 
+        call get_wall_time(wtime2)
+        call print_timer('enpart two-electron',time2-time,wtime2-wtime)
         time=time2
+        wtime=wtime2
 
 !! END IF OF WF-TYPE !!
       end if 
