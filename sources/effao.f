@@ -44,12 +44,18 @@
    !!                  "deviation from population" diagnostic below         !!
    !! notes:                                                                !!
    !!   - loops over all icufr fragments (common /frlist/), one full        !!
-   !!     build_Smp+diagonalize per fragment -- serial, not currently OMP-  !!
-   !!     parallelized (see CLAUDE.md Parallelization Status: OSLO/EFFAO    !!
-   !!     diagonalization -- each fragment's work is independent, so the    !!
-   !!     outer loop is the natural parallelization target, NOT SDIAG2      !!
-   !!     itself; the shared effao_mod p0(:,:) scratch array would need to  !!
-   !!     become per-fragment first, see the discussion this was raised in).!!
+   !!     build_Smp+diagonalize per fragment. the outer loop itself stays   !!
+   !!     serial ON PURPOSE (2026-08-15 design revision): icufr can be      !!
+   !!     small on a large system (e.g. 3 fragments on 200 atoms), which    !!
+   !!     would cap an outer-loop PARALLEL DO at 3 threads regardless of    !!
+   !!     core count. instead, the overlap-block build and gross-occupation!!
+   !!     projection INSIDE each iteration are each parallelized with the  !!
+   !!     full thread count -- both scale with system size (ndim/igr), not !!
+   !!     fragment count, so this generalizes correctly whether icufr is   !!
+   !!     small or large. the diagonalization itself (build_Smp/diagonalize)!!
+   !!     stays serial per fragment either way -- SDIAG2 doesn't           !!
+   !!     parallelize internally; the real fix there is a threaded/        !!
+   !!     BLAS-LAPACK eigensolver (planned, not started).                  !!
    !!   - the number of EFOs kept per fragment (imaxo) is capped by nocc    !!
    !!     and by the EFF_THRESH occupation cutoff (xminocc, from iopt(24)). !!
    !!   - gross occupations (p0gro) are stored in the SAME per-fragment     !!
@@ -120,8 +126,9 @@
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
       ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
 
-!! one full diagonalization per fragment -- see the parallelization note !!
-!! in the header above for why this loop, not SDIAG2, is the target.    !!
+!! per-fragment loop, kept serial on purpose -- see the header note above !!
+!! on why the loops INSIDE each iteration are the parallelization target, !!
+!! not this one.                                                         !!
       do iicenter=1,icufr
 
 !! scr(ifut): this fragment's total becke/tfvc weight at each grid point !!
@@ -143,6 +150,17 @@
 !! for reference since it's the fragment-local-only variant of the same sum. !!
         iallpo0=1
         if(iallpo0.eq.1) then
+!! parallel over mu: for a given mu, the inner nu=1,mu loop writes only   !!
+!! s0(mu,1:mu) and s0(1:mu,mu) -- no other mu writes those same entries   !!
+!! (element (a,b) with a<b is written only when the outer index reaches   !!
+!! max(a,b)), so different mu iterations never race. nu stays a serial   !!
+!! loop nested inside each parallel mu iteration (bounds depend on mu,    !!
+!! so it can't be COLLAPSEd -- see the prenumint convention in numint.f). !!
+!! wp/chp/scr/omp are shared, read-only inputs; x is a private scalar.    !!
+!! this is the dominant cost in the subroutine (O(ndim^2 x itotps)) and   !!
+!! scales with system size, unlike the outer fragment loop -- see the    !!
+!! header note on why this is the actual parallelization target.         !!
+!$OMP PARALLEL DO PRIVATE(mu,nu,jcenter,ifut,x)
           do mu=1,ndim
             do nu=1,mu
               x=ZERO
@@ -155,6 +173,7 @@
               s0(nu,mu)=x
             end do
           end do
+!$OMP END PARALLEL DO
         else
           do mu=1,ndim
             do nu=1,mu
@@ -227,7 +246,13 @@
 !! eos_analysis is the one that actually decides which of the two to use !!
 !! (see the 2026-08-14 discussion: it currently uses net, moving to      !!
 !! gross-only is the agreed next step, not done in this pass).           !!
+!! parallel over i: each EFO's gross occupation is independent -- writes  !!
+!! only its own s0all(i), and xx0 (the fragment total) is a genuine OMP   !!
+!! REDUCTION, not a shared accumulator written directly. c0/sat/pp0/      !!
+!! nfrlist/ifrlist are shared, read-only; icenter/jcenter/j/k/xx/xxx are  !!
+!! private per iteration.                                                !!
         xx0=ZERO
+!$OMP PARALLEL DO PRIVATE(i,icenter,jcenter,j,k,xx,xxx) REDUCTION(+:xx0)
         do i=1,imaxo
           xxx=ZERO
           do icenter=1,nfrlist(iicenter)
@@ -244,6 +269,7 @@
           s0all(i)=xxx
           xx0=xx0+xxx
         end do
+!$OMP END PARALLEL DO
         write(*,*) " "
         write(*,'(2x,a29,x,i3,f10.5)') "Gross occupation for fragment",iicenter,xx0
         if(icase.eq.0) write(*,'(2x,a31,x,f8.4)') "Deviation from gross population",xx0-xx1
@@ -847,8 +873,8 @@ c end loop over fragments
 !!                    (no fragments, no oxidation-state    !!
 !!                    assignment), used by the DOATOMS     !!
 !!                    pathway                              !!
-!! see CLAUDE.md Known Issues for removal-candidate status !!
-!! of the three dead ones.                                !!
+!! the three dead ones are cleanup candidates -- same category as the    !!
+!! confirmed-dead subroutines in devel.f.                                !!
 !! ***************************************************** !!
 
       subroutine uefomo(itotps,ndim,omp,chp,sat,wp,omp2,icase)
