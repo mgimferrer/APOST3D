@@ -127,8 +127,8 @@ EFF_THRE=   1
   Number of grid points:    265500
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
- TIMING CPU  :: atomic definition                                 1.13 s
- TIMING WALL :: atomic definition                                 0.52 s
+ TIMING CPU  :: atomic definition                                 1.15 s
+ TIMING WALL :: atomic definition                                 0.53 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -264,15 +264,16 @@ EFF_THRE=   1
   Functional type --> exchange-correlation
   HYBRID-GGA functional selected
   HF-type exchange coeff --> 0.200
-  
-  --------------------------- 
-   GENERAL ONE-ELECTRON PART  
-  --------------------------- 
-  
-  ----------------------------- 
-   ELECTRON-NUCLEAR ATTRACTION  
-  ----------------------------- 
-  
+
+  -----------------------------
+    GENERAL ONE-ELECTRON PART
+  -----------------------------
+
+
+  -------------------------------
+    ELECTRON-NUCLEAR ATTRACTION
+  -------------------------------
+
   --------------------------------------------------------------------------------                    
               1  O        2  H        3  H 
   --------------------------------------------------------------------------------                    
@@ -283,10 +284,11 @@ EFF_THRE=   1
   Electron-nuclei energy:   -194.5024157
   Integration error (kcal/mol):    -0.00
   
-  ---------------- 
-   KINETIC ENERGY  
-  ---------------- 
-  
+
+  ------------------
+    KINETIC ENERGY
+  ------------------
+
   --------------------------------------------------------------------------------                    
               1  O        2  H        3  H 
   --------------------------------------------------------------------------------                    
@@ -297,10 +299,11 @@ EFF_THRE=   1
   Kinetic energy:     75.8390458
   Integration error (kcal/mol):    -0.00
   
-  --------------------------- 
-   NUCLEAR-NUCLEAR REPULSION  
-  --------------------------- 
-  
+
+  -----------------------------
+    NUCLEAR-NUCLEAR REPULSION
+  -----------------------------
+
   --------------------------------------------------------------------------------                    
               1  O        2  H        3  H 
   --------------------------------------------------------------------------------                    
@@ -310,8 +313,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      7.2850801
   
- TIMING CPU  :: enpart one-electron                               0.31 s
- TIMING WALL :: enpart one-electron                               0.31 s
+ TIMING CPU  :: enpart one-electron                               0.33 s
+ TIMING WALL :: enpart one-electron                               0.28 s
   
   ------------------------------ 
    UKS-DFT ENERGY DECOMPOSITION  
@@ -374,8 +377,8 @@ EFF_THRE=   1
   
   WARNING: HF-exchange part missing 
   
- TIMING CPU  :: enpart dft                                        1.30 s
- TIMING WALL :: enpart dft                                        1.28 s
+ TIMING CPU  :: enpart dft                                        1.28 s
+ TIMING WALL :: enpart dft                                        1.25 s
   
   ----------------------------------------------------- 
    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  
@@ -406,7 +409,7 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Coulomb energy:     44.3183281
   
- TIMING CPU  :: Coulomb energy                                    0.25 s
+ TIMING CPU  :: Coulomb energy                                    0.24 s
  TIMING WALL :: Coulomb energy                                    0.04 s
   
   ------------------------------------------------- 
@@ -512,7 +515,7 @@ EFF_THRE=   1
   Integration error (au):     -0.0000008
   Integration error (kcal/mol):    -0.00
   
- TIMING CPU  :: enpart two-electron                               7.62 s
- TIMING WALL :: enpart two-electron                               1.13 s
+ TIMING CPU  :: enpart two-electron                               7.61 s
+ TIMING WALL :: enpart two-electron                               1.12 s
   
  ...Normal Termination of APOST-3D... 
