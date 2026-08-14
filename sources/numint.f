@@ -294,6 +294,49 @@ c      end if
 
 !! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: ao_to_mo_grid_t                                           !!
+!! purpose: same as ao_to_mo_grid, but also returns the transpose        !!
+!!   (chpmot(j,k)=chpmo(k,j)) in one pass -- some downstream loops       !!
+!!   (numint_two's exchange kernels) want the MO-major layout for        !!
+!!   cache-friendly access.                                              !!
+!! arguments:                                                            !!
+!!   itotps (in)  -- number of grid points                               !!
+!!   igr    (in)  -- number of basis functions (AOs)                     !!
+!!   nmo    (in)  -- number of MOs to transform                          !!
+!!   coef   (in)  -- AO coefficient matrix (igr,igr) -- c or cb           !!
+!!   chpao  (in)  -- AO values at each grid point (itotps,igr)            !!
+!!   chpmo  (out) -- MO values at each grid point (itotps,nmo)            !!
+!!   chpmot (out) -- transpose of chpmo (nmo,itotps)                     !!
+!! author: PSalse, MGimf, MMO.                                           !!
+!! ********************************************************************* !!
+      subroutine ao_to_mo_grid_t(itotps,igr,nmo,coef,chpao,chpmo,chpmot)
+
+      implicit real*8(a-h,o-z)
+
+      integer, intent(in) :: itotps,igr,nmo
+      dimension coef(igr,igr),chpao(itotps,igr),chpmo(itotps,nmo),chpmot(nmo,itotps)
+
+!! parallel over grid points: each k only reads its own chpao(k,:) and   !!
+!! the shared, read-only coef, and writes only its own chpmo(k,:)/       !!
+!! chpmot(:,k).                                                          !!
+!$OMP PARALLEL DO PRIVATE(k,j,i,xx)
+      do k=1,itotps
+        do j=1,nmo
+          xx=ZERO
+          do i=1,igr
+            xx=xx+coef(i,j)*chpao(k,i)
+          end do
+          chpmo(k,j)=xx
+          chpmot(j,k)=xx
+        end do
+      end do
+!$OMP END PARALLEL DO
+
+      end
+
+!! ***** !!
+
       subroutine fpoints(chp,pcoord)
       use basis_set
       use integration_grid

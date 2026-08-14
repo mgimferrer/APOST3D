@@ -104,8 +104,8 @@ EFF_THRE=   1
   RADIAL=  40
  ANGULAR= 146
 
- TIMING CPU  :: initialization                                    0.03 s
- TIMING WALL :: initialization                                    0.03 s
+ TIMING CPU  :: initialization                                    0.02 s
+ TIMING WALL :: initialization                                    0.02 s
   
   -------------------------------------
   SETTING ATOMIC GRIDS FOR INTEGRATION 
@@ -170,8 +170,8 @@ EFF_THRE=   1
   Number of grid points:    708000
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
- TIMING CPU  :: atomic definition                                21.82 s
- TIMING WALL :: atomic definition                                 5.41 s
+ TIMING CPU  :: atomic definition                                21.62 s
+ TIMING WALL :: atomic definition                                 5.38 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -403,7 +403,7 @@ EFF_THRE=   1
   Nuclear repulsion energy:     42.2635815
   
  TIMING CPU  :: enpart one-electron                               2.25 s
- TIMING WALL :: enpart one-electron                               1.59 s
+ TIMING WALL :: enpart one-electron                               1.58 s
   
   ------------------------------ 
    RKS-DFT ENERGY DECOMPOSITION  
@@ -545,8 +545,8 @@ EFF_THRE=   1
   
   WARNING: HF-exchange part missing 
   
- TIMING CPU  :: enpart dft                                       11.80 s
- TIMING WALL :: enpart dft                                       11.24 s
+ TIMING CPU  :: enpart dft                                       11.50 s
+ TIMING WALL :: enpart dft                                       10.95 s
   
   ----------------------------------------------------- 
    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  
@@ -555,11 +555,11 @@ EFF_THRE=   1
   Radial points:   40
   Angular points:  146
   Number of grid points:     46720
-  
-  --------------------------- 
-   GENERAL TWO-ELECTRON PART  
-  --------------------------- 
-  
+
+  -----------------------------
+    GENERAL TWO-ELECTRON PART
+  -----------------------------
+
   Rotating for angles:   0.000000   0.162000
   Number of grid points:     46720
   Two-el integration will be distributed over   8 threads out of  10 available hardware cores
@@ -595,22 +595,24 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Coulomb energy:     80.3392145
   
- TIMING CPU  :: Coulomb energy                                    1.51 s
- TIMING WALL :: Coulomb energy                                    0.23 s
+ TIMING CPU  :: Coulomb energy                                    1.34 s
+ TIMING WALL :: Coulomb energy                                    0.27 s
   
-  ------------------------------------------------- 
-   EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  
-  ------------------------------------------------- 
-  
+
+  ---------------------------------------------------
+    EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
+  ---------------------------------------------------
+
   Two-el integrations for     90 MO pairs
   Threshold for atom pair calculation    0.000500
   Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   Skipping numerical integration for     0 atom pairs
   
-  ----------------------------------------- 
-   HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  
-  ----------------------------------------- 
-  
+
+  -------------------------------------------
+    HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS
+  -------------------------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -639,12 +641,13 @@ EFF_THRE=   1
   Hartree-Fock exchange energy:    -12.4871105
   
  TIMING CPU  :: Exact-exchange energy                            25.56 s
- TIMING WALL :: Exact-exchange energy                             3.43 s
+ TIMING WALL :: Exact-exchange energy                             3.42 s
   
-  ------------------------ 
-   HYBRID KS-DFT XC TERMS  
-  ------------------------ 
-  
+
+  --------------------------
+    HYBRID KS-DFT XC TERMS
+  --------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -683,13 +686,13 @@ EFF_THRE=   1
   WARNING: New error with same sign
   Damping parameter:      1.3799748
   
- TIMING CPU  :: Interpolated zero-error                           6.57 s
- TIMING WALL :: Interpolated zero-error                           1.17 s
-  
-  ------------------------------------------------------- 
-   INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
-  ------------------------------------------------------- 
-  
+ TIMING CPU  :: Interpolated zero-error                           6.75 s
+ TIMING WALL :: Interpolated zero-error                           0.94 s
+
+  ---------------------------------------------------------
+    INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
+  ---------------------------------------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -717,10 +720,11 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Coulomb energy:     80.3435347
   
-  ------------------------------------------------------ 
-   INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  
-  ------------------------------------------------------ 
-  
+
+  --------------------------------------------------------
+    INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS
+  --------------------------------------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -748,10 +752,11 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -12.4892106
   
-  ------------------------------------- 
-   INTERPOLATED HYBRID KS-DFT XC TERMS  
-  ------------------------------------- 
-  
+
+  ---------------------------------------
+    INTERPOLATED HYBRID KS-DFT XC TERMS
+  ---------------------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -782,10 +787,11 @@ EFF_THRE=   1
   KS-DFT electron-electron energy:     67.2363766
   Integration error (kcal/mol):    -0.00
   
-  -------------------------------------- 
-   FUZZY ATOMS KS-DFT ENERGY COMPONENTS  
-  -------------------------------------- 
-  
+
+  ----------------------------------------
+    FUZZY ATOMS KS-DFT ENERGY COMPONENTS
+  ----------------------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -816,7 +822,7 @@ EFF_THRE=   1
   Integration error (au):      0.0000520
   Integration error (kcal/mol):     0.03
   
- TIMING CPU  :: enpart two-electron                              35.44 s
- TIMING WALL :: enpart two-electron                               5.36 s
+ TIMING CPU  :: enpart two-electron                              35.50 s
+ TIMING WALL :: enpart two-electron                               5.12 s
   
  ...Normal Termination of APOST-3D... 

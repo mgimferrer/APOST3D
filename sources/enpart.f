@@ -311,6 +311,30 @@
 
 !! ***** !!
 
+      !! ********************************************************************* !!
+      !! subroutine: numint_two                                                !!
+      !! purpose: two-electron IQA/ENPART energy partition, RHF/RKS -- Coulomb !!
+      !!   (via calc_coul) and, if requested, HF-type exchange (same-center    !!
+      !!   and atom-pair kernels, skipping pairs below the THREBOD bond-order  !!
+      !!   threshold via a multipolar approximation instead), each decomposed  !!
+      !!   into atomic/diatomic contributions. A second pass on a phase-       !!
+      !!   rotated grid estimates and corrects the numerical-integration error !!
+      !!   (the "zero-error" interpolation) when it exceeds tolerance. See     !!
+      !!   numint_two_uhf for open-shell.                                      !!
+      !! arguments:                                                            !!
+      !!   ndim   (in)  -- number of basis functions (leading dim of chp)      !!
+      !!   itotps (in)  -- total number of grid points                        !!
+      !!   wp     (in)  -- integration weight of each grid point               !!
+      !!   omp    (in)  -- becke/tfvc weight of each grid point for its own atom!!
+      !!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for  !!
+      !!                   every atom                                         !!
+      !!   pcoord (in)  -- xyz coordinates of each grid point                  !!
+      !!   chp    (in)  -- basis-function values at each grid point            !!
+      !!   rho    (in)  -- electron density at each grid point                 !!
+      !!   eto    (inout) -- total energy matrix, accumulated on top of the    !!
+      !!                   one-electron part already in it                    !!
+      !! author: PSalse, MGimf, MMO.                                           !!
+      !! ********************************************************************* !!
       subroutine numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
       use ao_matrices
@@ -379,13 +403,8 @@
       if(xmix.gt.ZERO) idoex=1
       iatps=nang*nrad
 
-!! DOING ENERGY PARTITION !!
-      npass=2     
-      write(*,*) " "
-      write(*,*) " --------------------------- "
-      write(*,*) "  GENERAL TWO-ELECTRON PART  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      npass=2
+      call print_box('GENERAL TWO-ELECTRON PART')
       do i=1,nat
         do j=1,nat
           coul(i,j)=ZERO
@@ -397,46 +416,26 @@
       end do
 
       ALLOCATE(chp2(itotps,nocc))
-      ALLOCATE(chp2s(nocc,itotps)) !! TODO: CHANGING THAT NEVER USE CHP2 !!
+      ALLOCATE(chp2s(nocc,itotps))
 
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nocc
-          xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chp(k,i) 
-          end do
-          chp2(k,j)=xx
-          chp2s(j,k)=xx
-        end do
-      end do
+      call ao_to_mo_grid_t(itotps,igr,nocc,c,chp,chp2,chp2s)
 
-      if(ianalytical.eq.0) then !MMO- skip if analytical
+      if(ianalytical.eq.0) then !! skip this whole rotated-grid pass for the analytical two-electron path !!
 
-!! ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
       phb=phb12
-      pha=ZERO 
+      pha=ZERO
       write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
       ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
-      ALLOCATE(chp2phas(nocc,itotps)) !!TODO
+      ALLOCATE(chp2phas(nocc,itotps))
 
       call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nocc
-          xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chppha(k,i) 
-          end do
-          chp2pha(k,j)=xx !! MG: TODO
-          chp2phas(j,k)=xx
-        end do
-      end do
-      end if !MMO- non-analytical skip ends here
+      call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
+      end if !! non-analytical skip ends here !!
 
 !! COULOMB PART !!
       call cpu_time(xtime)
@@ -444,6 +443,11 @@
       if(ianalytical.eq.0) then
         call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       else
+!! chp2b is never declared/allocated in this subroutine -- under IMPLICIT !!
+!! REAL*8 it's silently a scalar, not the rank-2 array calc_twoel_        !!
+!! analytical expects (confirmed by gfortran's own rank-mismatch warning !!
+!! at compile time). Only reached if ianalytical=1, an apparently        !!
+!! untested path. Not fixed here, needs sign-off.                        !!
         call calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
       call cpu_time(xtime2)
@@ -453,11 +457,10 @@
       xtime=xtime2
       wxtime=wxtime2
 
-!! IN CASE OF HAVING HF-TYPE EXCHANGE !!
-      if(ianalytical.eq.0) then !MMO- skip if analytical
+      if(ianalytical.eq.0) then !! skip HF-type exchange for the analytical path !!
       if(idoex.eq.1) then
 
-!! COMPUTING MULTIPOLAR APPROACH HERE !!
+!! multipolar approximation, used below for atom pairs skipped by THREBOD !!
         norb2=nocc*(nocc+1)/2
         ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
         do ii=1,itotps
@@ -476,12 +479,9 @@
         call multipolar(nocc,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
         DEALLOCATE(fij,xocc)
 
-!! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
-!! IMPLEMENTATION PERFORMED THANKS TO Dr. R. OSWALD !!
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) "  EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  "
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) " "
+!! loops reordered for parallelization purposes -- implementation !!
+!! performed thanks to Dr. R. Oswald.                             !!
+        call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
         write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
 
@@ -696,11 +696,7 @@
           end do
         end do
 
-!! PRINTING !!
-        write(*,*) " ----------------------------------------- "
-        write(*,*) "  HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-        write(*,*) " ----------------------------------------- "
-        write(*,*) " "
+        call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
         CALL MPRINT2(exch_hf,nat,maxat)
         write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
         write(*,*) " "
@@ -711,10 +707,9 @@
         xtime=xtime2
         wxtime=wxtime2
       end if
-      end if !MMO- non-analytical skip ends here
+      end if !! non-analytical skip ends here !!
 
-!! CHECKING ACCURACY OF THE TWO-ELECTRON PART !!
-!! HF ONLY !!
+!! checking accuracy of the two-electron part, HF only !!
       if(ihf.eq.1) then
         evee=coulen+exchen_hf
         write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
@@ -739,16 +734,13 @@
           end do
         end do
         if(idoex.eq.1) then
-          write(*,*) " ------------------------ "
-          write(*,*) "  HYBRID KS-DFT XC TERMS  "
-          write(*,*) " ------------------------ "
-          write(*,*) " "
+          call print_box('HYBRID KS-DFT XC TERMS')
           call MPRINT2(exch,nat,maxat)
           write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
           write(*,*) " "
         end if
         evee=coulen+exchen
-        write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee            
+        write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee
         if(evee0.ne.ZERO) then
           twoelerr=(evee-evee0)*tokcal
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
@@ -758,34 +750,27 @@
         write(*,*) " "
       end if
 
-!! ZERO ERROR STRATEGY FOR VEE PART !!
       if(ianalytical.eq.1) twoeltoler=232000
       write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
       write(*,*) " "
 
       if(abs(twoelerr).gt.twoeltoler) then
 
-!! NOW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
       phb=phb22
-      pha=ZERO 
+      pha=ZERO
       write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
       nat0=nat
       call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nocc
-          xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chppha(k,i) 
-          end do
-          chp2phas(j,k)=xx
-        end do
-      end do
+      call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
 
-!! DOING INTEGRATIONS FOR ONLY THE ATOMIC TERMS !!
-!! MG: CAN ALSO BEEN DONE WITH BETTER SCALING... IF NECESSARY !!
+!! same-center-only recompute of the Coulomb part on the rotated grid, !!
+!! for the zero-error interpolation below. parallel over icenter: each !!
+!! iteration accumulates into its own coul0(icenter,3), independent of !!
+!! every other icenter.                                                !!
+!$OMP PARALLEL DO PRIVATE(icenter,ifut,x0,dx0,dy0,dz0,f3,jfut,x1,dx1,dy1,dz1,dist)
       do icenter=1,nat
         do ifut=iatps*(icenter-1)+1,iatps*icenter
           x0=wp(ifut)*omp2(ifut,icenter)
@@ -793,7 +778,6 @@
           dy0=pcoord(ifut,2)
           dz0=pcoord(ifut,3)
 
-!! COULOMB PART !!
           f3=ZERO
           do jfut=iatps*(icenter-1)+1,iatps*icenter
             x1=wppha(jfut)*omp2pha(jfut,icenter)
@@ -801,13 +785,13 @@
             dy1=pcoordpha(jfut,2)
             dz1=pcoordpha(jfut,3)
             dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-            if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist !! MG: Could be controlled using the thr2 variable !!
+            if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist
           end do
           coul0(icenter,3)=coul0(icenter,3)+f3/TWO
         end do
       end do
+!$OMP END PARALLEL DO
 
-!! HF-TYPE EXCHANGE !!
       if(idoex.eq.1) then
 
 !! AS BEFORE, MORE CONVOLUTED LOOP STRUCTURE !!
@@ -871,7 +855,6 @@
         end do
       end if
 
-!! CHECKING NEW VALUES !!
       do i=1,nat
         coul0(i,1)=coul(i,i)
         if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
@@ -885,9 +868,9 @@
       phabest=ONE-(twoelerr/deltaee)
       write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
       if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
-      write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest !MMO- not dumping !! ...
+      write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest
 
-!! INTERPOLATING ENERGIES, REPLACING OLD COULOMB AND EXCHANGE TERMS !!
+!! interpolate energies, replacing the old Coulomb/exchange terms !!
       do i=1,nat
         coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
         if(idoex.eq.1) exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
@@ -899,12 +882,7 @@
       xtime=xtime2
       wxtime=wxtime2
 
-!! PRINTING !!
-      write(*,*) " "
-      write(*,*) " ------------------------------------------------------- "
-      write(*,*) "  INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
-      write(*,*) " ------------------------------------------------------- "
-      write(*,*) " "
+      call print_box('INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
       call MPRINT2(coul,nat,maxat)
       coulen=ZERO
       do i=1,nat
@@ -920,10 +898,7 @@
       end if
 
       if(idoex.eq.1) then
-        write(*,*) " ------------------------------------------------------ "
-        write(*,*) "  INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-        write(*,*) " ------------------------------------------------------ "
-        write(*,*) " "
+        call print_box('INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
         call MPRINT2(exch_hf,nat,maxat)
         exchen_hf=ZERO
         do i=1,nat
@@ -944,10 +919,7 @@
             end do
           end do
 
-          write(*,*) " ------------------------------------- "
-          write(*,*) "  INTERPOLATED HYBRID KS-DFT XC TERMS  "
-          write(*,*) " ------------------------------------- "
-          write(*,*) " "
+          call print_box('INTERPOLATED HYBRID KS-DFT XC TERMS')
           call MPRINT2(exch,nat,maxat)
           write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
           write(*,*) " "
@@ -966,15 +938,14 @@
         end do
       end if
 
-!! TOTAL TWO-ELECTRON PART !!
       if(ihf.eq.0) then
         evee=coulen+exchen
-        write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee             
+        write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee
         twoelerr=(evee-evee0)*tokcal
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
       else
         evee=coulen+exchen_hf
-        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee            
+        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee
         twoelerr=(evee-evee0)*tokcal
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
       end if
@@ -982,9 +953,6 @@
 
       end if
 
-!! END ZERO ERROR STRATEGY !!
-
-!! FINAL PRINTING !!
       if(ihf.eq.1) then
         xtot=ZERO
         do i=1,nat
@@ -998,10 +966,7 @@
         end do
         etot=xtot
 
-        write(*,*) " -------------------------------------------- "
-        write(*,*) "  FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------------- "
-        write(*,*) " "
+        call print_box('FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS')
         call MPRINT2(eto,nat,maxat)
         write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
         write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf  
@@ -1026,12 +991,9 @@
         end do
         etot=xtot
 
-        write(*,*) " -------------------------------------- "
-        write(*,*) "  FUZZY ATOMS KS-DFT ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------- "
-        write(*,*) " "
+        call print_box('FUZZY ATOMS KS-DFT ENERGY COMPONENTS')
         call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot  
+        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot
         write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
         if(ifield.eq.1) then
           write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
@@ -1043,16 +1005,17 @@
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       end if
       if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Energy Decomposition' 
+        line='   FRAGMENT ANALYSIS: Energy Decomposition'
         call group_by_frag_mat(1,line,eto)
       end if
 
       if(ianalytical.eq.0) then
         DEALLOCATE(chp2,chp2pha,rhopha,chppha,wppha,pcoordpha,omppha,omp2pha)
         DEALLOCATE(chp2s,chp2phas)
-!! MG: DEALLOCATING THE PARALLEL PART MISSING (I'VE BEEN LAZY)
+        if(idoex.eq.1) then
+          DEALLOCATE(f3k,exch_hfk,istart,iend,ijpaircount,exch_hfij)
+        end if
       else
-!        DEALLOCATE(chp2,rho) !MMO- rho is no longer allocated in the current version?
         DEALLOCATE(chp2)
       end if
 
@@ -1060,18 +1023,20 @@
 
 !! ***** !!
 
-      !! ********************************************************************* !!
-      !! subroutine: numint_one_uhf                                            !!
-      !! purpose: one-electron IQA/ENPART energy partition, UHF/UKS twin of    !!
-      !!   numint_one -- electron-nuclear attraction, kinetic energy, nuclear  !!
-      !!   repulsion and (if present) the external-field dipole terms, each    !!
-      !!   decomposed into atomic/diatomic contributions.                     !!
-      !! arguments: same as numint_one.                                        !!
-      !! author: PSalse, ERaco, MGimf                                          !!
-      !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: numint_one_uhf                                            !!
+!! purpose: one-electron IQA/ENPART energy partition, UHF/UKS twin of    !!
+!!   numint_one -- electron-nuclear attraction, kinetic energy, nuclear  !!
+!!   repulsion and (if present) the external-field dipole terms, each    !!
+!!   decomposed into atomic/diatomic contributions.                      !!
+!! arguments: same as numint_one.                                        !!
+!! author: PSalse, MGimf, MMO.                                           !!
+!! ********************************************************************* !!
       subroutine numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
+
       use ao_matrices
       use integration_grid
+
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       character*80 line
