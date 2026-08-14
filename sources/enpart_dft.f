@@ -1,20 +1,32 @@
+!! *********************************************************************** !!
+!! subroutine: xc                                                          !!
+!! purpose: restricted XC energy density at each grid point, via libxc.    !!
+!!   Exchange and correlation are queried separately when the input        !!
+!!   functional specifies them as distinct libxc ids (id_xfunc/id_cfunc),  !!
+!!   otherwise as one combined exchange-correlation id (id_xcfunc). MGGA   !!
+!!   Laplacian/kinetic-energy-density terms not implemented. See xc_uks    !!
+!!   for open-shell.                                                       !!
+!! arguments:                                                              !!
+!!   npt    (in)  -- number of grid points                                 !!
+!!   scr_a  (in)  -- electron density at each point                        !!
+!!   scr    (in)  -- density gradient contraction (sigma) at each point,   !!
+!!                   only read for GGA/hybrid-GGA functionals              !!
+!!   scr2   (out) -- XC energy density at each point (already multiplied   !!
+!!                   by the density)                                       !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine xc(npt,scr_a,scr,scr2)
-!! scr_a = RHO, scr = SIGMA RHO, scr2 = EXC (MULTIPLICATION BY RHO REMAINING) !!
       use xc_f90_types_m
       use xc_f90_lib_m
       implicit real*8(a-h,o-z)
       TYPE(xc_f90_pointer_t) :: xc_func
       TYPE(xc_f90_pointer_t) :: xc_info
       include 'parameter.h'
-      integer ideriv,npt
+      integer npt
       real*8 scr_a(npt),scr(npt),scr2(npt)
-      common /exchg/exch(maxat,maxat),xmix
       common /iops/iopt(100)
-! (TO DO) xkdens = kinetic energy density (MG)
-! (TO DO) Laplacian!!!
       allocatable :: scr2c(:)
 
-      ideriv=0
       id_xcfunc = iopt(60)
       id_cfunc  = iopt(62)
       id_xfunc  = iopt(61)
@@ -22,10 +34,9 @@
       ALLOCATE(scr2c(npt))
       do ii=1,npt
         scr2c(ii)=ZERO
-      end do 
+      end do
 
-!! EXC CALCULATION FROM LIBXC LIBRARIES !!
-
+!! exchange-correlation, from libxc. !!
       if(id_xcfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xcfunc,XC_UNPOLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -43,8 +54,7 @@
         call xc_f90_func_end(xc_func)
       end if 
 
-!! CORRELATION SEPARATED !!
-
+!! correlation, when specified as a separate libxc id. !!
       if(id_cfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_cfunc,XC_UNPOLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -62,8 +72,7 @@
         call xc_f90_func_end(xc_func)
       end if 
 
-!! EXCHANGE SEPARATED !!
-
+!! exchange, when specified as a separate libxc id. !!
       if(id_xfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_UNPOLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -81,18 +90,38 @@
         call xc_f90_func_end(xc_func)
       end if 
 
-!! MULTIPLYING BY RHO !! 
-!! EXCHANGE AND CORRELATION TOGETHER !!
-
+!! combine exchange and correlation, multiply by the density. !!
       do ii=1,npt
         scr2(ii)=(scr2c(ii)+scr2(ii))*scr_a(ii)
-      end do 
+      end do
       DEALLOCATE(scr2c)
 
       end
 
-! *****
+!! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: numint_dft                                                  !!
+!! purpose: KS-DFT exchange-correlation energy partition, RKS -- BODEN     !!
+!!   (bond-order density) approximation for atom-pair XC contributions,    !!
+!!   plus an "exact" one-center XC term via direct integration, combined   !!
+!!   into the final atomic/diatomic XC decomposition. See numint_dft_uks   !!
+!!   for open-shell.                                                       !!
+!! arguments:                                                              !!
+!!   ndim   (in)    -- number of basis functions (leading dim of chp)      !!
+!!   itotps (in)    -- total number of grid points                        !!
+!!   wp     (in)    -- integration weight of each grid point               !!
+!!   rho    (in)    -- electron density at each grid point                 !!
+!!   omp    (in)    -- becke/tfvc weight of each grid point for its own atom !!
+!!   omp2   (in)    -- becke/tfvc (or hirshfeld) weight of each point for  !!
+!!                      every atom                                         !!
+!!   chp    (in)    -- basis-function values at each grid point            !!
+!!   eto    (inout) -- total energy matrix, accumulated on top of the      !!
+!!                      one- and two-electron parts already in it          !!
+!!   pcoord (in)    -- xyz coordinates of each grid point                  !!
+!!   sat    (in)    -- per-atom AO overlap matrix (from numint_sat)        !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
       use xc_f90_types_m
       use xc_f90_lib_m
@@ -104,14 +133,11 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /iops/iopt(100)
-      common /achi/achi(maxat,maxat),ibcp
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/exchg/exch(maxat,maxat),xmix
-      dimension eto(maxat,maxat),Excmp(maxat,maxat)
+      dimension eto(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps),pcoord(itotps,3)
-! (TO DO) xkdens = kinetic energy density (MG)
-! (TO DO) Laplacian!!!
       dimension exch2(maxat,maxat)
       dimension sat(igr,igr,nat)
       character*80 line
@@ -130,27 +156,24 @@
       ALLOCATE(sab(nocc,nocc,nat),chpd(itotps,nocc,3))
       ALLOCATE(scrx(igr,nocc))
 
-!! ZEROING exch2 MATRIX !!
       exch2=ZERO
 
-!! THRESHOLD FOR BODEN CALCULATION USING THE BOND ORDER BETWEEN A PAIR OF ATOMS !!
+!! threshold for BODEN calculation, from the bond order between a pair of atoms. !!
       if(ithrebod.lt.1) then
         threbod=ZERO
       else
         threbod=real(ithrebod)/10000.0d0
       end if
 
-!! EXCHANGE AND CORRELATION FOR DFT !!
-!! BOND ORDER DENSITY !!
-      write(*,*) " "
-      write(*,*) " ------------------------------ "
-      write(*,*) "  RKS-DFT ENERGY DECOMPOSITION  "
-      write(*,*) " ------------------------------ "
-      write(*,*) " "
+      call print_box('RKS-DFT ENERGY DECOMPOSITION')
       write(*,*) " USING BOND ORDER DENSITY APPROACH "
       write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
       write(*,*) " "
 
+!! per-atom AO overlap projected onto MOs (sab), used by the BODEN kernel !!
+!! below. parallel over iatom: each iteration only writes its own         !!
+!! scrx(:,:)/sab(:,:,iatom), independent across atoms.                    !!
+!$OMP PARALLEL DO PRIVATE(iatom,nu,ii,mu,xx,jj,scrx)
       do iatom=1,nat
        do nu=1,igr
         do ii=1,nocc
@@ -166,16 +189,18 @@
         do jj=1,nocc
           xx=ZERO
           do nu=1,igr
-            xx=xx+c(nu,jj)*scrx(nu,ii)        
+            xx=xx+c(nu,jj)*scrx(nu,ii)
           end do
           sab(ii,jj,iatom)=xx
           if(ii.ne.jj) sab(jj,ii,iatom)=xx
         end do
        end do
       end do
+!$OMP END PARALLEL DO
 
-!! CHECKING !!
-      do ii=1,nocc                 
+!! sanity check: sab summed over atoms must reproduce the MO overlap     !!
+!! (identity for ii=jj, zero otherwise). !!
+      do ii=1,nocc
         do jj=ii,nocc
           x=ZERO
           if(ii.eq.jj) x=-ONE
@@ -189,32 +214,18 @@
         end do
       end do
 
-!! chp2 : MOs, chpd : MO DERIVATIVES !!
-      do k=1,itotps
-       do j=1,nocc
-         xx=ZERO
-         do i=1,igr
-           xx=xx+c(i,j)*chp(k,i)
-         end do
-         chp2(k,j)=xx
-       end do
-      end do
+      call ao_to_mo_grid(itotps,igr,nocc,c,chp,chp2)
 
       if(itype.gt.1) call grdrho(pcoord,chpd)
 
-!! CALCULATING XC MATRIX USING BODEN !!
-      write(*,*) " --------------------------------------- "
-      write(*,*) "  BOND ORDER DENSITY FOR ALL ATOM PAIRS  "
-      write(*,*) " --------------------------------------- "
-      write(*,*) " "
+      call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
       write(*,*) " --------------------------- "
       write(*,*) "  Atom   Atom   BODEN value  "
       write(*,*) " --------------------------- "
-      x0=ZERO
       do iatom=1,nat
         do jatom=iatom+1,nat
 
-!! COMPUTING BODEN FOR ATOMIC PAIRS (CONTROLLED BY THREBOD)
+!! BODEN for this atom pair, skipped below the THREBOD bond-order threshold. !!
           bx0=bo(iatom,jatom)
           if(bx0.ge.threbod) then
             x1=ZERO
@@ -252,14 +263,13 @@
 !$OMP END PARALLEL DO
             write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,x1
 
-!! GRADIENT OF BODEN CALCULATED FOR GGA FUNCTIONALS !!
-!! scr_a : BODEN FOR A GIVEN ATOM PAIR, scr : SIGMA BODEN scr2 : XC FUNCTIONAL VALUE !!
-! Laplacian of the BODEN required for the MGGA functionals. NOT IMPLEMENTED
+!! BODEN gradient, for GGA functionals -- scr_a: BODEN for this atom pair, !!
+!! scr: sigma BODEN, scr2: XC functional value. MGGA Laplacian term not   !!
+!! implemented. !!
             if(itype.gt.1) call grdboden(itotps,omp2,chp2,chpd,scr,iatom,jatom,sab)
             call xc(itotps,scr_a,scr,scr2)
 
-!! ALLPOINTS INTEGRATION !!
-             x1=ZERO
+            x1=ZERO
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
             do icenter=1,nat
               do iloc=1,iatps
@@ -275,11 +285,7 @@
       write(*,*) " --------------------------- "
       write(*,*) " "
 
-!! PRINTING !!
-      write(*,*) " --------------------------------------- "
-      write(*,*) "  DIATOMIC PURE KS-DFT XC TERMS (BODEN)  "
-      write(*,*) " --------------------------------------- "
-      write(*,*) " "
+      call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
       do ii=1,nat
        do jj=ii,nat
@@ -290,35 +296,30 @@
       call MPRINT2(exch2,nat,maxat)
       write(*,*) " "
 
-      if(itype.gt.1) then
-       ideriv=0
-       call sigma(pcoord,chp2,scr)
-      end if
+      if(itype.gt.1) call sigma(pcoord,chp2,scr)
 
-!! CALCULATE "EXACT" (ONE-CENTER) XC ENERGY !! 
-!! Laplacian for the MGGA functionals can be calculated using LAPLACIAN subroutine (qtaim.f). NOT IMPLEMENTED
-      call xc(itotps,rho,scr,scr2) 
+!! "exact" one-center XC energy, by direct integration (no BODEN approximation). !!
+!! MGGA Laplacian term not implemented (would need qtaim.f's laplacian routine). !!
+      call xc(itotps,rho,scr,scr2)
       xtot=ZERO
+!! parallel over icenter: each iteration writes only its own exch(icenter,icenter), !!
+!! xtot is a genuine running total. !!
+!$OMP PARALLEL DO PRIVATE(icenter,x,ifut) REDUCTION(+:xtot)
       do icenter=1,nat
         x=ZERO
-!! ALLPOINTS INTEGRATION !!
-        do ifut=1,itotps 
+        do ifut=1,itotps
           x=x+wp(ifut)*scr2(ifut)*omp(ifut)*omp2(ifut,icenter)
         end do
         exch(icenter,icenter)=x
         xtot=xtot+x
       end do
+!$OMP END PARALLEL DO
 
-!! PRINTING THE "PURE" ONCE-CENTER TERMS !!
-      write(*,*) " ----------------------------------------- "
-      write(*,*) "  PURE KS-DFT XC ONE-CENTER TERMS (EXACT)  "
-      write(*,*) " ----------------------------------------- "
-      write(*,*) " "
+      call print_box('PURE KS-DFT XC ONE-CENTER TERMS (EXACT)')
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
       write(*,*) " "
 
-!! REARRANGING ATOMIC XC COMPONENTS !!
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
       write(*,*) " "
       do ii=1,nat
@@ -332,11 +333,7 @@
         exch(ii,ii)=exch(ii,ii)-x0/TWO
       end do
 
-!! PRINTING !!
-      write(*,*) " ---------------------------------------------------------- "
-      write(*,*) "  FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS  "
-      write(*,*) " ---------------------------------------------------------- "
-      write(*,*) " "
+      call print_box('FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS')
       exchen=ZERO
       do ii=1,nat
        do jj=ii,nat
@@ -355,7 +352,6 @@
         call group_by_frag_mat(1,line,exch)
       end if
 
-!! ACCUMULATING INTO THE ETO MATRIX !!
       xtot=ZERO
       do ii=1,nat
         eto(ii,ii)=eto(ii,ii)+exch(ii,ii)
@@ -372,6 +368,19 @@
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: sigma                                                       !!
+!! purpose: density-gradient contraction (|grad(rho)|^2, "sigma" in        !!
+!!   libxc's convention) at each grid point, for GGA/hybrid-GGA XC         !!
+!!   functionals. Builds the AO gradient (x/y/z in turn) from primitives,  !!
+!!   transforms to MOs, and contracts with the already-transformed chp2.   !!
+!!   See sigma_uks for open-shell.                                         !!
+!! arguments:                                                              !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   chp2   (in)  -- MO values at each grid point (from the caller)        !!
+!!   scr    (out) -- sigma at each grid point                              !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine sigma(pcoord,chp2,scr)
       use basis_set
       use ao_matrices
@@ -379,20 +388,22 @@
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
       dimension chp2(natoms*nrad*nang,nocc),scr(natoms*nang*nrad)
       dimension pcoord(natoms*nang*nrad,3)
-      allocatable:: chpd(:,:),chp(:,:) 
+      allocatable:: chpd(:,:),chp(:,:)
 
       ipoints=natoms*nrad*nang
       ALLOCATE(chpd(ipoints,igr),chp(ipoints,igr))
 
-!! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
-      do kk=1,ipoints    
+      do kk=1,ipoints
         scr(kk)=ZERO
       end do
 
       do ixyz=1,3
+
+!! AO gradient (ixyz component) from primitives. parallel over irun: each !!
+!! iteration writes only its own chp(irun,:), independent across points.  !!
+!$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
          do irun=1,ipoints
            do iact=1,nbasis
              iactat=ihold(iact)
@@ -427,17 +438,15 @@
              chp(irun,iact)=f
            enddo
          enddo
-        
-!! TO MOs !!
-         do k=1,ipoints
-           do j=1,nocc
-             xx=ZERO
-             do i=1,igr
-               xx=xx+c(i,j)*chp(k,i)
-             end do
-             chpd(k,j)=xx
-           end do
-         end do
+!$OMP END PARALLEL DO
+
+         call ao_to_mo_grid(ipoints,igr,nocc,c,chp,chpd)
+
+!! contract with chp2 (already MO-transformed by the caller). parallel   !!
+!! over k: each iteration only reads chp2(k,:)/chpd(k,:) and writes its  !!
+!! own scr(k) -- safe across the three ixyz passes since they run        !!
+!! serially, only the point loop within each pass is threaded.          !!
+!$OMP PARALLEL DO PRIVATE(k,i,j)
          do k=1,ipoints
           do i=1,nocc
             do j=1,nocc
@@ -445,6 +454,7 @@
             end do
           end do
          end do
+!$OMP END PARALLEL DO
       end do
 
       do kk=1,ipoints
@@ -455,6 +465,17 @@
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: grdrho                                                      !!
+!! purpose: MO gradient (x/y/z in turn) at each grid point, for GGA/       !!
+!!   hybrid-GGA XC functionals. Builds the AO gradient from primitives,    !!
+!!   then transforms to MOs. See ugrdrho for open-shell.                   !!
+!! arguments:                                                              !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   chpd   (out) -- MO gradient at each grid point, one slice per         !!
+!!                   Cartesian component                                   !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine grdrho(pcoord,chpd)
       use basis_set
       use ao_matrices
@@ -464,13 +485,16 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       dimension chpd(natoms*nrad*nang,nocc,3),pcoord(natoms*nrad*nang,3)
       allocatable:: chp(:,:)
-      
-      itotps=natoms*nrad*nang
-      ALLOCATE(chp(itotps,igr)) 
 
-!! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
+      itotps=natoms*nrad*nang
+      ALLOCATE(chp(itotps,igr))
+
       do ixyz=1,3
-         do irun=1,itotps 
+
+!! AO gradient (ixyz component) from primitives. parallel over irun: each !!
+!! iteration writes only its own chp(irun,:), independent across points.  !!
+!$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
+         do irun=1,itotps
           do iact=1,nbasis
             iactat=ihold(iact)
             x=pcoord(irun,1)-coord(1,iactat)
@@ -504,24 +528,30 @@
             chp(irun,iact)=f
           enddo
          enddo
-         
-!! TO MOs !!
-         do k=1,itotps
-          do j=1,nocc
-            xx=ZERO
-            do i=1,igr
-              xx=xx+c(i,j)*chp(k,i)
-            end do
-            chpd(k,j,ixyz)=xx
-          end do
-         end do
+!$OMP END PARALLEL DO
+
+         call ao_to_mo_grid(itotps,igr,nocc,c,chp,chpd(1,1,ixyz))
 
       end do
-      DEALLOCATE(chp) 
+      DEALLOCATE(chp)
       end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: ugrdrho                                                     !!
+!! purpose: MO gradient (x/y/z in turn), alpha and beta, at each grid      !!
+!!   point, for GGA/hybrid-GGA XC functionals. Builds the AO gradient      !!
+!!   from primitives, then transforms to MOs. See grdrho for               !!
+!!   restricted/closed-shell.                                              !!
+!! arguments:                                                              !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   chpd   (out) -- alpha MO gradient at each grid point, one slice per   !!
+!!                   Cartesian component                                   !!
+!!   chpbd  (out) -- beta MO gradient at each grid point, one slice per    !!
+!!                   Cartesian component                                   !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
       subroutine ugrdrho(pcoord,chpd,chpbd)
       use basis_set
       use ao_matrices
@@ -532,13 +562,16 @@
       dimension chpd(natoms*nrad*nang,nalf,3),pcoord(natoms*nrad*nang,3)
       dimension chpbd(natoms*nrad*nang,nb,3)
       allocatable:: chp(:,:)
-      
-      itotps=natoms*nrad*nang
-      ALLOCATE(chp(itotps,igr)) 
 
-!! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
+      itotps=natoms*nrad*nang
+      ALLOCATE(chp(itotps,igr))
+
       do ixyz=1,3
-         do irun=1,itotps 
+
+!! AO gradient (ixyz component) from primitives. parallel over irun: each !!
+!! iteration writes only its own chp(irun,:), independent across points.  !!
+!$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
+         do irun=1,itotps
           do iact=1,nbasis
             iactat=ihold(iact)
             x=pcoord(irun,1)-coord(1,iactat)
@@ -572,31 +605,34 @@
             chp(irun,iact)=f
           enddo
          enddo
-         
-!! TO MOs !!
-         do k=1,itotps
-          do j=1,nalf
-            xx=ZERO
-            do i=1,igr
-              xx=xx+c(i,j)*chp(k,i)
-            end do
-            chpd(k,j,ixyz)=xx
-          end do
-          do j=1,nb  
-            xx=ZERO
-            do i=1,igr
-              xx=xx+cb(i,j)*chp(k,i)
-            end do
-            chpbd(k,j,ixyz)=xx
-          end do
-         end do
+!$OMP END PARALLEL DO
+
+         call ao_to_mo_grid(itotps,igr,nalf,c,chp,chpd(1,1,ixyz))
+         call ao_to_mo_grid(itotps,igr,nb,cb,chp,chpbd(1,1,ixyz))
 
       end do
-      DEALLOCATE(chp) 
+      DEALLOCATE(chp)
       end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: grdboden                                                    !!
+!! purpose: gradient of the bond-order density (BODEN) for one atom pair,  !!
+!!   at each grid point -- sigma input for the GGA/hybrid-GGA XC           !!
+!!   evaluation in numint_dft's BODEN loop. See grdboden_uks for           !!
+!!   open-shell.                                                           !!
+!! arguments:                                                              !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                   every atom                                            !!
+!!   chp2   (in)  -- MO values at each grid point                          !!
+!!   chpd   (in)  -- MO gradient at each grid point (from grdrho)          !!
+!!   scr    (out) -- BODEN gradient at each grid point                     !!
+!!   iat,kat (in) -- the atom pair                                         !!
+!!   sab    (in)  -- per-atom MO overlap matrix (from numint_dft)          !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine grdboden(itotps,omp2,chp2,chpd,scr,iat,kat,sab)
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
@@ -606,11 +642,16 @@
       dimension chpd(itotps,nocc,3),omp2(itotps,nat)
       dimension sab(nocc,nocc,nat)
 
-!! GENERATING GRID FOR BODEN DERIVATIVE !!
-      do kk=1,itotps    
+      do kk=1,itotps
         scr(kk)=ZERO
       end do
       do ixyz=1,3
+
+!! parallel over irun: each iteration only reads its own omp2(irun,:)/   !!
+!! chpd(irun,:,ixyz)/chp2(irun,:) and writes its own scr(irun) -- safe   !!
+!! across the three ixyz passes since they run serially, only the point  !!
+!! loop within each pass is threaded.                                    !!
+!$OMP PARALLEL DO PRIVATE(irun,w1,w2,xx,ii,jj,gab)
          do irun=1,itotps
             w1=omp2(irun,iat)
             w2=omp2(irun,kat)
@@ -623,17 +664,36 @@
             end do
             scr(irun)=scr(irun)+xx*xx
          end do
+!$OMP END PARALLEL DO
       end do
 
       xfact=FOUR
       if(iat.ne.kat) xfact=xfact*FOUR
-      do kk=1,itotps    
+      do kk=1,itotps
         scr(kk)=xfact*scr(kk)
       end do
       end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: xc_uks                                                      !!
+!! purpose: unrestricted XC energy density at each grid point, via libxc.  !!
+!!   Exchange and correlation are queried separately when the input        !!
+!!   functional specifies them as distinct libxc ids (id_xfunc/id_cfunc),  !!
+!!   otherwise as one combined exchange-correlation id (id_xcfunc). MGGA   !!
+!!   Laplacian/kinetic-energy-density terms not implemented. See xc for    !!
+!!   restricted/closed-shell.                                              !!
+!! arguments:                                                              !!
+!!   npt    (in)  -- number of grid points                                 !!
+!!   scr_ab (in)  -- electron density at each point, order alpha then beta !!
+!!   scr    (in)  -- density gradient contraction (sigma) at each point,   !!
+!!                   order up-up/up-down/down-down, only read for GGA/     !!
+!!                   hybrid-GGA functionals                                 !!
+!!   scr2   (out) -- XC energy density at each point (already multiplied   !!
+!!                   by the density)                                       !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
       subroutine xc_uks(npt,scr_ab,scr,scr2)
       use xc_f90_types_m
       use xc_f90_lib_m
@@ -641,15 +701,11 @@
       TYPE(xc_f90_pointer_t) :: xc_func
       TYPE(xc_f90_pointer_t) :: xc_info
       include 'parameter.h'
-      integer ideriv,npt
-      common /exchg/exch(maxat,maxat),xmix
+      integer npt
       common /iops/iopt(100)
-! (TO DO) xkdens = kinetic energy density (MG)
-! (TO DO) Laplacian!!!
       dimension scr_ab(2,npt),scr(3,npt),scr2(npt)
       allocatable :: scr2c(:)
 
-      ideriv=0
       id_xcfunc = iopt(60)
       id_cfunc  = iopt(62)
       id_xfunc  = iopt(61)
@@ -657,11 +713,9 @@
       ALLOCATE(scr2c(npt))
       do ii=1,npt
         scr2c(ii)=ZERO
-      end do 
+      end do
 
-!! scr_ab = RHO (ORDER: ALPHA, BETA) !!
-!! scr = SIGMA RHO (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
-!! scr2 = EXC (MULTIPLICATION BY RHO REMAINING) !!
+!! exchange-correlation, from libxc. !!
       if(id_xcfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xcfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -679,7 +733,7 @@
         call xc_f90_func_end(xc_func)
       end if 
 
-!! CORRELATION SEPARATED !!
+!! correlation, when specified as a separate libxc id. !!
       if(id_cfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_cfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -697,7 +751,7 @@
         call xc_f90_func_end(xc_func)
       end if 
 
-!! EXCHANGE SEPARATED !!
+!! exchange, when specified as a separate libxc id. !!
       if(id_xfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
@@ -715,16 +769,35 @@
         call xc_f90_func_end(xc_func)
       end if 
 
-!! MULTIPLYING BY RHO !! 
-!! EXCHANGE AND CORRELATION TOGETHER !!
+!! combine exchange and correlation, multiply by the density. !!
       do ii=1,npt
         scr2(ii)=(scr2c(ii)+scr2(ii))*(scr_ab(1,ii)+scr_ab(2,ii))
       end do
       DEALLOCATE(scr2c)
-      end 
+      end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: numint_dft_uks                                              !!
+!! purpose: KS-DFT exchange-correlation energy partition, UKS twin of      !!
+!!   numint_dft -- BODEN (bond-order density) approximation for atom-pair  !!
+!!   XC contributions (alpha+beta), plus an "exact" one-center XC term     !!
+!!   via direct integration, combined into the final atomic/diatomic XC    !!
+!!   decomposition. See numint_dft for restricted/closed-shell.            !!
+!! arguments:                                                              !!
+!!   ndim   (in)    -- number of basis functions (leading dim of chp)      !!
+!!   itotps (in)    -- total number of grid points                        !!
+!!   wp     (in)    -- integration weight of each grid point               !!
+!!   omp    (in)    -- becke/tfvc weight of each grid point for its own atom !!
+!!   omp2   (in)    -- becke/tfvc (or hirshfeld) weight of each point for  !!
+!!                      every atom                                         !!
+!!   chp    (in)    -- basis-function values at each grid point            !!
+!!   pcoord (in)    -- xyz coordinates of each grid point                  !!
+!!   eto    (inout) -- total energy matrix, accumulated on top of the      !!
+!!                      one- and two-electron parts already in it          !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
       subroutine numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
       use ao_matrices
       use integration_grid
@@ -735,7 +808,6 @@
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /iops/iopt(100)
       common/actual/iact,jat,icenter
-      common /achi/achi(maxat,maxat),ibcp
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/exchg/exch(maxat,maxat),xmix
       character*80 line
@@ -743,8 +815,6 @@
       dimension wp(itotps),chp(itotps,ndim)
       dimension omp(itotps),omp2(itotps,nat),pcoord(itotps,3)
       dimension exch2(maxat,maxat)
-! (TO DO) xkdens = kinetic energy density (MG)
-! (TO DO) Laplacian!!!
       allocatable :: chp2(:,:),chp3(:,:),rho(:,:),scrall(:,:),scr2(:)
       allocatable :: chpd(:,:,:),sab(:,:,:),sab2(:,:,:),scr_bod(:,:)
       allocatable :: chpbd(:,:,:)
@@ -765,42 +835,38 @@
       ALLOCATE(scrall(3,itotps),chp3(itotps,nb),sab(nalf,nalf,nat))
       ALLOCATE(scr2(itotps))
 
-!! ZEROING exch2 MATRIX !!
       exch2=ZERO
 
-!! BUILDING RHO AND ACCUMULATING IN THE SAME VECTOR. (ORDER: ALPHA, BETA) !!
+      call ao_to_mo_grid(itotps,igr,nalf,c,chp,chp2)
+      call ao_to_mo_grid(itotps,igr,nb,cb,chp,chp3)
+
+!! rho (order: alpha, beta), reduced from the MO amplitudes just built.  !!
+!! parallel over grid points: each k only reads its own chp2(k,:)/       !!
+!! chp3(k,:) and writes only its own rho(:,k).                           !!
+!$OMP PARALLEL DO PRIVATE(kk,jj,xx0,xx0b)
       do kk=1,itotps
         xx0=ZERO
         xx0b=ZERO
         do jj=1,nalf
-          xx=ZERO
-          xxb=ZERO
-          do ii=1,igr
-            xx=xx+c(ii,jj)*chp(kk,ii)
-            if(jj.le.nb) xxb=xxb+cb(ii,jj)*chp(kk,ii)
-          end do
-          chp2(kk,jj)=xx
-          if(jj.le.nb) then
-            chp3(kk,jj)=xxb
-            xx0b=xx0b+xxb*xxb
-          end if
-          xx0=xx0+xx*xx
+          xx0=xx0+chp2(kk,jj)*chp2(kk,jj)
+        end do
+        do jj=1,nb
+          xx0b=xx0b+chp3(kk,jj)*chp3(kk,jj)
         end do
         rho(1,kk)=xx0
         rho(2,kk)=xx0b
       end do
+!$OMP END PARALLEL DO
 
-!! EXCHANGE AND CORRELATION FOR DFT !!
-      write(*,*) " "
-      write(*,*) " ------------------------------ "
-      write(*,*) "  UKS-DFT ENERGY DECOMPOSITION  "
-      write(*,*) " ------------------------------ "
-      write(*,*) " "
+      call print_box('UKS-DFT ENERGY DECOMPOSITION')
       write(*,*) " USING BOND ORDER DENSITY APPROACH "
       write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
       write(*,*) " "
 
-!! sab FOR ALPHA, sab2 FOR BETA !!
+!! per-atom MO overlap, alpha (sab) and beta (sab2). parallel over       !!
+!! iatom: each iteration only writes its own sab(:,:,iatom)/             !!
+!! sab2(:,:,iatom), independent across atoms.                            !!
+!$OMP PARALLEL DO PRIVATE(iatom,ii,jj,xx,xxb,ifut)
       do iatom=1,nat
         do ii=1,nalf
           do jj=ii,nalf
@@ -815,12 +881,14 @@
             if(jj.le.nb.and.ii.le.nb) then
               sab2(ii,jj,iatom)=xxb
               if(ii.ne.jj) sab2(jj,ii,iatom)=xxb
-            end if 
+            end if
           end do
         end do
       end do
+!$OMP END PARALLEL DO
 
-!! CHECKING ALPHA AND BETA OVERLAPS !! 
+!! sanity check: sab/sab2 summed over atoms must reproduce the MO        !!
+!! overlap (identity for ii=jj, zero otherwise), alpha then beta.        !!
       do ii=1,nalf
         do jj=ii,nalf
           xa=ZERO
@@ -841,30 +909,23 @@
           do kk=1,nat
             xb=xb+sab2(ii,jj,kk)
           end do
-          if(abs(xa).gt.1.0d-3) then
+          if(abs(xb).gt.1.0d-3) then
             write(*,*) ii,jj,xb
-            stop " PROBLEM WITH ALPHA MOs OVERLAPS "
+            stop " PROBLEM WITH BETA MOs OVERLAPS "
           end if
         end do
       end do
 
-!! CALCULATING RHO GRADIENTS !!
-      if(itype.ne.1) call ugrdrho(pcoord,chpd,chpbd)
+      if(itype.gt.1) call ugrdrho(pcoord,chpd,chpbd)
 
-!! CALCULATING APPROXIMATED XC MATRIX USING BODEN !!
-      write(*,*) " --------------------------------------- "
-      write(*,*) "  BOND ORDER DENSITY FOR ALL ATOM PAIRS  "
-      write(*,*) " --------------------------------------- "
-      write(*,*) " "
+      call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
       write(*,*) " --------------------------- "
       write(*,*) "  Atom   Atom   BODEN value  "
       write(*,*) " --------------------------- "
-      x0=ZERO
       do iatom=1,nat
         do jatom=iatom+1,nat
 
-!! COMPUTING BODEN FOR ATOM PAIRS IF BODEN LARGE ENOUGH (CONTROLLED BY THREBOD)
-
+!! BODEN for this atom pair, skipped below the THREBOD bond-order threshold. !!
           bx0=bo(iatom,jatom)
           if(bx0.ge.threbod) then
             xx=ZERO
@@ -894,9 +955,8 @@
                   end do
                 end do
 
-!! DEFINING A-B BODEN AS A-B + B-A, HENCE FACTOR OF 2 !!
-!! scr_bod = BODEN MATRIX (ORDER: ALPHA, BETA)
-
+!! A-B BODEN defined as A-B + B-A, hence the factor of 2. scr_bod holds !!
+!! the BODEN matrix, order alpha then beta. !!
                 scr_bod(1,jfut)=ff2/TWO
                 scr_bod(2,jfut)=ff2b/TWO
                 if(iatom.ne.jatom) then
@@ -910,8 +970,8 @@
 !$OMP END PARALLEL DO
             write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,xx+xxb
 
-!! BODEN GRADIENT FOR UNRESTRICTED GGA FUNCTIONALS !!
-            if(itype.ne.1) call grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iatom,jatom,sab,sab2)
+!! BODEN gradient, for unrestricted GGA functionals. !!
+            if(itype.gt.1) call grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iatom,jatom,sab,sab2)
             call xc_uks(itotps,scr_bod,scrall,scr2)
             x1=ZERO
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
@@ -929,11 +989,7 @@
       write(*,*) " --------------------------- "
       write(*,*) " "
 
-!! PRINTING !!
-      write(*,*) " --------------------------------------- "
-      write(*,*) "  DIATOMIC PURE KS-DFT XC TERMS (BODEN)  "
-      write(*,*) " --------------------------------------- "
-      write(*,*) " "
+      call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
       do ii=1,nat
         exchen=exchen+exch2(ii,ii)
@@ -941,19 +997,20 @@
           if(ii.ne.jj) then
             exch2(jj,ii)=exch2(ii,jj)
             exchen=exchen+exch2(ii,jj)
-          end if 
+          end if
         end do
       end do
       CALL MPRINT2(exch2,nat,maxat)
       write(*,*) " "
 
-!! CALCULATE "EXACT" UNRESTRICTED XC ENERGY !!
-      if(itype.ne.1) then
-        ideriv=0
-        call sigma_uks(pcoord,chp2,chp3,scrall)
-      end if
+      if(itype.gt.1) call sigma_uks(pcoord,chp2,chp3,scrall)
+
+!! "exact" one-center XC energy, by direct integration (no BODEN approximation). !!
       call xc_uks(itotps,rho,scrall,scr2)
       xtot=ZERO
+!! parallel over icenter: each iteration writes only its own exch(icenter,icenter), !!
+!! xtot is a genuine running total. !!
+!$OMP PARALLEL DO PRIVATE(icenter,x,ifut) REDUCTION(+:xtot)
       do icenter=1,nat
         x=ZERO
         do ifut=1,itotps
@@ -962,17 +1019,13 @@
         exch(icenter,icenter)=x
         xtot=xtot+x
       end do
+!$OMP END PARALLEL DO
 
-!! PRINTING !!
-      write(*,*) " ----------------------------------------- "
-      write(*,*) "  PURE KS-DFT XC ONE-CENTER TERMS (EXACT)  "
-      write(*,*) " ----------------------------------------- "
-      write(*,*) " "
+      call print_box('PURE KS-DFT XC ONE-CENTER TERMS (EXACT)')
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
       write(*,*) " "
 
-!! RECALCULATING ATOMIC XC COMPONENTS !!
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
       write(*,*) " "
       do ii=1,nat
@@ -986,11 +1039,7 @@
         exch(ii,ii)=exch(ii,ii)-x0/TWO
       end do
 
-!! FINAL PRINTING !!
-      write(*,*) " ---------------------------------------------------------- "
-      write(*,*) "  FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS  "
-      write(*,*) " ---------------------------------------------------------- "
-      write(*,*) " "
+      call print_box('FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS')
       exchen=ZERO
       do ii=1,nat
         do jj=ii,nat
@@ -1009,7 +1058,6 @@
         call group_by_frag_mat(1,line,exch)
       end if
 
-!! ACCUMULATING IN ETO !!
       xtot=ZERO
       do ii=1,nat
         eto(ii,ii)=eto(ii,ii)+exch(ii,ii)
@@ -1021,10 +1069,31 @@
         end do
       end do
       DEALLOCATE(chp2,rho,scr_bod,chpd,chpbd,sab2,scrall,chp3,sab,scr2)
-      end 
+      end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: grdboden_uks                                                !!
+!! purpose: gradient of the bond-order density (BODEN) for one atom pair,  !!
+!!   alpha and beta, at each grid point -- sigma input for the GGA/        !!
+!!   hybrid-GGA XC evaluation in numint_dft_uks's BODEN loop. See          !!
+!!   grdboden for restricted/closed-shell.                                 !!
+!! arguments:                                                              !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   chp2   (in)  -- alpha MO values at each grid point                    !!
+!!   chp3   (in)  -- beta MO values at each grid point                     !!
+!!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                   every atom                                            !!
+!!   chpd   (in)  -- alpha MO gradient at each grid point (from ugrdrho)   !!
+!!   chpbd  (in)  -- beta MO gradient at each grid point (from ugrdrho)    !!
+!!   scrall (out) -- sigma BODEN at each grid point, order                 !!
+!!                   up-up/up-down/down-down                               !!
+!!   iat,kat (in) -- the atom pair                                         !!
+!!   sab,sab2 (in) -- per-atom MO overlap matrix, alpha/beta (from         !!
+!!                   numint_dft_uks)                                       !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
       subroutine grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iat,kat,sab,sab2)
       use ao_matrices
       use integration_grid
@@ -1035,15 +1104,20 @@
       dimension chpd(itotps,nalf,3),chpbd(itotps,nb,3)
       dimension sab(nalf,nalf,nat),sab2(nb,nb,nat),omp2(itotps,nat)
 
-!! GENERATING SIGMA BOND ORDER DENSITY VECTOR !!
       do kk=1,itotps
         scrall(1,kk)=ZERO
         scrall(2,kk)=ZERO
         scrall(3,kk)=ZERO
       end do
 
-!! CALCULATING AND ACCUMULATING SIGMA BODEN (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
       do ixyz=1,3
+
+!! sigma BODEN, order up-up/up-down/down-down. parallel over irun: each  !!
+!! iteration only reads its own omp2(irun,:)/chpd(irun,:,ixyz)/          !!
+!! chpbd(irun,:,ixyz)/chp2(irun,:)/chp3(irun,:) and writes its own       !!
+!! scrall(:,irun) -- safe across the three ixyz passes since they run    !!
+!! serially, only the point loop within each pass is threaded.           !!
+!$OMP PARALLEL DO PRIVATE(irun,w1,w2,xxa,xxb,ii,jj,gab,gab2)
         do irun=1,itotps
           w1=omp2(irun,iat)
           w2=omp2(irun,kat)
@@ -1063,9 +1137,10 @@
           scrall(2,irun)=scrall(2,irun)+xxa*xxb
           scrall(3,irun)=scrall(3,irun)+xxb*xxb
         end do
+!$OMP END PARALLEL DO
       end do
       if(iat.ne.kat) then
-        do kk=1,itotps    
+        do kk=1,itotps
           scrall(1,kk)=FOUR*scrall(1,kk)
           scrall(2,kk)=FOUR*scrall(2,kk)
           scrall(3,kk)=FOUR*scrall(3,kk)
@@ -1075,6 +1150,17 @@
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: func_info_print                                             !!
+!! purpose: prints the density-functional identification block (name,     !!
+!!   references, exchange/correlation type, family) via libxc's own info   !!
+!!   query functions, and classifies the functional into itype (1 LDA,    !!
+!!   2 GGA, 3 meta-GGA) for the caller's gradient-calculation dispatch.    !!
+!! arguments:                                                              !!
+!!   id_func (in)  -- libxc functional id (from iopt, read by the caller)  !!
+!!   itype   (out) -- functional family classification, see above          !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine func_info_print(id_func,itype)
 
       use xc_f90_types_m
@@ -1089,9 +1175,8 @@
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common/exchg/exch(maxat,maxat),xmix
-      common /iops/iopt(100)
 
-      character*120 name_ref        
+      character*120 name_ref
       character*80 name_func
 
       if(kop.ne.1) call xc_f90_func_init(xc_func,xc_info,id_func,XC_UNPOLARIZED)
@@ -1099,15 +1184,12 @@
       call xc_f90_hyb_exx_coef(xc_func,xmix)
       call xc_f90_info_name(xc_info,name_func)
 
-      write(*,*) " -------------------------------- "
-      write(*,*) "  DENSITY FUNCTIONAL INFORMATION  "
-      write(*,*) " -------------------------------- "
-      write(*,*) " "
+      call print_box('DENSITY FUNCTIONAL INFORMATION')
       write(*,*) " Functional name --> ",trim(name_func)
       ii=0
       call xc_f90_info_refs(xc_info,ii,name_ref)
       do while(ii.ge.0)
-        write(*,'(2x,a15,i1,a1,x,a120)') "Reference --> [",ii,"]",name_ref
+        write(*,'(2x,a15,i2,a1,x,a120)') "Reference --> [",ii,"]",name_ref
         call xc_f90_info_refs(xc_info,ii,name_ref)
       end do
       select case(xc_f90_info_kind(xc_info))
@@ -1123,8 +1205,8 @@
           write(*,*) " Functional type --> unknown"
       end select
 
-!! itype = 1 LDA, 2 GGA, 3 META-GGA. FOR HYB XMIX > 0. itype SAVED IN IOPT(55) !!
-
+!! itype: 1 LDA, 2 GGA, 3 meta-GGA. Hybrid functionals get xmix>0 as well. !!
+!! Caller stores the returned value in iopt(55) for later use. !!
       itype=0
       select case(xc_f90_info_family(xc_info))
         case(XC_FAMILY_UNKNOWN)
@@ -1146,13 +1228,13 @@
         case(XC_FAMILY_MGGA)
           write(*,*) " META-GGA functional selected"
           itype=3
-          write(*,*) " META-GGA still in development!!!" !! MG: TO DO LIST !!
+          write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
           stop
         case(XC_FAMILY_HYB_MGGA)
           write(*,*) " HYBRID-META-GGA functional selected"
           write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
           itype=3
-          write(*,*) " META-GGA still in development!!!" !! MG: TO DO LIST !!
+          write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
           stop
       end select
       call xc_f90_func_end(xc_func)
@@ -1161,6 +1243,20 @@
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: sigma_uks                                                   !!
+!! purpose: density-gradient contraction (sigma, order up-up/up-down/      !!
+!!   down-down) at each grid point, for GGA/hybrid-GGA XC functionals.     !!
+!!   Builds the AO gradient (x/y/z in turn) from primitives, transforms    !!
+!!   to MOs (alpha and beta), and contracts with the already-transformed   !!
+!!   chp2/chp3. See sigma for restricted/closed-shell.                     !!
+!! arguments:                                                              !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   chp2   (in)  -- alpha MO values at each grid point (from the caller)  !!
+!!   chp3   (in)  -- beta MO values at each grid point (from the caller)   !!
+!!   scr    (out) -- sigma at each grid point, order up-up/up-down/down-down !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
       subroutine sigma_uks(pcoord,chp2,chp3,scr)
       use basis_set
       use ao_matrices
@@ -1168,17 +1264,14 @@
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
       dimension chp2(natoms*nrad*nang,nalf),scr(3,natoms*nang*nrad)
       dimension chp3(natoms*nrad*nang,nb)
       dimension pcoord(natoms*nang*nrad,3)
       allocatable:: chpd(:,:),chp(:,:),chpbd(:,:)
 
-
       ipoints=natoms*nrad*nang
-      ALLOCATE(chpd(ipoints,igr),chp(ipoints,igr),chpbd(ipoints,igr))
+      ALLOCATE(chpd(ipoints,nalf),chp(ipoints,igr),chpbd(ipoints,nb))
 
-!! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
       do kk=1,ipoints
        do jj=1,3
         scr(jj,kk)=ZERO
@@ -1186,6 +1279,10 @@
       end do
 
       do ixyz=1,3
+
+!! AO gradient (ixyz component) from primitives. parallel over irun: each !!
+!! iteration writes only its own chp(irun,:), independent across points.  !!
+!$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
          do irun=1,ipoints
           do iact=1,nbasis
             iactat=ihold(iact)
@@ -1220,22 +1317,16 @@
             chp(irun,iact)=f
           enddo
          enddo
-         
-!! TO MOs !!  
-         do k=1,ipoints
-           do j=1,nalf
-             xx=ZERO
-             xxb=ZERO
-             do i=1,igr
-               xx=xx+c(i,j)*chp(k,i)
-               if(j.le.nb) xxb=xxb+cb(i,j)*chp(k,i)
-             end do
-             chpd(k,j)=xx
-             if(j.le.nb) chpbd(k,j)=xxb
-           end do
-         end do
+!$OMP END PARALLEL DO
 
-!! CALCULATION OF SIGMA FOR COUPLING WITH LIBXC LIBRARIES (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
+         call ao_to_mo_grid(ipoints,igr,nalf,c,chp,chpd)
+         call ao_to_mo_grid(ipoints,igr,nb,cb,chp,chpbd)
+
+!! sigma for libxc, order up-up/up-down/down-down. parallel over k: each !!
+!! iteration only reads chp2(k,:)/chp3(k,:)/chpd(k,:)/chpbd(k,:) and     !!
+!! writes its own scr(:,k) -- safe across the three ixyz passes since    !!
+!! they run serially, only the point loop within each pass is threaded. !!
+!$OMP PARALLEL DO PRIVATE(k,i,j)
          do k=1,ipoints
            do i=1,nalf
              do j=1,nalf
@@ -1245,14 +1336,15 @@
              end do
            end do
          end do
+!$OMP END PARALLEL DO
       end do
-c
+
       do k=1,ipoints
         do j=1,3
         scr(j,k)=4.0d0*scr(j,k)
-       end do 
-      end do 
+       end do
+      end do
       DEALLOCATE(chpd,chpbd,chp)
-      end 
+      end
 
 !! ***** !!
