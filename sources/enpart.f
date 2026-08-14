@@ -1310,6 +1310,17 @@
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: numint_two_uhf                                              !!
+!! purpose: two-electron IQA/ENPART energy partition, UHF/UKS twin of      !!
+!!   numint_two -- Coulomb (via calc_coul) and, if requested, HF-type      !!
+!!   exchange (same-center and atom-pair kernels, alpha+beta contributions !!
+!!   summed via the j.le.nb guard), each decomposed into atomic/diatomic   !!
+!!   contributions. Same zero-error rotated-grid interpolation strategy as !!
+!!   numint_two. See numint_two for restricted/closed-shell.               !!
+!! arguments: same as numint_two.                                          !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
       use ao_matrices
@@ -1353,21 +1364,20 @@
       allocatable :: chp2(:,:), chp2b(:,:), chp2phab(:,:)
       allocatable :: fij(:,:),fijb(:,:),xocc(:,:),xoccb(:,:),Excmpb(:,:)
 
-!! FOR ENPART PARALLEL !!
-      allocatable :: chp2s(:,:),chp2phas(:,:),chp2bs(:,:),chp2phabs(:,:) !! SWITCHED ORDER OF COLUMNS AND ROWS !!
-      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+!! parallelization-related arrays below. !!
+      allocatable :: chp2s(:,:),chp2phas(:,:),chp2bs(:,:),chp2phabs(:,:) !! transposed layout (rows/columns swapped) !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! included atom pairs, thread-slicing bookkeeping !!
       allocatable :: exch_hfk(:,:)
       allocatable :: exch_hfij(:,:)
       allocatable :: f3k(:)
 
-      ihf         = Iopt(18) 
+      ihf         = Iopt(18)
       idofr       = Iopt(40)
       ithrebod    = Iopt(44)
       ipolar      = Iopt(46)
       ifield      = Iopt(47) !MMO- adding iopt
       ianalytical = Iopt(91) !MMO- analytical
 
-      !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
       if(ithrebod.lt.1) then
         threbod=ZERO
       else
@@ -1377,13 +1387,8 @@
       if(xmix.gt.ZERO) idoex=1
       iatps=nang*nrad
 
-!! DOING ENERGY PARTITION !!
       npass=2
-      write(*,*) " "
-      write(*,*) " --------------------------- "
-      write(*,*) "  GENERAL TWO-ELECTRON PART  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      call print_box('GENERAL TWO-ELECTRON PART')
       do i=1,nat
         do j=1,nat
           coul(i,j)=ZERO
@@ -1395,32 +1400,17 @@
       end do
 
       ALLOCATE(chp2(itotps,nalf),chp2b(itotps,nb))
-      ALLOCATE(chp2s(nalf,itotps),chp2bs(nb,itotps)) !! TODO: CHANGING THAT NEVER USE CHP2 !!
+      ALLOCATE(chp2s(nalf,itotps),chp2bs(nb,itotps))
 
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nalf
-          xx=ZERO
-          xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chp(k,i) 
-            if(j.le.nb) xxb=xxb+cb(i,j)*chp(k,i) 
-          end do
-          if(j.le.nb) then
-            chp2b(k,j)=xxb
-            chp2bs(j,k)=xxb
-          end if
-          chp2(k,j)=xx
-          chp2s(j,k)=xx
-        end do
-      end do
+      call ao_to_mo_grid_t(itotps,igr,nalf,c,chp,chp2,chp2s)
+      call ao_to_mo_grid_t(itotps,igr,nb,cb,chp,chp2b,chp2bs)
 
       if(ianalytical.eq.0) then !MMO- skip if analytical
 
-!! ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
       phb=phb12
-      pha=ZERO 
+      pha=ZERO
       write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
       ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
@@ -1429,31 +1419,30 @@
 
       call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! TO MOs !!
+      call ao_to_mo_grid_t(itotps,igr,nalf,c,chppha,chp2pha,chp2phas)
+      call ao_to_mo_grid_t(itotps,igr,nb,cb,chppha,chp2phab,chp2phabs)
+
+!! rhopha is recomputed from the MO amplitudes (rather than kept as       !!
+!! prenumint's own density output) to stay numerically consistent with   !!
+!! chp2pha/chp2phab, which the exchange kernel below reads directly.     !!
+!! parallel over grid points: each k only reads its own chp2pha(k,:)/    !!
+!! chp2phab(k,:) and writes only its own rhopha(k).                      !!
+!$OMP PARALLEL DO PRIVATE(k,j,xtot,xtotb)
       do k=1,itotps
-        xtot=ZERO 
-        xtotb=ZERO 
+        xtot=ZERO
+        xtotb=ZERO
         do j=1,nalf
-          xx=ZERO
-          xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chppha(k,i) 
-            if(j.le.nb) xxb=xxb+cb(i,j)*chppha(k,i) 
-          end do
-          chp2pha(k,j)=xx
-          chp2phas(j,k)=xx
-          if(j.le.nb) then
-            chp2phab(k,j)=xxb
-            chp2phabs(j,k)=xxb
-            xtotb=xtotb+xxb*xxb
-          end if 
-          xtot=xtot+xx*xx
+          xtot=xtot+chp2pha(k,j)*chp2pha(k,j)
         end do
-        rhopha(k)=xtot+xtotb 
+        do j=1,nb
+          xtotb=xtotb+chp2phab(k,j)*chp2phab(k,j)
+        end do
+        rhopha(k)=xtot+xtotb
       end do
+!$OMP END PARALLEL DO
       end if !MMO- non-analytical skip ends here
 
-!! COULOMB !!
+!! Coulomb energy term. !!
       call cpu_time(xtime)
       call get_wall_time(wxtime)
       if(ianalytical.eq.0) then
@@ -1468,11 +1457,12 @@
       xtime=xtime2
       wxtime=wxtime2
 
-!! EXCHANGE PART !!
+!! HF-type exchange, computed only if requested (idoex). !!
       if(ianalytical.eq.0) then !MMO- skip if analytical
       if(idoex.eq.1) then
 
-!! COMPUTING MULTIPOLAR APPROACH HERE !!
+!! multipolar approximation, used below for atom pairs skipped by THREBOD, !!
+!! computed for alpha and beta separately then summed. !!
         norb2=nalf*(nalf+1)/2
         norb2b=nb*(nb+1)/2
         ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
@@ -1509,12 +1499,9 @@
         end do 
         DEALLOCATE(fij,fijb,xocc,xoccb,Excmpb)
 
-!! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
-!! MIMICKING STRATEGY FROM RHF PART !!
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) "  EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  "
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) " "
+!! loops reordered for parallelization purposes, mimicking numint_two's !!
+!! strategy (see there for the full explanation). !!
+        call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
         write(*,'(2x,a22,x,i6,x,a9)') "Two-el integrations for",nalf*(nalf+1),"functions"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
 
@@ -1562,7 +1549,7 @@
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
 
-!! THE TWO CALLS ARE CRUCIAL !!
+!! both calls below are required for the thread count to actually take effect. !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
 !! MG: restored real OpenMP parallelization here -- see the RHF
@@ -1606,7 +1593,8 @@
                   f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
                   f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
 
-!! FOR THE nalf = nb CASE IT IS REQUIRED TO ADD THIS !!
+!! nalf=nb's own highest-index term needs adding separately (loop above !!
+!! only pairs i with i+1..nalf, so the beta-side match never triggers). !!
                   if(nalf.eq.nb) then
                     f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
                     f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
@@ -1701,7 +1689,7 @@
                   f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
                   f3loc=f3loc+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
 
-!! AGAIN, ONLY WHEN nalf = nb !!
+!! same nalf=nb edge case as the same-center block above. !!
                   if(nalf.eq.nb) then
                     f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
                     f3loc=f3loc+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
@@ -1723,7 +1711,8 @@
           end do
         end do   
 
-!! ACCOUNTING IF SOME TERMS COME FROM MULTIPOLAR APPROACH... AND FACTORS... !!
+!! account for A-B/B-A symmetry (factor of 2) and for atom pairs whose !!
+!! term came from the multipolar approximation instead of integration. !!
         exchen_hf=ZERO
         do i=1,nat
           exch_hf(i,i)=exch_hf(i,i)/TWO
@@ -1734,18 +1723,14 @@
             exchen_hf=exchen_hf+exch_hf(i,j)
           end do
         end do
-        write(*,*) " ----------------------------------------- "
-        write(*,*) "  HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-        write(*,*) " ----------------------------------------- "
-        write(*,*) " "
+        call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
         call MPRINT2(exch_hf,nat,maxat)
         write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
         write(*,*) " "
       end if
       end if !MMO- non-analytical skip ends here
 
-!! CHECKING THE ACCURACY OF THE TWO ELECTRON PART !!
-!! HF ONLY !!
+!! checking accuracy of the two-electron part, HF only !!
       if(ihf.eq.1) then
         evee=coulen+exchen_hf
         write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
@@ -1770,10 +1755,7 @@
           end do
         end do
         if(idoex.eq.1) then
-          write(*,*) " ------------------------ "
-          write(*,*) "  HYBRID KS-DFT XC TERMS  "
-          write(*,*) " ------------------------ "
-          write(*,*) " "
+          call print_box('HYBRID KS-DFT XC TERMS')
           call MPRINT2(exch,nat,maxat)
           write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
           write(*,*) " "
@@ -1789,43 +1771,45 @@
         write(*,*) " "
       end if
 
-!! ZERO ERROR STRATEGY FOR THE VEE PART !!
+!! zero-error strategy for the two-electron (Vee) part. !!
       if(ianalytical.eq.1) twoeltoler=232000
       write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
       write(*,*) " "
 
       if(abs(twoelerr).gt.twoeltoler) then
 
-!! NOW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
         phb=phb22
-        pha=ZERO 
+        pha=ZERO
         write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
         nat0=nat
         call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! TO MOs !!
-        do k=1,itotps
-          xtot=ZERO 
-          xtotb=ZERO 
-          do j=1,nalf
-            xx=ZERO
-            xxb=ZERO
-            do i=1,igr 
-              xx=xx+c(i,j)*chppha(k,i) 
-              if(j.le.nb) xxb=xxb+cb(i,j)*chppha(k,i) 
-            end do
-            chp2phas(j,k)=xx
-            if(j.le.nb) then
-              chp2phabs(j,k)=xxb
-              xtotb=xtotb+xxb*xxb
-            end if 
-            xtot=xtot+xx*xx
-          end do
-          rhopha(k)=xtot+xtotb 
-        end do
+        call ao_to_mo_grid_t(itotps,igr,nalf,c,chppha,chp2pha,chp2phas)
+        call ao_to_mo_grid_t(itotps,igr,nb,cb,chppha,chp2phab,chp2phabs)
 
-!! INTERPOLATING ONLY ATOMIC TERMS !!
+!! rhopha recomputed from the MO amplitudes, same reason as the earlier !!
+!! rotated-grid pass above. !!
+!$OMP PARALLEL DO PRIVATE(k,j,xtot,xtotb)
+        do k=1,itotps
+          xtot=ZERO
+          xtotb=ZERO
+          do j=1,nalf
+            xtot=xtot+chp2phas(j,k)*chp2phas(j,k)
+          end do
+          do j=1,nb
+            xtotb=xtotb+chp2phabs(j,k)*chp2phabs(j,k)
+          end do
+          rhopha(k)=xtot+xtotb
+        end do
+!$OMP END PARALLEL DO
+
+!! same-center-only recompute of the Coulomb part on the rotated grid, !!
+!! for the zero-error interpolation below. parallel over icenter: each !!
+!! iteration accumulates into its own coul0(icenter,3), independent of !!
+!! every other icenter.                                                !!
+!$OMP PARALLEL DO PRIVATE(icenter,ifut,x0,dx0,dy0,dz0,f3,jfut,x1,dx1,dy1,dz1,dist)
         do icenter=1,nat
           do ifut=iatps*(icenter-1)+1,iatps*icenter
             x0=wp(ifut)*omp2(ifut,icenter)
@@ -1844,11 +1828,12 @@
             coul0(icenter,3)=coul0(icenter,3)+f3/TWO
           end do
         end do
+!$OMP END PARALLEL DO
 
-!! EXCHANGE PART !!
+!! HF-type exchange, computed only if requested (idoex). !!
         if(idoex.eq.1) then
 
-!! AS BEFORE, MORE CONVOLUTED LOOP STRUCTURE !!
+!! same-center recompute, same manual-chunking shape as above. !!
           exch_hfk=ZERO
           !DIR$ NOPARALLEL
           do icenter=1,nat
@@ -1863,7 +1848,7 @@
             istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
             iend(ithreads)=icenter*iatps
   
-  !! AGAIN THE TWO CALLS ARE CRUCIAL !!
+!! both calls below are required for the thread count to actually take effect. !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
 !! MG: false-sharing fix -- same as the earlier blocks in this
@@ -1903,7 +1888,7 @@
                     f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
                     f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
 
-!! AGAIN, ONLY WHEN nalf = nb !!
+!! same nalf=nb edge case as the same-center block above. !!
                     if(nalf.eq.nb) then
                       f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
                       f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
@@ -1924,7 +1909,8 @@
           end do
         end if
   
-!! CHECKING NEW VALUES !!
+!! compare same-center coul0/exch_hf against the rotated-grid recompute !!
+!! to get the damping parameter for the interpolation below. !!
         do i=1,nat
           coul0(i,1)=coul(i,i)
           if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
@@ -1938,9 +1924,9 @@
         phabest=ONE-(twoelerr/deltaee)
         write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
         if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
-        write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest !MMO- not dumping !! ...
+        write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest
 
-!! INTERPOLATING ENERGIES AND REPLACING OLD COULOMB AND EXCHANGE TERMS !!
+!! interpolate energies, replacing the old Coulomb/exchange terms !!
         do i=1,nat
           coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
           if(idoex.eq.1) then
@@ -1949,11 +1935,7 @@
         end do
         write(*,*) " "
 
-!! PRINTING !!
-        write(*,*) " ------------------------------------------------------- "
-        write(*,*) "  INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
-        write(*,*) " ------------------------------------------------------- "
-        write(*,*) " " 
+        call print_box('INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
         call MPRINT2(coul,nat,maxat)
         coulen=ZERO
         do i=1,nat
@@ -1969,10 +1951,7 @@
         end if
 
         if(idoex.eq.1) then
-          write(*,*) " ------------------------------------------------------ "
-          write(*,*) "  INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-          write(*,*) " ------------------------------------------------------ "
-          write(*,*) " "
+          call print_box('INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
           call MPRINT2(exch_hf,nat,maxat)
           exchen_hf=ZERO
           do i=1,nat
@@ -1989,18 +1968,15 @@
               exch(i,i)=exch(i,i)+xmix*(exch_hf(i,i)-coul0(i,2))
               exchen=exchen+exch(i,i)
               do j=i+1,nat
-!MMO- commenting the line below this one (instruccions Marti)
-!! MG: THIS IS ALREADY DONE IN THE FIRST ROTATION AND HERE ARE NOT TOUCHED !!
+!! off-diagonal exch(i,j) intentionally left untouched here -- already !!
+!! updated in the first rotation, on M. Gimferrer's instructions. !!
 !                exch(i,j)=exch(i,j)+xmix*exch_hf(i,j)
                 exch(j,i)=exch(i,j)
                 exchen=exchen+exch(i,j)
               end do
             end do
 
-            write(*,*) " ------------------------------------- "
-            write(*,*) "  INTERPOLATED HYBRID KS-DFT XC TERMS  "
-            write(*,*) " ------------------------------------- "
-            write(*,*) " "
+            call print_box('INTERPOLATED HYBRID KS-DFT XC TERMS')
             call MPRINT2(exch,nat,maxat)
             write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
             write(*,*) " "
@@ -2019,7 +1995,7 @@
           end do
         end if
 
-!! TOTAL TWO ELECTRON PART !!
+!! total two-electron part, after interpolation. !!
         if(ihf.eq.0) then
           evee=coulen+exchen
           write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee              
@@ -2034,9 +2010,6 @@
         write(*,*) " "
       end if
 
-!! END ZERO-ERROR STRATEGY !!
-
-!! FINAL PRINTING !!
       if(ihf.eq.1) then
         xtot=ZERO
         do i=1,nat
@@ -2050,12 +2023,9 @@
         end do
         etot=xtot
 
-        write(*,*) " -------------------------------------------- "
-        write(*,*) "  FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------------- "
-        write(*,*) " "
+        call print_box('FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS')
         call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
+        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot
         write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf 
   
 !MMO - added ifield loop, to match restricted
@@ -2080,12 +2050,9 @@
         end do
         etot=xtot
 
-        write(*,*) " -------------------------------------- "
-        write(*,*) "  FUZZY ATOMS KS-DFT ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------- "
-        write(*,*) " "
+        call print_box('FUZZY ATOMS KS-DFT ENERGY COMPONENTS')
         call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot  
+        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot
         write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
 
 !MMO - added ifield loop, to match restricted
@@ -2103,10 +2070,13 @@
         call group_by_frag_mat(1,line ,eto)
       end if
 
-      if(ianalytic.eq.0) then
+      if(ianalytical.eq.0) then
         DEALLOCATE(chp2,chp2b,chp2pha,rhopha,chp2phab)
         DEALLOCATE(wppha,omppha,omp2pha,chppha,pcoordpha)
-!! MG: DEALLOCATING THE PARALLEL PART MISSING (I'VE BEEN LAZY)
+        DEALLOCATE(chp2s,chp2bs,chp2phas,chp2phabs)
+        if(idoex.eq.1) then
+          DEALLOCATE(f3k,exch_hfk,istart,iend,ijpaircount,exch_hfij)
+        end if
       else
         DEALLOCATE(chp2,chp2b)
       end if
