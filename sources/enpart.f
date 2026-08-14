@@ -360,7 +360,7 @@
       common /exchg/exch(maxat,maxat),xmix
       common /twoel/twoeltoler
       common /efield/field(4),edipole
-!! FROM # GRID SECTION !!
+!! rotated-grid angles/thresholds, read from the # GRID input section. !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
       common /modgrid2/thr3
 
@@ -583,7 +583,7 @@
 !$OMP END PARALLEL DO
         end do
 
-!! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+!! reduce the per-thread accumulator into the same-center exch_hf term. !!
         do icenter=1,nat
           do isum=1,ithreads
             exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
@@ -671,7 +671,7 @@
 !$OMP END PARALLEL DO
         end do
 
-!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+!! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
         do numpairnat=1,ipaircounter
           icenter=ijpaircount(numpairnat,1)
           jcenter=ijpaircount(numpairnat,2)
@@ -680,7 +680,8 @@
           end do
         end do
 
-!! ACCOUNTING THAT AB = BA (FACTOR OF 2), AND IF SOME TERMS COME FROM MULTIPOLAR APPROACH !!
+!! account for A-B/B-A symmetry (factor of 2) and for atom pairs whose !!
+!! term came from the multipolar approximation instead of integration. !!
         exchen_hf=ZERO
         do i=1,nat
           exchen_hf=exchen_hf+exch_hf(i,i)
@@ -846,7 +847,7 @@
 !$OMP END PARALLEL DO
         end do
 
-!! ADDING THE TERMS INTO THE ORIGINAL coul0 MATRIX !!
+!! reduce the per-thread accumulator into the same-center coul0 term. !!
         do icenter=1,nat
           do isum=1,ithreads
             coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)
@@ -1333,7 +1334,7 @@
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/exchg/exch(maxat,maxat),xmix
       common/efield/field(4),edipole !MMO- adding common
-!! FROM # GRID SECTION !!
+!! rotated-grid angles/thresholds, read from the # GRID input section. !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
       common /modgrid2/thr3
 
@@ -1618,7 +1619,7 @@
 !$OMP END PARALLEL DO
         end do
 
-!! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+!! reduce the per-thread accumulator into the same-center exch_hf term. !!
         do icenter=1,nat
           do isum=1,ithreads
             exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
@@ -1713,7 +1714,7 @@
 !$OMP END PARALLEL DO
         end do
 
-!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+!! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
         do numpairnat=1,ipaircounter
           icenter=ijpaircount(numpairnat,1)
           jcenter=ijpaircount(numpairnat,2)
@@ -1915,7 +1916,7 @@
 !$OMP END PARALLEL DO
           end do
 
-  !! ADDING THE TERMS INTO THE ORIGINAL coul0 MATRIX !!
+  !! reduce the per-thread accumulator into the same-center coul0 term. !!
           do icenter=1,nat
             do isum=1,ithreads
               coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)/TWO
@@ -2829,7 +2830,7 @@ c  energetics
 !$OMP END PARALLEL DO
       end do
 
-!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+!! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
       do numpairnat=1,ipaircounter
         icenter=ijpaircount(numpairnat,1)
         jcenter=ijpaircount(numpairnat,2)
