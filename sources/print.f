@@ -1,10 +1,10 @@
-   !! ********************************************************************* !!
-   !! subroutine: print_box                                                 !!
-   !! purpose: prints text inside a rule auto-sized to fit it.              !!
-   !! arguments:                                                            !!
-   !!   text (in) -- title to print, no leading/trailing padding needed     !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: print_box                                                 !!
+!! purpose: prints text inside a rule auto-sized to fit it.              !!
+!! arguments:                                                            !!
+!!   text (in) -- title to print, no leading/trailing padding needed     !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       SUBROUTINE print_box(text)
       IMPLICIT NONE
       character(len=*), intent(in) :: text

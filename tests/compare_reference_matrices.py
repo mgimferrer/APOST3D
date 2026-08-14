@@ -10,9 +10,9 @@ this catches a wrong off-diagonal element that a matching trace/sum would
 hide.
 
 Intended for cross-checking against ../REFERENCE-OUTPUTS/compiler-testset/
-(sibling to the repo, not tracked in git -- see CLAUDE.md's Test Suite
-section) whenever changing enpart.f/enpart_dft.f code that prints one of
-these matrices, not just for the routine 'make test' pass.
+(sibling to the repo, not tracked in git) whenever changing
+enpart.f/enpart_dft.f code that prints one of these matrices, not just
+for the routine 'make test' pass.
 
 Usage
 -----

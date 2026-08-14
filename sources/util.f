@@ -411,21 +411,21 @@ c X(N,M)
         end
 
 
-   !! ********************************************************************* !!
-   !! subroutine: diagonalize                                               !!
-   !! purpose: symmetric eigensolver used everywhere in the codebase (~36   !!
-   !!   call sites). Uses LAPACK's dsyevd; old_diagonalize/SDIAG2 below is  !!
-   !!   the pre-2026-08-15 hand-rolled version, kept as an unused backup.   !!
-   !! arguments:                                                            !!
-   !!   M     (in)    -- leading declared dimension of a0/x (LDA)          !!
-   !!   N     (in)    -- actual matrix order to diagonalize (N<=M)          !!
-   !!   A0    (inout) -- in: matrix to diagonalize. out: zeroed except the  !!
-   !!                    diagonal, which holds the N eigenvalues           !!
-   !!   X     (out)   -- eigenvectors as columns, same order as A0's diag   !!
-   !!   ival  (in)    -- 0 everywhere today (sorted descending); nonzero    !!
-   !!                    is left in LAPACK's ascending order instead        !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: diagonalize                                               !!
+!! purpose: symmetric eigensolver used everywhere in the codebase (~36   !!
+!!   call sites). Uses LAPACK's dsyevd; old_diagonalize/SDIAG2 below is  !!
+!!   the pre-2026-08-15 hand-rolled version, kept as an unused backup.   !!
+!! arguments:                                                            !!
+!!   M     (in)    -- leading declared dimension of a0/x (LDA)          !!
+!!   N     (in)    -- actual matrix order to diagonalize (N<=M)          !!
+!!   A0    (inout) -- in: matrix to diagonalize. out: zeroed except the  !!
+!!                    diagonal, which holds the N eigenvalues           !!
+!!   X     (out)   -- eigenvectors as columns, same order as A0's diag   !!
+!!   ival  (in)    -- 0 everywhere today (sorted descending); nonzero    !!
+!!                    is left in LAPACK's ascending order instead        !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
         Subroutine diagonalize(M,N,A0,X,ival)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
@@ -461,12 +461,12 @@ c X(N,M)
         return
         end
 
-   !! ********************************************************************* !!
-   !! subroutine: old_diagonalize                                           !!
-   !! purpose: SDIAG2-based eigensolver, unused, kept as a backup for       !!
-   !!   diagonalize above (same interface -- swap back in by renaming).     !!
-   !! author: I. Mayer                                                      !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: old_diagonalize                                           !!
+!! purpose: SDIAG2-based eigensolver, unused, kept as a backup for       !!
+!!   diagonalize above (same interface -- swap back in by renaming).     !!
+!! author: I. Mayer                                                      !!
+!! ********************************************************************* !!
         Subroutine old_diagonalize(M,N,A0,X,ival)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
