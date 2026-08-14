@@ -14,25 +14,25 @@
 
 !! ***** !!
 
-   !! ********************************************************************* !!
-   !! subroutine: ueffao3d_frag                                             !!
-   !! purpose: computes real-space (3D grid) effective fragment orbitals    !!
-   !!   (EFOs) for EOS/EFFAO, one fragment at a time. Results are stored    !!
-   !!   into effao_mod (p0/p0net/p0gro/ip0), not returned via arguments.    !!
-   !! arguments (all read-only):                                            !!
-   !!   itotps (in) -- total number of grid points (nat*iatps)              !!
-   !!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
-   !!   omp    (in) -- becke/tfvc weight of each grid point for its own atom!!
-   !!   chp    (in) -- basis-function values at each grid point             !!
-   !!   sat    (in) -- per-atom AO overlap matrix (from numint_sat)         !!
-   !!   wp     (in) -- integration weight of each grid point                !!
-   !!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for   !!
-   !!                  every atom                                           !!
-   !!   pk     (in) -- density matrix to project onto fragment EFOs (p for  !!
-   !!                  closed-shell, pa/pb for alpha/beta)                  !!
-   !!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta                      !!
-   !! author: PSalse, ERaco, MGimf                                          !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: ueffao3d_frag                                             !!
+!! purpose: computes real-space (3D grid) effective fragment orbitals    !!
+!!   (EFOs) for EOS/EFFAO, one fragment at a time. Results are stored    !!
+!!   into effao_mod (p0/p0net/p0gro/ip0), not returned via arguments.    !!
+!! arguments (all read-only):                                            !!
+!!   itotps (in) -- total number of grid points (nat*iatps)              !!
+!!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
+!!   omp    (in) -- becke/tfvc weight of each grid point for its own atom!!
+!!   chp    (in) -- basis-function values at each grid point             !!
+!!   sat    (in) -- per-atom AO overlap matrix (from numint_sat)         !!
+!!   wp     (in) -- integration weight of each grid point                !!
+!!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for   !!
+!!                  every atom                                           !!
+!!   pk     (in) -- density matrix to project onto fragment EFOs (p for  !!
+!!                  closed-shell, pa/pb for alpha/beta)                  !!
+!!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta                      !!
+!! author: PSalse, ERaco, MGimf                                          !!
+!! ********************************************************************* !!
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
 
       use integration_grid
@@ -226,17 +226,17 @@
       end
 
 
-      !! ********************************************************************* !!
-      !! subroutine: eos_analysis                                              !!
-      !! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
-      !!   electron counts per fragment (EOS), then derives oxidation states.  !!
-      !!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
-      !! arguments:                                                            !!
-      !!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
-      !!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
-      !!   thres   (in) -- degeneracy threshold for integer electron count     !!
-      !! author: PSalse, ERaco, MGimf                                          !!
-      !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: eos_analysis                                              !!
+!! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
+!!   electron counts per fragment (EOS), then derives oxidation states.  !!
+!!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
+!! arguments:                                                            !!
+!!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
+!!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
+!!   thres   (in) -- degeneracy threshold for integer electron count     !!
+!! author: PSalse, ERaco, MGimf                                          !!
+!! ********************************************************************* !!
       subroutine eos_analysis(idobeta,icase,thres)
 
       use effao_mod, only: p0,p0net,p0gro,ip0

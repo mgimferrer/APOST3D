@@ -170,8 +170,8 @@ EFF_THRE=   1
   Number of grid points:    708000
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
- TIMING CPU  :: atomic definition                                21.86 s
- TIMING WALL :: atomic definition                                 5.46 s
+ TIMING CPU  :: atomic definition                                21.65 s
+ TIMING WALL :: atomic definition                                 5.35 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -299,15 +299,16 @@ EFF_THRE=   1
   Functional type --> exchange-correlation
   HYBRID-GGA functional selected
   HF-type exchange coeff --> 0.200
-  
-  --------------------------- 
-   GENERAL ONE-ELECTRON PART  
-  --------------------------- 
-  
-  ----------------------------- 
-   ELECTRON-NUCLEAR ATTRACTION  
-  ----------------------------- 
-  
+
+  -----------------------------
+    GENERAL ONE-ELECTRON PART
+  -----------------------------
+
+
+  -------------------------------
+    ELECTRON-NUCLEAR ATTRACTION
+  -------------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -336,10 +337,11 @@ EFF_THRE=   1
   Electron-nuclei energy:   -268.6482977
   Integration error (kcal/mol):     0.03
   
-  ---------------- 
-   KINETIC ENERGY  
-  ---------------- 
-  
+
+  ------------------
+    KINETIC ENERGY
+  ------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -368,10 +370,11 @@ EFF_THRE=   1
   Kinetic energy:     79.2827782
   Integration error (kcal/mol):     0.00
   
-  --------------------------- 
-   NUCLEAR-NUCLEAR REPULSION  
-  --------------------------- 
-  
+
+  -----------------------------
+    NUCLEAR-NUCLEAR REPULSION
+  -----------------------------
+
   --------------------------------------------------------------------------------                    
               1  C        2  C        3  H        4  H        5  H        6  H 
   --------------------------------------------------------------------------------                    
@@ -399,8 +402,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     42.2635815
   
- TIMING CPU  :: enpart one-electron                               2.11 s
- TIMING WALL :: enpart one-electron                               2.13 s
+ TIMING CPU  :: enpart one-electron                               2.28 s
+ TIMING WALL :: enpart one-electron                               1.63 s
   
   ------------------------------ 
    RKS-DFT ENERGY DECOMPOSITION  
@@ -542,8 +545,8 @@ EFF_THRE=   1
   
   WARNING: HF-exchange part missing 
   
- TIMING CPU  :: enpart dft                                       11.54 s
- TIMING WALL :: enpart dft                                       11.01 s
+ TIMING CPU  :: enpart dft                                       11.37 s
+ TIMING WALL :: enpart dft                                       10.80 s
   
   ----------------------------------------------------- 
    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  
@@ -592,7 +595,7 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Coulomb energy:     80.3392145
   
- TIMING CPU  :: Coulomb energy                                    1.51 s
+ TIMING CPU  :: Coulomb energy                                    1.54 s
  TIMING WALL :: Coulomb energy                                    0.24 s
   
   ------------------------------------------------- 
@@ -635,8 +638,8 @@ EFF_THRE=   1
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -12.4871105
   
- TIMING CPU  :: Exact-exchange energy                            25.55 s
- TIMING WALL :: Exact-exchange energy                             3.43 s
+ TIMING CPU  :: Exact-exchange energy                            25.52 s
+ TIMING WALL :: Exact-exchange energy                             3.44 s
   
   ------------------------ 
    HYBRID KS-DFT XC TERMS  
@@ -680,8 +683,8 @@ EFF_THRE=   1
   WARNING: New error with same sign
   Damping parameter:      1.3799748
   
- TIMING CPU  :: Interpolated zero-error                           6.59 s
- TIMING WALL :: Interpolated zero-error                           1.16 s
+ TIMING CPU  :: Interpolated zero-error                           6.56 s
+ TIMING WALL :: Interpolated zero-error                           1.15 s
   
   ------------------------------------------------------- 
    INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
@@ -813,7 +816,7 @@ EFF_THRE=   1
   Integration error (au):      0.0000520
   Integration error (kcal/mol):     0.03
   
- TIMING CPU  :: enpart two-electron                              35.45 s
- TIMING WALL :: enpart two-electron                               5.35 s
+ TIMING CPU  :: enpart two-electron                              35.43 s
+ TIMING WALL :: enpart two-electron                               5.36 s
   
  ...Normal Termination of APOST-3D... 

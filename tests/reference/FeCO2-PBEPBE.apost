@@ -134,8 +134,8 @@ EFF_THRE=   1
   Number of grid points:     29200
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
- TIMING CPU  :: atomic definition                                 0.25 s
- TIMING WALL :: atomic definition                                 0.10 s
+ TIMING CPU  :: atomic definition                                 0.20 s
+ TIMING WALL :: atomic definition                                 0.05 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 

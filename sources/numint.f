@@ -245,11 +245,54 @@ c       end do
 c 
 c       deallocate(inumpoint, basinlap,xlap)
 c      end if 
- 764  format(1x,i3,2f10.6)      
- 765  format(1x,'  Sum  ',2f10.6)  
- 766  format(1x,i3,i8)      
+ 764  format(1x,i3,2f10.6)
+ 765  format(1x,'  Sum  ',2f10.6)
+ 766  format(1x,i3,i8)
       return
       end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: ao_to_mo_grid                                             !!
+!! purpose: transforms basis-function (AO) values on the numerical grid  !!
+!!   into molecular-orbital (MO) values, chpmo(k,j)=sum_i coef(i,j)*     !!
+!!   chpao(k,i). Replaces the hardcoded "TO MOs" loop duplicated across  !!
+!!   enpart.f/enpart_dft.f (one call per spin: pass c/nocc for RHF,      !!
+!!   c/nalf then cb/nb for UHF).                                        !!
+!! arguments:                                                            !!
+!!   itotps (in)  -- number of grid points                               !!
+!!   igr    (in)  -- number of basis functions (AOs)                     !!
+!!   nmo    (in)  -- number of MOs to transform (nocc, nalf or nb)        !!
+!!   coef   (in)  -- AO coefficient matrix (igr,igr) -- c or cb           !!
+!!   chpao  (in)  -- AO values at each grid point (itotps,igr)            !!
+!!   chpmo  (out) -- MO values at each grid point (itotps,nmo)            !!
+!! author: PSalse, ERaco, MGimf                                          !!
+!! ********************************************************************* !!
+      subroutine ao_to_mo_grid(itotps,igr,nmo,coef,chpao,chpmo)
+
+      implicit real*8(a-h,o-z)
+
+      integer, intent(in) :: itotps,igr,nmo
+      dimension coef(igr,igr),chpao(itotps,igr),chpmo(itotps,nmo)
+
+!! parallel over grid points: each k only reads its own chpao(k,:) and   !!
+!! the shared, read-only coef, and writes only its own chpmo(k,:).       !!
+!$OMP PARALLEL DO PRIVATE(k,j,i,xx)
+      do k=1,itotps
+        do j=1,nmo
+          xx=ZERO
+          do i=1,igr
+            xx=xx+coef(i,j)*chpao(k,i)
+          end do
+          chpmo(k,j)=xx
+        end do
+      end do
+!$OMP END PARALLEL DO
+
+      end
+
+!! ***** !!
 
       subroutine fpoints(chp,pcoord)
       use basis_set
