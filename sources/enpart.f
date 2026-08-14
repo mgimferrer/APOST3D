@@ -1063,11 +1063,9 @@
       !! ********************************************************************* !!
       !! subroutine: numint_one_uhf                                            !!
       !! purpose: one-electron IQA/ENPART energy partition, UHF/UKS twin of    !!
-      !!   numint_one -- electron-nuclear attraction, kinetic energy and       !!
-      !!   nuclear repulsion, decomposed into atomic/diatomic contributions.   !!
-      !!   Unlike numint_one, has no external-field handling at all (see       !!
-      !!   Known Issues) and no DOFRAGS fragment analysis for the nuclear-     !!
-      !!   repulsion matrix (numint_one has both).                            !!
+      !!   numint_one -- electron-nuclear attraction, kinetic energy, nuclear  !!
+      !!   repulsion and (if present) the external-field dipole terms, each    !!
+      !!   decomposed into atomic/diatomic contributions.                     !!
       !! arguments: same as numint_one.                                        !!
       !! author: PSalse, ERaco, MGimf                                          !!
       !! ********************************************************************* !!
@@ -1084,17 +1082,21 @@
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/exchg/exch(maxat,maxat),xmix
+      common/efield/field(4),edipole
       dimension eto(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
 
-      dimension Epa(maxat,maxat),ekin(maxat,maxat),enuc(maxat,maxat)
-      dimension eecp(maxat)
+      dimension Epa(maxat,maxat),ekin(maxat,maxat),dip(maxat,3),enuc(maxat,maxat)
+      dimension eecp(maxat),ect(maxat,maxat)
+      dimension edip(maxat,maxat)
       allocatable :: chp2(:,:),scr(:),chpaux(:,:), chp3(:,:)
 
       idofr   =  Iopt(40)
+      ifield  =  Iopt(47)
       ipoints =  itotps
       iatps   =  nang*nrad
+      xxdip   =  ZERO
 
       call print_box('GENERAL ONE-ELECTRON PART')
 
@@ -1107,6 +1109,7 @@
       ekin=ZERO
       eto=ZERO
       enuc=ZERO
+      ect=ZERO
 
 !! pseudopotential atomic energies (if present), added to the E-N terms !!
       call mga_misc(iecp,eecp)
@@ -1115,6 +1118,50 @@
         do i=1,nat
           epa(i,i)=eecp(i)
         end do
+      end if
+
+!! field(:)/ifield were already read by main.f into the /efield/ common  !!
+!! and iopt(47) -- no need to re-scan the .inp file here.                !!
+      if(ifield.eq.1) then
+        write(*,*) "The system is under a static electric field"
+        write(*,'(2x,3(x,a3,x,f8.6))') "Fx=",field(2),"Fy=",field(3),"Fz=",field(4)
+        write(*,*) "Electron-nuclear and nuclear repulsion terms are affected by E. field"
+!! parallel over icenter: each iteration writes only its own dip(icenter,:)/ !!
+!! ect(icenter,icenter); x/y/z/zztop/xtot are per-iteration scratch, not     !!
+!! running totals, so no reduction is needed. untested -- no # GRID/field    !!
+!! test exists in the suite.                                                 !!
+!$OMP PARALLEL DO PRIVATE(icenter,x,y,z,zztop,ifut,distx,disty,distz,xtot)
+        do icenter=1,nat
+          x=ZERO
+          y=ZERO
+          z=ZERO
+          zztop=ZERO
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            distx=pcoord(ifut,1)
+            disty=pcoord(ifut,2)
+            distz=pcoord(ifut,3)
+            x=x+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distx
+            y=y+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*disty
+            z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
+            zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
+          end do
+          dip(icenter,1)=-x+zztop*coord(1,icenter)
+          dip(icenter,2)=-y+zztop*coord(2,icenter)
+          dip(icenter,3)=-z+zztop*coord(3,icenter)
+          xtot=(coord(1,icenter)*field(2)+coord(2,icenter)*field(3)+coord(3,icenter)*field(4))
+          ect(icenter,icenter)=-zztop*xtot
+        end do
+!$OMP END PARALLEL DO
+
+!! electric field x,y,z components are on field(2-4) !!
+        xtot=ZERO
+        do i=1,nat
+          edip(i,i)=+dip(i,1)*field(2)+dip(i,2)*field(3)+dip(i,3)*field(4)
+          xtot=xtot+ect(i,i)+edip(i,i)
+        end do
+        xxdip=xtot
+        write(*,'(2x,a37,x,f14.7)') "Electronic dipole moment energy term:",xxdip
+        write(*,*) " "
       end if
 
 !! electron-nuclei attraction integrals; parallel over the (icenter,jcenter) !!
@@ -1158,10 +1205,8 @@
       call MPRINT2(epa,nat,maxat)
       write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
 
-!! xxdip is READ here but this subroutine has no external-field handling  !!
-!! at all (unlike numint_one) -- nothing ever assigns it, so this reads   !!
-!! whatever is left on the stack. Not fixed here, needs sign-off (see     !!
-!! CLAUDE.md Known Issues).                                               !!
+!! xxdip is added here (not just eelnuc) since it's excluded from the    !!
+!! atomic epa contributions above -- keeps this check apples-to-apples.  !!
       if(eelnuc0.ne.ZERO) then
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
         write(*,*) ' '
@@ -1250,12 +1295,47 @@
         end do
       end do
 
-!! no DOFRAGS fragment analysis here for nuclear repulsion, unlike        !!
-!! numint_one's equivalent block -- asymmetry, not fixed, see Known Issues !!
       call print_box('NUCLEAR-NUCLEAR REPULSION')
       call MPRINT2(enuc,nat,maxat)
       write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
       write(*,*) " "
+      if(idofr.eq.1) then
+        line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
+        call group_by_frag_mat(1,line,enuc)
+      end if
+
+      if(ifield.eq.1) then
+        xxx=ZERO
+        xtot=ZERO
+        do i=1,nat
+          xxx=zn(i)*(coord(1,i)*field(2)+coord(2,i)*field(3)+coord(3,i)*field(4))
+          ect(i,i)=ect(i,i)+xxx
+          xtot=xtot+xxx
+        end do
+        write(*,'(2x,a50,x,f14.7)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
+        write(*,'(2x,a34,x,f14.7)') "Nuclear dipole moment energy term:",xtot
+        edipole=xtot+xxdip
+        write(*,'(2x,a32,x,f14.7)') "Total dipole moment energy term:",edipole
+        write(*,*) " "
+
+        call print_box('INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)')
+        call MPRINT2(edip,nat,maxat)
+        xtot=ZERO
+        do i=1,nat
+          xtot=xtot+edip(i,i)
+        end do
+        write(*,'(2x,a28,x,f14.7)') "Total Intrinsic dipole term:",xtot
+        write(*,*) " "
+
+        call print_box('CHARGE-TRANSFER ENERGY CONTRIBUTION (ORIGIN DEPENDENT)')
+        call MPRINT2(ect,nat,maxat)
+        xtot=ZERO
+        do i=1,nat
+          xtot=xtot+ect(i,i)
+        end do
+        write(*,'(2x,a27,x,f14.7)') "Total Charge-Transfer term:",xtot
+        write(*,*) " "
+      end if
 
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
