@@ -218,7 +218,7 @@
           bx0=bo(iatom,jatom)
           if(bx0.ge.threbod) then
             x1=ZERO
-!! MG/CLAUDE: BODEN build -- ff2 is already a genuine per-grid-point local
+!! MG: BODEN build -- ff2 is already a genuine per-grid-point local
 !! scalar and scr_a(jfut) is written at a unique index per iteration (no
 !! thread ever touches another thread's jfut), the same safe shape already
 !! parallelized in prenumint/numint_sat -- no false-sharing risk like the
@@ -869,7 +869,7 @@
           if(bx0.ge.threbod) then
             xx=ZERO
             xxb=ZERO
-!! MG/CLAUDE: same false-sharing-free parallelization as the RHF twin
+!! MG: same false-sharing-free parallelization as the RHF twin
 !! (numint_dft) above -- ff2/ff2b are genuine per-grid-point local scalars,
 !! scr_bod(:,jfut) is written at a unique index per iteration, xx/xxb are
 !! plain reductions. jfut computed inside the loop body, same reason as

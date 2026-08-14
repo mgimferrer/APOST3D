@@ -1,18 +1,18 @@
-!! ******************************************************* !!
-!! IQA/ENPART ENERGY PARTITIONING SUBROUTINES               !!
-!! one-electron part:                                       !!
-!!   numint_one      -- RHF/RKS                              !!
+!! ********************************************************** !!
+!! IQA/ENPART ENERGY PARTITIONING SUBROUTINES                 !!
+!! one-electron part:                                         !!
+!!   numint_one      -- RHF/RKS                               !!
 !!   numint_one_uhf  -- UHF/UKS                               !!
-!! two-electron part (both call calc_coul/multipolar         !!
-!! internally for the Coulomb/multipolar-expansion terms):   !!
-!!   numint_two      -- RHF/RKS                              !!
+!! two-electron part (both call calc_coul/multipolar          !!
+!! internally for the Coulomb/multipolar-expansion terms):    !!
+!!   numint_two      -- RHF/RKS                               !!
 !!   numint_two_uhf  -- UHF/UKS                               !!
-!!   calc_coul       -- Coulomb energy term                  !!
+!!   calc_coul       -- Coulomb energy term                   !!
 !!   multipolar      -- multipolar-expansion XC approximation !!
-!! polarizability analysis (# POLAR keyword, standalone --   !!
-!! not part of the one/two-electron machinery above):        !!
-!!   polar                                                   !!
-!! ******************************************************* !!
+!! polarizability analysis (# POLAR keyword, standalone --    !!
+!! not part of the one/two-electron machinery above):         !!
+!!   polar                                                    !!
+!! ********************************************************** !!
 
 !! ***** !!
 
@@ -311,30 +311,30 @@
 
 !! ***** !!
 
-      !! ********************************************************************* !!
-      !! subroutine: numint_two                                                !!
-      !! purpose: two-electron IQA/ENPART energy partition, RHF/RKS -- Coulomb !!
-      !!   (via calc_coul) and, if requested, HF-type exchange (same-center    !!
-      !!   and atom-pair kernels, skipping pairs below the THREBOD bond-order  !!
-      !!   threshold via a multipolar approximation instead), each decomposed  !!
-      !!   into atomic/diatomic contributions. A second pass on a phase-       !!
-      !!   rotated grid estimates and corrects the numerical-integration error !!
-      !!   (the "zero-error" interpolation) when it exceeds tolerance. See     !!
-      !!   numint_two_uhf for open-shell.                                      !!
-      !! arguments:                                                            !!
-      !!   ndim   (in)  -- number of basis functions (leading dim of chp)      !!
-      !!   itotps (in)  -- total number of grid points                        !!
-      !!   wp     (in)  -- integration weight of each grid point               !!
-      !!   omp    (in)  -- becke/tfvc weight of each grid point for its own atom!!
-      !!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for  !!
-      !!                   every atom                                         !!
-      !!   pcoord (in)  -- xyz coordinates of each grid point                  !!
-      !!   chp    (in)  -- basis-function values at each grid point            !!
-      !!   rho    (in)  -- electron density at each grid point                 !!
-      !!   eto    (inout) -- total energy matrix, accumulated on top of the    !!
-      !!                   one-electron part already in it                    !!
-      !! author: PSalse, MGimf, MMO.                                           !!
-      !! ********************************************************************* !!
+!! *********************************************************************** !!
+!! subroutine: numint_two                                                  !!
+!! purpose: two-electron IQA/ENPART energy partition, RHF/RKS -- Coulomb   !!
+!!   (via calc_coul) and, if requested, HF-type exchange (same-center      !!
+!!   and atom-pair kernels, skipping pairs below the THREBOD bond-order    !!
+!!   threshold via a multipolar approximation instead), each decomposed    !!
+!!   into atomic/diatomic contributions. A second pass on a phase-         !!
+!!   rotated grid estimates and corrects the numerical-integration error.  !!
+!!   (the "zero-error" interpolation) when it exceeds tolerance. See       !!
+!!   numint_two_uhf for open-shell.                                        !!
+!! arguments:                                                              !!
+!!   ndim   (in)  -- number of basis functions (leading dim of chp)        !!
+!!   itotps (in)  -- total number of grid points                           !!
+!!   wp     (in)  -- integration weight of each grid point                 !!
+!!   omp    (in)  -- becke/tfvc weight of each grid point for its own atom !!
+!!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                   every atom                                            !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   chp    (in)  -- basis-function values at each grid point              !!
+!!   rho    (in)  -- electron density at each grid point                   !!
+!!   eto    (inout) -- total energy matrix, accumulated on top of the      !!
+!!                   one-electron part already in it                       !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
       use ao_matrices
@@ -379,9 +379,9 @@
       allocatable :: chppha(:,:), wppha(:),pcoordpha(:,:),omppha(:)
       allocatable :: chp2pha(:,:),rhopha(:),omp2pha(:,:),ibaspointpha(:)
 
-!! FOR ENPART PARALLEL !!
-      allocatable :: chp2s(:,:),chp2phas(:,:) !! SWITCHED ORDER OF COLUMNS AND ROWS !!
-      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+!! parallelization-related arrays below. !!
+      allocatable :: chp2s(:,:),chp2phas(:,:) !! transposed layout (rows/columns swapped) !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! included atom pairs, thread-slicing bookkeeping !!
       allocatable :: exch_hfk(:,:)
       allocatable :: exch_hfij(:,:)
       allocatable :: f3k(:)
@@ -423,7 +423,6 @@
       if(ianalytical.eq.0) then !! skip this whole rotated-grid pass for the analytical two-electron path !!
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
-!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
       phb=phb12
       pha=ZERO
       write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
@@ -437,7 +436,7 @@
       call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
       end if !! non-analytical skip ends here !!
 
-!! COULOMB PART !!
+!! Coulomb energy term. !!
       call cpu_time(xtime)
       call get_wall_time(wxtime)
       if(ianalytical.eq.0) then
@@ -485,8 +484,7 @@
         write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
 
-!! FIRST ONLY SAME CENTER TERMS !!
-!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
+!! same-center terms first; determine the core count for thread splitting. !!
         call getenv('OMP_NUM_THREADS',threadenv)
         if(trim(threadenv)=='') then
           write(*,*) " OMP_NUM_THREADS not set"
@@ -507,14 +505,15 @@
      &    ithreads,"available hardware cores"
         end if
 
-!! TO ENSURE PROPER SLICING BY THREADS !!
+!! per-thread grid-point slicing bookkeeping. !!
         ALLOCATE(f3k(ithreads))
         ALLOCATE(exch_hfk(nat,ithreads))
         ALLOCATE(istart(ithreads),iend(ithreads))
         itilerest=mod(iatps,ithreads)
         ispace=(iatps-itilerest)/ithreads
 
-!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
+!! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
+!! avoids an old cap that limited parallelization to 8 cores.               !!
         exch_hfk=ZERO
         !DIR$ NOPARALLEL
         do icenter=1,nat
@@ -529,10 +528,10 @@
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
 
-!! THIS TWO CALLS ARE CRUCIAL !!
+!! both calls below are required for the thread count to actually take effect. !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
-!! MG/CLAUDE: restored real OpenMP parallelization here -- the old !DIR$
+!! MG: restored real OpenMP parallelization here -- the old !DIR$
 !! PARALLEL directive is an Intel-ifort-only auto-parallelization hint that
 !! gfortran does not understand, so this loop has been running serially
 !! since the migration off ifort. The istart/iend chunking already
@@ -540,7 +539,7 @@
 !! (f3k(ik), exch_hfk(icenter,ik)), which is exactly the data layout an
 !! OMP PARALLEL DO over ik needs -- no restructuring required, just the
 !! actual directive. !!
-!! MG/CLAUDE: f3k(ik) used to be written on every innermost i/j iteration --
+!! MG: f3k(ik) used to be written on every innermost i/j iteration --
 !! O(nocc^2) shared-array writes per grid point, all landing on an array
 !! that's SHARED (not PRIVATE) across threads, just index-partitioned by ik.
 !! Adjacent ik slots sit in the same cache line, so this hammered the same
@@ -591,7 +590,7 @@
           end do
         end do
 
-!! NOW PAIRS OF CENTERS !!
+!! atom-pair terms, skipping pairs below the THREBOD bond-order threshold. !!
         iterms=0
         ipaircounter=0
         ALLOCATE(ijpaircount(nat*nat,2))
@@ -610,7 +609,7 @@
         write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
         write(*,*) " "
 
-!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
+!! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
         ALLOCATE(exch_hfij(ipaircounter,ithreads))
         itilerest=mod(iatps,ithreads)
         ispace=(iatps-itilerest)/ithreads
@@ -629,9 +628,9 @@
           end do
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
-!! MG/CLAUDE: same fix as the same-center block above -- real OMP PARALLEL
+!! MG: same fix as the same-center block above -- real OMP PARALLEL
 !! DO in place of the dead !DIR$ PARALLEL Intel directive. !!
-!! MG/CLAUDE: same false-sharing fix as the same-center block above --
+!! MG: same false-sharing fix as the same-center block above --
 !! f3loc is a genuine PRIVATE scalar absorbing the i/j accumulation;
 !! exch_hfij is only touched once per ifut instead of once per i/j pair. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
@@ -721,7 +720,7 @@
           evee0=evee    
         end if
 
-!! DFT CASE !!
+!! hybrid KS-DFT case -- mix in the HF-exchange fraction (xmix). !!
       else
         exchen=ZERO
         do i=1,nat
@@ -794,7 +793,7 @@
 
       if(idoex.eq.1) then
 
-!! AS BEFORE, MORE CONVOLUTED LOOP STRUCTURE !!
+!! same-center recompute, same manual-chunking shape as above. !!
         exch_hfk=ZERO
         !DIR$ NOPARALLEL
         do icenter=1,nat
@@ -809,10 +808,10 @@
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
 
-!! AGAIN THE TWO CALLS ARE CRUCIAL !!
+!! both calls below are required for the thread count to actually take effect. !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
-!! MG/CLAUDE: same fix as above -- real OMP PARALLEL DO in place of the
+!! MG: same fix as above -- real OMP PARALLEL DO in place of the
 !! dead !DIR$ PARALLEL Intel directive. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
           do ik=1,ithreads
@@ -1030,7 +1029,7 @@
 !!   repulsion and (if present) the external-field dipole terms, each    !!
 !!   decomposed into atomic/diatomic contributions.                      !!
 !! arguments: same as numint_one.                                        !!
-!! author: PSalse, MGimf, MMO.                                           !!
+!! author: PSalse, MGimf.                                                !!
 !! ********************************************************************* !!
       subroutine numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
 
@@ -1244,7 +1243,7 @@
 !! eto(j,i) below should read eto(i,j) (matches the restricted twin,      !!
 !! numint_one) -- currently harmless since nothing reads the eto lower    !!
 !! triangle from this subroutine downstream, but not fixed here, needs    !!
-!! sign-off (see CLAUDE.md Known Issues).                                 !!
+!! sign-off before changing.                                              !!
       erep=ZERO
       do i=1,nat
         eto(i,i)=ekin(i,i)+epa(i,i)
@@ -1518,8 +1517,7 @@
         write(*,'(2x,a22,x,i6,x,a9)') "Two-el integrations for",nalf*(nalf+1),"functions"
         write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
 
-!! FIRST ONLY SAME CENTER TERMS !!
-!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
+!! same-center terms first; determine the core count for thread splitting. !!
         call getenv('OMP_NUM_THREADS',threadenv)
         if(trim(threadenv)=='') then
           write(*,*) " OMP_NUM_THREADS not set"
@@ -1540,14 +1538,15 @@
      &    ithreads,"available hardware cores"
         end if
 
-!! TO ENSURE PROPER SLICING BY THREADS !!
+!! per-thread grid-point slicing bookkeeping. !!
         ALLOCATE(f3k(ithreads))
         ALLOCATE(exch_hfk(nat,ithreads))
         ALLOCATE(istart(ithreads),iend(ithreads))
         itilerest=mod(iatps,ithreads)
         ispace=(iatps-itilerest)/ithreads
 
-!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
+!! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
+!! avoids an old cap that limited parallelization to 8 cores.               !!
         exch_hfk=ZERO
         !DIR$ NOPARALLEL
         do icenter=1,nat
@@ -1565,10 +1564,10 @@
 !! THE TWO CALLS ARE CRUCIAL !!
           call omp_set_dynamic(.false.)
           call omp_set_num_threads(ithreads)
-!! MG/CLAUDE: restored real OpenMP parallelization here -- see the RHF
+!! MG: restored real OpenMP parallelization here -- see the RHF
 !! twin (numint_two) above for the full explanation. Same fix, same
 !! already-safe per-ik data layout (f3k(ik), exch_hfk(icenter,ik)). !!
-!! MG/CLAUDE: false-sharing fix -- see the RHF twin (numint_two) above for
+!! MG: false-sharing fix -- see the RHF twin (numint_two) above for
 !! the full explanation. f3loc is a genuine PRIVATE scalar; exch_hfk is
 !! only touched once per ifut instead of on every i/j iteration. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
@@ -1626,7 +1625,7 @@
           end do
         end do
 
-!! NOW PAIRS OF CENTERS !!
+!! atom-pair terms, skipping pairs below the THREBOD bond-order threshold. !!
         iterms=0
         ipaircounter=0
         ALLOCATE(ijpaircount(nat*nat,2))
@@ -1645,7 +1644,7 @@
         write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
         write(*,*) " "
 
-!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
+!! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
         ALLOCATE(exch_hfij(ipaircounter,ithreads))
         itilerest=mod(iatps,ithreads)
         ispace=(iatps-itilerest)/ithreads
@@ -1664,7 +1663,7 @@
           end do
           istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
           iend(ithreads)=icenter*iatps
-!! MG/CLAUDE: false-sharing fix -- same as the same-center block above,
+!! MG: false-sharing fix -- same as the same-center block above,
 !! f3loc is a genuine PRIVATE scalar. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  i,j,f2,f2b,f3loc)
@@ -1757,7 +1756,7 @@
           evee0=evee    
         end if
 
-!! DFT CASE !!
+!! hybrid KS-DFT case -- mix in the HF-exchange fraction (xmix). !!
       else
         exchen=ZERO
         do i=1,nat
@@ -1866,7 +1865,7 @@
   !! AGAIN THE TWO CALLS ARE CRUCIAL !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-!! MG/CLAUDE: false-sharing fix -- same as the earlier blocks in this
+!! MG: false-sharing fix -- same as the earlier blocks in this
 !! subroutine, f3loc is a genuine PRIVATE scalar. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  i,j,f2,f2b,f3loc)
@@ -2744,7 +2743,7 @@ c  energetics
 !! THIS TWO CALLS ARE CRUCIAL !!
         call omp_set_dynamic(.false.)
         call omp_set_num_threads(ithreads)
-!! MG/CLAUDE: restored real OpenMP parallelization here -- see numint_two
+!! MG: restored real OpenMP parallelization here -- see numint_two
 !! (same file) for the full explanation; same fix, same already-safe
 !! per-ik data layout (f3k(ik), ecoul_k(icenter,ik)). !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
@@ -2788,7 +2787,7 @@ c  energetics
         end do
       end do
 
-!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
+!! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
       ALLOCATE(ecoul_ij(ipaircounter,ithreads))
       itilerest=mod(iatps,ithreads)
       ispace=(iatps-itilerest)/ithreads
@@ -2807,7 +2806,7 @@ c  energetics
         end do
         istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
-!! MG/CLAUDE: same fix as the same-center block above. !!
+!! MG: same fix as the same-center block above. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
         do ik=1,ithreads
           do ifut=istart(ik),iend(ik)
