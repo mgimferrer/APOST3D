@@ -278,9 +278,9 @@
           xtot=xtot+xxx
         end do
         write(*,'(2x,a50,x,f14.7)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
-        write(*,'(2x,a34,x,f14.7)') "Nuclear dipole moment energy term:",xtot
+        write(*,'(2x,a50,x,f14.7)') "Nuclear dipole moment energy term                :",xtot
         edipole=xtot+xxdip
-        write(*,'(2x,a32,x,f14.7)') "Total dipole moment energy term:",edipole
+        write(*,'(2x,a50,x,f14.7)') "Total dipole moment energy term                  :",edipole
         write(*,*) " "
 
         call print_box('INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)')
@@ -482,7 +482,7 @@
 !! performed thanks to Dr. R. Oswald.                             !!
         call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
         write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
-        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
+        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! same-center terms first; determine the core count for thread splitting. !!
         call getenv('OMP_NUM_THREADS',threadenv)
@@ -868,7 +868,7 @@
       phabest=ONE-(twoelerr/deltaee)
       write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
       if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
-      write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest
+      write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
 
 !! interpolate energies, replacing the old Coulomb/exchange terms !!
       do i=1,nat
@@ -945,7 +945,7 @@
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
       else
         evee=coulen+exchen_hf
-        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee
+        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
         twoelerr=(evee-evee0)*tokcal
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
       end if
@@ -968,10 +968,10 @@
 
         call print_box('FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS')
         call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
-        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf  
+        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot
+        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
         if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
+          write(*,'(2x,a26,x,f14.7)') "Total dipole energy      :",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
@@ -996,7 +996,7 @@
         write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot
         write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
         if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
+          write(*,'(2x,a26,x,f14.7)') "Total dipole energy      :",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
@@ -1278,9 +1278,9 @@
           xtot=xtot+xxx
         end do
         write(*,'(2x,a50,x,f14.7)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
-        write(*,'(2x,a34,x,f14.7)') "Nuclear dipole moment energy term:",xtot
+        write(*,'(2x,a50,x,f14.7)') "Nuclear dipole moment energy term                :",xtot
         edipole=xtot+xxdip
-        write(*,'(2x,a32,x,f14.7)') "Total dipole moment energy term:",edipole
+        write(*,'(2x,a50,x,f14.7)') "Total dipole moment energy term                  :",edipole
         write(*,*) " "
 
         call print_box('INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)')
@@ -1502,8 +1502,8 @@
 !! loops reordered for parallelization purposes, mimicking numint_two's !!
 !! strategy (see there for the full explanation). !!
         call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
-        write(*,'(2x,a22,x,i6,x,a9)') "Two-el integrations for",nalf*(nalf+1),"functions"
-        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
+        write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nalf*(nalf+1),"MO pairs"
+        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! same-center terms first; determine the core count for thread splitting. !!
         call getenv('OMP_NUM_THREADS',threadenv)
@@ -1924,7 +1924,7 @@
         phabest=ONE-(twoelerr/deltaee)
         write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
         if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
-        write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest
+        write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
 
 !! interpolate energies, replacing the old Coulomb/exchange terms !!
         do i=1,nat
@@ -2003,7 +2003,7 @@
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee=coulen+exchen_hf
-          write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee            
+          write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee            
           twoelerr=(evee-evee0)*tokcal
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         end if
@@ -2026,11 +2026,11 @@
         call print_box('FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS')
         call MPRINT2(eto,nat,maxat)
         write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot
-        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf 
-  
+        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
+
 !MMO - added ifield loop, to match restricted
         if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
+          write(*,'(2x,a26,x,f14.7)') "Total dipole energy      :",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
@@ -2057,7 +2057,7 @@
 
 !MMO - added ifield loop, to match restricted
         if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
+          write(*,'(2x,a26,x,f14.7)') "Total dipole energy      :",edipole
           err=(etot-escf+edipole)
         else
           err=(etot-escf)
@@ -2066,7 +2066,7 @@
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       end if
       if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Energy Decomposition' 
+        line='   FRAGMENT ANALYSIS: Energy Decomposition'
         call group_by_frag_mat(1,line ,eto)
       end if
 
