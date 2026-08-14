@@ -719,3 +719,67 @@
    END SUBROUTINE print_timer
 
    END MODULE timing_mod
+
+
+   !! ********************************************************************* !!
+   !! module: input_options_mod                                             !!
+   !! purpose: holds the .inp keyword flags parsed by read_input() (see     !!
+   !! read_input.f) that main.f's own control flow (validation, iopt(100)   !!
+   !! population, dispatch) reads directly -- replaces what used to be      !!
+   !! plain implicitly-typed locals in main.f. Flags already carried by     !!
+   !! an existing COMMON block (icas, ibcp, aerf, iaccur, nrad22, etc.)     !!
+   !! are NOT duplicated here -- see main.f's own COMMON declarations.      !!
+   !! author: MGimf                                                         !!
+   !! ********************************************************************* !!
+   MODULE input_options_mod
+   IMPLICIT REAL*8(A-H,O-Z)
+
+!! wavefunction source / density choice !!
+   integer :: iwfn,iallpo,ndens0
+
+!! atoms in molecules (Hilbert-space + real-space AIM selection) !!
+   integer :: imulli,ihirsh,inewbec,istiff,iradmat
+
+!! QTAIM !!
+   integer :: iqtaim,istep,inna,imaxdist,iscreening,ipath
+
+!! miscellaneous / integration control !!
+   integer :: iopop,isha,idoint,ipca,ilaplacian,ifinegrid,ielcount, &
+              iatdens,inopop
+   real*8  :: Rmax
+
+!! eff-AOs and EOS !!
+   integer :: ieffao,ieffthr,icube,jcubthr,kcubthr,ieos,iueos,ieoscent, &
+              iloba
+   real*8  :: xthresh
+
+!! local spin and correlated-WF input !!
+   integer :: ispin,icorr,idafh
+
+!! ENPART !!
+   integer :: ienpart,ihf,id_xcfunc,id_xfunc,id_cfunc,iecorr, &
+              ithrebod,iexact,ihomo,idek,iionic,ianalytical,itop,ietop, &
+              ipairs
+
+!! EDAIQA !!
+   integer :: iedaiqa,iflip
+
+!! NLOP / static field !!
+   integer :: ipolar,ifield
+
+!! atom/fragment restriction !!
+   integer :: idoat,idofr
+
+!! correlated-WF DM1/DM2 input !!
+   integer :: iorca,ipyscf
+
+!! OSLO !!
+   integer :: ioslo,ilow2,ifolitol,ibranch,ioslofchk
+
+!! external .fchk sources !!
+   integer :: iqchem,imokit
+
+!! X-ray scattering !!
+   integer :: iscattfact
+
+   END MODULE input_options_mod
