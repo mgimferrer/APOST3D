@@ -1060,6 +1060,17 @@
 
 !! ***** !!
 
+      !! ********************************************************************* !!
+      !! subroutine: numint_one_uhf                                            !!
+      !! purpose: one-electron IQA/ENPART energy partition, UHF/UKS twin of    !!
+      !!   numint_one -- electron-nuclear attraction, kinetic energy and       !!
+      !!   nuclear repulsion, decomposed into atomic/diatomic contributions.   !!
+      !!   Unlike numint_one, has no external-field handling at all (see       !!
+      !!   Known Issues) and no DOFRAGS fragment analysis for the nuclear-     !!
+      !!   repulsion matrix (numint_one has both).                            !!
+      !! arguments: same as numint_one.                                        !!
+      !! author: PSalse, ERaco, MGimf                                          !!
+      !! ********************************************************************* !!
       subroutine numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
       use ao_matrices
       use integration_grid
@@ -1076,9 +1087,6 @@
       dimension eto(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
-! (TO DO) xkdens = kinetic energy density (MG)
-! (TO DO) Laplacian!
-      dimension xkdens(itotps)
 
       dimension Epa(maxat,maxat),ekin(maxat,maxat),enuc(maxat,maxat)
       dimension eecp(maxat)
@@ -1088,48 +1096,34 @@
       ipoints =  itotps
       iatps   =  nang*nrad
 
-      write(*,*) " "
-      write(*,*) " --------------------------- "
-      write(*,*) "  GENERAL ONE-ELECTRON PART  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      call print_box('GENERAL ONE-ELECTRON PART')
 
       ALLOCATE(chp2(itotps,nalf),chp3(itotps,nb))
 
-!! TO MOs !!
-      do k=1,ipoints
-        do j=1,nalf
-          xx=ZERO
-          xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chp(k,i)
-            if(j.le.nb) xxb=xxb+cb(i,j)*chp(k,i)
-          end do
-          chp2(k,j)=xx
-          if(j.le.nb) chp3(k,j)=xxb
-        end do
-      end do
+      call ao_to_mo_grid(itotps,igr,nalf,c,chp,chp2)
+      call ao_to_mo_grid(itotps,igr,nb,cb,chp,chp3)
 
-!! ZEROING MATRICES !!
       epa=ZERO
       ekin=ZERO
       eto=ZERO
       enuc=ZERO
-      
-!! DOING ENERGY PARTITION !!
-!! ONE ELECTRON PART !!
 
-!! IN CASE OF HAVING PSEUDOPOTENTIAL !!
-      call mga_misc(iecp,eecp) !! MAYBE WE SHOULD DO A BETTER VERSION OF THIS... !!
+!! pseudopotential atomic energies (if present), added to the E-N terms !!
+      call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
-        write(*,*) " ADDING ECP ATOMIC ENERGIES TO E-N TERMS "
-        do i=1,nat       
+        write(*,*) "Adding ECP atomic energies to E-N terms"
+        do i=1,nat
           epa(i,i)=eecp(i)
-        end do 
-      end if 
+        end do
+      end if
+
+!! electron-nuclei attraction integrals; parallel over the (icenter,jcenter) !!
+!! atom-pair space (COLLAPSE(2), both bounds constant) -- each pair writes  !!
+!! only its own epa(icenter,jcenter), xtot is a genuine running total.      !!
       xtot=ZERO
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jcenter,x,zz,dx0,dy0,dz0,ifut,distx,disty,distz,rr) REDUCTION(+:xtot)
       do icenter=1,nat
-        do jcenter=1,nat     
+        do jcenter=1,nat
           x=ZERO
           zz=zn(jcenter)
           dx0=coord(1,jcenter)
@@ -1148,10 +1142,11 @@
           epa(icenter,jcenter)=epa(icenter,jcenter)-x
         end do
       end do
+!$OMP END PARALLEL DO
       xtot=ZERO
       do i=1,nat
         xtot=xtot+epa(i,i)
-        do j=1,i-1  
+        do j=1,i-1
           epa(i,j)=(epa(i,j)+epa(j,i))
           epa(j,i)=epa(i,j)
           xtot=xtot+epa(i,j)
@@ -1159,17 +1154,15 @@
       end do
       eelnuc=xtot
 
-!! PRINTING MATRIX !!
-      write(*,*) " ----------------------------- "
-      write(*,*) "  ELECTRON-NUCLEAR ATTRACTION  "
-      write(*,*) " ----------------------------- "
-      write(*,*) " "
+      call print_box('ELECTRON-NUCLEAR ATTRACTION')
       call MPRINT2(epa,nat,maxat)
       write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
 
-!! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE)
+!! xxdip is READ here but this subroutine has no external-field handling  !!
+!! at all (unlike numint_one) -- nothing ever assigns it, so this reads   !!
+!! whatever is left on the stack. Not fixed here, needs sign-off (see     !!
+!! CLAUDE.md Known Issues).                                               !!
       if(eelnuc0.ne.ZERO) then
-!        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc-eelnuc0)*tokcal !MMO- same as restricted case
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
         write(*,*) ' '
       else
@@ -1180,32 +1173,38 @@
         call group_by_frag_mat(1,line ,epa)
       end if
 
-!! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
+!! second-derivative AO values, needed for the kinetic-energy density below !!
       ALLOCATE(chpaux(itotps,igr))
       call dpoints(chpaux,pcoord)
 
-!! NOW TO MO AND MULTPLY BY MOs AND SUM OVER MOs USING SCRATCH ARRAY !!
-!! HENCE WE HAVE DENSITY IN scr EXCEPT FOR THE FACTOR OF TWO !!
+!! kinetic-energy density at each point: transform the 2nd-derivative AOs !!
+!! to MOs (alpha+beta) and dot with the already-transformed chp2/chp3 --  !!
+!! density in scr, /TWO like the restricted case's implicit factor of two !!
+!! (kept unmodified from the original UHF formula). parallel over k: each !!
+!! k only reads its own chpaux(k,:)/chp2(k,:)/chp3(k,:) and writes scr(k). !!
       ALLOCATE(scr(itotps))
+!$OMP PARALLEL DO PRIVATE(k,x,j,xx,xxb,i)
       do k=1,ipoints
         x=ZERO
         do j=1,nalf
           xx=ZERO
           xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chpaux(k,i) 
-            if(j.le.nb) xxb=xxb+cb(i,j)*chpaux(k,i) 
+          do i=1,igr
+            xx=xx+c(i,j)*chpaux(k,i)
+            if(j.le.nb) xxb=xxb+cb(i,j)*chpaux(k,i)
           end do
           x=x+chp2(k,j)*xx
           if(j.le.nb) x=x+chp3(k,j)*xxb
         end do
         scr(k)=x/TWO
-! (TO DO) Kinetic energy density (MG)
-!       xkdens(k)=scr(k)
-! (TO DO) Laplacian!
       end do
+!$OMP END PARALLEL DO
 
+!! contract the kinetic-energy density onto atoms; parallel over icenter, !!
+!! each iteration writes only its own ekin(icenter,icenter), xtot is a    !!
+!! genuine running total.                                                 !!
       xtot=ZERO
+!$OMP PARALLEL DO PRIVATE(icenter,x,ifut) REDUCTION(+:xtot)
       do icenter=1,nat
         x=ZERO
         do ifut=iatps*(icenter-1)+1,iatps*icenter
@@ -1214,29 +1213,28 @@
         ekin(icenter,icenter)=ekin(icenter,icenter)+x
         xtot=xtot+x
       end do
+!$OMP END PARALLEL DO
       ekinen=xtot
 
-!! PRINTING MATRIX !!
-      write(*,*) " ---------------- "
-      write(*,*) "  KINETIC ENERGY  "
-      write(*,*) " ---------------- "
-      write(*,*) " "
+      call print_box('KINETIC ENERGY')
       call MPRINT2(ekin,nat,maxat)
       write(*,'(2x,a15,x,f14.7)') "Kinetic energy:",ekinen
 
-!! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE ) !!
       if(ekin0.ne.ZERO) then
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*tokcal                      
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*tokcal
       else
-        ekin0=ekinen  
+        ekin0=ekinen
       end if
       write(*,*) " "
       if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Kinetic energy ' 
+        line='   FRAGMENT ANALYSIS: Kinetic energy '
         call group_by_frag_mat(1,line ,ekin)
       end if
 
-!! ADDING NUCLEAR REPULSION !!
+!! eto(j,i) below should read eto(i,j) (matches the restricted twin,      !!
+!! numint_one) -- currently harmless since nothing reads the eto lower    !!
+!! triangle from this subroutine downstream, but not fixed here, needs    !!
+!! sign-off (see CLAUDE.md Known Issues).                                 !!
       erep=ZERO
       do i=1,nat
         eto(i,i)=ekin(i,i)+epa(i,i)
@@ -1245,23 +1243,20 @@
           eto(i,j)=ekin(i,j)+epa(i,j)+zn(i)*zn(j)/dist
           eto(j,i)=epa(i,j)
 
-!! SAVING ALSO FOR PRINTING PURPOSES, I THINK WE SHOULD GIVE IT... COMES FOR FREE !!
+!! enuc: nuclear-repulsion pair matrix, kept only for the printout below. !!
           enuc(i,j)=zn(i)*zn(j)/dist
           enuc(j,i)=enuc(i,j)
           erep=erep+zn(i)*zn(j)/dist
         end do
       end do
 
-!! PRINTING MATRIX !!
-      write(*,*) " --------------------------- "
-      write(*,*) "  NUCLEAR-NUCLEAR REPULSION  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+!! no DOFRAGS fragment analysis here for nuclear repulsion, unlike        !!
+!! numint_one's equivalent block -- asymmetry, not fixed, see Known Issues !!
+      call print_box('NUCLEAR-NUCLEAR REPULSION')
       call MPRINT2(enuc,nat,maxat)
       write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
       write(*,*) " "
 
-!! TOTAL ENERGY UP TO HERE !!
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
 
