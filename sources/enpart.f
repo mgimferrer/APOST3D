@@ -2433,6 +2433,26 @@ c  energetics
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: multipolar                                                  !!
+!! purpose: multipolar-expansion approximation to the HF-type exchange     !!
+!!   energy between atom pairs, used by numint_two/numint_two_uhf as a     !!
+!!   cheaper substitute for full numerical integration on atom pairs       !!
+!!   skipped by the THREBOD bond-order threshold. Expands each MO-pair     !!
+!!   "density" (fij) as charge/dipole/quadrupole moments per atom and      !!
+!!   sums the pairwise electrostatic terms up to quadrupole-quadrupole.    !!
+!! arguments:                                                              !!
+!!   norb   (in)  -- number of MOs (nocc, nalf or nb)                      !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   wp     (in)  -- integration weight of each grid point                 !!
+!!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                   every atom                                            !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   fij    (in)  -- MO-pair product density on the grid, (itotps,norb2)   !!
+!!   xocc   (in)  -- MO-pair occupation factor (diagonal only is read)     !!
+!!   Excmp  (out) -- multipolar-approximation exchange energy per atom pair!!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine multipolar(norb,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
@@ -2440,20 +2460,18 @@ c  energetics
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
 
       dimension :: Excmp(maxat,maxat),wp(itotps),pcoord(itotps,3)
       dimension :: fij(itotps,norb*(norb+1)/2),omp2(itotps,nat)
       dimension :: xocc(norb*(norb+1)/2,norb*(norb+1)/2)
+      dimension :: rvect(3)
 
-      allocatable :: dip(:,:),quadp(:,:,:),rvect(:),sij(:),atdist(:,:) 
+      allocatable :: dip(:,:),quadp(:,:,:),sij(:),atdist(:,:)
       allocatable :: Excmp1(:,:),Excmp2(:,:),Excmp3(:,:),Excmp4(:,:)
       allocatable :: Excmp5(:,:),Excmp6(:,:)
 
-      iphf  = Iopt(65)
       iatps = nang*nrad
-      ALLOCATE(dip(nat,3),quadp(nat,3,3),rvect(3),sij(nat),atdist(nat,nat))
+      ALLOCATE(dip(nat,3),quadp(nat,3,3),sij(nat),atdist(nat,nat))
       ALLOCATE(Excmp1(nat,nat),Excmp2(nat,nat),Excmp3(nat,nat))
       ALLOCATE(Excmp4(nat,nat),Excmp5(nat,nat),Excmp6(nat,nat))
 
@@ -2477,20 +2495,20 @@ c  energetics
         end do
       end do
 
-!! LOOP OVER MO PAIRS !!
+!! loop over MO pairs !!
 
       irun=0
       do i=1,norb
       do j=i,norb
 
       irun=irun+1
-      ffact=xocc(irun,irun) 
+      ffact=xocc(irun,irun)
 
-!! LOOP OVER ATOMS !!
-
+!! per-atom charge/dipole/quadrupole moments of this MO pair's density. !!
+!! parallel over icenter: each iteration writes only its own dip(icenter,:), !!
+!! quadp(icenter,:,:) and sij(icenter), all independent across atoms.    !!
+!$OMP PARALLEL DO PRIVATE(icenter,xx,yy,zz,xy,xz,yz,x,y,z,ifut,distx,disty,distz,wccij)
       do icenter=1,nat
-
-!! QUADRUPOLE TERMS !!
 
         xx=ZERO
         yy=ZERO
@@ -2499,13 +2517,9 @@ c  energetics
         xz=ZERO
         yz=ZERO
 
-!! DIPOLE TERMS !!
-
         x=ZERO
         y=ZERO
         z=ZERO
-
-!! CHARGE TERM !!
 
         sij(icenter)=ZERO
         do ifut=iatps*(icenter-1)+1,iatps*icenter
@@ -2537,9 +2551,14 @@ c  energetics
         quadp(icenter,3,2)= quadp(icenter,2,3)
         quadp(icenter,3,3)=zz-(yy+xx)/TWO
       end do
+!$OMP END PARALLEL DO
 
-!! iat == A, jat == B !!
-
+!! pairwise electrostatic terms, iat==A, jat==B. parallel over iat: each   !!
+!! iteration only writes Excmp1..6(iat,jat>iat), a disjoint row per iat.  !!
+!! rvect is PRIVATE (plain fixed-size local, not the old shared          !!
+!! allocatable) so each thread gets its own scratch copy.                !!
+!$OMP PARALLEL DO PRIVATE(iat,jat,xx,ii,jj,kk,rvect,muamub,muar,mubr,
+!$OMP&  rqar,rqbr,muaqbr,mubqar,xm,qaqb,rqaqbr)
       do iat=1,nat
         do jat=iat+1,nat
           xx=atdist(iat,jat)
@@ -2547,12 +2566,10 @@ c  energetics
             rvect(ii)=coord(ii,jat)-coord(ii,iat)
           end do
 
-!! CHARGE-CHARGE !!
-
+!! charge-charge !!
           Excmp1(iat,jat)=Excmp1(iat,jat)+ffact*sij(iat)*sij(jat)/xx
 
-!! CHARGE-DIPOLE !!
-
+!! charge-dipole !!
           muamub=ZERO
           muar=ZERO
           mubr=ZERO
@@ -2563,12 +2580,10 @@ c  energetics
           end do
           Excmp2(iat,jat)=Excmp2(iat,jat)+ffact*(muar*sij(jat)-mubr*sij(iat))/(xx**THREE)
 
-!! DIPOLE-DIPOLE !!
-
+!! dipole-dipole !!
           Excmp3(iat,jat)=Excmp3(iat,jat)-ffact*(THREE*muar*mubr/(xx**FIVE)-muamub/(xx**THREE))
 
-!! CHARGE-QUADRUPOLE !!
-
+!! charge-quadrupole !!
           rqar=ZERO
           rqbr=ZERO
           do ii=1,3
@@ -2579,8 +2594,7 @@ c  energetics
           end do
           Excmp4(iat,jat)=Excmp4(iat,jat)+ffact*(rqar*sij(jat)+rqbr*sij(iat))/(xx**FIVE)
 
-!! DIPOLE-QUADRUPOLE !!
-
+!! dipole-quadrupole !!
           muaqbr=ZERO
           mubqar=ZERO
           do ii=1,3
@@ -2592,8 +2606,7 @@ c  energetics
           xm=-FIVE*(mubr*rqar-muar*rqbr)+TWO*xx*xx*(mubqar-muaqbr)
           Excmp5(iat,jat)=Excmp5(iat,jat)+ffact*xm/(xx**7.0d0)
 
-!! QUADRUPOLE-QUADRUPOLE !!
-
+!! quadrupole-quadrupole !!
           qaqb=ZERO
           rqaqbr=ZERO
           do ii=1,3
@@ -2608,14 +2621,14 @@ c  energetics
           Excmp6(iat,jat)=Excmp6(iat,jat)+ffact*xm
         end do
       end do
+!$OMP END PARALLEL DO
 
-!! END LOOP OVER MO PAIRS !!
+!! end loop over MO pairs !!
 
       end do
       end do
 
-!! COMPLETING MATRICES !!
-
+!! symmetrize and sum the six multipole-order contributions into Excmp. !!
       do i=1,nat
         do j=i+1,nat
           Excmp1(j,i)=Excmp1(i,j)
@@ -2628,12 +2641,29 @@ c  energetics
           Excmp(j,i)=Excmp(i,j)
         end do
       end do
-      DEALLOCATE(dip,quadp,rvect,sij,atdist,Excmp1,Excmp2,Excmp3,Excmp4,Excmp5,Excmp6)
+      DEALLOCATE(dip,quadp,sij,atdist,Excmp1,Excmp2,Excmp3,Excmp4,Excmp5,Excmp6)
 
       end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: calc_coul                                                   !!
+!! purpose: Coulomb (electron-electron) energy term for the two-electron   !!
+!!   IQA/ENPART part, shared by numint_two and numint_two_uhf. Same-center !!
+!!   and atom-pair kernels, phase-rotated grid throughout (all pairs are   !!
+!!   computed here, unlike the exchange kernels -- no THREBOD skip).       !!
+!! arguments:                                                              !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   wp/wppha (in) -- integration weight of each point, original/rotated   !!
+!!   omp2/omp2pha (in) -- becke/tfvc weight of each point for every atom,  !!
+!!                   original/rotated                                     !!
+!!   pcoord/pcoordpha (in) -- xyz coordinates of each point, original/     !!
+!!                   rotated                                               !!
+!!   rho/rhopha (in) -- electron density at each point, original/rotated   !!
+!!   coul   (out) -- Coulomb energy matrix, atomic/diatomic contributions  !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
 
       use integration_grid
@@ -2656,9 +2686,9 @@ c  energetics
 
       character*80 line
       character*100 threadenv
-      
-      !! FOR ENPART PARALLEL !!
-      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+
+!! parallelization-related arrays below. !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! included atom pairs, thread-slicing bookkeeping !!
       allocatable :: ecoul_k(:,:)
       allocatable :: ecoul_ij(:,:)
       allocatable :: f3k(:)
@@ -2666,8 +2696,8 @@ c  energetics
       iatps = nrad*nang
       idofr = iopt(40)
 
-!! MIMICKING HF PART !!
-!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
+!! same manual thread-chunking strategy as numint_two's exchange kernels; !!
+!! determine the core count for thread splitting. !!
       call getenv('OMP_NUM_THREADS',threadenv)
       if(trim(threadenv)=='') then
         write(*,*) " OMP_NUM_THREADS not set"
@@ -2688,14 +2718,15 @@ c  energetics
      &  ithreads,"available hardware cores"
       end if
 
-!! TO ENSURE PROPER SLICING BY THREADS !!
+!! per-thread grid-point slicing bookkeeping. !!
       ALLOCATE(f3k(ithreads))
       ALLOCATE(ecoul_k(nat,ithreads))
       ALLOCATE(istart(ithreads),iend(ithreads))
       itilerest=mod(iatps,ithreads)
       ispace=(iatps-itilerest)/ithreads
 
-!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
+!! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
+!! avoids an old cap that limited parallelization to 8 cores.               !!
       coul=ZERO
       ecoul_k=ZERO
       !DIR$ NOPARALLEL
@@ -2711,7 +2742,7 @@ c  energetics
         istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
 
-!! THIS TWO CALLS ARE CRUCIAL !!
+!! both calls below are required for the thread count to actually take effect. !!
         call omp_set_dynamic(.false.)
         call omp_set_num_threads(ithreads)
 !! MG: restored real OpenMP parallelization here -- see numint_two
@@ -2739,15 +2770,15 @@ c  energetics
 !$OMP END PARALLEL DO
       end do
 
-!! ADDING THE TERMS INTO THE ORIGINAL coul MATRIX !!
-!! FACTOR OF TWO ACCOUNTED BELOW !!
+!! reduce the per-thread accumulator into the same-center coul term !!
+!! (the factor of two is accounted for below, once coul is complete). !!
       do icenter=1,nat
         do isum=1,ithreads
           coul(icenter,icenter)=coul(icenter,icenter)+ecoul_k(icenter,isum)
         end do
       end do
 
-!! NOW PAIRS OF CENTERS (HERE ALL HAS TO BE COMPUTED) !!
+!! atom-pair terms -- every pair is computed here, no THREBOD skip. !!
       ipaircounter=0
       ALLOCATE(ijpaircount(nat*nat,2))
       do icenter=1,nat
@@ -2800,7 +2831,7 @@ c  energetics
 !$OMP END PARALLEL DO
       end do
 
-!! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
+!! reduce the per-thread accumulator into the atom-pair coul term. !!
       do numpairnat=1,ipaircounter
         icenter=ijpaircount(numpairnat,1)
         jcenter=ijpaircount(numpairnat,2)
@@ -2809,7 +2840,8 @@ c  energetics
         end do
       end do
 
-!! FACTOR OF TWO USED HERE !!
+!! same-center coul(i,i) was accumulated twice over (both (ifut,jfut) !!
+!! orderings), halve it before summing into coulen. !!
       coulen=ZERO
       do i=1,nat
         coul(i,i)=coul(i,i)/TWO
@@ -2820,12 +2852,7 @@ c  energetics
         end do
       end do
 
-!! PRINTING !!
-      write(*,*) " "
-      write(*,*) " ------------------------------------------ "
-      write(*,*) "  COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
-      write(*,*) " ------------------------------------------ "
-      write(*,*) " "
+      call print_box('COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
       call MPRINT2(coul,nat,maxat)
       write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
       write(*,*) " "
