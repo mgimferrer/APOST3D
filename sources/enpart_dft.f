@@ -1,14 +1,14 @@
 !! ************************************************************************** !!
 !! KS-DFT EXCHANGE-CORRELATION ENERGY PARTITIONING SUBROUTINES                !!
-!! RKS (closed-shell), authored PSalse, MGimf.:                               !!
+!! RKS (closed-shell):                                                        !!
 !!   numint_dft      -- BODEN approximation + "exact" one-center XC term      !!
 !!   xc              -- XC energy density at each grid point, via libxc       !!
 !!   sigma           -- density-gradient contraction, GGA/hybrid-GGA only     !!
 !!   grdrho          -- MO gradient at each grid point, GGA/hybrid-GGA only   !!
 !!   grdboden        -- BODEN gradient for one atom pair, GGA/hybrid-GGA only !!
-!! UKS (open-shell), authored MGimf. alone:                                   !!
+!! UKS (open-shell):                                                          !!
 !!   numint_dft_uks  -- UKS twin of numint_dft                                !!
-!!   xc_uks          -- UKS twin of xc                                       !!
+!!   xc_uks          -- UKS twin of xc                                        !!
 !!   sigma_uks       -- UKS twin of sigma                                     !!
 !!   ugrdrho         -- UKS twin of grdrho                                    !!
 !!   grdboden_uks    -- UKS twin of grdboden                                  !!
