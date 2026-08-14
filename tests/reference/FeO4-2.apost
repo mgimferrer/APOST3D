@@ -140,8 +140,8 @@ BRANCH I=   0
   Number of grid points:     29200
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
- TIMING CPU  :: atomic definition                                 0.80 s
- TIMING WALL :: atomic definition                                 0.24 s
+ TIMING CPU  :: atomic definition                                 0.79 s
+ TIMING WALL :: atomic definition                                 0.23 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
