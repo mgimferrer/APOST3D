@@ -82,6 +82,30 @@ c
 c      We are extremely grateful for the possibility of using these routines!      
 c
 c      -----------------------------------------------------------------------------c
+
+!! **************************************************************** !!
+!! PROGRAM APOST-3D -- MAIN ENTRY POINT / DRIVER                    !!
+!! single unnamed main program, no PROGRAM statement, no internal   !!
+!! subroutines -- this file is the program itself. Runs             !!
+!! sequentially in five phases:                                     !!
+!!   1) argument/file processing -- opens .fchk/.inp                !!
+!!   2) .inp keyword parsing -- ~70 local flags, one                !!
+!!      readchar/readint/readreal call per keyword (~186-661)       !!
+!!   3) cross-keyword validation                                    !!
+!!   4) iopt(100) population -- each local flag copied into its     !!
+!!      own hardcoded iopt(N) slot, read back by every analysis     !!
+!!      routine                                                     !!
+!!   5) setup (Hilbert-space sat matrix or real-space integration   !!
+!!      grid) then sequential dispatch per requested analysis:      !!
+!!      population/local spin/POLAR/PCA/EFFAO-EOS/LOBA/ENPART       !!
+!!      (one- then two-electron)/OSLO/X-ray scattering              !!
+!! several sections are commented out pending evaluation (DAFH,     !!
+!! EDAIQA state-construction dispatch, DFT-DM1/HIRAO                !!
+!! approximations, legacy topology/effao calls) -- catalogued,      !!
+!! not deleted, pending the main.f skeleton assessment (see         !!
+!! Planned Work).                                                   !!
+!! **************************************************************** !!
+
       use basis_set
       use ao_matrices
       use integration_grid
@@ -686,7 +710,7 @@ CCCCCCCCCCCCCCCCCCCCCCC
 
       if (ipca.eq.1.and.iqtaim.ne.1) iopop=1
       if(imulli.gt.1.or.iqtaim.eq.1) iopop=0
-      if(ihirsh.ne.0.and.idoatoms.eq.1) stop'Cant do HIRSH with DOATOMS'
+      if(ihirsh.ne.0.and.idoat.eq.1) stop'Cant do HIRSH with DOATOMS'
       if(ispin.eq.1.and.idono.eq.0)  then
        write(*,*) 'No Local Spin Analysis needed for Restricted SD WFs'
        ispin=0
@@ -1349,6 +1373,9 @@ CCCCCCCCCCCCCCC
 !! DOING EFFAO/UEFFAO/EFFAO-U FOR FRAGMENTS/ALL ATOMS !!
             if(ieffao.eq.1) then
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
+!! disabled call sites for effao.f's uefomo (dead, see that file's   !!
+!! top-of-file note) and devel.f's mhg/mhg2 (dead, part of that      !!
+!! file's own confirmed-dead subroutines, no note there yet).        !!
 c             call  uefomo(itotps,ndim,omp,chp,sat,wp,omp2,0)
 c             call mhg(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,pa,0)
 c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
@@ -1402,11 +1429,7 @@ C LOCALIZED ORBITALS BONDING ANALYSIS (LOBA)
 CCCCCCCCCCCCCCC
 
       if(iloba.eq.1) then
-        write(*,*) " "
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) "  DOING LOCALIZED ORBITAL BONDING ANALYSIS (LOBA)  "
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) " "
+        call print_box('Doing localized orbital bonding analysis (LOBA)')
 
 !! HILBERT-SPACE !!
         if(imulli.gt.0) then
@@ -1423,11 +1446,7 @@ C DO ENERGY DECOMPOSITION
 CCCCCCCCCCCCCCC
 
       if(ienpart.eq.1) then
-      write(*,*) " "
-      write(*,*) " -------------------------------------- "
-      write(*,*) "  DOING MOLECULAR ENERGY DECOMPOSITION  "
-      write(*,*) " -------------------------------------- "
-      write(*,*) " "
+      call print_box('Doing molecular energy decomposition')
 
 !! ONE ELECTRON PART: CASSCF AND CI WFs !!
       if(iposthf.eq.1) then
@@ -1510,11 +1529,7 @@ CCCCCCCCCCCCCCC
 !! TWO-ELECTRON PART !!
 
 !! TWO-ELECTRON INTEGRATION DEFAULTS !!
-      write(*,*) " "
-      write(*,*) " ----------------------------------------------------- "
-      write(*,*) "  SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION  "
-      write(*,*) " ----------------------------------------------------- "
-      write(*,*) " "
+      call print_box('Setting grid for two-electron numerical integration')
 
 !! CONTROLLED BY # GRID OPTION (modgrid common) !!
 !! DEFAULT GRID IS NOW 150 590, CAN BE CHANGED TO 40 146 BUT ENSURE TO ALSO MODIGY pha AND phb !!
@@ -1636,11 +1651,7 @@ CCCCCCCCCC
 CCCCCCCCCC
 
       if(ioslo.eq.1) then
-        write(*,*) " "
-        write(*,*) " ------------------------------------------------------- "
-        write(*,*) "  DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)  "
-        write(*,*) " ------------------------------------------------------- "
-        write(*,*) " "
+        call print_box('Doing oxidation states from localized orbitals (OSLO)')
 
 !! single timer for the whole OSLO block -- previously zero visibility. !!
       call cpu_time(time)
@@ -1680,11 +1691,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       if(iscattfact.eq.1) then
-        write(*,*) " "
-        write(*,*) " ------------------------------------- "
-        write(*,*) "  EVALUATING X-RAY SCATTERING FACTORS  "
-        write(*,*) " ------------------------------------- "
-        write(*,*) " "
+        call print_box('Evaluating X-ray scattering factors')
         call scattering_factors(itotps,wp,rho,omp2,pcoord)
       end if
 
