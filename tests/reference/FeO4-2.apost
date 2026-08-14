@@ -141,7 +141,7 @@ BRANCH I=   0
  Checking sum of AOs overlap matrices
  Deviations may not affect overall accuracy of MOs 
  TIMING CPU  :: atomic definition                                 0.79 s
- TIMING WALL :: atomic definition                                 0.23 s
+ TIMING WALL :: atomic definition                                 0.24 s
   
   ---------------------------
    DOING POPULATION ANALYSIS 
@@ -1714,7 +1714,7 @@ BRANCH I=   0
   Frg. Pop.  4:   0.02096   0.00921   0.00921   0.69064   0.00644
   Frg. Pop.  5:   0.77075   0.00921   0.00921   0.00644   0.69064
   
- TIMING CPU  :: OSLO analysis                                     1.60 s
- TIMING WALL :: OSLO analysis                                     1.47 s
+ TIMING CPU  :: OSLO analysis                                     1.59 s
+ TIMING WALL :: OSLO analysis                                     1.46 s
   
  ...Normal Termination of APOST-3D... 
