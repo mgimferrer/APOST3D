@@ -1,16 +1,21 @@
-!! ******************************************************* !!
-!! REAL-SPACE / HILBERT-SPACE EOS SUBROUTINES              !!
-!! live, feed the shared eos_analysis decision routine:    !!
-!!   ueffao3d_frag   -- real-space (3D grid) fragment EFOs !!
-!!   eos_analysis    -- EFO occupations -> electron counts !!
-!!                       -> fragment oxidation states      !!
-!!   ueffaolow_frag  -- Lowdin/NAO Hilbert-space fragment  !!
-!!                       EFOs                              !!
-!!   ueffaomull_frag -- Mulliken Hilbert-space fragment    !!
-!!                       EFOs                              !!
-!! see the LEGACY / UNREVIEWED banner further down for the !!
-!! rest of this file's subroutines (effao.f, 2026-08-14).  !!
-!! ******************************************************* !!
+!! **************************************************************** !!
+!! REAL-SPACE / HILBERT-SPACE EOS SUBROUTINES                       !!
+!! live, feed the shared eos_analysis decision routine:             !!
+!!   ueffao3d_frag   -- real-space (3D grid) fragment EFOs          !!
+!!   eos_analysis    -- EFO occupations -> electron counts          !!
+!!                      -> fragment oxidation states                !!
+!!   ueffaolow_frag  -- Lowdin/NAO Hilbert-space fragment           !!
+!!                      EFOs                                        !!
+!!   ueffaomull_frag -- Mulliken Hilbert-space fragment             !!
+!!                      EFOs                                        !!
+!! below (LEGACY / UNREVIEWED section further down), checked        !!
+!! codebase-wide 2026-08-14: ueffao3d is LIVE (single-atom EFFAOs,  !!
+!! DOATOMS pathway, not EOS -- no fragments/oxidation states);      !!
+!! uefomo/ueffaomull2/ueffaolow2 are DEAD (zero live call sites).   !!
+!! The three dead ones are cleanup candidates, same category as     !!
+!! devel.f's confirmed-dead subroutines -- kept for now pending the !!
+!! main.f skeleton assessment (see Planned Work).                   !!
+!! **************************************************************** !!
 
 !! ***** !!
 
@@ -165,7 +170,7 @@
             xx0=xx0+op(ifrlist(icenter,iicenter),ifrlist(jcenter,iicenter))
           end do
         end do
-        write(*,'(2x,a,1x,i0,1x,a)') "** FRAGMENT",iicenter,"**"
+        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
         write(*,*) " "
         if(icase.eq.0) write(*,'(2x,a29,x,f8.4)') "Deviation from net population",xmaxo-xx0
         lbl30="Net occupation for fragment"
@@ -220,23 +225,22 @@
 
       DEALLOCATE(scr,s0,sm,c0,splus,pp0,s0all)
 
-!! printing format !!
-60    FORMAT(8h  OCCUP. ,8f9.4)
+60    FORMAT("  OCCUP.",8f9.4)
 
       end
 
 
-!! ********************************************************************* !!
-!! subroutine: eos_analysis                                              !!
-!! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
-!!   electron counts per fragment (EOS), then derives oxidation states.  !!
-!!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
-!! arguments:                                                            !!
-!!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
-!!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
-!!   thres   (in) -- degeneracy threshold for integer electron count     !!
-!! author: PSalse, ERaco, MGimf                                          !!
-!! ********************************************************************* !!
+      !! ********************************************************************* !!
+      !! subroutine: eos_analysis                                              !!
+      !! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
+      !!   electron counts per fragment (EOS), then derives oxidation states.  !!
+      !!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
+      !! arguments:                                                            !!
+      !!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
+      !!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
+      !!   thres   (in) -- degeneracy threshold for integer electron count     !!
+      !! author: PSalse, ERaco, MGimf                                          !!
+      !! ********************************************************************* !!
       subroutine eos_analysis(idobeta,icase,thres)
 
       use effao_mod, only: p0,p0net,p0gro,ip0
@@ -436,6 +440,18 @@
 
 !! ****** !!
 
+!! *********************************************************************** !!
+!! subroutine: ueffaolow_frag                                              !!
+!! purpose: computes Hilbert-space (Lowdin or NAO basis) effective         !!
+!!   fragment orbitals (EFOs) for EOS/EFFAO, one fragment at a time, by    !!
+!!   block-diagonalizing the density matrix in the orthogonalized basis.   !!
+!!   Results are stored into effao_mod (p0/p0net/p0gro/ip0), not returned  !!
+!!   via arguments. Real-space (3D grid) twin is ueffao3d_frag; Mulliken   !!
+!!   Hilbert-space twin is ueffaomull_frag.                                !!
+!! arguments:                                                              !!
+!!   icase (in) -- 0 closed-shell, 1 alpha, 2 beta                         !!
+!! author: PSalse, ERaco, MGimf                                            !!
+!! *********************************************************************** !!
       subroutine ueffaolow_frag(icase)
 
       use basis_set
@@ -449,7 +465,6 @@
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(100)
-      common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
       dimension iao_frag(nmax)
@@ -457,9 +472,8 @@
       character*(25) nameout
 
       allocatable :: s0(:,:), sm(:,:), c0(:,:), splus(:,:), pp0(:,:)
-      allocatable :: s0all(:),is0all(:),efo(:,:),efo2(:)
+      allocatable :: efo(:,:),efo2(:)
 
-      ndim    = igr
       icube   = Iopt(13)
       ieffthr = Iopt(24)
       imulli  = Iopt(5)
@@ -467,11 +481,11 @@
       iefo=0
       xminocc=REAL(ieffthr)/1000.0d0
 
-      ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
-      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim),is0all(ndim))
-      ALLOCATE(efo(ndim,ndim),efo2(ndim))
+      ALLOCATE(s0(igr,igr),sm(igr,igr),splus(igr,igr))
+      ALLOCATE(c0(igr,igr),pp0(igr,igr))
+      ALLOCATE(efo(igr,igr),efo2(igr))
 
-c ao to frag map
+!! AO-to-fragment map. !!
       iao_frag=0
       do ifrag=1,icufr
         do icenter=1,nfrlist(ifrag)
@@ -482,7 +496,6 @@ c ao to frag map
         end do
       end do
 
-c initializing
       if(icase.eq.0) then
         s0=p
       else if (icase.eq.1) then
@@ -492,8 +505,7 @@ c initializing
       end if
 
       if(imulli.eq.4) then
-c use NA0 to AO matrix
-c warning, transpose...nonsymmetric
+!! NAO-to-AO matrix -- note the transpose, ssnao is nonsymmetric. !!
         do i=1,igr
           do j=1,igr
             splus(i,j)=ssnao(j,i)
@@ -506,51 +518,39 @@ c warning, transpose...nonsymmetric
       end if
       if(icase.eq.1) then
 
-!! TO PRINT ONLY ONCE !!
+!! banner printed only once, on the alpha (or closed-shell) pass. !!
         if(imulli.eq.4) then
-          write(*,*) " "
-          write(*,*) " ----------------------------- "
-          write(*,*) "  DOING EFFAO NAO FORMULATION  "
-          write(*,*) " ----------------------------- "
-          write(*,*) " "
+          call print_box('DOING EFFAO NAO FORMULATION')
         else
-          write(*,*) " "
-          write(*,*) " -------------------------------- "
-          write(*,*) "  DOING EFFAO LOWDIN FORMULATION  "
-          write(*,*) " -------------------------------- "
+          call print_box('DOING EFFAO LOWDIN FORMULATION')
         end if
-        write(*,*) " "
-        write(*,*) " ------------------------------- "
-        write(*,*) "  EFFAOs FROM THE ALPHA DENSITY  "
-        write(*,*) " ------------------------------- "
+        call print_box('EFFAOs FROM THE ALPHA DENSITY')
       else if(icase.eq.2) then
-        write(*,*) " "
-        write(*,*) " ------------------------------ "
-        write(*,*) "  EFFAOs FROM THE BETA DENSITY  "
-        write(*,*) " ------------------------------ "
+        call print_box('EFFAOs FROM THE BETA DENSITY')
       end if
       write(*,*) " "
-     
-c tranform P with Splus
-C will back trasnform effaos to ao basis later...then expanded in whole basis functions
+
+!! transform P with Splus into the orthogonalized basis -- EFOs are      !!
+!! back-transformed to the AO basis after diagonalization, below.        !!
       call to_lowdin_basis(igr,splus,s0)
 
-C LOOP OVER FRAGMENTS
-c easiest way to avois redordering is to perform nat diagonaliztions
-c jocc will control the total number of efos to process
-      jocc=0
+!! loop over fragments -- one diagonalization per fragment avoids having !!
+!! to reorder eigenvalues afterward.                                     !!
       do ifrag=1,icufr
-c Block diagonal P
-c clean auxiliary pp0 mat
-        pp0=0.0d0
+
+!! block-diagonal P for this fragment. parallel over (mu,nu): each      !!
+!! iteration writes only its own pp0(mu,nu), independent across pairs.  !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(mu,nu)
         do mu=1,igr
           do nu=1,igr
+            pp0(mu,nu)=ZERO
             if(iao_frag(mu).eq.ifrag.and.iao_frag(nu).eq.ifrag) pp0(mu,nu)=s0(mu,nu)
           end do
         end do
+!$OMP END PARALLEL DO
 
         call diagonalize(igr,igr,pp0,C0,0)
-c backtrasnform. eff.aos expanded over the full basis set
+!! back-transform: EFOs expanded over the full basis set. !!
         call to_AO_basis(igr,igr,sm,C0)
 
 c max number of effaos
@@ -569,7 +569,6 @@ c actual number of effaos
           i=i+1
         end do
 
-!! PRINTING !!
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
         write(*,*) " "
         write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",ifrag,xmaxo
@@ -577,11 +576,12 @@ c actual number of effaos
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,*) " "
 
-c saving efo info for fragment
-c saving all efos and occupations in efo matrix
-        do k=1,imaxo           
+!! save this fragment's EFOs (coefficients and occupations) into the    !!
+!! shared p0/p0net/p0gro/ip0 arrays and into the local efo/efo2 buffers !!
+!! (written out to efo_*.dat below).                                    !!
+        do k=1,imaxo
           iefo=iefo+1
-          do mu=1,igr                       
+          do mu=1,igr
             p0(mu,k)=c0(mu,k)
             efo(mu,iefo)=c0(mu,k)
           end do
@@ -591,16 +591,14 @@ c saving all efos and occupations in efo matrix
         end do
         ip0(ifrag)=imaxo
 
-c OUTPUT ORBITALS FOR VISUALIZATION
-c  write cube file
+!! cube file for visualization, if requested. !!
         if(icube.eq.1) call cubegen4(ifrag,icase)
 
-c end loop over fragments
       end do
 
-!! MG: THIS DESERVES BETTER (TO DO) !!
-c print out efo matrix
-      !write(*,*) 'printing ',iefo,' efos'
+!! EFO occupations/coefficients written out in a Gaussian-.fchk-like    !!
+!! array format (MG: this file-writing logic deserves a proper rewrite, !!
+!! to-do -- e.g. icase.eq.0/closed-shell never opens or writes these).  !!
       ival=iefo*igr
       nameout='efo_occ.dat'
       nameout=adjustl(nameout)
@@ -625,17 +623,27 @@ c
         close(45)
       end if
 
-!! DEALLOCATING !!
       DEALLOCATE(efo,efo2)
-      DEALLOCATE(s0,sm,c0,splus,pp0,s0all,is0all)
+      DEALLOCATE(s0,sm,c0,splus,pp0)
 
-!! PRINTING FORMATS !!
-60    FORMAT(8h  OCCUP. ,8f9.4)
+60    FORMAT("  OCCUP.",8f9.4)
 
       end
 
 !! ****** !!
 
+!! *********************************************************************** !!
+!! subroutine: ueffaomull_frag                                             !!
+!! purpose: computes Hilbert-space (Mulliken basis) effective fragment     !!
+!!   orbitals (EFOs) for EOS/EFFAO, one fragment at a time, by block-      !!
+!!   diagonalizing the density matrix in the orthogonalized (per-fragment  !!
+!!   S^-1/2) AO basis. Results are stored into effao_mod (p0/p0net/p0gro/  !!
+!!   ip0), not returned via arguments. Real-space (3D grid) twin is        !!
+!!   ueffao3d_frag; Lowdin/NAO Hilbert-space twin is ueffaolow_frag.       !!
+!! arguments:                                                              !!
+!!   icase (in) -- 0 closed-shell, 1 alpha, 2 beta                         !!
+!! author: PSalse, ERaco, MGimf                                            !!
+!! *********************************************************************** !!
       subroutine ueffaomull_frag(icase)
 
       use basis_set
@@ -648,49 +656,34 @@ c
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(100)
-      common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common  /filename/name0
-
-      character*(60) name0,name
-      character*(80) line  
 
       dimension iao_frag(nmax)
 
       allocatable :: s0(:,:),sm(:,:),c0(:,:),splus(:,:),pp0(:,:)
-      allocatable :: s0all(:),is0all(:),pk(:,:)
+      allocatable :: pk(:,:)
 
-      ndim    = igr
       icube   = Iopt(13)
       ieffthr = Iopt(24)
 
       xminocc=real(ieffthr)/1000.0d0
 
-      ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
-      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim),is0all(ndim),pk(ndim,ndim)) 
+      ALLOCATE(s0(igr,igr),sm(igr,igr),splus(igr,igr))
+      ALLOCATE(c0(igr,igr),pp0(igr,igr),pk(igr,igr))
 
-!! INITIALIZING !!
       if(icase.eq.0) then
         pk=p
       else if(icase.eq.1) then
-        write(*,*) " "
-        write(*,*) " ---------------------------------- "
-        write(*,*) "  DOING EFFAO MULLIKEN FORMULATION  "
-        write(*,*) " ---------------------------------- "
-        write(*,*) " "
-        write(*,*) " ------------------------------- "
-        write(*,*) "  EFFAOs FROM THE ALPHA DENSITY  "
-        write(*,*) " ------------------------------- "
+        call print_box('DOING EFFAO MULLIKEN FORMULATION')
+        call print_box('EFFAOs FROM THE ALPHA DENSITY')
         pk=pa
       else if(icase.eq.2) then
-        write(*,*) " ------------------------------ "
-        write(*,*) "  EFFAOs FROM THE BETA DENSITY  "
-        write(*,*) " ------------------------------ "
+        call print_box('EFFAOs FROM THE BETA DENSITY')
         pk=pb
       end if
       write(*,*) " "
 
-c ao to frag map
+!! AO-to-fragment map. !!
       iao_frag=0
       do ifrag=1,icufr
         do icenter=1,nfrlist(ifrag)
@@ -701,45 +694,46 @@ c ao to frag map
         end do
       end do
 
-C LOOP OVER FRAGMENTS
-c easiest way to avois redordering is to perform nat diagonaliztions
-c jocc will control the total number of efos to process
-      jocc=0
+!! loop over fragments -- one diagonalization per fragment avoids having !!
+!! to reorder eigenvalues afterward.                                     !!
       do ifrag=1,icufr
-c Making block-diagonal S  and P matrix (AO)
-        pp0=ZERO
-        s0=ZERO
+
+!! block-diagonal S and P (AO basis) for this fragment. parallel over    !!
+!! (mu,nu): each iteration writes only its own pp0(mu,nu)/s0(mu,nu),     !!
+!! independent across pairs.                                             !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(mu,nu)
         do mu=1,igr
           do nu=1,igr
-            if(iao_frag(mu).eq.ifrag.and.iao_frag(nu).eq.ifrag) then 
+            pp0(mu,nu)=ZERO
+            s0(mu,nu)=ZERO
+            if(iao_frag(mu).eq.ifrag.and.iao_frag(nu).eq.ifrag) then
               pp0(mu,nu)=pk(mu,nu)
               s0(mu,nu)=s(mu,nu)
             end if
           end do
         end do
-c make S0^1/2
+!$OMP END PARALLEL DO
+
+!! S0^-1/2, then transform the block P0 with it. !!
         call build_Smp(igr,s0,Sm,Splus,0)
-c tranform blovck P0 with Splus
         call to_lowdin_basis(igr,Splus,pp0)
         call diagonalize(igr,igr,pp0,C0,0)
-c backtrasnform. eff.aos expanded over the full basis set
+!! back-transform: EFOs expanded over the full basis set. !!
         call to_AO_basis(igr,igr,Sm,C0)
-c max number of effaos
+
         imaxeff=0
         do i=1,igr
           if(iao_frag(i).eq.ifrag) imaxeff=imaxeff+1
         end do
-c actual number of effaos
         xmaxo=ZERO
         imaxo=0
         i=1
-        do while(pp0(i,i).ge.xminocc.and.i.lt.imaxeff) 
+        do while(pp0(i,i).ge.xminocc.and.i.lt.imaxeff)
           xmaxo=xmaxo+pp0(i,i)
           imaxo=i
           i=i+1
         end do
 
-!! PRINTING !!
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
         write(*,*) " "
         write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",ifrag,xmaxo
@@ -747,9 +741,10 @@ c actual number of effaos
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,*) " "
 
-c saving efo info for fragment
-        do k=1,imaxo           
-          do mu=1,igr                       
+!! save this fragment's EFOs (coefficients and occupations) into the    !!
+!! shared p0/p0net/p0gro/ip0 arrays.                                     !!
+        do k=1,imaxo
+          do mu=1,igr
             p0(mu,k)=c0(mu,k)
           end do
           p0net(k,ifrag)=pp0(k,k)
@@ -757,18 +752,14 @@ c saving efo info for fragment
         end do
         ip0(ifrag)=imaxo
 
-c OUTPUT ORBITALS FOR VISUALIZATION
-c  write cube file
+!! cube file for visualization, if requested. !!
         if(icube.eq.1) call cubegen4(ifrag,icase)
 
-c end loop over fragments
       end do
 
-!! DEALLOCATING !!
-      DEALLOCATE(s0, sm, c0,splus,pp0, s0all,is0all,pk)
+      DEALLOCATE(s0,sm,c0,splus,pp0,pk)
 
-!! PRINTING FORMATS !!
-60    FORMAT(8h  OCCUP. ,8f9.4)
+60    FORMAT("  OCCUP.",8f9.4)
 
       end
 
