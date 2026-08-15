@@ -426,40 +426,40 @@ c X(N,M)
 !!                    is left in LAPACK's ascending order instead        !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-        Subroutine diagonalize(M,N,A0,X,ival)
-        implicit double precision(a-h,o-z)
-        include 'parameter.h'
-        integer, intent(in) :: M,N,ival
-        dimension x(M,M),a0(M,M)
-        double precision, allocatable :: w(:),work(:),acopy(:,:)
-        integer :: lwork,liwork,info
-        integer, allocatable :: iwork(:)
+      Subroutine diagonalize(M,N,A0,X,ival)
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+      integer, intent(in) :: M,N,ival
+      dimension x(M,M),a0(M,M)
+      double precision, allocatable :: w(:),work(:),acopy(:,:)
+      integer :: lwork,liwork,info
+      integer, allocatable :: iwork(:)
 
-        allocate(acopy(N,N),w(N))
-        acopy(1:N,1:N)=a0(1:N,1:N)
+      allocate(acopy(N,N),w(N))
+      acopy(1:N,1:N)=a0(1:N,1:N)
 
 !! workspace query, then the real call !!
-        allocate(work(1),iwork(1))
-        call dsyevd('V','U',N,acopy,N,w,work,-1,iwork,-1,info)
-        lwork=int(work(1))
-        liwork=iwork(1)
-        deallocate(work,iwork)
-        allocate(work(max(1,lwork)),iwork(max(1,liwork)))
-        call dsyevd('V','U',N,acopy,N,w,work,lwork,iwork,liwork,info)
-        if(info.ne.0) stop 'dsyevd failed to converge in diagonalize'
+      allocate(work(1),iwork(1))
+      call dsyevd('V','U',N,acopy,N,w,work,-1,iwork,-1,info)
+      lwork=int(work(1))
+      liwork=iwork(1)
+      deallocate(work,iwork)
+      allocate(work(max(1,lwork)),iwork(max(1,liwork)))
+      call dsyevd('V','U',N,acopy,N,w,work,lwork,iwork,liwork,info)
+      if(info.ne.0) stop 'dsyevd failed to converge in diagonalize'
 
 !! dsyevd returns ascending order; every caller expects descending      !!
 !! (old_diagonalize/SDIAG2's convention) -- reverse both eigenvalues    !!
 !! and the matching eigenvector columns while copying out.             !!
-        a0(1:N,1:N)=0.0d0
-        do i=1,N
-         a0(i,i)=w(N-i+1)
-         x(1:N,i)=acopy(1:N,N-i+1)
-        end do
+      a0(1:N,1:N)=0.0d0
+      do i=1,N
+        a0(i,i)=w(N-i+1)
+        x(1:N,i)=acopy(1:N,N-i+1)
+      end do
 
-        deallocate(acopy,w,work,iwork)
-        return
-        end
+      deallocate(acopy,w,work,iwork)
+      return
+      end
 
 !! ********************************************************************* !!
 !! subroutine: old_diagonalize                                           !!
@@ -467,23 +467,23 @@ c X(N,M)
 !!   diagonalize above (same interface -- swap back in by renaming).     !!
 !! author: I. Mayer                                                      !!
 !! ********************************************************************* !!
-        Subroutine old_diagonalize(M,N,A0,X,ival)
-        implicit double precision(a-h,o-z)
-        include 'parameter.h'
-        integer, intent(in) :: M,N
-        dimension x(M,M),a0(M,M),d(M)
+      Subroutine old_diagonalize(M,N,A0,X,ival)
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+      integer, intent(in) :: M,N
+      dimension x(M,M),a0(M,M),d(M)
 
 
-        call sdiag2(a0,m,n,d,ival)
-        do i=1,n
-         do j=1,n
+      call sdiag2(a0,m,n,d,ival)
+      do i=1,n
+        do j=1,n
           x(j,i)=a0(j,i)
           a0(j,i)=0.d0
-         end do
-         a0(i,i)=d(i)
         end do
-        return
-        end
+        a0(i,i)=d(i)
+      end do
+      return
+      end
 
 C DIAGONALIZATION OF THE REAL SYMMETRIC MATRIX X. IN D THE EIGENVALUES.
       Subroutine SDIAG2(X,M,N,D,inosort)

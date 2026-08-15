@@ -87,11 +87,11 @@ c ERC QTAIM input module
       call readchar("# METHOD","READINT",ireadint)
       if(ireadint.eq.1) iqtaim=2
       if(iqtaim.eq.1) then
-       call readint("# QTAIM","STEP",istep,300,1)
-       call readint("# QTAIM","NNA",inna,0,1)
-       call readint("# QTAIM","MAXDIST",imaxdist,12,1)
-       call readint("# QTAIM","SCREENING",iscreening,1000,1)
-       call readint("# QTAIM","PATH",ipath,0,1)
+        call readint("# QTAIM","STEP",istep,300,1)
+        call readint("# QTAIM","NNA",inna,0,1)
+        call readint("# QTAIM","MAXDIST",imaxdist,12,1)
+        call readint("# QTAIM","SCREENING",iscreening,1000,1)
+        call readint("# QTAIM","PATH",ipath,0,1)
       end if 
 
 c Miscellaneous options
@@ -118,26 +118,26 @@ C eff-AO-s and EOS
       call readint("# METHOD","EFF_THRESH",ieffthr,1,1)
       call readchar("# METHOD","CUBE",icube)
       if(icube.eq.1) then
-       call locate(16,"# CUBE",ii)
-       if(ii.eq.0) stop'Required section # CUBE not found in input file'
-       call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
-       call readint("# CUBE","MIN_OCC",kcubthr,0,1)
+        call locate(16,"# CUBE",ii)
+        if(ii.eq.0) stop'Required section # CUBE not found in input file'
+        call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
+        call readint("# CUBE","MIN_OCC",kcubthr,0,1)
       end if
 
 !! EOS (STANDARD) !!
       call readchar("# METHOD","EOS",ieos)
       if(ieos.eq.1) then 
-       iopop=1
-       ieffao=2
-       call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
+        iopop=1
+        ieffao=2
+        call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
 !! EOS FROM THE PAIRED AND UNPAIRED DENSITIES !!
       call readchar("# METHOD","EOS-U",iueos)
       if(iueos.eq.1) then 
-       iopop=1
-       ieffao=3
-       call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
+        iopop=1
+        ieffao=3
+        call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
 !! OS FROM CENTROIDS !!
@@ -198,7 +198,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           call readchar("# ENPART","CISD",icisd)
           call readchar("# ENPART","CORRELATION",iecorr)
           if(icas.eq.0. and.icisd.eq.0) then
-           stop "NO DFT/HF/CASSCF/CISD SELECTED FOR ENPART. REVISE inp"
+            stop "NO DFT/HF/CASSCF/CISD SELECTED FOR ENPART. REVISE inp"
           end if
 233       continue
         end if 
@@ -215,43 +215,43 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 !! ADDING GRID TUNNING FOR TWO-EL INTEGRATION !!
         call readchar("# ENPART","MOD-GRIDTWOEL",iigrid)
         if(iigrid.eq.1) then
-         call readint("# GRID","RADIAL",nrad22,150,1)
-         call readint("# GRID","ANGULAR",nang22,590,1)
-         call readreal("# GRID","rr00",rr0022,0.5d0,1)
-         call readreal("# GRID","phb1",phb12,0.169d0,1)
-         call readreal("# GRID","phb2",phb22,0.170d0,1)
-         call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
+          call readint("# GRID","RADIAL",nrad22,150,1)
+          call readint("# GRID","ANGULAR",nang22,590,1)
+          call readreal("# GRID","rr00",rr0022,0.5d0,1)
+          call readreal("# GRID","phb1",phb12,0.169d0,1)
+          call readreal("# GRID","phb2",phb22,0.170d0,1)
+          call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
         
 !! DEFAULTS, MODIFIED FOR SAFE INTEGRATION SETUP !! 
         else
-         nrad22=150
-         nang22=590
-         rr0022=0.5
-         phb12=0.169d0
-         phb22=0.170d0
-         thr3=1.0d-12
+          nrad22=150
+          nang22=590
+          rr0022=0.5
+          phb12=0.169d0
+          phb22=0.170d0
+          thr3=1.0d-12
 
 !! Warn if a # GRID block exists in the input but is being ignored because !!
 !! MOD-GRIDTWOEL wasn't set. Scan the file directly here rather than via   !!
 !! "locate", which always prints a "section not found" message on a miss   !!
-         igridpresent=0
-         rewind(16)
-         iiscan=0
-         do while(iiscan.eq.0)
-          read(16,"(a80)",end=234) linia
-          if(index(linia,"# GRID").ne.0) then
-           igridpresent=1
-           iiscan=1
-          end if
-         end do
+          igridpresent=0
+          rewind(16)
+          iiscan=0
+          do while(iiscan.eq.0)
+            read(16,"(a80)",end=234) linia
+            if(index(linia,"# GRID").ne.0) then
+              igridpresent=1
+              iiscan=1
+            end if
+          end do
 234      continue
-         if(igridpresent.eq.1) then
-          write(*,*) " "
-          write(*,*) "WARNING: a # GRID block was found in the input, but MOD-GRIDTWOEL"
-          write(*,*) "was not set in # ENPART. Using the default integration setup instead"
-          write(*,*) "Add MOD-GRIDTWOEL to # ENPART to apply your # GRID settings"
-          write(*,*) " "
-         end if
+          if(igridpresent.eq.1) then
+            write(*,*) " "
+            write(*,*) "WARNING: a # GRID block was found in the input, but MOD-GRIDTWOEL"
+            write(*,*) "was not set in # ENPART. Using the default integration setup instead"
+            write(*,*) "Add MOD-GRIDTWOEL to # ENPART to apply your # GRID settings"
+            write(*,*) " "
+          end if
         end if
 
 !! FOR TOPOLOGY CALCULATION !!
@@ -335,7 +335,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
             write(*,*) " "
           end if
         else
-            stop "EDAIQA SECTION MISSING. REVISE inp"
+          stop "EDAIQA SECTION MISSING. REVISE inp"
         end if
 
 !! END OF EDAIQA !!
@@ -344,15 +344,15 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 C NLOPs                       
       call readchar("# METHOD","POLAR",ipolar )
       if(ipolar.eq.1) then
-       iaccur=1
+        iaccur=1
 c using file $name.scr as raw output for post-processing
 !MMO- deleting everything scr-related as it's no longer used
       end if
 
       call field_misc(ifield)
       if(ifield.eq.1) then
-       write(*,*) 'The system is under a static electric field' 
-       write(*,'(3(a4,f8.6))') 'Fx=',field(2), 'Fy=',field(3),'Fz=',field(4) 
+        write(*,*) 'The system is under a static electric field' 
+        write(*,'(3(a4,f8.6))') 'Fx=',field(2), 'Fy=',field(3),'Fz=',field(4) 
       end if
 
 C Do for restricted number of atoms
@@ -364,9 +364,9 @@ C Do for restricted number of atoms
         read(16,*) icuat
         read(16,*) (iatlist(i),i=1,icuat)
       else
-       icuat=nat
+        icuat=nat
         do i=1,icuat
-         iatlist(i)=i
+          iatlist(i)=i
         end do
       end if
 
@@ -381,12 +381,12 @@ c Do for fragments
           read(16,*) nfrlist(i)
           if(i.eq.icufr.and.nfrlist(i).eq.-1) then 
             do l=1,nat
-             navect(l)=0
+              navect(l)=0
             end do 
             do l=1,(icufr-1)
-               do k=1,nfrlist(l)    
-                 navect(ifrlist(k,l))=1
-               end do 
+              do k=1,nfrlist(l)    
+                navect(ifrlist(k,l))=1
+              end do 
             end do
             k=0
             do l=1,nat                     
@@ -397,40 +397,40 @@ c Do for fragments
             end do  
             nfrlist(icufr)=k       
           else     
-           read(16,*) (ifrlist(k,i),k=1,nfrlist(i))
+            read(16,*) (ifrlist(k,i),k=1,nfrlist(i))
           end if
         end do
 c
         ixx=0
         do i=1,icufr
-         write(*,*)'Fragment: ',i 
-         write(*,'(20i4)') (ifrlist(k,i),k=1,nfrlist(i))
-         ixx=ixx+nfrlist(i)
+          write(*,*)'Fragment: ',i 
+          write(*,'(20i4)') (ifrlist(k,i),k=1,nfrlist(i))
+          ixx=ixx+nfrlist(i)
         end do
         if(ixx.ne.nat.and.(ieos.eq.1.or.ienpart.eq.1)) then
-         stop 'Missing/Additional atoms in fragment definition'
+          stop 'Missing/Additional atoms in fragment definition'
         end if
 
 c  jfrlist tells which fragment a given atom belongs to
         do i=1,icufr
-         do k=1,nfrlist(i)
-          jfrlist(ifrlist(k,i))=i
-         end do
+          do k=1,nfrlist(i)
+            jfrlist(ifrlist(k,i))=i
+          end do
         end do
         do i=1,nat
-        if(jfrlist(i).eq.0.and.(ieos.eq.1.or.ienpart.eq.1)) then
-         write(*,*) 'Unassigned atom to fragment:',i
-         stop
-        end if
+          if(jfrlist(i).eq.0.and.(ieos.eq.1.or.ienpart.eq.1)) then
+            write(*,*) 'Unassigned atom to fragment:',i
+            stop
+          end if
         end do
 c for compatibility
       else
-       icufr=nat
-       do i=1,icufr
-        nfrlist(i)=1
-        ifrlist(1,i)=i                
-        jfrlist(i)=i                
-       end do
+        icufr=nat
+        do i=1,icufr
+          nfrlist(i)=1
+          ifrlist(1,i)=i                
+          jfrlist(i)=i                
+        end do
       end if
 
 !! EXTRA WARNINGS FOR EDAIQA !!
