@@ -549,7 +549,273 @@ C
       write(*,*) ' '
 
       deallocate(tt,tts)
-      
+
+      return
+      end
+
+!! ********************************************************************* !!
+!! subroutine: population_density                                        !!
+!! purpose: spin- and total-density atomic-population contraction        !!
+!! (P*S^A products), writing qat/qsat via COMMON. Split from the         !!
+!! print side (population_print) so the idoint-guarded print_int         !!
+!! call in main.f can sit between the two, exactly where it did          !!
+!! before this routine existed.                                          !!
+!! arguments:                                                            !!
+!! sat (in) -- per-atom AO overlap matrix (numint_sat/tomull/tolow)      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine population_density(sat)
+      use basis_set
+      use ao_matrices
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      dimension sat(nbasis,nbasis,natoms)
+
+      print *,' '
+      print *,' ---------------------------'
+      print *,'  DOING POPULATION ANALYSIS '
+      print *,'   Partial atomic charges'
+      print *,'   Atomic spin densities '
+      print *,'   Bond orders and Valences '
+      print *,' ---------------------------'
+      print *,' '
+
+c Spin density
+      if(kop.ne.0.or.nalf.ne.nb) then
+       do kat=1,natoms
+        x=0.d0
+        do mu=1,nbasis
+         do nu=1,nbasis
+          x=x+ps(mu,nu)*sat(mu,nu,kat)
+         enddo
+        enddo
+        qsat(kat,1)=x
+        qsat(kat,2)=0.d0
+       enddo
+       do mu=1,nbasis
+        kat=ihold(mu)
+        x=0.d0
+        do itau=1,nbasis
+         x=x+ps(mu,itau)*s(itau,mu)
+        enddo
+        qsat(kat,2)=qsat(kat,2)+x
+       enddo
+      end if
+
+c Total density
+      do kat=1,natoms
+       x=0.d0
+       do mu=1,nbasis
+        do nu=1,nbasis
+         x=x+p(mu,nu)*sat(mu,nu,kat)
+        enddo
+       enddo
+       qat(kat,1)=x
+       qat(kat,2)=0.d0
+      enddo
+      do mu=1,nbasis
+       kat=ihold(mu)
+       x=0.d0
+       do itau=1,nbasis
+        x=x+p(mu,itau)*s(itau,mu)
+       enddo
+       qat(kat,2)=qat(kat,2)+x
+      enddo
+
+      return
+      end
+
+!! ********************************************************************* !!
+!! subroutine: population_print_charges                                  !!
+!! purpose: prints electron populations and partial atomic charges       !!
+!! (plus per-fragment breakdowns where DOFRAGS is set) from qat, already !!
+!! filled by population_density. The ELCOUNT/NCTAIM call that used to    !!
+!! sit between these two prints stays in main.f (like idoint/print_int)  !!
+!! -- NCTAIM lives in subroutines_mmo.f, which apost3d-eos's link list   !!
+!! deliberately excludes, so pop.f itself must not reference it.         !!
+!! arguments: none (all via qat/COMMON)                                  !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine population_print_charges()
+      use input_options_mod, only: idofr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      common /printout/iaccur
+      dimension dummyvec(maxat,2)
+      character*80 line
+
+c ELECTRON POPULATIONS
+      tc1=0.d0
+      tc2=0.d0
+      do i=1,nat
+       tc1=tc1+qat(i,1)
+       tc2=tc2+qat(i,2)
+      enddo
+      print *,'  '
+      print *,'    ELECTRON POPULATIONS'
+      print *,'  '
+      print *,'  Atom   apost3d      Mulliken'
+      print *,' -----------------------------'
+      call vprint(qat,nat,maxat,2)
+      print *,' -----------------------------'
+      if(iaccur.eq.0) then
+       print 162, tc1, tc2
+      else
+       print 172, tc1, tc2
+      end if
+
+      if (idofr.eq.1) then
+       line ='   FRAGMENT ANALYSIS : Electron populations'
+       call group_by_frag_vec(2,line ,qat)
+      end if
+
+c PARTIAL CHARGES
+      tc1=0.d0
+      tc2=0.d0
+      do i=1,nat
+       tc1=tc1-qat(i,1)+zn(i)
+       tc2=tc2-qat(i,2)+zn(i)
+       dummyvec(i,1)=zn(i)-qat(i,1)
+       dummyvec(i,2)=zn(i)-qat(i,2)
+      enddo
+      print *,'  '
+      print *,'    TOTAL ATOMIC CHARGES    '
+      print *,'  '
+      print *,'  Atom   apost3d      Mulliken'
+      print *,' -----------------------------'
+      call vprint(dummyvec,nat,maxat,2)
+      print *,' -----------------------------'
+      if(iaccur.eq.0) then
+       print 162, tc1, tc2
+      else
+       print 172, tc1, tc2
+      end if
+      print *,'  '
+
+      if (idofr.eq.1) then
+       line ='   FRAGMENT ANALYSIS : Atomic Charges'
+       call group_by_frag_vec(2,line ,dummyvec)
+      end if
+
+      return
+
+ 162  format(1x,'    Sum  ',2(f10.6,2X))
+ 172  format(1x,'    Sum  ',2(f20.13,2X))
+
+      end
+
+!! ********************************************************************* !!
+!! subroutine: population_print_overlap                                  !!
+!! purpose: prints spin populations (plus per-fragment breakdown) and    !!
+!! overlap populations from qsat/op, already filled by                   !!
+!! population_density -- op itself is built here via opop/mull_opop.     !!
+!! arguments:                                                            !!
+!! wp,omp,omp2,rho (in) -- integration grid weights/density, passed      !!
+!! straight to opop                                                      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine population_print_overlap(wp,omp,omp2,rho)
+      use basis_set, only: natoms
+      use integration_grid
+      use input_options_mod, only: idofr,imulli,iopop,icorr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common /printout/iaccur
+      dimension wp(nrad*nang*natoms),rho(nrad*nang*natoms)
+      dimension omp(nrad*nang*natoms),omp2(nrad*nang*natoms,natoms)
+      character*80 line
+
+c SPIN POPULATIONS
+      if(kop.ne.0.OR.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)) then
+       tc1=0.d0
+       tc2=0.d0
+       do i=1,nat
+        tc1=tc1+qsat(i,1)
+        tc2=tc2+qsat(i,2)
+       enddo
+       print *,'  '
+       print *,'     SPIN POPULATIONS'
+       print *,'  '
+       print *,'  Atom   apost3D      Mulliken'
+       print *,' -----------------------------'
+       call vprint(qsat,nat,maxat,2)
+       print *,' -----------------------------'
+       if(iaccur.eq.0) then
+        print 162, tc1, tc2
+       else
+        print 172, tc1, tc2
+       end if
+       print *,'  '
+      if (idofr.eq.1) then
+       line ='   FRAGMENT ANALYSIS : Spin Populations'
+       call group_by_frag_vec(2,line ,qsat)
+      end if
+      end if
+
+c OVERLAP POPULATIONS
+      if(iopop.eq.0) then
+       do i=1,nat
+        op(i,i)=qat(i,1)
+       end do
+      else if(imulli.ne.1) then
+        call opop(wp,omp,omp2,rho)
+      else
+        call mull_opop()
+      end if
+
+      if(iopop.eq.1) then
+       print *,' '
+       print *,'          APOST3D  OVERLAP POPULATION MATRIX'
+       print *,' '
+       call mprint(op,nat,maxat)
+       print *,'  '
+      if (idofr.eq.1) then
+       line ='   FRAGMENT ANALYSIS : Overlap Populations'
+       call group_by_frag_mat(0,line,op)
+      end if
+      end if
+
+      return
+
+ 162  format(1x,'    Sum  ',2(f10.6,2X))
+ 172  format(1x,'    Sum  ',2(f20.13,2X))
+
+      end
+
+!! ********************************************************************* !!
+!! subroutine: bond_order_analysis                                       !!
+!! purpose: thin wrapper around fborder -- kept separate from            !!
+!! population_density/population_print on purpose, so a future second    !!
+!! bond-order scheme gets its own equally-thin subroutine instead of     !!
+!! being wedged into population math.                                    !!
+!! arguments:                                                            !!
+!! sat (in) -- per-atom AO overlap matrix, passed straight to fborder    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine bond_order_analysis(sat)
+      use basis_set, only: natoms,nbasis
+      use input_options_mod, only: idofr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      dimension sat(nbasis,nbasis,natoms)
+      character*80 line
+
+      call fborder(sat)
+      if (idofr.eq.1) then
+       line ='   FRAGMENT ANALYSIS : Fuzzy Bond Order'
+       call group_by_frag_mat(1,line ,bo)
+      end if
+
       return
       end
 

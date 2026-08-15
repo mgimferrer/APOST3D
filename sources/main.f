@@ -147,8 +147,6 @@ c printing and internal options
       common /iops/iopt(200)
 c for enpart
       dimension eto(maxat,maxat)
-c auxiliary arrays
-      dimension dummyvec(maxat,2)
       character*60 name,name2,namepat,name3,name0
       character*80 line
 c for testing
@@ -641,189 +639,24 @@ CCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCC
 C DO POPULATION ANALYSIS
 CCCCCCCCCCCCCCC
-      print *,' '
-      print *,' ---------------------------'
-      print *,'  DOING POPULATION ANALYSIS '
-      print *,'   Partial atomic charges'
-      print *,'   Atomic spin densities '
-      print *,'   Bond orders and Valences '
-      print *,' ---------------------------'
-      print *,' '
+      call population_density(sat)
 
-c Spin density 
-      if(kop.ne.0.or.nalf.ne.nb) then
-       tc1=0.d0
-       tc2=0.d0
-       do kat=1,nat
-        x=0.d0
-        do mu=1,igr
-         do nu=1,igr
-          x=x+ps(mu,nu)*sat(mu,nu,kat)
-         enddo
-        enddo
-        qsat(kat,1)=x
-        qsat(kat,2)=0.d0
-       enddo
-       do mu=1,igr
-        kat=ihold(mu)
-        x=0.d0
-        do itau=1,igr
-         x=x+ps(mu,itau)*s(itau,mu)
-        enddo
-        qsat(kat,2)=qsat(kat,2)+x
-       enddo
-      end if
-
-c Total density 
-      tc1=0.d0
-      tc2=0.d0
-      do kat=1,nat
-       x=0.d0
-       do mu=1,igr
-        do nu=1,igr
-         x=x+p(mu,nu)*sat(mu,nu,kat)
-        enddo
-       enddo
-       qat(kat,1)=x
-       qat(kat,2)=0.d0
-      enddo
-      do mu=1,igr
-       kat=ihold(mu)
-       x=0.d0
-       do itau=1,igr
-        x=x+p(mu,itau)*s(itau,mu)
-       enddo
-       qat(kat,2)=qat(kat,2)+x
-      enddo
-
-
-CCCCCCCCCCCCCCC
-C Write INT FILES
-CCCCCCCCCCCCCCC
 !       write(*,*) 'idoint',idoint
       if(idoint.eq.1)  call print_int(ndim,nat,sat,namepat)
 
-CCCCCCCCCCCCCCC
-C ELECTRON POPULATIONS
-CCCCCCCCCCCCCCC
-      tc1=0.d0
-      tc2=0.d0
-      do i=1,nat
-       tc1=tc1+qat(i,1)
-       tc2=tc2+qat(i,2)
-      enddo
-      print *,'  '
-      print *,'    ELECTRON POPULATIONS'
-      print *,'  '
-      print *,'  Atom   apost3d      Mulliken'
-      print *,' -----------------------------'
-      call vprint(qat,nat,maxat,2)
-      print *,' -----------------------------'
-      if(iaccur.eq.0) then
-       print 162, tc1, tc2
-      else
-       print 172, tc1, tc2
+      call population_print_charges()
+
+      if(ielcount.eq.1) then
+       iatps=nang*nrad
+       CALL NCTAIM(iatps,wp,omp,omp2,nat,sat,igr,ibaspoint,chp)
       end if
 
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Electron populations'
-       call group_by_frag_vec(2,line ,qat)
-      end if
-
-CCCCCCCCCCCCCCC
-C PARTIAL CHARGES     
-CCCCCCCCCCCCCCC
-      tc1=0.d0
-      tc2=0.d0
-      do i=1,nat
-       tc1=tc1-qat(i,1)+zn(i)
-       tc2=tc2-qat(i,2)+zn(i)
-       dummyvec(i,1)=zn(i)-qat(i,1)
-       dummyvec(i,2)=zn(i)-qat(i,2)
-      enddo
-      print *,'  '
-      print *,'    TOTAL ATOMIC CHARGES    '
-      print *,'  '
-      print *,'  Atom   apost3d      Mulliken'
-      print *,' -----------------------------'
-      call vprint(dummyvec,nat,maxat,2)
-      print *,' -----------------------------'
-      if(iaccur.eq.0) then
-       print 162, tc1, tc2
-      else
-       print 172, tc1, tc2
-      end if
-      print *,'  '
-      
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Atomic Charges'
-       call group_by_frag_vec(2,line ,dummyvec)
-      end if
-
-      if(ielcount.eq.1) CALL NCTAIM(iatps,wp,omp,omp2,nat,sat,igr,ibaspoint,chp)
-
-CCCCCCCCCCCCCCC
-C SPIN POPULATIONS
-CCCCCCCCCCCCCCC
-      if(kop.ne.0.OR.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)) then
-       tc1=0.d0
-       tc2=0.d0
-       do i=1,nat
-        tc1=tc1+qsat(i,1)
-        tc2=tc2+qsat(i,2)
-       enddo
-       print *,'  '
-       print *,'     SPIN POPULATIONS'
-       print *,'  '
-       print *,'  Atom   apost3D      Mulliken'
-       print *,' -----------------------------'
-       call vprint(qsat,nat,maxat,2)
-       print *,' -----------------------------'
-       if(iaccur.eq.0) then
-        print 162, tc1, tc2
-       else
-        print 172, tc1, tc2
-       end if
-       print *,'  '
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Spin Populations'
-       call group_by_frag_vec(2,line ,qsat)
-      end if
-      end if
-
-CCCCCCCCCCCCCCC
-C OVERLAP POPULATIONS
-CCCCCCCCCCCCCCC
-      if(iopop.eq.0) then
-       do i=1,nat
-        op(i,i)=qat(i,1)
-       end do
-      else if(imulli.ne.1) then
-        call opop(wp,omp,omp2,rho)
-      else
-        call mull_opop()
-      end if 
-
-      if(iopop.eq.1) then
-       print *,' '
-       print *,'          APOST3D  OVERLAP POPULATION MATRIX'
-       print *,' '
-       call mprint(op,nat,maxat)
-       print *,'  '
-      if (idofr.eq.1) then 
-       line ='   FRAGMENT ANALYSIS : Overlap Populations'
-       call group_by_frag_mat(0,line,op)
-      end if
-      end if
+      call population_print_overlap(wp,omp,omp2,rho)
 
 CCCCCCCCCCCCCCC
 c Bond orders, valences, number of eff. unpaired electrons
 CCCCCCCCCCCCCCC
-       call fborder(sat)
-       if (idofr.eq.1) then
-        line ='   FRAGMENT ANALYSIS : Fuzzy Bond Order'
-        call group_by_frag_mat(1,line ,bo)
-       end if
+       call bond_order_analysis(sat)
 c
       write(*,*)
       call cpu_time(time2)
@@ -1373,8 +1206,5 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       print *,' '
       print *,'...Normal Termination of APOST-3D... '
 
- 162  format(1x,'    Sum  ',2(f10.6,2X))  
- 172  format(1x,'    Sum  ',2(f20.13,2X))  
-        
-      end 
+      end
 
