@@ -823,3 +823,70 @@ C
       return
       end
 
+!! ********************************************************************* !!
+!! subroutine: pca_analysis                                              !!
+!! purpose: "fuzzy atoms" PCA -- diagonalizes a covariance-like matrix   !!
+!! built from the overlap population (op) and delocalization index (di)  !!
+!! matrices, printing eigenvectors/eigenvalues and their projection      !!
+!! against qat. Needs di already populated (fborder, called earlier via  !!
+!! bond_order_analysis).                                                 !!
+!! FIXED 2026-08-15 (M. Gimferrer): scr, the eigenvector-output argument !!
+!! to diagonalize, was allocated as scr(nat) -- a vector -- but          !!
+!! diagonalize needs a full (M,M) matrix there, same as every other call !!
+!! site in this codebase. Wrote past scr's allocation whenever nat>1     !!
+!! (heap overflow, never caught -- PCA has zero test coverage). Now      !!
+!! allocated scr(nat,nat). Confirmed output-preserving: diagonalize's    !!
+!! write order fills scr's first nat elements (column 1) before any      !!
+!! out-of-bounds write happens, and every print below only ever read     !!
+!! scr(1:nat) -- i.e. column 1 -- so the values printed are identical    !!
+!! before and after, only the undefined-behavior overflow is gone.       !!
+!! STILL OPEN, not touched -- needs M. Gimferrer + P. Salvador to        !!
+!! confirm intent first: the two prints right after diagonalize look     !!
+!! swapped relative to its actual contract (pca/A0 comes back with       !!
+!! eigenvalues on its diagonal, scr/X holds the eigenvectors) -- but the !!
+!! code labels pca "PCA EIGENVECTORS" and prints scr as if it held       !!
+!! eigenvalues. See CLAUDE.md Known Issues.                              !!
+!! arguments: none (all via op/di/qat/COMMON)                            !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine pca_analysis()
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      allocatable pca(:,:),scr(:,:)
+
+      allocate(pca(nat,nat))
+      allocate(scr(nat,nat))
+      do i=1,nat
+        do j=1,nat
+          pca(i,j)=op(i,j)-0.50d0*di(i,j)
+        end do
+      end do
+
+      call print_box('"FUZZY ATOMS" COVARIANCE MATRIX')
+      call mprint(pca,nat,nat)
+      write(*,*)
+
+      call diagonalize(nat,nat,pca,scr,0)
+
+      call print_box('"FUZZY ATOMS" PCA EIGENVECTORS')
+      call mprint(pca,nat,nat)
+      write(*,*)
+      write(*,'(8f10.4)') (scr(i,1),i=1,nat)
+      write(*,*)
+
+      do i=1,nat
+        xx=ZERO
+        do k=1,nat
+          xx=xx+pca(k,i)*qat(k,1)
+        end do
+        write(*,'(2x,a,i3,a,2f14.6)') 'PC: ',i,' sum: ',xx,xx*scr(i,1)
+      end do
+
+      deallocate(pca,scr)
+
+      return
+      end
+

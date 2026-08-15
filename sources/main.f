@@ -155,7 +155,6 @@ C
       allocatable wp(:),omp(:),omp2(:,:),chp(:,:),pcoord(:,:),rho(:)
       allocatable xkdens(:)
       allocatable ibaspoint(:)
-      allocatable pca(:,:),scr(:)
       allocatable sss(:,:),sssi(:,:)
 c
       allocatable sat(:,:,:)
@@ -717,36 +716,7 @@ c      if(isha.ne.0) call numint_sha(ndim,itotps,nat,wp,chp,omp,omp2,ibaspoint)
 CCCCCCCCCCCCCCC
 C PCA ANALYSIS...after DIs MAY HAVE BEEN CALCULATED
 CCCCCCCCCCCCCCC
-      if(ipca.eq.1) then
-       allocate (pca(nat,natoms))
-       allocate (scr(nat))
-       do i=1,nat
-        do j=1,nat
-         pca(i,j)=op(i,j)-0.50d0*di(i,j)
-        end do
-       end do
-       print *,' '
-       print *,'                      "FUZZY ATOMS" COVARIANCE MATRIX'
-       print *,' '
-       call mprint(pca,nat,natoms)
-       print *,'  '
-       call diagonalize(nat,natoms,pca,scr,0)
-       print *,' '
-       print *,'                      "FUZZY ATOMS" PCA EIGENVECTORS '
-       print *,' '
-       call mprint(pca,nat,natoms)
-       print *,' '
-       write(*,'(8f10.4)') (scr(i),i=1,nat)
-       print *,' '
-       do i=1,nat
-         xx=ZERO
-         do k=1,nat
-           xx=xx+pca(k,i)*qat(k,1)
-         end do
-         write(*,*) 'PC: ',i,' sum: ',xx,xx*scr(i)
-       end do
-
-      end if
+      if(ipca.eq.1) call pca_analysis()
 
 CCCCCCCCCCCCCCC
 C DAFH PART
@@ -1157,8 +1127,8 @@ CCCCCCCCCC
         call print_box('Doing oxidation states from localized orbitals (OSLO)')
 
 !! single timer for the whole OSLO block -- previously zero visibility. !!
-      call cpu_time(time)
-      call get_wall_time(wtime)
+        call cpu_time(time)
+        call get_wall_time(wtime)
 
 !! COMPUTING sat FOR HILBERT SPACE CASES !!
 
