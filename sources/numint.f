@@ -58,26 +58,26 @@ c IOPS
 c Building  pcoords
       ifut=1
       do icenter=1,nat
-       do k=1,nrad 
-        do i=1,nang 
-         thx=th(i)
-         fix=ph(i)
-         rr=xr(k)
-         xabs0=rr*dsin(thx)*dcos(fix)
-         yabs0=rr*dsin(thx)*dsin(fix)
-         zabs0=rr*dcos(thx)
-         xabs=dcos(phb)*xabs0+dsin(phb)*yabs0
-         yabs=-dcos(pha)*dsin(phb)*xabs0+dcos(pha)*dcos(phb)*yabs0+dsin(pha)*zabs0
-         zabs=dsin(pha)*dsin(phb)*xabs0-dsin(pha)*dcos(phb)*yabs0+dcos(pha)*zabs0
-         xx0=xabs+coord(1,icenter)
-         yy0=yabs+coord(2,icenter)
-         zz0=zabs+coord(3,icenter)
-         pcoord(ifut,1)=xx0
-         pcoord(ifut,2)=yy0
-         pcoord(ifut,3)=zz0
-         ifut=ifut+1
+        do k=1,nrad 
+          do i=1,nang 
+            thx=th(i)
+            fix=ph(i)
+            rr=xr(k)
+            xabs0=rr*dsin(thx)*dcos(fix)
+            yabs0=rr*dsin(thx)*dsin(fix)
+            zabs0=rr*dcos(thx)
+            xabs=dcos(phb)*xabs0+dsin(phb)*yabs0
+            yabs=-dcos(pha)*dsin(phb)*xabs0+dcos(pha)*dcos(phb)*yabs0+dsin(pha)*zabs0
+            zabs=dsin(pha)*dsin(phb)*xabs0-dsin(pha)*dcos(phb)*yabs0+dcos(pha)*zabs0
+            xx0=xabs+coord(1,icenter)
+            yy0=yabs+coord(2,icenter)
+            zz0=zabs+coord(3,icenter)
+            pcoord(ifut,1)=xx0
+            pcoord(ifut,2)=yy0
+            pcoord(ifut,3)=zz0
+            ifut=ifut+1
+          enddo
         enddo
-       enddo
       enddo
       call rpoints(wp)
       call fpoints(chp,pcoord)
@@ -93,10 +93,10 @@ c Building rho
       do ifut=1,itotps
         x=0.0d0
         do mu=1,igr
-         do nu=mu+1,igr
-          x=x+p(mu,nu)*chp(ifut,mu)*chp(ifut,nu)*2.0d0
-         end do
-         x=x+p(mu,mu)*chp(ifut,mu)*chp(ifut,mu)
+          do nu=mu+1,igr
+            x=x+p(mu,nu)*chp(ifut,mu)*chp(ifut,nu)*2.0d0
+          end do
+          x=x+p(mu,mu)*chp(ifut,mu)*chp(ifut,mu)
         end do
         rho(ifut)=x
       end do
@@ -112,26 +112,26 @@ c Building aim weights for all gridpoints
 !! read-only data (pcoord); wat()/wathirsh() are themselves thread-safe !!
 !! (no shared mutable state -- see wat.f, chi is now a passed argument). !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,k,ifut,xx0,yy0,zz0,jcenter)
-       do icenter=1,nat
+      do icenter=1,nat
         do k=1,iatps
           ifut=(icenter-1)*iatps+k
           xx0=pcoord(ifut,1)
           yy0=pcoord(ifut,2)
           zz0=pcoord(ifut,3)
           do jcenter=1,nat
-           if(ihirsh.ne.0) then
-            omp2(ifut,jcenter)=wathirsh(jcenter,xx0,yy0,zz0)
-           else if (iqtaim.ne.1)then
-            omp2(ifut,jcenter)=wat(jcenter,xx0,yy0,zz0)
-           end if
+            if(ihirsh.ne.0) then
+              omp2(ifut,jcenter)=wathirsh(jcenter,xx0,yy0,zz0)
+            else if (iqtaim.ne.1)then
+              omp2(ifut,jcenter)=wat(jcenter,xx0,yy0,zz0)
+            end if
           end do
           omp(ifut)=wat(icenter,xx0,yy0,zz0)
         enddo
-       enddo
+      enddo
 !$OMP END PARALLEL DO
-       if(ihirsh.eq.2) then 
-         call wathirshit3(rho,iatps,wp,omp2,nat0,iiter)
-       end if
+      if(ihirsh.eq.2) then 
+        call wathirshit3(rho,iatps,wp,omp2,nat0,iiter)
+      end if
 
 c      vol=0.0
 c      do i=1,nrad
@@ -510,15 +510,15 @@ c IOPS
       if(iqtaim.eq.1) iallpo=1
 
 c Computing  atomic orbital overlap
-         do mu=1,ndim
-          do nu=1,ndim
-           do icenter=1,nat
+      do mu=1,ndim
+        do nu=1,ndim
+          do icenter=1,nat
             sat(nu,mu,icenter)=0.0d0               
-           end do
           end do
-         end do
+        end do
+      end do
 
-       if(iallpo.eq.0) then
+      if(iallpo.eq.0) then
 !! parallel over (icenter,mu): each (icenter,mu,nu) triple accumulates !!
 !! its own reduction into the local x and writes only its own          !!
 !! sat(mu,nu,icenter)/sat(nu,mu,icenter) -- no two iterations touch the !!
@@ -527,21 +527,21 @@ c Computing  atomic orbital overlap
 !! stays a serial loop nested inside each parallel (icenter,mu) pair.   !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,mu,nu,ifut,x)
         do icenter=1,nat
-         do mu=1,ndim
-          do nu=1,mu
-           x=ZERO
-           do ifut=iatps*(icenter-1)+1,iatps*icenter
-            x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*omp2(ifut,icenter)
-           end do
-           sat(mu,nu,icenter)=x
-           sat(nu,mu,icenter)=x
+          do mu=1,ndim
+            do nu=1,mu
+              x=ZERO
+              do ifut=iatps*(icenter-1)+1,iatps*icenter
+                x=x+wp(ifut)*chp(ifut,mu)*chp(ifut,nu)*omp2(ifut,icenter)
+              end do
+              sat(mu,nu,icenter)=x
+              sat(nu,mu,icenter)=x
+            enddo
           enddo
-         enddo
         enddo
 !$OMP END PARALLEL DO
-       end if
+      end if
 
-       if(iallpo.eq.1.and.iqtaim.eq.0) then
+      if(iallpo.eq.1.and.iqtaim.eq.0) then
 !! same reasoning as the iallpo=0 branch above: parallel over          !!
 !! (icenter,mu), each (icenter,mu,nu) triple only ever writes its own  !!
 !! sat(mu,nu,icenter). this branch is the expensive one (an extra      !!
@@ -549,59 +549,59 @@ c Computing  atomic orbital overlap
 !! biggest win of the two. !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,mu,nu,jcenter,jfut,x)
         do icenter=1,nat
-         do mu=1,ndim
-          do nu=1, mu
-           x=0.d0
-           do jcenter=1,nat
-            do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-             x=x+wp(jfut)*chp(jfut,mu)*chp(jfut,nu)*omp(jfut)*omp2(jfut,icenter)
+          do mu=1,ndim
+            do nu=1, mu
+              x=0.d0
+              do jcenter=1,nat
+                do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+                  x=x+wp(jfut)*chp(jfut,mu)*chp(jfut,nu)*omp(jfut)*omp2(jfut,icenter)
+                end do
+              end do
+              sat(mu,nu,icenter)=sat(mu,nu,icenter)+x
             end do
-           end do
-           sat(mu,nu,icenter)=sat(mu,nu,icenter)+x
           end do
-         end do
         end do
 !$OMP END PARALLEL DO
 
-       else if (iqtaim.eq.1) then
+      else if (iqtaim.eq.1) then
 
         do jcenter=1,nat
-         do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-          icenter=ibaspoint(jfut)
-          if(icenter.ne.0)then 
-           x3=wp(jfut)*omp(jfut)
-           do mu=1,ndim
-            do nu=1, mu 
-             sat(mu,nu,icenter)=sat(mu,nu,icenter)+chp(jfut,mu)*chp(jfut,nu)*x3
-            end do
-           end do
-          end if
-         end do
+          do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+            icenter=ibaspoint(jfut)
+            if(icenter.ne.0)then 
+              x3=wp(jfut)*omp(jfut)
+              do mu=1,ndim
+                do nu=1, mu 
+                  sat(mu,nu,icenter)=sat(mu,nu,icenter)+chp(jfut,mu)*chp(jfut,nu)*x3
+                end do
+              end do
+            end if
+          end do
         end do
       end if 
 
-       do mu=1,ndim
+      do mu=1,ndim
         do nu=1,mu 
           do icenter=1,nat
-           sat(nu,mu,icenter)=sat(mu,nu,icenter)
+            sat(nu,mu,icenter)=sat(mu,nu,icenter)
           end do
-         end do
         end do
+      end do
 
 c check atomic overlaps
-       write(*,*) 'Checking sum of AOs overlap matrices'
-       write(*,*) 'Deviations may not affect overall accuracy of MOs '
-       do i=1,igr
+      write(*,*) 'Checking sum of AOs overlap matrices'
+      write(*,*) 'Deviations may not affect overall accuracy of MOs '
+      do i=1,igr
         do j=i,igr
-         x=0.0d0
-         do iatom=1,nat
-          x=x+sat(i,j,iatom)
-         end do
-         if(abs(s(i,j)-x).gt.1.0d-1) then
-          write(*,*)'Large deviation for element ',i,j,x,s(i,j)
-         end if
+          x=0.0d0
+          do iatom=1,nat
+            x=x+sat(i,j,iatom)
+          end do
+          if(abs(s(i,j)-x).gt.1.0d-1) then
+            write(*,*)'Large deviation for element ',i,j,x,s(i,j)
+          end if
         end do
-       end do
+      end do
          
       return 
       end
