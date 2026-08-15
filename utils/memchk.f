@@ -5,7 +5,7 @@
       character*80 linea ,line        
       common /filename/name0
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       dimension ilog(40)
 
 CCCCCCCCCCCCCC

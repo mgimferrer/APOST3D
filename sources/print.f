@@ -381,7 +381,7 @@ CCCCC
       include 'parameter.h'
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common/cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /coord/ coord0(3,maxat),zn(maxat),iznuc(maxat)
@@ -863,7 +863,7 @@ c      xmaxg=1.0d-2
       include 'parameter.h'
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common/cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /coord/ coord0(3,maxat),zn(maxat),iznuc(maxat)
@@ -1238,7 +1238,7 @@ CCCCC
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       character*30 name
       common /filename/name
 
@@ -1570,7 +1570,7 @@ CCCCC
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       character*30 name
       common /filename/name
 
@@ -1805,7 +1805,7 @@ c assuming up to 99 atoms
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       character*30 name
       common /filename/name
 

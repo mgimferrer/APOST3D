@@ -8,7 +8,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /atlist/iatlist(maxat),icuat
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /filename/name0
 
       dimension :: iatpairs(2,maxat)

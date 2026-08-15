@@ -8,7 +8,7 @@
       double precision, dimension(igr,igr,nat) ::sat
       dimension ibaspoint(iatps*nat)
       double precision, dimension(iatps*nat,igr) ::chp
-      common /iops/iopt(100)
+      common /iops/iopt(200)
 
       iradmat = iopt(48)
       iunit=32
@@ -25,7 +25,7 @@
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /qat/qat(maxat,2),qsat(maxat,2)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       DOUBLE PRECISION, DIMENSION(nat) :: NCTAIM_qat
 
       iradmat = iopt(48)
@@ -302,7 +302,7 @@ c      double precision, dimension(maxat) :: pop
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
 
       dimension :: wp(itotps),pcoord(itotps,3)
@@ -660,7 +660,7 @@ c exchange
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common /achi/achi(maxat,maxat),ibcp
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
@@ -815,7 +815,7 @@ c exchange
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
 !      common /ps/ps(nmax,nmax),pa(nmax,nmax),pb(nmax,nmax)
       common /qat/qat(maxat,2),qsat(maxat,2)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       DIMENSION aux_sat(igr0,igr0,nat0)
       DIMENSION aux_qat(maxat,2)
       character*80 line

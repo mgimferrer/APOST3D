@@ -144,7 +144,7 @@ C
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common/actual/iact,jat,icenter
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /achi/achi(maxat,maxat),ibcp
       dimension wp(nrad*nang*natoms),rho(nrad*nang*natoms)
       dimension omp(nrad*nang*natoms),omp2(nrad*nang*natoms,natoms)

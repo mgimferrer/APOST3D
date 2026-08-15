@@ -92,7 +92,7 @@ c      -------------------------------------------------------------------------
 !!   2) .inp keyword parsing -- delegated to read_input() (see that !!
 !!      file), filling input_options_mod's ~70 flags                !!
 !!   3) cross-keyword validation                                    !!
-!!   4) iopt(100) population -- each local flag copied into its     !!
+!!   4) iopt(200) population -- each local flag copied into its     !!
 !!      own hardcoded iopt(N) slot, read back by every analysis     !!
 !!      routine                                                     !!
 !!   5) setup (Hilbert-space sat matrix or real-space integration   !!
@@ -144,7 +144,7 @@ c NLOP features
 c printing and internal options
       common /filename/name0
       common /printout/iaccur
-      common /iops/iopt(100)
+      common /iops/iopt(200)
 c for enpart
       dimension eto(maxat,maxat)
 c auxiliary arrays
@@ -268,85 +268,228 @@ c possible call system here...
 CCCCCCCCCCCCC
 c OPTIONS LIST
 CCCCCCCCCCCCC
+!! full 1-200 listing so unused slots are visible at a glance --   !!
+!! iopt(200), bumped from 100 2026-08-15 (only 1 free slot left at !!
+!! the old size). c-commented lines are genuinely unused slots.    !!
       iopt(1) = idoint
-c      iopt(2) = 
+c      iopt(2) =
       iopt(3) = iwfn
       iopt(4) = idono
       iopt(5) = imulli
       iopt(6) = ihirsh
       iopt(7) = iallpo
       iopt(8) = iopop
-c      iopt(9) = ndens0
-c      iopt(10) = 
-c     iopt(11) = 
+c      iopt(9) =   !! ndens0, set above in read_input() !!
+c      iopt(10) =
+
+c      iopt(11) =
       iopt(12) = ieffao
-      iopt(13) = icube 
-      iopt(14) = ibcp  
-      iopt(15) = ispin 
-      iopt(16) = iqtaim 
+      iopt(13) = icube
+      iopt(14) = ibcp
+      iopt(15) = ispin
+      iopt(16) = iqtaim
       iopt(17) = ienpart
       iopt(18) = ihf
-!! !!
+c      iopt(19) =
       iopt(20) = iexact
+
       iopt(21) = ihomo
       iopt(22) = idek
       iopt(23) = iionic
       iopt(24) = ieffthr
-      iopt(25) = istiff 
-      iopt(26) = icorr  
-      iopt(27) = isha   
-      iopt(28) = ipca 
-c      iopt(29) =  ipnof
-      iopt(30) = idafh  
+      iopt(25) = istiff
+      iopt(26) = icorr
+      iopt(27) = isha
+      iopt(28) = ipca
+c      iopt(29) =
+      iopt(30) = idafh
+
       iopt(31) = inewbec
+c      iopt(32) =
+c      iopt(33) =
       iopt(34) = ilaplacian
-c ERC qtaim 
-      iopt(35) = istep 
+      iopt(35) = istep
       iopt(36) = inna
       iopt(37) = imaxdist
       iopt(38) = iscreening
       iopt(39) = ipath
-c
       iopt(40) = idofr
+
       iopt(41) = jcubthr
       iopt(42) = kcubthr
-      iopt(43) = iorca   
+      iopt(43) = iorca
       iopt(44) = ithrebod
       iopt(45) = ifinegrid
-c
       iopt(46) = ipolar
       iopt(47) = ifield
       iopt(48) = iradmat
       iopt(49) = ielcount !MMO- NCTAIM
+c      iopt(50) =
 
-      iopt(56) = ihirao !! MG: to be done !!
+c      iopt(51) =
+c      iopt(52) =
+c      iopt(53) =
+c      iopt(54) =
+c      iopt(55) =   !! itype/jtype, set below in ENPART dispatch (dynamic) !!
+      iopt(56) = ihirao !! MG: to be done -- see Known Issue #22 !!
+c      iopt(57) =
       iopt(58) = itop
       iopt(59) = iecorr
-!! LIBXC IDs !!
       iopt(60) = id_xcfunc
+
       iopt(61) = id_xfunc
       iopt(62) = id_cfunc
+c      iopt(63) =
+c      iopt(64) =
+c      iopt(65) =   !! iposthf, set above in DEPENDENCIES & TO DO !!
+c      iopt(66) =
+c      iopt(67) =
+c      iopt(68) =
+c      iopt(69) =
+c      iopt(70) =
 
+c      iopt(71) =
+c      iopt(72) =
+c      iopt(73) =
+c      iopt(74) =
+c      iopt(75) =
+c      iopt(76) =
+c      iopt(77) =
+c      iopt(78) =
+      iopt(79) = imokit !! MG: Temporarily !!
+c      iopt(80) =
+
+c      iopt(81) =
+c      iopt(82) =
+c      iopt(83) =
+c      iopt(84) =
       iopt(85) = ipairs
       iopt(86) = ietop
-      iopt(87) = ipyscf   
-      iopt(88) =  inopop
-c      iopt(89) = 
+      iopt(87) = ipyscf
+      iopt(88) = inopop
+c      iopt(89) =
       iopt(90) = ieoscent
+
       iopt(91) = ianalytical
-!! EDAIQA !!
       iopt(92) = iedaiqa
       iopt(93) = iflip
-!! IF QCHEM .fchk USED AS INPUT !!
+c      iopt(94) =
       iopt(95) = iqchem
-      iopt(79) = imokit !! MG: Temporarily !!
-!! OSLO !!
       iopt(96) = ifolitol
       iopt(97) = ibranch
       iopt(98) = ioslofchk
-!! LOBA !!
       iopt(99) = iloba
+c      iopt(100) =
 
+c      iopt(101) =
+c      iopt(102) =
+c      iopt(103) =
+c      iopt(104) =
+c      iopt(105) =
+c      iopt(106) =
+c      iopt(107) =
+c      iopt(108) =
+c      iopt(109) =
+c      iopt(110) =
+
+c      iopt(111) =
+c      iopt(112) =
+c      iopt(113) =
+c      iopt(114) =
+c      iopt(115) =
+c      iopt(116) =
+c      iopt(117) =
+c      iopt(118) =
+c      iopt(119) =
+c      iopt(120) =
+
+c      iopt(121) =
+c      iopt(122) =
+c      iopt(123) =
+c      iopt(124) =
+c      iopt(125) =
+c      iopt(126) =
+c      iopt(127) =
+c      iopt(128) =
+c      iopt(129) =
+c      iopt(130) =
+
+c      iopt(131) =
+c      iopt(132) =
+c      iopt(133) =
+c      iopt(134) =
+c      iopt(135) =
+c      iopt(136) =
+c      iopt(137) =
+c      iopt(138) =
+c      iopt(139) =
+c      iopt(140) =
+
+c      iopt(141) =
+c      iopt(142) =
+c      iopt(143) =
+c      iopt(144) =
+c      iopt(145) =
+c      iopt(146) =
+c      iopt(147) =
+c      iopt(148) =
+c      iopt(149) =
+c      iopt(150) =
+
+c      iopt(151) =
+c      iopt(152) =
+c      iopt(153) =
+c      iopt(154) =
+c      iopt(155) =
+c      iopt(156) =
+c      iopt(157) =
+c      iopt(158) =
+c      iopt(159) =
+c      iopt(160) =
+
+c      iopt(161) =
+c      iopt(162) =
+c      iopt(163) =
+c      iopt(164) =
+c      iopt(165) =
+c      iopt(166) =
+c      iopt(167) =
+c      iopt(168) =
+c      iopt(169) =
+c      iopt(170) =
+
+c      iopt(171) =
+c      iopt(172) =
+c      iopt(173) =
+c      iopt(174) =
+c      iopt(175) =
+c      iopt(176) =
+c      iopt(177) =
+c      iopt(178) =
+c      iopt(179) =
+c      iopt(180) =
+
+c      iopt(181) =
+c      iopt(182) =
+c      iopt(183) =
+c      iopt(184) =
+c      iopt(185) =
+c      iopt(186) =
+c      iopt(187) =
+c      iopt(188) =
+c      iopt(189) =
+c      iopt(190) =
+
+c      iopt(191) =
+c      iopt(192) =
+c      iopt(193) =
+c      iopt(194) =
+c      iopt(195) =
+c      iopt(196) =
+c      iopt(197) =
+c      iopt(198) =
+c      iopt(199) =
+c      iopt(200) =
 CCCCCCCCCCCCC
 c END OPTIONS LIST
 CCCCCCCCCCCCC

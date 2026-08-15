@@ -23,7 +23,7 @@ c            cross-check
       use basis_set
       implicit real*8(a-h,o-z)
       include 'parameter.h'
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       dimension sat(nbasis,nbasis,natoms)
       allocatable  ss(:,:),s12(:,:),sm12(:,:),sp12(:,:),x(:,:) 
 
@@ -170,7 +170,7 @@ c            cross-check
       use nao_mod, only: unao,ssnao !! replaces common /nao/ -- see modules.f90 !!
       implicit real*8(a-h,o-z)
       include 'parameter.h'
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /filename/name0
       character*60 name0,name3
       dimension sat(nbasis,nbasis,natoms)
@@ -218,7 +218,7 @@ c cosntruct sat
       use ao_matrices, only:p 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       dimension sat(nbasis,nbasis,natoms)
       allocatable  ss(:,:),s12(:,:),sm12(:,:),sp12(:,:),x(:,:),wlow(:)
 

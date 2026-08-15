@@ -51,7 +51,7 @@
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
@@ -464,7 +464,7 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
       dimension iao_frag(nmax)
@@ -655,7 +655,7 @@ c
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
       dimension iao_frag(nmax)
@@ -787,7 +787,7 @@ c
       integer,intent(in) :: itotps,ndim
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord0(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
@@ -996,7 +996,7 @@ c
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /atlist/iatlist(maxat),icuat
 !      dimension p(nmax,nmax)
@@ -1186,7 +1186,7 @@ c end loop over atoms
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
 !      dimension p(nmax,nmax)
@@ -1393,7 +1393,7 @@ c end loop over atoms
       integer,intent(in) :: itotps,ndim
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/qat(maxat,2),qsat(maxat,2)

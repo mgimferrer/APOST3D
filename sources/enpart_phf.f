@@ -13,7 +13,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /coord/coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /energ0/ekin0,eelnuc0,evee0,etot0
       common /efield/field(4),edipole
@@ -312,7 +312,7 @@
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/twoel/twoeltoler
@@ -842,7 +842,7 @@
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
+      common /iops/iopt(200)
 
       dimension :: wp(itotps),wppha(itotps),pcoord(itotps,3),pcoordpha(itotps,3)
       dimension :: omp2(itotps,nat),omp2pha(itotps,nat),cumulab(iorb2,iorb2)

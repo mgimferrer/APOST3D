@@ -45,7 +45,7 @@
       include 'parameter.h'
       integer npt
       real*8 scr_a(npt),scr(npt),scr2(npt)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       allocatable :: scr2c(:)
 
       id_xcfunc = iopt(60)
@@ -153,7 +153,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/exchg/exch(maxat,maxat),xmix
       dimension eto(maxat,maxat)
@@ -723,7 +723,7 @@
       TYPE(xc_f90_pointer_t) :: xc_info
       include 'parameter.h'
       integer npt
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       dimension scr_ab(2,npt),scr(3,npt),scr2(npt)
       allocatable :: scr2c(:)
 
@@ -827,7 +827,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/exchg/exch(maxat,maxat),xmix

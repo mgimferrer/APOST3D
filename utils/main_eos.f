@@ -83,7 +83,7 @@ c TFVC features
 c printing and internal options
       common /filename/name0
       common /printout/iaccur
-      common /iops/iopt(100)
+      common /iops/iopt(200)
 c auxiliary arrays
       dimension dummyvec(maxat,2),navect(maxat)
       character*60 name,name2,namepat,name3,name0

@@ -7,7 +7,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /localspin/xlsa(maxat,maxat),ua(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       dimension sat(igr,igr,nat)

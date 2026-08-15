@@ -23,7 +23,7 @@
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/qat(maxat,2),qsat(maxat,2)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
 
       character*80 line
       

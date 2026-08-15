@@ -22,7 +22,7 @@
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /filename/name0
 
@@ -627,7 +627,7 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
       dimension sat(igr,igr,nat)
@@ -683,7 +683,7 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /filename/name0
 
       character*80 line
@@ -829,7 +829,7 @@
   
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /filename/name0
   
@@ -1907,7 +1907,7 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /filename/name0
 
       character*80 line

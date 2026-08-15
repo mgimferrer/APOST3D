@@ -8,7 +8,7 @@
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord0(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension clin(nmax**2)
@@ -274,7 +274,7 @@ c      call printmat(nbasis,vv)
       include 'parameter.h'
       character*80 line
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension  dm1(nspinorb,nspinorb)
 
@@ -419,7 +419,7 @@ c Building Pa and Pb matrix from dm1
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension dm2(norb,norb,norb,norb)
       dimension dm1(nspinorb,nspinorb)
@@ -524,7 +524,7 @@ c Building Pa and Pb matrix from dm1
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension dm2(norb,norb,norb,norb)
       dimension dm1(nspinorb,nspinorb)
@@ -603,7 +603,7 @@ c reading from formatted (unreadable) dm2 file
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /achi/achi(maxat,maxat),ibcp
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,eone0
