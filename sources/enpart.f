@@ -423,17 +423,17 @@
       if(ianalytical.eq.0) then !! skip this whole rotated-grid pass for the analytical two-electron path !!
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
-      phb=phb12
-      pha=ZERO
-      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
-      ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
-      ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
-      ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
-      ALLOCATE(chp2phas(nocc,itotps))
+        phb=phb12
+        pha=ZERO
+        write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
+        ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
+        ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
+        ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
+        ALLOCATE(chp2phas(nocc,itotps))
 
-      call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
+        call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-      call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
+        call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
       end if !! non-analytical skip ends here !!
 
 !! Coulomb energy term. !!
@@ -457,80 +457,80 @@
       wxtime=wxtime2
 
       if(ianalytical.eq.0) then !! skip HF-type exchange for the analytical path !!
-      if(idoex.eq.1) then
+        if(idoex.eq.1) then
 
 !! multipolar approximation, used below for atom pairs skipped by THREBOD !!
-        norb2=nocc*(nocc+1)/2
-        ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
-        do ii=1,itotps
-          irun=0
-          do jj=1,nocc
-            do kk=jj,nocc
-              irun=irun+1
-              fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
-              if(ii.eq.1) then
-                xocc(irun,irun)=-TWO
-                if(jj.ne.kk) xocc(irun,irun)=-FOUR
-              end if
+          norb2=nocc*(nocc+1)/2
+          ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
+          do ii=1,itotps
+            irun=0
+            do jj=1,nocc
+              do kk=jj,nocc
+                irun=irun+1
+                fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
+                if(ii.eq.1) then
+                  xocc(irun,irun)=-TWO
+                  if(jj.ne.kk) xocc(irun,irun)=-FOUR
+                end if
+              end do
             end do
           end do
-        end do
-        call multipolar(nocc,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
-        DEALLOCATE(fij,xocc)
+          call multipolar(nocc,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
+          DEALLOCATE(fij,xocc)
 
 !! loops reordered for parallelization purposes -- implementation !!
 !! performed thanks to Dr. R. Oswald.                             !!
-        call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
-        write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
-        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
+          call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
+          write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
+          write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! same-center terms first; determine the core count for thread splitting. !!
-        call getenv('OMP_NUM_THREADS',threadenv)
-        if(trim(threadenv)=='') then
-          write(*,*) " OMP_NUM_THREADS not set"
-          ithreadenv=ZERO
-        else
-          read(unit=threadenv,FMT='(I4)') ithreadenv
-        end if
+          call getenv('OMP_NUM_THREADS',threadenv)
+          if(trim(threadenv)=='') then
+            write(*,*) " OMP_NUM_THREADS not set"
+            ithreadenv=ZERO
+          else
+            read(unit=threadenv,FMT='(I4)') ithreadenv
+          end if
         !$OMP PARALLEL
-        iprocs=OMP_GET_MAX_THREADS()
-        ithreads=INT(OMP_GET_NUM_PROCS())
+          iprocs=OMP_GET_MAX_THREADS()
+          ithreads=INT(OMP_GET_NUM_PROCS())
         !$OMP END PARALLEL
-        if(ithreadenv.ne.ZERO) then
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
-     &    ithreads,"available hardware cores"
-          ithreads=ithreadenv
-        else
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
-     &    ithreads,"available hardware cores"
-        end if
+          if(ithreadenv.ne.ZERO) then
+            write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
+     &        ithreads,"available hardware cores"
+            ithreads=ithreadenv
+          else
+            write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
+     &        ithreads,"available hardware cores"
+          end if
 
 !! per-thread grid-point slicing bookkeeping. !!
-        ALLOCATE(f3k(ithreads))
-        ALLOCATE(exch_hfk(nat,ithreads))
-        ALLOCATE(istart(ithreads),iend(ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
+          ALLOCATE(f3k(ithreads))
+          ALLOCATE(exch_hfk(nat,ithreads))
+          ALLOCATE(istart(ithreads),iend(ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
 
 !! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
 !! avoids an old cap that limited parallelization to 8 cores.               !!
-        exch_hfk=ZERO
+          exch_hfk=ZERO
         !DIR$ NOPARALLEL
-        do icenter=1,nat
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
+          do icenter=1,nat
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
           !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
-          iend(ithreads)=icenter*iatps
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
 
 !! both calls below are required for the thread count to actually take effect. !!
-          call omp_set_dynamic(.false.)
-          call omp_set_num_threads(ithreads)
+            call omp_set_dynamic(.false.)
+            call omp_set_num_threads(ithreads)
 !! MG: restored real OpenMP parallelization here -- the old !DIR$
 !! PARALLEL directive is an Intel-ifort-only auto-parallelization hint that
 !! gfortran does not understand, so this loop has been running serially
@@ -551,83 +551,83 @@
 !! terms, same order, no numerical change -- purely removes redundant
 !! shared-memory traffic from the hot loop. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3loc=ZERO
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
-                x1=wppha(jfut)*omp2pha(jfut,icenter)
-                dx1=pcoordpha(jfut,1)
-                dy1=pcoordpha(jfut,2)
-                dz1=pcoordpha(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                  do i=1,nocc-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
-                    do j=i+1,nocc
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(icenter-1)+1,iatps*icenter
+                  x1=wppha(jfut)*omp2pha(jfut,icenter)
+                  dx1=pcoordpha(jfut,1)
+                  dy1=pcoordpha(jfut,2)
+                  dz1=pcoordpha(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
+                    do i=1,nocc-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      do j=i+1,nocc
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                      end do
                     end do
-                  end do
-                  f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
-                  f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
-                end if
+                    f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
+                    f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
+                  end if
+                end do
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
             end do
-          end do
 !$OMP END PARALLEL DO
-        end do
+          end do
 
 !! reduce the per-thread accumulator into the same-center exch_hf term. !!
-        do icenter=1,nat
-          do isum=1,ithreads
-            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+          do icenter=1,nat
+            do isum=1,ithreads
+              exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+            end do
           end do
-        end do
 
 !! atom-pair terms, skipping pairs below the THREBOD bond-order threshold. !!
-        iterms=0
-        ipaircounter=0
-        ALLOCATE(ijpaircount(nat*nat,2))
-        do icenter=1,nat
-          do jcenter=icenter+1,nat
-            bx0=bo(icenter,jcenter)
-            if(bx0.ge.threbod) then
-              ipaircounter=ipaircounter+1
-              ijpaircount(ipaircounter,1)=icenter
-              ijpaircount(ipaircounter,2)=jcenter
-            else
-              iterms=iterms+1
-            end if
+          iterms=0
+          ipaircounter=0
+          ALLOCATE(ijpaircount(nat*nat,2))
+          do icenter=1,nat
+            do jcenter=icenter+1,nat
+              bx0=bo(icenter,jcenter)
+              if(bx0.ge.threbod) then
+                ipaircounter=ipaircounter+1
+                ijpaircount(ipaircounter,1)=icenter
+                ijpaircount(ipaircounter,2)=jcenter
+              else
+                iterms=iterms+1
+              end if
+            end do
           end do
-        end do
-        write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
-        write(*,*) " "
+          write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
+          write(*,*) " "
 
 !! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
-        ALLOCATE(exch_hfij(ipaircounter,ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
-        exch_hfij=ZERO
+          ALLOCATE(exch_hfij(ipaircounter,ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
+          exch_hfij=ZERO
         !DIR$ NOPARALLEL
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
           !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
-          iend(ithreads)=icenter*iatps
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
 !! MG: same fix as the same-center block above -- real OMP PARALLEL
 !! DO in place of the dead !DIR$ PARALLEL Intel directive. !!
 !! MG: same false-sharing fix as the same-center block above --
@@ -635,78 +635,78 @@
 !! exch_hfij is only touched once per ifut instead of once per i/j pair. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  chp2snifut,chp2snjfut,chp2sijfut,chp2siifut,i,j,f2,f3loc)
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              chp2snifut=chp2s(nocc,ifut)
-              f3loc=ZERO
-              do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-                x1=wp(jfut)*omp2(jfut,jcenter)
-                dx1=pcoord(jfut,1)
-                dy1=pcoord(jfut,2)
-                dz1=pcoord(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
-                  chp2snjfut=chp2s(nocc,jfut)
-                  do i=1,nocc-1
-                    chp2sijfut=chp2s(i,jfut)
-                    chp2siifut=chp2s(i,ifut)
-                    do j=i+1,nocc
-                      f2=TWO*x0*chp2siifut*chp2s(j,ifut)
-                      f3loc=f3loc+f2*x1*chp2sijfut*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                chp2snifut=chp2s(nocc,ifut)
+                f3loc=ZERO
+                do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+                  x1=wp(jfut)*omp2(jfut,jcenter)
+                  dx1=pcoord(jfut,1)
+                  dy1=pcoord(jfut,2)
+                  dz1=pcoord(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
+                    chp2snjfut=chp2s(nocc,jfut)
+                    do i=1,nocc-1
+                      chp2sijfut=chp2s(i,jfut)
+                      chp2siifut=chp2s(i,ifut)
+                      do j=i+1,nocc
+                        f2=TWO*x0*chp2siifut*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2sijfut*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                      end do
+                      f2=x0*chp2siifut*chp2siifut
+                      f3loc=f3loc+f2*x1*chp2sijfut*chp2sijfut/dist
                     end do
-                    f2=x0*chp2siifut*chp2siifut
-                    f3loc=f3loc+f2*x1*chp2sijfut*chp2sijfut/dist
-                  end do
-                  f2=x0*chp2snifut*chp2snifut
-                  f3loc=f3loc+f2*x1*chp2snjfut*chp2snjfut/dist
-                end if
+                    f2=x0*chp2snifut*chp2snifut
+                    f3loc=f3loc+f2*x1*chp2snjfut*chp2snjfut/dist
+                  end if
+                end do
+                exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
               end do
-              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
             end do
-          end do
 !$OMP END PARALLEL DO
-        end do
+          end do
 
 !! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          do isum=1,ithreads
-            exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            do isum=1,ithreads
+              exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
+            end do
           end do
-        end do
 
 !! account for A-B/B-A symmetry (factor of 2) and for atom pairs whose !!
 !! term came from the multipolar approximation instead of integration. !!
-        exchen_hf=ZERO
-        do i=1,nat
-          exchen_hf=exchen_hf+exch_hf(i,i)
-          do j=i+1,nat
-            if(bo(i,j).lt.threbod) then 
-              exch_hf(i,j)=Excmp(i,j)
-            else 
-              exch_hf(i,j)=TWO*(exch_hf(i,j))
-            end if 
-            exch_hf(j,i)=exch_hf(i,j)
-            exchen_hf=exchen_hf+exch_hf(i,j)
+          exchen_hf=ZERO
+          do i=1,nat
+            exchen_hf=exchen_hf+exch_hf(i,i)
+            do j=i+1,nat
+              if(bo(i,j).lt.threbod) then 
+                exch_hf(i,j)=Excmp(i,j)
+              else 
+                exch_hf(i,j)=TWO*(exch_hf(i,j))
+              end if 
+              exch_hf(j,i)=exch_hf(i,j)
+              exchen_hf=exchen_hf+exch_hf(i,j)
+            end do
           end do
-        end do
 
-        call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
-        CALL MPRINT2(exch_hf,nat,maxat)
-        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-        write(*,*) " "
-        call cpu_time(xtime2)
-        call get_wall_time(wxtime2)
-        call print_timer('Exact-exchange energy',xtime2-xtime,wxtime2-wxtime)
-        write(*,*) " "
-        xtime=xtime2
-        wxtime=wxtime2
-      end if
+          call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
+          CALL MPRINT2(exch_hf,nat,maxat)
+          write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          write(*,*) " "
+          call cpu_time(xtime2)
+          call get_wall_time(wxtime2)
+          call print_timer('Exact-exchange energy',xtime2-xtime,wxtime2-wxtime)
+          write(*,*) " "
+          xtime=xtime2
+          wxtime=wxtime2
+        end if
       end if !! non-analytical skip ends here !!
 
 !! checking accuracy of the two-electron part, HF only !!
@@ -758,198 +758,198 @@
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
 !! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
-      phb=phb22
-      pha=ZERO
-      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
-      nat0=nat
-      call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
+        phb=phb22
+        pha=ZERO
+        write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
+        nat0=nat
+        call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-      call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
+        call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
 
 !! same-center-only recompute of the Coulomb part on the rotated grid, !!
 !! for the zero-error interpolation below. parallel over icenter: each !!
 !! iteration accumulates into its own coul0(icenter,3), independent of !!
 !! every other icenter.                                                !!
 !$OMP PARALLEL DO PRIVATE(icenter,ifut,x0,dx0,dy0,dz0,f3,jfut,x1,dx1,dy1,dz1,dist)
-      do icenter=1,nat
-        do ifut=iatps*(icenter-1)+1,iatps*icenter
-          x0=wp(ifut)*omp2(ifut,icenter)
-          dx0=pcoord(ifut,1)
-          dy0=pcoord(ifut,2)
-          dz0=pcoord(ifut,3)
+        do icenter=1,nat
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            x0=wp(ifut)*omp2(ifut,icenter)
+            dx0=pcoord(ifut,1)
+            dy0=pcoord(ifut,2)
+            dz0=pcoord(ifut,3)
 
-          f3=ZERO
-          do jfut=iatps*(icenter-1)+1,iatps*icenter
-            x1=wppha(jfut)*omp2pha(jfut,icenter)
-            dx1=pcoordpha(jfut,1)
-            dy1=pcoordpha(jfut,2)
-            dz1=pcoordpha(jfut,3)
-            dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-            if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist
+            f3=ZERO
+            do jfut=iatps*(icenter-1)+1,iatps*icenter
+              x1=wppha(jfut)*omp2pha(jfut,icenter)
+              dx1=pcoordpha(jfut,1)
+              dy1=pcoordpha(jfut,2)
+              dz1=pcoordpha(jfut,3)
+              dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+              if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist
+            end do
+            coul0(icenter,3)=coul0(icenter,3)+f3/TWO
           end do
-          coul0(icenter,3)=coul0(icenter,3)+f3/TWO
         end do
-      end do
 !$OMP END PARALLEL DO
 
-      if(idoex.eq.1) then
+        if(idoex.eq.1) then
 
 !! same-center recompute, same manual-chunking shape as above. !!
-        exch_hfk=ZERO
+          exch_hfk=ZERO
         !DIR$ NOPARALLEL
-        do icenter=1,nat
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
+          do icenter=1,nat
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
           !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
-          iend(ithreads)=icenter*iatps
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
 
 !! both calls below are required for the thread count to actually take effect. !!
-          call omp_set_dynamic(.false.)
-          call omp_set_num_threads(ithreads)
+            call omp_set_dynamic(.false.)
+            call omp_set_num_threads(ithreads)
 !! MG: same fix as above -- real OMP PARALLEL DO in place of the
 !! dead !DIR$ PARALLEL Intel directive. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3loc=ZERO
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
-                x1=wppha(jfut)*omp2pha(jfut,icenter)
-                dx1=pcoordpha(jfut,1)
-                dy1=pcoordpha(jfut,2)
-                dz1=pcoordpha(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(icenter-1)+1,iatps*icenter
+                  x1=wppha(jfut)*omp2pha(jfut,icenter)
+                  dx1=pcoordpha(jfut,1)
+                  dy1=pcoordpha(jfut,2)
+                  dz1=pcoordpha(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
                 if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
-                  do i=1,nocc-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
-                    do j=i+1,nocc
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                    do i=1,nocc-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      do j=i+1,nocc
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                      end do
                     end do
-                  end do
-                  f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
-                  f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
-                end if
+                    f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
+                    f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
+                  end if
+                end do
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
             end do
-          end do
 !$OMP END PARALLEL DO
-        end do
+          end do
 
 !! reduce the per-thread accumulator into the same-center coul0 term. !!
-        do icenter=1,nat
-          do isum=1,ithreads
-            coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)
+          do icenter=1,nat
+            do isum=1,ithreads
+              coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)
+            end do
           end do
-        end do
-      end if
+        end if
 
-      do i=1,nat
-        coul0(i,1)=coul(i,i)
-        if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
-      end do
-      deltaee=ZERO
-      do i=1,nat
-        deltaee=deltaee+coul0(i,1)-coul0(i,3)
-        if(idoex.eq.1) deltaee=deltaee+xmix*(coul0(i,2)-coul0(i,4))
-      end do
-      deltaee=deltaee*tokcal
-      phabest=ONE-(twoelerr/deltaee)
-      write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-      if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
-      write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
+        do i=1,nat
+          coul0(i,1)=coul(i,i)
+          if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
+        end do
+        deltaee=ZERO
+        do i=1,nat
+          deltaee=deltaee+coul0(i,1)-coul0(i,3)
+          if(idoex.eq.1) deltaee=deltaee+xmix*(coul0(i,2)-coul0(i,4))
+        end do
+        deltaee=deltaee*tokcal
+        phabest=ONE-(twoelerr/deltaee)
+        write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
+        if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+        write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
 
 !! interpolate energies, replacing the old Coulomb/exchange terms !!
-      do i=1,nat
-        coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
-        if(idoex.eq.1) exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
-      end do
-      write(*,*) " "
-      call cpu_time(xtime2)
-      call get_wall_time(wxtime2)
-      call print_timer('Interpolated zero-error',xtime2-xtime,wxtime2-wxtime)
-      xtime=xtime2
-      wxtime=wxtime2
-
-      call print_box('INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
-      call MPRINT2(coul,nat,maxat)
-      coulen=ZERO
-      do i=1,nat
-        do j=i,nat
-          coulen=coulen+coul(i,j)
+        do i=1,nat
+          coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
+          if(idoex.eq.1) exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
         end do
-      end do
-      write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-      write(*,*) " "
-      if(idofr.eq.1) then
-        line=' FRAGMENT ANALYSIS: Coulomb energy ' 
-        call group_by_frag_mat(1,line,coul)
-      end if
+        write(*,*) " "
+        call cpu_time(xtime2)
+        call get_wall_time(wxtime2)
+        call print_timer('Interpolated zero-error',xtime2-xtime,wxtime2-wxtime)
+        xtime=xtime2
+        wxtime=wxtime2
 
-      if(idoex.eq.1) then
-        call print_box('INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
-        call MPRINT2(exch_hf,nat,maxat)
-        exchen_hf=ZERO
+        call print_box('INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
+        call MPRINT2(coul,nat,maxat)
+        coulen=ZERO
         do i=1,nat
           do j=i,nat
-            exchen_hf=exchen_hf+exch_hf(i,j)
+            coulen=coulen+coul(i,j)
           end do
         end do
-        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+        write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
         write(*,*) " "
+        if(idofr.eq.1) then
+          line=' FRAGMENT ANALYSIS: Coulomb energy ' 
+          call group_by_frag_mat(1,line,coul)
+        end if
 
-        if(ihf.ne.1) then
+        if(idoex.eq.1) then
+          call print_box('INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
+          call MPRINT2(exch_hf,nat,maxat)
+          exchen_hf=ZERO
+          do i=1,nat
+            do j=i,nat
+              exchen_hf=exchen_hf+exch_hf(i,j)
+            end do
+          end do
+          write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          write(*,*) " "
+
+          if(ihf.ne.1) then
+            exchen=ZERO
+            do i=1,nat
+              exch(i,i)=exch(i,i)+xmix*(exch_hf(i,i)-coul0(i,2))
+              exchen=exchen+exch(i,i)
+              do j=i+1,nat
+                exchen=exchen+exch(i,j)
+              end do
+            end do
+
+            call print_box('INTERPOLATED HYBRID KS-DFT XC TERMS')
+            call MPRINT2(exch,nat,maxat)
+            write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
+            write(*,*) " "
+            if(idofr.eq.1) then
+              line=' FRAGMENT ANALYSIS: Final Exc Decomposition ' 
+              call group_by_frag_mat(1,line,exch)
+            end if
+          end if
+        else    
           exchen=ZERO
           do i=1,nat
-            exch(i,i)=exch(i,i)+xmix*(exch_hf(i,i)-coul0(i,2))
             exchen=exchen+exch(i,i)
             do j=i+1,nat
               exchen=exchen+exch(i,j)
             end do
           end do
-
-          call print_box('INTERPOLATED HYBRID KS-DFT XC TERMS')
-          call MPRINT2(exch,nat,maxat)
-          write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-          write(*,*) " "
-          if(idofr.eq.1) then
-            line=' FRAGMENT ANALYSIS: Final Exc Decomposition ' 
-            call group_by_frag_mat(1,line,exch)
-          end if
         end if
-      else    
-        exchen=ZERO
-        do i=1,nat
-          exchen=exchen+exch(i,i)
-          do j=i+1,nat
-            exchen=exchen+exch(i,j)
-          end do
-        end do
-      end if
 
-      if(ihf.eq.0) then
-        evee=coulen+exchen
-        write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee
-        twoelerr=(evee-evee0)*tokcal
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-      else
-        evee=coulen+exchen_hf
-        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
-        twoelerr=(evee-evee0)*tokcal
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-      end if
-      write(*,*) " "
+        if(ihf.eq.0) then
+          evee=coulen+exchen
+          write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
+        else
+          evee=coulen+exchen_hf
+          write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
+          twoelerr=(evee-evee0)*tokcal
+          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
+        end if
+        write(*,*) " "
 
       end if
 
@@ -1409,18 +1409,18 @@
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
 !! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
-      phb=phb12
-      pha=ZERO
-      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
-      ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
-      ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
-      ALLOCATE(chp2pha(itotps,nalf),rhopha(itotps),chp2phab(itotps,nb))
-      ALLOCATE(chp2phas(nalf,itotps),chp2phabs(nb,itotps))
+        phb=phb12
+        pha=ZERO
+        write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
+        ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
+        ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
+        ALLOCATE(chp2pha(itotps,nalf),rhopha(itotps),chp2phab(itotps,nb))
+        ALLOCATE(chp2phas(nalf,itotps),chp2phabs(nb,itotps))
 
-      call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
+        call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-      call ao_to_mo_grid_t(itotps,igr,nalf,c,chppha,chp2pha,chp2phas)
-      call ao_to_mo_grid_t(itotps,igr,nb,cb,chppha,chp2phab,chp2phabs)
+        call ao_to_mo_grid_t(itotps,igr,nalf,c,chppha,chp2pha,chp2phas)
+        call ao_to_mo_grid_t(itotps,igr,nb,cb,chppha,chp2phab,chp2phabs)
 
 !! rhopha is recomputed from the MO amplitudes (rather than kept as       !!
 !! prenumint's own density output) to stay numerically consistent with   !!
@@ -1428,17 +1428,17 @@
 !! parallel over grid points: each k only reads its own chp2pha(k,:)/    !!
 !! chp2phab(k,:) and writes only its own rhopha(k).                      !!
 !$OMP PARALLEL DO PRIVATE(k,j,xtot,xtotb)
-      do k=1,itotps
-        xtot=ZERO
-        xtotb=ZERO
-        do j=1,nalf
-          xtot=xtot+chp2pha(k,j)*chp2pha(k,j)
+        do k=1,itotps
+          xtot=ZERO
+          xtotb=ZERO
+          do j=1,nalf
+            xtot=xtot+chp2pha(k,j)*chp2pha(k,j)
+          end do
+          do j=1,nb
+            xtotb=xtotb+chp2phab(k,j)*chp2phab(k,j)
+          end do
+          rhopha(k)=xtot+xtotb
         end do
-        do j=1,nb
-          xtotb=xtotb+chp2phab(k,j)*chp2phab(k,j)
-        end do
-        rhopha(k)=xtot+xtotb
-      end do
 !$OMP END PARALLEL DO
       end if !MMO- non-analytical skip ends here
 
@@ -1459,99 +1459,99 @@
 
 !! HF-type exchange, computed only if requested (idoex). !!
       if(ianalytical.eq.0) then !MMO- skip if analytical
-      if(idoex.eq.1) then
+        if(idoex.eq.1) then
 
 !! multipolar approximation, used below for atom pairs skipped by THREBOD, !!
 !! computed for alpha and beta separately then summed. !!
-        norb2=nalf*(nalf+1)/2
-        norb2b=nb*(nb+1)/2
-        ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
-        ALLOCATE(fijb(itotps,norb2b),xoccb(norb2b,norb2b),Excmpb(maxat,maxat))
-        do ii=1,itotps
-          irun=0
-          irunb=0
-          do jj=1,nalf
-            do kk=jj,nalf
-              irun=irun+1
-              fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
-              if(ii.eq.1) then
-                xocc(irun,irun)=-ONE
-                if(jj.ne.kk) xocc(irun,irun)=-TWO
-              end if
-              if(jj.le.nb.and.kk.le.nb) then
-                irunb=irunb+1
-                fijb(ii,irunb)=chp2b(ii,jj)*chp2b(ii,kk)
+          norb2=nalf*(nalf+1)/2
+          norb2b=nb*(nb+1)/2
+          ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
+          ALLOCATE(fijb(itotps,norb2b),xoccb(norb2b,norb2b),Excmpb(maxat,maxat))
+          do ii=1,itotps
+            irun=0
+            irunb=0
+            do jj=1,nalf
+              do kk=jj,nalf
+                irun=irun+1
+                fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
                 if(ii.eq.1) then
-                  xoccb(irunb,irunb)=-ONE
-                  if(jj.ne.kk) xoccb(irunb,irunb)=-TWO
+                  xocc(irun,irun)=-ONE
+                  if(jj.ne.kk) xocc(irun,irun)=-TWO
                 end if
-              end if 
+                if(jj.le.nb.and.kk.le.nb) then
+                  irunb=irunb+1
+                  fijb(ii,irunb)=chp2b(ii,jj)*chp2b(ii,kk)
+                  if(ii.eq.1) then
+                    xoccb(irunb,irunb)=-ONE
+                    if(jj.ne.kk) xoccb(irunb,irunb)=-TWO
+                  end if
+                end if 
+              end do
             end do
           end do
-        end do
-        call multipolar(nalf,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
-        call multipolar(nb,itotps,wp,omp2,pcoord,fijb,xoccb,Excmpb)
-        do ii=1,nat
-          do jj=ii+1,nat
-            Excmp(ii,jj)=Excmp(ii,jj)+Excmpb(ii,jj)
-            Excmp(jj,ii)=Excmp(ii,jj)
+          call multipolar(nalf,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
+          call multipolar(nb,itotps,wp,omp2,pcoord,fijb,xoccb,Excmpb)
+          do ii=1,nat
+            do jj=ii+1,nat
+              Excmp(ii,jj)=Excmp(ii,jj)+Excmpb(ii,jj)
+              Excmp(jj,ii)=Excmp(ii,jj)
+            end do 
           end do 
-        end do 
-        DEALLOCATE(fij,fijb,xocc,xoccb,Excmpb)
+          DEALLOCATE(fij,fijb,xocc,xoccb,Excmpb)
 
 !! loops reordered for parallelization purposes, mimicking numint_two's !!
 !! strategy (see there for the full explanation). !!
-        call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
-        write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nalf*(nalf+1),"MO pairs"
-        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
+          call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
+          write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nalf*(nalf+1),"MO pairs"
+          write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! same-center terms first; determine the core count for thread splitting. !!
-        call getenv('OMP_NUM_THREADS',threadenv)
-        if(trim(threadenv)=='') then
-          write(*,*) " OMP_NUM_THREADS not set"
-          ithreadenv=ZERO
-        else
-          read(unit=threadenv,FMT='(I4)') ithreadenv
-        end if
+          call getenv('OMP_NUM_THREADS',threadenv)
+          if(trim(threadenv)=='') then
+            write(*,*) " OMP_NUM_THREADS not set"
+            ithreadenv=ZERO
+          else
+            read(unit=threadenv,FMT='(I4)') ithreadenv
+          end if
         !$OMP PARALLEL
-        iprocs=OMP_GET_MAX_THREADS()
-        ithreads=INT(OMP_GET_NUM_PROCS())
+          iprocs=OMP_GET_MAX_THREADS()
+          ithreads=INT(OMP_GET_NUM_PROCS())
         !$OMP END PARALLEL
-        if(ithreadenv.ne.ZERO) then
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
-     &    ithreads,"available hardware cores"
-          ithreads=ithreadenv
-        else
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
-     &    ithreads,"available hardware cores"
-        end if
+          if(ithreadenv.ne.ZERO) then
+            write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
+     &        ithreads,"available hardware cores"
+            ithreads=ithreadenv
+          else
+            write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
+     &        ithreads,"available hardware cores"
+          end if
 
 !! per-thread grid-point slicing bookkeeping. !!
-        ALLOCATE(f3k(ithreads))
-        ALLOCATE(exch_hfk(nat,ithreads))
-        ALLOCATE(istart(ithreads),iend(ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
+          ALLOCATE(f3k(ithreads))
+          ALLOCATE(exch_hfk(nat,ithreads))
+          ALLOCATE(istart(ithreads),iend(ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
 
 !! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
 !! avoids an old cap that limited parallelization to 8 cores.               !!
-        exch_hfk=ZERO
+          exch_hfk=ZERO
         !DIR$ NOPARALLEL
-        do icenter=1,nat
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
+          do icenter=1,nat
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
           !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
-          iend(ithreads)=icenter*iatps
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
 
 !! both calls below are required for the thread count to actually take effect. !!
-          call omp_set_dynamic(.false.)
-          call omp_set_num_threads(ithreads)
+            call omp_set_dynamic(.false.)
+            call omp_set_num_threads(ithreads)
 !! MG: restored real OpenMP parallelization here -- see the RHF
 !! twin (numint_two) above for the full explanation. Same fix, same
 !! already-safe per-ik data layout (f3k(ik), exch_hfk(icenter,ik)). !!
@@ -1560,174 +1560,174 @@
 !! only touched once per ifut instead of on every i/j iteration. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  i,j,f2,f2b,f3loc)
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3loc=ZERO
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
-                x1=wppha(jfut)*omp2pha(jfut,icenter)
-                dx1=pcoordpha(jfut,1)
-                dy1=pcoordpha(jfut,2)
-                dz1=pcoordpha(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                  do i=1,nalf-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
-                    if(i.le.nb) then
-                      f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                      f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
-                    end if
-                    do j=i+1,nalf
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
-                      if(j.le.nb) then
-                        f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                        f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(icenter-1)+1,iatps*icenter
+                  x1=wppha(jfut)*omp2pha(jfut,icenter)
+                  dx1=pcoordpha(jfut,1)
+                  dy1=pcoordpha(jfut,2)
+                  dz1=pcoordpha(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
+                    do i=1,nalf-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      if(i.le.nb) then
+                        f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
+                        f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
                       end if
+                      do j=i+1,nalf
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        if(j.le.nb) then
+                          f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
+                          f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+                        end if
+                      end do
                     end do
-                  end do
-                  f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                  f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
+                    f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
+                    f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
 
 !! nalf=nb's own highest-index term needs adding separately (loop above !!
 !! only pairs i with i+1..nalf, so the beta-side match never triggers). !!
-                  if(nalf.eq.nb) then
-                    f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                    f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
+                    if(nalf.eq.nb) then
+                      f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
+                      f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
+                    end if
                   end if
-                end if
+                end do
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
             end do
-          end do
 !$OMP END PARALLEL DO
-        end do
+          end do
 
 !! reduce the per-thread accumulator into the same-center exch_hf term. !!
-        do icenter=1,nat
-          do isum=1,ithreads
-            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+          do icenter=1,nat
+            do isum=1,ithreads
+              exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+            end do
           end do
-        end do
 
 !! atom-pair terms, skipping pairs below the THREBOD bond-order threshold. !!
-        iterms=0
-        ipaircounter=0
-        ALLOCATE(ijpaircount(nat*nat,2))
-        do icenter=1,nat
-          do jcenter=icenter+1,nat
-            bx0=bo(icenter,jcenter)
-            if(bx0.ge.threbod) then
-              ipaircounter=ipaircounter+1
-              ijpaircount(ipaircounter,1)=icenter
-              ijpaircount(ipaircounter,2)=jcenter
-            else
-              iterms=iterms+1
-            end if
+          iterms=0
+          ipaircounter=0
+          ALLOCATE(ijpaircount(nat*nat,2))
+          do icenter=1,nat
+            do jcenter=icenter+1,nat
+              bx0=bo(icenter,jcenter)
+              if(bx0.ge.threbod) then
+                ipaircounter=ipaircounter+1
+                ijpaircount(ipaircounter,1)=icenter
+                ijpaircount(ipaircounter,2)=jcenter
+              else
+                iterms=iterms+1
+              end if
+            end do
           end do
-        end do
-        write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
-        write(*,*) " "
+          write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
+          write(*,*) " "
 
 !! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
-        ALLOCATE(exch_hfij(ipaircounter,ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
-        exch_hfij=ZERO
+          ALLOCATE(exch_hfij(ipaircounter,ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
+          exch_hfij=ZERO
         !DIR$ NOPARALLEL
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
           !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
-          iend(ithreads)=icenter*iatps
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
 !! MG: false-sharing fix -- same as the same-center block above,
 !! f3loc is a genuine PRIVATE scalar. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  i,j,f2,f2b,f3loc)
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3loc=ZERO
-              do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-                x1=wp(jfut)*omp2(jfut,jcenter)
-                dx1=pcoord(jfut,1)
-                dy1=pcoord(jfut,2)
-                dz1=pcoord(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
-                  do i=1,nalf-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
-                    if(i.le.nb) then
-                      f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                      f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(i,jfut)/dist
-                    end if
-                    do j=i+1,nalf
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
-                      if(j.le.nb) then
-                        f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                        f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+                  x1=wp(jfut)*omp2(jfut,jcenter)
+                  dx1=pcoord(jfut,1)
+                  dy1=pcoord(jfut,2)
+                  dz1=pcoord(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
+                    do i=1,nalf-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
+                      if(i.le.nb) then
+                        f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
+                        f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(i,jfut)/dist
                       end if
+                      do j=i+1,nalf
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                        if(j.le.nb) then
+                          f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
+                          f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
+                        end if
+                      end do
                     end do
-                  end do
-                  f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                  f3loc=f3loc+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
+                    f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
+                    f3loc=f3loc+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
 
 !! same nalf=nb edge case as the same-center block above. !!
-                  if(nalf.eq.nb) then
-                    f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                    f3loc=f3loc+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
+                    if(nalf.eq.nb) then
+                      f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
+                      f3loc=f3loc+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
+                    end if
                   end if
-                end if
+                end do
+                exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
               end do
-              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
             end do
-          end do
 !$OMP END PARALLEL DO
-        end do
+          end do
 
 !! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          do isum=1,ithreads
-            exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
-          end do
-        end do   
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            do isum=1,ithreads
+              exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
+            end do
+          end do   
 
 !! account for A-B/B-A symmetry (factor of 2) and for atom pairs whose !!
 !! term came from the multipolar approximation instead of integration. !!
-        exchen_hf=ZERO
-        do i=1,nat
-          exch_hf(i,i)=exch_hf(i,i)/TWO
-          exchen_hf=exchen_hf+exch_hf(i,i)
-          do j=i+1,nat
-            if(bo(i,j).lt.threbod) exch_hf(i,j)=Excmp(i,j)
-            exch_hf(j,i)=exch_hf(i,j)
-            exchen_hf=exchen_hf+exch_hf(i,j)
+          exchen_hf=ZERO
+          do i=1,nat
+            exch_hf(i,i)=exch_hf(i,i)/TWO
+            exchen_hf=exchen_hf+exch_hf(i,i)
+            do j=i+1,nat
+              if(bo(i,j).lt.threbod) exch_hf(i,j)=Excmp(i,j)
+              exch_hf(j,i)=exch_hf(i,j)
+              exchen_hf=exchen_hf+exch_hf(i,j)
+            end do
           end do
-        end do
-        call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
-        call MPRINT2(exch_hf,nat,maxat)
-        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-        write(*,*) " "
-      end if
+          call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
+          call MPRINT2(exch_hf,nat,maxat)
+          write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          write(*,*) " "
+        end if
       end if !MMO- non-analytical skip ends here
 
 !! checking accuracy of the two-electron part, HF only !!
@@ -2499,58 +2499,58 @@ c  energetics
 
       irun=0
       do i=1,norb
-      do j=i,norb
+        do j=i,norb
 
-      irun=irun+1
-      ffact=xocc(irun,irun)
+          irun=irun+1
+          ffact=xocc(irun,irun)
 
 !! per-atom charge/dipole/quadrupole moments of this MO pair's density. !!
 !! parallel over icenter: each iteration writes only its own dip(icenter,:), !!
 !! quadp(icenter,:,:) and sij(icenter), all independent across atoms.    !!
 !$OMP PARALLEL DO PRIVATE(icenter,xx,yy,zz,xy,xz,yz,x,y,z,ifut,distx,disty,distz,wccij)
-      do icenter=1,nat
+          do icenter=1,nat
 
-        xx=ZERO
-        yy=ZERO
-        zz=ZERO
-        xy=ZERO
-        xz=ZERO
-        yz=ZERO
+            xx=ZERO
+            yy=ZERO
+            zz=ZERO
+            xy=ZERO
+            xz=ZERO
+            yz=ZERO
 
-        x=ZERO
-        y=ZERO
-        z=ZERO
+            x=ZERO
+            y=ZERO
+            z=ZERO
 
-        sij(icenter)=ZERO
-        do ifut=iatps*(icenter-1)+1,iatps*icenter
-          distx=pcoord(ifut,1)-coord(1,icenter)
-          disty=pcoord(ifut,2)-coord(2,icenter)
-          distz=pcoord(ifut,3)-coord(3,icenter)
-          wccij=wp(ifut)*omp2(ifut,icenter)*fij(ifut,irun)
-          xx=xx+wccij*distx*distx
-          yy=yy+wccij*disty*disty
-          zz=zz+wccij*distz*distz
-          xy=xy+wccij*distx*disty
-          xz=xz+wccij*distx*distz
-          yz=yz+wccij*disty*distz
-          x=x+wccij*distx
-          y=y+wccij*disty
-          z=z+wccij*distz
-          sij(icenter)=sij(icenter)+wccij
-        end do
-        dip(icenter,1)=x
-        dip(icenter,2)=y
-        dip(icenter,3)=z
-        quadp(icenter,1,1)=xx-(yy+zz)/TWO
-        quadp(icenter,1,2)=(THREE/TWO)*xy
-        quadp(icenter,2,1)= quadp(icenter,1,2)
-        quadp(icenter,1,3)=(THREE/TWO)*xz
-        quadp(icenter,3,1)= quadp(icenter,1,3)
-        quadp(icenter,2,2)=yy-(xx+zz)/TWO
-        quadp(icenter,2,3)=(THREE/TWO)*yz
-        quadp(icenter,3,2)= quadp(icenter,2,3)
-        quadp(icenter,3,3)=zz-(yy+xx)/TWO
-      end do
+            sij(icenter)=ZERO
+            do ifut=iatps*(icenter-1)+1,iatps*icenter
+              distx=pcoord(ifut,1)-coord(1,icenter)
+              disty=pcoord(ifut,2)-coord(2,icenter)
+              distz=pcoord(ifut,3)-coord(3,icenter)
+              wccij=wp(ifut)*omp2(ifut,icenter)*fij(ifut,irun)
+              xx=xx+wccij*distx*distx
+              yy=yy+wccij*disty*disty
+              zz=zz+wccij*distz*distz
+              xy=xy+wccij*distx*disty
+              xz=xz+wccij*distx*distz
+              yz=yz+wccij*disty*distz
+              x=x+wccij*distx
+              y=y+wccij*disty
+              z=z+wccij*distz
+              sij(icenter)=sij(icenter)+wccij
+            end do
+            dip(icenter,1)=x
+            dip(icenter,2)=y
+            dip(icenter,3)=z
+            quadp(icenter,1,1)=xx-(yy+zz)/TWO
+            quadp(icenter,1,2)=(THREE/TWO)*xy
+            quadp(icenter,2,1)= quadp(icenter,1,2)
+            quadp(icenter,1,3)=(THREE/TWO)*xz
+            quadp(icenter,3,1)= quadp(icenter,1,3)
+            quadp(icenter,2,2)=yy-(xx+zz)/TWO
+            quadp(icenter,2,3)=(THREE/TWO)*yz
+            quadp(icenter,3,2)= quadp(icenter,2,3)
+            quadp(icenter,3,3)=zz-(yy+xx)/TWO
+          end do
 !$OMP END PARALLEL DO
 
 !! pairwise electrostatic terms, iat==A, jat==B. parallel over iat: each   !!
@@ -2559,73 +2559,73 @@ c  energetics
 !! allocatable) so each thread gets its own scratch copy.                !!
 !$OMP PARALLEL DO PRIVATE(iat,jat,xx,ii,jj,kk,rvect,muamub,muar,mubr,
 !$OMP&  rqar,rqbr,muaqbr,mubqar,xm,qaqb,rqaqbr)
-      do iat=1,nat
-        do jat=iat+1,nat
-          xx=atdist(iat,jat)
-          do ii=1,3
-            rvect(ii)=coord(ii,jat)-coord(ii,iat)
-          end do
+          do iat=1,nat
+            do jat=iat+1,nat
+              xx=atdist(iat,jat)
+              do ii=1,3
+                rvect(ii)=coord(ii,jat)-coord(ii,iat)
+              end do
 
 !! charge-charge !!
-          Excmp1(iat,jat)=Excmp1(iat,jat)+ffact*sij(iat)*sij(jat)/xx
+              Excmp1(iat,jat)=Excmp1(iat,jat)+ffact*sij(iat)*sij(jat)/xx
 
 !! charge-dipole !!
-          muamub=ZERO
-          muar=ZERO
-          mubr=ZERO
-          do ii=1,3
-            muamub=muamub+dip(iat,ii)*dip(jat,ii)
-            muar=muar+dip(iat,ii)*rvect(ii)
-            mubr=mubr+dip(jat,ii)*rvect(ii)
-          end do
-          Excmp2(iat,jat)=Excmp2(iat,jat)+ffact*(muar*sij(jat)-mubr*sij(iat))/(xx**THREE)
+              muamub=ZERO
+              muar=ZERO
+              mubr=ZERO
+              do ii=1,3
+                muamub=muamub+dip(iat,ii)*dip(jat,ii)
+                muar=muar+dip(iat,ii)*rvect(ii)
+                mubr=mubr+dip(jat,ii)*rvect(ii)
+              end do
+              Excmp2(iat,jat)=Excmp2(iat,jat)+ffact*(muar*sij(jat)-mubr*sij(iat))/(xx**THREE)
 
 !! dipole-dipole !!
-          Excmp3(iat,jat)=Excmp3(iat,jat)-ffact*(THREE*muar*mubr/(xx**FIVE)-muamub/(xx**THREE))
+              Excmp3(iat,jat)=Excmp3(iat,jat)-ffact*(THREE*muar*mubr/(xx**FIVE)-muamub/(xx**THREE))
 
 !! charge-quadrupole !!
-          rqar=ZERO
-          rqbr=ZERO
-          do ii=1,3
-            do jj=1,3
-              rqar=rqar+rvect(ii)*quadp(iat,ii,jj)*rvect(jj)
-              rqbr=rqbr+rvect(ii)*quadp(jat,ii,jj)*rvect(jj)
-            end do
-          end do
-          Excmp4(iat,jat)=Excmp4(iat,jat)+ffact*(rqar*sij(jat)+rqbr*sij(iat))/(xx**FIVE)
+              rqar=ZERO
+              rqbr=ZERO
+              do ii=1,3
+                do jj=1,3
+                  rqar=rqar+rvect(ii)*quadp(iat,ii,jj)*rvect(jj)
+                  rqbr=rqbr+rvect(ii)*quadp(jat,ii,jj)*rvect(jj)
+                end do
+              end do
+              Excmp4(iat,jat)=Excmp4(iat,jat)+ffact*(rqar*sij(jat)+rqbr*sij(iat))/(xx**FIVE)
 
 !! dipole-quadrupole !!
-          muaqbr=ZERO
-          mubqar=ZERO
-          do ii=1,3
-            do jj=1,3
-              muaqbr=muaqbr+rvect(ii)*quadp(jat,ii,jj)*dip(iat,jj)
-              mubqar=mubqar+rvect(ii)*quadp(iat,ii,jj)*dip(jat,jj)
-            end do
-          end do
-          xm=-FIVE*(mubr*rqar-muar*rqbr)+TWO*xx*xx*(mubqar-muaqbr)
-          Excmp5(iat,jat)=Excmp5(iat,jat)+ffact*xm/(xx**7.0d0)
+              muaqbr=ZERO
+              mubqar=ZERO
+              do ii=1,3
+                do jj=1,3
+                  muaqbr=muaqbr+rvect(ii)*quadp(jat,ii,jj)*dip(iat,jj)
+                  mubqar=mubqar+rvect(ii)*quadp(iat,ii,jj)*dip(jat,jj)
+                end do
+              end do
+              xm=-FIVE*(mubr*rqar-muar*rqbr)+TWO*xx*xx*(mubqar-muaqbr)
+              Excmp5(iat,jat)=Excmp5(iat,jat)+ffact*xm/(xx**7.0d0)
 
 !! quadrupole-quadrupole !!
-          qaqb=ZERO
-          rqaqbr=ZERO
-          do ii=1,3
-            do jj=1,3
-              qaqb=qaqb+quadp(jat,ii,jj)*quadp(iat,ii,jj)
-              do kk=1,3
-                rqaqbr=rqaqbr+rvect(ii)*quadp(jat,ii,kk)*quadp(iat,kk,jj)*rvect(jj)
+              qaqb=ZERO
+              rqaqbr=ZERO
+              do ii=1,3
+                do jj=1,3
+                  qaqb=qaqb+quadp(jat,ii,jj)*quadp(iat,ii,jj)
+                  do kk=1,3
+                    rqaqbr=rqaqbr+rvect(ii)*quadp(jat,ii,kk)*quadp(iat,kk,jj)*rvect(jj)
+                  end do
+                end do
               end do
+              xm=(35.0d0/THREE)*(rqar*rqbr)/(xx**9.0d0)+(TWO/THREE)*qaqb/(xx**FIVE)-(60.0/9.0d0)*rqaqbr/(xx**7.0d0)
+              Excmp6(iat,jat)=Excmp6(iat,jat)+ffact*xm
             end do
           end do
-          xm=(35.0d0/THREE)*(rqar*rqbr)/(xx**9.0d0)+(TWO/THREE)*qaqb/(xx**FIVE)-(60.0/9.0d0)*rqaqbr/(xx**7.0d0)
-          Excmp6(iat,jat)=Excmp6(iat,jat)+ffact*xm
-        end do
-      end do
 !$OMP END PARALLEL DO
 
 !! end loop over MO pairs !!
 
-      end do
+        end do
       end do
 
 !! symmetrize and sum the six multipole-order contributions into Excmp. !!
@@ -2711,11 +2711,11 @@ c  energetics
       !$OMP END PARALLEL
       if(ithreadenv.ne.ZERO) then
         write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
-     &  ithreads,"available hardware cores"
+     &    ithreads,"available hardware cores"
         ithreads=ithreadenv
       else
         write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
-     &  ithreads,"available hardware cores"
+     &    ithreads,"available hardware cores"
       end if
 
 !! per-thread grid-point slicing bookkeeping. !!
