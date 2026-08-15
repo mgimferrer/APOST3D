@@ -201,7 +201,7 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
         implicit double precision (a-h,o-z)
         include 'parameter.h'
         common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-        common /iops/iopt(100)
+        common /iops/iopt(200)
         common /nna/ xnonradi(maxnna),atsphradi(maxat),nna
         common /coordnon/ coordnon(3,maxnna)
         dimension omp(nat*nrad*nang)
@@ -793,7 +793,7 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
 
       subroutine lnse(n,x0,xx,step,zsum,totzsum)
       implicit double precision(a-h,o-z)
-        common /iops/iopt(100)
+        common /iops/iopt(200)
         common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
         include 'parameter.h'
       dimension gxchp(:),gychp(:),gzchp(:),aochp(:)
@@ -831,7 +831,7 @@ c       write(*,*)'n',nf
       
       subroutine euler(x0,xx,step,zsum,totzsum)
       implicit double precision(a-h,o-z)
-        common /iops/iopt(100)
+        common /iops/iopt(200)
         common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
         include 'parameter.h'
       dimension gxchp(:),gychp(:),gzchp(:),aochp(:)
@@ -853,7 +853,7 @@ c       write(*,*)'n',nf
       
       subroutine rk2(x0,xx,step,zsum,totzsum)
       implicit double precision(a-h,o-z)
-        common /iops/iopt(100)
+        common /iops/iopt(200)
         common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
         include 'parameter.h'
       dimension gxchp(:),gychp(:),gzchp(:),aochp(:)
@@ -894,7 +894,7 @@ c       write(*,*)'n',nf
       
       subroutine rk4(x0,xx,step,zsum,totzsum)
       implicit double precision(a-h,o-z)
-        common /iops/iopt(100)
+        common /iops/iopt(200)
         common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
         include 'parameter.h'
       dimension gxchp(:),gychp(:),gzchp(:),aochp(:)
@@ -980,7 +980,7 @@ c
         common /quadrat/th(1000),ph(1000),w(1000),wr(500),Xr(500)
         common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
         common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-        common /iops/iopt(100)
+        common /iops/iopt(200)
         common /nna/ xnonradi(maxnna),atsphradi(maxat),nna
         common/pha2/pha,phb,rr00
         dimension gxchp(:),gychp(:),gzchp(:),aochp(:)
@@ -1042,7 +1042,7 @@ c       write(*,*)'resatom',atsphradi(i)
       include 'parameter.h'
       common/actual/iact,jat,icenter
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/ iopt(100)
+      common /iops/ iopt(200)
       dimension chp(ipoints,igr)
       dimension xlap(nat*nrad*nang)
 
@@ -1205,7 +1205,7 @@ c angular point i, radial point k
       implicit double precision (a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /nna/ xnonradi(maxnna),atsphradi(maxat),nna
       logical icontrol
       dimension x0(3),x1(3),g0(3),H0(3,3),hh0(3,3)

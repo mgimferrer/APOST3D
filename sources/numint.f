@@ -33,7 +33,7 @@
       integer, intent(in) :: ndim,itotps,nat0
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coordnon/ coordnon(3,maxnna)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /nna/ xnonradi(maxnna),atsphradi(maxat),nna
       dimension wp(itotps),chp(itotps,ndim),omp(itotps),rho(itotps)
       dimension pcoord(itotps,3),ibaspoint(itotps),omp2(itotps,nat0)
@@ -493,7 +493,7 @@ CC
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coordnon/ coordnon(3,maxnna)
       common /nna/ xnonradi(maxnna),atsphradi(maxat),nna
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       dimension wp(itotps),chp(itotps,ndim),omp(itotps)
       dimension ibaspoint(itotps),sat(ndim,ndim,nat0),omp2(itotps,nat0)
 

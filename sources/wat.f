@@ -49,7 +49,7 @@ c       safe to call from a parallel (OpenMP) region -- see wat/sbecke history.
 
       function sbecke(amu,chi)
       implicit real*8 (a-h,o-z)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /erf/aerf,ierf
 
 ! Becke's profile 
@@ -92,7 +92,7 @@ c       anu= aerf*anu/sqrt(1.0-(1.0-aerf*aerf)*anu*anu)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /atomrad/atr(maxat),dist(maxat,maxat)
@@ -373,7 +373,7 @@ c screening of the point
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
 !      common /c/c(nmax,nmax),p(nmax,nmax)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       allocatable ch(:)
 
       allocate (ch(igr))
@@ -413,7 +413,7 @@ c screening of the point
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
 !      common /c/c(nmax,nmax),p(nmax,nmax)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       allocatable ch(:),chd(:)
 
       allocate (ch(igr),chd(igr))
@@ -1031,7 +1031,7 @@ c      double precision, dimension(maxat) :: pop
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /hirsh/y2(50,5,150),radial(50,5,150),xr2(150),ieq(maxat),nradat,nat0,pop(maxat)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
 
@@ -1323,7 +1323,7 @@ c       write(*,*) 'ieq array:' ,(ieq(i),i=1,nat)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       dimension a(igr,igr) 
       allocatable ch(:)
 
@@ -1364,7 +1364,7 @@ c       write(*,*) 'ieq array:' ,(ieq(i),i=1,nat)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
 !      common /c/c(nmax,nmax),p(nmax,nmax)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       allocatable ch(:),chd(:,:)
 
       allocate (ch(igr),chd(igr,3))

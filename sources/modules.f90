@@ -724,7 +724,7 @@
    !! ********************************************************************* !!
    !! module: input_options_mod                                             !!
    !! purpose: holds the .inp keyword flags parsed by read_input() (see     !!
-   !! read_input.f) that main.f's own control flow (validation, iopt(100)   !!
+   !! read_input.f) that main.f's own control flow (validation, iopt(200)   !!
    !! population, dispatch) reads directly -- replaces what used to be      !!
    !! plain implicitly-typed locals in main.f. Flags already carried by     !!
    !! an existing COMMON block (icas, ibcp, aerf, iaccur, nrad22, etc.)     !!

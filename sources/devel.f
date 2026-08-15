@@ -10,7 +10,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
 c      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /localspin/xlsa(maxat,maxat),ua(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
@@ -307,7 +307,7 @@ c end outer loop over fragments
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /actual/iact,jat,icenter
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       dimension illim_eff(maxat),iulim_eff(maxat)
@@ -615,7 +615,7 @@ c
       include 'parameter.h'
       integer,intent(in) :: itotps,ndim
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
@@ -765,7 +765,7 @@ c end outer loop over fragments
       include 'parameter.h'
       integer,intent(in) :: itotps,ndim
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /effao/p0(nmax,nmax),p0net(nmax,maxat),p0gro(nmax,maxat),ip0(maxat)
@@ -919,7 +919,7 @@ c  write cube file
       integer, intent(in) :: itotps
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atomrad/atr(maxat),distance(maxat,maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /nna/ xnonradi(maxnna),atsphradi(maxat),nna

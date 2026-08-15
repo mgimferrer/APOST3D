@@ -46,7 +46,7 @@
 
       common /nat/nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /actual/iact,jat,icenter
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /energ0/ekin0,eelnuc0,evee0,etot0
@@ -353,7 +353,7 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /actual/iact,jat,icenter
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /energ0/ekin0,eelnuc0,evee0,etot0
@@ -1042,7 +1042,7 @@
       character*80 line
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
@@ -1339,7 +1339,7 @@
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common/twoel/twoeltoler !MMO- adding common
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
@@ -2093,7 +2093,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /atomrad/atr(maxat),dist(maxat,maxat)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common/efield/field(4),edipole
       common /qat/qat(maxat,2),qsat(maxat,2)
@@ -2676,7 +2676,7 @@ c  energetics
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /modgrid2/thr3 !! We can make that the distance threshold is controlled using this !!
 

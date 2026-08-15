@@ -30,7 +30,7 @@
       common /twoel/twoeltoler
       common /efield/field(4),edipole
       common /printout/iaccur
-      common /iops/iopt(100)
+      common /iops/iopt(200)
 
       dimension navect(maxat)
       dimension iatpairs(2,maxat)

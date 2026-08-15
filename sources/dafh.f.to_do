@@ -7,7 +7,7 @@ C needs to be updated
       integer, intent(in) :: nbasis,ndim,nat0
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /stv/ s(nmax,nmax),t(nmax,nmax)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /c_no/ c_no(nmax,nmax),occ_no(nmax,nmax)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension sat(ndim,ndim,nat0)
@@ -262,7 +262,7 @@ C END OF DM2 PART
       common /stv/ s(nmax,nmax),t(nmax,nmax)
       common /c/c(nmax,nmax),p(nmax,nmax)
       common /opensh/ cb(nmax,nmax)   
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       dimension sat(ndim,ndim,nat0)
       allocatable scr2(:,:),sat_no(:,:)
@@ -385,7 +385,7 @@ c    iat=iatlist(iat0)
       common /stv/ s(nmax,nmax),t(nmax,nmax)
       common /c/c(nmax,nmax),p(nmax,nmax)
       common /opensh/ cb(nmax,nmax)   
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       dimension sat(ndim,ndim,nat0)
       allocatable scr2(:,:),sat_no(:,:)
