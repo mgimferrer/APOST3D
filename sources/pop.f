@@ -586,53 +586,53 @@ C
 !! private x and writes only its own qsat(kat,1) slot; ps/sat shared     !!
 !! read-only, no cross-iteration dependency.                             !!
 !$OMP PARALLEL DO PRIVATE(mu,nu,x)
-       do kat=1,natoms
-        x=0.d0
-        do mu=1,nbasis
-         do nu=1,nbasis
-          x=x+ps(mu,nu)*sat(mu,nu,kat)
-         enddo
+        do kat=1,natoms
+          x=0.d0
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=x+ps(mu,nu)*sat(mu,nu,kat)
+            enddo
+          enddo
+          qsat(kat,1)=x
+          qsat(kat,2)=0.d0
         enddo
-        qsat(kat,1)=x
-        qsat(kat,2)=0.d0
-       enddo
 !$OMP END PARALLEL DO
 
 !! second (Ps*S) contribution, O(igr) outer trips only -- left serial,   !!
 !! not worth threading, and kat=ihold(mu) can repeat across mu so the    !!
 !! qsat(kat,2) accumulation isn't race-free without extra care.          !!
-       do mu=1,nbasis
-        kat=ihold(mu)
-        x=0.d0
-        do itau=1,nbasis
-         x=x+ps(mu,itau)*s(itau,mu)
+        do mu=1,nbasis
+          kat=ihold(mu)
+          x=0.d0
+          do itau=1,nbasis
+            x=x+ps(mu,itau)*s(itau,mu)
+          enddo
+          qsat(kat,2)=qsat(kat,2)+x
         enddo
-        qsat(kat,2)=qsat(kat,2)+x
-       enddo
       end if
 
 !! total density: P*S^A contraction, same pattern as spin density above  !!
 !$OMP PARALLEL DO PRIVATE(mu,nu,x)
       do kat=1,natoms
-       x=0.d0
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=x+p(mu,nu)*sat(mu,nu,kat)
+        x=0.d0
+        do mu=1,nbasis
+          do nu=1,nbasis
+            x=x+p(mu,nu)*sat(mu,nu,kat)
+          enddo
         enddo
-       enddo
-       qat(kat,1)=x
-       qat(kat,2)=0.d0
+        qat(kat,1)=x
+        qat(kat,2)=0.d0
       enddo
 !$OMP END PARALLEL DO
 
 !! second (P*S) contribution -- same O(igr)-only reasoning as above      !!
       do mu=1,nbasis
-       kat=ihold(mu)
-       x=0.d0
-       do itau=1,nbasis
-        x=x+p(mu,itau)*s(itau,mu)
-       enddo
-       qat(kat,2)=qat(kat,2)+x
+        kat=ihold(mu)
+        x=0.d0
+        do itau=1,nbasis
+          x=x+p(mu,itau)*s(itau,mu)
+        enddo
+        qat(kat,2)=qat(kat,2)+x
       enddo
 
       return
@@ -671,15 +671,15 @@ C
       call vprint(arr,nat,maxat,2)
       write(*,'(1x,a)') repeat('-',29)
       if(iaccur.eq.0) then
-       write(*,162) tc1,tc2
+        write(*,162) tc1,tc2
       else
-       write(*,172) tc1,tc2
+        write(*,172) tc1,tc2
       end if
       write(*,*)
 
       if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : '//fraglabel
-       call group_by_frag_vec(2,line,arr)
+        line ='   FRAGMENT ANALYSIS : '//fraglabel
+        call group_by_frag_vec(2,line,arr)
       end if
 
       return
@@ -712,23 +712,23 @@ C
       tc1=0.d0
       tc2=0.d0
       do i=1,nat
-       tc1=tc1+qat(i,1)
-       tc2=tc2+qat(i,2)
+        tc1=tc1+qat(i,1)
+        tc2=tc2+qat(i,2)
       enddo
       call print_population_table('ELECTRON POPULATIONS',
-     +     'Electron populations',qat,tc1,tc2)
+     +  'Electron populations',qat,tc1,tc2)
 
 !! partial charges -- nuclear charge minus qat, atom by atom !!
       tc1=0.d0
       tc2=0.d0
       do i=1,nat
-       tc1=tc1-qat(i,1)+zn(i)
-       tc2=tc2-qat(i,2)+zn(i)
-       dummyvec(i,1)=zn(i)-qat(i,1)
-       dummyvec(i,2)=zn(i)-qat(i,2)
+        tc1=tc1-qat(i,1)+zn(i)
+        tc2=tc2-qat(i,2)+zn(i)
+        dummyvec(i,1)=zn(i)-qat(i,1)
+        dummyvec(i,2)=zn(i)-qat(i,2)
       enddo
       call print_population_table('TOTAL ATOMIC CHARGES',
-     +     'Atomic Charges',dummyvec,tc1,tc2)
+     +  'Atomic Charges',dummyvec,tc1,tc2)
 
       return
       end
@@ -760,22 +760,22 @@ C
 !! spin populations -- straight sum of qsat, only for open-shell/       !!
 !! correlated-with-DM cases                                              !!
       if(kop.ne.0.OR.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)) then
-       tc1=0.d0
-       tc2=0.d0
-       do i=1,nat
-        tc1=tc1+qsat(i,1)
-        tc2=tc2+qsat(i,2)
-       enddo
-       call print_population_table('SPIN POPULATIONS',
-     +      'Spin Populations',qsat,tc1,tc2)
+        tc1=0.d0
+        tc2=0.d0
+        do i=1,nat
+          tc1=tc1+qsat(i,1)
+          tc2=tc2+qsat(i,2)
+        enddo
+        call print_population_table('SPIN POPULATIONS',
+     +    'Spin Populations',qsat,tc1,tc2)
       end if
 
 !! overlap populations -- op itself comes from opop (real-space) or     !!
 !! mull_opop (Mulliken); iopop=0 just takes the diagonal from qat        !!
       if(iopop.eq.0) then
-       do i=1,nat
-        op(i,i)=qat(i,1)
-       end do
+        do i=1,nat
+          op(i,i)=qat(i,1)
+        end do
       else if(imulli.ne.1) then
         call opop(wp,omp,omp2,rho)
       else
@@ -783,13 +783,13 @@ C
       end if
 
       if(iopop.eq.1) then
-       call print_box('APOST3D OVERLAP POPULATION MATRIX')
-       call mprint(op,nat,maxat)
-       write(*,*)
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Overlap Populations'
-       call group_by_frag_mat(0,line,op)
-      end if
+        call print_box('APOST3D OVERLAP POPULATION MATRIX')
+        call mprint(op,nat,maxat)
+        write(*,*)
+        if (idofr.eq.1) then
+          line ='   FRAGMENT ANALYSIS : Overlap Populations'
+          call group_by_frag_mat(0,line,op)
+        end if
       end if
 
       return
@@ -816,8 +816,8 @@ C
 
       call fborder(sat)
       if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Fuzzy Bond Order'
-       call group_by_frag_mat(1,line ,bo)
+        line ='   FRAGMENT ANALYSIS : Fuzzy Bond Order'
+        call group_by_frag_mat(1,line ,bo)
       end if
 
       return
