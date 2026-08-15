@@ -556,10 +556,10 @@ C
 !! ********************************************************************* !!
 !! subroutine: population_density                                        !!
 !! purpose: spin- and total-density atomic-population contraction        !!
-!! (P*S^A products), writing qat/qsat via COMMON. Split from the         !!
-!! print side (population_print) so the idoint-guarded print_int         !!
-!! call in main.f can sit between the two, exactly where it did          !!
-!! before this routine existed.                                          !!
+!! (P*S^A products), writing qat/qsat via COMMON. Split from the print   !!
+!! side (population_print_charges/population_print_overlap) so the       !!
+!! idoint-guarded print_int call in main.f can sit between them,         !!
+!! exactly where it did before this routine existed.                     !!
 !! arguments:                                                            !!
 !! sat (in) -- per-atom AO overlap matrix (numint_sat/tomull/tolow)      !!
 !! author: MGimf                                                         !!
@@ -573,17 +573,19 @@ C
       common /qat/qat(maxat,2),qsat(maxat,2)
       dimension sat(nbasis,nbasis,natoms)
 
-      print *,' '
-      print *,' ---------------------------'
-      print *,'  DOING POPULATION ANALYSIS '
-      print *,'   Partial atomic charges'
-      print *,'   Atomic spin densities '
-      print *,'   Bond orders and Valences '
-      print *,' ---------------------------'
-      print *,' '
+      call print_box('DOING POPULATION ANALYSIS')
+      write(*,'(3x,a)') 'Partial atomic charges'
+      write(*,'(3x,a)') 'Atomic spin densities'
+      write(*,'(3x,a)') 'Bond orders and Valences'
+      write(*,*)
 
-c Spin density
+!! spin density: P^s*S^A contraction, one atom per outer iteration       !!
       if(kop.ne.0.or.nalf.ne.nb) then
+
+!! parallel over kat (natoms) -- each iteration reduces mu,nu into a     !!
+!! private x and writes only its own qsat(kat,1) slot; ps/sat shared     !!
+!! read-only, no cross-iteration dependency.                             !!
+!$OMP PARALLEL DO PRIVATE(mu,nu,x)
        do kat=1,natoms
         x=0.d0
         do mu=1,nbasis
@@ -594,6 +596,11 @@ c Spin density
         qsat(kat,1)=x
         qsat(kat,2)=0.d0
        enddo
+!$OMP END PARALLEL DO
+
+!! second (Ps*S) contribution, O(igr) outer trips only -- left serial,   !!
+!! not worth threading, and kat=ihold(mu) can repeat across mu so the    !!
+!! qsat(kat,2) accumulation isn't race-free without extra care.          !!
        do mu=1,nbasis
         kat=ihold(mu)
         x=0.d0
@@ -604,7 +611,8 @@ c Spin density
        enddo
       end if
 
-c Total density
+!! total density: P*S^A contraction, same pattern as spin density above  !!
+!$OMP PARALLEL DO PRIVATE(mu,nu,x)
       do kat=1,natoms
        x=0.d0
        do mu=1,nbasis
@@ -615,6 +623,9 @@ c Total density
        qat(kat,1)=x
        qat(kat,2)=0.d0
       enddo
+!$OMP END PARALLEL DO
+
+!! second (P*S) contribution -- same O(igr)-only reasoning as above      !!
       do mu=1,nbasis
        kat=ihold(mu)
        x=0.d0
@@ -625,6 +636,57 @@ c Total density
       enddo
 
       return
+      end
+
+!! ********************************************************************* !!
+!! subroutine: print_population_table                                    !!
+!! purpose: shared title/column-header/data/sum/fragment-breakdown       !!
+!! layout for the three 2-column (apost3d, Mulliken) atomic tables       !!
+!! (electron populations, atomic charges, spin populations) -- replaces  !!
+!! three near-identical copies of this block, previously inconsistent    !!
+!! in small ways (a stray "apost3D" instead of "apost3d" in one of the   !!
+!! three, an extra blank line before the fragment breakdown in two of    !!
+!! the three but not the first).                                         !!
+!! arguments:                                                            !!
+!! title    (in) -- print_box title, e.g. 'ELECTRON POPULATIONS'         !!
+!! fraglabel(in) -- fragment-breakdown label, e.g. 'Electron populations'!!
+!! arr      (in) -- the (maxat,2) table to print (qat/dummyvec/qsat)     !!
+!! tc1,tc2  (in) -- apost3d/Mulliken column sums, computed by the caller !!
+!!                  (the summation itself differs per table)             !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine print_population_table(title,fraglabel,arr,tc1,tc2)
+      use input_options_mod, only: idofr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /printout/iaccur
+      character*(*) title,fraglabel
+      dimension arr(maxat,2)
+      character*80 line
+
+      call print_box(title)
+      write(*,'(2x,a)') 'Atom   apost3d      Mulliken'
+      write(*,'(1x,a)') repeat('-',29)
+      call vprint(arr,nat,maxat,2)
+      write(*,'(1x,a)') repeat('-',29)
+      if(iaccur.eq.0) then
+       write(*,162) tc1,tc2
+      else
+       write(*,172) tc1,tc2
+      end if
+      write(*,*)
+
+      if (idofr.eq.1) then
+       line ='   FRAGMENT ANALYSIS : '//fraglabel
+       call group_by_frag_vec(2,line,arr)
+      end if
+
+      return
+
+ 162  format(1x,'    Sum  ',2(f10.6,2X))
+ 172  format(1x,'    Sum  ',2(f20.13,2X))
+
       end
 
 !! ********************************************************************* !!
@@ -639,42 +701,24 @@ c Total density
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine population_print_charges()
-      use input_options_mod, only: idofr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
-      common /printout/iaccur
       dimension dummyvec(maxat,2)
-      character*80 line
 
-c ELECTRON POPULATIONS
+!! electron populations -- straight sum of qat !!
       tc1=0.d0
       tc2=0.d0
       do i=1,nat
        tc1=tc1+qat(i,1)
        tc2=tc2+qat(i,2)
       enddo
-      print *,'  '
-      print *,'    ELECTRON POPULATIONS'
-      print *,'  '
-      print *,'  Atom   apost3d      Mulliken'
-      print *,' -----------------------------'
-      call vprint(qat,nat,maxat,2)
-      print *,' -----------------------------'
-      if(iaccur.eq.0) then
-       print 162, tc1, tc2
-      else
-       print 172, tc1, tc2
-      end if
+      call print_population_table('ELECTRON POPULATIONS',
+     +     'Electron populations',qat,tc1,tc2)
 
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Electron populations'
-       call group_by_frag_vec(2,line ,qat)
-      end if
-
-c PARTIAL CHARGES
+!! partial charges -- nuclear charge minus qat, atom by atom !!
       tc1=0.d0
       tc2=0.d0
       do i=1,nat
@@ -683,30 +727,10 @@ c PARTIAL CHARGES
        dummyvec(i,1)=zn(i)-qat(i,1)
        dummyvec(i,2)=zn(i)-qat(i,2)
       enddo
-      print *,'  '
-      print *,'    TOTAL ATOMIC CHARGES    '
-      print *,'  '
-      print *,'  Atom   apost3d      Mulliken'
-      print *,' -----------------------------'
-      call vprint(dummyvec,nat,maxat,2)
-      print *,' -----------------------------'
-      if(iaccur.eq.0) then
-       print 162, tc1, tc2
-      else
-       print 172, tc1, tc2
-      end if
-      print *,'  '
-
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Atomic Charges'
-       call group_by_frag_vec(2,line ,dummyvec)
-      end if
+      call print_population_table('TOTAL ATOMIC CHARGES',
+     +     'Atomic Charges',dummyvec,tc1,tc2)
 
       return
-
- 162  format(1x,'    Sum  ',2(f10.6,2X))
- 172  format(1x,'    Sum  ',2(f20.13,2X))
-
       end
 
 !! ********************************************************************* !!
@@ -729,12 +753,12 @@ c PARTIAL CHARGES
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /printout/iaccur
       dimension wp(nrad*nang*natoms),rho(nrad*nang*natoms)
       dimension omp(nrad*nang*natoms),omp2(nrad*nang*natoms,natoms)
       character*80 line
 
-c SPIN POPULATIONS
+!! spin populations -- straight sum of qsat, only for open-shell/       !!
+!! correlated-with-DM cases                                              !!
       if(kop.ne.0.OR.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)) then
        tc1=0.d0
        tc2=0.d0
@@ -742,26 +766,12 @@ c SPIN POPULATIONS
         tc1=tc1+qsat(i,1)
         tc2=tc2+qsat(i,2)
        enddo
-       print *,'  '
-       print *,'     SPIN POPULATIONS'
-       print *,'  '
-       print *,'  Atom   apost3D      Mulliken'
-       print *,' -----------------------------'
-       call vprint(qsat,nat,maxat,2)
-       print *,' -----------------------------'
-       if(iaccur.eq.0) then
-        print 162, tc1, tc2
-       else
-        print 172, tc1, tc2
-       end if
-       print *,'  '
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Spin Populations'
-       call group_by_frag_vec(2,line ,qsat)
-      end if
+       call print_population_table('SPIN POPULATIONS',
+     +      'Spin Populations',qsat,tc1,tc2)
       end if
 
-c OVERLAP POPULATIONS
+!! overlap populations -- op itself comes from opop (real-space) or     !!
+!! mull_opop (Mulliken); iopop=0 just takes the diagonal from qat        !!
       if(iopop.eq.0) then
        do i=1,nat
         op(i,i)=qat(i,1)
@@ -773,11 +783,9 @@ c OVERLAP POPULATIONS
       end if
 
       if(iopop.eq.1) then
-       print *,' '
-       print *,'          APOST3D  OVERLAP POPULATION MATRIX'
-       print *,' '
+       call print_box('APOST3D OVERLAP POPULATION MATRIX')
        call mprint(op,nat,maxat)
-       print *,'  '
+       write(*,*)
       if (idofr.eq.1) then
        line ='   FRAGMENT ANALYSIS : Overlap Populations'
        call group_by_frag_mat(0,line,op)
@@ -785,18 +793,14 @@ c OVERLAP POPULATIONS
       end if
 
       return
-
- 162  format(1x,'    Sum  ',2(f10.6,2X))
- 172  format(1x,'    Sum  ',2(f20.13,2X))
-
       end
 
 !! ********************************************************************* !!
 !! subroutine: bond_order_analysis                                       !!
 !! purpose: thin wrapper around fborder -- kept separate from            !!
-!! population_density/population_print on purpose, so a future second    !!
-!! bond-order scheme gets its own equally-thin subroutine instead of     !!
-!! being wedged into population math.                                    !!
+!! population_density/population_print_charges/population_print_overlap  !!
+!! on purpose, so a future second bond-order scheme gets its own         !!
+!! equally-thin subroutine instead of being wedged into population math. !!
 !! arguments:                                                            !!
 !! sat (in) -- per-atom AO overlap matrix, passed straight to fborder    !!
 !! author: MGimf                                                         !!
