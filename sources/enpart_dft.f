@@ -61,15 +61,15 @@
       if(id_xcfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xcfunc,XC_UNPOLARIZED)
         select case (xc_f90_info_family(xc_info))
-          case(XC_FAMILY_LDA)
-            call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2(1))
-          case(XC_FAMILY_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
-          case(XC_FAMILY_HYB_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
-          case(XC_FAMILY_MGGA)
+        case(XC_FAMILY_LDA)
+          call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2(1))
+        case(XC_FAMILY_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+        case(XC_FAMILY_HYB_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+        case(XC_FAMILY_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
-          case(XC_FAMILY_HYB_MGGA)
+        case(XC_FAMILY_HYB_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
         end select
         call xc_f90_func_end(xc_func)
@@ -79,15 +79,15 @@
       if(id_cfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_cfunc,XC_UNPOLARIZED)
         select case (xc_f90_info_family(xc_info))
-          case(XC_FAMILY_LDA)
-            call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2c(1))
-          case(XC_FAMILY_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2c(1))
-          case(XC_FAMILY_HYB_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2c(1))
-          case(XC_FAMILY_MGGA)
+        case(XC_FAMILY_LDA)
+          call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2c(1))
+        case(XC_FAMILY_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2c(1))
+        case(XC_FAMILY_HYB_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2c(1))
+        case(XC_FAMILY_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
-          case(XC_FAMILY_HYB_MGGA)
+        case(XC_FAMILY_HYB_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
         end select
         call xc_f90_func_end(xc_func)
@@ -97,15 +97,15 @@
       if(id_xfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_UNPOLARIZED)
         select case (xc_f90_info_family(xc_info))
-          case(XC_FAMILY_LDA)
-            call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2(1))
-          case(XC_FAMILY_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
-          case(XC_FAMILY_HYB_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
-          case(XC_FAMILY_MGGA)
+        case(XC_FAMILY_LDA)
+          call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2(1))
+        case(XC_FAMILY_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+        case(XC_FAMILY_HYB_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+        case(XC_FAMILY_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
-          case(XC_FAMILY_HYB_MGGA)
+        case(XC_FAMILY_HYB_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
         end select
         call xc_f90_func_end(xc_func)
@@ -196,26 +196,26 @@
 !! scrx(:,:)/sab(:,:,iatom), independent across atoms.                    !!
 !$OMP PARALLEL DO PRIVATE(iatom,nu,ii,mu,xx,jj,scrx)
       do iatom=1,nat
-       do nu=1,igr
-        do ii=1,nocc
-          xx=ZERO
-          do mu=1,igr
-            xx=xx+c(mu,ii)*sat(mu,nu,iatom)
+        do nu=1,igr
+          do ii=1,nocc
+            xx=ZERO
+            do mu=1,igr
+              xx=xx+c(mu,ii)*sat(mu,nu,iatom)
+            end do
+            scrx(nu,ii)=xx
           end do
-          scrx(nu,ii)=xx
         end do
-       end do
 
-       do ii=1,nocc
-        do jj=1,nocc
-          xx=ZERO
-          do nu=1,igr
-            xx=xx+c(nu,jj)*scrx(nu,ii)
+        do ii=1,nocc
+          do jj=1,nocc
+            xx=ZERO
+            do nu=1,igr
+              xx=xx+c(nu,jj)*scrx(nu,ii)
+            end do
+            sab(ii,jj,iatom)=xx
+            if(ii.ne.jj) sab(jj,ii,iatom)=xx
           end do
-          sab(ii,jj,iatom)=xx
-          if(ii.ne.jj) sab(jj,ii,iatom)=xx
         end do
-       end do
       end do
 !$OMP END PARALLEL DO
 
@@ -309,10 +309,10 @@
       call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
       do ii=1,nat
-       do jj=ii,nat
-         if(ii.ne.jj) exch2(jj,ii)=exch2(ii,jj)
-         exchen=exchen+exch2(ii,jj)
-       end do
+        do jj=ii,nat
+          if(ii.ne.jj) exch2(jj,ii)=exch2(ii,jj)
+          exchen=exchen+exch2(ii,jj)
+        end do
       end do
       call MPRINT2(exch2,nat,maxat)
       write(*,*) " "
@@ -357,9 +357,9 @@
       call print_box('FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS')
       exchen=ZERO
       do ii=1,nat
-       do jj=ii,nat
-         exchen=exchen+exch(ii,jj)
-       end do
+        do jj=ii,nat
+          exchen=exchen+exch(ii,jj)
+        end do
       end do
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
@@ -425,16 +425,16 @@
 !! AO gradient (ixyz component) from primitives. parallel over irun: each !!
 !! iteration writes only its own chp(irun,:), independent across points.  !!
 !$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
-         do irun=1,ipoints
-           do iact=1,nbasis
-             iactat=ihold(iact)
-             x=pcoord(irun,1)-coord(1,iactat)
-             y=pcoord(irun,2)-coord(2,iactat)
-             z=pcoord(irun,3)-coord(3,iactat)
-             rr=dsqrt(x**2.0d0+y**2.0d0+z**2.0d0)
-             f=0.d0
-             k=1
-             do while(nprimbas(k,iact).ne.0)
+        do irun=1,ipoints
+          do iact=1,nbasis
+            iactat=ihold(iact)
+            x=pcoord(irun,1)-coord(1,iactat)
+            y=pcoord(irun,2)-coord(2,iactat)
+            z=pcoord(irun,3)-coord(3,iactat)
+            rr=dsqrt(x**2.0d0+y**2.0d0+z**2.0d0)
+            f=0.d0
+            k=1
+            do while(nprimbas(k,iact).ne.0)
               ipr=nprimbas(k,iact)
               nn=nlm(ipr,1)
               ll=nlm(ipr,2)
@@ -455,31 +455,31 @@
               end if
               f=f+dx*coefpb(ipr,iact)
               k=k+1
-             enddo
-             chp(irun,iact)=f
-           enddo
-         enddo
+            enddo
+            chp(irun,iact)=f
+          enddo
+        enddo
 !$OMP END PARALLEL DO
 
-         call ao_to_mo_grid(ipoints,igr,nocc,c,chp,chpd)
+        call ao_to_mo_grid(ipoints,igr,nocc,c,chp,chpd)
 
 !! contract with chp2 (already MO-transformed by the caller). parallel   !!
 !! over k: each iteration only reads chp2(k,:)/chpd(k,:) and writes its  !!
 !! own scr(k) -- safe across the three ixyz passes since they run        !!
 !! serially, only the point loop within each pass is threaded.          !!
 !$OMP PARALLEL DO PRIVATE(k,i,j)
-         do k=1,ipoints
+        do k=1,ipoints
           do i=1,nocc
             do j=1,nocc
-             scr(k)=scr(k)+chp2(k,i)*chp2(k,j)*chpd(k,i)*chpd(k,j)
+              scr(k)=scr(k)+chp2(k,i)*chp2(k,j)*chpd(k,i)*chpd(k,j)
             end do
           end do
-         end do
+        end do
 !$OMP END PARALLEL DO
       end do
 
       do kk=1,ipoints
-       scr(kk)=16.0d0*scr(kk)
+        scr(kk)=16.0d0*scr(kk)
       end do
       deallocate(chpd,chp)
       end
@@ -515,7 +515,7 @@
 !! AO gradient (ixyz component) from primitives. parallel over irun: each !!
 !! iteration writes only its own chp(irun,:), independent across points.  !!
 !$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
-         do irun=1,itotps
+        do irun=1,itotps
           do iact=1,nbasis
             iactat=ihold(iact)
             x=pcoord(irun,1)-coord(1,iactat)
@@ -525,33 +525,33 @@
             f=0.d0
             k=1
             do while(nprimbas(k,iact).ne.0)
-             ipr=nprimbas(k,iact)
-             nn=nlm(ipr,1)
-             ll=nlm(ipr,2)
-             mm=nlm(ipr,3)
-             alpha=expp(ipr)
-             if(ixyz.eq.1) then
-               dx=-2.0d0*alpha*(x**(nn+1))
-               if(nn.ge.1) dx=dx+nn*x**(nn-1)
-               dx=dx*(y**ll)*(z**mm)*dexp(-expp(ipr)*(rr**2))
-             else if(ixyz.eq.2) then
-               dx=-2.0d0*alpha*(y**(ll+1))
-               if(ll.ge.1) dx=dx+ll*y**(ll-1)
-               dx=dx*(x**nn)*(z**mm)*dexp(-expp(ipr)*(rr**2))
-             else
-               dx=-2.0d0*alpha*(z**(mm+1))
-               if(mm.ge.1) dx=dx+mm*z**(mm-1)
-               dx=dx*(x**nn)*(y**ll)*dexp(-expp(ipr)*(rr**2))
-             end if
-             f=f+dx*coefpb(ipr,iact)
-             k=k+1
+              ipr=nprimbas(k,iact)
+              nn=nlm(ipr,1)
+              ll=nlm(ipr,2)
+              mm=nlm(ipr,3)
+              alpha=expp(ipr)
+              if(ixyz.eq.1) then
+                dx=-2.0d0*alpha*(x**(nn+1))
+                if(nn.ge.1) dx=dx+nn*x**(nn-1)
+                dx=dx*(y**ll)*(z**mm)*dexp(-expp(ipr)*(rr**2))
+              else if(ixyz.eq.2) then
+                dx=-2.0d0*alpha*(y**(ll+1))
+                if(ll.ge.1) dx=dx+ll*y**(ll-1)
+                dx=dx*(x**nn)*(z**mm)*dexp(-expp(ipr)*(rr**2))
+              else
+                dx=-2.0d0*alpha*(z**(mm+1))
+                if(mm.ge.1) dx=dx+mm*z**(mm-1)
+                dx=dx*(x**nn)*(y**ll)*dexp(-expp(ipr)*(rr**2))
+              end if
+              f=f+dx*coefpb(ipr,iact)
+              k=k+1
             enddo
             chp(irun,iact)=f
           enddo
-         enddo
+        enddo
 !$OMP END PARALLEL DO
 
-         call ao_to_mo_grid(itotps,igr,nocc,c,chp,chpd(1,1,ixyz))
+        call ao_to_mo_grid(itotps,igr,nocc,c,chp,chpd(1,1,ixyz))
 
       end do
       DEALLOCATE(chp)
@@ -592,7 +592,7 @@
 !! AO gradient (ixyz component) from primitives. parallel over irun: each !!
 !! iteration writes only its own chp(irun,:), independent across points.  !!
 !$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
-         do irun=1,itotps
+        do irun=1,itotps
           do iact=1,nbasis
             iactat=ihold(iact)
             x=pcoord(irun,1)-coord(1,iactat)
@@ -602,34 +602,34 @@
             f=0.d0
             k=1
             do while(nprimbas(k,iact).ne.0)
-             ipr=nprimbas(k,iact)
-             nn=nlm(ipr,1)
-             ll=nlm(ipr,2)
-             mm=nlm(ipr,3)
-             alpha=expp(ipr)
-             if(ixyz.eq.1) then
-               dx=-2.0d0*alpha*(x**(nn+1))
-               if(nn.ge.1) dx=dx+nn*x**(nn-1)
-               dx=dx*(y**ll)*(z**mm)*dexp(-expp(ipr)*(rr**2))
-             else if(ixyz.eq.2) then
-               dx=-2.0d0*alpha*(y**(ll+1))
-               if(ll.ge.1) dx=dx+ll*y**(ll-1)
-               dx=dx*(x**nn)*(z**mm)*dexp(-expp(ipr)*(rr**2))
-             else
-               dx=-2.0d0*alpha*(z**(mm+1))
-               if(mm.ge.1) dx=dx+mm*z**(mm-1)
-               dx=dx*(x**nn)*(y**ll)*dexp(-expp(ipr)*(rr**2))
-             end if
-             f=f+dx*coefpb(ipr,iact)
-             k=k+1
+              ipr=nprimbas(k,iact)
+              nn=nlm(ipr,1)
+              ll=nlm(ipr,2)
+              mm=nlm(ipr,3)
+              alpha=expp(ipr)
+              if(ixyz.eq.1) then
+                dx=-2.0d0*alpha*(x**(nn+1))
+                if(nn.ge.1) dx=dx+nn*x**(nn-1)
+                dx=dx*(y**ll)*(z**mm)*dexp(-expp(ipr)*(rr**2))
+              else if(ixyz.eq.2) then
+                dx=-2.0d0*alpha*(y**(ll+1))
+                if(ll.ge.1) dx=dx+ll*y**(ll-1)
+                dx=dx*(x**nn)*(z**mm)*dexp(-expp(ipr)*(rr**2))
+              else
+                dx=-2.0d0*alpha*(z**(mm+1))
+                if(mm.ge.1) dx=dx+mm*z**(mm-1)
+                dx=dx*(x**nn)*(y**ll)*dexp(-expp(ipr)*(rr**2))
+              end if
+              f=f+dx*coefpb(ipr,iact)
+              k=k+1
             enddo
             chp(irun,iact)=f
           enddo
-         enddo
+        enddo
 !$OMP END PARALLEL DO
 
-         call ao_to_mo_grid(itotps,igr,nalf,c,chp,chpd(1,1,ixyz))
-         call ao_to_mo_grid(itotps,igr,nb,cb,chp,chpbd(1,1,ixyz))
+        call ao_to_mo_grid(itotps,igr,nalf,c,chp,chpd(1,1,ixyz))
+        call ao_to_mo_grid(itotps,igr,nb,cb,chp,chpbd(1,1,ixyz))
 
       end do
       DEALLOCATE(chp)
@@ -673,18 +673,18 @@
 !! across the three ixyz passes since they run serially, only the point  !!
 !! loop within each pass is threaded.                                    !!
 !$OMP PARALLEL DO PRIVATE(irun,w1,w2,xx,ii,jj,gab)
-         do irun=1,itotps
-            w1=omp2(irun,iat)
-            w2=omp2(irun,kat)
-            xx=ZERO
-            do ii=1,nocc
-              do jj=1,nocc
-                gab=sab(ii,jj,iat)*w2+sab(ii,jj,kat)*w1
-                xx=xx+gab*chpd(irun,jj,ixyz)*chp2(irun,ii)
-              end do
+        do irun=1,itotps
+          w1=omp2(irun,iat)
+          w2=omp2(irun,kat)
+          xx=ZERO
+          do ii=1,nocc
+            do jj=1,nocc
+              gab=sab(ii,jj,iat)*w2+sab(ii,jj,kat)*w1
+              xx=xx+gab*chpd(irun,jj,ixyz)*chp2(irun,ii)
             end do
-            scr(irun)=scr(irun)+xx*xx
-         end do
+          end do
+          scr(irun)=scr(irun)+xx*xx
+        end do
 !$OMP END PARALLEL DO
       end do
 
@@ -740,15 +740,15 @@
       if(id_xcfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xcfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
-          case(XC_FAMILY_LDA)
-            call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2(1))
-          case(XC_FAMILY_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
-          case(XC_FAMILY_HYB_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
-          case(XC_FAMILY_MGGA)
+        case(XC_FAMILY_LDA)
+          call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2(1))
+        case(XC_FAMILY_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+        case(XC_FAMILY_HYB_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+        case(XC_FAMILY_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
-          case(XC_FAMILY_HYB_MGGA)
+        case(XC_FAMILY_HYB_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
         end select
         call xc_f90_func_end(xc_func)
@@ -758,15 +758,15 @@
       if(id_cfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_cfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
-          case(XC_FAMILY_LDA)
-            call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2c(1))
-          case(XC_FAMILY_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2c(1))
-          case(XC_FAMILY_HYB_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2c(1))
-          case(XC_FAMILY_MGGA)
+        case(XC_FAMILY_LDA)
+          call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2c(1))
+        case(XC_FAMILY_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2c(1))
+        case(XC_FAMILY_HYB_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2c(1))
+        case(XC_FAMILY_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
-          case(XC_FAMILY_HYB_MGGA)
+        case(XC_FAMILY_HYB_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
         end select
         call xc_f90_func_end(xc_func)
@@ -776,15 +776,15 @@
       if(id_xfunc.ne.0) then
         call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_POLARIZED)
         select case (xc_f90_info_family(xc_info))
-          case(XC_FAMILY_LDA)
-            call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2(1))
-          case(XC_FAMILY_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
-          case(XC_FAMILY_HYB_GGA)
-            call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
-          case(XC_FAMILY_MGGA)
+        case(XC_FAMILY_LDA)
+          call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2(1))
+        case(XC_FAMILY_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+        case(XC_FAMILY_HYB_GGA)
+          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+        case(XC_FAMILY_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
-          case(XC_FAMILY_HYB_MGGA)
+        case(XC_FAMILY_HYB_MGGA)
 !            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
         end select
         call xc_f90_func_end(xc_func)
@@ -1149,8 +1149,8 @@
               gab=sab(ii,jj,iat)*w2+sab(ii,jj,kat)*w1
               xxa=xxa+gab*chpd(irun,jj,ixyz)*chp2(irun,ii)
               if(jj.le.nb.and.ii.le.nb) then
-               gab2=sab2(ii,jj,iat)*w2+sab2(ii,jj,kat)*w1
-               xxb=xxb+gab2*chpbd(irun,jj,ixyz)*chp3(irun,ii)
+                gab2=sab2(ii,jj,iat)*w2+sab2(ii,jj,kat)*w1
+                xxb=xxb+gab2*chpbd(irun,jj,ixyz)*chp3(irun,ii)
               end if
             end do
           end do
@@ -1214,49 +1214,49 @@
         call xc_f90_info_refs(xc_info,ii,name_ref)
       end do
       select case(xc_f90_info_kind(xc_info))
-        case(XC_EXCHANGE)
-          write(*,*) " Functional type --> exchange"
-        case(XC_CORRELATION)
-          write(*,*) " Functional type --> correlation"
-        case(XC_EXCHANGE_CORRELATION)
-          write(*,*) " Functional type --> exchange-correlation"
-        case(XC_KINETIC)
-          write(*,*) " Functional type --> kinetic energy"
-        case default
-          write(*,*) " Functional type --> unknown"
+      case(XC_EXCHANGE)
+        write(*,*) " Functional type --> exchange"
+      case(XC_CORRELATION)
+        write(*,*) " Functional type --> correlation"
+      case(XC_EXCHANGE_CORRELATION)
+        write(*,*) " Functional type --> exchange-correlation"
+      case(XC_KINETIC)
+        write(*,*) " Functional type --> kinetic energy"
+      case default
+        write(*,*) " Functional type --> unknown"
       end select
 
 !! itype: 1 LDA, 2 GGA, 3 meta-GGA. Hybrid functionals get xmix>0 as well. !!
 !! Caller stores the returned value in iopt(55) for later use. !!
       itype=0
       select case(xc_f90_info_family(xc_info))
-        case(XC_FAMILY_UNKNOWN)
-          write(*,*) " Family of the functional unknown"
-          stop
-        case(XC_FAMILY_NONE)
-          write(*,*) " Non-Family identified functional"
-          stop
-        case(XC_FAMILY_LDA)
-          write(*,*) " LDA functional selected"
-          itype=1
-        case(XC_FAMILY_GGA)
-          write(*,*) " GGA functional selected"
-          itype=2
-        case(XC_FAMILY_HYB_GGA)
-          write(*,*) " HYBRID-GGA functional selected"
-          write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
-          itype=2
-        case(XC_FAMILY_MGGA)
-          write(*,*) " META-GGA functional selected"
-          itype=3
-          write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
-          stop
-        case(XC_FAMILY_HYB_MGGA)
-          write(*,*) " HYBRID-META-GGA functional selected"
-          write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
-          itype=3
-          write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
-          stop
+      case(XC_FAMILY_UNKNOWN)
+        write(*,*) " Family of the functional unknown"
+        stop
+      case(XC_FAMILY_NONE)
+        write(*,*) " Non-Family identified functional"
+        stop
+      case(XC_FAMILY_LDA)
+        write(*,*) " LDA functional selected"
+        itype=1
+      case(XC_FAMILY_GGA)
+        write(*,*) " GGA functional selected"
+        itype=2
+      case(XC_FAMILY_HYB_GGA)
+        write(*,*) " HYBRID-GGA functional selected"
+        write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
+        itype=2
+      case(XC_FAMILY_MGGA)
+        write(*,*) " META-GGA functional selected"
+        itype=3
+        write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
+        stop
+      case(XC_FAMILY_HYB_MGGA)
+        write(*,*) " HYBRID-META-GGA functional selected"
+        write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
+        itype=3
+        write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
+        stop
       end select
       call xc_f90_func_end(xc_func)
 
@@ -1294,9 +1294,9 @@
       ALLOCATE(chpd(ipoints,nalf),chp(ipoints,igr),chpbd(ipoints,nb))
 
       do kk=1,ipoints
-       do jj=1,3
-        scr(jj,kk)=ZERO
-       end do
+        do jj=1,3
+          scr(jj,kk)=ZERO
+        end do
       end do
 
       do ixyz=1,3
@@ -1304,7 +1304,7 @@
 !! AO gradient (ixyz component) from primitives. parallel over irun: each !!
 !! iteration writes only its own chp(irun,:), independent across points.  !!
 !$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm,alpha,dx)
-         do irun=1,ipoints
+        do irun=1,ipoints
           do iact=1,nbasis
             iactat=ihold(iact)
             x=pcoord(irun,1)-coord(1,iactat)
@@ -1314,56 +1314,56 @@
             f=0.d0
             k=1
             do while(nprimbas(k,iact).ne.0)
-             ipr=nprimbas(k,iact)
-             nn=nlm(ipr,1)
-             ll=nlm(ipr,2)
-             mm=nlm(ipr,3)
-             alpha=expp(ipr)
-             if(ixyz.eq.1) then
-               dx=-2.0d0*alpha*(x**(nn+1))
-               if(nn.ge.1) dx=dx+nn*x**(nn-1)
-               dx=dx*(y**ll)*(z**mm)*dexp(-expp(ipr)*(rr**2))
-             else if(ixyz.eq.2) then
-               dx=-2.0d0*alpha*(y**(ll+1))
-               if(ll.ge.1) dx=dx+ll*y**(ll-1)
-               dx=dx*(x**nn)*(z**mm)*dexp(-expp(ipr)*(rr**2))
-             else
-               dx=-2.0d0*alpha*(z**(mm+1))
-               if(mm.ge.1) dx=dx+mm*z**(mm-1)
-               dx=dx*(x**nn)*(y**ll)*dexp(-expp(ipr)*(rr**2))
-             end if
-             f=f+dx*coefpb(ipr,iact)
-             k=k+1
+              ipr=nprimbas(k,iact)
+              nn=nlm(ipr,1)
+              ll=nlm(ipr,2)
+              mm=nlm(ipr,3)
+              alpha=expp(ipr)
+              if(ixyz.eq.1) then
+                dx=-2.0d0*alpha*(x**(nn+1))
+                if(nn.ge.1) dx=dx+nn*x**(nn-1)
+                dx=dx*(y**ll)*(z**mm)*dexp(-expp(ipr)*(rr**2))
+              else if(ixyz.eq.2) then
+                dx=-2.0d0*alpha*(y**(ll+1))
+                if(ll.ge.1) dx=dx+ll*y**(ll-1)
+                dx=dx*(x**nn)*(z**mm)*dexp(-expp(ipr)*(rr**2))
+              else
+                dx=-2.0d0*alpha*(z**(mm+1))
+                if(mm.ge.1) dx=dx+mm*z**(mm-1)
+                dx=dx*(x**nn)*(y**ll)*dexp(-expp(ipr)*(rr**2))
+              end if
+              f=f+dx*coefpb(ipr,iact)
+              k=k+1
             enddo
             chp(irun,iact)=f
           enddo
-         enddo
+        enddo
 !$OMP END PARALLEL DO
 
-         call ao_to_mo_grid(ipoints,igr,nalf,c,chp,chpd)
-         call ao_to_mo_grid(ipoints,igr,nb,cb,chp,chpbd)
+        call ao_to_mo_grid(ipoints,igr,nalf,c,chp,chpd)
+        call ao_to_mo_grid(ipoints,igr,nb,cb,chp,chpbd)
 
 !! sigma for libxc, order up-up/up-down/down-down. parallel over k: each !!
 !! iteration only reads chp2(k,:)/chp3(k,:)/chpd(k,:)/chpbd(k,:) and     !!
 !! writes its own scr(:,k) -- safe across the three ixyz passes since    !!
 !! they run serially, only the point loop within each pass is threaded. !!
 !$OMP PARALLEL DO PRIVATE(k,i,j)
-         do k=1,ipoints
-           do i=1,nalf
-             do j=1,nalf
-               scr(1,k)=scr(1,k)+chp2(k,i)*chp2(k,j)*chpd(k,i)*chpd(k,j)
-               if(j.le.nb) scr(2,k)=scr(2,k)+chp2(k,i)*chp3(k,j)*chpd(k,i)*chpbd(k,j)
-               if(i.le.nb.and.j.le.nb) scr(3,k)=scr(3,k)+chp3(k,i)*chp3(k,j)*chpbd(k,i)*chpbd(k,j)
-             end do
-           end do
-         end do
+        do k=1,ipoints
+          do i=1,nalf
+            do j=1,nalf
+              scr(1,k)=scr(1,k)+chp2(k,i)*chp2(k,j)*chpd(k,i)*chpd(k,j)
+              if(j.le.nb) scr(2,k)=scr(2,k)+chp2(k,i)*chp3(k,j)*chpd(k,i)*chpbd(k,j)
+              if(i.le.nb.and.j.le.nb) scr(3,k)=scr(3,k)+chp3(k,i)*chp3(k,j)*chpbd(k,i)*chpbd(k,j)
+            end do
+          end do
+        end do
 !$OMP END PARALLEL DO
       end do
 
       do k=1,ipoints
         do j=1,3
-        scr(j,k)=4.0d0*scr(j,k)
-       end do
+          scr(j,k)=4.0d0*scr(j,k)
+        end do
       end do
       DEALLOCATE(chpd,chpbd,chp)
       end
