@@ -99,11 +99,15 @@ c      -------------------------------------------------------------------------
 !!      grid) then sequential dispatch per requested analysis:      !!
 !!      population/local spin/POLAR/PCA/EFFAO-EOS/LOBA/ENPART       !!
 !!      (one- then two-electron)/OSLO/X-ray scattering              !!
-!! several sections are commented out pending evaluation (DAFH,     !!
-!! EDAIQA state-construction dispatch, DFT-DM1/HIRAO                !!
-!! approximations, legacy topology/effao calls) -- catalogued,      !!
-!! not deleted, pending the main.f skeleton assessment (see         !!
-!! Planned Work).                                                   !!
+!! population/bond-order/PCA analysis are delegated to pop.f        !!
+!! (population_density/population_print_charges/                    !!
+!! population_print_overlap/bond_order_analysis/pca_analysis) --    !!
+!! this is the final shape of the main.f/pop.f/read_input.f split,  !!
+!! no further extraction stages planned as of 2026-08-16.           !!
+!! several sections are commented out, kept pending evaluation      !!
+!! (DAFH, EDAIQA state-construction dispatch, DFT-DM1/HIRAO         !!
+!! approximations, legacy topology/effao calls) -- catalogued, not  !!
+!! deleted, see this file's own Known Issues in the project notes.  !!
 !! **************************************************************** !!
 
       use basis_set
@@ -113,23 +117,22 @@ c      -------------------------------------------------------------------------
       use input_options_mod
       implicit real*8(a-h,o-z)
       include 'parameter.h'
-c general parameters
+!! general parameters !!
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
-c orbitals and density matrices
-c atom and fragment lists
+!! orbitals and density matrices; atom and fragment lists !!
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-c populations and EOS
+!! populations and EOS !!
       common /loba/ oxi(maxat),errsav(maxat),elec(maxat),effpop(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-c local spin
+!! local spin !!
       common /localspin/xlsa(maxat,maxat),ua(maxat)
-c Enpart
+!! Enpart !!
       common /exchg/exch(maxat,maxat),xmix
-c TFVC features
+!! TFVC features !!
       common /achi/achi(maxat,maxat),ibcp
       common /erf/aerf,ierf
 !! MODGRID (diatXC) features !!
@@ -138,28 +141,27 @@ c TFVC features
 !! EDAIQA features !!
       common /edaiqa/xen,xcoul,xnn
       common /edaiqa2/i2deda,iipoints,xptxyz(2,3)
-c NLOP features
+!! NLOP features !!
       common /twoel/twoeltoler
       common /efield/field(4),edipole
-c printing and internal options
+!! printing and internal options !!
       common /filename/name0
       common /printout/iaccur
       common /iops/iopt(200)
-c for enpart
+!! for enpart !!
       dimension eto(maxat,maxat)
       character*60 name,name2,namepat,name3,name0
       character*80 line
-c for testing
+!! for testing !!
       dimension xhess(3,3)
-C
+
       allocatable wp(:),omp(:),omp2(:,:),chp(:,:),pcoord(:,:),rho(:)
       allocatable xkdens(:)
       allocatable ibaspoint(:)
       allocatable sss(:,:),sssi(:,:)
-c
       allocatable sat(:,:,:)
       allocatable dm1(:,:),dm2(:,:,:,:)
-C
+
 !! TO CHANGE !!
       allocatable orbpop(:)
       allocatable rho_orb(:,:)
@@ -170,56 +172,41 @@ C
       call cpu_time(time)
       call get_wall_time(wtime)
 
-CCCCCCCCCCCCCCCCCCCCCC
-C PROCESSING ARGUMENTS
-CCCCCCCCCCCCCCCCCCCCC
+!! Processing arguments !!
 
       CALL GETARG(1,name0)
       if(name0.ne."") then
-       j=len(name0)     
-       do i=1,j
-        if(name0(i:i).eq.' ') then
-         l=i-1
-         go to 10
-        end if
-       end do
+        j=len(name0)     
+        do i=1,j
+          if(name0(i:i).eq.' ') then
+            l=i-1
+            go to 10
+          end if
+        end do
 10     name=name0(1:l)//".fchk"
-       name2=name0(1:l)//".scr"
-       name3=name0(1:l)//".inp"
-       namepat=name0(1:l)
+        name2=name0(1:l)//".scr"
+        name3=name0(1:l)//".inp"
+        namepat=name0(1:l)
       else
 9999   stop 'The required input filename is missing'
       end if
 
-C print version info 
+!! print version info !!
       call kiir()
 
-CCCCCCCCCCCCCCCCCCCCC
-C PROCESSING INP FILE 
-CCCCCCCCCCCCCCCCCCCCC
+!! Processing .inp file !!
 
       open (16,file=name3,err=9999)
       open (15,file=name,err=9999)
 
       call read_input()
 
+!! kop=1 -> unrestricted calculation; iposthf -> correlated             !!
+!! calculation; icorr=0 -> no external dm1/2 provided; icas=1 ->        !!
+!! CASSCF calculation; icisd -> CISD calculation; idono=1 -> do         !!
+!! natural orbitals, idono=0 -> restricted SD calculation.              !!
 
-CCCCCCCCCCCCCCCCCCCCCCCCC
-C END PROCESSING INP FILE 
-CCCCCCCCCCCCCCCCCCCCCCCCC
-
-
-C kop=1 -> unrestricted calculation
-C iposthf -> Correlated calculation
-C icorr=0 -> no external dm1/2 provided
-C icas=1 -> CASSCF calculation
-C icisd -> CISD calculation
-c idono=1 -> Do natural orbitals 
-c idono=0 -> Restricted SD calculation 
-
-CCCCCCCCCCCCCCCCCCCCCCC
-C DEPENDENCIES & TO DO
-CCCCCCCCCCCCCCCCCCCCCCC
+!! Dependencies and cross-keyword validation !!
       iposthf=0
       idono=0
       if(icas.eq.1.or.icisd.eq.1) iposthf=1
@@ -227,8 +214,8 @@ CCCCCCCCCCCCCCCCCCCCCCC
       if(iposthf.eq.1.or.kop.eq.1) idono=1
 
       if(iposthf.eq.1) then
-       if(ispin.eq.1.and.icorr.lt.2) stop ' Local Spin needs dm1 and dm2 for correlated WFs'
-       if(ienpart.eq.1.and.icorr.lt.2) stop ' Enpart needs dm1 and dm2 for correlated WFs'
+        if(ispin.eq.1.and.icorr.lt.2) stop ' Local Spin needs dm1 and dm2 for correlated WFs'
+        if(ienpart.eq.1.and.icorr.lt.2) stop ' Enpart needs dm1 and dm2 for correlated WFs'
       end if
       if(iqtaim.eq.1) stop'This version can not do QTAIM'
 
@@ -236,26 +223,26 @@ CCCCCCCCCCCCCCCCCCCCCCC
       if(imulli.gt.1.or.iqtaim.eq.1) iopop=0
       if(ihirsh.ne.0.and.idoat.eq.1) stop'Cant do HIRSH with DOATOMS'
       if(ispin.eq.1.and.idono.eq.0)  then
-       write(*,*) 'No Local Spin Analysis needed for Restricted SD WFs'
-       ispin=0
+        write(*,*) 'No Local Spin Analysis needed for Restricted SD WFs'
+        ispin=0
       end if
       if(imulli.ne.0.and.ienpart.ne.0)  then
-       write(*,*) 'Can not do ENPART with Hilbert-space analysis'
-       ienpart=0
+        write(*,*) 'Can not do ENPART with Hilbert-space analysis'
+        ienpart=0
       end if
       if(iqtaim.ne.0.and.ienpart.ne.0)  then
-       write(*,*) 'Can not do ENPART with QTAIM '
-       ienpart=0
+        write(*,*) 'Can not do ENPART with QTAIM '
+        ienpart=0
       end if
       if(ieos.eq.1.and.idoat.eq.1) stop 'Cant do EOS with DOATOMS'
 
       if(idoint.eq.1) then
         write(*,*) ' Will do atomic overlaps for FCALC'
         if(iwfn.eq.1) then
-         write(*,*) ' Will use orbitals from wfn file'
-         write(*,*) ' Assuming orbitals are on fort.92'
+          write(*,*) ' Will use orbitals from wfn file'
+          write(*,*) ' Assuming orbitals are on fort.92'
 c possible call system here...
-       end if
+        end if
       end if
       
       if(kop.eq.0.and.ispin.eq.1) then
@@ -491,7 +478,7 @@ CCCCCCCCCCCCC
 c END OPTIONS LIST
 CCCCCCCCCCCCC
 
-c Natural orbitals from P-matrix in FChk
+!! Natural orbitals from P-matrix in .fchk !!
       if (idono.eq.1) call gennatural()
 
       write(*,*)
@@ -501,88 +488,78 @@ c Natural orbitals from P-matrix in FChk
       time=time2
       wtime=wtime2
 
-C density at the iatdens atom
-      if(iatdens.ne.0) call atdens_int(Rmax,iatdens) 
+!! density at the iatdens atom !!
+      if(iatdens.ne.0) call atdens_int(Rmax,iatdens)
       if(inopop.eq.1) stop 'Normal termination of APOST3D'
 
-c set atomic radii just in case needed
-       call prepar()
+!! set atomic radii just in case needed !!
+      call prepar()
 
-c Do just Mulliken-type analysis...either int files for fcalc or effao
-c or readint files 
+!! Mulliken-type analysis, either int files for FCALC or effao/readint !!
+!! files                                                                !!
       ndim=igr
       if(imulli.ge.1) then
-       allocate (sat(ndim,ndim,nat))
-       if(imulli.eq.1) then
-        call tomull(sat)
-       else if(imulli.eq.2.or.imulli.eq.3) then
-        write(*,*) ' Doing Hilbert-space analysis in Lowdin basis'
-        call tolow(sat)
-       else if(imulli.eq.4) then
-        write(*,*) ' Doing Hilbert-space analysis in NAO basis'
-        call tonao(sat)
-       else if(imulli.eq.5) then
-        write(*,*) ' Doing Hilbert-space analysis in weighted Lowdin ba
-     +   sis'
-        call tolow2(sat)
-       end if
+        allocate (sat(ndim,ndim,nat))
+        if(imulli.eq.1) then
+          call tomull(sat)
+        else if(imulli.eq.2.or.imulli.eq.3) then
+          write(*,*) ' Doing Hilbert-space analysis in Lowdin basis'
+          call tolow(sat)
+        else if(imulli.eq.4) then
+          write(*,*) ' Doing Hilbert-space analysis in NAO basis'
+          call tonao(sat)
+        else if(imulli.eq.5) then
+          write(*,*) ' Doing Hilbert-space analysis in weighted Lowdin ba
+     +      sis'
+          call tolow2(sat)
+        end if
 
 !      else if(iqtaim.eq.2) then
 !       ndim=nocc
 !       allocate (sat(ndim,ndim,nat))
 !       call readintfiles(sat)
        
-       else
-CCCCCCCCCCCCCCCCCCC
-C PREPARE FOR NUMERICAL INTEGRATIONS
-CCCCCCCCCCCCCCCCCCC
+      else
+!! Prepare for numerical integrations !!
 
         call build_integration_grid(ienpart, ipolar,ifinegrid)
 
-       iatps=nang*nrad
-       itotps=nat*iatps
-       allocate (wp(itotps),omp(itotps),omp2(itotps,nat))
-       allocate (chp(itotps,ndim),rho(itotps))
-       allocate (pcoord(itotps,3),ibaspoint(itotps))
+        iatps=nang*nrad
+        itotps=nat*iatps
+        allocate (wp(itotps),omp(itotps),omp2(itotps,nat))
+        allocate (chp(itotps,ndim),rho(itotps))
+        allocate (pcoord(itotps,3),ibaspoint(itotps))
 
 ! init populations to zero
-       do i=1,nat
-        qat(i,1)=ZERO
-       end do
+        do i=1,nat
+          qat(i,1)=ZERO
+        end do
 
 ! Prepare for Becke
-       if(ierf.ne.1) then
-         write(*,'(A20,i5)') ' Using stiffness k :',istiff
-       else
-        write(*,'(a34,f8.4)') 'USING ADJUSTABLE PROFILE WITH A= ',aerf
-       end if
-       if(ibcp.eq.1) call khi()
-       if(ihirsh.eq.1.or.ihirsh.eq.2.or.ielcount.eq.1) call makeatdens
+        if(ierf.ne.1) then
+          write(*,'(A20,i5)') ' Using stiffness k :',istiff
+        else
+          write(*,'(a34,f8.4)') 'USING ADJUSTABLE PROFILE WITH A= ',aerf
+        end if
+        if(ibcp.eq.1) call khi()
+        if(ihirsh.eq.1.or.ihirsh.eq.2.or.ielcount.eq.1) call makeatdens
  
-       iiter=1
-       call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,iiter)
+        iiter=1
+        call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,iiter)
 
-CCCCCCCCCCCCCCC
-C DO OS FROM LOCALIZED MOs
-CCCCCCCCCCCCCCC
+!! OS from localized MOs (centroids) !!
+        if(ieoscent.eq.1) then
+          write(*,*) 'Doing OS from centroids of localized orbitals...'
+          call eos_centroid(itotps,chp,wp,omp,pcoord)
+          stop
+        end if
 
-!! CENTROIDS !!
-      if(ieoscent.eq.1) then
-        write(*,*) 'Doing OS from centroids of localized orbitals...'
-        call eos_centroid(itotps,chp,wp,omp,pcoord)
-        stop
-      end if
-
-CCCCCCCCCCCCCCCCC
-C INTEGRATE ATOMIC OVERLAP BY DEFAULT
-CCCCCCCCCCCCCCCCC
-       allocate (sat(ndim,ndim,nat))
-       call numint_sat(ndim,itotps,nat,wp,omp,omp2,chp,ibaspoint,sat)
+!! Integrate atomic overlap by default !!
+        allocate (sat(ndim,ndim,nat))
+        call numint_sat(ndim,itotps,nat,wp,omp,omp2,chp,ibaspoint,sat)
 
       end if
-CCCCCCCCCCCCCCCCCCC
-C END OF PREPARATION FOR NUMERICAL INTEGRATIONS
-CCCCCCCCCCCCCCCCCCC
+!! end of preparation for numerical integrations !!
 
 !! atomic-domain partition time, covers both branches above (Hilbert    !!
 !! and real-space).                                                     !!
@@ -593,32 +570,25 @@ CCCCCCCCCCCCCCCCCCC
       wtime=wtime2
 
 
-CCCCCCCCCCCCCCCCC
-c CORRELATED WFs INPUT
-C  Needed dm1 and/or dm2 files 
-CCCCCCCCCCCCCCCCC
+!! Correlated-WF input, needs dm1 and/or dm2 files !!
 
-c cas cisd specifications
+!! cas/cisd specifications !!
       nelec=nalf+nb
       if(icorr.ne.0) then
-        print *,' -------------------------------'
-        print *,'  POST-HARTREE-FOCK CALCULATION '
-        print *,' -------------------------------'
-        print *,' '
+        call print_box('Post-Hartree-Fock calculation')
 
         if(icisd.eq.1) nspinorb=nbasis*2
 
-        print *,'Number of core + active spin-orbitals : ',nspinorb
-        print *,'Number of electrons : ',nelec
-        print *,'Number of basis functions :',nbasis
-        print *,' '
+        write(*,*) 'Number of core + active spin-orbitals : ',nspinorb
+        write(*,*) 'Number of electrons : ',nelec
+        write(*,*) 'Number of basis functions :',nbasis
+        write(*,*)
 
-
-        print *,'DM1 input starts'
+        write(*,*) 'DM1 input starts'
         ALLOCATE(dm1(nspinorb,nspinorb))
         call dm1input(dm1)
         if(icorr.eq.2) then
-          print *,'DM2 input starts'
+          write(*,*) 'DM2 input starts'
           norb=nspinorb/2
           ALLOCATE(dm2(norb,norb,norb,norb))
           if(iorca.eq.1.or.ipyscf.eq.1) then
@@ -630,14 +600,9 @@ c cas cisd specifications
       end if
 
 
-CCCCCCCCCCCCCCCCC
-c END CORRELATED WFs INPUT 
-CCCCCCCCCCCCCCCCC
+!! end of correlated-WF input !!
 
-
-CCCCCCCCCCCCCCC
-C DO POPULATION ANALYSIS
-CCCCCCCCCCCCCCC
+!! Population analysis !!
       call population_density(sat)
 
 !       write(*,*) 'idoint',idoint
@@ -646,16 +611,14 @@ CCCCCCCCCCCCCCC
       call population_print_charges()
 
       if(ielcount.eq.1) then
-       iatps=nang*nrad
-       CALL NCTAIM(iatps,wp,omp,omp2,nat,sat,igr,ibaspoint,chp)
+        iatps=nang*nrad
+        CALL NCTAIM(iatps,wp,omp,omp2,nat,sat,igr,ibaspoint,chp)
       end if
 
       call population_print_overlap(wp,omp,omp2,rho)
 
-CCCCCCCCCCCCCCC
-c Bond orders, valences, number of eff. unpaired electrons
-CCCCCCCCCCCCCCC
-       call bond_order_analysis(sat)
+!! Bond orders, valences, number of effectively unpaired electrons !!
+      call bond_order_analysis(sat)
 c
       write(*,*)
       call cpu_time(time2)
@@ -664,65 +627,47 @@ c
       time=time2
       wtime=wtime2
 
-CCCCCCCCCCCCCCC
-C Local Spin decomp for single-determinant WF
-CCCCCCCCCCCCCCC
-       if(ispin.eq.1.and.icas.eq.0.and.icisd.eq.0) then
-        print *,' '
-        print *,' ---------------------------'
-        print *,'  DOING LOCAL SPIN ANALYSIS '
-        print *,'   Single-determinant case  '
-        print *,' ---------------------------'
-        print *,' '
+!! Local spin decomposition, single-determinant WF !!
+      if(ispin.eq.1.and.icas.eq.0.and.icisd.eq.0) then
+        call print_box('Doing local spin analysis')
+        write(*,'(3x,a)') 'Single-determinant case'
+        write(*,*)
         call fspindec(sat)
         if (idofr.eq.1) then 
-         line ='   FRAGMENT ANALYSIS : Local Spin Analysis'
-         call group_by_frag_mat(0,line ,xlsa)
-         line ='   FRAGMENT ANALYSIS : Num. eff. unpaired elec.'
-         call group_by_frag_vec(1,line ,ua)
+          line ='   FRAGMENT ANALYSIS : Local Spin Analysis'
+          call group_by_frag_mat(0,line ,xlsa)
+          line ='   FRAGMENT ANALYSIS : Num. eff. unpaired elec.'
+          call group_by_frag_vec(1,line ,ua)
         end if
-       end if
-
-CCCCCCCCCCCCCCC
-C LOCAL SPIN & DIs for CORRELATED WFs         
-C  Needed dm1 and/or dm2 files produced by DMN code (E. Matito)
-CCCCCCCCCCCCCCC
-      if((icas.eq.1.or.icisd.eq.1).and.ispin.eq.1)then
-       print *,' '
-       print *,' ---------------------------'
-       print *,'  DOING LOCAL SPIN ANALYSIS '
-       print *,' Localization/Delocalization' 
-       print *,'        Correlated WF       '
-       print *,' ---------------------------'
-       print *,' '
-       call spincorr(sat,dm1,dm2)
-       call cpu_time(time2)
-       call get_wall_time(wtime2)
-       call print_timer('local spin analysis',time2-time,wtime2-wtime)
-       time=time2
-       wtime=wtime2
       end if
 
-CCCCCCCCCCCCCCC
-C NONLINEAR OPTICAL PROPERTIES          
-CCCCCCCCCCCCCCC
+!! Local spin and DIs for correlated WFs, needs dm1/dm2 from the DMN   !!
+!! code (E. Matito)                                                    !!
+      if((icas.eq.1.or.icisd.eq.1).and.ispin.eq.1)then
+        call print_box('Doing local spin analysis')
+        write(*,'(3x,a)') 'Localization/delocalization, correlated WF'
+        write(*,*)
+        call spincorr(sat,dm1,dm2)
+        call cpu_time(time2)
+        call get_wall_time(wtime2)
+        call print_timer('local spin analysis',time2-time,wtime2-wtime)
+        time=time2
+        wtime=wtime2
+      end if
+
+!! Nonlinear optical properties (POLAR) !!
 
       if(ipolar.ne.0) call polar(itotps,nat,wp,omp,omp2,pcoord,rho)
 
-CCCCCCCCCCCCCCC
-C ENTROPIES AND CORRELATION INDICATORS
-CCCCCCCCCCCCCCC
+!! Entropies and correlation indicators -- unfinished, see numint_sha !!
 c      if(isha.ne.0) call numint_sha(ndim,itotps,nat,wp,chp,omp,omp2,ibaspoint)
-CCCCCCCCCCCCCCC
-C PCA ANALYSIS...after DIs MAY HAVE BEEN CALCULATED
-CCCCCCCCCCCCCCC
+
+!! PCA analysis -- needs di already populated (bond_order_analysis     !!
+!! above)                                                              !!
       if(ipca.eq.1) call pca_analysis()
 
-CCCCCCCCCCCCCCC
-C DAFH PART
-C  Needed files produced by external code (R. Ponec)
-C  Not available in this version
-CCCCCCCCCCCCCCC
+!! DAFH part -- needed files produced by external code (R. Ponec), not !!
+!! available in this version                                           !!
 c          if(idafh.eq.1) then
 c           ncactiv=nspinorb
 c           if(icorr.ne.0) then
@@ -734,19 +679,11 @@ c            call dafh_input_rhf(nbasis,nat,sat)
 c           end if
 c          end if
 
-CCCCCCCCCCCCCCC
-C EFFAO PART
-CCCCCCCCCCCCCCC
-
-c ieffao 0 nothing
-c ieffao 1 eff-AOs 
-c ieffao 2 spin-resolved eff-AOs (a must for EOS)
-c ieffao 3 paired/unpaired eff-AOs
-
-c imulli 1 MULLIKEN                                 
-c imulli 2 LOWDIN                                   
-c imulli 3 LOWDIN-DAVIDSON (not implemented)                                   
-c imulli 4 NAO                                    
+!! EFFAO part                                                          !!
+!! ieffao: 0 nothing, 1 eff-AOs, 2 spin-resolved eff-AOs (a must for   !!
+!!   EOS), 3 paired/unpaired eff-AOs                                   !!
+!! imulli: 1 Mulliken, 2 Lowdin, 3 Lowdin-Davidson (not implemented),   !!
+!!   4 NAO                                                              !!
 
       if (ieffao.ne.0) then
 
@@ -763,9 +700,7 @@ c imulli 4 NAO
           end do
         end if
 
-CCCCCCCCCCCCCCC
-C Mulliken
-CCCCCCCCCCCCCCC
+!! Mulliken !!
         if(imulli.eq.1) then
           if(ieffao.eq.1) then
             call ueffaomull_frag(0)
@@ -795,9 +730,7 @@ CCCCCCCCCCCCCCC
             end if
           end if
 
-CCCCCCCCCCCCCCC
-C Lowdin      
-CCCCCCCCCCCCCCC
+!! Lowdin !!
         else if(imulli.gt.1) then
           if(ieffao.eq.1) then
             call ueffaolow_frag(0)
@@ -816,7 +749,7 @@ CCCCCCCCCCCCCCC
               call ueffaolow_frag(2)
               idobeta=1
             end if
-           if(ieos.eq.1) then
+            if(ieos.eq.1) then
               call cpu_time(xeos1)
               call get_wall_time(wxeos1)
               call eos_analysis(idobeta,2,xthresh)
@@ -824,12 +757,10 @@ CCCCCCCCCCCCCCC
               call get_wall_time(wxeos2)
               xeos_cpu=xeos_cpu+(xeos2-xeos1)
               xeos_wall=xeos_wall+(wxeos2-wxeos1)
-           end if
+            end if
           end if
 
-CCCCCCCCCCCCCCC
-C 3D-space    
-CCCCCCCCCCCCCCC
+!! 3D-space !!
         else
 
 !! DOING EFFAO/UEFFAO FOR SELECTED ATOMS ONLY (NO EOS) !!
@@ -897,9 +828,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         wtime=wtime2
       end if
 
-CCCCCCCCCCCCCCC
-C LOCALIZED ORBITALS BONDING ANALYSIS (LOBA)
-CCCCCCCCCCCCCCC
+!! Localized orbital bonding analysis (LOBA) !!
 
       if(iloba.eq.1) then
         call print_box('Doing localized orbital bonding analysis (LOBA)')
@@ -914,173 +843,162 @@ CCCCCCCCCCCCCCC
         if(imulli.eq.0) call eos_loba(sat)
       end if
 
-CCCCCCCCCCCCCCC
-C DO ENERGY DECOMPOSITION
-CCCCCCCCCCCCCCC
+!! Energy decomposition (ENPART) !!
 
       if(ienpart.eq.1) then
-      call print_box('Doing molecular energy decomposition')
+        call print_box('Doing molecular energy decomposition')
 
 !! ONE ELECTRON PART: CASSCF AND CI WFs !!
-      if(iposthf.eq.1) then
-        call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
-        call cpu_time(time2)
-        call get_wall_time(wtime2)
-        call print_timer('enpart one-electron',time2-time,wtime2-wtime)
-        time=time2
-        wtime=wtime2
+        if(iposthf.eq.1) then
+          call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
+          call cpu_time(time2)
+          call get_wall_time(wtime2)
+          call print_timer('enpart one-electron',time2-time,wtime2-wtime)
+          time=time2
+          wtime=wtime2
 
 !! ONE ELECTRON PART: DFT AND HF WFs !!
-      else 
+        else 
 
 !! INITIALIZE DFT FUNCTIONAL FOR INFO AND INITIAL PRINTING !!
-      if(id_xfunc.ne.-1) then
-        if(id_xcfunc.ne.0) call func_info_print(id_xcfunc,itype)
-        if(id_cfunc.ne.0) call func_info_print(id_cfunc,itype)
-        if(id_xfunc.ne.0) call func_info_print(id_xfunc,jtype)
-        if(itype.ge.jtype) iopt(55) = itype
-        if(jtype.gt.itype) iopt(55) = jtype
-      end if
+          if(id_xfunc.ne.-1) then
+            if(id_xcfunc.ne.0) call func_info_print(id_xcfunc,itype)
+            if(id_cfunc.ne.0) call func_info_print(id_cfunc,itype)
+            if(id_xfunc.ne.0) call func_info_print(id_xfunc,jtype)
+            if(itype.ge.jtype) iopt(55) = itype
+            if(jtype.gt.itype) iopt(55) = jtype
+          end if
 
 !! RESTRICTED CASE !!
-      if(kop.ne.1) then 
-        ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
+          if(kop.ne.1) then 
+            ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
 !! ONE-ELECTRON TERMS !!
-        call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
-        call cpu_time(time2)
-        call get_wall_time(wtime2)
-        call print_timer('enpart one-electron',time2-time,wtime2-wtime)
-        time=time2
-        wtime=wtime2
+            call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
+            call cpu_time(time2)
+            call get_wall_time(wtime2)
+            call print_timer('enpart one-electron',time2-time,wtime2-wtime)
+            time=time2
+            wtime=wtime2
 
 !! DFT XC TERM !!
-        if(id_xfunc.ne.-1) then
-          if(ianalytical.eq.0) then
-            call numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
-          else
-            call numint_dft_analytical(ndim,itotps,wp,omp,omp2,chp,eto,pcoord,sat)
-          end if
-          call cpu_time(time2)
-          call get_wall_time(wtime2)
-          call print_timer('enpart dft',time2-time,wtime2-wtime)
-          time=time2
-          wtime=wtime2
-        end if
-        DEALLOCATE(xkdens)
+            if(id_xfunc.ne.-1) then
+              if(ianalytical.eq.0) then
+                call numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
+              else
+                call numint_dft_analytical(ndim,itotps,wp,omp,omp2,chp,eto,pcoord,sat)
+              end if
+              call cpu_time(time2)
+              call get_wall_time(wtime2)
+              call print_timer('enpart dft',time2-time,wtime2-wtime)
+              time=time2
+              wtime=wtime2
+            end if
+            DEALLOCATE(xkdens)
 
 !! UNRESTRICTED CASE !!
-      else
-        ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
+          else
+            ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
 !! ONE-ELECTRON TERMS !!
-        call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
-        call cpu_time(time2)
-        call get_wall_time(wtime2)
-        call print_timer('enpart one-electron',time2-time,wtime2-wtime)
-        time=time2
-        wtime=wtime2
+            call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
+            call cpu_time(time2)
+            call get_wall_time(wtime2)
+            call print_timer('enpart one-electron',time2-time,wtime2-wtime)
+            time=time2
+            wtime=wtime2
 
 !! DFT XC TERM !!
-        if(id_xfunc.ne.-1) then
-          call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
-          call cpu_time(time2)
-          call get_wall_time(wtime2)
+            if(id_xfunc.ne.-1) then
+              call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
+              call cpu_time(time2)
+              call get_wall_time(wtime2)
 !! MG label fix: this timer sits after numint_dft_uks (the DFT XC term), not the !!
 !! one-electron term -- was mislabeled "enpart one-electron" like its neighbours. !!
-          call print_timer('enpart dft',time2-time,wtime2-wtime)
-          time=time2
-          wtime=wtime2
-        end if
-        DEALLOCATE(xkdens)
-      end if 
+              call print_timer('enpart dft',time2-time,wtime2-wtime)
+              time=time2
+              wtime=wtime2
+            end if
+            DEALLOCATE(xkdens)
+          end if 
 
 !! END IF METHOD TYPE !!
-      end if
-      DEALLOCATE(wp,omp,omp2,chp,pcoord,ibaspoint,rho)
+        end if
+        DEALLOCATE(wp,omp,omp2,chp,pcoord,ibaspoint,rho)
 
 !! TWO-ELECTRON PART !!
 
 !! TWO-ELECTRON INTEGRATION DEFAULTS !!
-      call print_box('Setting grid for two-electron numerical integration')
+        call print_box('Setting grid for two-electron numerical integration')
 
 !! CONTROLLED BY # GRID OPTION (modgrid common) !!
 !! DEFAULT GRID IS NOW 150 590, CAN BE CHANGED TO 40 146 BUT ENSURE TO ALSO MODIGY pha AND phb !!
-      nrad=nrad22
-      nang=nang22
-      rr00=rr0022
+        nrad=nrad22
+        nang=nang22
+        rr00=rr0022
 
 !! ANALYTICAL CASE !!
 !! MG: TO MODIFY AS NOW DEFAULT GRID IS LARGER THAN THIS ONE !!
-      if(ianalytical.eq.1) then
-        write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
-        write(*,*) " "
-        nrad=70
-        nang=434
-      end if
+        if(ianalytical.eq.1) then
+          write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
+          write(*,*) " "
+          nrad=70
+          nang=434
+        end if
 
 !! PRINTING INFO !!
-      write(*,'(2x,a14,x,i4)') "Radial points:",nrad
-      write(*,'(2x,a15,x,i4)') "Angular points:",nang  
+        write(*,'(2x,a14,x,i4)') "Radial points:",nrad
+        write(*,'(2x,a15,x,i4)') "Angular points:",nang  
 
 !! GENERATING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATIONS !!
-      iatps=nang*nrad
-      itotps=nrad*nang*nat
-      call quad(Nrad,Nang) 
-      ALLOCATE(wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
-      ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,ndim))
-      call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,0)
+        iatps=nang*nrad
+        itotps=nrad*nang*nat
+        call quad(Nrad,Nang) 
+        ALLOCATE(wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
+        ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,ndim))
+        call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,0)
 
 !! CASSCF AND CI WFs !!
-      if(iposthf.eq.1) then
+        if(iposthf.eq.1) then
 !        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
-        call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
-        call cpu_time(time2)
-        call get_wall_time(wtime2)
-        call print_timer('enpart two-electron',time2-time,wtime2-wtime)
-        time=time2
-        wtime=wtime2
+          call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
+          call cpu_time(time2)
+          call get_wall_time(wtime2)
+          call print_timer('enpart two-electron',time2-time,wtime2-wtime)
+          time=time2
+          wtime=wtime2
 
 !! DFT AND HF WFs !!
-      else
+        else
 
 !! UNRESTRICTED CASE !!
-        if(kop.eq.1) then 
-          call numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
+          if(kop.eq.1) then 
+            call numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
 !! RESTRICTED CASE !!
-        else
+          else
 !          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
-          call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
-        end if
-        write(*,*) " "
-        call cpu_time(time2)
-        call get_wall_time(wtime2)
-        call print_timer('enpart two-electron',time2-time,wtime2-wtime)
-        time=time2
-        wtime=wtime2
+            call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
+          end if
+          write(*,*) " "
+          call cpu_time(time2)
+          call get_wall_time(wtime2)
+          call print_timer('enpart two-electron',time2-time,wtime2-wtime)
+          time=time2
+          wtime=wtime2
 
 !! END IF OF WF-TYPE !!
-      end if 
+        end if 
 
-!! DEALLOCATING ANY EXISTENT GRID !!
-      DEALLOCATE(wp,omp,omp2,chp,pcoord,ibaspoint,rho)
+!! Deallocating any existent grid !!
+        DEALLOCATE(wp,omp,omp2,chp,pcoord,ibaspoint,rho)
 
-!! END IF OF IENPART !!
       end if
+!! end of energy decomposition !!
 
-CCCCCCCCCCCCCCCCCCC
-!! END OF ENERGY DECOMPOSITION !!
-CCCCCCCCCCCCCCCCCCC
+!! more topology stuff can be found in version 3.1-devel !!
 
-!! MG: MORE TOPOLOGY STUFF CAN BE FOUND IN VERSION 3.1-DEVEL !!
-
-CCCCCCCCCCCC
-!! EDAIQA !!
-CCCCCCCCCCCC
-
-!! MG: TO DO !!
-!! CREATING THE E(< A^0 B^0 >)^AB STATE !!
+!! EDAIQA -- to do, creating the E(<A^0 B^0>)^AB state !!
 !     if(iedaiqa.eq.1) then
 !       write(*,*) " "
 !       write(*,*) " Entering EDAIQA Section "
@@ -1091,17 +1009,7 @@ CCCCCCCCCCCC
 !       close(52)
 !     end if
 
-CCCCCCCCCCCCCCCCCCC
-!! END OF EDAIQA !!
-CCCCCCCCCCCCCCCCCCC
-
-
-!! MG: HIRAO PART TO BE DONE... LOCATED IN ANOTHER VERSION !!
-CCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!! DFT DM1 APPROXIMATIONS !!
-CCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-!! GENERATING FIRST GRID HERE FOR NUMERICAL INTEGRATION !!
+!! DFT DM1 approximations -- to be done, located in another version !!
 !     ndim=igr
 !     iatps=nang*nrad
 !     itotps=nrad*nang*nat
@@ -1112,16 +1020,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !     ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,igr))
 !     call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,pcoord,ibaspoint,0)
 !     DEALLOCATE(ibaspoint,omp)
-!     if(ihirao.eq.1) call dft_dm1(itotps,wp,omp2,pcoord,chp) 
+!     if(ihirao.eq.1) call dft_dm1(itotps,wp,omp2,pcoord,chp)
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!! END DFT DM1 APPROXIMATIONS !!
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-!! (MG: variants of the oslo procedure can be found in my development version) !!
-CCCCCCCCCC
-!! OSLO !!
-CCCCCCCCCC
+!! OSLO -- variants of the procedure can be found in the dev version !!
 
       if(ioslo.eq.1) then
         call print_box('Doing oxidation states from localized orbitals (OSLO)')
@@ -1147,34 +1048,22 @@ CCCCCCCCCC
           call uwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         end if
 
-      call cpu_time(time2)
-      call get_wall_time(wtime2)
-      call print_timer('OSLO analysis',time2-time,wtime2-wtime)
+        call cpu_time(time2)
+        call get_wall_time(wtime2)
+        call print_timer('OSLO analysis',time2-time,wtime2-wtime)
 
         DEALLOCATE(wp,omp,omp2,chp,pcoord)
       end if
 
-CCCCCCCCCCCCCCCCC
-!! END OF OSLO !!
-CCCCCCCCCCCCCCCCC
-
-
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!! X-RAY SCATTERING FACTORS !!
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!! X-ray scattering factors !!
 
       if(iscattfact.eq.1) then
         call print_box('Evaluating X-ray scattering factors')
         call scattering_factors(itotps,wp,rho,omp2,pcoord)
       end if
 
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!! END OF X-RAY SCATTERING FACTORS !!
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
-
-      print *,' '
-      print *,'...Normal Termination of APOST-3D... '
+      write(*,*)
+      write(*,*) '...Normal Termination of APOST-3D... '
 
       end
 
