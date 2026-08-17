@@ -123,6 +123,380 @@
       write(*,'(a80)') '                                                                              '
       END SUBROUTINE kiir
 
+!! ********************************************************************* !!
+!! subroutine: print_input_summary                                       !!
+!! purpose: "digested" echo of the .inp file -- prints which keywords    !!
+!! were actually active, grouped by .inp section, mirroring              !!
+!! tests/keywords.json's registry. Every keyword in the registry is      !!
+!! accounted for internally; only active ones print, sections with       !!
+!! nothing active are skipped entirely. Called from main.f right after   !!
+!! OPTIONS LIST, once every flag below is finalized.                     !!
+!! arguments: none (all via input_options_mod + a handful of COMMONs)    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      SUBROUTINE print_input_summary()
+      use input_options_mod
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /achi/achi(maxat,maxat),ibcp
+      common /erf/aerf,ierf
+      common /modgrid/nrad22,nang22,rr0022,phb12,phb22
+      common /atlist/iatlist(maxat),icuat
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     + jfrlist(maxat)
+      common /printout/iaccur
+      character*200 cbuf
+      character*40 cval
+      character*40 chdr
+
+      call print_box('INPUT SUMMARY')
+
+!! ----------------------------------------------------------------- !!
+!! # METHOD -- one line per active category, "label : value(s)"      !!
+!! ----------------------------------------------------------------- !!
+      chdr='# METHOD'
+      write(*,'(2x,a)') trim(chdr)
+      write(*,'(2x,a)') repeat('-',len_trim(chdr))
+
+!! real-space AIM schemes -- several can be active at once, joined  !!
+!! into one line; itfvc/ibcp/inewbec aren't mutually exclusive since !!
+!! TFVC sets ibcp/inewbec as a side effect (read_input.f), so TFVC   !!
+!! is checked first and BECKE-RHO/NEWBEC are only reported when they !!
+!! are the reason those flags are set, not a TFVC side effect        !!
+      cbuf=' '
+      if(itfvc.eq.1) cbuf=trim(cbuf)//' TFVC (Topological Fuzzy Voronoi Cells);'
+      if(ibcp.eq.1.and.itfvc.ne.1)
+     + cbuf=trim(cbuf)//' BECKE-RHO;'
+      if(inewbec.eq.1.and.itfvc.ne.1)
+     + cbuf=trim(cbuf)//' NEWBEC;'
+      if(ihirsh.eq.1) cbuf=trim(cbuf)//' HIRSH (Hirshfeld);'
+      if(ihirsh.eq.2) cbuf=trim(cbuf)//' HIRSH-IT (Hirshfeld-Iterative);'
+      if(iqtaim.eq.1) cbuf=trim(cbuf)//' QTAIM;'
+      if(iqtaim.eq.2) cbuf=trim(cbuf)//' QTAIM (READINT, reusing prior results);'
+      cbuf=adjustl(cbuf)
+      nlen=len_trim(cbuf)
+      if(nlen.gt.0.and.cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+      if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
+     + 'Atomic partitioning (real-space)     :',trim(cbuf)
+
+      if(imulli.ge.1) then
+       if(imulli.eq.1) cval='Mulliken'
+       if(imulli.eq.2) cval='Lowdin'
+       if(imulli.eq.3) cval='Lowdin-Davidson'
+       if(imulli.eq.4) cval='NAO-basis'
+       if(imulli.eq.5) cval='Lowdin-W'
+       write(*,'(2x,a,1x,a)')
+     + 'Atomic partitioning (Hilbert-space)  :',trim(cval)
+      end if
+
+      if(iopop.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Overlap population analysis          :','OPOP'
+
+      if(ieffao.ge.1.and.ieos.ne.1.and.iueos.ne.1) then
+       if(ieffao.eq.1) cval='EFFAO'
+       if(ieffao.eq.2) cval='UEFFAO'
+       if(ieffao.eq.3) cval='EFFAO-U (paired/unpaired only)'
+       write(*,'(2x,a,1x,a)')
+     + 'Effective atomic orbitals            :',trim(cval)
+      end if
+
+      if(ieos.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Oxidation states analysis            :',
+     + 'EOS (Effective Oxidation States, fragment-based)'
+      if(iueos.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Oxidation states analysis            :',
+     + 'EOS-U (open-shell, unpaired-density-based)'
+      if(ieoscent.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Oxidation states analysis            :','OS-CENTROID'
+      if(ioslo.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Oxidation states analysis            :',
+     + 'OSLO (oxidation states localized orbitals)'
+      if(iloba.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Oxidation states analysis            :',
+     + 'LOBA (Localized Orbital Bonding Analysis)'
+
+      if(ienpart.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Energy decomposition                 :',
+     + 'ENPART (one- and two-center IQA terms, see below)'
+      if(iedaiqa.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Energy decomposition                 :',
+     + 'EDAIQA (EDA interaction energies into IQA terms)'
+
+      if(ispin.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Local spin analysis                  :','SPIN'
+      if(ipolar.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Static polarizability                :','POLAR'
+      if(itop.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Topology analysis                    :',
+     + 'TOPOLOGY (see below)'
+      if(idafh.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Domain-averaged Fermi holes          :',
+     + 'DAFH (needs external files, see kiir banner)'
+      if(iscattfact.eq.1) write(*,'(2x,a,1x,a)')
+     + 'X-ray scattering factors             :','SCATT-FACT'
+      if(ilaplacian.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Density Laplacian                    :','LAPLACIAN'
+      if(isha.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Shannon entropy decomposition        :','SHANNON'
+      if(ipca.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Principal component analysis         :','PCA'
+      if(idoint.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Integration diagnostics              :','DOINT'
+      if(ielcount.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Electron counting (NCTAIM)           :','ELCOUNT'
+
+      if(idofr.eq.1) then
+       write(cval,'(i0,a)') icufr,' fragments (see below)'
+       write(*,'(2x,a,1x,a)')
+     + 'Fragment analysis                    :',trim(cval)
+      end if
+      if(idoat.eq.1) then
+       write(cval,'(i0,a)') icuat,' atoms selected'
+       write(*,'(2x,a,1x,a)')
+     + 'Atom selection                       :',trim(cval)
+      end if
+
+      cbuf=' '
+      if(iqchem.eq.1) cbuf=trim(cbuf)//' QCHEM;'
+      if(imokit.eq.1) cbuf=trim(cbuf)//' MOKIT;'
+      if(iwfn.eq.1) cbuf=trim(cbuf)//' WFN;'
+      cbuf=adjustl(cbuf)
+      nlen=len_trim(cbuf)
+      if(nlen.gt.0.and.cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+      if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
+     + 'Wavefunction source                  :',trim(cbuf)
+
+      if(icube.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Cube files                           :','CUBE (see below)'
+      if(iaccur.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Output precision                     :','FULLPRECISION'
+      if(inopop.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Population output                    :','NOPOPU (suppressed)'
+      if(ifinegrid.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Fine angular grid                    :',
+     + 'FINEGRID (974 points, one-electron integrals)'
+
+!! ----------------------------------------------------------------- !!
+!! # ENPART -- only if ENPART itself is active                       !!
+!! ----------------------------------------------------------------- !!
+      if(ienpart.eq.1) then
+       write(*,*)
+       chdr='# ENPART'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+
+       if(ihf.eq.1) then
+        cval='HF'
+       else if(icas.eq.1) then
+        cval='CASSCF'
+       else if(icisd.eq.1) then
+        cval='CISD'
+       else if(id_xcfunc.eq.402) then
+        cval='B3LYP (hybrid)'
+       else if(id_xfunc.eq.106.and.id_cfunc.eq.132) then
+        cval='BP86 (GGA)'
+       else if(id_xfunc.eq.1.and.id_cfunc.eq.0) then
+        cval='LDA'
+       else if(id_xcfunc.ne.0.or.id_xfunc.ne.0.or.id_cfunc.ne.0) then
+        write(cval,'(a,3(1x,i0))') 'custom libxc ids',
+     +   id_xcfunc,id_xfunc,id_cfunc
+       else
+        cval='unspecified'
+       end if
+       write(*,'(2x,a,1x,a)') 'Functional              :',trim(cval)
+
+       write(cval,'(a,i0)') 'THREBOD = ',ithrebod
+       write(*,'(2x,a,1x,a)')
+     + 'Atom-pair skip threshold:',trim(cval)
+
+       if(iigrid.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Two-electron grid       :',
+     + 'MOD-GRIDTWOEL (user-selected integration grid)'
+
+       cbuf=' '
+       if(iexact.eq.1) cbuf=trim(cbuf)//' EXACT;'
+       if(ihomo.eq.1) cbuf=trim(cbuf)//' HOMO;'
+       if(idek.eq.1) cbuf=trim(cbuf)//' DEKIN;'
+       if(iionic.eq.1) cbuf=trim(cbuf)//' IONIC;'
+       if(ianalytical.eq.1) cbuf=trim(cbuf)//' ANALYTIC;'
+       if(iecorr.eq.1) cbuf=trim(cbuf)//' CORRELATION;'
+       cbuf=adjustl(cbuf)
+       nlen=len_trim(cbuf)
+       if(nlen.gt.0.and.cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+       if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
+     + 'Extra options           :',trim(cbuf)
+
+!! MOD-GRIDTWOEL's own # GRID settings -- iigrid is shared with EDAIQA's !!
+!! own MOD-GRIDTWOEL check below; if both ENPART and EDAIQA are active   !!
+!! in the same run, whichever parses last in read_input.f wins here too !!
+       if(iigrid.eq.1) then
+        chdr='# GRID'
+        write(*,'(2x,a)') trim(chdr)
+        write(*,'(2x,a)') repeat('-',len_trim(chdr))
+        write(cval,'(i0)') nrad22
+        write(*,'(2x,a,1x,a)') 'Radial points              :',
+     +   trim(cval)
+        write(cval,'(i0)') nang22
+        write(*,'(2x,a,1x,a)') 'Angular points             :',
+     +   trim(cval)
+        write(cval,'(f6.3,a,f6.3)') phb12,' / ',phb22
+        write(*,'(2x,a,1x,a)') 'Rotation angles (phb1/phb2):',
+     +   trim(cval)
+       end if
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # EDAIQA -- only if EDAIQA is active                               !!
+!! ----------------------------------------------------------------- !!
+      if(iedaiqa.eq.1) then
+       write(*,*)
+       chdr='# EDAIQA'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       if(iflip.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Flip alpha/beta spins:','FLIPSPIN'
+       if(iigrid.eq.1) write(*,'(2x,a,1x,a)')
+     + 'Two-electron grid    :',
+     + 'MOD-GRIDTWOEL (user-selected integration grid)'
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # TOPOLOGY -- only if TOPOLOGY is active                           !!
+!! ----------------------------------------------------------------- !!
+      if(itop.eq.1) then
+       write(*,*)
+       chdr='# TOPOLOGY'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       if(ietop.eq.1) cval='Exchange'
+       if(ietop.eq.2) cval='Correlation'
+       if(ietop.eq.3) cval='Exchange-Correlation'
+       if(ietop.eq.9) cval='Density'
+       write(*,'(2x,a,1x,a)') 'Energy component:',trim(cval)
+       if(ipairs.gt.0) then
+        write(cval,'(i0,a)') ipairs,' atom pairs'
+       else
+        cval='entire molecule'
+       end if
+       write(*,'(2x,a,1x,a)') 'Atom pairs      :',trim(cval)
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # QTAIM -- only if QTAIM is active                                 !!
+!! ----------------------------------------------------------------- !!
+      if(iqtaim.ge.1) then
+       write(*,*)
+       chdr='# QTAIM'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       write(cval,'(i0)') istep
+       write(*,'(2x,a,1x,a)') 'Convergence step            :',
+     +  trim(cval)
+       write(cval,'(i0)') inna
+       write(*,'(2x,a,1x,a)') 'NNA (non-nuclear attractors):',
+     +  trim(cval)
+       write(cval,'(i0)') imaxdist
+       write(*,'(2x,a,1x,a)') 'Max basin distance          :',
+     +  trim(cval)
+       write(cval,'(i0)') iscreening
+       write(*,'(2x,a,1x,a)') 'Screening                   :',
+     +  trim(cval)
+       write(cval,'(i0)') ipath
+       write(*,'(2x,a,1x,a)') 'Gradient path               :',
+     +  trim(cval)
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # CUBE -- only if CUBE is active                                   !!
+!! ----------------------------------------------------------------- !!
+      if(icube.eq.1) then
+       write(*,*)
+       chdr='# CUBE'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       write(cval,'(i0)') jcubthr
+       write(*,'(2x,a,1x,a)') 'Max occupation threshold:',trim(cval)
+       write(cval,'(i0)') kcubthr
+       write(*,'(2x,a,1x,a)') 'Min occupation threshold:',trim(cval)
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # OSLO -- only if OSLO is active                                   !!
+!! ----------------------------------------------------------------- !!
+      if(ioslo.eq.1) then
+       write(*,*)
+       chdr='# OSLO'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       if(ilow2.eq.1) cval='Mulliken'
+       if(ilow2.eq.2) cval='Lowdin'
+       if(ilow2.eq.3) cval='Lowdin-Davidson'
+       if(ilow2.eq.6) cval='NAO-basis'
+       if(ilow2.eq.0) cval='TFVC/real-space (default)'
+       write(*,'(2x,a,1x,a)') 'Overlap matrix          :',trim(cval)
+       write(cval,'(i0)') ifolitol
+       write(*,'(2x,a,1x,a)') 'FOLI tolerance          :',trim(cval)
+       write(cval,'(i0)') ibranch
+       write(*,'(2x,a,1x,a)') 'Branch iteration        :',trim(cval)
+       if(ioslofchk.eq.2) then
+        cval='yes'
+       else
+        cval='no'
+       end if
+       write(*,'(2x,a,1x,a)') 'Print non-orthogonalized:',trim(cval)
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # FRAGMENTS -- only if DOFRAGS is active; replaces the raw         !!
+!! 'Fragment: N' + bare atom-index dump read_input.f used to print    !!
+!! ----------------------------------------------------------------- !!
+      if(idofr.eq.1) then
+       write(*,*)
+       write(chdr,'(a,i0,a)') '# FRAGMENTS  (',icufr,' fragments)'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       do i=1,icufr
+        write(*,'(2x,a,i3,a,20i4)') 'Fragment',i,' :',
+     +   (ifrlist(k,i),k=1,nfrlist(i))
+       end do
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # ATOMS -- only if DOATOMS is active                               !!
+!! ----------------------------------------------------------------- !!
+      if(idoat.eq.1) then
+       write(*,*)
+       write(chdr,'(a,i0,a)') '# ATOMS  (',icuat,' selected)'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       write(*,'(2x,20i4)') (iatlist(i),i=1,icuat)
+      end if
+
+!! ----------------------------------------------------------------- !!
+!! # DM -- only if correlated-WF density input is active              !!
+!! ----------------------------------------------------------------- !!
+      if(icorr.ne.0) then
+       write(*,*)
+       chdr='# DM'
+       write(*,'(2x,a)') trim(chdr)
+       write(*,'(2x,a)') repeat('-',len_trim(chdr))
+       write(cval,'(i0,a)') icorr,'-RDM'
+       write(*,'(2x,a,1x,a)') 'DM level:',trim(cval)
+       if(ipyscf.eq.1) then
+        cval='pySCF'
+       else if(iorca.eq.1) then
+        cval='ORCA'
+       else
+        cval='DMRG'
+       end if
+       write(*,'(2x,a,1x,a)') 'Source  :',trim(cval)
+      end if
+
+      write(*,*)
+
+      END SUBROUTINE print_input_summary
+
       SUBROUTINE VPRINT(H,N,ndim,jdim)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'

@@ -403,8 +403,6 @@ c Do for fragments
 c
         ixx=0
         do i=1,icufr
-          write(*,*)'Fragment: ',i 
-          write(*,'(20i4)') (ifrlist(k,i),k=1,nfrlist(i))
           ixx=ixx+nfrlist(i)
         end do
         if(ixx.ne.nat.and.(ieos.eq.1.or.ienpart.eq.1)) then

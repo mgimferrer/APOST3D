@@ -741,7 +741,7 @@
    integer :: iwfn,iallpo,ndens0
 
 !! atoms in molecules (Hilbert-space + real-space AIM selection) !!
-   integer :: imulli,ihirsh,inewbec,istiff,iradmat
+   integer :: imulli,ihirsh,inewbec,istiff,iradmat,itfvc
 
 !! QTAIM !!
    integer :: iqtaim,istep,inna,imaxdist,iscreening,ipath
@@ -759,10 +759,12 @@
 !! local spin and correlated-WF input !!
    integer :: ispin,icorr,idafh
 
-!! ENPART !!
+!! ENPART -- iigrid (MOD-GRIDTWOEL) is reused by EDAIQA's own check too !!
+!! (read_input.f), so after read_input() returns it reflects whichever  !!
+!! of the two sections was parsed last, not necessarily ENPART's own    !!
    integer :: ienpart,ihf,id_xcfunc,id_xfunc,id_cfunc,iecorr, &
               ithrebod,iexact,ihomo,idek,iionic,ianalytical,itop,ietop, &
-              ipairs
+              ipairs,iigrid
 
 !! EDAIQA !!
    integer :: iedaiqa,iflip
