@@ -109,7 +109,7 @@ formula for the sphere of the 131st algebraic order of accuracy," *Doklady
 Mathematics*, 59, 477-481 (1999).
 
 The program makes use of the `Libxc` library when necessary, using the F90
-interfaces provided by the authors (see http://www.tddft.org/programs/libxc).
+interfaces provided by the authors (see https://libxc.gitlab.io/).
 
 We are extremely grateful for the possibility of using these routines. We
 also acknowledge R. Oswald for technical support in code parallelization and

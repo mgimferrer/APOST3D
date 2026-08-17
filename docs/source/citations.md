@@ -56,7 +56,7 @@ The following paper should be cited in publications utilizing `APOST-3D`:
 * E. Ramos-Cordoba, V. Postils and P. Salvador, *J. Chem. Theor. Comput.*,
   **2015**, 11, 1501-1508.
   DOI: [10.1021/ct501088v](https://doi.org/10.1021/ct501088v)
-* M. Gimferrer and P. Salvador, *submitted*, **2024**.
+* M. Gimferrer and P. Salvador, *manuscript in preparation*, **2026**.
 
 **Oxidation states from localized orbitals**
 
@@ -68,6 +68,12 @@ The following paper should be cited in publications utilizing `APOST-3D`:
 * M. Gimferrer, A. Aldossary, P. Salvador and M. Head-Gordon, *J. Chem.
   Theor. Comput.*, **2022**, 18, 309-322.
   DOI: [10.1021/acs.jctc.1c01011](https://doi.org/10.1021/acs.jctc.1c01011)
+
+**Localized orbital bonding analysis (LOBA)**
+
+* M. Gimferrer, J. Van der Mynsbrugge, A. T. Bell, P. Salvador and
+  M. Head-Gordon, *Inorg. Chem.*, **2020**, 59, 15410-15420.
+  DOI: [10.1021/acs.inorgchem.0c02405](https://doi.org/10.1021/acs.inorgchem.0c02405)
 
 **Decomposition of EDA quantities into one- and two-center IQA terms**
 
