@@ -746,9 +746,8 @@ c*******************************
         ival=1
         ii=1
          end if
-       if(index(linea,"#").ne.0) ii=2 
+       if(index(linea,"#").ne.0) ii=2
       end do
-c        if(ii.eq.1) write(*,"(a8,a2,i3)") keyword,'= ',ival
       return
         end
 C*****************************************************************
@@ -777,7 +776,6 @@ C*****************************************************************
       else if(ii.eq.2) then
 10       intv=intdef
       end if
-c        write(*,"(a8,a2,2e10.4)") keyword,'= ',intv,intdef
       return
         end
 C*****************************************************************
@@ -805,7 +803,6 @@ C*****************************************************************
         else if(ii.eq.2) then
 40       intv=intdef
         end if
-        write(*,"(a8,a2,i3)") keyword,'= ',intv
         return
         end
 
