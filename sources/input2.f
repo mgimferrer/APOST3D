@@ -273,7 +273,6 @@ c      norb=nspinorb/2
       endif
       write(*,'(2x,a,1x,f20.10)') 'SCF/DFT energy (au)              :',
      + escf
-      write(*,*)
 
 ccccccccccccccccccccccccccc
 c end processing fchk file
