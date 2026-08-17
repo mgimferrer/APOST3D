@@ -716,8 +716,8 @@
 !! assignment left-justifies+pads (unlike A40 on write, which right-justifies). !!
    label40=label
 
-   write(*,'(1x,a,a40,f14.2,a2)') 'TIMING CPU  :: ',label40,tcpu,' s'
-   write(*,'(1x,a,a40,f14.2,a2)') 'TIMING WALL :: ',label40,twall,' s'
+   write(*,'(2x,a,a40,f14.2,a2)') 'TIMING CPU  :: ',label40,tcpu,' s'
+   write(*,'(2x,a,a40,f14.2,a2)') 'TIMING WALL :: ',label40,twall,' s'
 
    END SUBROUTINE print_timer
 
