@@ -89,10 +89,13 @@
          end if
          nbasis=nbasis+mult(mssh(i))
         end do
-        print *,"Number of atoms:",natoms
-        print *,"Number of basis functions:",nbasis
-        print *,'Total number of primitive gaussians',numprim
-       
+        write(*,'(2x,a,1x,i0)') 'Number of atoms                  :', &
+          natoms
+        write(*,'(2x,a,1x,i0)') 'Number of basis functions        :', &
+          nbasis
+        write(*,'(2x,a,1x,i0)') 'Primitive gaussians              :', &
+          numprim
+
         allocate(ihold(nbasis),llim(natoms),iulim(natoms))
 ! basis to atom map
         ii=0

@@ -13,17 +13,21 @@
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension clin(nmax**2)
       character*80 line
+      character*20 cform,ctype
       logical ilog
       real*8, allocatable ::vv(:,:)
 
       ndens0=iopt(9)
-     
+
       irhf=0
       iuhf=0
       icas=0
       icisd=0
       ikop=0
       irohf=0
+
+!! wavefunction summary -- each line below prints as its value is determined !!
+      call print_box('WAVEFUNCTION SUMMARY')
 
 ccccccccccccccccccccccccccccc
 c start processing fchk file
@@ -33,28 +37,34 @@ ccccccccccccccccccccccccccccc
       read(15,'(a80)')line
       if(index(line(11:11),"R").ne.0) then
        irhf=1
-       write(*,*) 'Restricted MO formalism'
+       cform='Restricted'
       else if(index(line(11:11),"U").ne.0) then
-       write(*,*) 'Unrestricted MO formalism'
+       cform='Unrestricted'
        iuhf=1
       end if
+      write(*,'(2x,a,1x,a)') 'MO formalism                     :',
+     + trim(cform)
+
       if(index(line(11:25),"CASSCF").ne.0) then
        icas=1
-       write(*,*) 'CASSCF type calculation'
+       ctype='CASSCF'
       else if(index(line(11:25),"HF").ne.0) then
-       write(*,*) 'Hartree-Fock type calculation'
+       ctype='Hartree-Fock'
       else if(index(line(11:25),"MP").ne.0) then
-       write(*,*) 'Moller-Plesset PT type calculation'
+       ctype='Moller-Plesset PT'
       else if(index(line(11:25),"CI").ne.0) then
        icisd=1
-       write(*,*) 'CI type calculation'
+       ctype='CI'
       else if(index(line(11:25),"CCSD").ne.0) then
-       write(*,*) 'Coupled-cluster type calculation'
+       ctype='Coupled-cluster'
        icisd=1
-      else 
-       write(*,*)'KS-DFT type calculation'
-       write(*,*)'(single det. built up of the Kohn-Sham orbitals)'
+      else
+       ctype='KS-DFT'
       end if
+      write(*,'(2x,a,1x,a)') 'Calculation type                 :',
+     + trim(ctype)
+      if(ctype.eq.'KS-DFT') write(*,'(4x,a)')
+     + '(single det. built from the Kohn-Sham orbitals)'
 
       call build_basis()
 
@@ -71,9 +81,8 @@ ccccccccccccccccccccccccccccc
       call allocate_stv(igr)
 
       igr0=int_locate(15,"Number of independ",ilog)
-      if(igr.ne.igr0) write(*,*) 'WARNING, some basis functions have bee
-     +n removed'
-   
+      if(igr.ne.igr0) write(*,'(2x,a)')
+     + 'WARNING: some basis functions were removed (linear dependency)'
 
       nelectr=int_locate(15,"Number of electr",ilog)
 
@@ -212,21 +221,24 @@ c
          ncou=ncou+1
         enddo
        enddo
+       write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
+     +  'found'
       else if(icas.ne.1.or.icisd.ne.1) then
-       print *, 'Spin density not found in FChk'
-       print *, 'Reconstructing spin density (if any) from MOs'
+       write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
+     +  'not found, reconstructed from MOs'
       end if
-      
+
 c In case CASSCF
       ncasel=int_locate(15,"Number of CAS El",ilog)
       if(ilog) then
        icas=1
        ncasorb=int_locate(15,"Number of CAS Or",ilog)
-       print *,'CAS specification is read:'
-       print *,'Active electrons : ',ncasel 
-       print *,'Active orbitals  : ',ncasorb
+       write(*,'(2x,a,1x,i0)') 'CAS active electrons             :',
+     +  ncasel
+       write(*,'(2x,a,1x,i0)') 'CAS active orbitals              :',
+     +  ncasorb
       endif
-      
+
       nocc=nelectr/2
       if(icas.eq.1) then
       ncore=(nelectr-ncasel)/2
@@ -237,27 +249,31 @@ c       nx=ncasel/2
 c       if(2*nx.ne.ncasel)nx=nx+1
 c       nspinorb=2*(nocc-nx+ncasorb)
 c       if(2*nocc.ne.nelectr)nspinorb=nspinorb+2
-       print *,'Number of CAS spin-orbitals', nspinorb
+       write(*,'(2x,a,1x,i0)') 'CAS spin-orbitals                :',
+     +  nspinorb
        icass=0
        if(abs(ss2).gt.1.0d-2) then
-        print *,'CAS WF other than pure singlet state'
+        write(*,'(2x,a,1x,a)') 'CAS spin state                   :',
+     +   'non-singlet'
         icass=1
        end if
-      else if(icisd.eq.1) then 
+      else if(icisd.eq.1) then
        nspinorb=igr0*2
-       print *,' Number of CI spin-orbitals', nspinorb
+       write(*,'(2x,a,1x,i0)') 'CI spin-orbitals                 :',
+     +  nspinorb
       endif
 c      norb=nspinorb/2
 
       if(icas.eq.0)then
-       print *,' '
-       print *,'nocc',nocc,'    nalpha',nalf,'    nbeta',nb
+       write(*,'(2x,a,1x,i0,a,i0,a,i0)')
+     +  'Occupied MOs (nocc/alpha/beta)   :',nocc,' / ',nalf,' / ',nb
       else
-       print *,'nalpha',nalf,'    nbeta',nb
+       write(*,'(2x,a,1x,i0,a,i0)')
+     +  'Occupied MOs (alpha/beta)        :',nalf,' / ',nb
       endif
-      print *,' '
-      print *,'E(SCF/DFT)=',escf
-      print *,' '
+      write(*,'(2x,a,1x,f20.10)') 'SCF/DFT energy (au)              :',
+     + escf
+      write(*,*)
 
 ccccccccccccccccccccccccccc
 c end processing fchk file
