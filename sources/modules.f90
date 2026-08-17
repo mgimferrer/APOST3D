@@ -1,5 +1,12 @@
+!! ********************************************************************* !!
+!! FILE STATUS (2026-08-17): the Subroutine Cleanup Protocol has been    !!
+!! applied to allocate_effao, allocate_nao, allocate_stv, get_wall_time, !!
+!! print_timer (pre-existing), build_basis. NOT yet applied to:          !!
+!! do_overlap, build_ao_matrices, build_integration_grid.                !!
+!! ********************************************************************* !!
+
    MODULE basis_set
-   integer :: numprim,nbasis,mmax,natoms  
+   integer :: numprim,nbasis,mmax,natoms
    INTEGER, ALLOCATABLE :: nlm(:,:),iptoat(:),nprimbas(:,:)
    INTEGER, ALLOCATABLE :: ihold(:),llim(:),iulim(:)
    INTEGER, ALLOCATABLE :: iptob_cartesian(:)
@@ -31,19 +38,26 @@
 
    CONTAINS
 
+   !! ********************************************************************* !!
+   !! subroutine: build_basis                                               !!
+   !! purpose: reads the basis set (shells, primitives, contraction coeffs) !!
+   !! from the .fchk (unit 15, already open) and builds the primitive/basis !!
+   !! function maps, pure-to-cartesian coefficients, and normalization used !!
+   !! by the rest of the code; prints the atom/basis/primitive counts.      !!
+   !! arguments: none (output via basis_set module's own arrays)            !!
+   !! author:                                                                !!
+   !! ********************************************************************* !!
    SUBROUTINE build_basis()
    IMPLICIT DOUBLE PRECISION(A-H,O-Z)
    PARAMETER(PI=4.0d0*DATAN(1.0d0),TOL=1.0d-8)
    integer, allocatable :: mnsh(:),iatsh(:),mssh(:)
    real*8, allocatable :: expsh(:),c1(:),c2(:),xnorm(:),coefp(:)
    integer :: ncshell,npshell
-   integer :: dummy,ilog 
+   integer :: dummy,ilog
    DIMENSION mult(-5:5)
    DATA mult/11,9,7,5,4,1,3,6,10,15,21/
 
-!   maxl=int_locate(15,"Highest angular",ilog)
-!   maxk=int_locate(15,"Largest degree",ilog)
-! reading basis set info
+!! reading basis set info !!
    ncshell=int_locate(15,"Number of contract",ilog)
    npshell=int_locate(15,"Number of primi",ilog)
    nbasis=int_locate(15,"Number of basis",ilog)
@@ -73,12 +87,8 @@
     dummy=int_locate(15,"P(S=P) Cont",ilog)
     read(15,*)(c2(i),i=1,npshell)
    end if
-!   dummy=int_locate(15,"Coordinatomses of e",ilog)
-!   read(15,*)(x(i),y(i),z(i),i=1,ncshell)
 
-! end reading basis set info
-
-! processing basis set
+!! processing basis set !!
         numprim=0
         nbasis=0
         do i=1,ncshell
@@ -97,7 +107,7 @@
           numprim
 
         allocate(ihold(nbasis),llim(natoms),iulim(natoms))
-! basis to atom map
+!! basis to atom map !!
         ii=0
         do i=1,ncshell
          do k=1,mult(mssh(i))
@@ -105,7 +115,7 @@
           ihold(ii)=iatsh(i)
          end do
         end do
-! setting basis set limits for mulliken
+!! setting basis set limits for mulliken !!
         llim(1)=1
         iulim(natoms)=nbasis
         iat=1
@@ -120,7 +130,7 @@
         allocate (nlm(numprim,3),expp(numprim),iptoat(numprim),coefpb(numprim,nbasis),iptob_cartesian(numprim))
         allocate (coefp(numprim),xnorm(numprim))
 
-! angular momentum of primitives and primtive to atom map 
+!! angular momentum of primitives and primitive-to-atom map !!
         nlm=0
         icount=1
         do i=1,ncshell
@@ -232,11 +242,7 @@
          end if 
         end do
 
-!        do i=1,numprim
-!          write(*,'(5i3)') i,(nlm(i,k),k=1,3),iptoat(i)
-!        end do
-
-!  list primitive exponents and coefficients
+!! list primitive exponents and coefficients !!
         icount=1
         jcount=1
         do i=1,ncshell
@@ -256,7 +262,7 @@
           end do
          end do
 
-!primitive normalization
+!! primitive normalization !!
         do i=1,numprim
           nn=nlm(i,1)
           ll=nlm(i,2)
@@ -267,10 +273,8 @@
           xnorm(i)=(2.0d0*expp(i)/PI)**0.75d0*DSQRT((8.0d0*expp(i))**(nn+ll+mm)*fnn*fll*fmm)
         end do
 
-        
-!Generating primitive to orbital map.
-!And pure to cartesian mapping up to G-type orbitals 
-
+!! generating primitive-to-orbital map, and pure-to-cartesian mapping   !!
+!! up to G-type orbitals                                                !!
         numprim=0
         nbasis=0
         coefpb=0.0d0
@@ -345,17 +349,19 @@
          nbasis=nbasis+mult(mssh(i))
         end do
 
-! max num prim per basis function
+!! max num prim per basis function !!
         mmax=0
         do i=1,ncshell
           ii=mnsh(i)
           if(mssh(i).le.-2) ii=3*ii
           if(mssh(i).le.-4) ii=2*ii
-          if(ii.gt.mmax) mmax=ii 
+          if(ii.gt.mmax) mmax=ii
         end do
         mmax=mmax+1
         allocate(nprimbas(mmax,nbasis))
 
+!! O(nbasis x numprim) but a one-time setup cost (build_basis runs once  !!
+!! per job) -- assessed, not worth OMP, same reasoning as input()        !!
         nprimbas=0
         do i=1,nbasis
          npb=0
@@ -367,13 +373,13 @@
          end do
         end do
 
-!Calculating overlap matrix
+!! calculating overlap matrix !!
         call do_overlap()
-! Calculating S^1/2 and S^-1/2
+!! calculating S^1/2 and S^-1/2 !!
         allocate(s12p(nbasis,nbasis),s12m(nbasis,nbasis))
         call build_Smp(nbasis,s,s12m,s12p,0)
 
-! dealocating auxiliary arrays
+!! deallocating auxiliary arrays !!
         deallocate(coefp,xnorm)
         deallocate(mnsh,iatsh,mssh)
         deallocate(expsh,c1,c2)
