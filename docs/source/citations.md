@@ -69,12 +69,6 @@ The following paper should be cited in publications utilizing `APOST-3D`:
   Theor. Comput.*, **2022**, 18, 309-322.
   DOI: [10.1021/acs.jctc.1c01011](https://doi.org/10.1021/acs.jctc.1c01011)
 
-**Localized orbital bonding analysis (LOBA)**
-
-* M. Gimferrer, J. Van der Mynsbrugge, A. T. Bell, P. Salvador and
-  M. Head-Gordon, *Inorg. Chem.*, **2020**, 59, 15410-15420.
-  DOI: [10.1021/acs.inorgchem.0c02405](https://doi.org/10.1021/acs.inorgchem.0c02405)
-
 **Decomposition of EDA quantities into one- and two-center IQA terms**
 
 * M. Gimferrer, S. Danes, D. M. Andrada and P. Salvador, *J. Chem. Theory
