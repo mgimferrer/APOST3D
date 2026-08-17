@@ -1,4 +1,10 @@
 !! ********************************************************************* !!
+!! FILE STATUS (2026-08-17): this file's only subroutine (read_input)    !!
+!! has been through the Subroutine Cleanup Protocol. Nothing left to     !!
+!! track here.                                                            !!
+!! ********************************************************************* !!
+
+!! ********************************************************************* !!
 !! subroutine: read_input                                                !!
 !! purpose: parses every '# METHOD'/section keyword from the .inp file   !!
 !!   (unit 16, opened by the caller) into the flags in input_options_mod,!!
@@ -37,22 +43,22 @@
       character*80 linia,namedm
       character*80 namefchk1,namefchk2
 
-c choose density from fchk file
+!! choose density from fchk file !!
       call readint("# METHOD","DENS",ndens0,1,1)
       iopt(9) = ndens0
-      
-C Processing FChk file
+
+!! processing fchk file !!
       call input()
 
       idoint=0
-      iwfn=0  
+      iwfn=0
 
-c look for options      
+!! look for options !!
       call readchar("# METHOD","WFN",iwfn)
       call readchar("# METHOD","ALLPOINTS",iallpo)
       call readchar("# METHOD","FULLPRECISION",iaccur)
 
-C Atoms in molecules
+!! atoms in molecules !!
       call readchar("# METHOD","MULLI",imulli)
       call readchar("# METHOD","LOWDIN",ilow)
       if(ilow.eq.1) imulli=2
@@ -82,7 +88,7 @@ C Atoms in molecules
       call readreal("# METHOD","ERF_PROF",aerf,6.266d0,1)
       if(ierf.eq.1)  istiff=0
 
-c ERC QTAIM input module
+!! ERC: QTAIM input module !!
       call readchar("# METHOD","QTAIM",iqtaim)
       call readchar("# METHOD","READINT",ireadint)
       if(ireadint.eq.1) iqtaim=2
@@ -94,7 +100,7 @@ c ERC QTAIM input module
         call readint("# QTAIM","PATH",ipath,0,1)
       end if 
 
-c Miscellaneous options
+!! miscellaneous options !!
       call readchar("# METHOD","OPOP",iopop)
       call readchar("# METHOD","SHANNON",isha)
       call readchar("# METHOD","DOINT",idoint)
@@ -105,13 +111,13 @@ c Miscellaneous options
       call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)
       call readreal("# METHOD","RHO_CALC_RAD",Rmax,0.0d0,1) ! fixed: was 0 (integer), must be REAL*8
       call readchar("# METHOD","NOPOPU",inopop)
- 
-C eff-AO-s and EOS
+
+!! eff-AO-s and EOS !!
       call readchar("# METHOD","EFFAO",ieffao)
       call readchar("# METHOD","UEFFAO",idummy)
       if(idummy.eq.1) ieffao=2
 
-!! EFFAOS PAIRED AND UNPAIRED (ONLY) !!
+!! effAOs, paired and unpaired only !!
       call readchar("# METHOD","EFFAO-U",idummy)
       if(idummy.eq.1) ieffao=3
 
@@ -124,7 +130,7 @@ C eff-AO-s and EOS
         call readint("# CUBE","MIN_OCC",kcubthr,0,1)
       end if
 
-!! EOS (STANDARD) !!
+!! EOS (standard) !!
       call readchar("# METHOD","EOS",ieos)
       if(ieos.eq.1) then 
         iopop=1
@@ -132,7 +138,7 @@ C eff-AO-s and EOS
         call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
-!! EOS FROM THE PAIRED AND UNPAIRED DENSITIES !!
+!! EOS from the paired and unpaired densities !!
       call readchar("# METHOD","EOS-U",iueos)
       if(iueos.eq.1) then 
         iopop=1
@@ -140,19 +146,19 @@ C eff-AO-s and EOS
         call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
-!! OS FROM CENTROIDS !!
+!! OS from centroids !!
       call readchar("# METHOD","OS-CENTROID",ieoscent)
 
-!! OS FROM LOCALIZED ORBITALS (LOBA) !!
+!! OS from localized orbitals (LOBA) !!
       call readchar("# METHOD","LOBA",iloba)
 
-c Local spin and methods for correlated WFs
+!! local spin and methods for correlated WFs !!
       call readchar("# METHOD","SPIN",ispin)
       call readint("# METHOD","DM",icorr,0,1)
       if(icorr.eq.2) ispin=1
       call readchar("# METHOD","DAFH",idafh)
 
-c Energy decomposition options   
+!! energy decomposition options !!
       call readchar("# METHOD","ENPART",ienpart )
       if(ienpart.eq.1) then
         xmix=ZERO
@@ -167,8 +173,8 @@ c Energy decomposition options
           id_func=id_xfunc+id_cfunc+id_xcfunc
           if (id_func.eq.0) stop 'FUNCTIONAL ID NOT FOUND IN INPUT FILE'
           go to 233
-c specific keywords for functionanls 
-        else 
+!! specific keywords for functionals !!
+        else
           call readchar("# ENPART","HF ",ihf)
           if(ihf.eq.1) then
             id_xfunc=-1
@@ -192,8 +198,8 @@ c specific keywords for functionanls
             go to 233
           end if
 
-c specific keywords for correlated methods
-c use CORRELATION to decompose both X and C. Default is decompose XC.
+!! specific keywords for correlated methods -- use CORRELATION to        !!
+!! decompose both X and C, default is decompose XC                       !!
           call readchar("# ENPART","CASSCF",icas)
           call readchar("# ENPART","CISD",icisd)
           call readchar("# ENPART","CORRELATION",iecorr)
@@ -203,8 +209,8 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
 233       continue
         end if 
 
-!!  EXTRA OPTIONS !! 
-        call readint("# ENPART","THREBOD",ithrebod,100,1) !! SELECTING VALUE LOWER THAN 1 SETS IT TO ZERO !!
+!! extra options !!
+        call readint("# ENPART","THREBOD",ithrebod,100,1) !! a value below 1 sets it to zero !!
         call readchar("# ENPART","EXACT",iexact)
         call readchar("# ENPART","HOMO",ihomo)
         call readchar("# ENPART","DEKIN",idek)
@@ -212,7 +218,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
         call readreal("# ENPART","TWOELTOLER",twoeltoler,0.00d0,1)
         call readchar("# ENPART","ANALYTIC",ianalytical)
 
-!! ADDING GRID TUNNING FOR TWO-EL INTEGRATION !!
+!! adding grid tuning for two-el integration !!
         call readchar("# ENPART","MOD-GRIDTWOEL",iigrid)
         if(iigrid.eq.1) then
           call readint("# GRID","RADIAL",nrad22,150,1)
@@ -222,7 +228,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           call readreal("# GRID","phb2",phb22,0.170d0,1)
           call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
         
-!! DEFAULTS, MODIFIED FOR SAFE INTEGRATION SETUP !! 
+!! defaults, modified for safe integration setup !!
         else
           nrad22=150
           nang22=590
@@ -254,9 +260,10 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           end if
         end if
 
-!! FOR TOPOLOGY CALCULATION !!
-!! MG: needs to be properly checked... done long time ago !!
-!! MG: extended version for 2d, 3d, and more 1d topology in apost3.1-devel of my user... we should check if worth merging !!
+!! for topology calculation !!
+!! MG: needs to be properly checked, done a long time ago                !!
+!! MG: an extended version for 2D/3D and more 1D topology exists in       !!
+!! apost3.1-devel -- worth checking if merging it in is worthwhile        !!
         itop=0
         ipairs=0
         call readchar("# METHOD","TOPOLOGY",itop)
@@ -272,7 +279,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           else
             write(*,*) " DOING CUBE OF THE ENTIRE MOLECULAR SYSTEM "
           end if
-!! FOR CHOOSING THE ENERGY COMPONENT TO DO THE TOPOLOGY !!
+!! for choosing the energy component to do the topology on !!
           ietop=-1
           call readchar("# TOPOLOGY","EXCHANGE",itop2)
           if(itop2.eq.1) ietop=1
@@ -285,10 +292,10 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           if(ietop.eq.-1) stop " FUNCTION FOR TOPOLOGY NOT INTRODUCED "
         end if
 
-!! END OF ENPART OPTIONS !!
+!! end of ENPART options !!
       end if
 
-!! EDAIQA OPTIONS !!
+!! EDAIQA options !!
       iedaiqa=0
       iflip=0
       call readchar("# METHOD","EDAIQA",iedaiqa)
@@ -300,15 +307,15 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           read(16,'(a80)') namefchk2
           open(unit=55,file=namefchk1)
           open(unit=52,file=namefchk2)
-          call readchar("# EDAIQA","FLIPSPIN",iflip) !! ALPHA FOR BETA !!
+          call readchar("# EDAIQA","FLIPSPIN",iflip) !! swaps alpha for beta !!
 
-!! ADDING pySCF REF VALUES FOR ELSTAT CALCULATION !!
+!! adding pySCF reference values for the electrostatic calculation !!
           call readreal("# EDAIQA","eN pySCF",xen,0.0d0,1)
           call readreal("# EDAIQA","Coul pySCF",xcoul,0.0d0,1)
           call readreal("# EDAIQA","NN pySCF",xnn,0.0d0,1)
 
-!! ADDING GRID TUNNING FOR TWO-EL INTEGRATION !!
-!! Potser es fa repetitiu amb el de la seccio ENPART. Es podria fer un 2x1!!
+!! adding grid tuning for two-el integration -- MG: repetitive with the  !!
+!! # ENPART block above, could be consolidated into one                 !!
           call readchar("# EDAIQA","MOD-GRIDTWOEL",iigrid)
           call readint("# GRID","RADIAL",nrad22,40,1)
           call readint("# GRID","ANGULAR",nang22,146,1)
@@ -316,7 +323,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           call readreal("# GRID","phb1",phb12,0.162d0,1)
           call readreal("# GRID","phb2",phb22,0.182d0,1)
 
-!! OPTIONS TO MAKE 2D PLOTS ABOUT ELECTROSTATIC POTENTIALS !!
+!! options to make 2D plots of electrostatic potentials !!
           i2deda=0
           call locate(16,"# 2D PLOTS",i2deda)
           if(i2deda.eq.1) then
@@ -324,7 +331,7 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
             read(16,*) (xptxyz(1,j),j=1,3)
             read(16,*) (xptxyz(2,j),j=1,3)
 
-!! PRINTING TO ENSURE... CAN BE REMOVED !!
+!! printing to confirm the values read in -- candidate for removal !!
             write(*,*) " "
             write(*,*) " SOME PRINTING FOR EDAIQA PURPOSES "
             write(*,*) " "
@@ -338,15 +345,15 @@ c use CORRELATION to decompose both X and C. Default is decompose XC.
           stop "EDAIQA SECTION MISSING. REVISE inp"
         end if
 
-!! END OF EDAIQA !!
+!! end of EDAIQA !!
       end if
 
-C NLOPs                       
+!! nonlinear optical properties (POLAR) !!
       call readchar("# METHOD","POLAR",ipolar )
       if(ipolar.eq.1) then
         iaccur=1
-c using file $name.scr as raw output for post-processing
-!MMO- deleting everything scr-related as it's no longer used
+!! MMO: the old $name.scr raw-output-for-post-processing path was       !!
+!! removed, no longer used here                                         !!
       end if
 
       call field_misc(ifield)
@@ -355,7 +362,7 @@ c using file $name.scr as raw output for post-processing
         write(*,'(3(a4,f8.6))') 'Fx=',field(2), 'Fy=',field(3),'Fz=',field(4) 
       end if
 
-C Do for restricted number of atoms
+!! do for restricted number of atoms !!
       idoat=0
       call readchar("# METHOD","DOATOMS",idoat)
       if(idoat.eq.1) then
@@ -370,7 +377,7 @@ C Do for restricted number of atoms
         end do
       end if
 
-c Do for fragments
+!! do for fragments !!
       idofr=0
       call readchar("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
@@ -400,7 +407,7 @@ c Do for fragments
             read(16,*) (ifrlist(k,i),k=1,nfrlist(i))
           end if
         end do
-c
+
         ixx=0
         do i=1,icufr
           ixx=ixx+nfrlist(i)
@@ -409,7 +416,7 @@ c
           stop 'Missing/Additional atoms in fragment definition'
         end if
 
-c  jfrlist tells which fragment a given atom belongs to
+!! jfrlist tells which fragment a given atom belongs to !!
         do i=1,icufr
           do k=1,nfrlist(i)
             jfrlist(ifrlist(k,i))=i
@@ -421,7 +428,7 @@ c  jfrlist tells which fragment a given atom belongs to
             stop
           end if
         end do
-c for compatibility
+!! for compatibility !!
       else
         icufr=nat
         do i=1,icufr
@@ -431,7 +438,7 @@ c for compatibility
         end do
       end if
 
-!! EXTRA WARNINGS FOR EDAIQA !!
+!! extra warnings for EDAIQA !!
       if(iedaiqa.eq.1) then
         if(idofr.eq.0) then
           write(*,*) " FRAGMENT DEFINITION REQUIRED FOR EDAIQA "
@@ -441,8 +448,8 @@ c for compatibility
         if(idofr.eq.1.and.icufr.ne.2) stop " ONLY 2 FRAGMENTS ALLOWED FOR EDAIQA "
       end if
 
-C READING DM1 and DM2  
-      if(icorr.ne.0) then 
+!! reading DM1 and DM2 !!
+      if(icorr.ne.0) then
         call locate(16,"# DM",ii)
         if(ii.eq.0) stop " # DM section not found in input file "
         call readchar("# DM","pySCF",ipyscf)
@@ -466,14 +473,15 @@ C READING DM1 and DM2
         end if
       end if
 
-!! OSLO OPTIONS !!
+!! OSLO options !!
 
       ioslo=0
       call readchar("# METHOD","OSLO",ioslo)
       if(ioslo.eq.1) then
 
-!! MG: BY DEFAULT REQUIRED THE TFVC AIM IN # METHOD (NUMERICAL INTEGRATION). BUT ONE CAN ASK OSLOs USING HILBERT AIMS !!
-!! HILBERT AIMS CASES !!
+!! MG: by default requires the TFVC AIM in # METHOD (numerical           !!
+!! integration), but one can ask for OSLOs using Hilbert-space AIMs      !!
+!! instead -- the Hilbert-space cases follow                             !!
 
         ilow2=0
         call readchar("# OSLO","MULLIKEN",ii)
@@ -485,26 +493,26 @@ C READING DM1 and DM2
         call readchar("# OSLO","NAO-BASIS",ii)
         if(ii.eq.1) ilow2=6
 
-!! EXTRA OPTIONS !!
-        
-        call readint("# OSLO","FOLI TOLERANCE",ifolitol,3,1) !! FOLI VALUE TOLERANCE (FOR SELECTION) !!
-        call readint("# OSLO","BRANCH ITERATION",ibranch,0,1) !! VALUE OF THE ITERATION TO INVOKE BRANCHING !!
+!! extra options !!
+
+        call readint("# OSLO","FOLI TOLERANCE",ifolitol,3,1) !! FOLI value tolerance, for selection !!
+        call readint("# OSLO","BRANCH ITERATION",ibranch,0,1) !! iteration to invoke branching at !!
         ioslofchk=1
-        call readchar("# OSLO","PRINT NON-ORTHO",ii) !! FOR PRINTING NON-ORTHO OSLOs IN AN EXTRA .fchk FILE !!
+        call readchar("# OSLO","PRINT NON-ORTHO",ii) !! prints non-ortho OSLOs to an extra .fchk file !!
         if(ii.eq.1) ioslofchk=2
 
       end if
 
-!! TO PRINT .fchk FILES FROM QCHEM or MOKIT (MG: FCHK FORMAT IS DIFFERENT THAN GAUSSIAN) !!
+!! to print .fchk files from QCHEM or MOKIT -- MG: their fchk format is  !!
+!! different from Gaussian's                                             !!
       iqchem=0
       call readchar("# METHOD","QCHEM",iqchem)
       imokit=0
       call readchar("# METHOD","MOKIT",imokit)
 
-!! END OF OSLO OPTIONS !!
+!! end of OSLO options !!
 
-
-!! X-RAY SCATTERING FACTORS !!
+!! X-ray scattering factors !!
       call readchar("# METHOD","SCATT-FACT",iscattfact)
 
       end

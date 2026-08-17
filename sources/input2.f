@@ -1,3 +1,22 @@
+!! ********************************************************************* !!
+!! FILE STATUS (2026-08-17): the Subroutine Cleanup Protocol (comments,  !!
+!! header, printing, parallelization assessment) has been applied to     !!
+!! input, readchar, readreal, readint. NOT yet applied to: dm1input,     !!
+!! dm2input_pyscf, dm2input_dmn, mga_misc, field_misc, locate,           !!
+!! int_locate, real_locate, do_potential, Boys_expansionn.               !!
+!! ********************************************************************* !!
+
+!! ********************************************************************* !!
+!! subroutine: input                                                     !!
+!! purpose: reads the native Gaussian .fchk (unit 15) into the           !!
+!! wavefunction's global state -- MO formalism/type, basis size (via     !!
+!! build_basis/build_ao_matrices), P/PS density matrices, spin density,  !!
+!! CAS/CI spin-orbital counts. Prints the WAVEFUNCTION SUMMARY block as  !!
+!! each value is determined (see the print_box call below).              !!
+!! arguments: none (unit 15 already open; output via COMMON /nat/,       !!
+!!   /coord/, /energ/, /cas/ and ao_matrices' P/PS/C/CB module arrays)   !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine input
       use basis_set
       use ao_matrices
@@ -15,7 +34,6 @@
       character*80 line
       character*20 cform,ctype
       logical ilog
-      real*8, allocatable ::vv(:,:)
 
       ndens0=iopt(9)
 
@@ -23,48 +41,45 @@
       iuhf=0
       icas=0
       icisd=0
-      ikop=0
       irohf=0
 
 !! wavefunction summary -- each line below prints as its value is determined !!
       call print_box('WAVEFUNCTION SUMMARY')
 
-ccccccccccccccccccccccccccccc
-c start processing fchk file
-ccccccccccccccccccccccccccccc
+!! start processing fchk file !!
       rewind 15
       read(15,'(a80)')line
       read(15,'(a80)')line
       if(index(line(11:11),"R").ne.0) then
-       irhf=1
-       cform='Restricted'
+        irhf=1
+        cform='Restricted'
       else if(index(line(11:11),"U").ne.0) then
-       cform='Unrestricted'
-       iuhf=1
+        cform='Unrestricted'
+        iuhf=1
       end if
       write(*,'(2x,a,1x,a)') 'MO formalism                     :',
-     + trim(cform)
+     +  trim(cform)
 
       if(index(line(11:25),"CASSCF").ne.0) then
-       icas=1
-       ctype='CASSCF'
+        icas=1
+        ctype='CASSCF'
       else if(index(line(11:25),"HF").ne.0) then
-       ctype='Hartree-Fock'
+        ctype='Hartree-Fock'
       else if(index(line(11:25),"MP").ne.0) then
-       ctype='Moller-Plesset PT'
+        ctype='Moller-Plesset PT'
       else if(index(line(11:25),"CI").ne.0) then
-       icisd=1
-       ctype='CI'
+        icisd=1
+        ctype='CI'
       else if(index(line(11:25),"CCSD").ne.0) then
-       ctype='Coupled-cluster'
-       icisd=1
+        ctype='Coupled-cluster'
+        icisd=1
       else
-       ctype='KS-DFT'
+        ctype='KS-DFT'
       end if
       write(*,'(2x,a,1x,a)') 'Calculation type                 :',
-     + trim(ctype)
+     +  trim(ctype)
       if(ctype.eq.'KS-DFT') write(*,'(4x,a)')
-     + '(single det. built from the Kohn-Sham orbitals)'
+     +  '(single det. built from the Kohn-Sham orbitals)'
 
       call build_basis()
 
@@ -82,7 +97,7 @@ ccccccccccccccccccccccccccccc
 
       igr0=int_locate(15,"Number of independ",ilog)
       if(igr.ne.igr0) write(*,'(2x,a)')
-     + 'WARNING: some basis functions were removed (linear dependency)'
+     +  'WARNING: some basis functions were removed (linear dependency)'
 
       nelectr=int_locate(15,"Number of electr",ilog)
 
@@ -105,183 +120,175 @@ ccccccccccccccccccccccccccccc
       dummy=int_locate(15,"Alpha MO co",ilog)
       read(15,*)((c(i,j),i=1,igr),j=1,igr0)
       if(igr0.ne.igr) then
-       do i=igr0+1,igr
-        do j=1,igr
-         c(j,i)=0.0d0
+        do i=igr0+1,igr
+          do j=1,igr
+            c(j,i)=0.0d0
+          end do
         end do
-       end do
       end if
 
       dummy=int_locate(15,"Beta MO co",ilog)
       if(ilog) then
-       read(15,*)((cb(i,j),i=1,igr),j=1,igr0)
-       if(igr0.ne.igr) then
-        do i=igr0+1,igr
-         do j=1,igr
-          c(j,i)=0.0d0
-         end do
-        end do
-       end if
-c just in case not detected above
-       iuhf=1
-       kop=1
+        read(15,*)((cb(i,j),i=1,igr),j=1,igr0)
+        if(igr0.ne.igr) then
+          do i=igr0+1,igr
+            do j=1,igr
+              c(j,i)=0.0d0
+            end do
+          end do
+        end if
+!! just in case not detected above !!
+        iuhf=1
+        kop=1
       end if
 
-
-C Reading P-matrix from fchk
+!! reading P-matrix from fchk !!
       ntriang=int_locate(15,"otal SCF D",ilog)
       read(15,*)(clin(i),i=1,ntriang)
       ndens=1     
 
       if(ndens0.gt.1) then
-       ndens=-1
-       rewind 15
+        ndens=-1
+        rewind 15
  200   read(15,'(a80)',end=211)line
-       if(index(line,"Total").ne.0) ndens=ndens+1
-       goto 200
+        if(index(line,"Total").ne.0) ndens=ndens+1
+        goto 200
  211   continue                 
 
-       if(ndens.ne.1) then
-        print *, ndens,' densities found in the fchk file'   
-       else
-        print *,' There is only a P-matrix the fchk file - it is used.' 
-       end if
-       if(ndens0.le.ndens)then
-        ndens=ndens0
-        print *,'Using the ',ndens,'-d/th density in the fchk file'
-       else 
-        print *,ndens0,'-d/th density not found in the fchk file'
-        stop
-       endif
+        if(ndens.ne.1) then
+          write(*,'(2x,i0,a)') ndens,' densities found in the fchk file'
+        else
+          write(*,'(2x,a)')
+     +      'Only one P-matrix found in the fchk file -- using it'
+        end if
+        if(ndens0.le.ndens)then
+          ndens=ndens0
+          write(*,'(2x,a,i0,a)') 'Using density number ',ndens,
+     +      ' from the fchk file'
+        else
+          write(*,'(2x,a,i0,a)') 'Density number ',ndens0,
+     +      ' not found in the fchk file'
+          stop
+        endif
 
-c Getting the n-th Density matrix in fchk instead
-       ncou=-1
-       rewind 15
-       do while (ncou.lt.ndens)
-        read(15,'(a80)')line
-        if(index(line,"Total").ne.0) ncou=ncou+1   
-       end do
-       read(15,*)(clin(i),i=1,ntriang)
+!! getting the n-th density matrix in fchk instead !!
+        ncou=-1
+        rewind 15
+        do while (ncou.lt.ndens)
+          read(15,'(a80)')line
+          if(index(line,"Total").ne.0) ncou=ncou+1   
+        end do
+        read(15,*)(clin(i),i=1,ntriang)
       end if
-c 
+
       ncou=1
       do i=1,igr
-       do j=1,i
-        p(i,j)=clin(ncou)
-        p(j,i)=clin(ncou)
-        ncou=ncou+1
-       enddo
+        do j=1,i
+          p(i,j)=clin(ncou)
+          p(j,i)=clin(ncou)
+          ncou=ncou+1
+        enddo
       enddo
 
-c checking for RO case. Wrong P provided in FChk in some Gaussian
-c versions. Building P and PS from MOs just in case
+!! checking for RO case -- wrong P provided in FChk in some Gaussian    !!
+!! versions, building P and PS from MOs just in case                    !!
       irohf=int_locate(15,"IROHF",ilog)
       if(irohf.eq.1) then
-       kop=1
-       do i=1,igr
-        do j=1,igr
-         cb(i,j)=c(i,j)
+        kop=1
+        do i=1,igr
+          do j=1,igr
+            cb(i,j)=c(i,j)
+          enddo
         enddo
-       enddo
       end if
+!! O(igr^2 x nocc) but a one-time setup cost (input() runs once per job), !!
+!! not a hot loop -- assessed, not worth OMP unlike the actual numerical  !!
+!! integration kernels this codebase parallelizes (see CLAUDE.md)         !!
       if(kop.eq.1) then
-       do i=1,igr
-        do j=1,igr
-         pa(i,j)=0.0d0
-         pb(i,j)=0.0d0
-         do ij=1,nalf
-          pa(i,j)=pa(i,j)+c(i,ij)*c(j,ij)
-         end do
-         do ij=1,nb
-           pb(i,j)=pb(i,j)+cb(i,ij)*cb(j,ij)
-         end do
-         p(i,j)=pa(i,j)+pb(i,j)
-         ps(i,j)=pa(i,j)-pb(i,j)
+        do i=1,igr
+          do j=1,igr
+            pa(i,j)=0.0d0
+            pb(i,j)=0.0d0
+            do ij=1,nalf
+              pa(i,j)=pa(i,j)+c(i,ij)*c(j,ij)
+            end do
+            do ij=1,nb
+              pb(i,j)=pb(i,j)+cb(i,ij)*cb(j,ij)
+            end do
+            p(i,j)=pa(i,j)+pb(i,j)
+            ps(i,j)=pa(i,j)-pb(i,j)
+          end do
         end do
-       end do
       else
-       do i=1,igr
-        do j=1,igr
-         pa(i,j)=p(i,j)/2.0d0 
-         pb(i,j)=p(i,j)/2.0d0 
+        do i=1,igr
+          do j=1,igr
+            pa(i,j)=p(i,j)/2.0d0 
+            pb(i,j)=p(i,j)/2.0d0 
+          enddo
         enddo
-       enddo
-      end if
-c
-c checking if spin density is available in fchk
-c
-      ntriang=int_locate(15,"Spin SCF ",ilog)
-      if(ilog) then
-       read(15,*)(clin(i),i=1,ntriang)
-       ncou=1
-       do i=1,igr
-        do j=1,i
-         ps(i,j)=clin(ncou)
-         ps(j,i)=clin(ncou)
-         ncou=ncou+1
-        enddo
-       enddo
-       write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
-     +  'found'
-      else if(icas.ne.1.or.icisd.ne.1) then
-       write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
-     +  'not found, reconstructed from MOs'
       end if
 
-c In case CASSCF
+!! checking if spin density is available in fchk !!
+      ntriang=int_locate(15,"Spin SCF ",ilog)
+      if(ilog) then
+        read(15,*)(clin(i),i=1,ntriang)
+        ncou=1
+        do i=1,igr
+          do j=1,i
+            ps(i,j)=clin(ncou)
+            ps(j,i)=clin(ncou)
+            ncou=ncou+1
+          enddo
+        enddo
+        write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
+     +    'found'
+      else if(icas.ne.1.or.icisd.ne.1) then
+        write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
+     +    'not found, reconstructed from MOs'
+      end if
+
+!! in case CASSCF !!
       ncasel=int_locate(15,"Number of CAS El",ilog)
       if(ilog) then
-       icas=1
-       ncasorb=int_locate(15,"Number of CAS Or",ilog)
-       write(*,'(2x,a,1x,i0)') 'CAS active electrons             :',
-     +  ncasel
-       write(*,'(2x,a,1x,i0)') 'CAS active orbitals              :',
-     +  ncasorb
+        icas=1
+        ncasorb=int_locate(15,"Number of CAS Or",ilog)
+        write(*,'(2x,a,1x,i0)') 'CAS active electrons             :',
+     +    ncasel
+        write(*,'(2x,a,1x,i0)') 'CAS active orbitals              :',
+     +    ncasorb
       endif
 
       nocc=nelectr/2
       if(icas.eq.1) then
-      ncore=(nelectr-ncasel)/2
-      norb=ncore+ncasorb
-      nspinorb=norb*2
+        ncore=(nelectr-ncasel)/2
+        norb=ncore+ncasorb
+        nspinorb=norb*2
 
-c       nx=ncasel/2
-c       if(2*nx.ne.ncasel)nx=nx+1
-c       nspinorb=2*(nocc-nx+ncasorb)
-c       if(2*nocc.ne.nelectr)nspinorb=nspinorb+2
-       write(*,'(2x,a,1x,i0)') 'CAS spin-orbitals                :',
-     +  nspinorb
-       icass=0
-       if(abs(ss2).gt.1.0d-2) then
-        write(*,'(2x,a,1x,a)') 'CAS spin state                   :',
-     +   'non-singlet'
-        icass=1
-       end if
+        write(*,'(2x,a,1x,i0)') 'CAS spin-orbitals                :',
+     +    nspinorb
+        icass=0
+        if(abs(ss2).gt.1.0d-2) then
+          write(*,'(2x,a,1x,a)') 'CAS spin state                   :',
+     +      'non-singlet'
+          icass=1
+        end if
       else if(icisd.eq.1) then
-       nspinorb=igr0*2
-       write(*,'(2x,a,1x,i0)') 'CI spin-orbitals                 :',
-     +  nspinorb
+        nspinorb=igr0*2
+        write(*,'(2x,a,1x,i0)') 'CI spin-orbitals                 :',
+     +    nspinorb
       endif
-c      norb=nspinorb/2
 
       if(icas.eq.0)then
-       write(*,'(2x,a,1x,i0,a,i0,a,i0)')
-     +  'Occupied MOs (nocc/alpha/beta)   :',nocc,' / ',nalf,' / ',nb
+        write(*,'(2x,a,1x,i0,a,i0,a,i0)')
+     +    'Occupied MOs (nocc/alpha/beta)   :',nocc,' / ',nalf,' / ',nb
       else
-       write(*,'(2x,a,1x,i0,a,i0)')
-     +  'Occupied MOs (alpha/beta)        :',nalf,' / ',nb
+        write(*,'(2x,a,1x,i0,a,i0)')
+     +    'Occupied MOs (alpha/beta)        :',nalf,' / ',nb
       endif
       write(*,'(2x,a,1x,f20.10)') 'SCF/DFT energy (au)              :',
-     + escf
+     +  escf
 
-ccccccccccccccccccccccccccc
-c end processing fchk file
-ccccccccccccccccccccccccccc
-c      allocate(vv(nbasis,nbasis))
-c      call do_potential(zn,vv)
-c      call printmat(nbasis,vv)
-
-       end
+      end
 
       subroutine dm1input(dm1)
       use ao_matrices
@@ -743,29 +750,48 @@ C REading and taking into acocunt ony x.y and z dipole components
       end
 
 
-c*******************************
-c PROCESSING INP FILE   ********
-c*******************************
+!! ********************************************************************* !!
+!! subroutine: readchar                                                  !!
+!! purpose: scans an .inp section (unit 16, already open) for a bare     !!
+!! keyword; ival=1 if found before the section closes, 0 otherwise.      !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
+!!   keyword (in)  -- keyword text to search for                        !!
+!!   ival    (out) -- 1 if found, 0 otherwise                            !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine readchar(section,keyword,ival)
       character section*(*), keyword*(*)
       character linea*80
       integer ipos,ii
 
-        ival=0
+      ival=0
       call locate(16,section,ii)
       ii=0
       do while(ii.eq.0)
-       read(16,"(a80)") linea
-         ipos=index(linea,keyword)
-         if(ipos.ne.0) then
-        ival=1
-        ii=1
-         end if
-       if(index(linea,"#").ne.0) ii=2
+        read(16,"(a80)") linea
+        ipos=index(linea,keyword)
+        if(ipos.ne.0) then
+          ival=1
+          ii=1
+        end if
+        if(index(linea,"#").ne.0) ii=2
       end do
       return
-        end
-C*****************************************************************
+      end
+
+!! ********************************************************************* !!
+!! subroutine: readreal                                                  !!
+!! purpose: scans an .inp section (unit 16, already open) for a keyword  !!
+!! followed by a real value; falls back to intdef if not found.          !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
+!!   keyword (in)  -- keyword text to search for                        !!
+!!   intv    (out) -- parsed value, or intdef if not found               !!
+!!   intdef  (in)  -- default value                                      !!
+!!   ilog    (in)  -- 0 = required (stop if missing), 1 = optional       !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine readreal(section,keyword,intv,intdef,ilog)
       character section*(*), keyword*(*)
       character linea*80
@@ -773,53 +799,71 @@ C*****************************************************************
       integer ilog
 
       call locate(16,section,ii)
-       if(ii.eq.0) go to 10
+!! if the whole section is missing, this jumps straight to the default -- !!
+!! the ilog=0 "required" stop below only fires when the section exists    !!
+!! but the keyword inside it doesn't (found during the 2026-08-17 cleanup !!
+!! pass, not fixed, see CLAUDE.md)                                        !!
+      if(ii.eq.0) go to 10
       ii=0
       do while(ii.eq.0)
-      read(16,"(a80)") linea
-         ipos=index(linea,keyword)
-         if(ipos.ne.0) then
+        read(16,"(a80)") linea
+        ipos=index(linea,keyword)
+        if(ipos.ne.0) then
           ipos=ipos+1+len(keyword)
           read(linea(ipos:),*,err=10,end=10) intv
-      ii=1
-         end if
-      if(index(linea,"#").ne.0) ii=2 
+          ii=1
+        end if
+        if(index(linea,"#").ne.0) ii=2
       end do
       if(ilog.eq.0.and.ii.ne.1) then
-      write(*,*) keyword,'is required.'
-      stop
+        write(*,*) keyword,'is required.'
+        stop
       else if(ii.eq.2) then
-10       intv=intdef
+10      intv=intdef
       end if
       return
-        end
-C*****************************************************************
-        subroutine readint(section,keyword,intv,intdef,ilog)
-        character section*(*), keyword*(*)
-        character linea*80
-        integer ipos,ii,intv,intdef,ilog
+      end
 
-        call locate(16,section,ii)
-        if(ii.eq.0) goto 40
-        ii=0
-        do while(ii.eq.0)
-         read(16,"(a80)") linea
-         ipos=index(linea,keyword)
-         if(ipos.ne.0) then
+!! ********************************************************************* !!
+!! subroutine: readint                                                   !!
+!! purpose: scans an .inp section (unit 16, already open) for a keyword  !!
+!! followed by an integer value; falls back to intdef if not found.      !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
+!!   keyword (in)  -- keyword text to search for                        !!
+!!   intv    (out) -- parsed value, or intdef if not found               !!
+!!   intdef  (in)  -- default value                                      !!
+!!   ilog    (in)  -- 0 = required (stop if missing), 1 = optional       !!
+!! author:                                                                !!
+!! ********************************************************************* !!
+      subroutine readint(section,keyword,intv,intdef,ilog)
+      character section*(*), keyword*(*)
+      character linea*80
+      integer ipos,ii,intv,intdef,ilog
+
+      call locate(16,section,ii)
+!! same pre-existing gap as readreal above -- a missing section jumps     !!
+!! straight to the default, bypassing the ilog=0 "required" stop         !!
+      if(ii.eq.0) goto 40
+      ii=0
+      do while(ii.eq.0)
+        read(16,"(a80)") linea
+        ipos=index(linea,keyword)
+        if(ipos.ne.0) then
           ipos=ipos+1+len(keyword)
           read(linea(ipos:),*,end=40) intv
           ii=1
-         end if
-         if(index(linea,"#").ne.0) ii=2
-        end do
-        if(ilog.eq.0.and.ii.ne.1) then
-         write(*,*) keyword,"is required."
-         stop
-        else if(ii.eq.2) then
-40       intv=intdef
         end if
-        return
-        end
+        if(index(linea,"#").ne.0) ii=2
+      end do
+      if(ilog.eq.0.and.ii.ne.1) then
+        write(*,*) keyword,"is required."
+        stop
+      else if(ii.eq.2) then
+40      intv=intdef
+      end if
+      return
+      end
 
 C*****************************************************************
       subroutine locate(iunit,string,ii)
