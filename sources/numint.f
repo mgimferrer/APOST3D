@@ -586,9 +586,10 @@ c Computing  atomic orbital overlap
         end do
       end do
 
-c check atomic overlaps
-      write(*,*) 'Checking sum of AOs overlap matrices'
-      write(*,*) 'Deviations may not affect overall accuracy of MOs '
+!! sanity check: sum of atomic overlap matrices vs. total overlap S !!
+      write(*,*)
+      write(*,'(2x,a)') 'Checking sum of AOs overlap matrices'
+      write(*,'(2x,a)') '(deviations may not affect overall accuracy of MOs)'
       do i=1,igr
         do j=i,igr
           x=0.0d0

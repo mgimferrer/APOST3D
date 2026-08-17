@@ -536,11 +536,12 @@ CCCCCCCCCCCCC
           qat(i,1)=ZERO
         end do
 
-! Prepare for Becke
+!! prepare for Becke-type atomic weighting !!
+        call print_box('SETTING ATOMIC DEFINITION')
         if(ierf.ne.1) then
-          write(*,'(A20,i5)') ' Using stiffness k :',istiff
+          write(*,'(2x,a,1x,i0)') 'Using stiffness k:',istiff
         else
-          write(*,'(a34,f8.4)') 'USING ADJUSTABLE PROFILE WITH A= ',aerf
+          write(*,'(2x,a,1x,f8.4)') 'Using adjustable profile with A =',aerf
         end if
         if(ibcp.eq.1) call khi()
         if(ihirsh.eq.1.or.ihirsh.eq.2.or.ielcount.eq.1) call makeatdens
