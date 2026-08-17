@@ -1,10 +1,4 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): this file's only subroutine (read_input)    !!
-!! has been through the Subroutine Cleanup Protocol. Nothing left to     !!
-!! track here.                                                            !!
-!! ********************************************************************* !!
-
-!! ********************************************************************* !!
 !! subroutine: read_input                                                !!
 !! purpose: parses every '# METHOD'/section keyword from the .inp file   !!
 !!   (unit 16, opened by the caller) into the flags in input_options_mod,!!
