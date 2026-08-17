@@ -338,6 +338,7 @@
 !! own MOD-GRIDTWOEL check below; if both ENPART and EDAIQA are active   !!
 !! in the same run, whichever parses last in read_input.f wins here too !!
         if(iigrid.eq.1) then
+          write(*,*)
           chdr='# GRID'
           write(*,'(2x,a)') trim(chdr)
           write(*,'(2x,a)') repeat('-',len_trim(chdr))

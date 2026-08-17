@@ -1,3 +1,21 @@
+!! ********************************************************************* !!
+!! FILE STATUS (2026-08-17): the Subroutine Cleanup Protocol has been    !!
+!! applied to gennatural, diagonalize, old_diagonalize (pre-existing).   !!
+!! NOT yet applied to: readintfiles, invert, svd, uvprint, inc, outc,    !!
+!! outc23, outc2. gennatural_old is confirmed dead (zero call sites      !!
+!! codebase-wide) but left alone pending a deprecation decision, same as !!
+!! old_diagonalize.                                                      !!
+!! ********************************************************************* !!
+
+!! ********************************************************************* !!
+!! subroutine: gennatural                                                !!
+!! purpose: builds natural orbitals from the density matrix P (S^1/2     !!
+!! transform, diagonalize, back-transform to AO basis); prints their     !!
+!! occupation numbers and a sum-of-overlap sanity check. Called from     !!
+!! main.f when idono=1 (post-HF or open-shell/kop=1 runs).               !!
+!! arguments: none (P/S via ao_matrices, output via occ_no/c_no)         !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine gennatural()
       use basis_set
       use ao_matrices
@@ -12,48 +30,53 @@
 
       allocate(s0(igr,igr),sm(igr,igr),splus(igr,igr))
 
-c make S1/2
-       s0=s
-       call build_Smp(igr,s0,sm,splus,0)
+!! make S^1/2 !!
+      s0=s
+      call build_Smp(igr,s0,sm,splus,0)
 
-c tranform P with S1/2
-       do i=1,igr
+!! transform P with S^1/2, diagonalize, back-transform to AO basis !!
+      do i=1,igr
         do j=1,igr
-        occ_no(i,j)=p(i,j)
+          occ_no(i,j)=p(i,j)
         end do
-       end do
+      end do
       call to_lowdin_basis(igr,splus,occ_no)
       call diagonalize(igr,igr,occ_no,c_no,0)
       call to_AO_basis(igr,igr,sm,c_no)
 
       i=1
-      do while(abs(occ_no(i,i)).gt.1.0d-6) 
-       i=i+1
+      do while(abs(occ_no(i,i)).gt.1.0d-6)
+        i=i+1
       end do
-      write(*,*) 'Natural orbital occupations (>1.0e-6): '
-      write(*,'(8f10.5)') (occ_no(ii,ii),ii=1,i-1)
 
-       write(*,*) 'Checking NO overlap matrix '
-! reusing s0
-        do i=1,igr
-         do j=1,igr
+      call print_box('NATURAL ORBITALS')
+      write(*,'(2x,a)') 'Occupation numbers (>1.0e-6):'
+      write(*,'(2x,8f10.5)') (occ_no(ii,ii),ii=1,i-1)
+      write(*,*)
+
+!! checking NO overlap matrix -- reusing s0. O(igr^3) but a one-time      !!
+!! setup cost (gennatural runs once per job), not worth OMP unless it     !!
+!! ever shows up as hot for a much larger system                         !!
+      write(*,'(2x,a)') 'Checking NO overlap matrix'
+      do i=1,igr
+        do j=1,igr
           xx=0.0d0
           do k=1,igr
-           xx=xx+c_no(k,i)*s(k,j)
+            xx=xx+c_no(k,i)*s(k,j)
           end do
           s0(i,j)=xx
-         end do
         end do
-        do i=1,igr
-         do j=1,igr
+      end do
+      do i=1,igr
+        do j=1,igr
           xx=0.0d0
           do k=1,igr
-           xx=xx+s0(i,k)*c_no(k,j)
+            xx=xx+s0(i,k)*c_no(k,j)
           end do
-         if(i.eq.j.and.abs(xx-1.0d0).gt.1.0d-5) write(*,*) i,j,xx
-         if(i.ne.j.and.abs(xx).gt.1.0d-5) write(*,*) i,j,xx
-         end do
+          if(i.eq.j.and.abs(xx-1.0d0).gt.1.0d-5) write(*,*) i,j,xx
+          if(i.ne.j.and.abs(xx).gt.1.0d-5) write(*,*) i,j,xx
         end do
+      end do
 
       deallocate(s0,sm,splus)
       return
