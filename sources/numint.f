@@ -81,8 +81,6 @@ c Building  pcoords
       enddo
       call rpoints(wp)
       call fpoints(chp,pcoord)
-      ipoints=iatps*nat
-      write(*,'(2x,a22,x,i9)') 'Number of grid points:',ipoints         
 
 c Building rho
 !! parallel over grid points: each ifut only reads the shared, read-only !!

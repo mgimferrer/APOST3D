@@ -1,8 +1,8 @@
 !! ********************************************************************* !!
 !! FILE STATUS (2026-08-17): the Subroutine Cleanup Protocol has been    !!
 !! applied to allocate_effao, allocate_nao, allocate_stv, get_wall_time, !!
-!! print_timer (pre-existing), build_basis. NOT yet applied to:          !!
-!! do_overlap, build_ao_matrices, build_integration_grid.                !!
+!! print_timer (pre-existing), build_basis, build_integration_grid. NOT  !!
+!! yet applied to: do_overlap, build_ao_matrices.                        !!
 !! ********************************************************************* !!
 
    MODULE basis_set
@@ -511,11 +511,23 @@
 
    CONTAINS
 
+   !! ********************************************************************* !!
+   !! subroutine: build_integration_grid                                    !!
+   !! purpose: picks the atom-centered grid size (radial/angular points,    !!
+   !! rr00) -- from command-line overrides if given, else ENPART/POLAR/     !!
+   !! EDAIQA high-accuracy defaults, else the plain one-electron defaults;  !!
+   !! prints the choice, then builds the grid via quad().                   !!
+   !! arguments:                                                            !!
+   !!   ienpart, ipolar, ifinegrid (in) -- select the high-accuracy         !!
+   !!     defaults when any is set (see Known Issue #21 re: iedaiqa below)  !!
+   !! author:                                                                !!
+   !! ********************************************************************* !!
    SUBROUTINE build_integration_grid(ienpart, ipolar,ifinegrid)
+   common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
    character*30 integ1,integ2
-!   INTEGER :: Nrad,Nang
-!   DOUBLE PRECISION :: pha, phb, rr00
 
+!! command-line override (argv(2)/argv(3)), rarely used in practice --   !!
+!! main.f only ever passes argument 1 (the job name) in normal usage     !!
        call getarg(2,integ1)
        call getarg(3,integ2)
        if(integ1.ne.' '.and.integ2.ne.' ') then
@@ -531,24 +543,14 @@
         print *,' Angular points:',npoints
         nang=npoints
         rr00=0.500d0
-! Enpart defaults for high-accuracyone-el integrations
+!! ENPART/POLAR/EDAIQA defaults for high-accuracy one-el integrations    !!
        else if(ienpart.eq.1.or.ipolar.eq.1.or.iedaiqa.eq.1) then
         nrad=150
         nang=590
         if(ifinegrid.eq.1) nang=974
         rr00=0.500d0
-!       else if(ieoscent.eq.1) then
-! simple grid to compute centroids of localized orbitals
-!        nrad=20
-!        nang=50
-!        rr00=0.5d0
-!! OSLOs testing !!
-!       else if(ioslo.eq.1) then
-!        nrad=40
-!        nang=146
-!        rr00=0.5d0
        else
-! APOST old defaults for one-el integrations
+!! APOST legacy defaults for one-el integrations !!
         nrad=40
         nang=146
         rr00=0.5d0
@@ -556,19 +558,14 @@
 
        pha=0.0d0
        phb=0.0d0
-!       pha=pha*dacos(-1.0d0)/180.0
-!       phb=phb*dacos(-1.0d0)/180.0
 
-       print *,' -------------------------------------'
-       print *,' SETTING ATOMIC GRIDS FOR INTEGRATION '
-       print *,' -------------------------------------'
-       print *,' '
-       write(*,'(A17,i5)') ' Radial points  :',nrad
-       write(*,'(A17,i5)') ' Angular points :',nang
-       write(*,'(A17,f7.3 )'),' r0 (radial)    :',rr00
+       call print_box('SETTING ATOMIC GRIDS FOR INTEGRATION')
+       write(*,'(2x,a,1x,i0)') 'Radial points  :',nrad
+       write(*,'(2x,a,1x,i0)') 'Angular points :',nang
+       write(*,'(2x,a,1x,f7.3)') 'r0 (radial)    :',rr00
+       write(*,'(2x,a,1x,i0)') 'Grid points    :',nrad*nang*nat
 
        call quad(nrad,nang)
-
 
    END SUBROUTINE build_integration_grid
 

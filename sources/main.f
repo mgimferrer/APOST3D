@@ -947,7 +947,8 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! PRINTING INFO !!
         write(*,'(2x,a14,x,i4)') "Radial points:",nrad
-        write(*,'(2x,a15,x,i4)') "Angular points:",nang  
+        write(*,'(2x,a15,x,i4)') "Angular points:",nang
+        write(*,'(2x,a12,x,i9)') "Grid points:",nrad*nang*nat
 
 !! GENERATING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATIONS !!
         iatps=nang*nrad
