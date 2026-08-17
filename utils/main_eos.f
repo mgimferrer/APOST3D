@@ -1,6 +1,6 @@
 c------------------------------------------------------------------------------c
 c                                                                              c
-c                    Program APOST-3D, Version 4                               c
+c                    Program APOST-3D, Version 5                               c
 c                   --------------------------------                           c
 c                                                                              c
 c    Real-space and Hilbert-space tools for wave function analysis             c
@@ -40,7 +40,7 @@ c                                                                              c
 c    Cite this program as:                                                     c
 c    ---------------------                                                     c
 c            P. Salvador, E. Ramos-Cordoba, M. Gimferrer, M. Montilla          c
-C            Program APOST-3D, Version 4, Girona, 2020                         c
+C            Program APOST-3D, Version 5, Girona, 2020                         c
 c                                                                              c
 c  e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       c
 c                                                                              c

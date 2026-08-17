@@ -1,7 +1,7 @@
 c-----------------------------------------------------------------------------
 c                                                                                  
-c                        Program APOST-3D, Version 4                               
-c                                 12-03-2025                                       
+c                        Program APOST-3D, Version 5
+c                                 22-09-2026
 c                       --------------------------------                           
 c                                                                                  
 c        Real-space and Hilbert-space tools for wave function analysis             
@@ -173,7 +173,6 @@ c      -------------------------------------------------------------------------
       call get_wall_time(wtime)
 
 !! Processing arguments !!
-
       CALL GETARG(1,name0)
       if(name0.ne."") then
         j=len(name0)     
@@ -195,7 +194,6 @@ c      -------------------------------------------------------------------------
       call kiir()
 
 !! Processing .inp file !!
-
       open (16,file=name3,err=9999)
       open (15,file=name,err=9999)
 
@@ -619,7 +617,7 @@ CCCCCCCCCCCCC
 
 !! Bond orders, valences, number of effectively unpaired electrons !!
       call bond_order_analysis(sat)
-c
+
       write(*,*)
       call cpu_time(time2)
       call get_wall_time(wtime2)
@@ -656,14 +654,12 @@ c
       end if
 
 !! Nonlinear optical properties (POLAR) !!
-
       if(ipolar.ne.0) call polar(itotps,nat,wp,omp,omp2,pcoord,rho)
 
 !! Entropies and correlation indicators -- unfinished, see numint_sha !!
 c      if(isha.ne.0) call numint_sha(ndim,itotps,nat,wp,chp,omp,omp2,ibaspoint)
 
-!! PCA analysis -- needs di already populated (bond_order_analysis     !!
-!! above)                                                              !!
+!! PCA analysis -- needs DI already populated (bond_order_analysis above) !!
       if(ipca.eq.1) call pca_analysis()
 
 !! DAFH part -- needed files produced by external code (R. Ponec), not !!
