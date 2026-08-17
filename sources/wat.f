@@ -1,3 +1,8 @@
+!! ********************************************************************* !!
+!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
+!! applied to: wat, pp, sbecke, khi, functxyz, dfunctxyz, wathirsh2,     !!
+!! prepar, makeatdens, orbxyz, d2functxyz.                               !!
+!! ********************************************************************* !!
 
       function wat(ii,x,y,z)
       implicit real*8 (a-h,o-z)
@@ -98,6 +103,7 @@ c       anu= aerf*anu/sqrt(1.0-(1.0-aerf*aerf)*anu*anu)
       common /atomrad/atr(maxat),dist(maxat,maxat)
       common /achi/achi(maxat,maxat),ibcp
       dimension rho(82),kmin(10),kmax(10)
+      character*200 cnote
 
       inewbec=iopt(31)
       iradmat=iopt(48)
@@ -117,9 +123,12 @@ c       anu= aerf*anu/sqrt(1.0-(1.0-aerf*aerf)*anu*anu)
          go to 101
       end if
 
-      write(*,*) 'Using density along atom pairs to set atomic radii.'
+      write(*,'(2x,a)') 'Using density along atom pairs to set atomic radii'
+      write(*,*)
       do 100 iatom=1,nat-1
       do 100 jatom=iatom+1,nat
+
+      cnote=' '
 
       if(inewbec.eq.1) then
       rijx2=(coord(1,jatom)+coord(1,iatom))/2.0d0
@@ -180,42 +189,46 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
         endif    
       enddo
 
-C Print if there are maxima or no minima along interatomic axis
+!! note if there are maxima or no minima along the interatomic axis !!
       if(ncmax.ne.0.or.ncmin.eq.0)then
-      write(*,'(a18,2i4)')' Info: atom pair: ',iatom,jatom
-      write(*,32)ncmax,' maximum and ',ncmin,
-     $' minima of density between atoms',iatom,' and ',jatom
-      write(*,*)'Max:',(kmax(i),i=1,ncmax),'Min:',(kmin(i),i=1,ncmin)
-32    format(i2,a13,i2,a32,i4,a5,i4)
+        write(cnote,'(i0,a,i0,a)') ncmax,' max / ',ncmin,' min extrema'
       endif
 
-c Simplest case : 0 max and 1 min
+!! simplest case: 0 max and 1 min !!
       if(ncmax.eq.0.and.ncmin.eq.1)then
        kc=kmin(1)
        goto 7
       endif
-C flag for pseudopotential
+!! flag for pseudopotential !!
       ipseudo=0
       if(int(zn(iatom)).ne.iznuc(iatom).or.int(zn(jatom)).ne.iznuc(jatom))then
-       write(*,*)'Atom/s with pseudopotential/s '
+       if(len_trim(cnote).gt.0) then
+        cnote=trim(cnote)//'; pseudopotential present'
+       else
+        cnote='pseudopotential present'
+       end if
        ipseudo=1
       end if
-c Case: there is one more minima than maxima or vice versa
+!! case: there is one more minima than maxima or vice versa !!
       if(ipseudo.eq.0.and.ncmax.ne.0.and.abs(ncmin-ncmax).eq.1) then
        kmc=mod(ncmax,2)
        if(kmc.ne.0) then
         kc=kmax((ncmax+1)/2)
         maxflg=1
-        print *, 'The central maxima selected as dividing point:',kc
+        cnote=trim(cnote)//'; using central maximum as dividing point'
        else
         kc=kmin((ncmin+1)/2)
         maxflg=0
-        print *, 'The central minima selected as dividing point:',kc
+        cnote=trim(cnote)//'; using central minimum as dividing point'
        end if
        go to 7
       end if
 
-      print *, 'Inconsistent number of extrema:' 
+      if(len_trim(cnote).gt.0) then
+       cnote=trim(cnote)//'; inconsistent extrema'
+      else
+       cnote='inconsistent extrema'
+      end if
 
       ijx=ndiv
       iix=ndiv/2
@@ -235,19 +248,16 @@ c Case: there is one more minima than maxima or vice versa
       end do
       kc=iix
       if(maxflg.eq.1) then
-       print *,'Selecting maximum closest to midpoint ',kc
+       cnote=trim(cnote)//', selecting maximum closest to midpoint'
       else
-       print *,'Selecting minimum closest to midpoint ',kc
+       cnote=trim(cnote)//', selecting minimum closest to midpoint'
       end if
-       
-C Something wrong...
-c      print *,'Irrecoverable inconsistency between atoms',iatom,jatom
 
   7   continue
 
       nsubdiv=40
       substep=2.d0/dfloat(ndiv*nsubdiv)
-       
+
       do k=1,nsubdiv+1
        xabs=coord(1,iatom)+(step*dfloat(kc-2)+substep*dfloat(k-1))*rijx
        yabs=coord(2,iatom)+(step*dfloat(kc-2)+substep*dfloat(k-1))*rijy
@@ -255,39 +265,35 @@ c      print *,'Irrecoverable inconsistency between atoms',iatom,jatom
        rho(k)=functxyz(xabs,yabs,zabs)
       enddo
 
-c      print *,(rho(k),k=1,nsubdiv+1)
-
       do k=2,nsubdiv
        kc1=k
       if(maxflg.eq.0.and.rho(k).lt.rho(k-1).and.rho(k).lt.rho(k+1))  goto 17
       if(maxflg.eq.1.and.rho(k).gt.rho(k-1).and.rho(k).gt.rho(k+1))  goto 17
       enddo
       if(dist(iatom,jatom).gt.10.0d0) then
-       write(*,*) 'No extremum of density found. Atoms too far away, usi
-     +ng 1:1 ratio'
+       write(*,'(2x,a,i3,a,i3,a)') 'Atom pair ',iatom,' - ',jatom,
+     +   ' : no density extremum found, atoms too far apart, using 1:1 ratio'
        achi(iatom,jatom)=1.0d0
        achi(jatom,iatom)=1.0d0
        go to 100
       else
        stop  'No extremum of density found'
       end if
-      
-  17  continue    
-      write(*,*) 'Subdivision :',kc1
+
+  17  continue
       ri=(step*dfloat(kc-2)+substep*dfloat(kc1-1))
       rj=1.d0-ri
       achi(iatom,jatom)=ri/rj
       achi(jatom,iatom)=rj/ri
-      if(ri.ge.0.90d0.or.ri.le.0.10) then
-        write(*,*)'WARNING, LARGE POLARIZATION. PLEASE CHECK' 
-      end if
 
-      write(*,33)' Atom pair: ',iatom,jatom,' Ratio: ',achi(iatom,jatom)
-      write(*,*)' '
-c      print *,iatom,jatom,ri,rj,achi(iatom,jatom),achi(jatom,iatom)
+      if(len_trim(cnote).gt.0) write(*,'(2x,a,i3,a,i3,a,a)')
+     +  'Atom pair ',iatom,' - ',jatom,' : ',trim(adjustl(cnote))
+      write(*,'(2x,a,i3,a,i3,a,i0,a,f8.5)') 'Atom pair ',iatom,' - ',
+     +  jatom,' : subdivision ',kc1,', ratio ',achi(iatom,jatom)
+      if(ri.ge.0.90d0.or.ri.le.0.10) write(*,'(2x,a)')
+     +  'WARNING: large polarization for this atom pair, please check'
 
-  100 continue      
-33    FORMAT(a12,2i4,a8,f8.5)
+  100 continue
       if(iradmat.eq.1) then 
        open(unit=45,file='radmat.inp')
        write(45,*) nat
