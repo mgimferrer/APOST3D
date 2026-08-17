@@ -476,6 +476,9 @@ CCCCCCCCCCCCC
 c END OPTIONS LIST
 CCCCCCCCCCCCC
 
+!! digested echo of the .inp file -- every flag above is now final !!
+      call print_input_summary()
+
 !! Natural orbitals from P-matrix in .fchk !!
       if (idono.eq.1) call gennatural()
 
