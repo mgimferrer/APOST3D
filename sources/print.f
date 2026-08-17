@@ -120,7 +120,6 @@
       write(*,'(a80)') '  We are extremely grateful for the possibility of using these routines!      '
       write(*,'(a80)') '                                                                              '
       write(*,'(a80)') '------------------------------------------------------------------------------'
-      write(*,'(a80)') '                                                                              '
       END SUBROUTINE kiir
 
 !! ********************************************************************* !!
@@ -492,8 +491,6 @@
        end if
        write(*,'(2x,a,1x,a)') 'Source  :',trim(cval)
       end if
-
-      write(*,*)
 
       END SUBROUTINE print_input_summary
 
