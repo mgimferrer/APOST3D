@@ -1,9 +1,8 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): the Subroutine Cleanup Protocol has been    !!
-!! applied to gennatural, diagonalize, old_diagonalize (pre-existing).   !!
-!! NOT yet applied to: readintfiles, invert, svd, uvprint, inc, outc,    !!
-!! outc23, outc2. gennatural_old is confirmed dead (zero call sites      !!
-!! codebase-wide) but left alone pending a deprecation decision, same as !!
+!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
+!! applied to: readintfiles, invert, svd, uvprint, inc, outc, outc23,    !!
+!! outc2. gennatural_old is confirmed dead (zero call sites codebase-    !!
+!! wide) but left alone pending a deprecation decision, same as          !!
 !! old_diagonalize.                                                      !!
 !! ********************************************************************* !!
 

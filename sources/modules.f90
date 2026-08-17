@@ -1,8 +1,6 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): the Subroutine Cleanup Protocol has been    !!
-!! applied to allocate_effao, allocate_nao, allocate_stv, get_wall_time, !!
-!! print_timer (pre-existing), build_basis, build_integration_grid. NOT  !!
-!! yet applied to: do_overlap, build_ao_matrices.                        !!
+!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
+!! applied to: do_overlap, build_ao_matrices.                            !!
 !! ********************************************************************* !!
 
    MODULE basis_set

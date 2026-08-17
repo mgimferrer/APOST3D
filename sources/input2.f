@@ -1,9 +1,8 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): the Subroutine Cleanup Protocol (comments,  !!
-!! header, printing, parallelization assessment) has been applied to     !!
-!! input, readchar, readreal, readint. NOT yet applied to: dm1input,     !!
-!! dm2input_pyscf, dm2input_dmn, mga_misc, field_misc, locate,           !!
-!! int_locate, real_locate, do_potential, Boys_expansionn.               !!
+!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
+!! applied to: dm1input, dm2input_pyscf, dm2input_dmn, mga_misc,         !!
+!! field_misc, locate, int_locate, real_locate, do_potential,            !!
+!! Boys_expansionn.                                                      !!
 !! ********************************************************************* !!
 
 !! ********************************************************************* !!
