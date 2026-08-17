@@ -1244,7 +1244,6 @@ C Atomradiuszokat ertelmesen feltolteni!
         dist(j,i)=dist(i,j)
        enddo
       enddo
-      print *,' '
       return
       end
       
