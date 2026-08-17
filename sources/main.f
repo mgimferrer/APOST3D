@@ -565,6 +565,7 @@ CCCCCCCCCCCCC
 
 !! atomic-domain partition time, covers both branches above (Hilbert    !!
 !! and real-space).                                                     !!
+      write(*,*)
       call cpu_time(time2)
       call get_wall_time(wtime2)
       call print_timer('atomic definition',time2-time,wtime2-wtime)
