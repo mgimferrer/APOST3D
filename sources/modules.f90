@@ -1,8 +1,3 @@
-!! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
-!! applied to: do_overlap, build_ao_matrices.                            !!
-!! ********************************************************************* !!
-
    MODULE basis_set
    integer :: numprim,nbasis,mmax,natoms
    INTEGER, ALLOCATABLE :: nlm(:,:),iptoat(:),nprimbas(:,:)
@@ -384,18 +379,34 @@
 
    END SUBROUTINE build_basis
 
+   !! ********************************************************************* !!
+   !! subroutine: do_overlap                                                !!
+   !! purpose: primitive-Gaussian overlap matrix sp(numprim,numprim), via   !!
+   !! the closed-form Gaussian-product/binomial-expansion formula per       !!
+   !! Cartesian direction (screening primitive pairs that are exactly zero  !!
+   !! by symmetry along any direction), then contracted through coefpb      !!
+   !! into the basis-function AO overlap matrix S(nbasis,nbasis). Called    !!
+   !! once from build_basis().                                              !!
+   !! arguments: none (numprim/nbasis/coord/nlm/expp/coefpb via module,     !!
+   !! output S via module)                                                  !!
+   !! author:                                                                !!
+   !! ********************************************************************* !!
    subroutine do_overlap()
    IMPLICIT DOUBLE PRECISION(A-H,O-Z)
    PARAMETER(PI=4.0d0*DATAN(1.0d0),TOL=1.0d-8)
    dimension AminusB(3)
    real*8, allocatable ::sp(:,:)
 
+!! O(numprim^2) triangular loop, each doing an O(1) closed-form overlap   !!
+!! evaluation -- a one-time setup cost (do_overlap runs once per job),    !!
+!! not worth OMP                                                          !!
    allocate(sp(numprim,numprim))
    allocate(s(nbasis,nbasis))
    do ia=1,numprim
      do ib=1,ia
        sp(ia,ib)=0.0d0
-       do ixyz=1,3 ! screening of primitives
+       do ixyz=1,3 !! screening of primitives: skip pairs exactly zero    !!
+                    !! by symmetry along this direction                    !!
         AminusB(ixyz)=coord(ixyz,iptoat(ia))-coord(ixyz,iptoat(ib))
         ii=mod(nlm(ia,ixyz)+nlm(ib,ixyz),2)
         if(abs(AminusB(ixyz)).lt.TOL.and.ii.ne.0) go to 111
@@ -403,7 +414,7 @@
        gamma_p=expp(ia)+expp(ib)
        eta_p=(expp(ia)*expp(ib))/gamma_p
        do_ov=PI**(3.0d0/2.0d0)/gamma_p**(3.0d0/2.0d0)
-       do ixyz=1,3 !calculating for all 3 directions
+       do ixyz=1,3 !! accumulate the overlap integral along all 3 directions !!
          do_ov=do_ov*fact(nlm(ia,ixyz))*fact(nlm(ib,ixyz))/(2.0d0**(nlm(ia,ixyz)+nlm(ib,ixyz)))
          if(abs(AminusB(ixyz)).gt.TOL) do_ov=do_ov*exp(-eta_p*AminusB(ixyz)**2.0d0)
          sum_i=0.0d0
@@ -414,7 +425,7 @@
            j=j1+j2
            facij=fact(i1)*fact(j1)*fact(i2)*fact(j2)*expp(ia)**(nlm(ia,ixyz)-i1)*expp(ib)**(nlm(ib,ixyz)-i2)
            sum_r=0.0d0
-           if(abs(AminusB(ixyz)).gt.TOL) then !avoid 0^0
+           if(abs(AminusB(ixyz)).gt.TOL) then !! avoid 0^0 !!
              do ir=0,j/2
               xfac=eta_p**(j-ir)*(2.0d0*AminusB(ixyz))**(j-2*ir)/(fact(ir)*fact(j-2*ir))
               if(MOD(ir,2).ne.0) xfac=-xfac
@@ -434,7 +445,8 @@
 111   if(ia.ne.ib) sp(ib,ia)=sp(ia,ib)
      end do
    end do
-! basis functions overlap
+
+!! contract primitive overlaps into the basis-function overlap matrix !!
    do i=1,nbasis
     do j=1,i
      S(i,j)=0.0d0
@@ -475,6 +487,16 @@
 
    CONTAINS
 
+   !! ********************************************************************* !!
+   !! subroutine: build_ao_matrices                                         !!
+   !! purpose: allocates the ao_matrices module's MO-coefficient/density-   !!
+   !! matrix arrays (c/p/cb/ps/pa/pb/c_no/occ_no) to the actual basis size.  !!
+   !! called from input2.f's input(), right after igr becomes known --      !!
+   !! same pattern effao_mod/nao_mod/stv_mod's own allocate_* subroutines    !!
+   !! follow, just predating that naming convention.                        !!
+   !! arguments: igr (in) -- number of basis functions                     !!
+   !! author:                                                                !!
+   !! ********************************************************************* !!
    SUBROUTINE build_ao_matrices(igr)
 
    ALLOCATE(c(igr,igr),p(igr,igr))
