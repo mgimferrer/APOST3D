@@ -84,7 +84,7 @@ c making zeroes for printing purposes
       enddo
 
       call print_box('"FUZZY ATOMS" BOND ORDER MATRIX')
-      CALL Mprint(bo,NATOMS,maxat)
+      CALL Mprint2(bo,NATOMS,maxat)
 C
 C CALCULATION OF THE VALENCE NUMBERS
 C
@@ -100,13 +100,15 @@ C
        diag(i)=2.d0*qat(i,1)-diag(i)
       enddo
       
-      call print_valence_table('TOTAL VALENCES',' ','V_A',diag)
+      call print_valence_table('TOTAL VALENCES',' ','Total valences',
+     +  'V_A',diag)
       call print_valence_table('VALENCES USED IN BONDS',
-     +  '(SUM OF BOND ORDERS)','VB_A',tindex)
+     +  '(SUM OF BOND ORDERS)','Valences used in bonds','VB_A',tindex)
       do i=1,natoms
       diag(i)=diag(i)-tindex(i)
       enddo
-      call print_valence_table('FREE VALENCES',' ','F_A',diag)
+      call print_valence_table('FREE VALENCES',' ','Free valences',
+     +  'F_A',diag)
 
       deallocate(tt)
       
@@ -684,21 +686,27 @@ C
 !! the electron/charge/spin population tables, and for the same reason:  !!
 !! the header/separator width now matches vprint's own fixed data-row    !!
 !! format (20 columns) instead of a hardcoded value that didn't cover    !!
-!! the numbers.                                                          !!
+!! the numbers. Also prints a per-fragment breakdown (DOFRAGS) via        !!
+!! group_by_frag_vec, matching the population/bond-order tables --        !!
+!! previously the only ones of the six population-analysis tables         !!
+!! without one.                                                           !!
 !! arguments:                                                            !!
 !! title    (in) -- print_box title, e.g. 'TOTAL VALENCES'               !!
 !! subtitle (in) -- optional explanatory line under the title, blank     !!
 !!                   (' ') if none, e.g. '(SUM OF BOND ORDERS)'          !!
+!! fraglabel(in) -- fragment-breakdown label, e.g. 'Total valences'      !!
 !! label    (in) -- column header, e.g. 'V_A'                            !!
 !! arr      (in) -- the (maxat) vector to print (diag/tindex)            !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      subroutine print_valence_table(title,subtitle,label,arr)
+      subroutine print_valence_table(title,subtitle,fraglabel,label,arr)
+      use input_options_mod, only: idofr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      character*(*) title,subtitle,label
+      character*(*) title,subtitle,fraglabel,label
       dimension arr(maxat)
+      character*80 line
 
       call print_box(title)
       if(len_trim(subtitle).gt.0) then
@@ -709,6 +717,11 @@ C
       write(*,'(2x,a)') repeat('-',18)
       call vprint(arr,nat,maxat,1)
       write(*,'(2x,a)') repeat('-',18)
+
+      if (idofr.eq.1) then
+        line=' FRAGMENT ANALYSIS: '//fraglabel
+        call group_by_frag_vec(1,line,arr)
+      end if
 
       return
       end
@@ -808,7 +821,7 @@ C
 
       if(iopop.eq.1) then
         call print_box('APOST3D OVERLAP POPULATION MATRIX')
-        call mprint(op,nat,maxat)
+        call mprint2(op,nat,maxat)
         if (idofr.eq.1) then
           line ='   FRAGMENT ANALYSIS : Overlap Populations'
           call group_by_frag_mat(0,line,op)
