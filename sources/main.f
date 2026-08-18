@@ -1042,8 +1042,9 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         call scattering_factors(itotps,wp,rho,omp2,pcoord)
       end if
 
+!! End printing... !!
       write(*,*)
-      write(*,'(2x,a)') 'Normal Termination of APOST-3D'
+      write(*,'(2x,a)') '...Normal Termination of APOST-3D...'
 
       end
 
