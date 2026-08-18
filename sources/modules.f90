@@ -69,15 +69,15 @@
 
    CONTAINS
 
-   !! ********************************************************************* !!
-   !! subroutine: build_basis                                               !!
-   !! purpose: reads the basis set (shells, primitives, contraction coeffs) !!
-   !! from the .fchk (unit 15, already open) and builds the primitive/basis !!
-   !! function maps, pure-to-cartesian coefficients, and normalization used !!
-   !! by the rest of the code; prints the atom/basis/primitive counts.      !!
-   !! arguments: none (output via basis_set module's own arrays)            !!
-   !! author: MMO, PSalse, MGimf                                            !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: build_basis                                               !!
+!! purpose: reads the basis set (shells, primitives, contraction coeffs) !!
+!! from the .fchk (unit 15, already open) and builds the primitive/basis !!
+!! function maps, pure-to-cartesian coefficients, and normalization used !!
+!! by the rest of the code; prints the atom/basis/primitive counts.      !!
+!! arguments: none (output via basis_set module's own arrays)            !!
+!! author: MMO, PSalse, MGimf                                            !!
+!! ********************************************************************* !!
    SUBROUTINE build_basis()
    IMPLICIT DOUBLE PRECISION(A-H,O-Z)
    PARAMETER(PI=4.0d0*DATAN(1.0d0),TOL=1.0d-8)
@@ -391,8 +391,6 @@
    mmax=mmax+1
    allocate(nprimbas(mmax,nbasis))
 
-!! O(nbasis x numprim) but a one-time setup cost (build_basis runs once  !!
-!! per job) -- assessed, not worth OMP, same reasoning as input()        !!
    nprimbas=0
    do i=1,nbasis
      npb=0
@@ -406,6 +404,7 @@
 
 !! calculating overlap matrix !!
    call do_overlap()
+
 !! calculating S^1/2 and S^-1/2 !!
    allocate(s12p(nbasis,nbasis),s12m(nbasis,nbasis))
    call build_Smp(nbasis,s,s12m,s12p,0)
@@ -417,37 +416,36 @@
 
    END SUBROUTINE build_basis
 
-   !! ********************************************************************* !!
-   !! subroutine: do_overlap                                                !!
-   !! purpose: primitive-Gaussian overlap matrix sp(numprim,numprim), via   !!
-   !! the closed-form Gaussian-product/binomial-expansion formula per       !!
-   !! Cartesian direction (screening primitive pairs that are exactly zero  !!
-   !! by symmetry along any direction), then contracted through coefpb      !!
-   !! into the basis-function AO overlap matrix S(nbasis,nbasis). Called    !!
-   !! once from build_basis().                                              !!
-   !! arguments: none (numprim/nbasis/coord/nlm/expp/coefpb via module,     !!
-   !! output S via module)                                                  !!
-   !! author:                                                                !!
-   !! ********************************************************************* !!
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: do_overlap                                                !!
+!! purpose: primitive-Gaussian overlap matrix sp(numprim,numprim), via   !!
+!! the closed-form Gaussian-product/binomial-expansion formula per       !!
+!! Cartesian direction (screening primitive pairs that are exactly zero  !!
+!! by symmetry along any direction), then contracted through coefpb      !!
+!! into the basis-function AO overlap matrix S(nbasis,nbasis). Called    !!
+!! once from build_basis().                                              !!
+!! arguments: none (numprim/nbasis/coord/nlm/expp/coefpb via module,     !!
+!! output S via module)                                                  !!
+!! author: PSalse, MMO, MGimf                                            !!
+!! ********************************************************************* !!
    subroutine do_overlap()
    IMPLICIT DOUBLE PRECISION(A-H,O-Z)
    PARAMETER(PI=4.0d0*DATAN(1.0d0),TOL=1.0d-8)
    dimension AminusB(3)
    real*8, allocatable ::sp(:,:)
 
-!! O(numprim^2) triangular loop, each doing an O(1) closed-form overlap   !!
-!! evaluation -- a one-time setup cost (do_overlap runs once per job),    !!
-!! not worth OMP                                                          !!
+!! Not worth OMP... !!
    allocate(sp(numprim,numprim))
    allocate(s(nbasis,nbasis))
    do ia=1,numprim
      do ib=1,ia
        sp(ia,ib)=0.0d0
-       do ixyz=1,3 !! screening of primitives: skip pairs exactly zero    !!
-                    !! by symmetry along this direction                    !!
-        AminusB(ixyz)=coord(ixyz,iptoat(ia))-coord(ixyz,iptoat(ib))
-        ii=mod(nlm(ia,ixyz)+nlm(ib,ixyz),2)
-        if(abs(AminusB(ixyz)).lt.TOL.and.ii.ne.0) go to 111
+       do ixyz=1,3 !! screening of primitives: skip pairs exactly zero by symmetry along this direction  !!
+         AminusB(ixyz)=coord(ixyz,iptoat(ia))-coord(ixyz,iptoat(ib))
+         ii=mod(nlm(ia,ixyz)+nlm(ib,ixyz),2)
+         if(abs(AminusB(ixyz)).lt.TOL.and.ii.ne.0) go to 111
        end do
        gamma_p=expp(ia)+expp(ib)
        eta_p=(expp(ia)*expp(ib))/gamma_p
@@ -457,25 +455,25 @@
          if(abs(AminusB(ixyz)).gt.TOL) do_ov=do_ov*exp(-eta_p*AminusB(ixyz)**2.0d0)
          sum_i=0.0d0
          do i1=0,nlm(ia,ixyz)/2
-          j1=nlm(ia,ixyz)-2*i1
-          do i2=0,nlm(ib,ixyz)/2
-           j2=nlm(ib,ixyz)-2*i2
-           j=j1+j2
-           facij=fact(i1)*fact(j1)*fact(i2)*fact(j2)*expp(ia)**(nlm(ia,ixyz)-i1)*expp(ib)**(nlm(ib,ixyz)-i2)
-           sum_r=0.0d0
-           if(abs(AminusB(ixyz)).gt.TOL) then !! avoid 0^0 !!
-             do ir=0,j/2
-              xfac=eta_p**(j-ir)*(2.0d0*AminusB(ixyz))**(j-2*ir)/(fact(ir)*fact(j-2*ir))
-              if(MOD(ir,2).ne.0) xfac=-xfac
-              sum_r=sum_r+xfac
-             end do
-           else if(mod(j,2).eq.0) then
-             sum_r=eta_p**(j/2)/fact(j/2)
-             if(mod(j/2,2).ne.0) sum_r=-sum_r
-           end if
-           if(MOD(j1,2).ne.0) sum_r=-sum_r
-           sum_i=sum_i+sum_r*fact(j)/facij 
-          end do
+           j1=nlm(ia,ixyz)-2*i1
+           do i2=0,nlm(ib,ixyz)/2
+             j2=nlm(ib,ixyz)-2*i2
+             j=j1+j2
+             facij=fact(i1)*fact(j1)*fact(i2)*fact(j2)*expp(ia)**(nlm(ia,ixyz)-i1)*expp(ib)**(nlm(ib,ixyz)-i2)
+             sum_r=0.0d0
+             if(abs(AminusB(ixyz)).gt.TOL) then !! avoid 0^0 !!
+               do ir=0,j/2
+                 xfac=eta_p**(j-ir)*(2.0d0*AminusB(ixyz))**(j-2*ir)/(fact(ir)*fact(j-2*ir))
+                 if(MOD(ir,2).ne.0) xfac=-xfac
+                 sum_r=sum_r+xfac
+               end do
+             else if(mod(j,2).eq.0) then
+               sum_r=eta_p**(j/2)/fact(j/2)
+               if(mod(j/2,2).ne.0) sum_r=-sum_r
+             end if
+             if(MOD(j1,2).ne.0) sum_r=-sum_r
+             sum_i=sum_i+sum_r*fact(j)/facij
+           end do
          end do
          do_ov=do_ov*sum_i
        end do
@@ -486,19 +484,19 @@
 
 !! contract primitive overlaps into the basis-function overlap matrix !!
    do i=1,nbasis
-    do j=1,i
-     S(i,j)=0.0d0
-     k=1
-     do while(nprimbas(k,i).ne.0) 
-      l=1
-      do while(nprimbas(l,j).ne.0) 
-       S(i,j)=S(i,j)+coefpb(nprimbas(k,i),i)*coefpb(nprimbas(l,j),j)*sp(nprimbas(k,i),nprimbas(l,j)) 
-       l=l+1
-      end do
-       k=k+1
+     do j=1,i
+       S(i,j)=0.0d0
+       k=1
+       do while(nprimbas(k,i).ne.0)
+         l=1
+         do while(nprimbas(l,j).ne.0)
+           S(i,j)=S(i,j)+coefpb(nprimbas(k,i),i)*coefpb(nprimbas(l,j),j)*sp(nprimbas(k,i),nprimbas(l,j))
+           l=l+1
+         end do
+         k=k+1
+       end do
+       if(i.ne.j) s(j,i)=s(i,j)
      end do
-     if(i.ne.j) s(j,i)=s(i,j)
-    end do
    end do
    deallocate(sp)
    end subroutine do_overlap
