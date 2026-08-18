@@ -1009,25 +1009,20 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !     if(ihirao.eq.1) call dft_dm1(itotps,wp,omp2,pcoord,chp)
 
 !! OSLO -- variants of the procedure can be found in the dev version !!
-
       if(ioslo.eq.1) then
         call print_box('Doing oxidation states from localized orbitals (OSLO)')
-
-!! single timer for the whole OSLO block -- previously zero visibility. !!
         call cpu_time(time)
         call get_wall_time(wtime)
 
 !! Computing sat for Hilbert-space cases !!
-
         if(ilow2.ne.0) then
-          iopt(5)=ilow2 !! MG: trick !!
+          iopt(5)=ilow2 !! MG: trick, not elegant but works !!
           if(ilow2.eq.1) call tomull(sat)
           if(ilow2.eq.2.or.ilow2.eq.3) call tolow(sat)
           if(ilow2.eq.6) call tonao(sat)
         end if
 
 !! General, independently of the AIM scheme !!
-
         if(kop.eq.0) then
           call rwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         else
@@ -1042,14 +1037,13 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
       end if
 
 !! X-ray scattering factors !!
-
       if(iscattfact.eq.1) then
         call print_box('Evaluating X-ray scattering factors')
         call scattering_factors(itotps,wp,rho,omp2,pcoord)
       end if
 
       write(*,*)
-      write(*,*) '...Normal Termination of APOST-3D... '
+      write(*,'(2x,a)') 'Normal Termination of APOST-3D'
 
       end
 
