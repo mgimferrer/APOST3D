@@ -554,9 +554,9 @@ C
       dimension sat(nbasis,nbasis,natoms)
 
       call print_box('DOING POPULATION ANALYSIS')
-      write(*,'(3x,a)') 'Partial atomic charges'
-      write(*,'(3x,a)') 'Atomic spin densities'
-      write(*,'(3x,a)') 'Bond orders and Valences'
+      write(*,'(2x,a)') 'Partial atomic charges'
+      write(*,'(2x,a)') 'Atomic spin densities'
+      write(*,'(2x,a)') 'Bond orders and Valences'
 
 !! spin density: P^s*S^A contraction, one atom per outer iteration       !!
       if(kop.ne.0.or.nalf.ne.nb) then
@@ -650,17 +650,17 @@ C
       call print_box(title)
       if(iaccur.eq.0) then
         write(*,'(1x,a7,2a12)') 'Atom','apost3d','Mulliken'
-        write(*,'(a)') repeat('-',32)
+        write(*,'(2x,a)') repeat('-',30)
       else
         write(*,'(1x,a7,2a20)') 'Atom','apost3d','Mulliken'
-        write(*,'(a)') repeat('-',48)
+        write(*,'(2x,a)') repeat('-',46)
       end if
       call vprint(arr,nat,maxat,2)
       if(iaccur.eq.0) then
-        write(*,'(a)') repeat('-',32)
+        write(*,'(2x,a)') repeat('-',30)
         write(*,162) tc1,tc2
       else
-        write(*,'(a)') repeat('-',48)
+        write(*,'(2x,a)') repeat('-',46)
         write(*,172) tc1,tc2
       end if
 
@@ -706,9 +706,9 @@ C
         write(*,*)
       end if
       write(*,'(1x,a7,a12)') 'Atom',label
-      write(*,'(a)') repeat('-',20)
+      write(*,'(2x,a)') repeat('-',18)
       call vprint(arr,nat,maxat,1)
-      write(*,'(a)') repeat('-',20)
+      write(*,'(2x,a)') repeat('-',18)
 
       return
       end
