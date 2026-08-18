@@ -728,11 +728,13 @@
       write(*,666) line
 !! repeat count built at runtime from the actual chunk size (NNMAX-NMIN+1,  !!
 !! <=6), not a literal '6(...)', to stay correct however many columns the   !!
-!! last chunk actually has                                                  !!
+!! last chunk actually has. Each fragment number is right-justified in a    !!
+!! field exactly as wide as its F12.6/F20.13 data column (I12/I20), so it   !!
+!! lands flush with that column's last digit instead of drifting left.      !!
       if(iaccur.eq.0) then
-        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(I3,7X))'
+        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'I12)'
       else
-        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(I3,15X))'
+        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'I20)'
       end if
       write(*,hdrfmt) (I,I=NMIN,NNMAX)
       write(*,666) line
