@@ -267,6 +267,7 @@
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
         call group_by_frag_mat(1,line,enuc)
+        write(*,*)
       end if
 
       if(ifield.eq.1) then
@@ -1267,6 +1268,7 @@
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
         call group_by_frag_mat(1,line,enuc)
+        write(*,*)
       end if
 
       if(ifield.eq.1) then
@@ -2859,6 +2861,7 @@ c  energetics
       if(idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: Coulomb energy '
         call group_by_frag_mat(1,line,coul)
+        write(*,*)
       end if
 
       end

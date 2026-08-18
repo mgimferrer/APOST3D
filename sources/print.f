@@ -695,19 +695,54 @@
 !! ***** !!
 
 
-      SUBROUTINE MPRINTNOAT(H,M,N,mdim,ndim)
+!! ********************************************************************* !!
+!! subroutine: mprintnoat                                                !!
+!! purpose: bordered, chunked (6 columns per block) numeric matrix       !!
+!! print for fragment-indexed tables -- same visual style as MPRINT2,    !!
+!! minus the atom-symbol column (fragments don't have one). Shared by    !!
+!! group_by_frag_mat (fragment x fragment matrices, iheader=1: prints a  !!
+!! generic "Frag N" column header per chunk) and group_by_frag_vec       !!
+!! (fragment x fixed-value-type tables, iheader=0: the caller already    !!
+!! printed its own header, since those columns aren't fragments).        !!
+!! arguments:                                                            !!
+!! H (in) -- data matrix, M rows x N columns                            !!
+!! M,N (in) -- rows/columns actually used                               !!
+!! mdim,ndim (in) -- H's declared dimensions                            !!
+!! iheader (in) -- 1: print a generic per-chunk "Frag N" column header,  !!
+!!                 0: borders and data only                             !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      SUBROUTINE MPRINTNOAT(H,M,N,mdim,ndim,iheader)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
-      integer, intent(in) :: ndim,mdim
+      integer, intent(in) :: ndim,mdim,iheader
       DIMENSION H(MDIM,NDIM)
       common /printout/iaccur
+      character*100 line
+      character*40 hdrfmt
+
+      line="--------------------------------------------------------------------------------"
 
       K=6
       NMIN=1
       NNMAX=MIN0(N,K)
-   62 FORMAT(1X,I3,6X,6F12.6)
-   63 FORMAT(1X,I3,X,6F20.13)
-    1 continue                              
+   62 FORMAT(2X,I3,6X,6F12.6)
+   63 FORMAT(2X,I3,6X,6F20.13)
+    1 continue
+      if(iheader.eq.1) then
+        write(*,666) line
+!! repeat count built at runtime from the actual chunk size (NNMAX-NMIN+1,  !!
+!! <=6) -- a literal '6(...)' here would let gfortran start printing the    !!
+!! next repetition's leading text ('Frag') before running out of data on    !!
+!! its I3, leaving a stray label with no number on the last chunk           !!
+        if(iaccur.eq.0) then
+          write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(2X,''Frag'',I3,3X))'
+        else
+          write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(2X,''Frag'',I3,11X))'
+        end if
+        write(*,hdrfmt) (I,I=NMIN,NNMAX)
+      end if
+      write(*,666) line
       DO 2 I=1,M
       if(iaccur.eq.0) then
       PRINT 62,I,(H(I,J),J=NMIN,NNMAX)
@@ -715,19 +750,32 @@
       PRINT 63,I,(H(I,J),J=NMIN,NNMAX)
       end if
    2  CONTINUE
+      write(*,666) line
       NMIN=NMIN+6
       K=K+6
       NNMAX=MIN0(N,K)
       IF(NNMAX.GE.NMIN) GOTO 71
       RETURN
-   71 PRINT 66
-   66 FORMAT(1X//)
+   71 write(*,*)
       GO TO 1
+
+!! FORMAT FOR THE BORDER LINE !!
+  666 FORMAT(2x,a100)
       END
-    
-CCCC
-C GROUP PRINTING
-CCCC
+
+!! ********************************************************************* !!
+!! subroutine: group_by_frag_mat                                         !!
+!! purpose: sums a per-atom matrix A into a per-fragment matrix B (using !!
+!! /frlist/'s atom-to-fragment map) and prints it via mprintnoat,         !!
+!! MPRINT2-style (bordered, chunked, generic "Frag N" column headers).   !!
+!! arguments:                                                            !!
+!! ilog (in) -- 0: sum the full matrix, 1: lower-triangular only         !!
+!!              (symmetric quantity, e.g. bond order)                    !!
+!! line (in) -- title, printed via print_box (leading/trailing blanks    !!
+!!              in the caller's string are stripped)                     !!
+!! A    (in) -- the (maxat,maxat) per-atom matrix to sum and print       !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine group_by_frag_mat(ilog,line,A)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -738,7 +786,7 @@ CCCC
       character*80 line
       integer ilog
 
-c ilog=0 do all matrix, ilog=1 lower triangular
+!! ilog=0: full matrix, ilog=1: lower triangular (symmetric quantity) !!
 
       do i=1,nat
        do j=1,nat
@@ -772,35 +820,48 @@ c ilog=0 do all matrix, ilog=1 lower triangular
       end do
       end if
 
-      print 60
-      write(*,'(a80)') line 
-      write(*,*) ' '
-      call mprintnoat(B,icufr,icufr,maxat,maxat)
-      write(*,*) ' '
+      call print_box(trim(adjustl(line)))
+      call mprintnoat(B,icufr,icufr,maxat,maxat,1)
       if(iaccur.eq.0) then
-      PRINT 63,x
+        write(*,163) x
       else
-      PRINT 64,x
+        write(*,164) x
       end if
-      write(*,*) ' '
 
-      write(*,*) 'Additional printing :'
+      write(*,*)
+      write(*,'(2x,a)') 'Additional printing:'
       do i=1,icufr
        do j=1,icufr
         if(iaccur.eq.0) then
-         write(*,'(i3,i3,1X,F12.6)') i,j,b(i,j)
+         write(*,'(2x,i3,i3,1x,f12.6)') i,j,b(i,j)
         else
-         write(*,'(i3,i3,1X,F20.13)') i,j,b(i,j)
+         write(*,'(2x,i3,i3,1x,f20.13)') i,j,b(i,j)
         end if
        end do
       end do
-      write(*,*) ' '
 
-   60 FORMAT(1X//)
-   63 FORMAT('  Total:',5X,F20.13)
-   64 FORMAT('  Total:',5X,F20.13)
+      return
+
+  163 format(2x,'   Total:',f12.6)
+  164 format(2x,'   Total:',f20.13)
+
       end
 
+!! ********************************************************************* !!
+!! subroutine: group_by_frag_vec                                         !!
+!! purpose: sums a per-atom (maxat,ndim) table A into a per-fragment      !!
+!! table B (using /frlist/'s atom-to-fragment map) and prints it, same   !!
+!! bordered style as group_by_frag_mat/mprintnoat -- but the columns     !!
+!! here are fixed value types (3D-space/Mulliken), not fragments, so     !!
+!! this subroutine prints its own header instead of mprintnoat's generic !!
+!! "Frag N" one (iheader=0).                                             !!
+!! arguments:                                                            !!
+!! ndim (in) -- number of value columns (1 or 2: 3D-space[, Mulliken])   !!
+!! line (in) -- title, printed via print_box (leading/trailing blanks    !!
+!!              in the caller's string are stripped)                     !!
+!! A    (in) -- the (maxat,ndim) per-atom table to sum and print         !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine group_by_frag_vec(ndim,line,A)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -824,36 +885,38 @@ c ilog=0 do all matrix, ilog=1 lower triangular
       end do
 
       do j=1,ndim
-      x(j)=0.0d0
-      do i=1,icufr
-       x(j)=x(j)+b(i,j)
-      end do
+       x(j)=0.0d0
+       do i=1,icufr
+        x(j)=x(j)+b(i,j)
+       end do
       end do
 
-      print 60
-      write(*,'(a80)') line 
-      write(*,*) ' '
-      if(ndim.eq.2) then
-      write(*,*) '             3D-space   Mulliken'
-      write(*,*) '           ----------------------'
-      else
-      write(*,*) '             3D-space '
-      write(*,*) '           ------------'
-      end if
-      call mprintnoat(B,icufr,ndim,maxat,ndim)
-      if(ndim.eq.2) then
-      write(*,*) '           ----------------------'
-      else
-      write(*,*) '           ------------'
-      end if
+      call print_box(trim(adjustl(line)))
       if(iaccur.eq.0) then
-      write(*,63)(x(j),j=1,ndim)
+        if(ndim.eq.2) then
+          write(*,'(a11,2a12)') 'Fragment','3D-space','Mulliken'
+        else
+          write(*,'(a11,a12)') 'Fragment','3D-space'
+        end if
       else
-      write(*,64)(x(j),j=1,ndim)
+        if(ndim.eq.2) then
+          write(*,'(a11,2a20)') 'Fragment','3D-space','Mulliken'
+        else
+          write(*,'(a11,a20)') 'Fragment','3D-space'
+        end if
       end if
-   63 FORMAT('  Total:',1X,2(F12.6,1X))
-   64 FORMAT('  Total:',1X,2(F20.13,1X))
-   60 FORMAT(1X//)
+      call mprintnoat(B,icufr,ndim,maxat,ndim,0)
+      if(iaccur.eq.0) then
+        write(*,63) (x(j),j=1,ndim)
+      else
+        write(*,64) (x(j),j=1,ndim)
+      end if
+
+      return
+
+   63 format(2x,'   Total:',2f12.6)
+   64 format(2x,'   Total:',2f20.13)
+
       end
 
 CCCCC
