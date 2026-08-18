@@ -1,3 +1,37 @@
+!! ********************************************************************** !!
+!! ATOMIC WEIGHT FUNCTIONS -- Becke, Hirshfeld(-I), TFVC                  !!
+!! Becke/TFVC weight kernels (thread-safe, called from OMP grid loops     !!
+!! elsewhere):                                                            !!
+!!   wat             -- normalized atomic weight at a point               !!
+!!   pp              -- unnormalized weight (product over cell functions) !!
+!!   sbecke          -- Becke/erf cell function                           !!
+!! TFVC atomic-radius setup (run once per job, before the grid is used):  !!
+!!   khi             -- picks each atom pair's TFVC radius-dividing point !!
+!!   prepar          -- Koga empirical atomic radii + distance matrix     !!
+!! Hirshfeld / Hirshfeld-Iterative weight evaluators:                     !!
+!!   wathirsh        -- standard (non-iterative) Hirshfeld weight         !!
+!!   splint          -- cubic-spline lookup on a tabulated radial density !!
+!!   wathirsh2       -- Hirshfeld-Iterative weight at converged pop(:)    !!
+!!   wathirshit3     -- LIVE self-consistency driver (converges pop(:),   !!
+!!                      then rebuilds weights) -- called from numint.f    !!
+!!   makeatdens      -- reads/splines the external densoutput file that   !!
+!!                      wathirsh/wathirshit3 interpolate against          !!
+!!   wathirshit      -- DEAD, zero call sites, superseded by wathirshit3  !!
+!!   wathirshit2     -- DEAD, zero call sites, superseded by wathirshit3  !!
+!! single-point density/MO evaluators (used by khi's density scan and by  !!
+!! print.f's cube generators):                                            !!
+!!   functxyz        -- total electron density at a point                !!
+!!   dfunctxyz       -- directional derivative of the density at a point  !!
+!!   d2functxyz      -- second-derivative density contraction at a point  !!
+!!   orbxyz          -- value of one MO at a point                        !!
+!! Subroutine Cleanup Protocol: fully done, all 16 routines, 2026-08-18.  !!
+!! Known Issues #25 (wathirsh2 arg-count mismatch at its print.f call     !!
+!! sites) and #26 (wathirshit/wathirshit2 dead) are open, not fixed --    !!
+!! see CLAUDE.md.                                                         !!
+!! ********************************************************************** !!
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! function: wat                                                         !!
 !! purpose: normalized Becke/TFVC atomic weight of atom ii at point       !!
