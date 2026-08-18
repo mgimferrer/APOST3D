@@ -23,23 +23,17 @@
 !!                         CONTAINS get_wall_time, print_timer            !!
 !!   input_options_mod -- ~70 .inp keyword flags parsed by read_input()   !!
 !!                         data only, no CONTAINS                         !!
-!!                                                                         !!
-!! Subroutine Cleanup Protocol: fully done -- every subroutine/function   !!
-!! above already has a structured header (2026-08-18).                    !!
-!!                                                                         !!
-!! Loose ends NOT covered by the protocol, since they're module-level     !!
-!! declarations rather than subroutine bodies -- worth a look next:       !!
+!!                                                                        !!
+!! Worth a look next:                                                     !!
 !!   - basis_set/ao_matrices/integration_grid's own top-of-module         !!
 !!     variable-doc comments are still old-style single-`!`, not          !!
 !!     converted to `!! !!`. Some are openly uncertain about what the     !!
 !!     array holds: ao_matrices has "pa/pb(igr,igr) -> density matrix     !!
 !!     only for alpha/beta spinorbitals?" and "occ_no(igr,igr) -> ?";     !!
-!!     integration_grid has several "probably ..." guesses for th/ph/w.  !!
+!!     integration_grid has several "probably ..." guesses for th/ph/w.   !!
 !!   - a stray `!!MMO- MODULE TESTING STARTS HERE.` marker sits right     !!
-!!     before the ao_matrices module statement -- reads like leftover    !!
-!!     development scaffolding rather than real documentation.           !!
-!!   - stv_mod's own module header is missing the `author:` line that    !!
-!!     effao_mod/nao_mod both have.                                       !!
+!!     before the ao_matrices module statement -- reads like leftover     !!
+!!     development scaffolding rather than real documentation.            !!
 !! ********************************************************************** !!
 
    MODULE basis_set
@@ -82,7 +76,7 @@
    !! function maps, pure-to-cartesian coefficients, and normalization used !!
    !! by the rest of the code; prints the atom/basis/primitive counts.      !!
    !! arguments: none (output via basis_set module's own arrays)            !!
-   !! author:                                                                !!
+   !! author: MMO, PSalse, MGimf                                            !!
    !! ********************************************************************* !!
    SUBROUTINE build_basis()
    IMPLICIT DOUBLE PRECISION(A-H,O-Z)
@@ -118,308 +112,308 @@
    read(15,*)(mssh(i),i=1,ncshell)
    dummy=0
    do i=1,ncshell
-    if(mssh(i).eq.-1) dummy=1  
+     if(mssh(i).eq.-1) dummy=1
    end do
    if(dummy.eq.1) then
-    dummy=int_locate(15,"P(S=P) Cont",ilog)
-    read(15,*)(c2(i),i=1,npshell)
+     dummy=int_locate(15,"P(S=P) Cont",ilog)
+     read(15,*)(c2(i),i=1,npshell)
    end if
 
 !! processing basis set !!
-        numprim=0
-        nbasis=0
-        do i=1,ncshell
-         if(mssh(i).lt.-1) then
-          numprim=numprim+mult(abs(mssh(i)))*mnsh(i)
-         else
-          numprim=numprim+mult(mssh(i))*mnsh(i)
-         end if
-         nbasis=nbasis+mult(mssh(i))
-        end do
-        write(*,'(2x,a,1x,i0)') 'Number of atoms                  :', &
-          natoms
-        write(*,'(2x,a,1x,i0)') 'Number of basis functions        :', &
-          nbasis
-        write(*,'(2x,a,1x,i0)') 'Primitive gaussians              :', &
-          numprim
+   numprim=0
+   nbasis=0
+   do i=1,ncshell
+     if(mssh(i).lt.-1) then
+       numprim=numprim+mult(abs(mssh(i)))*mnsh(i)
+     else
+       numprim=numprim+mult(mssh(i))*mnsh(i)
+     end if
+     nbasis=nbasis+mult(mssh(i))
+   end do
+   write(*,'(2x,a,1x,i0)') 'Number of atoms                  :', &
+     natoms
+   write(*,'(2x,a,1x,i0)') 'Number of basis functions        :', &
+     nbasis
+   write(*,'(2x,a,1x,i0)') 'Primitive gaussians              :', &
+     numprim
 
-        allocate(ihold(nbasis),llim(natoms),iulim(natoms))
+   allocate(ihold(nbasis),llim(natoms),iulim(natoms))
 !! basis to atom map !!
-        ii=0
-        do i=1,ncshell
-         do k=1,mult(mssh(i))
-          ii=ii+1
-          ihold(ii)=iatsh(i)
-         end do
-        end do
+   ii=0
+   do i=1,ncshell
+     do k=1,mult(mssh(i))
+       ii=ii+1
+       ihold(ii)=iatsh(i)
+     end do
+   end do
 !! setting basis set limits for mulliken !!
-        llim(1)=1
-        iulim(natoms)=nbasis
-        iat=1
-        do i=1,nbasis
-         if(ihold(i).ne.iat) then
-          iulim(iat)=i-1
-          llim(iat+1)=i
-          iat=iat+1
-         end if
-        end do
-        
-        allocate (nlm(numprim,3),expp(numprim),iptoat(numprim),coefpb(numprim,nbasis),iptob_cartesian(numprim))
-        allocate (coefp(numprim),xnorm(numprim))
+   llim(1)=1
+   iulim(natoms)=nbasis
+   iat=1
+   do i=1,nbasis
+     if(ihold(i).ne.iat) then
+       iulim(iat)=i-1
+       llim(iat+1)=i
+       iat=iat+1
+     end if
+   end do
+
+   allocate (nlm(numprim,3),expp(numprim),iptoat(numprim),coefpb(numprim,nbasis),iptob_cartesian(numprim))
+   allocate (coefp(numprim),xnorm(numprim))
 
 !! angular momentum of primitives and primitive-to-atom map !!
-        nlm=0
-        icount=1
-        do i=1,ncshell
-           if(mssh(i).eq.0) then
-            do j=1,mnsh(i)
-             iptoat(icount)=iatsh(i)
-             icount=icount+1
-            end do
-           else if (mssh(i).eq.1) then
-            do j=1,mnsh(i)
-             nlm(icount,1)=1
-             nlm(icount+1,2)=1
-             nlm(icount+2,3)=1
-             do ii=0,2
-              iptoat(icount+ii)=iatsh(i)
-             end do
-             icount=icount+3
-            end do
-           else if (mssh(i).eq.-1) then
-            do j=1,mnsh(i)
-             nlm(icount+1,1)=1
-             nlm(icount+2,2)=1
-             nlm(icount+3,3)=1
-             do ii=0,3
-              iptoat(icount+ii)=iatsh(i)
-             end do
-             icount=icount+4
-            end do
-           else if (abs(mssh(i)).eq.2) then
-            do j=1,mnsh(i)
-             nlm(icount,1)=2   !dxx
-             nlm(icount+1,2)=2 !dyy 
-             nlm(icount+2,3)=2 !dzz
-             nlm(icount+3,1)=1 !dxy
-             nlm(icount+3,2)=1
-             nlm(icount+4,1)=1 !dxz
-             nlm(icount+4,3)=1
-             nlm(icount+5,2)=1 !dyz
-             nlm(icount+5,3)=1
-             do ii=0,5
-              iptoat(icount+ii)=iatsh(i)
-             end do
-             icount=icount+6
-            end do
-           else if (abs(mssh(i)).eq.3) then
-            do j=1,mnsh(i)
-             nlm(icount,1)=3    !fxxx
-             nlm(icount+1,2)=3  !fyyy
-             nlm(icount+2,3)=3  !fzzz
-             nlm(icount+3,1)=1  !fxyy
-             nlm(icount+3,2)=2  
-             nlm(icount+4,1)=2  !fxxy
-             nlm(icount+4,2)=1 
-             nlm(icount+5,1)=2  !fxxz
-             nlm(icount+5,3)=1  
-             nlm(icount+6,1)=1  !fxzz
-             nlm(icount+6,3)=2  
-             nlm(icount+7,2)=1  !fyzz
-             nlm(icount+7,3)=2  
-             nlm(icount+8,2)=2  !fyyz
-             nlm(icount+8,3)=1  
-             nlm(icount+9,1)=1  !fxyz
-             nlm(icount+9,2)=1  
-             nlm(icount+9,3)=1  
-             do ii=0,9
-              iptoat(icount+ii)=iatsh(i)
-             end do
-             icount=icount+10
-            end do
-           else if (abs(mssh(i)).eq.4) then
-            do j=1,mnsh(i)
-             nlm(icount,3)=4    !   ZZZZ
-             nlm(icount+1,2)=1  !   YZZZ
-             nlm(icount+1,3)=3  
-             nlm(icount+2,2)=2  !   YYZZ
-             nlm(icount+2,3)=2  
-             nlm(icount+3,2)=3  !   YYYZ
-             nlm(icount+3,3)=1  
-             nlm(icount+4,2)=4  !   YYYY
-             nlm(icount+5,1)=1  !   XZZZ 
-             nlm(icount+5,3)=3  
-             nlm(icount+6,1)=1  !   XYZZ
-             nlm(icount+6,2)=1   
-             nlm(icount+6,3)=2   
-             nlm(icount+7,1)=1  !   XYYZ             
-             nlm(icount+7,2)=2              
-             nlm(icount+7,3)=1              
-             nlm(icount+8,1)=1  !   XYYY           
-             nlm(icount+8,2)=3  
-             nlm(icount+9,1)=2  !   XXZZ           
-             nlm(icount+9,3)=2  
-             nlm(icount+10,1)=2 !   XXYZ             
-             nlm(icount+10,2)=1  
-             nlm(icount+10,3)=1 
-             nlm(icount+11,1)=2 !   XXYY 
-             nlm(icount+11,2)=2              
-             nlm(icount+12,1)=3 !   XXXZ 
-             nlm(icount+12,3)=1              
-             nlm(icount+13,1)=3 !   XXXY 
-             nlm(icount+13,2)=1              
-             nlm(icount+14,1)=4 !   XXXX 
-             do ii=0,14        
-              iptoat(icount+ii)=iatsh(i)
-             end do
-             icount=icount+15
-            end do
-           else 
-            stop 'angular momentum not implemented'
-         end if 
-        end do
+   nlm=0
+   icount=1
+   do i=1,ncshell
+     if(mssh(i).eq.0) then
+       do j=1,mnsh(i)
+         iptoat(icount)=iatsh(i)
+         icount=icount+1
+       end do
+     else if (mssh(i).eq.1) then
+       do j=1,mnsh(i)
+         nlm(icount,1)=1
+         nlm(icount+1,2)=1
+         nlm(icount+2,3)=1
+         do ii=0,2
+           iptoat(icount+ii)=iatsh(i)
+         end do
+         icount=icount+3
+       end do
+     else if (mssh(i).eq.-1) then
+       do j=1,mnsh(i)
+         nlm(icount+1,1)=1
+         nlm(icount+2,2)=1
+         nlm(icount+3,3)=1
+         do ii=0,3
+           iptoat(icount+ii)=iatsh(i)
+         end do
+         icount=icount+4
+       end do
+     else if (abs(mssh(i)).eq.2) then
+       do j=1,mnsh(i)
+         nlm(icount,1)=2   !dxx
+         nlm(icount+1,2)=2 !dyy
+         nlm(icount+2,3)=2 !dzz
+         nlm(icount+3,1)=1 !dxy
+         nlm(icount+3,2)=1
+         nlm(icount+4,1)=1 !dxz
+         nlm(icount+4,3)=1
+         nlm(icount+5,2)=1 !dyz
+         nlm(icount+5,3)=1
+         do ii=0,5
+           iptoat(icount+ii)=iatsh(i)
+         end do
+         icount=icount+6
+       end do
+     else if (abs(mssh(i)).eq.3) then
+       do j=1,mnsh(i)
+         nlm(icount,1)=3    !fxxx
+         nlm(icount+1,2)=3  !fyyy
+         nlm(icount+2,3)=3  !fzzz
+         nlm(icount+3,1)=1  !fxyy
+         nlm(icount+3,2)=2
+         nlm(icount+4,1)=2  !fxxy
+         nlm(icount+4,2)=1
+         nlm(icount+5,1)=2  !fxxz
+         nlm(icount+5,3)=1
+         nlm(icount+6,1)=1  !fxzz
+         nlm(icount+6,3)=2
+         nlm(icount+7,2)=1  !fyzz
+         nlm(icount+7,3)=2
+         nlm(icount+8,2)=2  !fyyz
+         nlm(icount+8,3)=1
+         nlm(icount+9,1)=1  !fxyz
+         nlm(icount+9,2)=1
+         nlm(icount+9,3)=1
+         do ii=0,9
+           iptoat(icount+ii)=iatsh(i)
+         end do
+         icount=icount+10
+       end do
+     else if (abs(mssh(i)).eq.4) then
+       do j=1,mnsh(i)
+         nlm(icount,3)=4    !   ZZZZ
+         nlm(icount+1,2)=1  !   YZZZ
+         nlm(icount+1,3)=3
+         nlm(icount+2,2)=2  !   YYZZ
+         nlm(icount+2,3)=2
+         nlm(icount+3,2)=3  !   YYYZ
+         nlm(icount+3,3)=1
+         nlm(icount+4,2)=4  !   YYYY
+         nlm(icount+5,1)=1  !   XZZZ
+         nlm(icount+5,3)=3
+         nlm(icount+6,1)=1  !   XYZZ
+         nlm(icount+6,2)=1
+         nlm(icount+6,3)=2
+         nlm(icount+7,1)=1  !   XYYZ
+         nlm(icount+7,2)=2
+         nlm(icount+7,3)=1
+         nlm(icount+8,1)=1  !   XYYY
+         nlm(icount+8,2)=3
+         nlm(icount+9,1)=2  !   XXZZ
+         nlm(icount+9,3)=2
+         nlm(icount+10,1)=2 !   XXYZ
+         nlm(icount+10,2)=1
+         nlm(icount+10,3)=1
+         nlm(icount+11,1)=2 !   XXYY
+         nlm(icount+11,2)=2
+         nlm(icount+12,1)=3 !   XXXZ
+         nlm(icount+12,3)=1
+         nlm(icount+13,1)=3 !   XXXY
+         nlm(icount+13,2)=1
+         nlm(icount+14,1)=4 !   XXXX
+         do ii=0,14
+           iptoat(icount+ii)=iatsh(i)
+         end do
+         icount=icount+15
+       end do
+     else
+       stop 'angular momentum not implemented'
+     end if
+   end do
 
 !! list primitive exponents and coefficients !!
-        icount=1
-        jcount=1
-        do i=1,ncshell
-          do j=1,mnsh(i)
-           kk=mult(abs(mssh(i)))
-           if(mssh(i).eq.-1) kk=4
-           do k=1,kk
-            expp(icount)=expsh(jcount)
-            if(mssh(i).eq.-1.and.k.ne.1) then
-             coefp(icount)=c2(jcount)
-            else
-             coefp(icount)=c1(jcount)
-            end if
-            icount=icount+1
-           end do
-           jcount=jcount+1
-          end do
-         end do
+   icount=1
+   jcount=1
+   do i=1,ncshell
+     do j=1,mnsh(i)
+       kk=mult(abs(mssh(i)))
+       if(mssh(i).eq.-1) kk=4
+       do k=1,kk
+         expp(icount)=expsh(jcount)
+         if(mssh(i).eq.-1.and.k.ne.1) then
+           coefp(icount)=c2(jcount)
+         else
+           coefp(icount)=c1(jcount)
+         end if
+         icount=icount+1
+       end do
+       jcount=jcount+1
+     end do
+   end do
 
 !! primitive normalization !!
-        do i=1,numprim
-          nn=nlm(i,1)
-          ll=nlm(i,2)
-          mm=nlm(i,3)
-          fnn=fact(nn)/fact(2*nn)
-          fll=fact(ll)/fact(2*ll)
-          fmm=fact(mm)/fact(2*mm)
-          xnorm(i)=(2.0d0*expp(i)/PI)**0.75d0*DSQRT((8.0d0*expp(i))**(nn+ll+mm)*fnn*fll*fmm)
-        end do
+   do i=1,numprim
+     nn=nlm(i,1)
+     ll=nlm(i,2)
+     mm=nlm(i,3)
+     fnn=fact(nn)/fact(2*nn)
+     fll=fact(ll)/fact(2*ll)
+     fmm=fact(mm)/fact(2*mm)
+     xnorm(i)=(2.0d0*expp(i)/PI)**0.75d0*DSQRT((8.0d0*expp(i))**(nn+ll+mm)*fnn*fll*fmm)
+   end do
 
 !! generating primitive-to-orbital map, and pure-to-cartesian mapping   !!
 !! up to G-type orbitals                                                !!
-        numprim=0
-        nbasis=0
-        coefpb=0.0d0
-        do i=1,ncshell
-         do j=1,mnsh(i)
-          if(mssh(i).ge.-1) then
-           do k=1,mult(mssh(i))
-            numprim=numprim+1 
-            coefpb(numprim,nbasis+k)=coefp(numprim)*xnorm(numprim)
-            iptob_cartesian(numprim)=nbasis+k !MMO- ptob map for cartesian
-           end do
-          else if (mssh(i).eq.-2) then ! mapping for pure 5d 
-            coefpb(numprim+1,nbasis+1)=coefp(numprim+1)*xnorm(numprim+1)*(-0.5d0)  
-            coefpb(numprim+1,nbasis+4)=coefp(numprim+1)*xnorm(numprim+1)*(sqrt(3.0d0)/2.0d0)   
-            coefpb(numprim+2,nbasis+1)=coefp(numprim+2)*xnorm(numprim+2)*(-0.5d0)
-            coefpb(numprim+2,nbasis+4)=coefp(numprim+2)*xnorm(numprim+2)*(-sqrt(3.0d0)/2.0d0)
-            coefpb(numprim+3,nbasis+1)=coefp(numprim+3)*xnorm(numprim+3)
-            coefpb(numprim+4,nbasis+5)=coefp(numprim+4)*xnorm(numprim+4)
-            coefpb(numprim+5,nbasis+2)=coefp(numprim+5)*xnorm(numprim+5)
-            coefpb(numprim+6,nbasis+3)=coefp(numprim+6)*xnorm(numprim+6)
-            numprim=numprim+mult(abs(mssh(i)))
-          else if (mssh(i).eq.-3) then ! mapping for pure 7f 
-            coefpb(numprim+1,nbasis+2)=coefp(numprim+1)*xnorm(numprim+1)*(-sqrt(6.0d0)/4.0d0)
-            coefpb(numprim+1,nbasis+6)=coefp(numprim+1)*xnorm(numprim+1)*(sqrt(10.0d0)/4.0d0)
-            coefpb(numprim+2,nbasis+3)=coefp(numprim+2)*xnorm(numprim+2)*(-sqrt(6.0d0)/4.0d0)
-            coefpb(numprim+2,nbasis+7)=coefp(numprim+2)*xnorm(numprim+2)*(-sqrt(10.0d0)/4.0d0)
-            coefpb(numprim+3,nbasis+1)=coefp(numprim+3)*xnorm(numprim+3)
-            coefpb(numprim+4,nbasis+2)=coefp(numprim+4)*xnorm(numprim+4)*(-sqrt(30.0d0)/20.0d0)
-            coefpb(numprim+4,nbasis+6)=coefp(numprim+4)*xnorm(numprim+4)*(-3.0d0*sqrt(2.0d0)/4.0d0)
-            coefpb(numprim+5,nbasis+3)=coefp(numprim+5)*xnorm(numprim+5)*(-sqrt(30.0d0)/20.0d0)
-            coefpb(numprim+5,nbasis+7)=coefp(numprim+5)*xnorm(numprim+5)*(3.0d0*sqrt(2.0d0)/4.0d0)
-            coefpb(numprim+6,nbasis+1)=coefp(numprim+6)*xnorm(numprim+6)*(-3.0d0*sqrt(5.0d0)/10.0d0)
-            coefpb(numprim+6,nbasis+4)=coefp(numprim+6)*xnorm(numprim+6)*(sqrt(3.0d0)/2.0d0)
-            coefpb(numprim+7,nbasis+2)=coefp(numprim+7)*xnorm(numprim+7)*(sqrt(30.0d0)/5.0d0)
-            coefpb(numprim+8,nbasis+3)=coefp(numprim+8)*xnorm(numprim+8)*(sqrt(30.0d0)/5.0d0)
-            coefpb(numprim+9,nbasis+1)=coefp(numprim+9)*xnorm(numprim+9)*(-3.0d0*sqrt(5.0d0)/10.0d0)
-            coefpb(numprim+9,nbasis+4)=coefp(numprim+9)*xnorm(numprim+9)*(-sqrt(3.0d0)/2.0d0)
-            coefpb(numprim+10,nbasis+5)=coefp(numprim+10)*xnorm(numprim+10)
-            numprim=numprim+mult(abs(mssh(i)))
-          else if (mssh(i).eq.-4) then ! mapping for pure 9f 
-            coefpb(numprim+1 ,nbasis+1)=coefp(numprim+1 )*xnorm(numprim+1 )
-            coefpb(numprim+2 ,nbasis+3)=coefp(numprim+2 )*xnorm(numprim+2 )*(sqrt(70.0d0)/7.0d0)
-            coefpb(numprim+3 ,nbasis+1)=coefp(numprim+3 )*xnorm(numprim+3 )*(-3.0d0*sqrt(105.0d0)/35.0d0)
-            coefpb(numprim+3 ,nbasis+4)=coefp(numprim+3 )*xnorm(numprim+3 )*(-3.0d0*sqrt(21.0d0)/14.0d0)
-            coefpb(numprim+4 ,nbasis+3)=coefp(numprim+4 )*xnorm(numprim+4 )*(-3.0d0*sqrt(70.0d0)/28.0d0)
-            coefpb(numprim+4 ,nbasis+7)=coefp(numprim+4 )*xnorm(numprim+4 )*(-sqrt(10.0d0)/4.0d0)
-            coefpb(numprim+5 ,nbasis+1)=coefp(numprim+5 )*xnorm(numprim+5 )*(3.0d0/8.0d0)
-            coefpb(numprim+5 ,nbasis+4)=coefp(numprim+5 )*xnorm(numprim+5 )*(sqrt(5.0d0)/4.0d0)
-            coefpb(numprim+5 ,nbasis+8)=coefp(numprim+5 )*xnorm(numprim+5 )*(sqrt(35.0d0)/8.0d0)
-            coefpb(numprim+6 ,nbasis+2)=coefp(numprim+6 )*xnorm(numprim+6 )*(sqrt(70.0d0)/7.0d0)
-            coefpb(numprim+7 ,nbasis+5)=coefp(numprim+7 )*xnorm(numprim+7 )*(3.0d0*sqrt(7.0d0)/7.0d0)
-            coefpb(numprim+8 ,nbasis+2)=coefp(numprim+8 )*xnorm(numprim+8 )*(-3.0d0*sqrt(14.0d0)/28.0d0)
-            coefpb(numprim+8 ,nbasis+6)=coefp(numprim+8 )*xnorm(numprim+8 )*(-3.0d0*sqrt(2.0d0)/4.0d0)
-            coefpb(numprim+9 ,nbasis+5)=coefp(numprim+9 )*xnorm(numprim+9 )*(-sqrt(35.0d0)/14.0d0)
-            coefpb(numprim+9 ,nbasis+9)=coefp(numprim+9 )*xnorm(numprim+9 )*(-sqrt(5.0d0)/2.0d0)
-            coefpb(numprim+10,nbasis+1)=coefp(numprim+10)*xnorm(numprim+10)*(-3.0d0*sqrt(105.0d0)/35.0d0)
-            coefpb(numprim+10,nbasis+4)=coefp(numprim+10)*xnorm(numprim+10)*(3.0d0*sqrt(21.0d0)/14.0d0)
-            coefpb(numprim+11,nbasis+3)=coefp(numprim+11)*xnorm(numprim+11)*(-3.0d0*sqrt(14.0d0)/28.0d0)
-            coefpb(numprim+11,nbasis+7)=coefp(numprim+11)*xnorm(numprim+11)*(3.0d0*sqrt(2.0d0)/4.0d0)
-            coefpb(numprim+12,nbasis+1)=coefp(numprim+12)*xnorm(numprim+12)*(3.0d0*sqrt(105.0d0)/140.0d0)
-            coefpb(numprim+12,nbasis+8)=coefp(numprim+12)*xnorm(numprim+12)*(-3.0d0*sqrt(3.0d0)/4.0d0)
-            coefpb(numprim+13,nbasis+2)=coefp(numprim+13)*xnorm(numprim+13)*(-3.0d0*sqrt(70.0d0)/28.0d0)
-            coefpb(numprim+13,nbasis+6)=coefp(numprim+13)*xnorm(numprim+13)*(sqrt(10.0d0)/4.0d0)
-            coefpb(numprim+14,nbasis+5)=coefp(numprim+14)*xnorm(numprim+14)*(-sqrt(35.0d0)/14.0d0)
-            coefpb(numprim+14,nbasis+9)=coefp(numprim+14)*xnorm(numprim+14)*(sqrt(5.0d0)/2.0d0)
-            coefpb(numprim+15,nbasis+1)=coefp(numprim+15)*xnorm(numprim+15)*(3.0d0/8.0d0)
-            coefpb(numprim+15,nbasis+4)=coefp(numprim+15)*xnorm(numprim+15)*(-sqrt(5.0d0)/4.0d0)
-            coefpb(numprim+15,nbasis+8)=coefp(numprim+15)*xnorm(numprim+15)*(sqrt(35.0d0)/8.0d0)
-            numprim=numprim+mult(abs(mssh(i)))
-          end if
+   numprim=0
+   nbasis=0
+   coefpb=0.0d0
+   do i=1,ncshell
+     do j=1,mnsh(i)
+       if(mssh(i).ge.-1) then
+         do k=1,mult(mssh(i))
+           numprim=numprim+1
+           coefpb(numprim,nbasis+k)=coefp(numprim)*xnorm(numprim)
+           iptob_cartesian(numprim)=nbasis+k !MMO- ptob map for cartesian
          end do
-         nbasis=nbasis+mult(mssh(i))
-        end do
+       else if (mssh(i).eq.-2) then ! mapping for pure 5d
+         coefpb(numprim+1,nbasis+1)=coefp(numprim+1)*xnorm(numprim+1)*(-0.5d0)
+         coefpb(numprim+1,nbasis+4)=coefp(numprim+1)*xnorm(numprim+1)*(sqrt(3.0d0)/2.0d0)
+         coefpb(numprim+2,nbasis+1)=coefp(numprim+2)*xnorm(numprim+2)*(-0.5d0)
+         coefpb(numprim+2,nbasis+4)=coefp(numprim+2)*xnorm(numprim+2)*(-sqrt(3.0d0)/2.0d0)
+         coefpb(numprim+3,nbasis+1)=coefp(numprim+3)*xnorm(numprim+3)
+         coefpb(numprim+4,nbasis+5)=coefp(numprim+4)*xnorm(numprim+4)
+         coefpb(numprim+5,nbasis+2)=coefp(numprim+5)*xnorm(numprim+5)
+         coefpb(numprim+6,nbasis+3)=coefp(numprim+6)*xnorm(numprim+6)
+         numprim=numprim+mult(abs(mssh(i)))
+       else if (mssh(i).eq.-3) then ! mapping for pure 7f
+         coefpb(numprim+1,nbasis+2)=coefp(numprim+1)*xnorm(numprim+1)*(-sqrt(6.0d0)/4.0d0)
+         coefpb(numprim+1,nbasis+6)=coefp(numprim+1)*xnorm(numprim+1)*(sqrt(10.0d0)/4.0d0)
+         coefpb(numprim+2,nbasis+3)=coefp(numprim+2)*xnorm(numprim+2)*(-sqrt(6.0d0)/4.0d0)
+         coefpb(numprim+2,nbasis+7)=coefp(numprim+2)*xnorm(numprim+2)*(-sqrt(10.0d0)/4.0d0)
+         coefpb(numprim+3,nbasis+1)=coefp(numprim+3)*xnorm(numprim+3)
+         coefpb(numprim+4,nbasis+2)=coefp(numprim+4)*xnorm(numprim+4)*(-sqrt(30.0d0)/20.0d0)
+         coefpb(numprim+4,nbasis+6)=coefp(numprim+4)*xnorm(numprim+4)*(-3.0d0*sqrt(2.0d0)/4.0d0)
+         coefpb(numprim+5,nbasis+3)=coefp(numprim+5)*xnorm(numprim+5)*(-sqrt(30.0d0)/20.0d0)
+         coefpb(numprim+5,nbasis+7)=coefp(numprim+5)*xnorm(numprim+5)*(3.0d0*sqrt(2.0d0)/4.0d0)
+         coefpb(numprim+6,nbasis+1)=coefp(numprim+6)*xnorm(numprim+6)*(-3.0d0*sqrt(5.0d0)/10.0d0)
+         coefpb(numprim+6,nbasis+4)=coefp(numprim+6)*xnorm(numprim+6)*(sqrt(3.0d0)/2.0d0)
+         coefpb(numprim+7,nbasis+2)=coefp(numprim+7)*xnorm(numprim+7)*(sqrt(30.0d0)/5.0d0)
+         coefpb(numprim+8,nbasis+3)=coefp(numprim+8)*xnorm(numprim+8)*(sqrt(30.0d0)/5.0d0)
+         coefpb(numprim+9,nbasis+1)=coefp(numprim+9)*xnorm(numprim+9)*(-3.0d0*sqrt(5.0d0)/10.0d0)
+         coefpb(numprim+9,nbasis+4)=coefp(numprim+9)*xnorm(numprim+9)*(-sqrt(3.0d0)/2.0d0)
+         coefpb(numprim+10,nbasis+5)=coefp(numprim+10)*xnorm(numprim+10)
+         numprim=numprim+mult(abs(mssh(i)))
+       else if (mssh(i).eq.-4) then ! mapping for pure 9f
+         coefpb(numprim+1 ,nbasis+1)=coefp(numprim+1 )*xnorm(numprim+1 )
+         coefpb(numprim+2 ,nbasis+3)=coefp(numprim+2 )*xnorm(numprim+2 )*(sqrt(70.0d0)/7.0d0)
+         coefpb(numprim+3 ,nbasis+1)=coefp(numprim+3 )*xnorm(numprim+3 )*(-3.0d0*sqrt(105.0d0)/35.0d0)
+         coefpb(numprim+3 ,nbasis+4)=coefp(numprim+3 )*xnorm(numprim+3 )*(-3.0d0*sqrt(21.0d0)/14.0d0)
+         coefpb(numprim+4 ,nbasis+3)=coefp(numprim+4 )*xnorm(numprim+4 )*(-3.0d0*sqrt(70.0d0)/28.0d0)
+         coefpb(numprim+4 ,nbasis+7)=coefp(numprim+4 )*xnorm(numprim+4 )*(-sqrt(10.0d0)/4.0d0)
+         coefpb(numprim+5 ,nbasis+1)=coefp(numprim+5 )*xnorm(numprim+5 )*(3.0d0/8.0d0)
+         coefpb(numprim+5 ,nbasis+4)=coefp(numprim+5 )*xnorm(numprim+5 )*(sqrt(5.0d0)/4.0d0)
+         coefpb(numprim+5 ,nbasis+8)=coefp(numprim+5 )*xnorm(numprim+5 )*(sqrt(35.0d0)/8.0d0)
+         coefpb(numprim+6 ,nbasis+2)=coefp(numprim+6 )*xnorm(numprim+6 )*(sqrt(70.0d0)/7.0d0)
+         coefpb(numprim+7 ,nbasis+5)=coefp(numprim+7 )*xnorm(numprim+7 )*(3.0d0*sqrt(7.0d0)/7.0d0)
+         coefpb(numprim+8 ,nbasis+2)=coefp(numprim+8 )*xnorm(numprim+8 )*(-3.0d0*sqrt(14.0d0)/28.0d0)
+         coefpb(numprim+8 ,nbasis+6)=coefp(numprim+8 )*xnorm(numprim+8 )*(-3.0d0*sqrt(2.0d0)/4.0d0)
+         coefpb(numprim+9 ,nbasis+5)=coefp(numprim+9 )*xnorm(numprim+9 )*(-sqrt(35.0d0)/14.0d0)
+         coefpb(numprim+9 ,nbasis+9)=coefp(numprim+9 )*xnorm(numprim+9 )*(-sqrt(5.0d0)/2.0d0)
+         coefpb(numprim+10,nbasis+1)=coefp(numprim+10)*xnorm(numprim+10)*(-3.0d0*sqrt(105.0d0)/35.0d0)
+         coefpb(numprim+10,nbasis+4)=coefp(numprim+10)*xnorm(numprim+10)*(3.0d0*sqrt(21.0d0)/14.0d0)
+         coefpb(numprim+11,nbasis+3)=coefp(numprim+11)*xnorm(numprim+11)*(-3.0d0*sqrt(14.0d0)/28.0d0)
+         coefpb(numprim+11,nbasis+7)=coefp(numprim+11)*xnorm(numprim+11)*(3.0d0*sqrt(2.0d0)/4.0d0)
+         coefpb(numprim+12,nbasis+1)=coefp(numprim+12)*xnorm(numprim+12)*(3.0d0*sqrt(105.0d0)/140.0d0)
+         coefpb(numprim+12,nbasis+8)=coefp(numprim+12)*xnorm(numprim+12)*(-3.0d0*sqrt(3.0d0)/4.0d0)
+         coefpb(numprim+13,nbasis+2)=coefp(numprim+13)*xnorm(numprim+13)*(-3.0d0*sqrt(70.0d0)/28.0d0)
+         coefpb(numprim+13,nbasis+6)=coefp(numprim+13)*xnorm(numprim+13)*(sqrt(10.0d0)/4.0d0)
+         coefpb(numprim+14,nbasis+5)=coefp(numprim+14)*xnorm(numprim+14)*(-sqrt(35.0d0)/14.0d0)
+         coefpb(numprim+14,nbasis+9)=coefp(numprim+14)*xnorm(numprim+14)*(sqrt(5.0d0)/2.0d0)
+         coefpb(numprim+15,nbasis+1)=coefp(numprim+15)*xnorm(numprim+15)*(3.0d0/8.0d0)
+         coefpb(numprim+15,nbasis+4)=coefp(numprim+15)*xnorm(numprim+15)*(-sqrt(5.0d0)/4.0d0)
+         coefpb(numprim+15,nbasis+8)=coefp(numprim+15)*xnorm(numprim+15)*(sqrt(35.0d0)/8.0d0)
+         numprim=numprim+mult(abs(mssh(i)))
+       end if
+     end do
+     nbasis=nbasis+mult(mssh(i))
+   end do
 
 !! max num prim per basis function !!
-        mmax=0
-        do i=1,ncshell
-          ii=mnsh(i)
-          if(mssh(i).le.-2) ii=3*ii
-          if(mssh(i).le.-4) ii=2*ii
-          if(ii.gt.mmax) mmax=ii
-        end do
-        mmax=mmax+1
-        allocate(nprimbas(mmax,nbasis))
+   mmax=0
+   do i=1,ncshell
+     ii=mnsh(i)
+     if(mssh(i).le.-2) ii=3*ii
+     if(mssh(i).le.-4) ii=2*ii
+     if(ii.gt.mmax) mmax=ii
+   end do
+   mmax=mmax+1
+   allocate(nprimbas(mmax,nbasis))
 
 !! O(nbasis x numprim) but a one-time setup cost (build_basis runs once  !!
 !! per job) -- assessed, not worth OMP, same reasoning as input()        !!
-        nprimbas=0
-        do i=1,nbasis
-         npb=0
-         do k=1,numprim
-          if(abs(coefpb(k,i)).gt.TOL) then
-           npb=npb+1
-           nprimbas(npb,i)=k
-          end if
-         end do
-        end do
+   nprimbas=0
+   do i=1,nbasis
+     npb=0
+     do k=1,numprim
+       if(abs(coefpb(k,i)).gt.TOL) then
+         npb=npb+1
+         nprimbas(npb,i)=k
+       end if
+     end do
+   end do
 
 !! calculating overlap matrix !!
-        call do_overlap()
+   call do_overlap()
 !! calculating S^1/2 and S^-1/2 !!
-        allocate(s12p(nbasis,nbasis),s12m(nbasis,nbasis))
-        call build_Smp(nbasis,s,s12m,s12p,0)
+   allocate(s12p(nbasis,nbasis),s12m(nbasis,nbasis))
+   call build_Smp(nbasis,s,s12m,s12p,0)
 
 !! deallocating auxiliary arrays !!
-        deallocate(coefp,xnorm)
-        deallocate(mnsh,iatsh,mssh)
-        deallocate(expsh,c1,c2)
+   deallocate(coefp,xnorm)
+   deallocate(mnsh,iatsh,mssh)
+   deallocate(expsh,c1,c2)
 
    END SUBROUTINE build_basis
 
@@ -526,8 +520,8 @@
 ! pb(igr,igr) -> density matrix only for beta spinorbitals?
 ! ps(igr,igr) -> spin density matrix (pa-pb)
 ! c_no(igr,igr) -> c for Natural Orbitals?
-! occ_no(igr,igr) -> ?
-!Note: igr is number is basis functions.
+! occ_no(igr,igr) -> natural orbital occupation values
+! Note: igr is number is basis functions
 
    CONTAINS
 
