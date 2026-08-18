@@ -6,6 +6,8 @@
 | ------- | ----------- |
 | MAX_OCC=*val* | Maximal EFO occupation for generating its cube files. Integer *val* is in the [0, 1000] range and the occupation is defined as *val*/1000.0d0 |
 | MIN_OCC=*val* | Minimal EFO occupation for generating the cube file. Integer *val* is in the [0, 1000] range and the occupation is defined as *val*/1000.0d0 |
+| SPACING=*val* | Double-precision grid point spacing, in bohr. Default *val*=0.25 |
+| RADIUS_SCALE=*val* | Double-precision multiplier applied to the extremal atom's covalent radius to set the cube padding beyond the fragment's bounding box (larger *val* gives a bigger cube). Default *val*=2.0 |
 
 ## Block section # GRID
 
