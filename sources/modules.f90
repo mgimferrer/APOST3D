@@ -584,44 +584,44 @@
 
 !! command-line override (argv(2)/argv(3)), rarely used in practice --   !!
 !! main.f only ever passes argument 1 (the job name) in normal usage     !!
-       call getarg(2,integ1)
-       call getarg(3,integ2)
-       if(integ1.ne.' '.and.integ2.ne.' ') then
-        read(integ1,'(i4)') Nrad
-        read(integ2,'(i4)') Nang
-        if(Nrad.gt.500) stop 'Max number of radial points  is 500 '
-        do 111 i=1,18
-         npoints=leved(i)
-         if(nang.lt.leved(i+1)) goto 211
+   call getarg(2,integ1)
+   call getarg(3,integ2)
+   if(integ1.ne.' '.and.integ2.ne.' ') then
+     read(integ1,'(i4)') Nrad
+     read(integ2,'(i4)') Nang
+     if(Nrad.gt.500) stop 'Max number of radial points  is 500 '
+     do 111 i=1,18
+       npoints=leved(i)
+       if(nang.lt.leved(i+1)) goto 211
   111 continue
-        npoints=leved(19)
+     npoints=leved(19)
   211 continue
-        print *,' Angular points:',npoints
-        nang=npoints
-        rr00=0.500d0
+     print *,' Angular points:',npoints
+     nang=npoints
+     rr00=0.500d0
 !! ENPART/POLAR/EDAIQA defaults for high-accuracy one-el integrations    !!
-       else if(ienpart.eq.1.or.ipolar.eq.1.or.iedaiqa.eq.1) then
-        nrad=150
-        nang=590
-        if(ifinegrid.eq.1) nang=974
-        rr00=0.500d0
-       else
+   else if(ienpart.eq.1.or.ipolar.eq.1.or.iedaiqa.eq.1) then
+     nrad=150
+     nang=590
+     if(ifinegrid.eq.1) nang=974
+     rr00=0.500d0
+   else
 !! APOST legacy defaults for one-el integrations !!
-        nrad=40
-        nang=146
-        rr00=0.5d0
-       end if
+     nrad=40
+     nang=146
+     rr00=0.5d0
+   end if
 
-       pha=0.0d0
-       phb=0.0d0
+   pha=0.0d0
+   phb=0.0d0
 
-       call print_box('SETTING ATOMIC GRIDS FOR INTEGRATION')
-       write(*,'(2x,a,1x,i0)') 'Radial points  :',nrad
-       write(*,'(2x,a,1x,i0)') 'Angular points :',nang
-       write(*,'(2x,a,1x,f7.3)') 'r0 (radial)    :',rr00
-       write(*,'(2x,a,1x,i0)') 'Grid points    :',nrad*nang*nat
+   call print_box('SETTING ATOMIC GRIDS FOR INTEGRATION')
+   write(*,'(2x,a,1x,i0)') 'Radial points  :',nrad
+   write(*,'(2x,a,1x,i0)') 'Angular points :',nang
+   write(*,'(2x,a,1x,f7.3)') 'r0 (radial)    :',rr00
+   write(*,'(2x,a,1x,i0)') 'Grid points    :',nrad*nang*nat
 
-       call quad(nrad,nang)
+   call quad(nrad,nang)
 
    END SUBROUTINE build_integration_grid
 
