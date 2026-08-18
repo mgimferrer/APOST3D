@@ -698,24 +698,20 @@
 !! ********************************************************************* !!
 !! subroutine: mprintnoat                                                !!
 !! purpose: bordered, chunked (6 columns per block) numeric matrix       !!
-!! print for fragment-indexed tables -- same visual style as MPRINT2,    !!
-!! minus the atom-symbol column (fragments don't have one). Shared by    !!
-!! group_by_frag_mat (fragment x fragment matrices, iheader=1: prints a  !!
-!! generic "Frag N" column header per chunk) and group_by_frag_vec       !!
-!! (fragment x fixed-value-type tables, iheader=0: the caller already    !!
-!! printed its own header, since those columns aren't fragments).        !!
+!! print for a fragment x fragment matrix -- same visual style as        !!
+!! MPRINT2, minus the atom-symbol column (fragments don't have one).     !!
+!! The column header is just the fragment number, no "Frag" label, so a  !!
+!! block of numbers copy-pastes cleanly. Used only by group_by_frag_mat. !!
 !! arguments:                                                            !!
 !! H (in) -- data matrix, M rows x N columns                            !!
 !! M,N (in) -- rows/columns actually used                               !!
 !! mdim,ndim (in) -- H's declared dimensions                            !!
-!! iheader (in) -- 1: print a generic per-chunk "Frag N" column header,  !!
-!!                 0: borders and data only                             !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      SUBROUTINE MPRINTNOAT(H,M,N,mdim,ndim,iheader)
+      SUBROUTINE MPRINTNOAT(H,M,N,mdim,ndim)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
-      integer, intent(in) :: ndim,mdim,iheader
+      integer, intent(in) :: ndim,mdim
       DIMENSION H(MDIM,NDIM)
       common /printout/iaccur
       character*100 line
@@ -729,19 +725,16 @@
    62 FORMAT(2X,I3,6X,6F12.6)
    63 FORMAT(2X,I3,6X,6F20.13)
     1 continue
-      if(iheader.eq.1) then
-        write(*,666) line
+      write(*,666) line
 !! repeat count built at runtime from the actual chunk size (NNMAX-NMIN+1,  !!
-!! <=6) -- a literal '6(...)' here would let gfortran start printing the    !!
-!! next repetition's leading text ('Frag') before running out of data on    !!
-!! its I3, leaving a stray label with no number on the last chunk           !!
-        if(iaccur.eq.0) then
-          write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(2X,''Frag'',I3,3X))'
-        else
-          write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(2X,''Frag'',I3,11X))'
-        end if
-        write(*,hdrfmt) (I,I=NMIN,NNMAX)
+!! <=6), not a literal '6(...)', to stay correct however many columns the   !!
+!! last chunk actually has                                                  !!
+      if(iaccur.eq.0) then
+        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(I3,7X))'
+      else
+        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'(I3,15X))'
       end if
+      write(*,hdrfmt) (I,I=NMIN,NNMAX)
       write(*,666) line
       DO 2 I=1,M
       if(iaccur.eq.0) then
@@ -767,7 +760,7 @@
 !! subroutine: group_by_frag_mat                                         !!
 !! purpose: sums a per-atom matrix A into a per-fragment matrix B (using !!
 !! /frlist/'s atom-to-fragment map) and prints it via mprintnoat,         !!
-!! MPRINT2-style (bordered, chunked, generic "Frag N" column headers).   !!
+!! MPRINT2-style (bordered, chunked, per-fragment column header).        !!
 !! arguments:                                                            !!
 !! ilog (in) -- 0: sum the full matrix, 1: lower-triangular only         !!
 !!              (symmetric quantity, e.g. bond order)                    !!
@@ -821,24 +814,12 @@
       end if
 
       call print_box(trim(adjustl(line)))
-      call mprintnoat(B,icufr,icufr,maxat,maxat,1)
+      call mprintnoat(B,icufr,icufr,maxat,maxat)
       if(iaccur.eq.0) then
         write(*,163) x
       else
         write(*,164) x
       end if
-
-      write(*,*)
-      write(*,'(2x,a)') 'Additional printing:'
-      do i=1,icufr
-       do j=1,icufr
-        if(iaccur.eq.0) then
-         write(*,'(2x,i3,i3,1x,f12.6)') i,j,b(i,j)
-        else
-         write(*,'(2x,i3,i3,1x,f20.13)') i,j,b(i,j)
-        end if
-       end do
-      end do
 
       return
 
@@ -850,11 +831,12 @@
 !! ********************************************************************* !!
 !! subroutine: group_by_frag_vec                                         !!
 !! purpose: sums a per-atom (maxat,ndim) table A into a per-fragment      !!
-!! table B (using /frlist/'s atom-to-fragment map) and prints it, same   !!
-!! bordered style as group_by_frag_mat/mprintnoat -- but the columns     !!
-!! here are fixed value types (3D-space/Mulliken), not fragments, so     !!
-!! this subroutine prints its own header instead of mprintnoat's generic !!
-!! "Frag N" one (iheader=0).                                             !!
+!! table B (using /frlist/'s atom-to-fragment map) and prints it,        !!
+!! bordered to its own actual width -- unlike group_by_frag_mat's        !!
+!! fragment x fragment matrix, this table's column count never grows     !!
+!! with the number of fragments (always 1 or 2: 3D-space[, Mulliken]),   !!
+!! so a fixed-width MPRINT2-style border would just run off past the     !!
+!! last number for no reason.                                            !!
 !! arguments:                                                            !!
 !! ndim (in) -- number of value columns (1 or 2: 3D-space[, Mulliken])   !!
 !! line (in) -- title, printed via print_box (leading/trailing blanks    !!
@@ -871,6 +853,7 @@
       common /printout/iaccur
       dimension A(maxat,ndim),B(maxat,ndim)
       dimension x(ndim)
+      integer colw,totw
 
       do i=1,nat
        do j=1,ndim
@@ -891,6 +874,15 @@
        end do
       end do
 
+!! 11-column fragment-index margin (2X+I3+6X), matching mprintnoat's own !!
+!! -- total width = margin + one value column (12/20-wide) per ndim      !!
+      if(iaccur.eq.0) then
+        colw=12
+      else
+        colw=20
+      end if
+      totw=11+colw*ndim
+
       call print_box(trim(adjustl(line)))
       if(iaccur.eq.0) then
         if(ndim.eq.2) then
@@ -905,7 +897,15 @@
           write(*,'(a11,a20)') 'Fragment','3D-space'
         end if
       end if
-      call mprintnoat(B,icufr,ndim,maxat,ndim,0)
+      write(*,'(2x,a)') repeat('-',totw-2)
+      do i=1,icufr
+        if(iaccur.eq.0) then
+          write(*,'(2x,i3,6x,2f12.6)') i,(B(i,j),j=1,ndim)
+        else
+          write(*,'(2x,i3,6x,2f20.13)') i,(B(i,j),j=1,ndim)
+        end if
+      end do
+      write(*,'(2x,a)') repeat('-',totw-2)
       if(iaccur.eq.0) then
         write(*,63) (x(j),j=1,ndim)
       else
