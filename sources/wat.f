@@ -1,7 +1,6 @@
 !! ********************************************************************** !!
 !! ATOMIC WEIGHT FUNCTIONS -- Becke, Hirshfeld(-I), TFVC                  !!
-!! Becke/TFVC weight kernels (thread-safe, called from OMP grid loops     !!
-!! elsewhere):                                                            !!
+!! Becke/TFVC weight kernels                                              !!
 !!   wat             -- normalized atomic weight at a point               !!
 !!   pp              -- unnormalized weight (product over cell functions) !!
 !!   sbecke          -- Becke/erf cell function                           !!
@@ -20,26 +19,24 @@
 !!   wathirshit2     -- DEAD, zero call sites, superseded by wathirshit3  !!
 !! single-point density/MO evaluators (used by khi's density scan and by  !!
 !! print.f's cube generators):                                            !!
-!!   functxyz        -- total electron density at a point                !!
+!!   functxyz        -- total electron density at a point                 !!
 !!   dfunctxyz       -- directional derivative of the density at a point  !!
 !!   d2functxyz      -- second-derivative density contraction at a point  !!
 !!   orbxyz          -- value of one MO at a point                        !!
-!! Subroutine Cleanup Protocol: fully done, all 16 routines, 2026-08-18.  !!
-!! Known Issues #25 (wathirsh2 arg-count mismatch at its print.f call     !!
-!! sites) and #26 (wathirshit/wathirshit2 dead) are open, not fixed --    !!
-!! see CLAUDE.md.                                                         !!
+!! Note: known Issues #25 (wathirsh2 arg-count mismatch at its print.f    !!
+!! call sites) and #26 (wathirshit/wathirshit2 dead) are open, not fixed  !!
 !! ********************************************************************** !!
 
 !! ***** !!
 
 !! ********************************************************************* !!
 !! function: wat                                                         !!
-!! purpose: normalized Becke/TFVC atomic weight of atom ii at point       !!
-!! (x,y,z): pp(ii)/sum_j pp(j). Thread-safe (pure function of its         !!
-!! arguments plus read-only geometry COMMON) -- called from OMP           !!
-!! integration-grid loops in numint.f.                                    !!
+!! purpose: normalized Becke/TFVC atomic weight of atom ii at point      !!
+!! (x,y,z): pp(ii)/sum_j pp(j). Thread-safe (pure function of its        !!
+!! arguments plus read-only geometry COMMON) -- called from OMP          !!
+!! integration-grid loops in numint.f.                                   !!
 !! arguments: ii (atom index), x,y,z (point coordinates)                 !!
-!! author:                                                                !!
+!! author: Mayer, PSalse                                                 !!
 !! ********************************************************************* !!
       function wat(ii,x,y,z)
       implicit real*8 (a-h,o-z)
@@ -55,15 +52,17 @@
       return
       end
 
-!! ********************************************************************* !!
-!! function: pp                                                          !!
+!! ***** !!
+
+!! ********************************************************************** !!
+!! function: pp                                                           !!
 !! purpose: unnormalized Becke/TFVC weight of atom ii at point (x,y,z) -- !!
 !! product over all other atoms j of the cell function sbecke() evaluated !!
-!! at the scaled coordinate along the ii-j axis, using the TFVC radius     !!
-!! ratio achi(ii,j) (ibcp=1) or the plain atomic-radius ratio otherwise.   !!
-!! arguments: ii (atom index), x,y,z (point coordinates)                 !!
-!! author:                                                                !!
-!! ********************************************************************* !!
+!! at the scaled coordinate along the ii-j axis, using the TFVC radius    !!
+!! ratio achi(ii,j) (ibcp=1) or the plain atomic-radius ratio otherwise.  !!
+!! arguments: ii (atom index), x,y,z (point coordinates)                  !!
+!! author: Mayer, PSalse                                                  !!
+!! ********************************************************************** !!
       function pp(ii,x,y,z)
       implicit real*8 (a-h,o-z)
       include 'parameter.h'
@@ -88,6 +87,7 @@
             chi=atr(ii)/atr(j)
           endif
           amu=(r(ii)-r(j))/dist(ii,j)
+
 !! chi is passed explicitly (not via COMMON) so that pp/sbecke stay        !!
 !! safe to call from a parallel (OMP) region                               !!
           p=p*sbecke(amu,chi)
@@ -97,14 +97,16 @@
       return
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! function: sbecke                                                      !!
-!! purpose: Becke cell/boundary function at scaled inter-atomic            !!
-!! coordinate amu with radius-ratio parameter chi: the standard iterated   !!
-!! polynomial profile (stiffness k=iopt(25), or the shifted/asymmetric     !!
-!! form when inewbec=iopt(31)/=0), or an erf-based profile when ierf=1.    !!
+!! purpose: Becke cell/boundary function at scaled inter-atomic          !!
+!! coordinate amu with radius-ratio parameter chi: the standard iterated !!
+!! polynomial profile (stiffness k=iopt(25), or the shifted/asymmetric   !!
+!! form when inewbec=iopt(31)/=0), or an erf-based profile when ierf=1.  !!
 !! arguments: amu (scaled coordinate), chi (radius-ratio parameter)      !!
-!! author:                                                                !!
+!! author: Mayer, PSalse                                                 !!
 !! ********************************************************************* !!
       function sbecke(amu,chi)
       implicit real*8 (a-h,o-z)
@@ -142,20 +144,21 @@
       return
       end
 
+!! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: khi                                                       !!
+!! ********************************************************************** !!
+!! subroutine: khi                                                        !!
 !! purpose: sets each atom-pair's TFVC radius ratio achi(i,j) by scanning !!
-!! the density along the interatomic axis and locating the extremum      !!
+!! the density along the interatomic axis and locating the extremum       !!
 !! (minimum, or a maximum when no minimum is consistent) that divides the !!
-!! two atoms; short-circuits to a plain atomic-radius ratio when the pair  !!
+!! two atoms; short-circuits to a plain atomic-radius ratio when the pair !!
 !! is far apart or (inewbec=1) the midpoint is occupied by a third atom,  !!
 !! and can read/write the whole achi matrix from/to radmat.inp            !!
 !! (iradmat=iopt(48)=2/1) instead of recomputing it. Prints one summary   !!
 !! line per atom pair.                                                    !!
-!! arguments: none (nat/coord/achi/atr/dist via COMMON)                  !!
-!! author:                                                                !!
-!! ********************************************************************* !!
+!! arguments: none (nat/coord/achi/atr/dist via COMMON)                   !!
+!! author: Mayer, PSalse                                                  !!
+!! ********************************************************************** !!
       subroutine khi
       use basis_set, only : coord
       use ao_matrices
@@ -190,9 +193,9 @@
 
       write(*,'(2x,a)') 'Using density along atom pairs to set atomic radii'
       write(*,*)
-!! O(nat^2) atom pairs, each doing a handful of O(igr^2) functxyz() density !!
-!! evaluations -- a one-time setup cost, not currently parallelized; a     !!
-!! candidate for OMP if it ever shows up as hot on a large system         !!
+
+!! O(nat^2) atom pairs, each doing a handful of O(igr^2) functxyz() density        !!
+!! evaluations -- a one-time setup cost, not currently parallelized (not worth it) !!
       do 100 iatom=1,nat-1
         do 100 jatom=iatom+1,nat
 
@@ -239,7 +242,6 @@
             zabs=coord(3,iatom)+step*dfloat(k-1)*rijz
             rho(k)=functxyz(xabs,yabs,zabs)
           enddo
-c      print *,'pollas',(rho(k),k=1,ndiv+1)
 
           ncmin=0
           ncmax=0
@@ -265,6 +267,7 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
             kc=kmin(1)
             goto 7
           endif
+
 !! flag for pseudopotential !!
           ipseudo=0
           if(int(zn(iatom)).ne.iznuc(iatom).or.int(zn(jatom)).ne.iznuc(jatom))then
@@ -275,6 +278,7 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
             end if
             ipseudo=1
           end if
+
 !! case: there is one more minima than maxima or vice versa !!
           if(ipseudo.eq.0.and.ncmax.ne.0.and.abs(ncmin-ncmax).eq.1) then
             kmc=mod(ncmax,2)
@@ -290,6 +294,7 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
             go to 7
           end if
 
+!! Final crash... Never achieved it with a "proper" wavefunction !!
           if(len_trim(cnote).gt.0) then
             cnote=trim(cnote)//'; inconsistent extrema'
           else
@@ -369,16 +374,17 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
       return
       end
 
+!! ***** !!
 
 !! ********************************************************************* !!
 !! function: wathirsh                                                    !!
-!! purpose: standard (non-iterative) Hirshfeld weight of atom icenter at  !!
-!! point (xabs,yabs,zabs) -- ratio of that atom's tabulated free-atom     !!
-!! density (splint() on the radial profile read from densoutput, see      !!
-!! makeatdens) to the promolecular sum over all atoms; the sum is         !!
-!! skipped (weight set to 0) when the numerator itself is negligible.     !!
+!! purpose: standard (non-iterative) Hirshfeld weight of atom icenter at !!
+!! point (xabs,yabs,zabs) -- ratio of that atom's tabulated free-atom    !!
+!! density (splint() on the radial profile read from densoutput, see     !!
+!! makeatdens) to the promolecular sum over all atoms; the sum is        !!
+!! skipped (weight set to 0) when the numerator itself is negligible.    !!
 !! arguments: icenter (atom index), xabs,yabs,zabs (point coordinates)   !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       Function wathirsh(icenter,xabs,yabs,zabs)
       use basis_set, only: coord,natoms
@@ -388,8 +394,7 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
 
       toler=1.0d-12
 
-      istate=1
-!! istate=1 selects the neutral-atom radial profile (regular Hirshfeld) !!
+      istate=1 !! istate=1 selects the neutral-atom radial profile (regular Hirshfeld) !!
       ipos=ieq(icenter)
 
       dist=dsqrt((xabs-coord(1,icenter))**2+(yabs-coord(2,icenter))**2+(zabs-coord(3,icenter))**2)
@@ -408,21 +413,22 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
       else
         wathirsh=0.0d0
       end if
-
       end
 
-!! ********************************************************************* !!
-!! function: splint                                                      !!
+!! ***** !!
+
+!! ********************************************************************** !!
+!! function: splint                                                       !!
 !! purpose: cubic spline interpolation (Numerical Recipes splint) of a    !!
 !! tabulated free-atom radial density profile ya(ipos,istate,:) at        !!
 !! y2a(ipos,istate,:) (second derivatives, from spline() in makeatdens)   !!
 !! at distance x; binary search locates the bracketing table interval.    !!
 !! Clamps a spurious negative result to 0 (interpolation artifact, warned !!
 !! above -1.0e-3).                                                        !!
-!! arguments: ipos (atom-type index), istate (charge-state index),       !!
-!! n (table size), x (evaluation distance)                               !!
+!! arguments: ipos (atom-type index), istate (charge-state index),        !!
+!! n (table size), x (evaluation distance)                                !!
 !! author:                                                                !!
-!! ********************************************************************* !!
+!! ********************************************************************** !!
       FUNCTION splint(ipos,istate,n,x)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
@@ -458,15 +464,16 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
 
       END
 
+!! ***** !!
 
 !! ********************************************************************* !!
 !! function: functxyz                                                    !!
-!! purpose: total electron density at point (xabs,yabs,zabs), built by    !!
-!! evaluating every AO there and contracting with the density matrix P    !!
-!! (rho = sum_mu,nu P(mu,nu) chi_mu chi_nu). Used by khi() to scan the    !!
-!! density along an interatomic axis.                                     !!
+!! purpose: total electron density at point (xabs,yabs,zabs), built by   !!
+!! evaluating every AO there and contracting with the density matrix P   !!
+!! (rho = sum_mu,nu P(mu,nu) chi_mu chi_nu). Used by khi() to scan the   !!
+!! density along an interatomic axis.                                    !!
 !! arguments: xabs,yabs,zabs (point coordinates)                         !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       function functxyz(xabs,yabs,zabs)
       use basis_set
@@ -477,11 +484,11 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
       common /iops/iopt(200)
       allocatable ch(:)
 
-!! this single-point evaluator (and its siblings dfunctxyz/d2functxyz/    !!
-!! orbxyz) is itself O(igr^2) but deliberately not OMP-parallelized       !!
-!! internally -- like pp()/sbecke(), it must stay callable from an        !!
-!! already-parallel caller (e.g. a per-grid-point OMP loop in print.f's   !!
-!! cube generators) without nesting a second OMP region                  !!
+!! This type of loop, also present in dfunctxyz/d2functxyz/orbxyz) has been !!
+!! deliberately not OMP-parallelized -- like pp()/sbecke(). The reason is   !!
+!! that it must stay callable from an already-parallel caller               !!
+!! (e.g. a per-grid-point OMP loop in print.f's cube generators) without    !!
+!! nesting a second OMP region...                                           !!
       allocate (ch(igr))
 
       do iact=1,igr
@@ -512,15 +519,17 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
       functxyz=x
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! function: dfunctxyz                                                   !!
-!! purpose: directional derivative (d/dixyz) of the electron density at   !!
-!! point (xabs,yabs,zabs) -- same AO-contraction structure as functxyz,   !!
-!! but also accumulates each AO's derivative along the requested          !!
-!! Cartesian direction and contracts P against chi*dchi (off-diagonal     !!
-!! terms doubled, matching the mu<nu / mu=mu split used throughout).      !!
+!! purpose: directional derivative (d/dixyz) of the electron density at  !!
+!! point (xabs,yabs,zabs) -- same AO-contraction structure as functxyz,  !!
+!! but also accumulates each AO's derivative along the requested         !!
+!! Cartesian direction and contracts P against chi*dchi (off-diagonal    !!
+!! terms doubled, matching the mu<nu / mu=mu split used throughout).     !!
 !! arguments: ixyz (1/2/3 = d/dx, d/dy, d/dz), xabs,yabs,zabs (point)    !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       function dfunctxyz(ixyz,xabs,yabs,zabs)
       use basis_set
@@ -579,16 +588,18 @@ c      print *,'pollas',(rho(k),k=1,ndiv+1)
       dfunctxyz=xx
       end
 
+!! ***** !!
 
 !! ********************************************************************* !!
 !! subroutine: wathirshit                                                !!
-!! purpose: Hirshfeld-Iterative population/weight update (superseded by   !!
-!! wathirshit3, which reuses the same converged-weight logic via          !!
-!! wathirsh2() instead of duplicating it inline). Confirmed dead --       !!
-!! zero call sites codebase-wide -- left alone pending a deprecation      !!
-!! decision, same as old_diagonalize/gennatural_old.                      !!
+!! purpose: Hirshfeld-Iterative population/weight update (superseded by  !!
+!! wathirshit3, which reuses the same converged-weight logic via         !!
+!! wathirsh2() instead of duplicating it inline). Confirmed dead --      !!
+!! zero call sites codebase-wide -- left alone pending a deprecation     !!
+!! decision, same as old_diagonalize/gennatural_old.                     !!
 !! arguments: rho,iatps,wp,whi,nat                                       !!
-!! author:                                                                !!
+!! author:                                                               !!
+!! Note: Should we delete it?                                            !!
 !! ********************************************************************* !!
       SUBROUTINE wathirshit(rho,iatps,wp,whi,nat)
       use integration_grid
@@ -802,16 +813,19 @@ c        write(*,*)'wathirsh',whi(((icenter-1)*iatps)+ifuty),dist,n
 
       end
 
-!! ********************************************************************* !!
-!! subroutine: wathirshit2                                               !!
+!! ***** !!
+
+!! ********************************************************************** !!
+!! subroutine: wathirshit2                                                !!
 !! purpose: Hirshfeld-Iterative population/weight update, cross-atom      !!
 !! whi(:,nat) variant with charge-state clamping (superseded by           !!
 !! wathirshit3). Confirmed dead -- zero call sites codebase-wide -- left  !!
-!! alone pending a deprecation decision, same as old_diagonalize/          !!
+!! alone pending a deprecation decision, same as old_diagonalize/         !!
 !! gennatural_old.                                                        !!
-!! arguments: rho,iatps,wp,whi,nat                                       !!
+!! arguments: rho,iatps,wp,whi,nat                                        !!
 !! author:                                                                !!
-!! ********************************************************************* !!
+!! Note: Should we delete it?                                             !!
+!! ********************************************************************** !!
       SUBROUTINE wathirshit2(rho,iatps,wp,whi,nat)
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1105,16 +1119,18 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
 
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! function: wathirsh2                                                   !!
-!! purpose: Hirshfeld-Iterative weight of atom jcenter at point           !!
-!! (xabs,yabs,zabs) using the current converged fractional-charge-state   !!
-!! populations pop(:) (COMMON /hirsh/) -- interpolates each atom's        !!
-!! radial density between its floor/ceiling integer charge states via     !!
-!! splint(), same promolecular-ratio structure as wathirsh but with a      !!
-!! population-dependent profile per atom instead of a fixed neutral one.  !!
+!! purpose: Hirshfeld-Iterative weight of atom jcenter at point          !!
+!! (xabs,yabs,zabs) using the current converged fractional-charge-state  !!
+!! populations pop(:) (COMMON /hirsh/) -- interpolates each atom's       !!
+!! radial density between its floor/ceiling integer charge states via    !!
+!! splint(), same promolecular-ratio structure as wathirsh but with a    !!
+!! population-dependent profile per atom instead of a fixed neutral one. !!
 !! arguments: jcenter (atom index), xabs,yabs,zabs (point coordinates)   !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       function wathirsh2(jcenter,xabs,yabs,zabs)
       use integration_grid
@@ -1133,10 +1149,10 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       ipollas(4)=2
       ipollas(5)=4
       ipollas(6)=4
- 
+
       toler=1.0d-12
 
-      x0=0.0d0  
+      x0=ZERO
       do i=1,nat
         ilint=INT(pop(i))-int(zn(i))+3
         iuint=INT(pop(i))+1-int(zn(i))+3
@@ -1164,27 +1180,27 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
      *    , nradat,dist) 
 
         wathirsh2=x1/x0
- 
+
       else
-        wathirsh2=0.d0 
-      end if          
-
-
+        wathirsh2=ZERO
+      end if
       end
 
-!! ********************************************************************* !!
-!! subroutine: wathirshit3                                               !!
+!! ***** !!
+
+!! ********************************************************************** !!
+!! subroutine: wathirshit3                                                !!
 !! purpose: Hirshfeld-Iterative population cycle -- when iiter=1 (and not !!
 !! reading a cached radmat.inp), iterates atomic populations pop(:) to    !!
 !! self-consistency (each pop(i) driven by the current per-atom weights   !!
 !! whi via wathirsh2()) until every atom's population change drops below  !!
 !! tolerance, then recomputes whi at the converged populations; can       !!
-!! persist/restore pop(:) via hirshit.pop (iopt(48)=1/2) to skip           !!
-!! reconverging on a repeat run. iiter=0 just (re)builds whi from the      !!
+!! persist/restore pop(:) via hirshit.pop (iopt(48)=1/2) to skip          !!
+!! reconverging on a repeat run. iiter=0 just (re)builds whi from the     !!
 !! already-current pop(:) with no iteration.                              !!
-!! arguments: rho,iatps,wp,whi,nat,iiter                                 !!
+!! arguments: rho,iatps,wp,whi,nat,iiter                                  !!
 !! author:                                                                !!
-!! ********************************************************************* !!
+!! ********************************************************************** !!
       SUBROUTINE wathirshit3(rho,iatps,wp,whi,nat,iiter)
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1263,8 +1279,6 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
           xxp=xxp+znpop(ii)
         end do
         write(*,*) 'Tot. Pop. ',xxp
-
-
 
         ifut=0
         DO icenter=1, nat
@@ -1347,13 +1361,15 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
 
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: prepar                                                    !!
-!! purpose: builds the per-atom Becke/TFVC radius table atr(:) (Koga      !!
-!! empirical radii, overridable per-run by an optional radius.inp file)   !!
-!! and the full interatomic distance matrix dist(:,:).                    !!
+!! purpose: builds the per-atom Becke/TFVC radius table atr(:) (Koga     !!
+!! empirical radii, overridable per-run by an optional radius.inp file)  !!
+!! and the full interatomic distance matrix dist(:,:).                   !!
 !! arguments: none (nat/coord/iznuc via COMMON, output via atr/dist)     !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine prepar
       implicit real*8 (a-h,o-z)
@@ -1362,8 +1378,9 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       common /atomrad/atr(maxat),dist(maxat,maxat)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+
 !! radii from Koga; original value for F is 0.633. rare-gas data from  !!
-!! Wikipedia                                                              !!
+!! Wikipedia                                                           !!
       data atrad/0.327, 0.320, 1.219, 0.911, 0.793, 0.766, 0.699, 0.658,
      +  0.900, 0.690, 1.545, 1.333, 1.199, 1.123, 1.110, 1.071, 1.039,
      +  0.970, 1.978, 1.745, 1.337, 1.274, 1.236, 1.128, 1.180, 1.091,
@@ -1400,7 +1417,6 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
         atr(i)=atrad(ia)
       enddo
 
-!! O(nat^2) but a one-time setup cost -- not worth OMP !!
       do i=1,nat-1
         dist(i,i)=0.d0
         do j=i+1,nat
@@ -1410,20 +1426,20 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       enddo
       return
       end
-      
-**********************************************************************
 
-!! ********************************************************************* !!
-!! subroutine: makeatdens                                                !!
-!! purpose: reads the tabulated free-atom radial density profiles (for   !!
+!! ***** !!
+
+!! ********************************************************************** !!
+!! subroutine: makeatdens                                                 !!
+!! purpose: reads the tabulated free-atom radial density profiles (for    !!
 !! every charge state of every atom type present) from an external        !!
 !! densoutput file, matches each entry to the atoms present in this run   !!
-!! via ieq(:), and splines each profile (spline(), for later splint()      !!
-!! evaluation by wathirsh/wathirsh2). Feeds the Hirshfeld-family AIM       !!
+!! via ieq(:), and splines each profile (spline(), for later splint()     !!
+!! evaluation by wathirsh/wathirsh2). Feeds the Hirshfeld-family AIM      !!
 !! schemes (HIRSH/HIRSH-IT).                                              !!
 !! arguments: none (nat/coord/iznuc via COMMON, output via ieq/radial/y2) !!
 !! author:                                                                !!
-!! ********************************************************************* !!
+!! ********************************************************************** !!
       subroutine makeatdens
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
@@ -1481,7 +1497,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
           CALL spline(iat,ich,nrad0,-10.0d0,0.0d0)
         END DO
       END DO
- 
+
       CLOSE(51)
 
       do i=1,nat
@@ -1493,15 +1509,18 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       end do
 
       end
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! function: orbxyz                                                      !!
-!! purpose: value of MO nu (from coefficient matrix A) at point           !!
-!! (xabs,yabs,zabs) -- evaluates every AO there and contracts with A's    !!
-!! nu-th column. Used by the cube-file generators (print.f) to plot an    !!
-!! individual orbital rather than a density.                              !!
+!! purpose: value of MO nu (from coefficient matrix A) at point          !!
+!! (xabs,yabs,zabs) -- evaluates every AO there and contracts with A's   !!
+!! nu-th column. Used by the cube-file generators (print.f) to plot an   !!
+!! individual orbital rather than a density.                             !!
 !! arguments: A (MO coefficient matrix), nu (orbital index), xabs,yabs,  !!
 !! zabs (point coordinates)                                              !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       function orbxyz(A,nu,xabs,yabs,zabs)
       use basis_set
@@ -1512,11 +1531,11 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       dimension a(igr,igr)
       allocatable ch(:)
 
-      allocate (ch(igr))
+      allocate(ch(igr))
 
       do iact=1,igr
         iactat=ihold(iact)
-        f=0.d0
+        f=ZERO
         x=xabs-coord(1,iactat)
         y=yabs-coord(2,iactat)
         z=zabs-coord(3,iactat)
@@ -1533,7 +1552,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
         ch(iact)=f
       end do
 
-      x=0.0d0
+      x=ZERO
       do mu=1,igr
         x=x+a(mu,nu)*ch(mu)
       end do
@@ -1541,17 +1560,18 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       deallocate (ch)
       end
 
+!! ***** !!
 
 !! ********************************************************************* !!
 !! function: d2functxyz                                                  !!
-!! purpose: second-derivative contraction of the density at point         !!
-!! (xabs,yabs,zabs) along the (ixyz,jxyz) Cartesian pair (dx2/dy2/dz2/    !!
-!! dxdy/dxdz/dydz, icode=ixyz*jxyz selects which) -- same AO-contraction   !!
-!! structure as functxyz/dfunctxyz, extended to first and second AO       !!
-!! derivatives.                                                           !!
+!! purpose: second-derivative contraction of the density at point        !!
+!! (xabs,yabs,zabs) along the (ixyz,jxyz) Cartesian pair (dx2/dy2/dz2/   !!
+!! dxdy/dxdz/dydz, icode=ixyz*jxyz selects which) -- same AO-contraction !!
+!! structure as functxyz/dfunctxyz, extended to first and second AO      !!
+!! derivatives.                                                          !!
 !! arguments: ixyz,jxyz (1/2/3 = x/y/z, selects the derivative pair),    !!
 !! xabs,yabs,zabs (point coordinates)                                    !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       function d2functxyz(ixyz,jxyz,xabs,yabs,zabs)
       use basis_set
@@ -1669,3 +1689,5 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       deallocate (ch,chd)
       d2functxyz=x
       end
+
+!! ***** !!
