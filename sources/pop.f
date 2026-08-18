@@ -83,9 +83,7 @@ c making zeroes for printing purposes
       rindex(i,i)=0.d0
       enddo
 
-      WRITE(*,6342)
- 6342 FORMAT(1x,/21X,'"FUZZY ATOMS" BOND ORDER MATRIX'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
+      call print_box('"FUZZY ATOMS" BOND ORDER MATRIX')
       CALL Mprint(bo,NATOMS,maxat)
 C
 C CALCULATION OF THE VALENCE NUMBERS
@@ -102,32 +100,14 @@ C
        diag(i)=2.d0*qat(i,1)-diag(i)
       enddo
       
-      print *,'  '
-      print *,'   TOTAL VALENCES '
-      print *,'  '
-      print *,'    Atom     V_A'
-      print *,' -----------------'
-      call vprint(diag,nat,maxat,1)
-      print *,' ------------------'
-      print *,'  '
-      print *,'VALENCES USED IN BONDS'
-      print *,'(SUM OF BOND ORDERS)'
-      print *,'  '
-      print *,'    Atom     VB_A'
-      print *,' -----------------'
-      call vprint(tindex,nat,maxat,1)
-      print *,' ------------------'
-      print *,'  '
-      print *,'   FREE VALENCES'
-      print *,' '
-      print *,'    Atom     F_A'
-      print *,' -----------------'
+      call print_valence_table('TOTAL VALENCES',' ','V_A',diag)
+      call print_valence_table('VALENCES USED IN BONDS',
+     +  '(SUM OF BOND ORDERS)','VB_A',tindex)
       do i=1,natoms
       diag(i)=diag(i)-tindex(i)
       enddo
-      call vprint(diag,nat,maxat,1)
-      print *,' ------------------'
-      
+      call print_valence_table('FREE VALENCES',' ','F_A',diag)
+
       deallocate(tt)
       
       return
@@ -577,7 +557,6 @@ C
       write(*,'(3x,a)') 'Partial atomic charges'
       write(*,'(3x,a)') 'Atomic spin densities'
       write(*,'(3x,a)') 'Bond orders and Valences'
-      write(*,*)
 
 !! spin density: P^s*S^A contraction, one atom per outer iteration       !!
       if(kop.ne.0.or.nalf.ne.nb) then
@@ -646,7 +625,10 @@ C
 !! three near-identical copies of this block, previously inconsistent    !!
 !! in small ways (a stray "apost3D" instead of "apost3d" in one of the   !!
 !! three, an extra blank line before the fragment breakdown in two of    !!
-!! the three but not the first).                                         !!
+!! the three but not the first). Header/separator/sum-line widths are    !!
+!! sized to match vprint's own fixed data-row format exactly (32 columns !!
+!! for the default 6-decimal case, 48 for FULLPRECISION) -- previously a  !!
+!! hardcoded 29/35-column layout that didn't cover the actual numbers.    !!
 !! arguments:                                                            !!
 !! title    (in) -- print_box title, e.g. 'ELECTRON POPULATIONS'         !!
 !! fraglabel(in) -- fragment-breakdown label, e.g. 'Electron populations'!!
@@ -666,16 +648,21 @@ C
       character*80 line
 
       call print_box(title)
-      write(*,'(2x,a)') 'Atom   apost3d      Mulliken'
-      write(*,'(1x,a)') repeat('-',29)
-      call vprint(arr,nat,maxat,2)
-      write(*,'(1x,a)') repeat('-',29)
       if(iaccur.eq.0) then
+        write(*,'(1x,a7,2a12)') 'Atom','apost3d','Mulliken'
+        write(*,'(a)') repeat('-',32)
+      else
+        write(*,'(1x,a7,2a20)') 'Atom','apost3d','Mulliken'
+        write(*,'(a)') repeat('-',48)
+      end if
+      call vprint(arr,nat,maxat,2)
+      if(iaccur.eq.0) then
+        write(*,'(a)') repeat('-',32)
         write(*,162) tc1,tc2
       else
+        write(*,'(a)') repeat('-',48)
         write(*,172) tc1,tc2
       end if
-      write(*,*)
 
       if (idofr.eq.1) then
         line ='   FRAGMENT ANALYSIS : '//fraglabel
@@ -684,9 +671,46 @@ C
 
       return
 
- 162  format(1x,'    Sum  ',2(f10.6,2X))
- 172  format(1x,'    Sum  ',2(f20.13,2X))
+ 162  format(1x,'    Sum',2f12.6)
+ 172  format(1x,'    Sum',2f20.13)
 
+      end
+
+!! ********************************************************************* !!
+!! subroutine: print_valence_table                                       !!
+!! purpose: shared title/column-header/data layout for the three         !!
+!! single-column atomic valence tables printed by fborder (V_A/VB_A/     !!
+!! F_A) -- same consolidation print_population_table already applies to  !!
+!! the electron/charge/spin population tables, and for the same reason:  !!
+!! the header/separator width now matches vprint's own fixed data-row    !!
+!! format (20 columns) instead of a hardcoded value that didn't cover    !!
+!! the numbers.                                                          !!
+!! arguments:                                                            !!
+!! title    (in) -- print_box title, e.g. 'TOTAL VALENCES'               !!
+!! subtitle (in) -- optional explanatory line under the title, blank     !!
+!!                   (' ') if none, e.g. '(SUM OF BOND ORDERS)'          !!
+!! label    (in) -- column header, e.g. 'V_A'                            !!
+!! arr      (in) -- the (maxat) vector to print (diag/tindex)            !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine print_valence_table(title,subtitle,label,arr)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      character*(*) title,subtitle,label
+      dimension arr(maxat)
+
+      call print_box(title)
+      if(len_trim(subtitle).gt.0) then
+        write(*,'(1x,a)') trim(subtitle)
+        write(*,*)
+      end if
+      write(*,'(1x,a7,a12)') 'Atom',label
+      write(*,'(a)') repeat('-',20)
+      call vprint(arr,nat,maxat,1)
+      write(*,'(a)') repeat('-',20)
+
+      return
       end
 
 !! ********************************************************************* !!
@@ -785,7 +809,6 @@ C
       if(iopop.eq.1) then
         call print_box('APOST3D OVERLAP POPULATION MATRIX')
         call mprint(op,nat,maxat)
-        write(*,*)
         if (idofr.eq.1) then
           line ='   FRAGMENT ANALYSIS : Overlap Populations'
           call group_by_frag_mat(0,line,op)
