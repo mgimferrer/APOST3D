@@ -1,3 +1,47 @@
+!! ********************************************************************** !!
+!! F90 MODULES -- basis set, AO/density matrices, integration grid,       !!
+!! per-atom EFO/NAO/QTAIM scratch arrays, timers, .inp keyword flags      !!
+!!   basis_set         -- basis-set data (primitives, contraction         !!
+!!                         coeffs, AO overlap S)                          !!
+!!                         CONTAINS build_basis, do_overlap               !!
+!!   ao_matrices       -- MO coefficient/density matrices (c/p/cb/ps/pa/  !!
+!!                         pb/c_no/occ_no)                                !!
+!!                         CONTAINS build_ao_matrices                     !!
+!!   integration_grid  -- atom-centered grid (Nrad/Nang/pha/phb/rr00,     !!
+!!                         Lebedev th/ph/w, radial wr/xr)                 !!
+!!                         CONTAINS build_integration_grid                !!
+!!   effao_mod         -- effective-AO population matrices (p0/p0net/     !!
+!!                         p0gro/ip0), replaces legacy common /effao/     !!
+!!                         CONTAINS allocate_effao                        !!
+!!   nao_mod           -- natural-AO matrices (unao/ssnao), replaces      !!
+!!                         legacy common /nao/                            !!
+!!                         CONTAINS allocate_nao                          !!
+!!   stv_mod           -- QTAIM overlap/kinetic matrices (sp/tt),         !!
+!!                         replaces legacy common /stv/                   !!
+!!                         CONTAINS allocate_stv                          !!
+!!   timing_mod        -- CPU+wall-clock timers                           !!
+!!                         CONTAINS get_wall_time, print_timer            !!
+!!   input_options_mod -- ~70 .inp keyword flags parsed by read_input()   !!
+!!                         data only, no CONTAINS                         !!
+!!                                                                         !!
+!! Subroutine Cleanup Protocol: fully done -- every subroutine/function   !!
+!! above already has a structured header (2026-08-18).                    !!
+!!                                                                         !!
+!! Loose ends NOT covered by the protocol, since they're module-level     !!
+!! declarations rather than subroutine bodies -- worth a look next:       !!
+!!   - basis_set/ao_matrices/integration_grid's own top-of-module         !!
+!!     variable-doc comments are still old-style single-`!`, not          !!
+!!     converted to `!! !!`. Some are openly uncertain about what the     !!
+!!     array holds: ao_matrices has "pa/pb(igr,igr) -> density matrix     !!
+!!     only for alpha/beta spinorbitals?" and "occ_no(igr,igr) -> ?";     !!
+!!     integration_grid has several "probably ..." guesses for th/ph/w.  !!
+!!   - a stray `!!MMO- MODULE TESTING STARTS HERE.` marker sits right     !!
+!!     before the ao_matrices module statement -- reads like leftover    !!
+!!     development scaffolding rather than real documentation.           !!
+!!   - stv_mod's own module header is missing the `author:` line that    !!
+!!     effao_mod/nao_mod both have.                                       !!
+!! ********************************************************************** !!
+
    MODULE basis_set
    integer :: numprim,nbasis,mmax,natoms
    INTEGER, ALLOCATABLE :: nlm(:,:),iptoat(:),nprimbas(:,:)
