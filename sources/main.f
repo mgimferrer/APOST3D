@@ -92,9 +92,8 @@ c      -------------------------------------------------------------------------
 !!   2) .inp keyword parsing -- delegated to read_input() (see that !!
 !!      file), filling input_options_mod's ~70 flags                !!
 !!   3) cross-keyword validation                                    !!
-!!   4) iopt(200) population -- each local flag copied into its     !!
-!!      own hardcoded iopt(N) slot, read back by every analysis     !!
-!!      routine                                                     !!
+!!   4) iopt(200) -- each local flag copied into its own hardcoded  !!
+!!      iopt(N) slot, read back by every analysis routine           !!
 !!   5) setup (Hilbert-space sat matrix or real-space integration   !!
 !!      grid) then sequential dispatch per requested analysis:      !!
 !!      population/local spin/POLAR/PCA/EFFAO-EOS/LOBA/ENPART       !!
@@ -102,12 +101,11 @@ c      -------------------------------------------------------------------------
 !! population/bond-order/PCA analysis are delegated to pop.f        !!
 !! (population_density/population_print_charges/                    !!
 !! population_print_overlap/bond_order_analysis/pca_analysis) --    !!
-!! this is the final shape of the main.f/pop.f/read_input.f split,  !!
-!! no further extraction stages planned as of 2026-08-16.           !!
+!! this is the final shape of the main.f/pop.f/read_input.f split.  !!
 !! several sections are commented out, kept pending evaluation      !!
 !! (DAFH, EDAIQA state-construction dispatch, DFT-DM1/HIRAO         !!
 !! approximations, legacy topology/effao calls) -- catalogued, not  !!
-!! deleted, see this file's own Known Issues in the project notes.  !!
+!! deleted.                                                         !!
 !! **************************************************************** !!
 
       use basis_set
@@ -247,12 +245,9 @@ c possible call system here...
         write(*,*) 'Warning, closed-shell Local Spin calculation ' 
       end if
 
-CCCCCCCCCCCCC
-c OPTIONS LIST
-CCCCCCCCCCCCC
-!! full 1-200 listing so unused slots are visible at a glance --   !!
-!! iopt(200), bumped from 100 2026-08-15 (only 1 free slot left at !!
-!! the old size). c-commented lines are genuinely unused slots.    !!
+!! Start of iopt listing. Full 1-200 listing so unused slots are   !!
+!! visible at a glance -- iopt(200). Commented lines are genuinely !!
+!!unused slots.                                                    !!
       iopt(1) = idoint
 c      iopt(2) =
       iopt(3) = iwfn
@@ -472,9 +467,7 @@ c      iopt(197) =
 c      iopt(198) =
 c      iopt(199) =
 c      iopt(200) =
-CCCCCCCCCCCCC
-c END OPTIONS LIST
-CCCCCCCCCCCCC
+!! End of iop listing !!
 
 !! digested echo of the .inp file -- every flag above is now final !!
       call print_input_summary()
@@ -521,8 +514,8 @@ CCCCCCCCCCCCC
 !       call readintfiles(sat)
        
       else
-!! Prepare for numerical integrations !!
 
+!! Prepare for numerical integrations !!
         call build_integration_grid(ienpart, ipolar,ifinegrid)
 
         iatps=nang*nrad
@@ -572,9 +565,7 @@ CCCCCCCCCCCCC
       time=time2
       wtime=wtime2
 
-
 !! Correlated-WF input, needs dm1 and/or dm2 files !!
-
 !! cas/cisd specifications !!
       nelec=nalf+nb
       if(icorr.ne.0) then
@@ -601,8 +592,6 @@ CCCCCCCCCCCCC
           end if
         end if
       end if
-
-
 !! end of correlated-WF input !!
 
 !! Population analysis !!
@@ -645,7 +634,7 @@ CCCCCCCCCCCCC
       end if
 
 !! Local spin and DIs for correlated WFs, needs dm1/dm2 from the DMN   !!
-!! code (E. Matito)                                                    !!
+!! code (E. Matito) or from pySCF                                      !!
       if((icas.eq.1.or.icisd.eq.1).and.ispin.eq.1)then
         call print_box('Doing local spin analysis')
         write(*,'(3x,a)') 'Localization/delocalization, correlated WF'
@@ -685,7 +674,6 @@ c          end if
 !!   EOS), 3 paired/unpaired eff-AOs                                   !!
 !! imulli: 1 Mulliken, 2 Lowdin, 3 Lowdin-Davidson (not implemented),   !!
 !!   4 NAO                                                              !!
-
       if (ieffao.ne.0) then
 
 !! accumulate eos_analysis time separately (see print_timer calls below). !!
@@ -764,7 +752,7 @@ c          end if
 !! 3D-space !!
         else
 
-!! DOING EFFAO/UEFFAO FOR SELECTED ATOMS ONLY (NO EOS) !!
+!! EFFAO/UEFFAO for selected atoms only (no EOS) !!
           if(idoat.ne.0) then
             if(ieffao.eq.1) then
               call ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
@@ -775,7 +763,7 @@ c          end if
 
           else
 
-!! DOING EFFAO/UEFFAO/EFFAO-U FOR FRAGMENTS/ALL ATOMS !!
+!! EFFAO/UEFFAO/EFFAO-U for fragments/all atoms !!
             if(ieffao.eq.1) then
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
 !! disabled call sites for effao.f's uefomo (dead, see that file's   !!
@@ -813,7 +801,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
                 xeos_wall=xeos_wall+(wxeos2-wxeos1)
               end if
 
-!! EOS-U PART: OS ANALYSIS CALLED FROM INSIDE THE ROUTINE !!
+!! GEOS part: oxidation-state analysis called from inside the routine !!
             else if(ieffao.eq.3) then
               call effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2,iueos) 
             end if
@@ -830,26 +818,24 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
       end if
 
 !! Localized orbital bonding analysis (LOBA) !!
-
       if(iloba.eq.1) then
         call print_box('Doing localized orbital bonding analysis (LOBA)')
 
-!! HILBERT-SPACE !!
+!! Hilbert-space !!
         if(imulli.gt.0) then
           write(*,*) " LOBA NOT IMPLEMENTED FOR HILBERT-SPACE "
           stop
         end if
 
-!! REAL-SPACE !!
+!! Real-space !!
         if(imulli.eq.0) call eos_loba(sat)
       end if
 
 !! Energy decomposition (ENPART) !!
-
       if(ienpart.eq.1) then
         call print_box('Doing molecular energy decomposition')
 
-!! ONE ELECTRON PART: CASSCF AND CI WFs !!
+!! One-electron part: CASSCF and CI WFs !!
         if(iposthf.eq.1) then
           call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
           call cpu_time(time2)
@@ -858,10 +844,10 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
           time=time2
           wtime=wtime2
 
-!! ONE ELECTRON PART: DFT AND HF WFs !!
+!! One-electron part: DFT and HF WFs !!
         else 
 
-!! INITIALIZE DFT FUNCTIONAL FOR INFO AND INITIAL PRINTING !!
+!! Initialize DFT functional for info and initial printing !!
           if(id_xfunc.ne.-1) then
             if(id_xcfunc.ne.0) call func_info_print(id_xcfunc,itype)
             if(id_cfunc.ne.0) call func_info_print(id_cfunc,itype)
@@ -870,11 +856,11 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             if(jtype.gt.itype) iopt(55) = jtype
           end if
 
-!! RESTRICTED CASE !!
+!! Restricted case !!
           if(kop.ne.1) then 
             ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
-!! ONE-ELECTRON TERMS !!
+!! One-electron terms !!
             call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
             call cpu_time(time2)
             call get_wall_time(wtime2)
@@ -882,7 +868,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             time=time2
             wtime=wtime2
 
-!! DFT XC TERM !!
+!! DFT XC term !!
             if(id_xfunc.ne.-1) then
               if(ianalytical.eq.0) then
                 call numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
@@ -897,11 +883,11 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             end if
             DEALLOCATE(xkdens)
 
-!! UNRESTRICTED CASE !!
+!! Unrestricted case !!
           else
             ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
-!! ONE-ELECTRON TERMS !!
+!! One-electron terms !!
             call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
             call cpu_time(time2)
             call get_wall_time(wtime2)
@@ -909,13 +895,11 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             time=time2
             wtime=wtime2
 
-!! DFT XC TERM !!
+!! DFT XC term !!
             if(id_xfunc.ne.-1) then
               call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
               call cpu_time(time2)
               call get_wall_time(wtime2)
-!! MG label fix: this timer sits after numint_dft_uks (the DFT XC term), not the !!
-!! one-electron term -- was mislabeled "enpart one-electron" like its neighbours. !!
               call print_timer('enpart dft',time2-time,wtime2-wtime)
               time=time2
               wtime=wtime2
@@ -923,23 +907,23 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             DEALLOCATE(xkdens)
           end if 
 
-!! END IF METHOD TYPE !!
+!! End of restricted/unrestricted dispatch !!
         end if
         DEALLOCATE(wp,omp,omp2,chp,pcoord,ibaspoint,rho)
 
-!! TWO-ELECTRON PART !!
+!! Two-electron part !!
 
-!! TWO-ELECTRON INTEGRATION DEFAULTS !!
+!! Two-electron integration defaults !!
         call print_box('Setting grid for two-electron numerical integration')
 
-!! CONTROLLED BY # GRID OPTION (modgrid common) !!
-!! DEFAULT GRID IS NOW 150 590, CAN BE CHANGED TO 40 146 BUT ENSURE TO ALSO MODIGY pha AND phb !!
+!! Controlled by # GRID option (modgrid common) !!
+!! Default grid is now 150/590, can be changed to 40/146 but ensure to also modify pha and phb !!
         nrad=nrad22
         nang=nang22
         rr00=rr0022
 
-!! ANALYTICAL CASE !!
-!! MG: TO MODIFY AS NOW DEFAULT GRID IS LARGER THAN THIS ONE !!
+!! Analytical case !!
+!! MG: to modify as now default grid is larger than this one !!
         if(ianalytical.eq.1) then
           write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
           write(*,*) " "
@@ -947,12 +931,12 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
           nang=434
         end if
 
-!! PRINTING INFO !!
+!! Printing info !!
         write(*,'(2x,a14,x,i4)') "Radial points:",nrad
         write(*,'(2x,a15,x,i4)') "Angular points:",nang
         write(*,'(2x,a12,x,i9)') "Grid points:",nrad*nang*nat
 
-!! GENERATING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATIONS !!
+!! Generating grid for two-electron numerical integrations !!
         iatps=nang*nrad
         itotps=nrad*nang*nat
         call quad(Nrad,Nang) 
@@ -960,7 +944,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,ndim))
         call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,0)
 
-!! CASSCF AND CI WFs !!
+!! CASSCF and CI WFs !!
         if(iposthf.eq.1) then
 !        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
           call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
@@ -970,14 +954,14 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
           time=time2
           wtime=wtime2
 
-!! DFT AND HF WFs !!
+!! DFT and HF WFs !!
         else
 
-!! UNRESTRICTED CASE !!
+!! Unrestricted case !!
           if(kop.eq.1) then 
             call numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
-!! RESTRICTED CASE !!
+!! Restricted case !!
           else
 !          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
             call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
@@ -989,7 +973,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
           time=time2
           wtime=wtime2
 
-!! END IF OF WF-TYPE !!
+!! End of WF-type dispatch !!
         end if 
 
 !! Deallocating any existent grid !!
@@ -1033,7 +1017,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         call cpu_time(time)
         call get_wall_time(wtime)
 
-!! COMPUTING sat FOR HILBERT SPACE CASES !!
+!! Computing sat for Hilbert-space cases !!
 
         if(ilow2.ne.0) then
           iopt(5)=ilow2 !! MG: trick !!
@@ -1042,7 +1026,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
           if(ilow2.eq.6) call tonao(sat)
         end if
 
-!! GENERAL INDEPENDENTLY OF THE AIM !!
+!! General, independently of the AIM scheme !!
 
         if(kop.eq.0) then
           call rwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
