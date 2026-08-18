@@ -1,10 +1,16 @@
 !! ********************************************************************* !!
 !! FILE STATUS (2026-08-18): Subroutine Cleanup Protocol still NOT       !!
 !! applied to: VPRINT, MPRINT_NLOP, MPRINT, MPRINT2, print_int_old,      !!
-!! print_int, cubegen3, rmat, rarr, ival, cubegen3_mhg, cubegen4.        !!
+!! print_int, cubegen3, rmat, rarr, ival, cubegen3_mhg.                  !!
 !! mprintnoat/group_by_frag_mat/group_by_frag_vec got headers/comments/  !!
 !! printing during the 2026-08-18 fragment-analysis rewrite (see         !!
 !! CLAUDE.md) -- small self-contained subroutines, no OMP candidate.     !!
+!! cubegen3/cubegen3_mhg/rmat/rarr/ival/print_int_old are likely dead or !!
+!! near-dead (see CLAUDE.md) -- deliberately left untouched pending a    !!
+!! consolidation decision, not yet given the protocol. cubegen4 is done  !!
+!! (full protocol + OMP parallelization of its grid-evaluation loop,     !!
+!! 2026-08-18) -- also gained two new # CUBE keywords, SPACING/          !!
+!! RADIUS_SCALE.                                                         !!
 !! ********************************************************************* !!
 
 !! ********************************************************************* !!
@@ -428,6 +434,10 @@
         write(*,'(2x,a,1x,a)') 'Max occupation threshold:',trim(cval)
         write(cval,'(i0)') kcubthr
         write(*,'(2x,a,1x,a)') 'Min occupation threshold:',trim(cval)
+        write(cval,'(f6.3)') cubespacing
+        write(*,'(2x,a,1x,a)') 'Grid spacing (bohr)     :',trim(adjustl(cval))
+        write(cval,'(f6.3)') cuberadscale
+        write(*,'(2x,a,1x,a)') 'Radius scale            :',trim(adjustl(cval))
       end if
 
 !! ----------------------------------------------------------------- !!
@@ -2346,10 +2356,25 @@ c assuming up to 99 atoms
       deallocate(c0,xyz)
       end
 
+!! ********************************************************************* !!
+!! subroutine: cubegen4                                                  !!
+!! purpose: writes one Gaussian-style .cube file per requested EFO       !!
+!! (imaxeff..imineff, thresholded by MAX_OCC/MIN_OCC) of fragment/atom    !!
+!! ifrag -- adaptive grid, fixed point spacing (# CUBE SPACING, bohr)     !!
+!! with padding scaled by RADIUS_SCALE times the extremal atom's         !!
+!! covalent radius in each direction, so point count (not spacing)       !!
+!! grows with fragment size. icase selects RHF/UHF-alpha/UHF-beta/UEOS   !!
+!! paired/unpaired naming; imulli selects orbital-value output (Mulliken/!!
+!! Lowdin) vs AIM-weighted density (Becke/TFVC/Hirshfeld/QTAIM).         !!
+!! arguments: ifrag (in) -- fragment/atom index, icase (in) -- 0-4,      !!
+!! see above                                                             !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine cubegen4(ifrag,icase)
       use ao_matrices
       use integration_grid
       use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+      use input_options_mod, only: cubespacing,cuberadscale
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /atomrad/atr(maxat),dist(maxat,maxat)
@@ -2397,7 +2422,7 @@ c assuming up to 99 atoms
           c0(i,j)=p0(i,j)
         end do
       end do
-c setting actual effos to print, instead
+!! setting actual effos to print, instead !!
       if(jcubthr.lt.0) then
        imaxeff=abs(jcubthr)
        imineff=abs(kcubthr)
@@ -2415,10 +2440,9 @@ c setting actual effos to print, instead
 2      imineff= imineff - 1
        if(p0net(imineff,ifrag).le.xmineff) go to 2
       end if
-c
 
       if(imaxeff.gt.imineff) then
-       write(*,*) ' No eff-AOs in the occupation range' 
+       write(*,*) ' No eff-AOs in the occupation range'
        write(*,*) " "
        deallocate(c0)
        return
@@ -2454,16 +2478,15 @@ c
         if(icase.eq.3) name2=trim(name2)//"_paired"
         if(icase.eq.4) name2=trim(name2)//"_unpaired"
 
-c asuming rectangular grid...
-       xgrid=0.0d0                 
+!! assuming rectangular grid !!
+       xgrid=0.0d0
 
-C For moleculs/fragments 
-c adaptative size cube
-c extra set to 3 times the atomic radii
-      xmesh=0.2d0
-      rrmax=3.0d0
+!! adaptive-size cube: fixed point spacing (# CUBE SPACING), padding      !!
+!! scaled by RADIUS_SCALE times the extremal atom's covalent radius       !!
+      xmesh=cubespacing
+      rrmax=cuberadscale
       volume=1.0d0
-c furthest x y z atomic positions of the fragment
+!! furthest x y z atomic positions of the fragment !!
       do i=1,3
        xmax=-1.0d8
        xmin=1.0d8
@@ -2489,11 +2512,16 @@ c furthest x y z atomic positions of the fragment
        volume=volume*dist0
       end do
 
-c Now the grid
+!! now the grid !!
       write(*,'(a21,3i4)')'Size of cube (x,y,z):',(igrid(i),i=1,3)
       allocate ( xyz(igrid(1),igrid(2),igrid(3)))
 
       do ivec=imaxeff,imineff
+!! each (i,j,k) grid point is independent, writing only its own xyz        !!
+!! slot; orbxyz/wat/wathirsh(2) are pure functions of their arguments      !!
+!! plus read-only shared state (c0/coord/COMMON), safe to call in          !!
+!! parallel (see wat.f)                                                    !!
+!$OMP PARALLEL DO COLLAPSE(3) PRIVATE(i,j,k,xabs,yabs,zabs,ww,iatom,jjat)
        do i=1,igrid(1)
         do j=1,igrid(2)
          do k=1,igrid(3)
@@ -2513,9 +2541,11 @@ c Now the grid
               ww=ww+wathirsh(jjat,xabs,yabs,zabs)
             else if(ihirsh.eq.2) then
               ww=ww+wathirsh2(jjat,xabs,yabs,zabs,pop)
-            else if(iqtaim.eq.1) then 
-c             call cubeqtaim(jjat,xabs,yabs,zabs,ww0)
-c              ww=ww+ww0
+            else if(iqtaim.eq.1) then
+!! QTAIM cube weighting was never wired up (cubeqtaim doesn't exist       !!
+!! codebase-wide) -- ww stays 0 here, so a QTAIM-weighted cube would be   !!
+!! all zeros rather than erroring. Unreachable in practice regardless:    !!
+!! main.f:218 hard-stops the whole run at startup when iqtaim=1.          !!
             end if
            end do
            xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)*ww
@@ -2523,8 +2553,11 @@ c              ww=ww+ww0
          end do
         end do
        end do
-c approximate normalization of orbital
+!$OMP END PARALLEL DO
+!! approximate normalization of orbital -- same independence argument,   !!
+!! reduction on x0                                                        !!
        x0=0.0d0
+!$OMP PARALLEL DO COLLAPSE(3) PRIVATE(i,j,k) REDUCTION(+:x0)
        do i=1,igrid(1)
         do j=1,igrid(2)
          do k=1,igrid(3)
@@ -2532,10 +2565,11 @@ c approximate normalization of orbital
          end do
         end do
        end do
+!$OMP END PARALLEL DO
        write(*,'(a25,f7.4)') 'Normalization from cube: ',x0*volume/(igrid(1)*igrid(2)*igrid(3))
        write(*,*) " "
 
-c      OUTPUT    
+!! output !!
 
         if(idofr.eq.0) then
         read(mend(iznuc(ifrag)),'(A2)')charnu
@@ -2543,10 +2577,7 @@ c      OUTPUT
         else
          charnu="FR"
         end if   
-        l0=len_trim(name)
-        l1=len_trim(name2)
-        l2=len_trim(charnu)
-c assuming up to 99 atoms
+!! assuming up to 99 atoms !!
         if(ifrag.lt.10) then
            write(atnu,'(i1)')ifrag
         else

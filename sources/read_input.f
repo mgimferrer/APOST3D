@@ -122,6 +122,8 @@
         if(ii.eq.0) stop'Required section # CUBE not found in input file'
         call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
         call readint("# CUBE","MIN_OCC",kcubthr,0,1)
+        call readreal("# CUBE","SPACING",cubespacing,0.25d0,1)
+        call readreal("# CUBE","RADIUS_SCALE",cuberadscale,2.0d0,1)
       end if
 
 !! EOS (standard) !!

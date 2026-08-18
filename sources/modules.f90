@@ -778,6 +778,7 @@
    integer :: ieffao,ieffthr,icube,jcubthr,kcubthr,ieos,iueos,ieoscent, &
               iloba
    real*8  :: xthresh
+   real*8  :: cubespacing,cuberadscale !! # CUBE grid spacing (bohr) / atomic-radius padding scale !!
 
 !! local spin and correlated-WF input !!
    integer :: ispin,icorr,idafh
