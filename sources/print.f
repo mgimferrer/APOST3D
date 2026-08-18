@@ -1,8 +1,10 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
-!! applied to: VPRINT, MPRINT_NLOP, MPRINT, MPRINT2, MPRINTNOAT,         !!
-!! group_by_frag_mat, group_by_frag_vec, print_int_old, print_int,       !!
-!! cubegen3, rmat, rarr, ival, cubegen3_mhg, cubegen4.                   !!
+!! FILE STATUS (2026-08-18): Subroutine Cleanup Protocol still NOT       !!
+!! applied to: VPRINT, MPRINT_NLOP, MPRINT, MPRINT2, print_int_old,      !!
+!! print_int, cubegen3, rmat, rarr, ival, cubegen3_mhg, cubegen4.        !!
+!! mprintnoat/group_by_frag_mat/group_by_frag_vec got headers/comments/  !!
+!! printing during the 2026-08-18 fragment-analysis rewrite (see         !!
+!! CLAUDE.md) -- small self-contained subroutines, no OMP candidate.     !!
 !! ********************************************************************* !!
 
 !! ********************************************************************* !!
