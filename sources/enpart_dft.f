@@ -369,8 +369,9 @@
         write(*,*) " "
       end if
       if (idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Exc Decomposition' 
+        line='   FRAGMENT ANALYSIS: Exc Decomposition'
         call group_by_frag_mat(1,line,exch)
+        write(*,*)
       end if
 
       xtot=ZERO
@@ -1075,8 +1076,9 @@
         write(*,*) " "
       end if
       if (idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Exc Decomposition' 
+        line='   FRAGMENT ANALYSIS: Exc Decomposition'
         call group_by_frag_mat(1,line,exch)
+        write(*,*)
       end if
 
       xtot=ZERO
