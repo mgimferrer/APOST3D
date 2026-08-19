@@ -1,3 +1,39 @@
+!! ********************************************************************** !!
+!! NUMERICAL INTEGRATION CORE -- grid construction, AO/density evaluation, !!
+!! atomic-orbital overlap integration                                     !!
+!! Per-iteration grid/density driver:                                     !!
+!!   prenumint       -- builds the grid (pcoord), AO values (chp, via     !!
+!!                       fpoints/rpoints), electron density (rho), and    !!
+!!                       becke/tfvc/hirshfeld atomic weights (omp/omp2)   !!
+!! Grid-point evaluators called from prenumint (and, for dpoints, from    !!
+!! enpart.f/enpart_phf.f directly):                                       !!
+!!   fpoints         -- basis-function values at every grid point         !!
+!!   rpoints         -- integration weight of every grid point            !!
+!!   dpoints         -- Laplacian of every basis function at every grid   !!
+!!                       point                                            !!
+!! AO->MO transform helpers (shared by enpart.f/enpart_dft.f, replacing   !!
+!! a hardcoded loop once duplicated across both):                         !!
+!!   ao_to_mo_grid   -- transforms AO grid values to MO grid values       !!
+!!   ao_to_mo_grid_t -- same, plus returns the MO-major transpose         !!
+!! Atomic-orbital overlap integration (runs by default for every          !!
+!! calculation that isn't Hilbert-space Mulliken/Lowdin/NAO):             !!
+!!   numint_sat      -- per-atom AO overlap matrix (sat), three mutually  !!
+!!                       exclusive integration schemes (iallpo/iqtaim)    !!
+!! Hirshfeld/Hirshfeld-Iterative promolecular density support:            !!
+!!   spline          -- cubic-spline second-derivative setup for a        !!
+!!                       tabulated free-atom radial density profile,      !!
+!!                       consumed by splint() (wat.f)                     !!
+!! Debug/diagnostic utility (opt-in, # METHOD / RHO_CALC_AT, zero test    !!
+!! coverage):                                                             !!
+!!   atdens_int      -- integrates the density (and its anisotropy) over  !!
+!!                       a sphere around one atom, on its own small grid  !!
+!! Note: spline's zero-density branch never sets y2(iat,ich,n), unlike    !!
+!! the normal branch, which splint() (wat.f) can read whenever its       !!
+!! binary search lands khi=n -- discussed 2026-08-19, left as-is.         !!
+!! ********************************************************************** !!
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: prenumint                                                 !!
 !! purpose: builds the atom-centered numerical integration grid, the     !!
