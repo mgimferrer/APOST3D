@@ -1,28 +1,19 @@
-!! ********************************************************************* !!
-!! subroutine: spincorr                                                  !!
-!! purpose: local spin / delocalization-index decomposition from the     !!
-!!   post-HF 1- and 2-RDMs (dm1/dm2, natural-orbital basis). Prints the  !!
-!!   bond order matrix, Mayer's "new" bond order (CPL 554, 83 (2012)),   !!
-!!   the LI/DI matrix, effectively unpaired electrons (u_A), and the     !!
-!!   S^2 decomposition (a=3/4, Ramos-Cordoba/Salvador local spin) --     !!
-!!   plus their DOFRAGS fragment-analysis breakdowns when requested.     !!
-!! arguments:                                                            !!
-!!   sat (in) -- per-atom AO overlap matrix (igr,igr,nat)                !!
-!!   dm1 (in) -- one-electron reduced density matrix, spin-orbital       !!
-!!               basis (nspinorb,nspinorb)                               !!
-!!   dm2 (in) -- spinless two-electron reduced density matrix, natural-  !!
-!!               orbital basis (norb,norb,norb,norb)                    !!
-!! parallelization: not done. The O(norb^4*nat^2) i/j/k/l/iat/jat loop    !!
-!!   (the dominant cost) accumulates into shared S234/DI/BO(iat,jat) on  !!
-!!   every i/j/k/l iteration -- a genuine reduction, not a plain private- !!
-!!   write split, and this codebase has no existing precedent for an     !!
-!!   OMP array-REDUCTION on fixed-size arrays this large. The cheaper    !!
-!!   O(norb^2*nat) satmo-transform loops reuse a single shared scr(:,:)  !!
-!!   scratch array across iat iterations (not iat-indexed), so paral-   !!
-!!   lelizing over iat would race on scr without first giving each      !!
-!!   thread its own copy. Both left serial pending a dedicated pass.     !!
-!! author:                                                               !!
-!! ********************************************************************* !!
+!! ********************************************************************** !!
+!! subroutine: spincorr                                                   !!
+!! purpose: local spin / delocalization-index decomposition from the      !!
+!!   post-HF 1- and 2-RDMs (dm1/dm2, natural-orbital basis). Prints the   !!
+!!   bond order matrix, Mayer's "new" bond order (CPL 554, 83 (2012)),    !!
+!!   the LI/DI matrix, effectively unpaired electrons (u_A), and the      !!
+!!   S^2 decomposition (a=3/4, Ramos-Cordoba/Salvador local spin) --      !!
+!!   plus their DOFRAGS fragment-analysis breakdowns when requested.      !!
+!! arguments:                                                             !!
+!!   sat (in) -- per-atom AO overlap matrix (igr,igr,nat)                 !!
+!!   dm1 (in) -- one-electron reduced density matrix, spin-orbital        !!
+!!               basis (nspinorb,nspinorb)                                !!
+!!   dm2 (in) -- spinless two-electron reduced density matrix, natural-   !!
+!!               orbital basis (norb,norb,norb,norb)                      !!
+!! author: PSalse, ERaco                                                  !!
+!! ********************************************************************** !!
       subroutine spincorr(sat,dm1,dm2)
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -43,11 +34,11 @@
       allocatable scr(:,:),satmo(:,:,:)
       allocatable sfdm1(:,:), psdm1(:,:),u_no(:)
 
-      idofr= iopt(40)
+      idofr = iopt(40)
 
-      allocate (scr(igr,igr))
-      allocate (satmo(igr,igr,nat))
-      allocate (sfdm1(norb,norb),psdm1(norb,norb),u_no(norb))
+      allocate(scr(igr,igr))
+      allocate(satmo(igr,igr,nat))
+      allocate(sfdm1(norb,norb),psdm1(norb,norb),u_no(norb))
 
 !! effective unpaired electrons in the NO basis, same dimension as MOs !!
       do iat=1,nat
@@ -86,9 +77,9 @@
         ua(iat)=xx
       end do
 
-!! satmo(i,j,jat) is read with its indices exchanged (satmo(j,i,jat))    !!
-!! throughout this routine relative to the naive iat/jat-symmetric form  !!
-!! -- a deliberate correction, kept consistently below.                 !!
+!! satmo(i,j,jat) is read with its indices exchanged (satmo(j,i,jat))   !!
+!! throughout this routine relative to the naive iat/jat-symmetric form !!
+!! kept consistently below.                                             !!
       do iat=1,nat
         do jat=iat,nat
           yy=0.0d0
@@ -135,7 +126,6 @@
             satmo(i,j,iat)=x
           end do
         end do
-
       end do
 
 !! orthogonality check !!
@@ -152,9 +142,9 @@
         end do
       end do
 
-!! initializing arrays for local spin, DI and U decomposition; local    !!
-!! spin formula (-1+2a)*Gamma_ijij - 0.5*Gamma_ijji, a=0 (Alcoba) vs     !!
-!! a=3/4 (Ramos-Cordoba) -- this routine implements a=3/4.               !!
+!! initializing arrays for local spin, DI and U decomposition; local !!
+!! spin formula (-1+2a)*Gamma_ijij - 0.5*Gamma_ijji, a=0 (Alcoba) vs !!
+!! a=3/4 (Ramos-Cordoba) -- this routine implements a=3/4.           !!
       do i=1,nat
         do j=1,nat
           s234(i,j)=0.0d0
@@ -171,9 +161,9 @@
         end do
       end do
 
-!! contributions from the spinless cumulant of dm2, 1122 form (spin      !!
-!! density contributions included in the cumulant, i.e. not removed).    !!
-!! satmo indices are exchanged throughout, same correction as above.     !!
+!! contributions from the spinless cumulant of dm2, 1122 form (spin   !!
+!! density contributions included in the cumulant, i.e. not removed). !!
+!! satmo indices are exchanged throughout, same correction as above.  !!
       do i=1,norb
         do j=1,norb
           do k=1,norb
@@ -211,6 +201,7 @@
         BO(i,i)=BO(i,i)/2.0d0
         DI(i,i)=DI(i,i)/2.0d0+bo(i,i)
       end do
+
 !! saving Ramos-Cordoba decomposition !!
       do i=1,nat
         do j=1,nat
@@ -233,49 +224,40 @@
       enddo
 
 !! printing !!
-      WRITE(*,8)
- 8    FORMAT(1x,/21X,'  APOST3D BOND ORDER MATRIX')
-      print *,' '
+      call print_box('APOST3D BOND ORDER MATRIX')
       call MPRINT(bo,nat,maxat)
-      print *,' '
 
-      WRITE(*,5)
- 5    FORMAT(1x,/21X,'  APOST3D NEW BOND ORDER MATRIX')
-      print *,' Improved definition by I. Mayer on CPL 554, 83 (2012)'
-      print *,' '
+      call print_box('APOST3D NEW BOND ORDER MATRIX')
+      write(*,'(2x,a)') 'Improved definition by I. Mayer, CPL 554, 83 (2012)'
+      write(*,*)
       call MPRINT(bonew,nat,maxat)
-      print *,' '
-      write(*,'(a13,f10.5)') ' Sum check = ' ,x1
-      print *,' '
+      write(*,*)
+      write(*,'(2x,a,f10.5)') 'Sum check = ',x1
 
-      WRITE(*,4)
- 4    FORMAT(1x,/21X,'    APOST3D LI/DI MATRIX'//)
+      call print_box('APOST3D LI/DI MATRIX')
       call MPRINT(DI,nat,maxat)
-      print *,' '
-      write(*,'(a13,f10.5)') ' Sum check = ' ,x0
+      write(*,*)
+      write(*,'(2x,a,f10.5)') 'Sum check = ',x0
       if (idofr.eq.1) then
         line ='   FRAGMENT ANALYSIS : Deloc. Index'
         call group_by_frag_mat(1,line ,di)
       end if
 
-      print *,'  '
-      print *,' EFFECTIVELY UNPAIRED ELECTRONS'
-      print *,'  '
-      print *,'    Atom     u_A'
-      print *,' -----------------'
+      call print_box('EFFECTIVELY UNPAIRED ELECTRONS')
+      write(*,'(1x,a7,a12)') 'Atom','u_A'
+      write(*,'(2x,a)') repeat('-',18)
       call vprint(ua,nat,maxat,1)
-      print *,' ------------------'
-      write(*,'(a17,f10.5)') ' Sum check N_D = ' ,xnd
+      write(*,'(2x,a)') repeat('-',18)
+      write(*,'(2x,a,f10.5)') 'Sum check N_D = ',xnd
       if (idofr.eq.1) then
         line ='   FRAGMENT ANALYSIS : Num. eff. unpaired elec.'
         call group_by_frag_vec(1,line ,ua)
       end if
 
-      WRITE(*,3)
- 3    FORMAT(1x,/21X,'    APOST3D S^2 DECOMPOSITION (a=3/4)'//)
+      call print_box('APOST3D S^2 DECOMPOSITION (a=3/4)')
       call MPRINT(s234,nat,maxat)
-      print *,' '
-      write(*,'(a20,f10.5)') 'Sum check  <S^2> = ' ,x2
+      write(*,*)
+      write(*,'(2x,a,f10.5)') 'Sum check <S^2> = ',x2
       if (idofr.eq.1) then
         line ='   FRAGMENT ANALYSIS : Local Spin Analysis'
         call group_by_frag_mat(0,line ,xlsa)
