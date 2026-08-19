@@ -748,7 +748,7 @@
         ip0(ifrag)=imaxo
 
 !  write cube file
-!        if(icube.eq.1) call cubegen4(ifrag,icase)
+!        if(icube.eq.1) call cubegen_new(ifrag,icase)
        end do
 
 ! Doing EOS analysis of the ALPHA PART
@@ -975,7 +975,7 @@
         end do
         ip0(ifrag)=imaxo
 !  write cube file
-!        if(icube.eq.1) call cubegen4(ifrag,icase)
+!        if(icube.eq.1) call cubegen_new(ifrag,icase)
 
        end do
 
