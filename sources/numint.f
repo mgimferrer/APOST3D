@@ -17,7 +17,7 @@
 !!   chp       (out) -- value of each basis function at each grid point  !!
 !!   rho       (out) -- electron density at each grid point              !!
 !!   pcoord    (out) -- xyz coordinates of each grid point               !!
-!!   ibaspoint (--)   -- qtaim basin assignment; unused here, the qtaim   !!
+!!   ibaspoint (--)   -- qtaim basin assignment; unused here, the qtaim  !!
 !!                       grid-building block below is disabled           !!
 !!   iiter     (in)  -- scf iteration counter, only read by the          !!
 !!                       hirshfeld-iterative (ihirsh=2) branch           !!
@@ -335,6 +335,16 @@ c      end if
 
 !! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: fpoints                                                   !!
+!! purpose: evaluates every basis function at every numerical-grid       !!
+!!   point (chp(irun,iact)), contracting each primitive Gaussian over    !!
+!!   its shell. called once per iteration from prenumint, right after    !!
+!!   the grid coordinates (pcoord) are built.                            !!
+!! arguments:                                                            !!
+!!   chp    (out) -- value of each basis function at each grid point     !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                  !!
+!! ********************************************************************* !!
       subroutine fpoints(chp,pcoord)
       use basis_set
       use integration_grid
@@ -344,6 +354,10 @@ c      end if
 
       iatps=nrad*nang
       itotps=iatps*natoms
+!! parallel over grid points: each irun only reads shared, read-only     !!
+!! basis-set data and its own pcoord(irun,:), and writes only its own    !!
+!! chp(irun,:) -- no dependency between iterations.                      !!
+!$OMP PARALLEL DO PRIVATE(irun,iact,iactat,x,y,z,rr,f,k,ipr,nn,ll,mm)
       do irun=1,itotps
          do iact=1,nbasis
           iactat=ihold(iact)
@@ -364,9 +378,23 @@ c      end if
           chp(irun,iact)=f
          enddo
       end do
+!$OMP END PARALLEL DO
       return
       end
 
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: rpoints                                                   !!
+!! purpose: builds the integration weight of every numerical-grid point  !!
+!!   (radial quadrature weight times angular weight times 4*pi*r^2,      !!
+!!   folded into wr). called once per iteration from prenumint.          !!
+!! arguments:                                                            !!
+!!   wp (out) -- integration weight of each grid point                   !!
+!! notes: left serial -- O(itotps) with only a handful of flops per      !!
+!!   point (no inner basis-function loop, unlike fpoints/dpoints), not   !!
+!!   worth the OMP overhead.                                             !!
+!! ********************************************************************* !!
       subroutine rpoints(wp)
       use basis_set
       use integration_grid
@@ -390,6 +418,20 @@ c      end if
       end
 
 
+!! ********************************************************************* !!
+!! subroutine: spline                                                    !!
+!! purpose: cubic-spline second-derivative setup (Numerical Recipes      !!
+!!   spline) for a free-atom radial density profile y(iat,ich,:) tabu-   !!
+!!   lated at x(:) -- consumed later by splint() (wat.f) for Hirshfeld/  !!
+!!   Hirshfeld-iterative promolecular density lookups. Skips the fit     !!
+!!   entirely (zeroes y2) for the H+ special case, where the tabulated   !!
+!!   density is identically zero.                                       !!
+!! arguments:                                                            !!
+!!   iat,ich (in) -- atom-type/charge-state index into y2/y/x            !!
+!!   n       (in) -- number of tabulated radial points                   !!
+!!   yp1,ypn (in) -- first-derivative boundary conditions at the first/  !!
+!!                    last point (natural spline if > 0.99e30)           !!
+!! ********************************************************************* !!
       SUBROUTINE spline(iat,ich,n,yp1,ypn)
       IMPLICIT DOUBLE PRECISION (a-h,o-z)
       include 'parameter.h'
@@ -397,8 +439,8 @@ c      end if
       common/ hirsh/y2(50,5,150),y(50,5,150),x(150),ieq(maxat),
      1 nrad0,nat0,pop(maxat)
 
-c special case of H+ atom
-      if(y(iat,ich,1).ne.0.0d0) then      
+!! special case of H+ atom !!
+      if(y(iat,ich,1).ne.0.0d0) then
 
       if (yp1.gt..99e30) then
         y2(iat,ich,1)=0.d0
@@ -412,8 +454,6 @@ c special case of H+ atom
       do i=2,n-1
         sig=(x(i)-x(i-1))/(x(i+1)-x(i-1))
         p=sig*y2(iat,ich,i-1)+2.
-c        y2(i)=(sig-1.)/p
-c PSS
         y2(iat,ich,i)=(sig-1.)/p
         u(i)=(6.*((y(iat,ich,i+1)-y(iat,ich,i))/(x(i+1)-x(i))-
      1  (y(iat,ich,i)-y(iat,ich,i-1))/(x(i)-x(i-1)))/(x(i+1)-
@@ -445,9 +485,8 @@ c PSS
 
       END
 
-CC
-CC
-CC
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: numint_sat                                                !!
 !! purpose: integrates the atomic-orbital overlap matrix per atom (sat)  !!
@@ -605,8 +644,19 @@ c Computing  atomic orbital overlap
       return 
       end
 
-! *****
+!! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: dpoints                                                   !!
+!! purpose: evaluates the Laplacian of every basis function at every     !!
+!!   numerical-grid point (chp(irun,iact)), contracting each primitive   !!
+!!   Gaussian's second derivative over its shell. Same grid/basis loop   !!
+!!   structure as fpoints, used by enpart.f/enpart_phf.f's Laplacian-    !!
+!!   dependent terms.                                                    !!
+!! arguments:                                                            !!
+!!   chp    (out) -- Laplacian of each basis function at each grid point !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                  !!
+!! ********************************************************************* !!
       subroutine dpoints(chp,pcoord)
       use basis_set
       use integration_grid
@@ -616,15 +666,23 @@ c Computing  atomic orbital overlap
 
       iatps=nrad*nang
 
-      irun=1
+!! parallel over (icenter,ifut) grid-point pairs: irun is computed        !!
+!! directly instead of carried as a serially-incremented counter, since   !!
+!! a plain "irun=irun+1" is not safe once the loop is split across        !!
+!! threads (same convention as prenumint's aim-weight loop). each         !!
+!! iteration writes only its own chp(irun,:) and reads shared, read-only  !!
+!! basis-set data.                                                        !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,ifut,iact,irun,iactat,x,y,z,
+!$OMP&  rr,f,k,ipr,nn,ll,mm,alpha,alpha2,dx2,dy2,dz2,dd)
       do icenter=1,natoms
        do ifut=1,iatps
+         irun=(icenter-1)*iatps+ifut
          do iact=1,nbasis
           iactat=ihold(iact)
           x=pcoord(irun,1)-coord(1,iactat)
           y=pcoord(irun,2)-coord(2,iactat)
           z=pcoord(irun,3)-coord(3,iactat)
-          rr=x*x+y*y+z*z 
+          rr=x*x+y*y+z*z
           f=0.d0
           k=1
           do while(nprimbas(k,iact).ne.0)
@@ -649,18 +707,33 @@ c Computing  atomic orbital overlap
           enddo
           chp(irun,iact)=-f
          enddo
-         irun=irun+1
        enddo
       end do
+!$OMP END PARALLEL DO
       return
       end
 
+!! ********************************************************************* !!
+!! subroutine: atdens_int                                                !!
+!! purpose: debug/diagnostic utility -- reports the electron density at  !!
+!!   one atom's nucleus, then integrates the density (and its angular    !!
+!!   anisotropy) over a sphere of radius Rmax centered on that atom, on  !!
+!!   its own small Gauss-Legendre/Lebedev grid (independent of the main  !!
+!!   integration_grid module). Opt-in via # METHOD / RHO_CALC_AT /       !!
+!!   RHO_CALC_RAD (iatdens=0 by default, never called).                  !!
+!! arguments:                                                            !!
+!!   Rmax    (in) -- integration sphere radius                           !!
+!!   iatdens (in) -- index of the atom to integrate around                !!
+!! ********************************************************************* !!
       subroutine atdens_int(Rmax,iatdens)
       use basis_set, only: coord
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      allocatable :: pcoord(:,:),wp(:),rho(:) 
-      allocatable:: x(:),y(:),z(:),w(:),xr(:),wr(:) !MMO- this one uses vectors that share name with the new module... is that a problem?
+      allocatable :: pcoord(:,:),wp(:),rho(:)
+!! local x/y/z/w/xr/wr, unrelated to integration_grid's module-level     !!
+!! arrays of the same name -- this routine never "use"s that module, so  !!
+!! there is no aliasing/collision, just a coincidental naming overlap.   !!
+      allocatable:: x(:),y(:),z(:),w(:),xr(:),wr(:)
 
        xxx=functxyz(coord(1,iatdens),coord(2,iatdens),coord(3,iatdens))
        write(*,*) 'Electron density on coords of atom ',iatdens,' :',xxx
@@ -677,8 +750,8 @@ c Computing  atomic orbital overlap
        CALL LD0110(X,Y,Z,W,nnang)
 
        allocate(pcoord(nnrad*nnang,3),wp(nnrad*nnang),rho(nnrad*nnang))
-       
-c Building  pcoords 
+
+!! building pcoords !!
       ifut=0
       icenter=iatdens
       do k=1,nnrad 
@@ -709,10 +782,9 @@ c Building  pcoords
        xaver=xaver/nnang
        xaver2=xaver2/nnang
        xanis=xanis+xr(k)*xr(k)*wr(k)*(xaver2-xaver*xaver)
-c       write(*,*) 'density sigma^2',xr(k),xaver2-xaver*xaver
       end do
-      write(*,'(a41,f6.3,a3,e22.12)') 'Electron density integrated on sphere of R',Rmax,' :',xx
-      write(*,'(a40,f6.3,a3,e22.12)') 'Integrated anisotropy of rho on sphere of R',Rmax,' :',xanis
+      write(*,'(a42,f6.3,a3,e22.12)') 'Electron density integrated on sphere of R',Rmax,' :',xx
+      write(*,'(a43,f6.3,a3,e22.12)') 'Integrated anisotropy of rho on sphere of R',Rmax,' :',xanis
 
       end
 
