@@ -76,7 +76,7 @@
 !! function maps, pure-to-cartesian coefficients, and normalization used !!
 !! by the rest of the code; prints the atom/basis/primitive counts.      !!
 !! arguments: none (output via basis_set module's own arrays)            !!
-!! author: MMO, PSalse, MGimf                                            !!
+!! author: PSalse                                                        !!
 !! ********************************************************************* !!
    SUBROUTINE build_basis()
    IMPLICIT DOUBLE PRECISION(A-H,O-Z)
@@ -428,7 +428,7 @@
 !! once from build_basis().                                              !!
 !! arguments: none (numprim/nbasis/coord/nlm/expp/coefpb via module,     !!
 !! output S via module)                                                  !!
-!! author: PSalse, MMO, MGimf                                            !!
+!! author: PSalse.                                                       !!
 !! ********************************************************************* !!
    subroutine do_overlap()
    IMPLICIT DOUBLE PRECISION(A-H,O-Z)
@@ -503,8 +503,7 @@
 
    END MODULE basis_set 
 
-
-!!MMO- MODULE TESTING STARTS HERE.
+!! ***** !!
 
    MODULE ao_matrices
    DOUBLE PRECISION, ALLOCATABLE :: c(:,:), p(:,:)
@@ -523,16 +522,16 @@
 
    CONTAINS
 
-   !! ********************************************************************* !!
-   !! subroutine: build_ao_matrices                                         !!
-   !! purpose: allocates the ao_matrices module's MO-coefficient/density-   !!
-   !! matrix arrays (c/p/cb/ps/pa/pb/c_no/occ_no) to the actual basis size.  !!
-   !! called from input2.f's input(), right after igr becomes known --      !!
-   !! same pattern effao_mod/nao_mod/stv_mod's own allocate_* subroutines    !!
-   !! follow, just predating that naming convention.                        !!
-   !! arguments: igr (in) -- number of basis functions                     !!
-   !! author:                                                                !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: build_ao_matrices                                         !!
+!! purpose: allocates the ao_matrices module's MO-coefficient/density-   !!
+!! matrix arrays (c/p/cb/ps/pa/pb/c_no/occ_no) to the actual basis size. !!
+!! called from input2.f's input(), right after igr becomes known --      !!
+!! same pattern effao_mod/nao_mod/stv_mod's own allocate_* subroutines   !!
+!! follow, just predating that naming convention.                        !!
+!! arguments: igr (in) -- number of basis functions                      !!
+!! author: MMO                                                           !!
+!! ********************************************************************* !!
    SUBROUTINE build_ao_matrices(igr)
 
    ALLOCATE(c(igr,igr),p(igr,igr))
@@ -544,7 +543,7 @@
 
    END MODULE ao_matrices
 
-
+!! ***** !!
 
    MODULE integration_grid
    INTEGER :: Nrad,Nang
@@ -556,34 +555,33 @@
    DOUBLE PRECISION,dimension(500):: wr,xr  
 ! Nrad -> number of radial points in the atomic grid
 ! Nang -> number of angular points in the atomic grid
-! pha -> rotated grid for zero-error. Change in theta?
-! phb -> rotated grid for zero-error. Change in phi?
+! pha -> rotated grid for zero-error (first roration)
+! phb -> rotated grid for zero-error (second rotation)
 ! rr00 -> nuclear distance at which half of the radial points have been distributed
-! th(nang?) -> theta: angular coordinate for a given angular plane of points
-! ph(nang?) -> phi: angular coordinate for a given angular plane of points
-! w(nang?) -> probably mathematical weight of each angular plane?
-! wr(nrad?) -> mathematical weight of a given radial surface
-! xr(nrad?) -> distance from grid center to a given radial surface
+! th(nang) -> theta: angular coordinate for a given angular plane of points
+! ph(nang) -> phi: angular coordinate for a given angular plane of points
+! w(nang) -> probably mathematical weight of each angular plane?
+! wr(nrad) -> mathematical weight of a given radial surface
+! xr(nrad) -> distance from grid center to a given radial surface
 
    CONTAINS
 
-   !! ********************************************************************* !!
-   !! subroutine: build_integration_grid                                    !!
-   !! purpose: picks the atom-centered grid size (radial/angular points,    !!
-   !! rr00) -- from command-line overrides if given, else ENPART/POLAR/     !!
-   !! EDAIQA high-accuracy defaults, else the plain one-electron defaults;  !!
-   !! prints the choice, then builds the grid via quad().                   !!
-   !! arguments:                                                            !!
-   !!   ienpart, ipolar, ifinegrid (in) -- select the high-accuracy         !!
-   !!     defaults when any is set (see Known Issue #21 re: iedaiqa below)  !!
-   !! author:                                                                !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: build_integration_grid                                    !!
+!! purpose: picks the atom-centered grid size (radial/angular points,    !!
+!! rr00) -- from command-line overrides if given, else ENPART/POLAR/     !!
+!! EDAIQA high-accuracy defaults, else the plain one-electron defaults;  !!
+!! prints the choice, then builds the grid via quad().                   !!
+!! arguments:                                                            !!
+!!   ienpart, ipolar, ifinegrid (in) -- select the high-accuracy         !!
+!!     defaults when any is set (see Known Issue #21 re: iedaiqa below)  !!
+!! author: MMO, MGimf                                                    !!
+!! ********************************************************************* !!
    SUBROUTINE build_integration_grid(ienpart, ipolar,ifinegrid)
    common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
    character*30 integ1,integ2
 
-!! command-line override (argv(2)/argv(3)), rarely used in practice --   !!
-!! main.f only ever passes argument 1 (the job name) in normal usage     !!
+!! command-line override (argv(2)/argv(3)), rarely used in practice !!
    call getarg(2,integ1)
    call getarg(3,integ2)
    if(integ1.ne.' '.and.integ2.ne.' ') then
@@ -599,21 +597,24 @@
      print *,' Angular points:',npoints
      nang=npoints
      rr00=0.500d0
-!! ENPART/POLAR/EDAIQA defaults for high-accuracy one-el integrations    !!
+
+!! ENPART/POLAR/EDAIQA defaults for high-accuracy one-el integrations !!
    else if(ienpart.eq.1.or.ipolar.eq.1.or.iedaiqa.eq.1) then
      nrad=150
      nang=590
      if(ifinegrid.eq.1) nang=974
      rr00=0.500d0
-   else
+
 !! APOST legacy defaults for one-el integrations !!
+   else
      nrad=40
      nang=146
      rr00=0.5d0
    end if
 
-   pha=0.0d0
-   phb=0.0d0
+!! Rotation angles... they are zero for one-el part, just to be consistent !!
+   pha=ZERO
+   phb=ZERO
 
    call print_box('SETTING ATOMIC GRIDS FOR INTEGRATION')
    write(*,'(2x,a,1x,i0)') 'Radial points  :',nrad
@@ -627,16 +628,17 @@
 
    END MODULE integration_grid
 
+!! ***** !!
 
-   !! ********************************************************************* !!
-   !! module: effao_mod                                                     !!
-   !! purpose: replaces the legacy 'common /effao/' block (nmax x nmax,     !!
-   !!   fixed at compile time regardless of the real system size). holds    !!
-   !!   the effective-atomic-orbital population matrices used by effao.f,   !!
-   !!   print.f and ueos.f. allocated to the actual (igr,nat) once those    !!
-   !!   are known from the .fchk, so there is no silent size cap anymore.   !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! module: effao_mod                                                     !!
+!! purpose: replaces the legacy 'common /effao/' block (nmax x nmax,     !!
+!!   fixed at compile time regardless of the real system size). Holds    !!
+!!   the effective-atomic-orbital population matrices used by effao.f,   !!
+!!   print.f and ueos.f. Allocated to the actual (igr,nat) once those    !!
+!!   are known from the .fchk, so there is no silent size cap anymore.   !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    MODULE effao_mod
    real*8, allocatable :: p0(:,:)    !! p0(igr,igr)    -- effective AO population matrix
    real*8, allocatable :: p0net(:,:) !! p0net(igr,nat) -- net population, per basis fn/atom
@@ -665,28 +667,29 @@
 
    END MODULE effao_mod
 
+!! ***** !!
 
-   !! ********************************************************************* !!
-   !! module: nao_mod                                                       !!
-   !! purpose: replaces the legacy 'common /nao/' block (same nmax x nmax   !!
-   !!   cap as effao_mod above). holds the natural-atomic-orbital matrices  !!
-   !!   used by effao.f and mulliken.f.                                     !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! module: nao_mod                                                       !!
+!! purpose: replaces the legacy 'common /nao/' block (same nmax x nmax   !!
+!!   cap as effao_mod above). Holds the natural-atomic-orbital matrices  !!
+!!   used by effao.f and mulliken.f.                                     !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    MODULE nao_mod
    real*8, allocatable :: unao(:,:)  !! unao(igr,igr)  -- natural AO transformation matrix
    real*8, allocatable :: ssnao(:,:) !! ssnao(igr,igr) -- overlap matrix in the NAO basis
 
    CONTAINS
 
-   !! ********************************************************************* !!
-   !! subroutine: allocate_nao                                              !!
-   !! purpose: allocate the nao_mod arrays to the real system size. call    !!
-   !!   once, right after igr becomes known -- see allocate_effao above.    !!
-   !! arguments:                                                            !!
-   !!   igr (in) -- number of basis functions                               !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: allocate_nao                                              !!
+!! purpose: allocate the nao_mod arrays to the real system size. call    !!
+!!   once, right after igr becomes known -- see allocate_effao above.    !!
+!! arguments:                                                            !!
+!!   igr (in) -- number of basis functions                               !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    SUBROUTINE allocate_nao(igr)
    integer, intent(in) :: igr
 
@@ -696,27 +699,29 @@
 
    END MODULE nao_mod
 
+!! ***** !!
 
-   !! ********************************************************************* !!
-   !! module: stv_mod                                                       !!
-   !! purpose: replaces the legacy 'common /stv/' block (same nmax x nmax   !!
-   !!   cap as effao_mod above). holds the QTAIM overlap/kinetic-energy-    !!
-   !!   related matrices used by qtaim.f.                                   !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! module: stv_mod                                                       !!
+!! purpose: replaces the legacy 'common /stv/' block (same nmax x nmax   !!
+!!   cap as effao_mod above). holds the QTAIM overlap/kinetic-energy-    !!
+!!   related matrices used by qtaim.f.                                   !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    MODULE stv_mod
    real*8, allocatable :: sp(:,:) !! sp(igr,igr) -- QTAIM overlap-related matrix
    real*8, allocatable :: tt(:,:) !! tt(igr,igr) -- QTAIM kinetic-energy-related matrix
 
    CONTAINS
 
-   !! ********************************************************************* !!
-   !! subroutine: allocate_stv                                              !!
-   !! purpose: allocate the stv_mod arrays to the real system size. call    !!
-   !!   once, right after igr becomes known -- see allocate_effao above.    !!
-   !! arguments:                                                            !!
-   !!   igr (in) -- number of basis functions                               !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: allocate_stv                                              !!
+!! purpose: allocate the stv_mod arrays to the real system size. call    !!
+!!   once, right after igr becomes known -- see allocate_effao above.    !!
+!! arguments:                                                            !!
+!!   igr (in) -- number of basis functions                               !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    SUBROUTINE allocate_stv(igr)
    integer, intent(in) :: igr
 
@@ -726,25 +731,24 @@
 
    END MODULE stv_mod
 
+!! ***** !!
 
-   !! ********************************************************************* !!
-   !! module: timing_mod                                                    !!
-   !! purpose: grep-friendly CPU + wall-clock timers for main.f/enpart.f/   !!
-   !!   enpart_phf.f (cpu_time() alone is misleading for OMP code -- it's   !!
-   !!   thread-summed, not wall-clock).                                    !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! module: timing_mod                                                    !!
+!! purpose: grep-friendly CPU + wall-clock timers                        !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    MODULE timing_mod
    CONTAINS
 
-   !! ********************************************************************* !!
-   !! subroutine: get_wall_time                                             !!
-   !! purpose: wall-clock reading via system_clock (seconds). integer*8     !!
-   !!   counters avoid the default kind's sub-hour wraparound.              !!
-   !! arguments:                                                            !!
-   !!   twall (out) -- current wall-clock reading, seconds                  !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: get_wall_time                                             !!
+!! purpose: wall-clock reading via system_clock (seconds). integer*8     !!
+!!   counters avoid the default kind's sub-hour wraparound.              !!
+!! arguments:                                                            !!
+!!   twall (out) -- current wall-clock reading, seconds                  !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    SUBROUTINE get_wall_time(twall)
    IMPLICIT REAL*8(A-H,O-Z)
    integer*8 :: icount,icount_rate
@@ -755,24 +759,26 @@
 
    END SUBROUTINE get_wall_time
 
-   !! ********************************************************************* !!
-   !! subroutine: print_timer                                               !!
-   !! purpose: fixed-format "TIMING CPU/WALL :: label value" print, so      !!
-   !!   `grep "TIMING"` finds every timer regardless of caller.             !!
-   !! arguments:                                                            !!
-   !!   label (in) -- section name (<=40 chars, keeps the value column      !!
-   !!                 fixed across call sites)                              !!
-   !!   tcpu  (in) -- cpu_time() delta, seconds (thread-summed)             !!
-   !!   twall (in) -- get_wall_time() delta, seconds (true wall-clock)      !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: print_timer                                               !!
+!! purpose: fixed-format "TIMING CPU/WALL :: label value" print, so      !!
+!!   `grep "TIMING"` finds every timer regardless of caller.             !!
+!! arguments:                                                            !!
+!!   label (in) -- section name (<=40 chars, keeps the value column      !!
+!!                 fixed across call sites)                              !!
+!!   tcpu  (in) -- cpu_time() delta, seconds (thread-summed)             !!
+!!   twall (in) -- get_wall_time() delta, seconds (true wall-clock)      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    SUBROUTINE print_timer(label,tcpu,twall)
    IMPLICIT REAL*8(A-H,O-Z)
    character(len=*), intent(in) :: label
    real*8, intent(in) :: tcpu,twall
    character(len=40) :: label40
 
-!! assignment left-justifies+pads (unlike A40 on write, which right-justifies). !!
+!! assignment left-justifies+pads (unlike A40 on write, which right-justifies) !!
    label40=label
 
    write(*,'(2x,a,a40,f14.2,a2)') 'TIMING CPU  :: ',label40,tcpu,' s'
@@ -782,17 +788,18 @@
 
    END MODULE timing_mod
 
+!! ***** !!
 
-   !! ********************************************************************* !!
-   !! module: input_options_mod                                             !!
-   !! purpose: holds the .inp keyword flags parsed by read_input() (see     !!
-   !! read_input.f) that main.f's own control flow (validation, iopt(200)   !!
-   !! population, dispatch) reads directly -- replaces what used to be      !!
-   !! plain implicitly-typed locals in main.f. Flags already carried by     !!
-   !! an existing COMMON block (icas, ibcp, aerf, iaccur, nrad22, etc.)     !!
-   !! are NOT duplicated here -- see main.f's own COMMON declarations.      !!
-   !! author: MGimf                                                         !!
-   !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! module: input_options_mod                                             !!
+!! purpose: holds the .inp keyword flags parsed by read_input() (see     !!
+!! read_input.f) that main.f's own control flow (validation, iopt(200)   !!
+!! population, dispatch) reads directly -- replaces what used to be      !!
+!! plain implicitly-typed locals in main.f. Flags already carried by     !!
+!! an existing COMMON block (icas, ibcp, aerf, iaccur, nrad22, etc.)     !!
+!! are NOT duplicated here -- see main.f's own COMMON declarations.      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
    MODULE input_options_mod
    IMPLICIT REAL*8(A-H,O-Z)
 
@@ -848,3 +855,5 @@
    integer :: iscattfact
 
    END MODULE input_options_mod
+
+!! ***** !!
