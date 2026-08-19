@@ -32,30 +32,23 @@
       include 'parameter.h'
       integer, intent(in) :: ndim,itotps,nat0
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coordnon/ coordnon(3,maxnna)
       common /iops/iopt(200)
-      common /nna/ xnonradi(maxnna),atsphradi(maxat),nna
       dimension wp(itotps),chp(itotps,ndim),omp(itotps),rho(itotps)
       dimension pcoord(itotps,3),ibaspoint(itotps),omp2(itotps,nat0)
-C
-      dimension inumpoint(:), xlap(:),xlapat(:), basinlap(:)
-      allocatable basinlap, xlap,xlapat, inumpoint
 
-
-c IOPS
-      imulli= Iopt(5) 
-      ihirsh = Iopt(6) 
-      iallpo = Iopt(7) 
+!! iopt flags used by this routine !!
+      imulli= Iopt(5)
+      ihirsh = Iopt(6)
+      iallpo = Iopt(7)
       ieffao= Iopt(12)
       icube = Iopt(13)
-      ibcp=  Iopt(14) 
+      ibcp=  Iopt(14)
       iqtaim=Iopt(16)
-      ilaplacian=Iopt(34) 
 
       if(iqtaim.eq.1) iallpo=1
       iatps=Nang*NRad
 
-c Building  pcoords
+!! building pcoords !!
       ifut=1
       do icenter=1,nat
         do k=1,nrad 
@@ -82,11 +75,10 @@ c Building  pcoords
       call rpoints(wp)
       call fpoints(chp,pcoord)
 
-c Building rho
-!! parallel over grid points: each ifut only reads the shared, read-only !!
-!! density matrix p and its own row chp(ifut,:), and writes only its own !!
-!! rho(ifut) -- no dependency between iterations, so a plain parallel do !!
-!! over ifut is safe. !!
+!! building rho: parallel over grid points: each ifut only reads the    !!
+!! shared, read-only density matrix p and its own row chp(ifut,:), and  !!
+!! writes only its own rho(ifut) -- no dependency between iterations,   !!
+!! so a plain parallel do over ifut is safe. !!
 !$OMP PARALLEL DO PRIVATE(ifut,mu,nu,x)
       do ifut=1,itotps
         x=0.0d0
@@ -99,7 +91,7 @@ c Building rho
         rho(ifut)=x
       end do
 !$OMP END PARALLEL DO
-c Building aim weights for all gridpoints
+!! building aim weights for all gridpoints !!
 !! parallel over (icenter,k) grid-point pairs. ifut is now computed !!
 !! directly from icenter/k instead of carried as a serially-incremented !!
 !! counter, since a plain "ifut=ifut+1" is not safe once the loop is !!
@@ -127,125 +119,15 @@ c Building aim weights for all gridpoints
         enddo
       enddo
 !$OMP END PARALLEL DO
-      if(ihirsh.eq.2) then 
+      if(ihirsh.eq.2) then
         call wathirshit3(rho,iatps,wp,omp2,nat0,iiter)
       end if
 
-c      vol=0.0
-c      do i=1,nrad
-c       do j=1,npoints
+!! QTAIM basin assignment/Laplacian integration is not available in this !!
+!! version (QTAIM is hard-disabled, main.f:218) -- the block that used   !!
+!! to build ibaspoint and integrate the Laplacian here was removed as    !!
+!! unreachable dead code (2026-08-19); see git history for the original. !!
 
-c qtaim stuff...not available in this version	
-c QTAIM DISABLED
-c
-c      if (ilaplacian.eq.1.and.iqtaim.eq.0) then
-c        allocate (xlap(nat*nang*nrad),xlapat(nat0))
-c        call laplacian(ipoints,chp,nrad,nang,xlap)
-c        do jcenter=1,nat
-c         xlapat(jcenter)=0.0d0
-c         do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-c           x3=wp(jfut)*omp(jfut)
-c           xlapat(jcenter)=xlapat(jcenter)+x3*xlap(jfut)
-c         end do
-c        end do
-c
-c       tc1=0.d0
-c       do i=1,nat
-c        xlapat(i)=xlapat(i)*(-0.25d0)
-c        tc1=tc1+xlapat(i)
-c       end do
-c       print *,'  '
-c       print *,'    -1/4 LAPLACIAN INT.    '
-c       print *,'  '
-c       print *,'  Atom   Value '
-c       print *,' -----------------------------'
-c       call vprint(xlapat,nat,maxat,1)
-c       print *,' -----------------------------'
-c       write(*,'(a13,f10.5)') ' Sum check = ' ,tc1 
-c       print *,'  '
-c      end if
-c
-c      if (iqtaim.eq.1) then
-c       write(*,*)'' 
-c       write(*,*)'QTAIM:' 
-c       write(*,*)'' 
-c       allocate (inumpoint(0:nat))
-c       allocate (basinlap(0:nat))
-c       allocate (xlap(nat*nang*nrad))
-c       do ii=0,nat
-c        inumpoint(ii)=0
-c        basinlap(ii)=0.0d0
-c       end do 
-c       call atsphere()
-c       print *,'  '
-c       print *,'    ATOMIC TRUST SPHERE RADIUS    '
-c       print *,'  '
-c       print *,'  Atom   RADIUS ' 
-c       print *,' -----------------------------'
-c       call vprint(atsphradi,nat,maxat,1)
-c       print *,' -----------------------------'
-c       print *,'  '
-c        
-c       call qtaimgrid(pcoord,nrad,nang,omp,ibaspoint,xlap)
-c
-c        do jcenter=1,nat0
-c         do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-c          icenter=ibaspoint(jfut)
-cc          if(icenter.ne.0)then 
-c           x3=wp(jfut)*omp(jfut)
-c           basinlap(icenter)=basinlap(icenter)+x3*xlap(jfut)
-c           inumpoint(icenter)= inumpoint(icenter)+1
-cc          else
-cc           inumpoint(0)=inumpoint(0)+1 
-cc          end if
-c         end do
-c        end do
-c
-c       print *,'  '
-c       print *,'    GRID POINTS PER ATOM    '
-c       print *,'  '
-c       print *,'  Atom   POINTS ' 
-c       print *,' -----------------------------'
-c       inumpoint(0)=inumpoint(0)
-c       print 766, 0,'    ',inumpoint(0)
-c       do ij=1,nat
-c        inumpoint(ij)=inumpoint(ij)
-c        print 766, ij,inumpoint(ij)
-c       enddo
-c       print *,' -----------------------------'
-c       print *,'  '
-c
-c       print *,'  '
-c       print *,'    -1/4 LAPLACIAN INT.    '
-c       print *,'  '
-c       print *,'  Atom   Value ' 
-c       print *,' -----------------------------'
-c       tc1=0.d0
-c       tc1=tc1+basinlap(0)
-c       print 764, 0,'   ',basinlap(0)/(-4.0d0)
-c       do i=1,nat
-c        tc1=tc1+basinlap(i)
-c        print 764, i,basinlap(i)/(-4.0d0)
-c       enddo
-c       print *,' -----------------------------'
-c       print 765, tc1*(-0.25d0)
-c       print *,'  '
-c
-C this is silly...just to make it compatible with fuzzy
-C must be done independently more efficiently
-c       do ifut=1,itotps
-c        do jcenter=1,nat
-c         omp2(ifut,jcenter)=0.d0
-c        end do
-c        jcenter=ibaspoint(ifut)
-c        if(jcenter.ne.0) omp2(ifut,jcenter)=1.d0
-c       end do
-c 
-c       deallocate(inumpoint, basinlap,xlap)
-c      end if 
- 764  format(1x,i3,2f10.6)
- 765  format(1x,'  Sum  ',2f10.6)
- 766  format(1x,i3,i8)
       return
       end
 
@@ -476,7 +358,7 @@ c      end if
       END DO
 
       else
-      write(*,*) 'Set zeroes in spline for species',iat,ich
+      write(*,'(2x,a,2(1x,i0))') 'Set zeroes in spline for species',iat,ich
 
       do k=n-1,1,-1
         y2(iat,ich,k)=0.0d0                                
@@ -528,16 +410,14 @@ c      end if
       include 'parameter.h'
       integer, intent(in):: ndim,itotps,nat0
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coordnon/ coordnon(3,maxnna)
-      common /nna/ xnonradi(maxnna),atsphradi(maxat),nna
       common /iops/iopt(200)
       dimension wp(itotps),chp(itotps,ndim),omp(itotps)
       dimension ibaspoint(itotps),sat(ndim,ndim,nat0),omp2(itotps,nat0)
 
-c IOPS
-      imulli= iopt(5) 
-      ihirsh = iopt(6) 
-      iallpo = iopt(7) 
+!! iopt flags used by this routine !!
+      imulli= iopt(5)
+      ihirsh = iopt(6)
+      iallpo = iopt(7)
       ieffao= iopt(12)
       icube = iopt(13)
       iqtaim=iopt(16)
@@ -546,7 +426,7 @@ c IOPS
 
       if(iqtaim.eq.1) iallpo=1
 
-c Computing  atomic orbital overlap
+!! computing atomic orbital overlap !!
       do mu=1,ndim
         do nu=1,ndim
           do icenter=1,nat
@@ -636,7 +516,7 @@ c Computing  atomic orbital overlap
             x=x+sat(i,j,iatom)
           end do
           if(abs(s(i,j)-x).gt.1.0d-1) then
-            write(*,*)'Large deviation for element ',i,j,x,s(i,j)
+            write(*,'(2x,a,2(1x,i0),2(1x,f14.8))') 'Large deviation for element ',i,j,x,s(i,j)
           end if
         end do
       end do
@@ -736,7 +616,7 @@ c Computing  atomic orbital overlap
       allocatable:: x(:),y(:),z(:),w(:),xr(:),wr(:)
 
        xxx=functxyz(coord(1,iatdens),coord(2,iatdens),coord(3,iatdens))
-       write(*,*) 'Electron density on coords of atom ',iatdens,' :',xxx
+       write(*,'(2x,a,1x,i0,a,e16.8)') 'Electron density on coords of atom ',iatdens,' : ',xxx
 
        nnrad=30
        nnang=110    
@@ -783,8 +663,8 @@ c Computing  atomic orbital overlap
        xaver2=xaver2/nnang
        xanis=xanis+xr(k)*xr(k)*wr(k)*(xaver2-xaver*xaver)
       end do
-      write(*,'(a42,f6.3,a3,e22.12)') 'Electron density integrated on sphere of R',Rmax,' :',xx
-      write(*,'(a43,f6.3,a3,e22.12)') 'Integrated anisotropy of rho on sphere of R',Rmax,' :',xanis
+      write(*,'(2x,a42,f6.3,a3,e22.12)') 'Electron density integrated on sphere of R',Rmax,' :',xx
+      write(*,'(2x,a43,f6.3,a3,e22.12)') 'Integrated anisotropy of rho on sphere of R',Rmax,' :',xanis
 
       end
 
