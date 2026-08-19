@@ -208,7 +208,7 @@ c ...calculate gross occupations from orbitals!!!
         ip0(ifrag)=imaxo
 
 c  write cube file
-        if(icube.eq.1) call cubegen4(ifrag,4)
+        if(icube.eq.1) call cubegen_new(ifrag,4)
 c clean
         p0=0.0d0
         p0net=0.0d0
@@ -291,7 +291,7 @@ c ...calculate gross occupations from orbitals!!!
         ip0(ifrag)=imaxo
 
 c  write cube file
-        if(icube.eq.1) call cubegen4(ifrag,3)
+        if(icube.eq.1) call cubegen_new(ifrag,3)
 
 c end outer loop over fragments
         end do
@@ -463,7 +463,7 @@ c
         ip0(icenter)=imaxo-llim(icenter)+1
 
 c OUTPUT ORBITALS FOR VISUALIZATION
-        if(icube.eq.1) call cubegen3(icenter,icase)
+        if(icube.eq.1) call cubegen_new(icenter,icase)
 
 c end loop over atoms
         end do
@@ -750,7 +750,7 @@ c ...calculate gross occupations from orbitals!!!
 
 
 c  write cube file
-        if(icube.eq.1) call cubegen3_mhg(iicenter,icase)
+c cubegen3_mhg deleted (print.f, 2026-08-19) -- dead, redundant with cubegen_new
 
 
 c end outer loop over fragments
@@ -902,7 +902,7 @@ c        write(*,60) (s0all(mu),mu=1,imaxo)
 
 
 c  write cube file
-        if(icube.eq.1) call cubegen3_mhg(iicenter,icase)
+c cubegen3_mhg deleted (print.f, 2026-08-19) -- dead, redundant with cubegen_new
 
 
        deallocate (scr,s0, sm, c0,splus,pp0, s0all,is0all)
