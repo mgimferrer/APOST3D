@@ -32,14 +32,14 @@
 
       END SUBROUTINE print_box
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: kiir                                                      !!
 !! purpose: prints the startup banner -- version/date identity, feature  !!
 !! availability and per-method citation directory, acknowledgments.      !!
-!! Moved here from util.f 2026-08-17 (pure formatted output, no numerics,!!
-!! belongs with the rest of this file's print routines).                 !!
 !! arguments: none                                                       !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       SUBROUTINE kiir
       IMPLICIT NONE
@@ -137,6 +137,8 @@
       write(*,'(a80)') '------------------------------------------------------------------------------'
       END SUBROUTINE kiir
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: print_input_summary                                       !!
 !! purpose: "digested" echo of the .inp file -- prints which keywords    !!
@@ -173,7 +175,7 @@
       write(*,'(2x,a)') trim(chdr)
       write(*,'(2x,a)') repeat('-',len_trim(chdr))
 
-!! real-space AIM schemes -- several can be active at once, joined  !!
+!! real-space AIM schemes -- several can be active at once, joined   !!
 !! into one line; itfvc/ibcp/inewbec aren't mutually exclusive since !!
 !! TFVC sets ibcp/inewbec as a side effect (read_input.f), so TFVC   !!
 !! is checked first and BECKE-RHO/NEWBEC are only reported when they !!
@@ -343,7 +345,7 @@
 
 !! MOD-GRIDTWOEL's own # GRID settings -- iigrid is shared with EDAIQA's !!
 !! own MOD-GRIDTWOEL check below; if both ENPART and EDAIQA are active   !!
-!! in the same run, whichever parses last in read_input.f wins here too !!
+!! in the same run, whichever parses last in read_input.f wins here too  !!
         if(iigrid.eq.1) then
           write(*,*)
           chdr='# GRID'
@@ -362,7 +364,7 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # EDAIQA -- only if EDAIQA is active                               !!
+!! # EDAIQA -- only if EDAIQA is active                              !!
 !! ----------------------------------------------------------------- !!
       if(iedaiqa.eq.1) then
         write(*,*)
@@ -377,7 +379,7 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # TOPOLOGY -- only if TOPOLOGY is active                           !!
+!! # TOPOLOGY -- only if TOPOLOGY is active                          !!
 !! ----------------------------------------------------------------- !!
       if(itop.eq.1) then
         write(*,*)
@@ -398,7 +400,7 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # QTAIM -- only if QTAIM is active                                 !!
+!! # QTAIM -- only if QTAIM is active                                !!
 !! ----------------------------------------------------------------- !!
       if(iqtaim.ge.1) then
         write(*,*)
@@ -423,7 +425,7 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # CUBE -- only if CUBE is active                                   !!
+!! # CUBE -- only if CUBE is active                                  !!
 !! ----------------------------------------------------------------- !!
       if(icube.eq.1) then
         write(*,*)
@@ -441,7 +443,7 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # OSLO -- only if OSLO is active                                   !!
+!! # OSLO -- only if OSLO is active                                  !!
 !! ----------------------------------------------------------------- !!
       if(ioslo.eq.1) then
         write(*,*)
@@ -467,8 +469,8 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # FRAGMENTS -- only if DOFRAGS is active; replaces the raw         !!
-!! 'Fragment: N' + bare atom-index dump read_input.f used to print    !!
+!! # FRAGMENTS -- only if DOFRAGS is active; replaces the raw        !!
+!! 'Fragment: N' + bare atom-index dump read_input.f used to print   !!
 !! ----------------------------------------------------------------- !!
       if(idofr.eq.1) then
         write(*,*)
@@ -482,7 +484,7 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # ATOMS -- only if DOATOMS is active                               !!
+!! # ATOMS -- only if DOATOMS is active                              !!
 !! ----------------------------------------------------------------- !!
       if(idoat.eq.1) then
         write(*,*)
@@ -493,7 +495,7 @@
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # DM -- only if correlated-WF density input is active              !!
+!! # DM -- only if correlated-WF density input is active             !!
 !! ----------------------------------------------------------------- !!
       if(icorr.ne.0) then
         write(*,*)
@@ -513,6 +515,8 @@
       end if
 
       END SUBROUTINE print_input_summary
+
+!! ***** !!
 
       SUBROUTINE VPRINT(H,N,ndim,jdim)
       IMPLICIT REAL*8 (A-H,O-Z)
@@ -706,18 +710,17 @@
 
 !! ***** !!
 
-
 !! ********************************************************************* !!
 !! subroutine: mprintnoat                                                !!
 !! purpose: bordered, chunked (6 columns per block) numeric matrix       !!
 !! print for a fragment x fragment matrix -- same visual style as        !!
 !! MPRINT2, minus the atom-symbol column (fragments don't have one).     !!
 !! The column header is just the fragment number, no "Frag" label, so a  !!
-!! block of numbers copy-pastes cleanly. Used only by group_by_frag_mat. !!
+!! block of numbers copy-pastes cleanly. Used only by group_by_frag_mat  !!
 !! arguments:                                                            !!
-!! H (in) -- data matrix, M rows x N columns                            !!
-!! M,N (in) -- rows/columns actually used                               !!
-!! mdim,ndim (in) -- H's declared dimensions                            !!
+!! H (in) -- data matrix, M rows x N columns                             !!
+!! M,N (in) -- rows/columns actually used                                !!
+!! mdim,ndim (in) -- H's declared dimensions                             !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
       SUBROUTINE MPRINTNOAT(H,M,N,mdim,ndim)
@@ -770,10 +773,12 @@
   666 FORMAT(2x,a100)
       END
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: group_by_frag_mat                                         !!
 !! purpose: sums a per-atom matrix A into a per-fragment matrix B (using !!
-!! /frlist/'s atom-to-fragment map) and prints it via mprintnoat,         !!
+!! /frlist/'s atom-to-fragment map) and prints it via mprintnoat,        !!
 !! MPRINT2-style (bordered, chunked, per-fragment column header).        !!
 !! arguments:                                                            !!
 !! ilog (in) -- 0: sum the full matrix, 1: lower-triangular only         !!
@@ -794,7 +799,6 @@
       integer ilog
 
 !! ilog=0: full matrix, ilog=1: lower triangular (symmetric quantity) !!
-
       do i=1,nat
        do j=1,nat
         B(i,j)=0.0d0
@@ -841,6 +845,8 @@
   164 format(2x,'   Total:',f20.13)
 
       end
+
+!! ***** !!
 
 !! ********************************************************************* !!
 !! subroutine: group_by_frag_vec                                         !!
@@ -2356,20 +2362,22 @@ c assuming up to 99 atoms
       deallocate(c0,xyz)
       end
 
-!! ********************************************************************* !!
-!! subroutine: cubegen4                                                  !!
-!! purpose: writes one Gaussian-style .cube file per requested EFO       !!
+!! ***** !!
+
+!! ********************************************************************** !!
+!! subroutine: cubegen4                                                   !!
+!! purpose: writes one Gaussian-style .cube file per requested EFO        !!
 !! (imaxeff..imineff, thresholded by MAX_OCC/MIN_OCC) of fragment/atom    !!
 !! ifrag -- adaptive grid, fixed point spacing (# CUBE SPACING, bohr)     !!
-!! with padding scaled by RADIUS_SCALE times the extremal atom's         !!
-!! covalent radius in each direction, so point count (not spacing)       !!
-!! grows with fragment size. icase selects RHF/UHF-alpha/UHF-beta/UEOS   !!
-!! paired/unpaired naming; imulli selects orbital-value output (Mulliken/!!
-!! Lowdin) vs AIM-weighted density (Becke/TFVC/Hirshfeld/QTAIM).         !!
-!! arguments: ifrag (in) -- fragment/atom index, icase (in) -- 0-4,      !!
-!! see above                                                             !!
-!! author:                                                                !!
-!! ********************************************************************* !!
+!! with padding scaled by RADIUS_SCALE times the extremal atom's          !!
+!! covalent radius in each direction, so point count (not spacing)        !!
+!! grows with fragment size. icase selects RHF/UHF-alpha/UHF-beta/UEOS    !!
+!! paired/unpaired naming; imulli selects orbital-value output (Mulliken/ !!
+!! Lowdin) vs AIM-weighted density (Becke/TFVC/Hirshfeld/QTAIM).          !!
+!! arguments: ifrag (in) -- fragment/atom index, icase (in) -- 0-4,       !!
+!! see above                                                              !!
+!! author: PSalse, MGimf                                                  !!
+!! ********************************************************************** !!
       subroutine cubegen4(ifrag,icase)
       use ao_matrices
       use integration_grid
@@ -2422,6 +2430,7 @@ c assuming up to 99 atoms
           c0(i,j)=p0(i,j)
         end do
       end do
+
 !! setting actual effos to print, instead !!
       if(jcubthr.lt.0) then
        imaxeff=abs(jcubthr)
@@ -2517,6 +2526,7 @@ c assuming up to 99 atoms
       allocate ( xyz(igrid(1),igrid(2),igrid(3)))
 
       do ivec=imaxeff,imineff
+
 !! each (i,j,k) grid point is independent, writing only its own xyz        !!
 !! slot; orbxyz/wat/wathirsh(2) are pure functions of their arguments      !!
 !! plus read-only shared state (c0/coord/COMMON), safe to call in          !!
@@ -2554,9 +2564,10 @@ c assuming up to 99 atoms
         end do
        end do
 !$OMP END PARALLEL DO
+
 !! approximate normalization of orbital -- same independence argument,   !!
 !! reduction on x0                                                        !!
-       x0=0.0d0
+       x0=ZERO
 !$OMP PARALLEL DO COLLAPSE(3) PRIVATE(i,j,k) REDUCTION(+:x0)
        do i=1,igrid(1)
         do j=1,igrid(2)
@@ -2644,3 +2655,4 @@ c assuming up to 99 atoms
       deallocate(c0,xyz)
       end
 
+!! ***** !!

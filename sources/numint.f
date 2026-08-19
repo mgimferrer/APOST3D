@@ -612,6 +612,8 @@
       return
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: atdens_int                                                !!
 !! purpose: debug/diagnostic utility -- reports the electron density at  !!
@@ -630,6 +632,7 @@
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       allocatable :: pcoord(:,:),wp(:),rho(:)
+
 !! local x/y/z/w/xr/wr, unrelated to integration_grid's module-level     !!
 !! arrays of the same name -- this routine never "use"s that module.     !!
       allocatable:: x(:),y(:),z(:),w(:),xr(:),wr(:)
@@ -687,3 +690,4 @@
 
       end
 
+!! ***** !!
