@@ -1,15 +1,4 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-19): Subroutine Cleanup Protocol still NOT       !!
-!! applied to: cubegen3, rmat, rarr, ival, cubegen3_mhg. All confirmed   !!
-!! dead or near-dead -- only reachable from dead or DOATOMS-adjacent     !!
-!! callers -- deliberately left untouched pending a consolidation        !!
-!! decision, not yet made. print_int_old (zero callers, superseded by    !!
-!! the live print_int) was confirmed dead and deleted outright rather    !!
-!! than left pending, since nothing referenced it. Every other           !!
-!! subroutine in this file is done.                                      !!
-!! ********************************************************************* !!
-
-!! ********************************************************************* !!
 !! subroutine: print_box                                                 !!
 !! purpose: prints text inside a rule auto-sized to fit it.              !!
 !! arguments:                                                            !!
@@ -1354,580 +1343,10 @@
 
       end
 
-CCCCC
-C FOR WRITTING CUBE FILES
-CCCCC
-
-      subroutine cubegen3(ifrag,icase)
-      use ao_matrices
-      use integration_grid
-      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /qat/qat(maxat,2),qsat(maxat,2)
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /iops/iopt(200)
-      character*30 name
-      common /filename/name
-
-      character*30 name2
-      character nameaim*60, charnu*2,atnu*2,charnu1*3
-      character*2 mend(92)
-      data mend/' H','He','Li','Be',' B',' C',' N',' O',
-     $ ' F','Ne','Na','Mg','Al','Si',' P',' S','Cl',
-     $ 'Ar',' K','Ca','Sc','Ti',' V','Cr','Mn','Fe',
-     $ 'Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br',
-     $ 'Kr','Rb','Sr',' Y','Zr','Nb','Mo','Tc','Ru',
-     $ 'Rh','Pd','Ag','Cd','In','Sn','Sb','Te',' I',
-     $ 'Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sn',
-     $ 'Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',
-     $ 'Hf','Ta',' W','Re','Os','Ir','Pt','Au','Hg',
-     $ 'Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac',
-     $ 'Th','Pa',' U'  /
-
-      dimension pgrid(maxgrid,3),igrid(3),xgrid(3,3)
-      dimension pop(maxat)          
-      allocatable c0(:,:),xyz(:,:,:)
-
-      ihirsh=iopt(6)
-      imulli= Iopt(5) 
-      ibcp=Iopt(14)
-      iqtaim = Iopt(16)  
-      inewbec = Iopt(31) 
-      idofr=Iopt(40)
-      jcubthr=iopt(41)
-      kcubthr=iopt(42)
-
-      allocate(c0(igr,igr))
-      imaxo=ip0(ifrag)
-      do i=1,igr
-       do j=1,imaxo
-        c0(i,j)=p0(i,j)
-       end do
-      end do
-
-c setting actual effos to print, instead
-      if(jcubthr.lt.0) then
-       imaxeff=abs(jcubthr)
-       imineff=abs(kcubthr)
-      else
-       imaxeff=0
-       xmaxeff=float(jcubthr)*1.0d-3
-       if (icase.eq.0) xmaxeff=2.0d0*xmaxeff
-1      imaxeff= imaxeff+1
-       if(p0net(imaxeff,ifrag).ge.xmaxeff) go to 1
-       imineff=imaxo+1
-       xmineff=float(kcubthr)*1.0d-3   
-       if (icase.eq.0) xmineff=2.0d0*xmineff
-2      imineff= imineff - 1
-       if(p0net(imineff,ifrag).le.xmineff) go to 2
-      end if
-c
-
-      if(imaxeff.gt.imineff) then
-       write(*,*) 'No eff-AOs in the occupation range' 
-       return
-      end if
-      write(*,22)'Generating cube files for eff-AOs',imaxeff,' to',imineff,' of atom/fragment ',ifrag
-22    format (a33,i3,a3,i3,a18,i3)
-
-        if (imulli.eq.1) then
-         name2="mulliken"
-        else if (imulli.gt.1) then
-         name2="lowdin"
-        else
-        if (ihirsh.eq.0) then
-         name2="becke"
-         if(ibcp.eq.1) then 
-            if(inewbec.eq.0)then
-              name2="beckerho"
-            else
-             name2="tfvc"
-            end if
-         end if
-         if(iqtaim.eq.1) name2="qtaim"
-        else if(ihirsh.eq.1) then
-         name2="hirsh"
-        else if(ihirsh.eq.2) then
-         name2="hirsh-it"
-         do i=1,nat
-          pop(i)=qat(i,1)
-         end do
-        end if
-        end if
-
-C grid points for cube in each dimension
-      ngridp=40 
-
-      do i=1,3
-       igrid(i)=ngridp
-c       if (i.eq.3) igrid(i)=100
-c asuming rectangular grid...
-       do j=1,3
-       xgrid(i,j)=0.0d0                 
-       end do
-      end do
-
-C Two options: For moleculs/fragments or centered on atoms      
-C now active first option as it deals with fragments
-
-      if(1.eq.1) then
-      extra=3.2
-      volume=1.0d0
-c furthest x y z atomic posisiotns of the fragment
-      do i=1,3
-       xmax=-1.0d8
-       xmin=1.0d8
-       do jatom=1,nfrlist(ifrag)
-        iatom=ifrlist(jatom,ifrag)
-        if(coord(i,iatom).lt.xmin) xmin=coord(i,iatom)
-        if(coord(i,iatom).gt.xmax) xmax=coord(i,iatom)
-       end do
-       xmin=xmin-extra
-       xmax=xmax+extra
-       dist=xmax-xmin
-       volume=volume*dist
-       xgrid(i,i)=dist/(igrid(i)-1.0d0)
-       do j=1,igrid(i)
-        pgrid(j,i)=xmin+(j-1)*xgrid(i,i)
-       end do
-      end do
-
-c centering the grid on the atom
-      else
-      extra=3.0
-      iatom=jjat  
-      do i=1,3
-       xmin=coord(i,iatom)
-       xmax=coord(i,iatom)
-       xmin=xmin-extra
-       xmax=xmax+extra
-       dist=xmax-xmin
-       xgrid(i,i)=dist/(igrid(i)-1.0d0)
-       do j=1,igrid(i)
-        pgrid(j,i)=xmin+(j-1)*xgrid(i,i)
-       end do
-      end do
-      end if
-
-c Now the grid
-      allocate ( xyz(igrid(1),igrid(2),igrid(3)))
-
-      do ivec=imaxeff,imineff
-       do i=1,igrid(1)
-        do j=1,igrid(2)
-         do k=1,igrid(3)
-          xabs=pgrid(i,1)
-          yabs=pgrid(j,2)
-          zabs=pgrid(k,3)
-
-          if(imulli.ne.0) then
-           xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)
-          else
-           ww=0.0d0
-           do iatom=1,nfrlist(ifrag)
-           jjat=ifrlist(iatom,ifrag)
-           if(ihirsh.eq.0.and.iqtaim.eq.0) then
-            ww=ww+wat(jjat,xabs,yabs,zabs)
-           else if(ihirsh.eq.1) then
-            ww=ww+wathirsh(jjat,xabs,yabs,zabs)
-           else if(ihirsh.eq.2) then
-            ww=ww+wathirsh2(jjat,xabs,yabs,zabs,pop)
-           else if(iqtaim.eq.1) then 
-c            call cubeqtaim(jjat,xabs,yabs,zabs,ww0)
-            ww=ww+ww0
-           end if
-           end do
-           xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)*ww
-          end if
-         end do
-        end do
-       end do
-c approximate normalization of orbital
-       x0=0.0d0
-       do i=1,igrid(1)
-        do j=1,igrid(2)
-         do k=1,igrid(3)
-          x0=x0+xyz(i,j,k)*xyz(i,j,k)
-         end do
-        end do
-       end do
-       write(*,'(a25,f7.4)') 'Normalization from cube: ',x0*volume/(ngridp**3.0d0)
-
-c      OUTPUT    
-
-        if(idofr.eq.0) then
-        read(mend(iznuc(ifrag)),'(A2)')charnu
-         charnu=adjustl(charnu)
-        else
-         charnu="FR"
-        end if   
-        l0=len_trim(name)
-        l1=len_trim(name2)
-        l2=len_trim(charnu)
-c assuming up to 99 atoms
-        if(ifrag.lt.10) then
-           write(atnu,'(i1)')ifrag
-        else
-           write(atnu,'(i2)')ifrag
-        end if
-        if(ivec.lt.10) then
-         write(charnu1,'(i1)')ivec
-        else if (ivec.lt.100) then
-         write(charnu1,'(i2)')ivec
-        else
-         write(charnu1,'(i3)')ivec
-        end if
-         if(icase.ne.2) then
-         nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
-     +   trim(atnu)//"_"//trim(charnu1)
-         else                
-         nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
-     +   trim(atnu)//"_"//trim(charnu1)//"beta"
-         end if 
-       j=len(nameaim)
-       do i=1,j
-        if(nameaim(i:i).eq.' ') then
-         llen=i-1
-         go to 10
-        end if
-       end do
-  10   continue
-       nameaim=nameaim(1:llen)//".cube"
-
-       open(44,file=nameaim,status="unknown")
-       rewind(44)
-       write(44,*)'Cube generated with APOST-3D code '
-       if(idofr.eq.0) then
-       write(44,41) trim(name),name2,' EFFAO',ivec," for atom",
-     + mend(iznuc(ifrag)),"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
-     + p0net(ivec,ifrag)
-       else
-       write(44,44) trim(name),name2,' EFFAO',ivec," for frag",
-     + ifrag,"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
-     + p0net(ivec,ifrag)
-       end if
-       write(44,42) nat,(pgrid(1,j),j=1,3)
-       do i=1,3
-        write(44,42) igrid(i),(xgrid(i,j),j=1,3)
-       end do
-       do i=1,nat
-        write(44,43) iznuc(i),zn(i),(coord(j,i),j=1,3)
-       end do
-       ione=1
-       write(44,'(2i5)')ione,ione
-       do i=1,igrid(1)
-       do j=1,igrid(2)
-        write(44,40)(xyz(i,j,k),k=1,igrid(3))
-       end do
-       end do
-       close(44)
-      end do
-41    format(a8,x,a8,a7,i3,a9,a2,a11,f8.4,a9,f8.4)
-44    format(a8,x,a8,a7,i3,a9,i2,a11,f8.4,a9,f8.4)
-42    format(i5,3f12.6)
-43    format(i5,4f12.6)
-40    format(6e13.5)
-     
-      deallocate(c0,xyz)
-      end
-
-
-CCCCC
-C FOR WRITTING FCHK FILES
-CCCCC
-       subroutine rmat(iunit,key,ival,jval,ndim,rmatrix)
-       implicit double precision (a-h,o-z)
-       include 'parameter.h'
-       dimension rmatrix(ndim,ndim) 
-       character(len=*) ::  key
-       integer ival,jval
-       character(len=43) ::  title
-       title=adjustl(key)
-       write(iunit,'(A43,A6,I12)') title,"R   N=",ival*jval
-       write(iunit,'(5ES16.8)') ((rmatrix(i,j),i=1,jval),j=1,ival)
-       end
-
-       subroutine rarr(iunit,key,ival,ndim,rarray)
-       implicit double precision (a-h,o-z)
-       include 'parameter.h'
-       character(len=*) ::  key
-       integer ival
-       dimension rarray(ndim)
-       character(len=43) ::  title
-       title=adjustl(key)
-       write(iunit,'(A43,A6,I12)') title,"R   N=",ival
-       write(iunit,'(5ES16.8)') (rarray(i),i=1,ival)
-       end
-
-       subroutine ival(iunit,key,ivalue)
-       implicit double precision (a-h,o-z)
-       character(len=*) ::  key
-       integer ivalue
-       character(len=43) ::  title
-       title=adjustl(key)
-       write(iunit,'(A43,A,I17)') title,"I",ivalue
-       end
-
-        SUBROUTINE PRINTMAT(N_orbital,S)
-        IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-        include 'parameter.h'
-        DIMENSION S(N_orbital,N_orbital)
-
-        nblock=N_orbital/5
-        if(nblock*5.ne.N_orbital) nblock=nblock+1
-        do k=1,nblock
-          ii=min0(N_orbital,5*k)
-          write(*,'(4x,10(7X,i6,a1))') (j," ",j=5*(k-1)+1,ii)
-          do i=5*(k-1)+1,N_orbital
-!            ii=5*k
-!            if(i.lt.5*k) ii=i
-            ii=min0(i,5*k)
-            write(*,'(i7,5(x,d13.6))') i,(S(i,j),j=5*(k-1)+1,ii)
-          end do
-        end do
-        END SUBROUTINE
-
-      subroutine cubegen3_mhg(ifrag,icase)
-      use ao_matrices
-      use integration_grid
-      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /qat/qat(maxat,2),qsat(maxat,2)
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /iops/iopt(200)
-      character*30 name
-      common /filename/name
-
-      character*30 name2
-      character nameaim*60, charnu*2,atnu*2,charnu1*3
-      character*2 mend(92)
-      data mend/' H','He','Li','Be',' B',' C',' N',' O',
-     $ ' F','Ne','Na','Mg','Al','Si',' P',' S','Cl',
-     $ 'Ar',' K','Ca','Sc','Ti',' V','Cr','Mn','Fe',
-     $ 'Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br',
-     $ 'Kr','Rb','Sr',' Y','Zr','Nb','Mo','Tc','Ru',
-     $ 'Rh','Pd','Ag','Cd','In','Sn','Sb','Te',' I',
-     $ 'Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sn',
-     $ 'Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',
-     $ 'Hf','Ta',' W','Re','Os','Ir','Pt','Au','Hg',
-     $ 'Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac',
-     $ 'Th','Pa',' U'  /
-
-      dimension pgrid(maxgrid,3),igrid(3),xgrid(3,3)
-      dimension pop(maxat)          
-      allocatable c0(:,:),xyz(:,:,:)
-
-      ihirsh=iopt(6)
-      imulli= Iopt(5) 
-      ibcp=Iopt(14)
-      iqtaim = Iopt(16)  
-      inewbec = Iopt(31) 
-      idofr=Iopt(40)
-      jcubthr=iopt(41)
-      kcubthr=iopt(42)
-
-      allocate(c0(igr,igr))
-      imaxo=ip0(ifrag)
-      do i=1,igr
-       do j=1,imaxo
-        c0(i,j)=p0(i,j)
-       end do
-      end do
-
-c setting actual effos to print, instead
-      if(jcubthr.lt.0) then
-       imaxeff=abs(jcubthr)
-       imineff=abs(kcubthr)
-      else
-       imaxeff=0
-       xmaxeff=float(jcubthr)*1.0d-3
-       if (icase.eq.0) xmaxeff=2.0d0*xmaxeff
-1      imaxeff= imaxeff+1
-       if(p0net(imaxeff,ifrag).ge.xmaxeff) go to 1
-       imineff=imaxo+1
-       xmineff=float(kcubthr)*1.0d-3   
-       if (icase.eq.0) xmineff=2.0d0*xmineff
-2      imineff= imineff - 1
-       if(p0net(imineff,ifrag).le.xmineff) go to 2
-      end if
-c
-
-      if(imaxeff.gt.imineff) then
-       write(*,*) 'No eff-AOs in the occupation range' 
-       return
-      end if
-      write(*,22)'Generating cube files for eff-AOs',imaxeff,' to',imineff,' of atom/fragment ',ifrag
-22    format (a33,i3,a3,i3,a18,i3)
-
-      name2="mhg"
-
-C grid points for cube in each dimension
-      ngridp=40 
-
-      do i=1,3
-       igrid(i)=ngridp
-c       if (i.eq.3) igrid(i)=100
-c asuming rectangular grid...
-       do j=1,3
-       xgrid(i,j)=0.0d0                 
-       end do
-      end do
-
-C Two options: For moleculs/fragments or centered on atoms      
-C now active first option as it deals with fragments
-
-      if(1.eq.1) then
-      extra=5.2
-      volume=1.0d0
-c furthest x y z atomic posisiotns of the fragment
-      do i=1,3
-       xmax=-1.0d8
-       xmin=1.0d8
-       do jatom=1,nfrlist(ifrag)
-        iatom=ifrlist(jatom,ifrag)
-        if(coord(i,iatom).lt.xmin) xmin=coord(i,iatom)
-        if(coord(i,iatom).gt.xmax) xmax=coord(i,iatom)
-       end do
-       xmin=xmin-extra
-       xmax=xmax+extra
-       dist=xmax-xmin
-       volume=volume*dist
-       xgrid(i,i)=dist/(igrid(i)-1.0d0)
-       do j=1,igrid(i)
-        pgrid(j,i)=xmin+(j-1)*xgrid(i,i)
-       end do
-      end do
-
-c centering the grid on the atom
-      else
-      extra=3.0
-      iatom=jjat  
-      do i=1,3
-       xmin=coord(i,iatom)
-       xmax=coord(i,iatom)
-       xmin=xmin-extra
-       xmax=xmax+extra
-       dist=xmax-xmin
-       xgrid(i,i)=dist/(igrid(i)-1.0d0)
-       do j=1,igrid(i)
-        pgrid(j,i)=xmin+(j-1)*xgrid(i,i)
-       end do
-      end do
-      end if
-
-c Now the grid
-      allocate ( xyz(igrid(1),igrid(2),igrid(3)))
-
-      do ivec=imaxeff,imineff
-       do i=1,igrid(1)
-        do j=1,igrid(2)
-         do k=1,igrid(3)
-          xabs=pgrid(i,1)
-          yabs=pgrid(j,2)
-          zabs=pgrid(k,3)
-           xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)
-         end do
-        end do
-       end do
-c approximate normalization of orbital
-       x0=0.0d0
-       do i=1,igrid(1)
-        do j=1,igrid(2)
-         do k=1,igrid(3)
-          x0=x0+xyz(i,j,k)*xyz(i,j,k)
-         end do
-        end do
-       end do
-       write(*,'(a25,f7.4)') 'Normalization from cube: ',x0*volume/(ngridp**3.0d0)
-
-c      OUTPUT    
-
-        if(idofr.eq.0) then
-        read(mend(iznuc(ifrag)),'(A2)')charnu
-         charnu=adjustl(charnu)
-        else
-         charnu="FR"
-        end if   
-        l0=len_trim(name)
-        l1=len_trim(name2)
-        l2=len_trim(charnu)
-c assuming up to 99 atoms
-        if(ifrag.lt.10) then
-           write(atnu,'(i1)')ifrag
-        else
-           write(atnu,'(i2)')ifrag
-        end if
-        if(ivec.lt.10) then
-         write(charnu1,'(i1)')ivec
-        else if (ivec.lt.100) then
-         write(charnu1,'(i2)')ivec
-        else
-         write(charnu1,'(i3)')ivec
-        end if
-         if(icase.ne.2) then
-         nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
-     +   trim(atnu)//"_"//trim(charnu1)
-         else                
-         nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
-     +   trim(atnu)//"_"//trim(charnu1)//"beta"
-         end if 
-       j=len(nameaim)
-       do i=1,j
-        if(nameaim(i:i).eq.' ') then
-         llen=i-1
-         go to 10
-        end if
-       end do
-  10   continue
-       nameaim=nameaim(1:llen)//".cube"
-
-       open(44,file=nameaim,status="unknown")
-       rewind(44)
-       write(44,*)'Cube generated with APOST-3D code '
-       if(idofr.eq.0) then
-       write(44,41) trim(name),name2,' EFFAO',ivec," for atom",
-     + mend(iznuc(ifrag)),"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
-     + p0net(ivec,ifrag)
-       else
-       write(44,44) trim(name),name2,' EFFAO',ivec," for frag",
-     + ifrag,"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
-     + p0net(ivec,ifrag)
-       end if
-       write(44,42) nat,(pgrid(1,j),j=1,3)
-       do i=1,3
-        write(44,42) igrid(i),(xgrid(i,j),j=1,3)
-       end do
-       do i=1,nat
-        write(44,43) iznuc(i),zn(i),(coord(j,i),j=1,3)
-       end do
-       ione=1
-       write(44,'(2i5)')ione,ione
-       do i=1,igrid(1)
-       do j=1,igrid(2)
-        write(44,40)(xyz(i,j,k),k=1,igrid(3))
-       end do
-       end do
-       close(44)
-      end do
-41    format(a8,x,a8,a7,i3,a9,a2,a11,f8.4,a9,f8.4)
-44    format(a8,x,a8,a7,i3,a9,i2,a11,f8.4,a9,f8.4)
-42    format(i5,3f12.6)
-43    format(i5,4f12.6)
-40    format(6e13.5)
-     
-      deallocate(c0,xyz)
-      end
-
 !! ***** !!
 
 !! ********************************************************************** !!
-!! subroutine: cubegen4                                                   !!
+!! subroutine: cubegen_new                                               !!
 !! purpose: writes one Gaussian-style .cube file per requested EFO        !!
 !! (imaxeff..imineff, thresholded by MAX_OCC/MIN_OCC) of fragment/atom    !!
 !! ifrag -- adaptive grid, fixed point spacing (# CUBE SPACING, bohr)     !!
@@ -1940,7 +1359,7 @@ c assuming up to 99 atoms
 !! see above                                                              !!
 !! author: PSalse, MGimf                                                  !!
 !! ********************************************************************** !!
-      subroutine cubegen4(ifrag,icase)
+      subroutine cubegen_new(ifrag,icase)
       use ao_matrices
       use integration_grid
       use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
@@ -2218,3 +1637,47 @@ c assuming up to 99 atoms
       end
 
 !! ***** !!
+
+!! ********************************************************************* !!
+!! .fchk-STYLE FILE WRITERS -- kept for future use, not currently called !!
+!! rmat/rarr/ival write a matrix/array/scalar in .fchk's own labeled     !!
+!! block format ("key R   N=..." / "key I ..." + Gaussian-style data    !!
+!! rows). Their only current callers are confirmed-dead legacy          !!
+!! subroutines (effao.f's ueffaomull2/ueffaolow2, devel.f's             !!
+!! effao_minbas), so nothing reaches them today -- kept rather than     !!
+!! deleted because they'll be needed for properly printing .fchk files  !!
+!! from the OSLO section.                                               !!
+!! ********************************************************************* !!
+
+       subroutine rmat(iunit,key,ival,jval,ndim,rmatrix)
+       implicit double precision (a-h,o-z)
+       include 'parameter.h'
+       dimension rmatrix(ndim,ndim) 
+       character(len=*) ::  key
+       integer ival,jval
+       character(len=43) ::  title
+       title=adjustl(key)
+       write(iunit,'(A43,A6,I12)') title,"R   N=",ival*jval
+       write(iunit,'(5ES16.8)') ((rmatrix(i,j),i=1,jval),j=1,ival)
+       end
+
+       subroutine rarr(iunit,key,ival,ndim,rarray)
+       implicit double precision (a-h,o-z)
+       include 'parameter.h'
+       character(len=*) ::  key
+       integer ival
+       dimension rarray(ndim)
+       character(len=43) ::  title
+       title=adjustl(key)
+       write(iunit,'(A43,A6,I12)') title,"R   N=",ival
+       write(iunit,'(5ES16.8)') (rarray(i),i=1,ival)
+       end
+
+       subroutine ival(iunit,key,ivalue)
+       implicit double precision (a-h,o-z)
+       character(len=*) ::  key
+       integer ivalue
+       character(len=43) ::  title
+       title=adjustl(key)
+       write(iunit,'(A43,A,I17)') title,"I",ivalue
+       end

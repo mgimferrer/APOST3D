@@ -219,7 +219,7 @@
         ip0(iicenter)=imaxo
 
 !! optional: write a cube file for this fragment's EFOs (# CUBE section) !!
-        if(icube.eq.1) call cubegen4(iicenter,icase)
+        if(icube.eq.1) call cubegen_new(iicenter,icase)
 
       end do !! end of the per-fragment loop !!
 
@@ -592,7 +592,7 @@ c actual number of effaos
         ip0(ifrag)=imaxo
 
 !! cube file for visualization, if requested. !!
-        if(icube.eq.1) call cubegen4(ifrag,icase)
+        if(icube.eq.1) call cubegen_new(ifrag,icase)
 
       end do
 
@@ -753,7 +753,7 @@ c
         ip0(ifrag)=imaxo
 
 !! cube file for visualization, if requested. !!
-        if(icube.eq.1) call cubegen4(ifrag,icase)
+        if(icube.eq.1) call cubegen_new(ifrag,icase)
 
       end do
 
@@ -976,7 +976,7 @@ c saving efo info for fragment
         ip0(iicenter)=imaxo
 
 c  write cube file
-        if(icube.eq.1) call cubegen4(iicenter,icase)
+        if(icube.eq.1) call cubegen_new(iicenter,icase)
 
 
 c end outer loop over fragments
@@ -1156,7 +1156,7 @@ c
         ip0(icenter)=imaxo-llim(icenter)+1
 
 c OUTPUT ORBITALS FOR VISUALIZATION
-        if(icube.eq.1) call cubegen3(icenter,icase)
+        if(icube.eq.1) call cubegen_new(icenter,icase)
 
 c end loop over atoms
         end do
@@ -1362,7 +1362,7 @@ CCCCCC
 
 c OUTPUT ORBITALS FOR VISUALIZATION
 c  write cube file
-        if(icube.eq.1) call cubegen3(icenter,icase)
+        if(icube.eq.1) call cubegen_new(icenter,icase)
 
 c end loop over atoms
         end do
@@ -1533,7 +1533,7 @@ c         end do
         ip0(icenter)=imaxo
 
 c  write cube file
-        if(icube.eq.1) call cubegen3(icenter,icase)
+        if(icube.eq.1) call cubegen_new(icenter,icase)
         
         end do
         deallocate (s0, sm, c0,splus,pp0, s0all,is0all)

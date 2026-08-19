@@ -198,7 +198,7 @@
           !! CUBE PRINTING !!
           if(icase.eq.1) iicase=3
           if(icase.eq.2) iicase=4
-          if(icube.eq.1) call cubegen4(iicenter,iicase)
+          if(icube.eq.1) call cubegen_new(iicenter,iicase)
         end do
       end do
 
