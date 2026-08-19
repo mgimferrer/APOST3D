@@ -1463,6 +1463,20 @@ c      xmaxg=1.0d-2
 
       end
 
+!! ********************************************************************* !!
+!! subroutine: print_int                                                 !!
+!! purpose: writes one AIMPAC/PROAIMV-format ".int" file per atom (plus  !!
+!!   a ".files" index) holding that atom's overlap matrix in the MO/NO   !!
+!!   basis -- consumed by the external FCALC program to compute atomic   !!
+!!   properties from APOST-3D's atomic partition. Opt-in via # METHOD /  !!
+!!   DOINT. Also runs a final MO-orthogonality sanity check (sum of all  !!
+!!   atomic overlap matrices vs. the identity) once every atom is done.  !!
+!! arguments:                                                            !!
+!!   nbas,nat0 (in) -- sat's declared dimensions (basis functions, atoms)!!
+!!   sat       (in) -- per-atom atomic-orbital overlap matrix            !!
+!!   name      (in) -- job name, used as the ".int"/".files" basename    !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       subroutine print_int(nbas,nat0,sat,name)
       use basis_set
       use ao_matrices
@@ -1495,148 +1509,151 @@ c      xmaxg=1.0d-2
 
       allocatable c3(:,:),c2(:,:),csave(:,:),scr(:,:)
 
+!! iopt flags used by this routine !!
+      ihirsh = Iopt(6)
+      imulli=Iopt(5)
+      icorr=Iopt(26)
+      iqtaim =Iopt(16)
 
-C IOPS
-       ihirsh = Iopt(6)
-       imulli=Iopt(5) 
-       icorr=Iopt(26)   
-       iqtaim =Iopt(16)
+      inato=0
+      if(icorr.eq.1.or.icas.eq.1.or.icisd.eq.1) inato=1
 
-       inato=0
-       if(icorr.eq.1.or.icas.eq.1.or.icisd.eq.1) inato=1
+!! rescan the .fchk (unit 15, already fully read by input()) for the    !!
+!! independent-function count -- same rewind+rescan pattern as          !!
+!! input2.f's readchar/readint.                                         !!
+      rewind(15)
+ 998  read(15,'(a80)') line
+      if(index(line,"Number of independant functions").ne.0) then
+        read(line(54:61),'(i8)') ndim
+      else if(index(line,"Number of independent functions").ne.0) then
+        read(line(54:61),'(i8)') ndim
+      else
+        go to 998
+      end if
 
-        rewind(15)
- 998    read(15,'(a80)') line
-        if(index(line,"Number of independant functions").ne.0) then
-         read(line(54:61),'(i8)') ndim
-        else if(index(line,"Number of independent functions").ne.0) then
-         read(line(54:61),'(i8)') ndim
-        else
-         go to 998
-        end if
+      allocate( c3(2*igr,2*igr))
+      allocate( c2(igr,igr),csave(igr,igr),scr(igr,igr))
+      scr=0.0d0
 
-        allocate( c3(2*igr,2*igr))
-        allocate( c2(igr,igr),csave(igr,igr),scr(igr,igr))
-        scr=0.0d0
+      do i=1,igr
+        do j=1,igr
+          scr(i,j)=c(i,j)
+        end do
+      end do
 
+      if(inato.eq.1) then
+        if(icas.eq.1) ndim=norb
+        write(*,'(2x,a,1x,i0,1x,a)') 'Using',ndim,'natural orbitals'
         do i=1,igr
-         do j=1,igr
-         scr(i,j)=c(i,j)
-         end do
-        end do
-
-        if(inato.eq.1) then
-         if(icas.eq.1) ndim=norb
-         write(*,*) 'Using',ndim,' natural orbitals'
-         do i=1,igr
           do j=1,ndim
-          scr(i,j)=c_no(i,j)
+            scr(i,j)=c_no(i,j)
           end do
-         end do
-        end if
-
-       do i=1,igr
-        do j=1,ndim
-         csave(i,j)=0.0d0                
         end do
-       end do
- 
-c building file
+      end if
+
+      do i=1,igr
+        do j=1,ndim
+          csave(i,j)=0.0d0
+        end do
+      end do
+
+!! building file !!
       naim=88
       naim3=89
       l=len_trim(name)
-c      write(*,*) l,'----'
       if(imulli.eq.1) then
-       nameaim=name(1:l)//"mul.files"
-       ext="mul_"
+        nameaim=name(1:l)//"mul.files"
+        ext="mul_"
       else if(imulli.ge.2) then
-       nameaim=name(1:l)//"low.files"
-       ext="low_"
+        nameaim=name(1:l)//"low.files"
+        ext="low_"
       else if(iqtaim.eq.1) then
-       nameaim=name(1:l)//"aim.files"
-       ext="aim_"
+        nameaim=name(1:l)//"aim.files"
+        ext="aim_"
       else if(ihirsh.eq.0) then
-       nameaim=name(1:l)//"fuz.files"
-       ext="fuz_"
+        nameaim=name(1:l)//"fuz.files"
+        ext="fuz_"
       else if(ihirsh.eq.1) then
-       nameaim=name(1:l)//"hir.files"
-       ext="hir_"
+        nameaim=name(1:l)//"hir.files"
+        ext="hir_"
       else if(ihirsh.eq.2) then
-       nameaim=name(1:l)//"ihi.files"
-       ext="ihi_"
+        nameaim=name(1:l)//"ihi.files"
+        ext="ihi_"
       end if
       open(file=nameaim,unit=naim3,status="unknown")
       rewind(naim3)
       do jjat=1,icuat
         if(icuat.ne.nat) then
-         jat=iatlist(jjat)
+          jat=iatlist(jjat)
         else
-         jat=jjat
+          jat=jjat
         end if
-       read(mend(iznuc(jat)),'(A2)')charnu  
-         charnu=adjustl(charnu)
+        read(mend(iznuc(jat)),'(A2)')charnu
+        charnu=adjustl(charnu)
         l1=len_trim(name)
-        l2=len_trim(charnu)
-        if(jat.lt.10) then 
-         write(charnu1,'(i1)')jat
-         nameaim=name(1:l1)//ext//trim(charnu)//charnu1
-      else if(jat.lt.100) then
-         write(charnu2,'(i2)')jat
-         nameaim=name(1:l1)//ext//trim(charnu)//charnu2         
-      else
-         write(charnu3,'(i3)')jat
-         nameaim=name(1:l1)//ext//trim(charnu)//charnu3         
-c assuming up to 999 atoms
-      end if
-       j=len(nameaim)
-       do i=1,j
-        if(nameaim(i:i).eq.' ') then
-         l=i-1
-         go to 10
+!! atom index formatted 1/2/3 digits wide -- assumes up to 999 atoms !!
+        if(jat.lt.10) then
+          write(charnu1,'(i1)')jat
+          nameaim=name(1:l1)//ext//trim(charnu)//charnu1
+        else if(jat.lt.100) then
+          write(charnu2,'(i2)')jat
+          nameaim=name(1:l1)//ext//trim(charnu)//charnu2
+        else
+          write(charnu3,'(i3)')jat
+          nameaim=name(1:l1)//ext//trim(charnu)//charnu3
         end if
-       end do
+        j=len(nameaim)
+        do i=1,j
+          if(nameaim(i:i).eq.' ') then
+            l=i-1
+            go to 10
+          end if
+        end do
   10   continue
-       nameaim=nameaim(1:l)//".int"
-       write(naim3,'(a40)') nameaim
-      open(file=nameaim,unit=naim,status="unknown")
-      rewind(naim)
+        nameaim=nameaim(1:l)//".int"
+        write(naim3,'(a40)') nameaim
+        open(file=nameaim,unit=naim,status="unknown")
+        rewind(naim)
 
-c     writting stuff will be looked for by FCALC
+!! the following .int-file content is read by the external FCALC       !!
+!! program -- format is AIMPAC/PROAIMV-compatible, do not restyle. AE   !!
+!! and BK are placeholders (see header) kept only for format            !!
+!! compatibility, not computed from the real SCF energy.                !!
         BK=1.0d0
         AE=-1.0d0
         write(naim,'(a20)') 'Created by APOST3D '
         if(iopt(5).eq.1) then
-         write(naim,*) 'Using Mulliken atomic definition '
+          write(naim,*) 'Using Mulliken atomic definition '
         else if(iopt(5).ge.2) then
-         write(naim,*) 'Using Lowdin atomic definition '
+          write(naim,*) 'Using Lowdin atomic definition '
         else if(iopt(6).eq.1) then
-         write(naim,*) 'Using Hirshfeld atomic definition '
+          write(naim,*) 'Using Hirshfeld atomic definition '
         else if(iopt(6).eq.2) then
-         write(naim,*) 'Using Hirshfeld-Iterative atomic definition '
+          write(naim,*) 'Using Hirshfeld-Iterative atomic definition '
         else if(iopt(14).eq.1.and.iopt(31).eq.0) then
-         write(naim,*) 'Using Becke-rho atomic definition '
+          write(naim,*) 'Using Becke-rho atomic definition '
         else if(iopt(14).eq.1.and.iopt(31).eq.1) then
-         write(naim,*) 'Using TFVC atomic definition '
+          write(naim,*) 'Using TFVC atomic definition '
         else if(iopt(16).eq.1) then
-         write(naim,*) 'Using QTAIM atomic definition '
+          write(naim,*) 'Using QTAIM atomic definition '
         else
-         write(naim,*) 'Using Becke atomic definition '
+          write(naim,*) 'Using Becke atomic definition '
         end if
-         if(iopt(5).eq.0) write(naim,*) 'Stiffness parameter k = ',iopt(25)
+        if(iopt(5).eq.0) write(naim,*) 'Stiffness parameter k = ',iopt(25)
         if(inato.eq.1)  then
-         write(naim,*) 'Correlated wave function '
-         if(icorr.eq.0) then
-          write(naim,*) '*Warning*, no RDM1 provided.' 
-          write(naim,*) 'Can not do alpha and beta populations separatedly.' 
-         end if
+          write(naim,*) 'Correlated wave function '
+          if(icorr.eq.0) then
+            write(naim,*) '*Warning*, no RDM1 provided.'
+            write(naim,*) 'Can not do alpha and beta populations separatedly.'
+          end if
         else
-         write(naim,*) 'Single-determinant wave function '
-         if(kop.eq.1) write(naim,*) 'Unrestricted wave function '
+          write(naim,*) 'Single-determinant wave function '
+          if(kop.eq.1) write(naim,*) 'Unrestricted wave function '
         end if
 
-      write(naim,'(a30,F20.11)')' MOLECULAR SCF ENERGY (AU)  = ',AE
-      write(naim,*)''
-      write(naim,'(A25,A4,i5)')' INTEGRATION IS OVER ATOM',mend(iznuc(jat)),
+        write(naim,'(a30,F20.11)')' MOLECULAR SCF ENERGY (AU)  = ',AE
+        write(naim,*)''
+        write(naim,'(A25,A4,i5)')' INTEGRATION IS OVER ATOM',mend(iznuc(jat)),
      1  jat
       !write(naim2) mend(iznuc(jat)),jat
         write(naim,'(a27)') ' RESULTS OF THE INTEGRATION'
@@ -1647,185 +1664,176 @@ c     writting stuff will be looked for by FCALC
         write(naim,'(a17,e21.14,a17,e21.14)')'              K  ',BK,
      1  '        E(ATOM)  ',AE
         write(naim,'(a17,e21.14)')'              L  ',0.0d0
-      write(naim,*)''
+        write(naim,*)''
         write(naim,'(a35)')'          The Atomic Overlap Matrix'
         write(naim,*)''
 
         if(inato.eq.1) then
-         write(naim,'(a36)')'  Correlated  Wavefunction'
-         write(naim,*)''
+          write(naim,'(a36)')'  Correlated  Wavefunction'
+          write(naim,*)''
         else if(kop.eq.1) then
-         write(naim,'(a36)')'Unrestricted  Wavefunction'
-         write(naim,*)''
+          write(naim,'(a36)')'Unrestricted  Wavefunction'
+          write(naim,*)''
         else
-         write(naim,'(a36)')'Restricted Closed-Shell Wavefunction'
-         write(naim,*)''
+          write(naim,'(a36)')'Restricted Closed-Shell Wavefunction'
+          write(naim,*)''
         end if
 
         do i=1,2*igr
-         do j=1,2*igr
-           c3(i,j)=0.0d0
-         end do
+          do j=1,2*igr
+            c3(i,j)=0.0d0
+          end do
         end do
 
-c transform  sat matrix in AO basis
-      numorb=nalf
-      if(inato.eq.1) numorb=ndim
-      do i=1,numorb
-       do j=1,igr
-        xx=0.0d0
-        do k=1,igr
-         xx=xx+scr(k,i)*sat(k,j,jjat)
+!! transform sat matrix into the AO basis !!
+        numorb=nalf
+        if(inato.eq.1) numorb=ndim
+        do i=1,numorb
+          do j=1,igr
+            xx=0.0d0
+            do k=1,igr
+              xx=xx+scr(k,i)*sat(k,j,jjat)
+            end do
+            c2(i,j)=xx
+          end do
         end do
-        c2(i,j)=xx
-       end do
-      end do
-      do i=1,numorb
-       do j=1,numorb
-        xx=0.0d0
-        do k=1,igr
-         xx=xx+c2(i,k)*scr(k,j)       
+        do i=1,numorb
+          do j=1,numorb
+            xx=0.0d0
+            do k=1,igr
+              xx=xx+c2(i,k)*scr(k,j)
+            end do
+            c3(i,j)=xx
+          end do
         end do
-        c3(i,j)=xx
-       end do
-        end do
-C open-shell
+!! open-shell !!
         if(kop.eq.1.and.inato.eq.0)  then
-      do i=1,nb    
-       do j=1,igr
-        xx=0.0d0
-        do k=1,igr
-         xx=xx+cb(k,i)*sat(k,j,jjat)
-        end do
-        c2(i,j)=xx
-       end do
-        end do
-      do i=1,nb   
-       do j=1,nb   
-        xx=0.0d0
-        do k=1,igr
-         xx=xx+c2(i,k)*cb(k,j)       
-        end do
-        c3(i+nalf,j+nalf)=xx
-       end do
-        end do
+          do i=1,nb
+            do j=1,igr
+              xx=0.0d0
+              do k=1,igr
+                xx=xx+cb(k,i)*sat(k,j,jjat)
+              end do
+              c2(i,j)=xx
+            end do
+          end do
+          do i=1,nb
+            do j=1,nb
+              xx=0.0d0
+              do k=1,igr
+                xx=xx+c2(i,k)*cb(k,j)
+              end do
+              c3(i+nalf,j+nalf)=xx
+            end do
+          end do
         end if
-        
-c         do i=1,igr 
-c          write(naim,*) (sat(i,j,jat),j=1,i)
-c         end do
 
-      do i=1,igr
-       do j=1,igr
-        csave(i,j)=csave(i,j)+c3(i,j)
-       end do
-      end do
+        do i=1,igr
+          do j=1,igr
+            csave(i,j)=csave(i,j)+c3(i,j)
+          end do
+        end do
 
-c only occupied
-c         do i=1,igr0
-c unrestricted single-determinant
-         if(kop.eq.1.and.inato.eq.0) then
+!! unrestricted single-determinant !!
+        if(kop.eq.1.and.inato.eq.0) then
           if (imulli.ne.1) then
-          do i=1,nalf+nb 
-           write(naim,*) (c3(i,j),j=1,i)
-          end do
+            do i=1,nalf+nb
+              write(naim,*) (c3(i,j),j=1,i)
+            end do
           else
-          do i=1,nalf+nb 
-           write(naim,*) (c3(i,j),j=1,nalf+nb)
-          end do
+            do i=1,nalf+nb
+              write(naim,*) (c3(i,j),j=1,nalf+nb)
+            end do
           end if
-c recalculate spin populations
+!! recalculate spin populations !!
           qalf=0.0d0
-          do i=1,nalf 
+          do i=1,nalf
             qalf=qalf+c3(i,i)
           end do
           qbet=0.0d0
-          do i=1,nb   
+          do i=1,nb
             qbet=qbet+c3(i+nalf,i+nalf)
           end do
-          write(naim,*) '  '               
-          write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qalf     
-          write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qbet        
-c restricted single-determinant
-         else if(inato.eq.0) then
+          write(naim,*) '  '
+          write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qalf
+          write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qbet
+!! restricted single-determinant !!
+        else if(inato.eq.0) then
           if (imulli.ne.1) then
-          do i=1,nocc
-           write(naim,*) (c3(i,j),j=1,i)
-          end do
+            do i=1,nocc
+              write(naim,*) (c3(i,j),j=1,i)
+            end do
           else
-          do i=1,nocc
-           write(naim,*) (c3(i,j),j=1,nocc)
-          end do
+            do i=1,nocc
+              write(naim,*) (c3(i,j),j=1,nocc)
+            end do
           end if
-          write(naim,*) '  '               
+          write(naim,*) '  '
           write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qat(jjat,1)/2.0d0
           write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qat(jjat,1)/2.0d0
-c correlated wave function        
-         else if(inato.eq.1) then
+!! correlated wave function !!
+        else if(inato.eq.1) then
           if (imulli.ne.1) then
-          do i=1,numorb
-           write(naim,*) (c3(i,j),j=1,i)
-          end do
+            do i=1,numorb
+              write(naim,*) (c3(i,j),j=1,i)
+            end do
           else
-          do i=1,numorb
-           write(naim,*) (c3(i,j),j=1,numorb)
-          end do
+            do i=1,numorb
+              write(naim,*) (c3(i,j),j=1,numorb)
+            end do
           end if
-          write(naim,*) '  '               
+          write(naim,*) '  '
           write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qat(jjat,1)/2.0d0
           write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qat(jjat,1)/2.0d0
-         end if
+        end if
 
 
         write(naim,*)' '
-       write(naim,*) 'NORMAL TERMINATION OF PROAIMV'
+        write(naim,*) 'NORMAL TERMINATION OF PROAIMV'
 
-      close(naim)
-        end do
+        close(naim)
+      end do
       close(naim3)
 
 
-        if(icuat.eq.nat) then
-c check for orthogonality of the MOs
-      xmax=1.0d-2
-      xmaxd=1.0d-3
-      xmaxns=1.0d-4
-c         do i=1,igr
-c          write(*,*) (csave(i,j),j=1,igr)
-c         end do
-c      xmaxg=1.0d-2
-      do i=1,igr
-       do j=i,igr
-          if(i.eq.j) then
-         if(abs(csave(i,i))-1.0d0.gt.xmax) then 
-          xx=abs(csave(i,i))-1.0d0
-          imaxd=i
-            if(i.le.nalf) then
-          write(*,*) 'Dev. from normalization ',xx,imaxd
-            end if
-         end if
-        else 
-         if(abs(csave(i,j)).gt.xmaxd) then 
-          xx=abs(csave(i,j))
-          imax1=i
-          imax2=j
-            if(i.le.nalf.and.j.le.nalf) then
-          write(*,'(a27,f10.6,2i3)') 'Dev. from orth. in occ. set:',xx,
+      if(icuat.eq.nat) then
+!! check for orthogonality of the MOs -- sum of all atomic overlap    !!
+!! matrices (csave) should equal the identity.                         !!
+        xmax=1.0d-2
+        xmaxd=1.0d-3
+        xmaxns=1.0d-4
+        do i=1,igr
+          do j=i,igr
+            if(i.eq.j) then
+              if(abs(csave(i,i))-1.0d0.gt.xmax) then
+                xx=abs(csave(i,i))-1.0d0
+                imaxd=i
+                if(i.le.nalf) then
+                  write(*,'(2x,a,f10.6,i3)') 'Dev. from normalization ',xx,imaxd
+                end if
+              end if
+            else
+              if(abs(csave(i,j)).gt.xmaxd) then
+                xx=abs(csave(i,j))
+                imax1=i
+                imax2=j
+                if(i.le.nalf.and.j.le.nalf) then
+                  write(*,'(2x,a,f10.6,2i3)') 'Dev. from orth. in occ. set:',xx,
      1      imax1,imax2
+                end if
+              end if
+              if(j.gt.i) then
+                xxx=abs(csave(i,j))-abs(csave(j,i))
+                if(xxx.gt.xmaxns) then
+                  xx=xxx
+                  imaxns1=i
+                  imaxns2=j
+                  write(*,'(2x,a,f10.6,2i3)') 'Dev. from hermiticity',xx,imaxns1,imaxns2
+                end if
+              end if
             end if
-         end if
-         if(j.gt.i) then
-          xxx=abs(csave(i,j))-abs(csave(j,i)) 
-          if(xxx.gt.xmaxns) then 
-           xx=xxx
-           imaxns1=i   
-           imaxns2=j   
-           write(*,*) 'Dev. from hermiticity',xx,imaxns1,imaxns2
-          end if
-         end if
-        end if
-       end do
-      end do
+          end do
+        end do
       end if
       deallocate(c3,scr,c2,csave)
 
