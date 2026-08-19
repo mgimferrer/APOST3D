@@ -1,16 +1,12 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-18): Subroutine Cleanup Protocol still NOT       !!
-!! applied to: VPRINT, MPRINT_NLOP, MPRINT, MPRINT2, print_int_old,      !!
-!! print_int, cubegen3, rmat, rarr, ival, cubegen3_mhg.                  !!
-!! mprintnoat/group_by_frag_mat/group_by_frag_vec got headers/comments/  !!
-!! printing during the 2026-08-18 fragment-analysis rewrite (see         !!
-!! CLAUDE.md) -- small self-contained subroutines, no OMP candidate.     !!
-!! cubegen3/cubegen3_mhg/rmat/rarr/ival/print_int_old are likely dead or !!
-!! near-dead (see CLAUDE.md) -- deliberately left untouched pending a    !!
-!! consolidation decision, not yet given the protocol. cubegen4 is done  !!
-!! (full protocol + OMP parallelization of its grid-evaluation loop,     !!
-!! 2026-08-18) -- also gained two new # CUBE keywords, SPACING/          !!
-!! RADIUS_SCALE.                                                         !!
+!! FILE STATUS (2026-08-19): Subroutine Cleanup Protocol still NOT       !!
+!! applied to: print_int_old, cubegen3, rmat, rarr, ival, cubegen3_mhg.  !!
+!! All confirmed dead or near-dead (print_int_old superseded by the live !!
+!! print_int; cubegen3/cubegen3_mhg/rmat/rarr/ival only reachable from   !!
+!! dead or DOATOMS-adjacent callers) -- deliberately left untouched      !!
+!! pending a deliberate consolidation decision, not yet made.            !!
+!! VPRINT/MPRINT_NLOP/MPRINT/MPRINT2/print_int/mprintnoat/               !!
+!! group_by_frag_mat/group_by_frag_vec/cubegen4 are all done.            !!
 !! ********************************************************************* !!
 
 !! ********************************************************************* !!
@@ -518,6 +514,18 @@
 
 !! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: VPRINT                                                    !!
+!! purpose: unbordered print of a per-atom vector (or 2-column matrix,   !!
+!!   via jdim) -- atom index, element symbol, then jdim value(s). No     !!
+!!   6-column chunking (jdim is always 1 or 2 at call sites).            !!
+!! arguments:                                                            !!
+!!   H    (in) -- data (ndim,jdim)                                       !!
+!!   N    (in) -- number of atoms actually printed                       !!
+!!   ndim (in) -- H's declared leading dimension                         !!
+!!   jdim (in) -- number of value columns (1 or 2)                       !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       SUBROUTINE VPRINT(H,N,ndim,jdim)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
@@ -527,33 +535,43 @@
       DIMENSION H(NDIM,jdim)
 
       Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O , 
+      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
      $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
      $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
      $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
      $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
      $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
      $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sn ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu , 
+     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
      $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
      $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
      $4H Th ,4H Pa ,4H  U   /
-    
-      K=6
-      NMIN=1
-      NNMAX=1
+
    62 FORMAT(1X,I3,A4,6F12.6)
    63 FORMAT(1X,I3,A4,6F20.13)
       DO 2 I=1,N
-      if(iaccur.eq.0) then
-      PRINT 62,I,mend(iznuc(i)),(H(I,J),J=1,jdim)
-      else
-      PRINT 63,I,mend(iznuc(i)),(H(I,J),J=1,jdim)
-      end if
+        if(iaccur.eq.0) then
+          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=1,jdim)
+        else
+          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=1,jdim)
+        end if
    2  CONTINUE
       RETURN
       END
 
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: MPRINT_NLOP                                               !!
+!! purpose: unbordered print of a per-atom 3-column (X/Y/Z) matrix, with !!
+!!   its own column header line -- used for dipole/charge-transfer       !!
+!!   component tables in enpart.f.                                       !!
+!! arguments:                                                            !!
+!!   H    (in) -- data (ndim,3)                                          !!
+!!   N    (in) -- number of atoms actually printed                       !!
+!!   ndim (in) -- H's declared leading dimension                         !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       SUBROUTINE MPRINT_NLOP(H,N,ndim)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
@@ -563,36 +581,46 @@
       DIMENSION H(NDIM,3)
 
       Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O , 
+      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
      $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
      $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
      $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
      $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
      $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
      $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sn ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu , 
+     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
      $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
      $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
      $4H Th ,4H Pa ,4H  U   /
-    
+
       NMIN=1
       NNMAX=3
-      PRINT *, ('_________________X___________________Y__________________Z__________')
+      PRINT *,'_________________X___________________Y__________________Z__________'
       PRINT *,' '
       DO I=1,N
-       if(iaccur.eq.0) then
-        PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-       else
-        PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-       end if
+        if(iaccur.eq.0) then
+          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+        else
+          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+        end if
       end do
       RETURN
-      PRINT 66
    62 FORMAT(1X,I3,A4,6F12.6)
    63 FORMAT(1X,I3,A4,3F20.13)
-   66 FORMAT(1X///)
       END
 
+!! ********************************************************************* !!
+!! subroutine: MPRINT                                                    !!
+!! purpose: unbordered N x N matrix print, chunked 6 columns at a time   !!
+!!   (loops back to label 1 for each further chunk of columns until      !!
+!!   NMIN exceeds N). No border -- see MPRINT2 for the bordered twin     !!
+!!   used throughout ENPART.                                             !!
+!! arguments:                                                            !!
+!!   H    (in) -- data matrix (ndim,ndim)                                !!
+!!   N    (in) -- number of atoms actually printed                       !!
+!!   ndim (in) -- H's declared leading dimension                         !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       SUBROUTINE MPRINT(H,N,ndim)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
@@ -601,40 +629,39 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,NDIM)
 
-
       Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O , 
+      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
      $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
      $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
      $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
      $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
      $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
      $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sn ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu , 
+     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
      $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
      $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
      $4H Th ,4H Pa ,4H  U   /
-    
+
       K=6
       NMIN=1
       NNMAX=MIN0(N,K)
    62 FORMAT(1X,I3,A4,6F12.6)
    63 FORMAT(1X,I3,A4,6F20.13)
    1  if(iaccur.eq.0) then
-      PRINT 60, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 60, (I, mend(iznuc(i)),I=NMIN,NNMAX)
       else
-      PRINT 61, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 61, (I, mend(iznuc(i)),I=NMIN,NNMAX)
       end if
    60 FORMAT(10X,6(2X,I3,A4,3X))
    61 FORMAT(10X,6(6X,I3,A4,7X))
       PRINT 64
    64 FORMAT(1X)
       DO 2 I=1,N
-      if(iaccur.eq.0) then
-      PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-      else
-      PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-      end if
+        if(iaccur.eq.0) then
+          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+        else
+          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+        end if
    2  CONTINUE
       NMIN=NMIN+6
       K=K+6
@@ -648,6 +675,18 @@
 
 !! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: MPRINT2                                                   !!
+!! purpose: bordered N x N matrix print, chunked 6 columns at a time --  !!
+!!   same chunk/loop-back structure as MPRINT, plus an 80-column rule    !!
+!!   before/after the header and each row block. The style used         !!
+!!   throughout ENPART for atom-pair matrices.                           !!
+!! arguments:                                                            !!
+!!   H    (in) -- data matrix (ndim,ndim)                                !!
+!!   N    (in) -- number of atoms actually printed                       !!
+!!   ndim (in) -- H's declared leading dimension                         !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       SUBROUTINE MPRINT2(H,N,ndim)
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
@@ -658,18 +697,18 @@
       DIMENSION H(NDIM,NDIM)
 
       Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O , 
+      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
      $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
      $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
      $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
      $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
      $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
      $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sn ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu , 
+     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
      $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
      $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
      $4H Th ,4H Pa ,4H  U   /
-    
+
       line="--------------------------------------------------------------------------------"
 
       K=6
@@ -678,21 +717,21 @@
    62 FORMAT(2X,I3,A4,6F12.6)
    63 FORMAT(2X,I3,A4,6F20.13)
    1  if(iaccur.eq.0) then
-      PRINT 666,line
-      PRINT 60, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 666,line
+        PRINT 60, (I, mend(iznuc(i)),I=NMIN,NNMAX)
       else
-      PRINT 666,line
-      PRINT 61, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 666,line
+        PRINT 61, (I, mend(iznuc(i)),I=NMIN,NNMAX)
       end if
    60 FORMAT(10X,6(2X,I3,A4,3X))
    61 FORMAT(10X,6(6X,I3,A4,7X))
       PRINT 666,line
       DO 2 I=1,N
-      if(iaccur.eq.0) then
-      PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-      else
-      PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-      end if
+        if(iaccur.eq.0) then
+          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+        else
+          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+        end if
    2  CONTINUE
       PRINT 666,line
       NMIN=NMIN+6
@@ -700,11 +739,11 @@
       NNMAX=MIN0(N,K)
       IF(NNMAX.GE.NMIN) GOTO 71
       RETURN
-   71 PRINT 66  
+   71 PRINT 66
    66 FORMAT(1X)
       GO TO 1
 
-!! FORMAT FOR THE LINES !!
+!! format for the border lines !!
   666 FORMAT(2x,a100)
       END
 
