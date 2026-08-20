@@ -11,7 +11,7 @@
       common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
-      allocatable :: orbpop(:)
+      allocatable :: orbpop(:),orbpopat(:,:)
       allocatable :: flo(:,:),clo(:,:)
 
       dimension sat(igr,igr,nat)
@@ -47,22 +47,27 @@
       if(kop.ne.1) then
 
         !! CALCULATING FIRST FRAGMENT POPULATIONS FOR EACH LO !!
-        ALLOCATE(orbpop(nocc))
+        !! clo is fixed here, so its expensive per-atom population matrix !!
+        !! is computed once, then just summed per fragment below.        !!
+        ALLOCATE(orbpop(nocc),orbpopat(nocc,nat))
         ALLOCATE(flo(nocc,icufr),clo(igr,igr))
 
         flo=ZERO
         clo=c
 
+        call rwf_uwf_orbpop_atom(sat,nocc,clo,orbpopat)
+
         !! LOOP OVER FRAGMENTS !!
         do jfrg=1,icufr
           orbpop=ZERO
-          call rwf_uwf_frg_pop(jfrg,sat,nocc,clo,orbpop)
+          call rwf_uwf_frg_pop(jfrg,nocc,orbpopat,orbpop)
 
           !! SAVING FRAGMENT POPULATIONS !!
           do ii=1,nocc
             flo(ii,jfrg)=orbpop(ii)
           end do
         end do
+        DEALLOCATE(orbpopat)
 
         write(*,*) " ----------------------------------------- "
         write(*,*) "  Fragment population analysis of each LO  "
