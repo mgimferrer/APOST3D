@@ -98,7 +98,7 @@
       write(*,*) " "
       write(*,*) "  Frag.        Charge center (xyz)     "
       write(*,*) " ------------------------------------- "
-      ALLOCATE(Smat(ifrg,igr,igr))
+      ALLOCATE(Smat(icufr,igr,igr))
       do ifrg=1,icufr
         xcenter=ZERO
         ycenter=ZERO
@@ -906,7 +906,7 @@
       write(*,*) " "
       write(*,*) "  Frag.        Charge center (xyz)     "
       write(*,*) " ------------------------------------- "
-      ALLOCATE(Smat(ifrg,igr,igr))
+      ALLOCATE(Smat(icufr,igr,igr))
       do ifrg=1,icufr
         xcenter=ZERO
         ycenter=ZERO
@@ -1556,7 +1556,7 @@
                 infopop(1,inewcore)=ifrg
                 infopop(2,inewcore)=iorb
                 scrb(inewcore)=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-                write(*,112) infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
+                write(*,112) infopop(2,inewcore),infopop(1,inewcore),scrb(inewcore)
               end if
             end do
           end do
