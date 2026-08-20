@@ -704,7 +704,8 @@
         },
         {
           "label": "PC 1 sum check",
-          "pattern": "PC:\\s+1\\s+sum:\\s+([-+]?\\d+\\.\\d+)",
+          "section": "PCA SUM CHECKS",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 63.895144,
           "tol_abs": 2e-5
         },

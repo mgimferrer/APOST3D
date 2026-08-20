@@ -786,15 +786,17 @@
 !! the FIRST eigenvector specifically, not eigenvector i. Looks like it !!
 !! may have meant pca(i,i) (eigenvalue i) or scr(i,i); not changed,     !!
 !! same "confirm intent first" caveat as the label-swap question above. !!
-      write(*,*)
-      write(*,'(2x,a)') 'PC sum checks (atomic-charge projection onto each eigenvector):'
+      call print_box('PCA SUM CHECKS')
+      write(*,'(2x,a)') '  PC   Charge projection    x eigenvector 1'
+      write(*,'(2x,a)') repeat('-',44)
       do i=1,nat
         xx=ZERO
         do k=1,nat
           xx=xx+pca(k,i)*qat(k,1)
         end do
-        write(*,'(2x,a,i3,a,2f14.6)') 'PC:',i,' sum:',xx,xx*scr(i,1)
+        write(*,'(3x,i3,2f18.6)') i,xx,xx*scr(i,1)
       end do
+      write(*,'(2x,a)') repeat('-',44)
 
       deallocate(pca,scr)
 
