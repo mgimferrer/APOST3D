@@ -746,12 +746,17 @@
 !! out-of-bounds write happens, and every print below only ever read     !!
 !! scr(1:nat) -- i.e. column 1 -- so the values printed are identical    !!
 !! before and after, only the undefined-behavior overflow is gone.       !!
-!! STILL OPEN, not touched -- needs M. Gimferrer + P. Salvador to        !!
-!! confirm intent first: the two prints right after diagonalize look     !!
-!! swapped relative to its actual contract (pca/A0 comes back with       !!
-!! eigenvalues on its diagonal, scr/X holds the eigenvectors) -- but the !!
-!! code labels pca "PCA EIGENVECTORS" and prints scr as if it held       !!
-!! eigenvalues.                                                          !!
+!! FIXED 2026-08-20 (M. Gimferrer): the two prints right after            !!
+!! diagonalize were swapped relative to its actual contract (util.f's    !!
+!! diagonalize returns eigenvalues on A0's diagonal, eigenvectors as     !!
+!! X's columns -- here A0=pca, X=scr). "PCA EIGENVECTORS" was printing   !!
+!! pca (eigenvalues) and the per-atom row below it was printing          !!
+!! scr(:,1) (genuinely eigenvector 1) unlabeled as such. Now             !!
+!! "PCA EIGENVECTORS" prints scr (the real eigenvector matrix, all N     !!
+!! columns) and the row below it prints pca's diagonal (the N            !!
+!! eigenvalues). The PCA SUM CHECKS table's second column (xx*scr(i,1))  !!
+!! is untouched -- that's a separate, still-open question about the      !!
+!! formula's intent, not the label swap.                                 !!
 !! arguments: none (all via op/di/qat/COMMON)                            !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
@@ -777,10 +782,10 @@
       call diagonalize(nat,nat,pca,scr,0)
 
       call print_box('"FUZZY ATOMS" PCA EIGENVECTORS')
-      call mprint2(pca,nat,nat)
+      call mprint2(scr,nat,nat)
       write(*,*)
-      write(*,'(2x,a)') 'First eigenvector (per-atom coefficients):'
-      write(*,'(2x,8f10.4)') (scr(i,1),i=1,nat)
+      write(*,'(2x,a)') 'Eigenvalues:'
+      write(*,'(2x,8f10.4)') (pca(i,i),i=1,nat)
 
 !! second column rescales the projection by scr(i,1) -- component i of  !!
 !! the FIRST eigenvector specifically, not eigenvector i. Looks like it !!

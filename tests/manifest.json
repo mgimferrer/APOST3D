@@ -696,11 +696,18 @@
           "tol_abs": 2e-5
         },
         {
-          "label": "PCA eigenvector block Na diagonal",
+          "label": "PCA eigenvector 1, Na component",
           "section": "PCA EIGENVECTORS",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 5.632326,
+          "ref": -0.999883,
           "tol_abs": 2e-5
+        },
+        {
+          "label": "PCA eigenvalue 1",
+          "section": "Eigenvalues:",
+          "pattern": "([-+]?\\d+\\.\\d+)",
+          "ref": 5.6323,
+          "tol_abs": 2e-3
         },
         {
           "label": "PC 1 sum check",
