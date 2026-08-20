@@ -22,62 +22,62 @@
           "label": "Total KS-DFT energy (au)",
           "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -76.2241116,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
           "ref": -8e-07,
-          "tol_abs": 1e-5
+          "tol_abs": 2e-6
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.551876,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.275938,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.235156,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "H spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.382422,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O-H TFVC bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+O\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.707736,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O IQA self-energy (au)",
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -75.021251,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O-H IQA interaction (au)",
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.237810,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         }
       ]
     },
@@ -103,59 +103,59 @@
           "label": "Total KS-DFT energy (au)",
           "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -79.8655614,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.0000520,
-          "tol_abs": 1e-5
+          "tol_abs": 2e-6
         },
         {
           "label": "C TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.287036,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.095671,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "C-C TFVC bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+C\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.949832,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "C total valence",
           "section": "TOTAL VALENCES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 4.021652,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Electron-nuclei energy (au)",
           "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -268.6482977,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "Kinetic energy (au)",
           "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 79.2827782,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "KS-DFT electron-electron energy (au)",
           "pattern": "KS-DFT electron-electron energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 67.2363766,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-6
         }
       ]
     },
@@ -182,70 +182,70 @@
           "section": "ELECTRON POPULATIONS",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.126631,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "F TFVC electron population",
           "section": "ELECTRON POPULATIONS",
           "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
           "ref": 9.721908,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "C TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.873369,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "F TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.721908,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.050605,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "C-F bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+C\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.812947,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "C-H bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+C\\s+\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.915475,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "C total valence",
           "section": "TOTAL VALENCES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 3.559854,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "OSLO 1 FOLI value",
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00002,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "OSLO 9 FOLI value (most delocalized)",
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "1\\.06204\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.35476,
-          "tol_abs": 5e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "F fragment OSLO oxidation state",
@@ -286,49 +286,49 @@
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.443242,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "C TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.412799,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "4\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.134560,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Fe fragment EFO net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 12.11696,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "Fe fragment EFO gross occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 12.27814,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "C fragment EFO net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.77991,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "C fragment EFO gross occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.85638,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "Fe frag 1 EFO 11 net occupation",
@@ -336,7 +336,7 @@
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 11,
           "ref": 0.8156,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-3
         },
         {
           "label": "Fe frag 1 EFO 11 gross occupation",
@@ -344,7 +344,7 @@
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 11,
           "ref": 0.8381,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-3
         },
         {
           "label": "C frag 2 EFO 7 net occupation",
@@ -352,7 +352,7 @@
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 7,
           "ref": 0.7473,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-3
         },
         {
           "label": "C frag 2 EFO 7 gross occupation",
@@ -360,7 +360,7 @@
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 7,
           "ref": 0.7870,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-3
         },
         {
           "label": "Fe EOS alpha electrons (frag 1)",
@@ -380,7 +380,7 @@
           "label": "EOS reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "ref": 96.598,
-          "tol_abs": 0.5
+          "tol_abs": 0.02
         }
       ]
     },
@@ -408,42 +408,42 @@
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.611910,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.903168,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O TFVC electron population",
           "section": "ELECTRON POPULATIONS",
           "pattern": "2\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": 8.903168,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Fe-O bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s*Fe\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.549239,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "cis O-O bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "2\\s+O\\s+\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.268367,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Fe total valence",
           "section": "TOTAL VALENCES",
           "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.196322,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Fe OSLO oxidation state",
@@ -464,14 +464,14 @@
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00010,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "OSLO 5 FOLI value (fully localized)",
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value\\s+:\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00000,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         }
       ]
     },
@@ -509,53 +509,53 @@
           "label": "Electron-nuclei energy (au)",
           "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -434.8233244,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "Kinetic energy (au)",
           "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 151.9545478,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "Interpolated HF exchange energy (au)",
           "pattern": "Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": -17.9479838,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "Total integrated energy (au)",
           "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -152.0623834,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-6
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
           "ref": -0.0000151,
-          "tol_abs": 1e-5
+          "tol_abs": 2e-6
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -1.224594,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.621081,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "O-H fuzzy bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+O\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.621736,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         }
       ]
     },
@@ -582,63 +582,63 @@
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1 Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.516733,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Fe Lowdin spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "1 Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.286012,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Fe-C1 fuzzy bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1 Fe\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.873759,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "Fe fragment EFO alpha net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 13.40094,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "Fe fragment EFO beta net occupation",
           "section": "EFFAOs FROM THE BETA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 13.11495,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "CN ligand fragment EFO alpha net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.74761,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "EOS alpha reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 1,
           "ref": 64.481,
-          "tol_abs": 0.5
+          "tol_abs": 0.02
         },
         {
           "label": "EOS beta reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": 67.928,
-          "tol_abs": 0.5
+          "tol_abs": 0.02
         },
         {
           "label": "Overall reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 3,
           "ref": 64.481,
-          "tol_abs": 0.5
+          "tol_abs": 0.02
         },
         {
           "label": "Fe fragment oxidation state",
@@ -679,62 +679,62 @@
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.344363,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "B Mulliken spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "2\\s+B\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.941932,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "PCA covariance matrix Na diagonal",
           "section": "COVARIANCE MATRIX",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.631461,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-5
         },
         {
           "label": "PCA eigenvector block Na diagonal",
           "section": "PCA EIGENVECTORS",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.632326,
-          "tol_abs": 1e-4
+          "tol_abs": 2e-5
         },
         {
           "label": "PC 1 sum check",
           "pattern": "PC:\\s+1\\s+sum:\\s+([-+]?\\d+\\.\\d+)",
           "ref": 63.895144,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-5
         },
         {
           "label": "EOS alpha net occupation fragment 1",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.16096,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "EOS beta net occupation fragment 1",
           "section": "EFFAOs FROM THE BETA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.00909,
-          "tol_abs": 1e-3
+          "tol_abs": 2e-4
         },
         {
           "label": "EOS alpha reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 1,
           "ref": 89.768,
-          "tol_abs": 0.5
+          "tol_abs": 0.02
         },
         {
           "label": "EOS beta reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": 100.000,
-          "tol_abs": 0.5
+          "tol_abs": 0.02
         },
         {
           "label": "Fragment 1 oxidation state",
