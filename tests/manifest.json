@@ -404,6 +404,283 @@
           "tol_abs": 1e-3
         }
       ]
+    },
+    {
+      "name": "H2O-Dimer-RHF",
+      "description": "Water dimer, RHF — ENPART (HF) with THREBOD 10/MOD-GRIDTWOEL, DOFRAGS. THREBOD is tight enough to skip 6 atom pairs into the multipolar expansion path (enpart.f's multipolar), the only active-test coverage for it.",
+      "tags": ["hf", "enpart", "tfvc", "rhf", "threbod", "multipolar", "fragments"],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/HF",
+        "ENPART/THREBOD",
+        "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL",
+        "GRID/ANGULAR",
+        "GRID/PHB1",
+        "GRID/PHB2",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Atom pairs skipped (multipolar path)",
+          "pattern": "Skipping numerical integration for\\s+([-+]?\\d+) atom pairs",
+          "ref": 6,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Electron-nuclei energy (au)",
+          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -434.8233244,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Kinetic energy (au)",
+          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 151.9545478,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Interpolated HF exchange energy (au)",
+          "pattern": "Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 2,
+          "ref": -17.9479838,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -152.0623834,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.0000151,
+          "tol_abs": 1e-5
+        },
+        {
+          "label": "O TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.224594,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "H TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.621081,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "O-H fuzzy bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "1\\s+O\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.621736,
+          "tol_abs": 1e-3
+        }
+      ]
+    },
+    {
+      "name": "FeCN5NO3--UBLYP",
+      "description": "Iron pentacyanonitrosylferrate dianion, UKS BLYP — LOWDIN (Hilbert-space AIM), EFFAO, EOS, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for LOWDIN population/EFFAO/EOS on an open-shell, many-fragment system. Cube generation (# CUBE) verified separately, one-time, against reference .cube files — not part of this active test (see REFERENCE-OUTPUTS/compiler-testset).",
+      "tags": ["dft", "lowdin", "effao", "eos", "uks", "fragments", "openshell"],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "LOWDIN",
+        "EFFAO",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Fe Lowdin atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1 Fe\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.516733,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe Lowdin spin population",
+          "section": "SPIN POPULATIONS",
+          "pattern": "1 Fe\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.286012,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe-C1 fuzzy bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "1 Fe\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.873759,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe fragment EFO alpha net occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 13.40094,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe fragment EFO beta net occupation",
+          "section": "EFFAOs FROM THE BETA DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 13.11495,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "CN ligand fragment EFO alpha net occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 6.74761,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "EOS alpha reliability index R(%)",
+          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 1,
+          "ref": 64.481,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "EOS beta reliability index R(%)",
+          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 2,
+          "ref": 67.928,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 3,
+          "ref": 64.481,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Fe fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "NO ligand fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "7\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.00,
+          "tol_abs": 0.05
+        }
+      ]
+    },
+    {
+      "name": "NaBH3--UHF",
+      "description": "Sodium borohydride anion, UHF — MULLI (Mulliken AIM), PCA, EOS together, DOFRAGS with 2 fragments. Combining PCA and EOS in one run used to fail to complete in the pre-migration codebase (reference split into two separate outputs, .apost for EOS-only and .apostPCA for PCA-only); this combined run is verified to match both split references exactly, confirming the coupling is fixed. Also first active-test coverage for pca_analysis (see Known Issue #23 — the PCA EIGENVECTORS block's diagonal is actually eigenvalues, a pre-existing label swap, not touched here).",
+      "tags": ["hf", "uhf", "mulliken", "pca", "eos", "fragments"],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "MULLI",
+        "PCA",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Na Mulliken atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.344363,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "B Mulliken spin population",
+          "section": "SPIN POPULATIONS",
+          "pattern": "2\\s+B\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.941932,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "PCA covariance matrix Na diagonal",
+          "section": "COVARIANCE MATRIX",
+          "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 5.631461,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "PCA eigenvector block Na diagonal (mislabeled, see Known Issue #23)",
+          "section": "PCA EIGENVECTORS",
+          "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 5.632326,
+          "tol_abs": 1e-4
+        },
+        {
+          "label": "PC 1 sum check",
+          "pattern": "PC:\\s+1\\s+sum:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 63.895144,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "EOS alpha net occupation fragment 1",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 5.16096,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "EOS beta net occupation fragment 1",
+          "section": "EFFAOs FROM THE BETA DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 6.00909,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "EOS alpha reliability index R(%)",
+          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 1,
+          "ref": 89.768,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "EOS beta reliability index R(%)",
+          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 2,
+          "ref": 100.000,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Fragment 1 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Fragment 2 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.00,
+          "tol_abs": 0.05
+        }
+      ]
     }
   ]
 }

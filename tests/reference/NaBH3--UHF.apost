@@ -1,0 +1,473 @@
+  ------------------------------------------------------------------------------
+                                                                                
+                     ___    ____  ____  ___________   _____ ____                
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
+                 /_/  |_/_/    \____//____//_/     /____/_____/                 
+                                                                                
+                        Version 5   --   22 September 2026                      
+                         --------------------------------                       
+                                                                                
+      Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Documentation: https://apost3d.readthedocs.io                             
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
+                                                                                
+    e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
+                                                                                
+      Available atomic definitions:                                             
+      ----------------------------                                              
+                                                                                
+      Real space:                                                               
+        Becke, J. Chem. Phys. 88 2547 1988                                      
+        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
+        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
+        Topological fuzzy Voronoi cells (TFVC), J Chem Phys 139 071103 2013     
+        QTAIM, J. Comput. Chem 30 1082 2009                                     
+                                                                                
+      Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
+                                                                                
+      Calculating:                                                              
+      ------------                                                              
+                                                                                
+        A) Atomic and overlap populations, bond orders and valences             
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
+                                                                                
+        B) Hartree-Fock molecular energy decomposition                          
+           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
+                                                                                
+        C) KS-DFT molecular energy decomposition                                
+           P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007                
+           M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
+                                                                                
+        D) Molecular energy decomposition for CAS/DMRG wavefunctions            
+                                                                                
+        E) Effective atomic orbitals:                                           
+           I. Mayer, J. Phys. Chem. 100 6249 1996                               
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
+                                                                                
+        F) Local spin analysis                                                  
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+                                                                                
+        G) Effective Oxidation states analysis                                  
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
+                                                                                
+        H) Oxidation states from localized orbitals                             
+           M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020      
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
+           M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022         
+                                                                                
+        I) Decomposition of EDA quantities into one- and two-center IQA terms   
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
+                                                                                
+        J) Origin-independent decomposition of static polarizabilities          
+           M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021      
+                                                                                
+  ------------------------------------------------------------------------------
+                                                                                
+    The program has been written by using parts of the program APOST by         
+    I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
+                                                                                
+    The numerical integration utilizes the subroutines for Lebedev              
+    quadrature downloaded from CCL. The appropriate reference is:               
+    V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
+    131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
+                                                                                
+    The program makes use of libxc library when necessary, using the F90        
+    interfaces provided by the authors.                                         
+                   (see https://libxc.gitlab.io/)                               
+                                                                                
+    We are extremely grateful for the possibility of using these routines!      
+                                                                                
+  ------------------------------------------------------------------------------
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                     : Unrestricted
+  Calculation type                 : Hartree-Fock
+  Number of atoms                  : 5
+  Number of basis functions        : 47
+  Primitive gaussians              : 125
+  Spin density (FChk)              : found
+  Occupied MOs (nocc/alpha/beta)   : 10 / 10 / 10
+  SCF/DFT energy (au)              :      -188.2484755980
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  --------
+  Atomic partitioning (Hilbert-space)  : Mulliken
+  Overlap population analysis          : OPOP
+  Oxidation states analysis            : EOS (Effective Oxidation States, fragment-based)
+  Principal component analysis         : PCA
+  Fragment analysis                    : 2 fragments (see below)
+
+  # FRAGMENTS  (2 fragments)
+  --------------------------
+  Fragment  1 :   1
+  Fragment  2 :   2   3   4   5
+
+  --------------------
+    NATURAL ORBITALS
+  --------------------
+
+  Occupation numbers (>1.0e-6):
+     2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   1.99960   1.99960
+     1.99722   1.36193   0.63807   0.00278   0.00040   0.00040   0.00000   0.00000
+     0.00000
+
+  Checking NO overlap matrix
+
+  TIMING CPU  :: initialization                                    0.00 s
+  TIMING WALL :: initialization                                    0.00 s
+
+  TIMING CPU  :: atomic definition                                 0.00 s
+  TIMING WALL :: atomic definition                                 0.00 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Partial atomic charges
+  Atomic spin densities
+  Bond orders and Valences
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
+   1 Na    11.344363   11.344363
+   2  B     5.266761    5.266761
+   3  H     1.129626    1.129626
+   4  H     1.129626    1.129626
+   5  H     1.129626    1.129626
+  ------------------------------
+     Sum   20.000000   20.000000
+
+  --------------------------------------------
+    FRAGMENT ANALYSIS : Electron populations
+  --------------------------------------------
+
+   Fragment    3D-space    Mulliken
+  ---------------------------------
+    1         11.344363   11.344363
+    2          8.655637    8.655637
+  ---------------------------------
+     Total:   20.000000   20.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
+   1 Na    -0.344363   -0.344363
+   2  B    -0.266761   -0.266761
+   3  H    -0.129626   -0.129626
+   4  H    -0.129626   -0.129626
+   5  H    -0.129626   -0.129626
+  ------------------------------
+     Sum   -1.000000   -1.000000
+
+  --------------------------------------
+    FRAGMENT ANALYSIS : Atomic Charges
+  --------------------------------------
+
+   Fragment    3D-space    Mulliken
+  ---------------------------------
+    1         -0.344363   -0.344363
+    2         -0.655637   -0.655637
+  ---------------------------------
+     Total:   -1.000000   -1.000000
+
+  --------------------
+    SPIN POPULATIONS
+  --------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
+   1 Na    -0.719596   -0.719596
+   2  B     0.941932    0.941932
+   3  H    -0.074112   -0.074112
+   4  H    -0.074112   -0.074112
+   5  H    -0.074112   -0.074112
+  ------------------------------
+     Sum    0.000000    0.000000
+
+  ----------------------------------------
+    FRAGMENT ANALYSIS : Spin Populations
+  ----------------------------------------
+
+   Fragment    3D-space    Mulliken
+  ---------------------------------
+    1         -0.719596   -0.719596
+    2          0.719596    0.719596
+  ---------------------------------
+     Total:    0.000000    0.000000
+
+  -------------------------------------
+    APOST3D OVERLAP POPULATION MATRIX
+  -------------------------------------
+
+  --------------------------------------------------------------------------------                    
+              1 Na        2  B        3  H        4  H        5  H 
+  --------------------------------------------------------------------------------                    
+    1 Na    11.174055    0.170954   -0.000216   -0.000216   -0.000216
+    2  B     0.170954    3.892300    0.401169    0.401169    0.401169
+    3  H    -0.000216    0.401169    0.794620   -0.032974   -0.032974
+    4  H    -0.000216    0.401169   -0.032974    0.794620   -0.032974
+    5  H    -0.000216    0.401169   -0.032974   -0.032974    0.794620
+  --------------------------------------------------------------------------------                    
+
+  -------------------------------------------
+    FRAGMENT ANALYSIS : Overlap Populations
+  -------------------------------------------
+
+  --------------------------------------------------------------------------------                    
+                      1           2
+  --------------------------------------------------------------------------------                    
+    1         11.174055    0.170308
+    2          0.170308    8.485330
+  --------------------------------------------------------------------------------                    
+     Total:   20.000000
+
+  -----------------------------------
+    "FUZZY ATOMS" BOND ORDER MATRIX
+  -----------------------------------
+
+  --------------------------------------------------------------------------------                    
+              1 Na        2  B        3  H        4  H        5  H 
+  --------------------------------------------------------------------------------                    
+    1 Na    11.085187    0.448343    0.023336    0.023336    0.023336
+    2  B     0.448343    3.626893    0.943798    0.943798    0.943798
+    3  H     0.023336    0.943798    0.660166   -0.014108   -0.014108
+    4  H     0.023336    0.943798   -0.014108    0.660166   -0.014108
+    5  H     0.023336    0.943798   -0.014108   -0.014108    0.660166
+  --------------------------------------------------------------------------------                    
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+    Atom         V_A
+  ------------------
+   1 Na     1.426197
+   2  B     3.836586
+   3  H     0.944343
+   4  H     0.944343
+   5  H     0.944343
+  ------------------
+
+  -------------------------------------
+    FRAGMENT ANALYSIS: Total valences
+  -------------------------------------
+
+   Fragment    3D-space
+  ---------------------
+    1          1.426197
+    2          6.669616
+  ---------------------
+     Total:    8.095813
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+ (SUM OF BOND ORDERS)
+
+    Atom        VB_A
+  ------------------
+   1 Na     0.518350
+   2  B     3.279735
+   3  H     0.938918
+   4  H     0.938918
+   5  H     0.938918
+  ------------------
+
+  ---------------------------------------------
+    FRAGMENT ANALYSIS: Valences used in bonds
+  ---------------------------------------------
+
+   Fragment    3D-space
+  ---------------------
+    1          0.518350
+    2          6.096490
+  ---------------------
+     Total:    6.614840
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+    Atom         F_A
+  ------------------
+   1 Na     0.907846
+   2  B     0.556851
+   3  H     0.005425
+   4  H     0.005425
+   5  H     0.005425
+  ------------------
+
+  ------------------------------------
+    FRAGMENT ANALYSIS: Free valences
+  ------------------------------------
+
+   Fragment    3D-space
+  ---------------------
+    1          0.907846
+    2          0.573126
+  ---------------------
+     Total:    1.480973
+
+  ----------------------------------------
+    FRAGMENT ANALYSIS : Fuzzy Bond Order
+  ----------------------------------------
+
+  --------------------------------------------------------------------------------                    
+                      1           2
+  --------------------------------------------------------------------------------                    
+    1         11.085187    0.518350
+    2          0.518350    8.396462
+  --------------------------------------------------------------------------------                    
+     Total:   20.000000
+
+  TIMING CPU  :: population analyses                               0.00 s
+  TIMING WALL :: population analyses                               0.00 s
+
+  -----------------------------------
+    "FUZZY ATOMS" COVARIANCE MATRIX
+  -----------------------------------
+
+              1 Na        2  B        3  H        4  H        5  H 
+
+   1 Na     5.631461   -0.053217   -0.011884   -0.011884   -0.011884
+   2  B    -0.053217    2.078854   -0.070730   -0.070730   -0.070730
+   3  H    -0.011884   -0.070730    0.464537   -0.025920   -0.025920
+   4  H    -0.011884   -0.070730   -0.025920    0.464537   -0.025920
+   5  H    -0.011884   -0.070730   -0.025920   -0.025920    0.464537
+
+
+  ----------------------------------
+    "FUZZY ATOMS" PCA EIGENVECTORS
+  ----------------------------------
+
+              1 Na        2  B        3  H        4  H        5  H 
+
+   1 Na     5.632326    0.000000    0.000000    0.000000    0.000000
+   2  B     0.000000    2.087063    0.000000    0.000000    0.000000
+   3  H     0.000000    0.000000    0.490456    0.000000    0.000000
+   4  H     0.000000    0.000000    0.000000    0.490456    0.000000
+   5  H     0.000000    0.000000    0.000000    0.000000    0.403623
+
+   -0.9999    0.0149    0.0021    0.0021    0.0021
+
+  PC:   1 sum:      63.895144    -63.887685
+  PC:   2 sum:      10.992061      0.163236
+  PC:   3 sum:       0.554032      0.001150
+  PC:   4 sum:       0.554032      0.001150
+  PC:   5 sum:       0.455943      0.000946
+
+  ------------------------------------
+    DOING EFFAO MULLIKEN FORMULATION
+  ------------------------------------
+
+
+  ---------------------------------
+    EFFAOs FROM THE ALPHA DENSITY
+  ---------------------------------
+
+  
+  ** FRAGMENT   1 **
+  
+  Net occupation for fragment   1    5.16096
+  Net occupation using >    0.00100
+  OCCUP.   1.0081   1.0000   1.0000   1.0000   0.9999   0.1529
+  
+  ** FRAGMENT   2 **
+  
+  Net occupation for fragment   2    4.53857
+  Net occupation using >    0.00100
+  OCCUP.   1.0245   1.0000   0.9817   0.9817   0.5505
+  
+  
+  Total number of eff-AO-s for analysis:   11
+ EOS: Unambiguous integer electron assignation
+
+  ------------------------------------
+    EOS ANALYSIS FOR ALPHA ELECTRONS
+  ------------------------------------
+
+   Frag.  Elect.  Last occ.  First unocc.  
+  ---------------------------------------- 
+     1     5.00     1.000     0.153
+     2     5.00     0.551         -
+  ---------------------------------------- 
+   RELIABILITY INDEX R(%) =  89.768
+
+  --------------------------------
+    EFFAOs FROM THE BETA DENSITY
+  --------------------------------
+
+  
+  ** FRAGMENT   1 **
+  
+  Net occupation for fragment   1    6.00909
+  Net occupation using >    0.00100
+  OCCUP.   1.0107   1.0000   1.0000   1.0000   0.9999   0.9985
+  
+  ** FRAGMENT   2 **
+  
+  Net occupation for fragment   2    3.94623
+  Net occupation using >    0.00100
+  OCCUP.   1.0000   0.9860   0.9860   0.9742
+  
+  
+  Total number of eff-AO-s for analysis:   10
+ EOS: Unambiguous integer electron assignation
+
+  -----------------------------------
+    EOS ANALYSIS FOR BETA ELECTRONS
+  -----------------------------------
+
+   Frag.  Elect.  Last occ.  First unocc.  
+  ---------------------------------------- 
+     1     6.00     0.999         -
+     2     4.00     0.974         -
+  ---------------------------------------- 
+   RELIABILITY INDEX R(%) = 100.000
+
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
+   Frag.  Oxidation State  
+  ------------------------ 
+     1          0.00
+     2         -1.00
+  ------------------------ 
+   Total oxidation state:   -1.0
+  
+  OVERALL RELIABILITY INDEX R(%) =  89.768
+
+  TIMING CPU  :: EFFAO computation                                 0.00 s
+  TIMING WALL :: EFFAO computation                                 0.00 s
+  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.00 s
+
+  ...Normal Termination of APOST-3D...
