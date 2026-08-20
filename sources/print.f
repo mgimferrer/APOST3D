@@ -1,3 +1,46 @@
+!! *********************************************************************** !!
+!! ALL FORMATTED OUTPUT -- startup/input banners, shared matrix printers,  !!
+!! fragment-analysis printers, the AIMPAC/PROAIMV .int-file writer, the    !!
+!! cube-file generator                                                     !!
+!! Startup/input banners:                                                  !!
+!!   kiir                -- startup banner (version, citations, features)  !!
+!!   print_input_summary -- "digested" echo of the active .inp keywords    !!
+!! Shared building block, used by every banner-style print_box call below: !!
+!!   print_box           -- auto-sized rule around a title, no manual      !!
+!!                           blank-line management needed by callers       !!
+!! Per-atom vector/matrix printers (no border):                            !!
+!!   VPRINT               -- per-atom vector or 2-column matrix            !!
+!!   MPRINT_NLOP           -- per-atom 3-column (X/Y/Z) matrix             !!
+!!   MPRINT                -- N x N matrix, chunked 6 columns at a time    !!
+!! Bordered N x N atom-pair matrix printer, the style used throughout      !!
+!! ENPART:                                                                 !!
+!!   MPRINT2               -- same chunking as MPRINT, plus an 80-column   !!
+!!                             rule around the header and each row block   !!
+!! Fragment-analysis printers (condense a per-atom quantity to per-        !!
+!! fragment via /frlist/'s atom-to-fragment map, then print):              !!
+!!   mprintnoat            -- bordered/chunked fragment x fragment matrix  !!
+!!                             print, called only by group_by_frag_mat     !!
+!!   group_by_frag_mat     -- sums a per-atom matrix to per-fragment,       !!
+!!                             prints via mprintnoat                        !!
+!!   group_by_frag_vec     -- sums a per-atom table to per-fragment,        !!
+!!                             prints bordered to its own actual width      !!
+!!                             (never chunked -- always 1-2 columns)        !!
+!! AIMPAC/PROAIMV interface (opt-in, # METHOD / DOINT):                    !!
+!!   print_int              -- writes one .int file per atom (plus a        !!
+!!                             .files index) holding its MO/NO-basis        !!
+!!                             overlap matrix, for the external FCALC       !!
+!!                             program                                     !!
+!! Cube-file generation (opt-in, # CUBE):                                  !!
+!!   cubegen_new            -- writes one Gaussian-style .cube file per      !!
+!!                             requested EFO of a fragment/atom, adaptive   !!
+!!                             grid sized from SPACING/RADIUS_SCALE          !!
+!! .fchk-style file writers, kept for future OSLO .fchk-printing work,      !!
+!! currently unreachable (see their own header at the end of this file):   !!
+!!   rmat, rarr, ival                                                       !!
+!! *********************************************************************** !!
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: print_box                                                 !!
 !! purpose: prints text inside a rule auto-sized to fit it.              !!
