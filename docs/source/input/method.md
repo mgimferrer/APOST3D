@@ -23,7 +23,7 @@
 | EOS | Effective Oxidation States (EOS) analysis |
 | EOS-U | Effective Oxidation States analysis from the paired and unpaired density functions (EOS-U) |
 | OS-CENTROID | Oxidation states from centroids of localized orbitals |
-| OSLO | Oxidation States Localized Orbitals (OSLO). Requires an additional `# OSLO` block section |
+| OSLO | Oxidation States Localized Orbitals (OSLO). Requires an additional `# OSLO` block section — and `TFVC` here in `# METHOD`, always, see [Block section # OSLO](oslo.md) |
 | SPIN | Local Spin Analysis (LSA) |
 | ENPART | Real-space-only molecular energy decomposition (IQA). Requires an additional `# ENPART` block section |
 | EDAIQA | Real-space-only molecular energy decomposition of Energy Decomposition Analysis (EDA) terms. Requires an additional `# EDAIQA` block section |

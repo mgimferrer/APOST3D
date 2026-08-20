@@ -72,10 +72,13 @@ python3 tests/run_tests.py --help
 | `H2O-T-B3LYP` | Water, RKS B3LYP — TFVC, ENPART (DFT+IQA), local spin | `dft enpart spin tfvc rks` |
 | `CH3F` | Fluoromethane, RKS DFT — TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `FeCO2-PBEPBE` | Iron dicarbonyl⁺, UKS PBE — TFVC, fragment EOS (open-shell), including per-EFO net/gross occupation checks | `dft eos effao tfvc uks fragments openshell` |
-| `FeO4-2` | Ferrate(VI)²⁻, UKS — TFVC, QCHEM interface, OSLO+EOS | `dft eos oslo tfvc uks fragments openshell qchem` |
+| `FeO4-2` | Ferrate(VI)²⁻, RKS — TFVC, QCHEM interface, OSLO+EOS. Closed-shell despite the name (chosen to exercise the QCHEM `.fchk` interface, not open-shell coverage) | `dft eos oslo tfvc rks fragments qchem` |
 | `C2H6-B3LYP` | Ethane, RKS B3LYP — full ENPART, THREBOD/MOD-GRIDTWOEL, ~85s single-threaded | `dft enpart tfvc rks threbod` |
+| `H2O-Dimer-RHF` | Water dimer, RHF — ENPART (HF), THREBOD 10 skips 6 atom pairs into the multipolar-approximation path (only active coverage for it) | `hf enpart tfvc rhf threbod multipolar fragments` |
+| `FeCN5NO3--UBLYP` | Iron cyanide/nitrosyl/nitrate complex, UKS BLYP — LOWDIN (first Hilbert-space AIM coverage), EFFAO, EOS, 7 fragments, open-shell | `dft lowdin effao eos uks fragments openshell` |
+| `NaBH3--UHF` | UHF — MULLI, PCA+EOS together (first `pca_analysis` coverage) | `hf uhf mulliken pca eos fragments` |
 
-All five run every time `make test` is invoked.
+All eight run every time `make test` is invoked.
 
 ## Adding a new test case
 

@@ -759,6 +759,53 @@
           "tol_abs": 0.05
         }
       ]
+    },
+    {
+      "name": "FeCN5NO3--UBLYP-t2",
+      "description": "Iron pentacyanonitrosylferrate dianion, UKS BLYP — TFVC (mandatory for OSLO's grid-dependent Smat) + OSLO with LOWDIN as the # OSLO fragment-population scheme, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for uwf_iterative_oslo (unrestricted OSLO) -- CH3F/FeO4-2 are both closed-shell despite earlier notes, so this is genuinely the first open-shell OSLO run in the suite. Reference .fchk/.inp/.apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; reference values here are a fresh run against the current codebase (the supplied .apost predates several printing changes, so its raw text doesn't diff cleanly, but the physics -- oxidation states, natural-orbital occupations -- matches it exactly).",
+      "tags": ["dft", "oslo", "lowdin", "tfvc", "uks", "fragments", "openshell"],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO", "OSLO/LOWDIN", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION", "OSLO/PRINT-NON-ORTHO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Fe fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CN ligand fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "NO3 fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "7\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "OSLO 1 alpha FOLI value",
+          "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
+          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00035,
+          "tol_abs": 2e-4
+        }
+      ]
     }
   ]
 }
