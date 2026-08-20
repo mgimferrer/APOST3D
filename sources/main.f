@@ -569,7 +569,7 @@ c      iopt(200) =
 !! cas/cisd specifications !!
       nelec=nalf+nb
       if(icorr.ne.0) then
-        call print_box('Post-Hartree-Fock calculation')
+        call print_box('POST-HARTREE-FOCK CALCULATION')
 
         if(icisd.eq.1) nspinorb=nbasis*2
 
@@ -621,9 +621,8 @@ c      iopt(200) =
 
 !! Local spin decomposition, single-determinant WF !!
       if(ispin.eq.1.and.icas.eq.0.and.icisd.eq.0) then
-        call print_box('Doing local spin analysis')
+        call print_box('DOING LOCAL SPIN ANALYSIS')
         write(*,'(3x,a)') 'Single-determinant case'
-        write(*,*)
         call fspindec(sat)
         if (idofr.eq.1) then 
           line ='   FRAGMENT ANALYSIS : Local Spin Analysis'
@@ -636,9 +635,8 @@ c      iopt(200) =
 !! Local spin and DIs for correlated WFs, needs dm1/dm2 from the DMN   !!
 !! code (E. Matito) or from pySCF                                      !!
       if((icas.eq.1.or.icisd.eq.1).and.ispin.eq.1)then
-        call print_box('Doing local spin analysis')
+        call print_box('DOING LOCAL SPIN ANALYSIS')
         write(*,'(3x,a)') 'Localization/delocalization, correlated WF'
-        write(*,*)
         call spincorr(sat,dm1,dm2)
         call cpu_time(time2)
         call get_wall_time(wtime2)
@@ -819,7 +817,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! Localized orbital bonding analysis (LOBA) !!
       if(iloba.eq.1) then
-        call print_box('Doing localized orbital bonding analysis (LOBA)')
+        call print_box('DOING LOCALIZED ORBITAL BONDING ANALYSIS (LOBA)')
 
 !! Hilbert-space !!
         if(imulli.gt.0) then
@@ -833,7 +831,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! Energy decomposition (ENPART) !!
       if(ienpart.eq.1) then
-        call print_box('Doing molecular energy decomposition')
+        call print_box('DOING MOLECULAR ENERGY DECOMPOSITION')
 
 !! One-electron part: CASSCF and CI WFs !!
         if(iposthf.eq.1) then
@@ -849,11 +847,22 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! Initialize DFT functional for info and initial printing !!
           if(id_xfunc.ne.-1) then
-            if(id_xcfunc.ne.0) call func_info_print(id_xcfunc,itype)
-            if(id_cfunc.ne.0) call func_info_print(id_cfunc,itype)
-            if(id_xfunc.ne.0) call func_info_print(id_xfunc,jtype)
+            ifuncfirst=1
+            if(id_xcfunc.ne.0) then
+              call func_info_print(id_xcfunc,itype,ifuncfirst)
+              ifuncfirst=0
+            end if
+            if(id_cfunc.ne.0) then
+              call func_info_print(id_cfunc,itype,ifuncfirst)
+              ifuncfirst=0
+            end if
+            if(id_xfunc.ne.0) then
+              call func_info_print(id_xfunc,jtype,ifuncfirst)
+              ifuncfirst=0
+            end if
             if(itype.ge.jtype) iopt(55) = itype
             if(jtype.gt.itype) iopt(55) = jtype
+            write(*,*) " "
           end if
 
 !! Restricted case !!
@@ -914,7 +923,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !! Two-electron part !!
 
 !! Two-electron integration defaults !!
-        call print_box('Setting grid for two-electron numerical integration')
+        call print_box('SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION')
 
 !! Controlled by # GRID option (modgrid common) !!
 !! Default grid is now 150/590, can be changed to 40/146 but ensure to also modify pha and phb !!
@@ -1010,7 +1019,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! OSLO -- variants of the procedure can be found in the dev version !!
       if(ioslo.eq.1) then
-        call print_box('Doing oxidation states from localized orbitals (OSLO)')
+        call print_box('DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)')
         call cpu_time(time)
         call get_wall_time(wtime)
 
@@ -1038,7 +1047,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! X-ray scattering factors !!
       if(iscattfact.eq.1) then
-        call print_box('Evaluating X-ray scattering factors')
+        call print_box('EVALUATING X-RAY SCATTERING FACTORS')
         call scattering_factors(itotps,wp,rho,omp2,pcoord)
       end if
 

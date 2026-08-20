@@ -71,7 +71,7 @@
       iatps   = nang*nrad
       xxdip   = ZERO
 
-      call print_box('GENERAL ONE-ELECTRON PART')
+      call print_subbox('GENERAL ONE-ELECTRON PART')
 
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
 
@@ -87,6 +87,7 @@
       call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
         write(*,*) "Adding ECP atomic energies to E-N terms"
+        write(*,*) " "
         do ii=1,nat
           epa(ii,ii)=eecp(ii)
         end do
@@ -174,7 +175,7 @@
       end do
       eelnuc=xtot
 
-      call print_box('ELECTRON-NUCLEAR ATTRACTION')
+      call print_subbox('ELECTRON-NUCLEAR ATTRACTION')
       call MPRINT2(epa,nat,maxat)
       write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
 
@@ -185,7 +186,6 @@
       else
         eelnuc0=eelnuc
       end if
-      write(*,*) " "
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Electron-nuclei attraction '
         call group_by_frag_mat(1,line,epa)
@@ -238,7 +238,6 @@
       else
         ekin0=ekinen
       end if
-      write(*,*) " "
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy '
         call group_by_frag_mat(1,line,ekin)
@@ -263,12 +262,11 @@
       call print_box('NUCLEAR-NUCLEAR REPULSION')
       call MPRINT2(enuc,nat,maxat)
       write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
-      write(*,*) " "
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
         call group_by_frag_mat(1,line,enuc)
-        write(*,*)
       end if
+      write(*,*) " "
 
       if(ifield.eq.1) then
         xxx=ZERO
@@ -453,7 +451,7 @@
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
-      write(*,*) " "
+      if(ianalytical.eq.1.or.idoex.eq.0) write(*,*) " "
       xtime=xtime2
       wxtime=wxtime2
 
@@ -608,7 +606,6 @@
             end do
           end do
           write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
-          write(*,*) " "
 
 !! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
           ALLOCATE(exch_hfij(ipaircounter,ithreads))
@@ -704,7 +701,7 @@
           call cpu_time(xtime2)
           call get_wall_time(wxtime2)
           call print_timer('Exact-exchange energy',xtime2-xtime,wxtime2-wxtime)
-          write(*,*) " "
+          if(ihf.eq.1) write(*,*) " "
           xtime=xtime2
           wxtime=wxtime2
         end if
@@ -892,9 +889,9 @@
           end do
         end do
         write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-        write(*,*) " "
+        if(idoex.eq.0) write(*,*) " "
         if(idofr.eq.1) then
-          line=' FRAGMENT ANALYSIS: Coulomb energy ' 
+          line=' FRAGMENT ANALYSIS: Coulomb energy '
           call group_by_frag_mat(1,line,coul)
         end if
 
@@ -908,7 +905,7 @@
             end do
           end do
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-          write(*,*) " "
+          if(ihf.eq.1) write(*,*) " "
 
           if(ihf.ne.1) then
             exchen=ZERO
@@ -923,13 +920,13 @@
             call print_box('INTERPOLATED HYBRID KS-DFT XC TERMS')
             call MPRINT2(exch,nat,maxat)
             write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-            write(*,*) " "
             if(idofr.eq.1) then
-              line=' FRAGMENT ANALYSIS: Final Exc Decomposition ' 
+              line=' FRAGMENT ANALYSIS: Final Exc Decomposition '
               call group_by_frag_mat(1,line,exch)
             end if
+            write(*,*) " "
           end if
-        else    
+        else
           exchen=ZERO
           do i=1,nat
             exchen=exchen+exch(i,i)
@@ -950,7 +947,6 @@
           twoelerr=(evee-evee0)*tokcal
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         end if
-        write(*,*) " "
 
       end if
 
@@ -1064,7 +1060,7 @@
       iatps   =  nang*nrad
       xxdip   =  ZERO
 
-      call print_box('GENERAL ONE-ELECTRON PART')
+      call print_subbox('GENERAL ONE-ELECTRON PART')
 
       ALLOCATE(chp2(itotps,nalf),chp3(itotps,nb))
 
@@ -1081,6 +1077,7 @@
       call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
         write(*,*) "Adding ECP atomic energies to E-N terms"
+        write(*,*) " "
         do i=1,nat
           epa(i,i)=eecp(i)
         end do
@@ -1167,7 +1164,7 @@
       end do
       eelnuc=xtot
 
-      call print_box('ELECTRON-NUCLEAR ATTRACTION')
+      call print_subbox('ELECTRON-NUCLEAR ATTRACTION')
       call MPRINT2(epa,nat,maxat)
       write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
 
@@ -1175,7 +1172,6 @@
 !! atomic epa contributions above -- keeps this check apples-to-apples.  !!
       if(eelnuc0.ne.ZERO) then
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
-        write(*,*) ' '
       else
         eelnuc0=eelnuc
       end if
@@ -1236,7 +1232,6 @@
       else
         ekin0=ekinen
       end if
-      write(*,*) " "
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy '
         call group_by_frag_mat(1,line ,ekin)
@@ -1264,12 +1259,11 @@
       call print_box('NUCLEAR-NUCLEAR REPULSION')
       call MPRINT2(enuc,nat,maxat)
       write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
-      write(*,*) " "
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
         call group_by_frag_mat(1,line,enuc)
-        write(*,*)
       end if
+      write(*,*) " "
 
       if(ifield.eq.1) then
         xxx=ZERO
@@ -1455,7 +1449,7 @@
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
-      write(*,*) " "
+      if(ianalytical.eq.1.or.idoex.eq.0) write(*,*) " "
       xtime=xtime2
       wxtime=wxtime2
 
@@ -1633,7 +1627,6 @@
             end do
           end do
           write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
-          write(*,*) " "
 
 !! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
           ALLOCATE(exch_hfij(ipaircounter,ithreads))
@@ -1728,7 +1721,7 @@
           call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
           call MPRINT2(exch_hf,nat,maxat)
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-          write(*,*) " "
+          if(ihf.eq.1) write(*,*) " "
         end if
       end if !MMO- non-analytical skip ends here
 
@@ -1935,7 +1928,6 @@
             exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
           end if
         end do
-        write(*,*) " "
 
         call print_box('INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
         call MPRINT2(coul,nat,maxat)
@@ -1946,9 +1938,9 @@
           end do
         end do
         write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-        write(*,*) " "
+        if(idoex.eq.0) write(*,*) " "
         if(idofr.eq.1) then
-          line='   FRAGMENT ANALYSIS: Coulomb energy ' 
+          line='   FRAGMENT ANALYSIS: Coulomb energy '
           call group_by_frag_mat(1,line ,coul)
         end if
 
@@ -1962,7 +1954,7 @@
             end do
           end do
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-          write(*,*) " "
+          if(ihf.eq.1) write(*,*) " "
 
           if(ihf.ne.1) then
             exchen=ZERO
@@ -1981,11 +1973,11 @@
             call print_box('INTERPOLATED HYBRID KS-DFT XC TERMS')
             call MPRINT2(exch,nat,maxat)
             write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-            write(*,*) " "
             if(idofr.eq.1) then
-              line='   FRAGMENT ANALYSIS: Final Exc Decomposition ' 
+              line='   FRAGMENT ANALYSIS: Final Exc Decomposition '
               call group_by_frag_mat(1,line ,exch)
             end if
+            write(*,*) " "
           end if
         else    
           exchen=ZERO
@@ -2009,7 +2001,6 @@
           twoelerr=(evee-evee0)*tokcal
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         end if
-        write(*,*) " "
       end if
 
       if(ihf.eq.1) then
@@ -2857,12 +2848,11 @@ c  energetics
       call print_box('COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
       call MPRINT2(coul,nat,maxat)
       write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-      write(*,*) " "
       if(idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: Coulomb energy '
         call group_by_frag_mat(1,line,coul)
-        write(*,*)
       end if
+      write(*,*) " "
 
       end
 
