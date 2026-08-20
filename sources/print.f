@@ -177,7 +177,12 @@
       if(iqtaim.eq.2) cbuf=trim(cbuf)//' QTAIM (READINT, reusing prior results);'
       cbuf=adjustl(cbuf)
       nlen=len_trim(cbuf)
-      if(nlen.gt.0.and.cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+!! nlen==0 is possible (no real-space AIM scheme active) -- split into two   !!
+!! ifs rather than one .and., since Fortran doesn't guarantee short-circuit !!
+!! evaluation and cbuf(0:0) trips -fbounds-check.                           !!
+      if(nlen.gt.0) then
+        if(cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+      end if
       if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
      +  'Atomic partitioning (real-space)     :',trim(cbuf)
 
@@ -264,7 +269,11 @@
       if(iwfn.eq.1) cbuf=trim(cbuf)//' WFN;'
       cbuf=adjustl(cbuf)
       nlen=len_trim(cbuf)
-      if(nlen.gt.0.and.cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+!! nlen==0 is possible (native .fchk, no QCHEM/MOKIT/WFN) -- same           !!
+!! short-circuit concern as above.                                         !!
+      if(nlen.gt.0) then
+        if(cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+      end if
       if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
      +  'Wavefunction source                  :',trim(cbuf)
 
@@ -324,7 +333,11 @@
         if(iecorr.eq.1) cbuf=trim(cbuf)//' CORRELATION;'
         cbuf=adjustl(cbuf)
         nlen=len_trim(cbuf)
-        if(nlen.gt.0.and.cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+!! nlen==0 is possible (no extra ENPART option active) -- same             !!
+!! short-circuit concern as above.                                        !!
+        if(nlen.gt.0) then
+          if(cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
+        end if
         if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
      +    'Extra options           :',trim(cbuf)
 
