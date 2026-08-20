@@ -1,534 +1,404 @@
+!! ********************************************************************* !!
+!! subroutine: fborder                                                   !!
+!! purpose: builds the "fuzzy atoms" bond order matrix (bo/di, via the   !!
+!!   R-index trace of P*S^A products, Ps-corrected for open-shell) and   !!
+!!   the three derived valence tables (total/used-in-bonds/free).        !!
+!!   called from bond_order_analysis for every AIM scheme -- sat already !!
+!!   encodes which one (numint_sat/tomull/tolow/...).                    !!
+!! arguments:                                                            !!
+!!   sat (in) -- per-atom AO overlap matrix                              !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine fborder(sat)
       use basis_set
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /qat/qat(maxat,2),qsat(maxat,2)
+      common /ovpop/ op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common /qat/ qat(maxat,2),qsat(maxat,2)
       dimension sat(nbasis,nbasis,natoms)
 
       dimension rindex(maxat,maxat),tindex(maxat),diag(maxat)
       allocatable tt(:,:,:)
-      allocate (tt(nbasis,nbasis,natoms))
+      allocate(tt(nbasis,nbasis,natoms))
 
-C  COMPUTE THE MATRIX PRODUCTS P*S^A
-C
+!! P*S^A matrix products, contracted into the R-index trace below. !!
       do iat=1,natoms
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=0.d0
-         do itau=1,nbasis
-          x=x+P(mu,itau)*sat(itau,nu,iat)
-         enddo
-         tt(mu,nu,iat)=x
-        enddo
-       enddo
-      enddo
-
-      do iat=1,natoms
-       do ibt=iat,natoms
-        x=0.d0
         do mu=1,nbasis
-         do nu=1,nbasis
-           x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-         enddo
-        enddo
-        rindex(iat,ibt)=x
-        rindex(ibt,iat)=x
-       enddo
-       diag(iat)=rindex(iat,iat)
-      enddo
-
-c Ps contribution
-      if(kop.ne.0)then
-       do iat=1,natoms
-        do mu=1,nbasis
-         do nu=1,nbasis
-          x=0.d0
-          do itau=1,nbasis
-           x=x+Ps(mu,itau)*sat(itau,nu,iat)
-          enddo
-          tt(mu,nu,iat)=x
-         enddo
-        enddo
-       enddo
-       do iat=1,natoms
-        do ibt=iat,natoms
-         x=0.d0
-         do mu=1,nbasis
           do nu=1,nbasis
-           x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+            x=0.d0
+            do itau=1,nbasis
+              x=x+p(mu,itau)*sat(itau,nu,iat)
+            enddo
+            tt(mu,nu,iat)=x
           enddo
-         enddo
-         rindex(iat,ibt)=rindex(iat,ibt)+x
-         rindex(ibt,iat)=rindex(iat,ibt)
         enddo
-       enddo
+      enddo
+
+      do iat=1,natoms
+        do ibt=iat,natoms
+          x=0.d0
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+            enddo
+          enddo
+          rindex(iat,ibt)=x
+          rindex(ibt,iat)=x
+        enddo
+!! diag(iat) is captured here from the P-only R-index, before the Ps    !!
+!! correction below is folded into rindex -- TOTAL VALENCES (built from !!
+!! diag, see the tail of this routine) is therefore P-only even for     !!
+!! open-shell (kop!=0), while the bond order matrix/valences-in-bonds   !!
+!! (built from rindex) do get the Ps correction. Possibly inconsistent  !!
+!! for open-shell systems; not changed pending confirmation.            !!
+        diag(iat)=rindex(iat,iat)
+      enddo
+
+!! Ps contribution (open-shell only) !!
+      if(kop.ne.0) then
+        do iat=1,natoms
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=0.d0
+              do itau=1,nbasis
+                x=x+ps(mu,itau)*sat(itau,nu,iat)
+              enddo
+              tt(mu,nu,iat)=x
+            enddo
+          enddo
+        enddo
+        do iat=1,natoms
+          do ibt=iat,natoms
+            x=0.d0
+            do mu=1,nbasis
+              do nu=1,nbasis
+                x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+              enddo
+            enddo
+            rindex(iat,ibt)=rindex(iat,ibt)+x
+            rindex(ibt,iat)=rindex(iat,ibt)
+          enddo
+        enddo
       endif
-c
-c Savinig bo matrix. di will be overwritten in case of correlated calcualtion
+
+!! save the bond order matrix -- di gets overwritten later for a !!
+!! correlated (CAS/CISD) calculation. !!
       do i=1,natoms
-       do j=1,natoms
-        if (i.eq.j) then
-         bo(i,i)=rindex(i,i)*0.5d0    
-        else
-         bo(i,j)=rindex(i,j)     
-        end if
-        di(i,j)=bo(i,j)     
-       end do
-      end do
-c making zeroes for printing purposes
+        do j=1,natoms
+          if(i.eq.j) then
+            bo(i,i)=rindex(i,i)*0.5d0
+          else
+            bo(i,j)=rindex(i,j)
+          endif
+          di(i,j)=bo(i,j)
+        enddo
+      enddo
+
+!! zero the diagonal so it can be reused as the valence sum below !!
       do i=1,natoms
-      rindex(i,i)=0.d0
+        rindex(i,i)=0.d0
       enddo
 
       call print_box('"FUZZY ATOMS" BOND ORDER MATRIX')
-      CALL Mprint2(bo,NATOMS,maxat)
-C
-C CALCULATION OF THE VALENCE NUMBERS
-C
-      DO I=1,NATOMS
-       X=0.D0
-       DO  J=1,NATOMS
-        X=X+rindex(I,J)
-       end do
-      rindex(I,I)=X
-      end do
-      do i=1,natoms 
-       tindex(i)=rindex(i,i)
-       diag(i)=2.d0*qat(i,1)-diag(i)
+      call mprint2(bo,natoms,maxat)
+
+!! valence numbers !!
+      do i=1,natoms
+        x=0.d0
+        do j=1,natoms
+          x=x+rindex(i,j)
+        enddo
+        rindex(i,i)=x
       enddo
-      
+      do i=1,natoms
+        tindex(i)=rindex(i,i)
+        diag(i)=2.d0*qat(i,1)-diag(i)
+      enddo
+
       call print_valence_table('TOTAL VALENCES',' ','Total valences',
      +  'V_A',diag)
       call print_valence_table('VALENCES USED IN BONDS',
      +  '(SUM OF BOND ORDERS)','Valences used in bonds','VB_A',tindex)
       do i=1,natoms
-      diag(i)=diag(i)-tindex(i)
+        diag(i)=diag(i)-tindex(i)
       enddo
       call print_valence_table('FREE VALENCES',' ','Free valences',
      +  'F_A',diag)
 
       deallocate(tt)
-      
+
       return
       end
 
       
 
+!! ********************************************************************* !!
+!! subroutine: opop                                                      !!
+!! purpose: builds the atom-pair overlap population matrix (op) by       !!
+!!   numerical integration of the density weighted by each atom's        !!
+!!   fuzzy-partition weight -- the default scheme (iallpo=0) integrates  !!
+!!   each atom's own grid; ALLPOINTS (iallpo=1) instead pre-weights rho   !!
+!!   once and re-sums it over the full grid for every atom pair.         !!
+!! arguments:                                                            !!
+!!   wp        (in) -- integration weight of each grid point             !!
+!!   omp       (in) -- becke weight of each grid point (ALLPOINTS only)  !!
+!!   omp2      (in) -- per-atom fuzzy weight of each grid point          !!
+!!   rho       (in) -- electron density at each grid point (ALLPOINTS    !!
+!!                      rescales this array in place)                    !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine opop(wp,omp,omp2,rho)
       use basis_set, only: natoms
       use ao_matrices
       use integration_grid
-      IMPLICIT REAL*8(A-H,O-Z)
+      implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common/actual/iact,jat,icenter
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(200)
-      common /achi/achi(maxat,maxat),ibcp
+      common /actual/ iact,jat,icenter
+      common /ovpop/ op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common /iops/ iopt(200)
+      common /achi/ achi(maxat,maxat),ibcp
       dimension wp(nrad*nang*natoms),rho(nrad*nang*natoms)
       dimension omp(nrad*nang*natoms),omp2(nrad*nang*natoms,natoms)
 
-
-c IOPS
-      idono=iopt(4)
-      iallpo = iopt(7) 
+      iallpo=iopt(7)
 
       iatps=nrad*nang
       itotps=iatps*natoms
 
-c igr= number of basis functions
-c iatps = number of grid points per atom
-c wp(i) = integration weight of the ith grid point
-c chp(i,j) = value of the jth atomic orbital at the ith grid point
-c omp(i) =  becke weight of the ith point of the atom to which the point belongs
-
-c Computing  overlap population      
-c each atom with its own grid points
-       do i=1,natoms
+!! not parallelized: called once per calculation on a small (natoms^2) !!
+!! matrix, negligible next to the numerical-integration hot paths.     !!
+      do i=1,natoms
         do j=1,natoms
-         op(i,j)=0.0d0
-        end do
-       end do
+          op(i,j)=0.0d0
+        enddo
+      enddo
 
-       if(iallpo.eq.0) then
+      if(iallpo.eq.0) then
+!! default scheme: each atom integrated over its own grid points !!
         do icenter=1,natoms
-         do ifut=iatps*(icenter-1)+1,iatps*icenter
-          do jcenter=icenter,natoms
-           op(icenter,jcenter)=op(icenter,jcenter)+wp(ifut)*rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
-          end do
-         enddo
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            do jcenter=icenter,natoms
+              op(icenter,jcenter)=op(icenter,jcenter)+wp(ifut)*rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
+            enddo
+          enddo
         enddo
-       else if(iallpo.eq.1) then ! overriding rho
+      else if(iallpo.eq.1) then
+!! ALLPOINTS scheme: pre-weight rho once, then re-sum it over the full !!
+!! grid for every atom pair.                                          !!
         do kcenter=1,natoms
-         do ifut=iatps*(kcenter-1)+1,iatps*kcenter
-           rho(ifut)=wp(ifut)*omp(ifut)*rho(ifut)
-         end do
-        end do
-        do ifut=1,itotps 
-         do icenter=1,natoms
-          do jcenter=icenter,natoms
-           op(icenter,jcenter)=op(icenter,jcenter)+rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
-          end do
-         enddo
+          do ifut=iatps*(kcenter-1)+1,iatps*kcenter
+            rho(ifut)=wp(ifut)*omp(ifut)*rho(ifut)
+          enddo
         enddo
-       end if 
+        do ifut=1,itotps
+          do icenter=1,natoms
+            do jcenter=icenter,natoms
+              op(icenter,jcenter)=op(icenter,jcenter)+rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
+            enddo
+          enddo
+        enddo
+      endif
 
-       xx0=0.0d0
-       do icenter=1,natoms
-        xx0=xx0+op(icenter,icenter)
+      do icenter=1,natoms
         do jcenter=icenter+1,natoms
-         op(jcenter,icenter)=op(icenter,jcenter)
-         xx0=xx0+2.0d0*op(icenter,jcenter)
-        end do
-       end do
+          op(jcenter,icenter)=op(icenter,jcenter)
+        enddo
+      enddo
 
-      return 
+      return
       end
 
+!! ********************************************************************* !!
+!! subroutine: fspindec                                                  !!
+!! purpose: "fuzzy atoms" local-spin decomposition for a single-         !!
+!!   determinant density (the SPIN keyword's default path -- spincorr    !!
+!!   in corr.f is the sibling correlated-wavefunction, icas/icisd        !!
+!!   branch). Prints effectively unpaired electrons (u_A), the a=3/4     !!
+!!   <S^2> decomposition (I. Mayer, P. Salvador), and its Davidson-      !!
+!!   Lowdin-basis twin.                                                  !!
+!! arguments:                                                            !!
+!!   sat (in) -- per-atom AO overlap matrix (numint_sat/tomull/tolow)    !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine fspindec(sat)
       use basis_set
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /qat/qat(maxat,2),qsat(maxat,2)
-      common /localspin/xlsa(maxat,maxat),ua(maxat)
+      common /qat/ qat(maxat,2),qsat(maxat,2)
+      common /localspin/ xlsa(maxat,maxat),ua(maxat)
       dimension sat(nbasis,nbasis,natoms)
-c
-      dimension rindex1(maxat,maxat), rindex2(maxat,maxat)
-      dimension rindex3(maxat,maxat) ,rindex(maxat,maxat)
-      dimension tt(:,:,:)
-      dimension tts(:,:)
-      allocatable tt
-      allocatable tts
+      dimension rindex(maxat,maxat)
+      allocatable tt(:,:,:),tts(:,:)
 
-c
-C
-c
-C    CALCULATING "FUZZY" BOND-ORDER AND VALENCE INDICES 
-C  According to I. MAYER and P. SALVADOR, to be published  
-C
-c
-C  Input parameters: Pa: Total electron density matrix;
-c                    Pb: Spin density matrix;
-c                    S: Overlap matrix; 
-c                    Illim and Iulim: arrays of lower and upper limits of the 
-c                                basis orbitals belonging to a given atom;
-c                    Natoms: number of the atoms;
-c                    Nbasis: number of basis orbitals.
-C  
-c     Uses also:     qsat(maxat,2): an array, the first column of which
-c                    contains "fuzzy atom" populations of individual atoms
-C  
-c       
-      allocate (tt(nbasis,nbasis,natoms))
-      allocate (tts(nbasis,nbasis))
+      allocate(tt(nbasis,nbasis,natoms))
+      allocate(tts(nbasis,nbasis))
 
       do mu=1,nbasis
-       do nu=1,nbasis
-        tts(mu,nu)=0.0d0
-       enddo 
-      enddo
-
-      do iat=1,natoms
-       do mu=1,nbasis
         do nu=1,nbasis
-         x=0.d0
-         do itau=1,nbasis
-          x=x+ps(mu,itau)*sat(itau,nu,iat)
-         enddo
-         tt(mu,nu,iat)=x
-         tts(mu,nu)=tts(mu,nu)+x
+          tts(mu,nu)=0.0d0
         enddo
-       enddo
       enddo
 
-C Number of efectively unpaired electrons
-      sum=0.0d0
-      do iat=1,natoms
-       x=0.0d0  
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=x+tt(mu,nu,iat)*tts(nu,mu)
-        enddo
-       enddo
-       ua(iat)=x
-       sum=sum+x
-      enddo
-      print *,'  '
-      print *,' EFFECTIVELY UNPAIRED ELECTRONS'
-      print *,'  '
-      print *,'    Atom     u_A'
-      print *,' -----------------'
-      call vprint(ua,nat,maxat,1)
-      print *,' ------------------'
-      write(*,'(a16,f10.5)') ' Sum check N_D = ' ,sum 
+!! parallelization: not done. The O(nbasis^2*natoms^2) iat/ibt/mu/nu     !!
+!! loops below (a=3/4 and Davidson decompositions) are the dominant     !!
+!! cost, same profile as spincorr's in corr.f -- no codebase precedent  !!
+!! yet for an array-accumulate REDUCTION at this size, and every active !!
+!! test system here is small enough that it isn't currently a           !!
+!! bottleneck.                                                          !!
 
-CCCCC
-C DEPRECATED
-CCCCC
-      if(1.eq.0) then
-C No U decomposition !!!!  
-      sum=0.0d0
+!! Ps*S^A products, tts is their sum over atoms !!
       do iat=1,natoms
-       do ibt=iat,natoms
-        x=0.0d0  
         do mu=1,nbasis
-         do nu=1,nbasis
-          x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-         enddo
+          do nu=1,nbasis
+            x=0.d0
+            do itau=1,nbasis
+              x=x+ps(mu,itau)*sat(itau,nu,iat)
+            enddo
+            tt(mu,nu,iat)=x
+            tts(mu,nu)=tts(mu,nu)+x
+          enddo
         enddo
-        rindex(iat,ibt)=x*0.50d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-        rindex(ibt,iat)=rindex(iat,ibt)
-        sum=sum+rindex(iat,ibt)
-        if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
-       enddo
       enddo
 
-
-c     CALL Mprint(rindex,NATOMS,maxat)
-c      WRITE(*,6342)
-c 6342 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=0)'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
-c      write(*,*) ' '
-c      write(*,*) '<S^2> = ',sum
-
-
-C     U Decomposition 
+!! effectively unpaired electrons !!
       sum=0.0d0
       do iat=1,natoms
-      x=0.0d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tts(mu,nu)*tt(nu,mu,iat)
-      enddo
-      enddo
-      rindex(iat,iat)=x*0.50d0+(qsat(iat,1)*qsat(iat,1))*0.25d0
-      sum=sum+rindex(iat,iat)
-      do ibt=iat+1,natoms
-      rindex(iat,ibt)=(qsat(iat,1)*qsat(ibt,1))*0.25d0
-      rindex(ibt,iat)=rindex(iat,ibt)
-      sum=sum+2.0d0*rindex(iat,ibt)
-      enddo
-      enddo
-
-c      WRITE(*,6352)
-c 6352 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=1/2)'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
-c      write(*,*) ' '
-c      write(*,*) '<S^2> = ',sum
-
-C   3/8  U Decomposition 
-
-      sum=0.0d0
-      do iat=1,natoms
-      do jat=1,natoms
-       rindex(iat,jat)=0.0d0
-      end do 
-      end do 
-
-
-      do iat=1,natoms
-      x=0.0d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tts(mu,nu)*tt(nu,mu,iat)
-      enddo
-      enddo
-      rindex(iat,iat)=x*0.375d0
-      do ibt=iat,natoms
-      x=0.0d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tt(mu,nu,ibt)*tt(nu,mu,iat)
-      enddo
-      enddo
-      rindex(iat,ibt)=rindex(iat,ibt)+
-     &                x*0.125d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-      rindex(ibt,iat)=rindex(iat,ibt)
-      sum=sum+rindex(iat,ibt)
-      if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
-      enddo
-      enddo
-
-c      WRITE(*,6333)
-c 6333 FORMAT(1x,/21X,'3/8 U "FUZZY ATOMS" SPIN DECOMPOSITION MATRIX'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
-c      write(*,*) ' '
-c      write(*,*) '<S^2> = ',sum
-
-      end if
-CCCCC
-C DEPRECATED
-CCCCC
-
-C   3/4  U Decomposition 
-
-      sum=0.0d0
-      do iat=1,natoms
-      do jat=1,natoms
-       rindex(iat,jat)=0.0d0
-       rindex1(iat,jat)=0.0d0
-       rindex2(iat,jat)=0.0d0
-      end do 
-      end do 
-
-
-      do iat=1,natoms
-       x=0.0d0
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=x+tts(mu,nu)*tt(nu,mu,iat)
-        enddo
-       enddo
-       rindex(iat,iat)=x*0.750d0
-       rindex3(iat,iat)=x*0.750d0
-       do ibt=iat,natoms
         x=0.0d0
         do mu=1,nbasis
-         do nu=1,nbasis
-          x=x+tt(mu,nu,ibt)*tt(nu,mu,iat)
-         enddo
+          do nu=1,nbasis
+            x=x+tt(mu,nu,iat)*tts(nu,mu)
+          enddo
         enddo
-        rindex(iat,ibt)=rindex(iat,ibt)-x*0.25d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-        rindex(ibt,iat)=rindex(iat,ibt)
-c      rindex1(iat,ibt)=rindex1(iat,ibt)-x*0.25d0
-c      rindex2(iat,ibt)=rindex2(iat,ibt)+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-c      rindex1(ibt,iat)=rindex1(iat,ibt)
-c      rindex2(ibt,iat)=rindex2(iat,ibt)
-        sum=sum+rindex(iat,ibt)
-        if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
-       enddo
+        ua(iat)=x
+        sum=sum+x
       enddo
 
-c deprecated
-      if(1.eq.0) then
-      print *,' '
-      print *,'                  *** RECOMMENDED FORMULATION *** '
-      WRITE(*,6090)
- 6090 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)'//)
-      CALL Mprint(rindex3,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,*) '<S^2> = ',sum
+      call print_box('EFFECTIVELY UNPAIRED ELECTRONS')
+      write(*,'(1x,a7,a12)') 'Atom','u_A'
+      write(*,'(2x,a)') repeat('-',18)
+      call vprint(ua,nat,maxat,1)
+      write(*,'(2x,a)') repeat('-',18)
+      write(*,'(2x,a,f10.5)') 'Sum check N_D = ',sum
 
-
-      WRITE(*,6091)
- 6091 FORMAT(1x,/21X,'3/4 U2 "FUZZY ATOMS" SPIN DECOMPOSITION MATRIX'//)
-      CALL Mprint(rindex1,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,*) '<S^2> = ',sum
-
-
-      WRITE(*,6092)
- 6092 FORMAT(1x,/21X,'3/4 U3 "FUZZY ATOMS" SPIN DECOMPOSITION MATRIX'//)
-      CALL Mprint(rindex2,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,*) '<S^2> = ',sum
-      end if
-
-c LSA
-      print *,' '
-      WRITE(*,6313)
- 6313 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)'//)
-      CALL Mprint(rindex,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,'(a20,f10.5)') 'Sum check  <S^2> = ' ,sum
-      write(*,*) ' '
-
-      do i=1,natoms
-       do j=1,natoms
-        xlsa(i,j)=rindex(i,j)
-       end do
-      end do
-
-C
-C NOW DAVIDOSN
-C
-C
-C  COMPUTE THE MATRIX PRODUCTS P*S^A
-C
-      do iat=1,natoms
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=0.d0
-      do itau=1,nbasis
-      x=x+p(mu,itau)*sat(itau,nu,iat)
-      enddo
-      tt(mu,nu,iat)=x
-      enddo
-      enddo
-      enddo
-
-      do iat=1,natoms
-      xx0=0.d0
-      do ibt=1,natoms
- 
-      x=0.d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-      enddo
-      enddo
-      if(iat.ne.ibt) then
-       rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
-       xx0=xx0+x
-      end if
-      
-      enddo
-      rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
-      enddo
-
-      if(kop.ne.0)then
-
-      do iat=1,natoms
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=0.d0
-      do itau=1,nbasis
-      x=x+ps(mu,itau)*sat(itau,nu,iat)
-      enddo
-      tt(mu,nu,iat)=x
-      enddo
-      enddo
-      enddo
-
-      do iat=1,natoms
-      xx0=0.d0
-      do ibt=1,natoms
- 
-      x=0.d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-      enddo
-      enddo
-
-      if(iat.ne.ibt) then 
-       rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
-       xx0=xx0+x
-      end if
-      
-      enddo
-      rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
-      enddo
-
-      end if
-
-      WRITE(*,6343)
- 6343 FORMAT(1x,/21X,'"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX'//)
-      CALL Mprint(rindex,NATOMS,maxat)
+!! a=3/4 U decomposition (I. Mayer, P. Salvador local-spin formula) !!
       sum=0.0d0
       do iat=1,natoms
-      do ibt=1,natoms
-       sum=sum+rindex(iat,ibt)
-      end do
-      end do
-      write(*,*) ' '
-      write(*,'(a20,f10.5)') 'Sum check  <S^2> = ' ,sum
-      write(*,*) ' '
+        do jat=1,natoms
+          rindex(iat,jat)=0.0d0
+        enddo
+      enddo
+
+      do iat=1,natoms
+        x=0.0d0
+        do mu=1,nbasis
+          do nu=1,nbasis
+            x=x+tts(mu,nu)*tt(nu,mu,iat)
+          enddo
+        enddo
+        rindex(iat,iat)=x*0.750d0
+        do ibt=iat,natoms
+          x=0.0d0
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=x+tt(mu,nu,ibt)*tt(nu,mu,iat)
+            enddo
+          enddo
+          rindex(iat,ibt)=rindex(iat,ibt)-x*0.25d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
+          rindex(ibt,iat)=rindex(iat,ibt)
+          sum=sum+rindex(iat,ibt)
+          if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
+        enddo
+      enddo
+
+      call print_box('"FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)')
+      call mprint(rindex,natoms,maxat)
+      write(*,*)
+      write(*,'(2x,a,f10.5)') 'Sum check <S^2> = ',sum
+
+      do i=1,natoms
+        do j=1,natoms
+          xlsa(i,j)=rindex(i,j)
+        enddo
+      enddo
+
+!! Davidson-Lowdin-basis twin -- rindex is safely reused here, xlsa      !!
+!! already holds the a=3/4 result saved above. P*S^A products first,    !!
+!! then the Ps correction (open-shell only).                            !!
+      do iat=1,natoms
+        do mu=1,nbasis
+          do nu=1,nbasis
+            x=0.d0
+            do itau=1,nbasis
+              x=x+p(mu,itau)*sat(itau,nu,iat)
+            enddo
+            tt(mu,nu,iat)=x
+          enddo
+        enddo
+      enddo
+
+      do iat=1,natoms
+        xx0=0.d0
+        do ibt=1,natoms
+          x=0.d0
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+            enddo
+          enddo
+          if(iat.ne.ibt) then
+            rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
+            xx0=xx0+x
+          endif
+        enddo
+        rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
+      enddo
+
+      if(kop.ne.0) then
+        do iat=1,natoms
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=0.d0
+              do itau=1,nbasis
+                x=x+ps(mu,itau)*sat(itau,nu,iat)
+              enddo
+              tt(mu,nu,iat)=x
+            enddo
+          enddo
+        enddo
+
+        do iat=1,natoms
+          xx0=0.d0
+          do ibt=1,natoms
+            x=0.d0
+            do mu=1,nbasis
+              do nu=1,nbasis
+                x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+              enddo
+            enddo
+            if(iat.ne.ibt) then
+              rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
+              xx0=xx0+x
+            endif
+          enddo
+          rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
+        enddo
+      endif
+
+      call print_box('"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX')
+      call mprint(rindex,natoms,maxat)
+      sum=0.0d0
+      do iat=1,natoms
+        do ibt=1,natoms
+          sum=sum+rindex(iat,ibt)
+        enddo
+      enddo
+      write(*,*)
+      write(*,'(2x,a,f10.5)') 'Sum check <S^2> = ',sum
 
       deallocate(tt,tts)
 
@@ -881,7 +751,7 @@ C
 !! swapped relative to its actual contract (pca/A0 comes back with       !!
 !! eigenvalues on its diagonal, scr/X holds the eigenvectors) -- but the !!
 !! code labels pca "PCA EIGENVECTORS" and prints scr as if it held       !!
-!! eigenvalues. See CLAUDE.md Known Issues.                              !!
+!! eigenvalues.                                                          !!
 !! arguments: none (all via op/di/qat/COMMON)                            !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
