@@ -790,6 +790,12 @@
       dimension sat(igr,igr,nat)
       dimension corb(igr,igr),orbpop(norb,nat)
 
+!! corb/sat read-only; each (icenter,iorb) pair accumulates into its own !!
+!! private xx and writes only its own orbpop slot, so no collisions.     !!
+!! COLLAPSE(2) is safe since neither bound depends on the other index,   !!
+!! and gives full nat*norb parallelism even when nat alone (icufr-sized  !!
+!! systems included) is too small to feed many cores.                   !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iorb,jj,kk,xx)
       do icenter=1,nat
         do iorb=1,norb
           xx=ZERO
@@ -801,6 +807,7 @@
           orbpop(iorb,icenter)=xx
         end do
       end do
+!$OMP END PARALLEL DO
 
       end
 
