@@ -189,7 +189,6 @@
       call print_box('RKS-DFT ENERGY DECOMPOSITION')
       write(*,*) " USING BOND ORDER DENSITY APPROACH "
       write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
-      write(*,*) " "
 
 !! per-atom AO overlap projected onto MOs (sab), used by the BODEN kernel !!
 !! below. parallel over iatom: each iteration only writes its own         !!
@@ -304,7 +303,6 @@
         end do
       end do
       write(*,*) " --------------------------- "
-      write(*,*) " "
 
       call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
@@ -315,7 +313,6 @@
         end do
       end do
       call MPRINT2(exch2,nat,maxat)
-      write(*,*) " "
 
       if(itype.gt.1) call sigma(pcoord,chp2,scr)
 
@@ -342,7 +339,6 @@
       write(*,*) " "
 
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
-      write(*,*) " "
       do ii=1,nat
         x0=ZERO
         do jj=1,nat
@@ -363,16 +359,15 @@
       end do
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
-      write(*,*) " "
       if(xmix.gt.ZERO) then
-        write(*,*) " WARNING: HF-exchange part missing "
         write(*,*) " "
+        write(*,*) " WARNING: HF-exchange part missing "
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Exc Decomposition'
         call group_by_frag_mat(1,line,exch)
-        write(*,*)
       end if
+      write(*,*) " "
 
       xtot=ZERO
       do ii=1,nat
@@ -883,7 +878,6 @@
       call print_box('UKS-DFT ENERGY DECOMPOSITION')
       write(*,*) " USING BOND ORDER DENSITY APPROACH "
       write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
-      write(*,*) " "
 
 !! per-atom MO overlap, alpha (sab) and beta (sab2). parallel over       !!
 !! iatom: each iteration only writes its own sab(:,:,iatom)/             !!
@@ -1009,7 +1003,6 @@
         end do
       end do
       write(*,*) " --------------------------- "
-      write(*,*) " "
 
       call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
@@ -1023,7 +1016,6 @@
         end do
       end do
       CALL MPRINT2(exch2,nat,maxat)
-      write(*,*) " "
 
       if(itype.gt.1) call sigma_uks(pcoord,chp2,chp3,scrall)
 
@@ -1049,7 +1041,6 @@
       write(*,*) " "
 
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
-      write(*,*) " "
       do ii=1,nat
         x0=ZERO
         do jj=1,nat
@@ -1070,16 +1061,15 @@
       end do
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
-      write(*,*) " "
       if(xmix.gt.ZERO) then
-        write(*,*) " WARNING: HF-exchange part missing "
         write(*,*) " "
+        write(*,*) " WARNING: HF-exchange part missing "
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Exc Decomposition'
         call group_by_frag_mat(1,line,exch)
-        write(*,*)
       end if
+      write(*,*) " "
 
       xtot=ZERO
       do ii=1,nat
@@ -1182,9 +1172,14 @@
 !! arguments:                                                              !!
 !!   id_func (in)  -- libxc functional id (from iopt, read by the caller)  !!
 !!   itype   (out) -- functional family classification, see above          !!
+!!   ifirst  (in)  -- 1 if this is the first of up to 3 consecutive calls  !!
+!!                   from the caller (subbox, no leading blank -- the      !!
+!!                   caller's own preceding box already supplies one), 0   !!
+!!                   otherwise (print_box, own leading blank needed since  !!
+!!                   the previous call's content isn't blank-terminated)   !!
 !! author: PSalse, MGimf.                                                  !!
 !! *********************************************************************** !!
-      subroutine func_info_print(id_func,itype)
+      subroutine func_info_print(id_func,itype,ifirst)
 
       use xc_f90_types_m
       use xc_f90_lib_m
@@ -1207,7 +1202,11 @@
       call xc_f90_hyb_exx_coef(xc_func,xmix)
       call xc_f90_info_name(xc_info,name_func)
 
-      call print_box('DENSITY FUNCTIONAL INFORMATION')
+      if(ifirst.eq.1) then
+        call print_subbox('DENSITY FUNCTIONAL INFORMATION')
+      else
+        call print_box('DENSITY FUNCTIONAL INFORMATION')
+      end if
       write(*,*) " Functional name --> ",trim(name_func)
       ii=0
       call xc_f90_info_refs(xc_info,ii,name_ref)
