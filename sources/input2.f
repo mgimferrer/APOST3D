@@ -1,11 +1,4 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
-!! applied to: dm1input, dm2input_pyscf, dm2input_dmn, mga_misc,         !!
-!! field_misc, locate, int_locate, real_locate, do_potential,            !!
-!! Boys_expansionn.                                                      !!
-!! ********************************************************************* !!
-
-!! ********************************************************************* !!
 !! subroutine: input                                                     !!
 !! purpose: reads the native Gaussian .fchk (unit 15) into the           !!
 !! wavefunction's global state -- MO formalism/type, basis size (via     !!
@@ -289,6 +282,21 @@
 
       end
 
+!! ********************************************************************* !!
+!! subroutine: dm1input                                                  !!
+!! purpose: reads the spin-orbital 1-RDM (dm1) for a post-HF wavefunction !!
+!! -- either the full-space matrix from a DMN-code file (unit 11,        !!
+!! unformatted), or the active-space-only matrix from PySCF (unit 11,    !!
+!! formatted, inactive block assumed diagonally doubly occupied) --      !!
+!! then reconstructs the natural orbitals (occ_no/c_no) and overwrites   !!
+!! the AO-basis P/Pa/Pb/Ps density matrices from it, replacing whatever   !!
+!! the .fchk itself provided. No active test exercises this path (# DM   !!
+!! PYSCF/ORCA); code preserved as-is during the 2026-08-20 cleanup pass, !!
+!! only comments/printing/indentation touched.                          !!
+!! arguments:                                                             !!
+!!   dm1 (out) -- spin-orbital 1-RDM, (nspinorb,nspinorb)                 !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine dm1input(dm1)
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -303,11 +311,11 @@
 
       iorca    = Iopt(43)
       ipyscf   = Iopt(87)
-      thres   = 1.0d-8
+      thres    = 1.0d-8
 
       allocate(scr(igr,igr))
-       
-!! Nbasis HERE IS ncore + nact SPIN-ORBITALS (2x ncore + nact SPATIAL MOs)  
+
+!! nspinorb here is ncore + nact spin-orbitals (2x ncore + nact spatial MOs). !!
 
       do i=1,nspinorb
         do j=1,nspinorb
@@ -315,27 +323,27 @@
         end do
       end do
 
-c reading dm1 as provided by DMN node. full space
+!! full-space dm1, as provided by the DMN code. !!
       if(iorca.ne.1.and.ipyscf.ne.1) then
-          rewind(11)
-          do while(.true.)
-            read(11,end=99) i,j,vvv 
-            if(ABS(vvv).gt.thres) then
-              dm1(i,j)=dm1(i,j)+vvv
-              dm1(j,i)=dm1(i,j)
-            end if
-          end do
-      else 
+        rewind(11)
+        do while(.true.)
+          read(11,end=99) i,j,vvv
+          if(ABS(vvv).gt.thres) then
+            dm1(i,j)=dm1(i,j)+vvv
+            dm1(j,i)=dm1(i,j)
+          end if
+        end do
+      else
 
-c reading dm1 as provided by PySCF code. Only active space
-c correcting for active orbital index
-
+!! active-space-only dm1, as provided by PySCF -- inactive spin-orbitals !!
+!! assumed doubly occupied/diagonal, active-orbital indices offset by    !!
+!! ncore to land in the full spin-orbital space.                        !!
         ncore=(nspinorb-ncasorb*2)
-        write(*,*) "Nspinorb, Ncasorb, ncoreorb : ",nspinorb,ncasorb,ncore 
+        write(*,*) "Nspinorb, Ncasorb, ncoreorb : ",nspinorb,ncasorb,ncore
         write(*,*) 'Generating DM1 for inactive spin orbitals, ',ncore
         write(*,*) 'Assuming diagonal dm1 '
 
-        do ii=1,ncore  
+        do ii=1,ncore
           dm1(ii,ii)=ONE
         end do
         rewind(11)
@@ -350,8 +358,10 @@ c correcting for active orbital index
           end if
         end do
       end if
-99    print *, "End DM1 reading "
+99    write(*,*) "End DM1 reading "
 
+!! sanity check: dm1 should be idempotent (dm1^2 = dm1) for a single- !!
+!! determinant-equivalent density; reported, not enforced. !!
       difi=ZERO
       do i=1,nspinorb
         do j=1,nspinorb
@@ -362,9 +372,9 @@ c correcting for active orbital index
           difi=dmax1(difi,dabs(x-dm1(i,j)))
         end do
       end do
-      print *, " "
-      print *, " Max. deviation from idempotency = ",difi
-      print *, " "
+      write(*,*) " "
+      write(*,*) " Max. deviation from idempotency = ",difi
+      write(*,*) " "
 
       do i=1,norb
         do k=1,norb
@@ -372,69 +382,82 @@ c correcting for active orbital index
         end do
       end do
 
-!! DIAGONALIZING TO GET NOs AND TRANSFORMATION TO THE AO BASIS !!
-
+!! diagonalizing to get NOs and transform to the AO basis. !!
       call diagonalize(igr,norb,occ_no,scr,0)
-      do i=1,igr          
-        do j=1,norb         
+      do i=1,igr
+        do j=1,norb
           x=ZERO
-          do k=1,norb         
-            x=x+c(i,k)*scr(k,j) 
+          do k=1,norb
+            x=x+c(i,k)*scr(k,j)
           end do
-          c_no(i,j)=x                          
+          c_no(i,j)=x
         end do
       end do
 
-c Building Pa and Pb matrix from dm1
+!! building Pa and Pb from dm1. !!
       write(*,*) 'Reconstructing P and Ps matrices from dm1 file'
-      do nu=1,igr 
-       do mu=1,igr  
-        x=0.d0
-        do i=1,nspinorb,2 
-         ii=i/2+1
-         do j=1,nspinorb,2 
-          jj=j/2+1
-          x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
-         enddo 
-        enddo
-        pa(mu,nu)=x    
-       enddo
-      enddo
+      do nu=1,igr
+        do mu=1,igr
+          x=0.d0
+          do i=1,nspinorb,2
+            ii=i/2+1
+            do j=1,nspinorb,2
+              jj=j/2+1
+              x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
+            end do
+          end do
+          pa(mu,nu)=x
+        end do
+      end do
 
-      do nu=1,igr 
-       do mu=1,igr  
-        x=0.d0
-        do i=2,nspinorb,2 
-         ii=i/2
-         do j=2,nspinorb,2 
-          jj=j/2
-          x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
-         enddo 
-        enddo
-        pb(mu,nu)=x    
-       enddo
-      enddo
+      do nu=1,igr
+        do mu=1,igr
+          x=0.d0
+          do i=2,nspinorb,2
+            ii=i/2
+            do j=2,nspinorb,2
+              jj=j/2
+              x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
+            end do
+          end do
+          pb(mu,nu)=x
+        end do
+      end do
 
-      do mu=1,igr 
-       do nu=1,igr 
-        ps(mu,nu)=pa(mu,nu)-pb(mu,nu)
-       enddo
-      enddo
+      do mu=1,igr
+        do nu=1,igr
+          ps(mu,nu)=pa(mu,nu)-pb(mu,nu)
+        end do
+      end do
 
       dif=0.0d0
-      do i=1,igr 
-       do j=1,igr  
-        dif=dmax1(dif,dabs((pa(i,j)+pb(i,j))-p(i,j)))
-        p(i,j)=pa(i,j)+pb(i,j)
-       end do 
-      end do 
-      write(*,*) 'P (and Ps) in fchk overriden'    
-      write(*,*) 'Max dif. P from dm1 and from FChk: ',dif        
-
+      do i=1,igr
+        do j=1,igr
+          dif=dmax1(dif,dabs((pa(i,j)+pb(i,j))-p(i,j)))
+          p(i,j)=pa(i,j)+pb(i,j)
+        end do
+      end do
+      write(*,*) 'P (and Ps) in fchk overriden'
+      write(*,*) 'Max dif. P from dm1 and from FChk: ',dif
 
       deallocate(scr)
       end
-!!!
+
+!! ***** !!
+!! ********************************************************************* !!
+!! subroutine: dm2input_pyscf                                            !!
+!! purpose: reads the active-space-only spinless 2-RDM (dm2) produced by !!
+!! PySCF's write_dm12 (unit 12, formatted *.dm2), then reconstructs the  !!
+!! core and core-active blocks analytically from the spin-resolved 1-RDM !!
+!! (dm1, already read by dm1input) assuming a closed-shell inactive      !!
+!! space. No active test exercises this path (# DM PYSCF); code          !!
+!! preserved as-is during the 2026-08-20 cleanup pass, only comments/    !!
+!! printing/indentation touched.                                        !!
+!! arguments:                                                             !!
+!!   dm1 (in)  -- spin-orbital 1-RDM, (nspinorb,nspinorb)                 !!
+!!   dm2 (out) -- spinless active+core 2-RDM, (norb,norb,norb,norb)       !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine dm2input_pyscf(dm1,dm2)
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -448,9 +471,6 @@ c Building Pa and Pb matrix from dm1
       real*8 vvv
       logical ilog
 
-! At the moment will read the full spinless rdm2 from file *.dm2, as
-! produced by write_dm12 function in apost3d.py 
-
       dm2=0.0d0
 
       ninact=(nspinorb-ncasorb*2)
@@ -461,9 +481,9 @@ c Building Pa and Pb matrix from dm1
       write(*,*) 'Active orbitals : ', ncasorb
       write(*,*) 'Total spinless rdm2 dimension : ', norb
 
-! reading active space
+!! active space, from *.dm2. !!
       rewind(12)
-      read(12,*) 
+      read(12,*)
       icount=0
       do while(.true.)
         read(12,*,end=999) ii,jj,kk,ll,vvv
@@ -473,73 +493,86 @@ c Building Pa and Pb matrix from dm1
 999   continue
       write(*,*) 'rdm2 elements read:',icount
 
-! reconstructing core and core-active blocks
-! with spin resolved dm1
+!! core and core-active blocks, reconstructed from the spin-resolved dm1. !!
 
-!! ALPHA-ALPHA AND BETA-BETA CASES !!
-
-        do ispin=1,2
-          do ii=1,ncore
-            do jj=1,ncore
-              dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+ONE
-              dm2(ii,jj,jj,ii)=dm2(ii,jj,jj,ii)-ONE
-            end do 
-            do kk=ncore+1,iorb
-              do ll=ncore+1,iorb
-               dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(ii,ll,kk,ii)=dm2(ii,ll,kk,ii)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(kk,ii,ii,ll)=dm2(kk,ii,ii,ll)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-              end do 
-            end do 
-          end do 
-        end do 
-
-!! ALPHA-BETA CASE !!
-
+!! alpha-alpha and beta-beta cases. !!
+      do ispin=1,2
         do ii=1,ncore
-          dm2(ii,ii,ii,ii)=dm2(ii,ii,ii,ii)+TWO
           do jj=1,ncore
-            if(jj.ne.ii) dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+TWO
+            dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+ONE
+            dm2(ii,jj,jj,ii)=dm2(ii,jj,jj,ii)-ONE
           end do
           do kk=ncore+1,iorb
             do ll=ncore+1,iorb
-              dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+1,2*(ll-1)+1)
-              dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+2,2*(ll-1)+2)
-              dm2(ii,ii,ll,kk)=dm2(ii,ii,ll,kk)+dm1(2*(ll-1)+2,2*(kk-1)+2)
-              dm2(ll,kk,ii,ii)=dm2(ll,kk,ii,ii)+dm1(2*(ll-1)+1,2*(kk-1)+1)
+              dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+              dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+              dm2(ii,ll,kk,ii)=dm2(ii,ll,kk,ii)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+              dm2(kk,ii,ii,ll)=dm2(kk,ii,ii,ll)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
             end do
           end do
         end do
+      end do
 
-!! CHECKING DM2 !!
+!! alpha-beta case. !!
+      do ii=1,ncore
+        dm2(ii,ii,ii,ii)=dm2(ii,ii,ii,ii)+TWO
+        do jj=1,ncore
+          if(jj.ne.ii) dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+TWO
+        end do
+        do kk=ncore+1,iorb
+          do ll=ncore+1,iorb
+            dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+1,2*(ll-1)+1)
+            dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+2,2*(ll-1)+2)
+            dm2(ii,ii,ll,kk)=dm2(ii,ii,ll,kk)+dm1(2*(ll-1)+2,2*(kk-1)+2)
+            dm2(ll,kk,ii,ii)=dm2(ll,kk,ii,ii)+dm1(2*(ll-1)+1,2*(kk-1)+1)
+          end do
+        end do
+      end do
 
-       xx2=ZERO
-       do ii=1,ncore
-         do jj=1,ncore
-           xx2=xx2+dm2(ii,ii,jj,jj)
-         end do
-       end do
-       write(*,*) 'Trace of inactive orbitals: ',xx2
-       xx2=ZERO
-       do ii=ncore+1,norb
-         do jj=ncore+1,norb
-           xx2=xx2+dm2(ii,ii,jj,jj)
-         end do
-       end do
-       write(*,*) 'Trace of active orbitals: ',xx2
-       xx2=ZERO
-       do ii=1,norb
-         do jj=1,norb
-           xx2=xx2+dm2(ii,ii,jj,jj)
-         end do
-       end do
-       nelect=nalf+nb
-       write(*,*) " "
-       write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2,nelect*(nelect-1)
-       write(*,*) " "
+!! checking dm2: traces should reproduce N(N-1) when normalized. !!
+      xx2=ZERO
+      do ii=1,ncore
+        do jj=1,ncore
+          xx2=xx2+dm2(ii,ii,jj,jj)
+        end do
+      end do
+      write(*,*) 'Trace of inactive orbitals: ',xx2
+      xx2=ZERO
+      do ii=ncore+1,norb
+        do jj=ncore+1,norb
+          xx2=xx2+dm2(ii,ii,jj,jj)
+        end do
+      end do
+      write(*,*) 'Trace of active orbitals: ',xx2
+      xx2=ZERO
+      do ii=1,norb
+        do jj=1,norb
+          xx2=xx2+dm2(ii,ii,jj,jj)
+        end do
+      end do
+      nelect=nalf+nb
+      write(*,*) " "
+      write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2,nelect*(nelect-1)
+      write(*,*) " "
       end
 
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: dm2input_dmn                                              !!
+!! purpose: reads the full spin-separated 2-RDM produced by the DMN code !!
+!! (unit 12, unformatted) -- only the i<=j, k<=l, i<=k elements are      !!
+!! stored on file, reconstructed here into the full spinless dm2(norb^4) !!
+!! via the AAAA/ABAB/BABA/BBBB and ABBA/BAAB symmetry relations. No      !!
+!! active test exercises this path (# DM ORCA/DMN); code preserved as-is !!
+!! during the 2026-08-20 cleanup pass, only comments/printing/           !!
+!! indentation touched.                                                  !!
+!! arguments:                                                             !!
+!!   dm1 (in)  -- spin-orbital 1-RDM, unused here (kept for a uniform     !!
+!!               call signature with dm2input_pyscf)                     !!
+!!   dm2 (out) -- spinless 2-RDM, (norb,norb,norb,norb)                   !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine dm2input_dmn(dm1,dm2)
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -552,59 +585,52 @@ c Building Pa and Pb matrix from dm1
       character*80 line
       logical ilog
 
-      thres   = 1.0d-8
+      thres = 1.0d-8
 
-!! PREPARATING FOR DM1 AND DM2 READING !!
+      dm2=ZERO
 
-       dm2=ZERO
-
-!! READING THE DM2(1,2,1,2) MATRIX BUT SAVING AS DM2(1,1,2,2), IMPORTANT FOR LATER ON !!
-
-c reading full rdm2 spin-separated as given by  DMN code
-c reading only i<=j, k<=l, i<=k elements and reconstructing full rdm2
-c reading from formatted (unreadable) dm2 file
-
+!! reading the dm2(1,2,1,2) matrix but saving as dm2(1,1,2,2) (important !!
+!! for downstream consumers). Reads only i<=j, k<=l, i<=k elements from  !!
+!! the formatted (unlabeled) *.dm2 file and reconstructs the full rdm2   !!
+!! via symmetry -- ij0 for the AAAA/ABAB/BABA/BBBB terms, kj0 for the    !!
+!! ABBA/BAAB terms.                                                      !!
       rewind(12)
       do while(.true.)
-       read(12,end=999) i0,k0,j0,l0,vvv
-       if(abs(vvv).gt.thres) then
-         ii=(i0-1)/2+1
-         kk=(k0-1)/2+1
-         jj=(j0-1)/2+1
-         ll=(l0-1)/2+1
-         ilog=.true.
-         if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.
+        read(12,end=999) i0,k0,j0,l0,vvv
+        if(abs(vvv).gt.thres) then
+          ii=(i0-1)/2+1
+          kk=(k0-1)/2+1
+          jj=(j0-1)/2+1
+          ll=(l0-1)/2+1
+          ilog=.true.
+          if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.
 
-!! IJ0 FOR THE AAAA, ABAB,BABA AND BBBB TERMS !!
-!! KJ0 FOR THE ABBA AND BAAB TERMS !!
-
-         ij0=mod(i0+j0,2)+mod(k0+l0,2)
-         kj0=mod(k0+j0,2)+mod(i0+l0,2)
-         if(ij0.eq.0)then
-           dm2(ii,jj,kk,ll)=dm2(ii,jj,kk,ll)+vvv
-           if(ilog) dm2(jj,ii,ll,kk)=dm2(jj,ii,ll,kk)+vvv
-           if(k0.ne.i0.and.l0.ne.j0) then
-            dm2(kk,ll,ii,jj)=dm2(kk,ll,ii,jj)+vvv
-             if(ilog) dm2(ll,kk,jj,ii)=dm2(ll,kk,jj,ii)+vvv
-           end if
-         end if
-         if(kj0.eq.0) then
-           if(k0.ne.i0) then
-             dm2(kk,jj,ii,ll)=dm2(kk,jj,ii,ll)-vvv
-             if(ilog) dm2(jj,kk,ll,ii)=dm2(jj,kk,ll,ii)-vvv
-           end if
-           if(l0.ne.j0) then
-             dm2(ii,ll,kk,jj)=dm2(ii,ll,kk,jj)-vvv
-             if(ilog) dm2(ll,ii,jj,kk)=dm2(ll,ii,jj,kk)-vvv
+          ij0=mod(i0+j0,2)+mod(k0+l0,2)
+          kj0=mod(k0+j0,2)+mod(i0+l0,2)
+          if(ij0.eq.0)then
+            dm2(ii,jj,kk,ll)=dm2(ii,jj,kk,ll)+vvv
+            if(ilog) dm2(jj,ii,ll,kk)=dm2(jj,ii,ll,kk)+vvv
+            if(k0.ne.i0.and.l0.ne.j0) then
+              dm2(kk,ll,ii,jj)=dm2(kk,ll,ii,jj)+vvv
+              if(ilog) dm2(ll,kk,jj,ii)=dm2(ll,kk,jj,ii)+vvv
+            end if
           end if
-         end if
-       end if
+          if(kj0.eq.0) then
+            if(k0.ne.i0) then
+              dm2(kk,jj,ii,ll)=dm2(kk,jj,ii,ll)-vvv
+              if(ilog) dm2(jj,kk,ll,ii)=dm2(jj,kk,ll,ii)-vvv
+            end if
+            if(l0.ne.j0) then
+              dm2(ii,ll,kk,jj)=dm2(ii,ll,kk,jj)-vvv
+              if(ilog) dm2(ll,ii,jj,kk)=dm2(ll,ii,jj,kk)-vvv
+            end if
+          end if
+        end if
       end do
 
 999   continue
 
-!! CHECKING DM2 !!
-
+!! checking dm2: trace should reproduce N(N-1) when normalized. !!
       xx2=ZERO
       do ii=1,norb
         do jj=1,norb
@@ -615,8 +641,22 @@ c reading from formatted (unreadable) dm2 file
       write(*,*) " "
       end
 
-! *****
+!! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: mga_misc                                                  !!
+!! purpose: reads the reference one-/two-electron energy components      !!
+!! (kinetic, electron-nuclear, electron-electron) that ENPART's          !!
+!! integration-error checks compare against, from custom fields appended !!
+!! to the .fchk by the project's own post-processing scripts (Gaussian:  !!
+!! utils/get_energy(_g16); ORCA: orca2fchk) -- not a stock Gaussian/ORCA  !!
+!! field. Also detects and reads an ECP matrix if present, returning     !!
+!! per-atom (Mulliken-type) ECP energies.                                !!
+!! arguments:                                                             !!
+!!   iecp (out) -- 1 if an ECP matrix was found in the .fchk, 0 otherwise !!
+!!   eecp (out) -- per-atom ECP energy (only filled if iecp=1)            !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine mga_misc(iecp,eecp)
       use basis_set
       use ao_matrices
@@ -631,119 +671,122 @@ c reading from formatted (unreadable) dm2 file
       dimension eecp(maxat)
       character*80 line
 
-      allocatable :: xecpv(:),xecpm(:,:),xprod(:,:)
+      allocatable :: xecpv(:),xecpm(:,:)
 
-
-!! Reading KE, PE and EE from fchk. Printed to the fchk file using the following programs: !!
-!! From Gaussian09: /users/mgimferrer/FORTRAN/APOST3D.3.1-devel/utils/get_energy xxx.log >> xxx.fchk !!
-!! From Gaussian16: /users/mgimferrer/FORTRAN/APOST3D.3.1-devel/utils/get_energy_g16 xxx.log >> xxx.fchk !!
-c also included in FChk with orca2fchk program
       ekin0=ZERO
       eelnuc0=ZERO
-      ecoul0=ZERO
-      eexch0=ZERO
-      ecorr0=ZERO
       evee0=ZERO
-      eone0=ZERO
 
       rewind(15)
 991   read(15,'(a80)',end=891) line
       if(index(line,"Kinetic Energy").ne.0) then
-       read(line(45:71),'(es27.15)')  ekin0
+        read(line(45:71),'(es27.15)')  ekin0
       else
-       go to 991
+        go to 991
       end if
 891   continue
       rewind(15)
 992   read(15,'(a80)',end=892) line
       if(index(line,"Electron-Nuclei Energy").ne.0) then
-       read(line(45:71),'(es27.15)')  eelnuc0
+        read(line(45:71),'(es27.15)')  eelnuc0
       else
-       go to 992
+        go to 992
       end if
 892   continue
       rewind(15)
 993   read(15,'(a80)',end=893) line
       if(index(line,"Electron-Electron Energy").ne.0) then
-       read(line(45:71),'(es27.15)')  evee0
+        read(line(45:71),'(es27.15)')  evee0
       else
-       go to 993
+        go to 993
       end if
-
 893   continue
-c ECP?
+
+!! pseudopotential (ECP) matrix, if present. !!
       iecp=0
       rewind(15)
 998   read(15,'(a80)',end=897) line
       if(index(line,"ECP Mat").ne.0) then
-       iecp=1                                 
-       write(*,*) ' Pseudopotential matrix found in fchk file'
+        iecp=1
+        write(*,*) ' Pseudopotential matrix found in fchk file'
       else
-       go to 998
+        go to 998
       end if
 897   continue
-c Reading ECP matrix
-      if(iecp.eq.1) then
-999   read(15,'(a80)',end=1000) line
-      if(index(line,"ECP-Mat").ne.0) then !! MG: Bug corrected. The blank was giving problems !!
-       read(line(51:66),'(i17)') nn
-       ALLOCATE(xecpv(nn))
-       read(15,*) (xecpv(i),i=1,nn)
-      else
-       go to 999
-      end if
-c Transform to matrix
-       ALLOCATE(xecpm(igr,igr))
-       ALLOCATE(xprod(igr,igr))
-       k=1
-       do i=1,igr
-        do j=1,i
-         xecpm(i,j)=xecpv(k)   
-         xecpm(j,i)=xecpm(i,j) 
-         k=k+1
-        end do 
-       end do 
-       DEALLOCATE(xecpv)
 
-c ECP energy values for each atom Mulliken-type
-       xecp=0.0d0
-       do iiat=1,nat
-        xxx=0.0d0
-        do i=llim(iiat),iulim(iiat)
-         do k=1,igr
-          xxx=xxx+p(i,k)*xecpm(k,i)
-         end do
+      if(iecp.eq.1) then
+!! matched string is "ECP-Mat", not "ECP Mat" (no hyphen) as above --   !!
+!! a leading blank there previously broke the match.                    !!
+999     read(15,'(a80)',end=1000) line
+        if(index(line,"ECP-Mat").ne.0) then
+          read(line(51:66),'(i17)') nn
+          ALLOCATE(xecpv(nn))
+          read(15,*) (xecpv(i),i=1,nn)
+        else
+          go to 999
+        end if
+
+!! lower-triangular packed -> full symmetric matrix. !!
+        ALLOCATE(xecpm(igr,igr))
+        k=1
+        do i=1,igr
+          do j=1,i
+            xecpm(i,j)=xecpv(k)
+            xecpm(j,i)=xecpm(i,j)
+            k=k+1
+          end do
         end do
-        eecp(iiat)=xxx
-        xecp=xecp+xxx
-       end do
-       write(*,'(a27,es27.15)') ' Pseudopotential Energy :',xecp
-       write(*,'(5ES16.5)') (eecp(i),i=1,nat)
+        DEALLOCATE(xecpv)
+
+!! per-atom ECP energy, Mulliken-type (P contracted against the ECP matrix). !!
+        xecp=0.0d0
+        do iiat=1,nat
+          xxx=0.0d0
+          do i=llim(iiat),iulim(iiat)
+            do k=1,igr
+              xxx=xxx+p(i,k)*xecpm(k,i)
+            end do
+          end do
+          eecp(iiat)=xxx
+          xecp=xecp+xxx
+        end do
+        DEALLOCATE(xecpm)
+        write(*,'(a27,es27.15)') ' Pseudopotential Energy :',xecp
+        write(*,'(5ES16.5)') (eecp(i),i=1,nat)
       end if
 
       return
 1000  stop ' ECP Matrix not found'
-      end 
+      end
 
-c ****
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: field_misc                                                !!
+!! purpose: scans the .fchk for an external static electric field entry  !!
+!! and reads its 4 components; ifield=1 if the x/y/z components are      !!
+!! non-negligible (the 4th component, magnitude, is read but not used    !!
+!! for this check).                                                      !!
+!! arguments:                                                             !!
+!!   ifield (out) -- 1 if a non-negligible field is present, 0 otherwise  !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine field_misc(ifield)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common/efield/field(4),edipole
       character*80 line
 
-
       ifield=0
-C External electric field?
-C REading and taking into acocunt ony x.y and z dipole components
+
       rewind(15)
 1     read(15,'(a80)',end=2) line
       if(index(line,"External E-field").ne.0) then
-       read(15,*) (field(i),i=1,4)
-       xx=abs(field(2))+abs(field(3))+abs(field(4))
-       if(xx.gt.1.0d-4) ifield=1
+        read(15,*) (field(i),i=1,4)
+        xx=abs(field(2))+abs(field(3))+abs(field(4))
+        if(xx.gt.1.0d-4) ifield=1
       else
-       go to 1
+        go to 1
       end if
 2     continue
       end
@@ -865,6 +908,18 @@ C REading and taking into acocunt ony x.y and z dipole components
       end
 
 C*****************************************************************
+!! ********************************************************************* !!
+!! subroutine: locate                                                    !!
+!! purpose: rewinds iunit and scans it for a line containing string,     !!
+!! leaving the file positioned just past that line for the caller to     !!
+!! keep reading from. Used throughout input()/read_input() to find       !!
+!! .fchk/.inp section markers before parsing what follows.               !!
+!! arguments:                                                             !!
+!!   iunit  (in)  -- file unit to scan (already open)                     !!
+!!   string (in)  -- text to search for                                   !!
+!!   ii     (out) -- 1 if found, 0 otherwise                              !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine locate(iunit,string,ii)
       integer iunit
       character string*(*)
@@ -874,19 +929,32 @@ C*****************************************************************
 
       ii=0
       do while(ii.eq.0)
-       read(iunit,"(a80)",end=10)linia
-       if(index(linia,string).ne.0) then
+        read(iunit,'(a80)',end=10) linia
+        if(index(linia,string).ne.0) then
           ii=1
           return
-         end if
+        end if
       end do
-10      write(*,*) string, 'section not found '
+
+10    write(*,*) trim(string),' section not found '
       return
       end
 
+!! ********************************************************************* !!
+!! function: int_locate                                                  !!
+!! purpose: rewinds iunit and scans it for a line containing text, then  !!
+!! reads an integer value from its fixed .fchk column position. Returns  !!
+!! 0 and ilog=.false. if text isn't found or the value can't be parsed.  !!
+!! See real_locate for the real*8 twin.                                  !!
+!! arguments:                                                             !!
+!!   iunit (in)  -- file unit to scan (already open)                      !!
+!!   text  (in)  -- text to search for                                    !!
+!!   ilog  (out) -- .true. if found and parsed, .false. otherwise         !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       function int_locate(iunit,text,ilog)
       implicit double precision(a-h,o-z)
-      character*(*)text
+      character*(*) text
       character*80 line
       integer int_locate
       logical ilog
@@ -895,19 +963,31 @@ C*****************************************************************
       rewind(iunit)
 1     read(iunit,'(a80)',end=99) line
       if(index(line,text).eq.0) then
-       goto 1
+        goto 1
       else
-       read(line(50:61),*,err=99) int_locate
-       ilog=.true.
-       go to 2
+        read(line(50:61),*,err=99) int_locate
+        ilog=.true.
+        go to 2
       end if
 99    int_locate=0
 2     continue
       end
 
+!! ********************************************************************* !!
+!! function: real_locate                                                 !!
+!! purpose: rewinds iunit and scans it for a line containing text, then  !!
+!! reads a real*8 value from its fixed .fchk column position. Returns 0  !!
+!! and ilog=.false. if text isn't found or the value can't be parsed.    !!
+!! See int_locate for the integer twin.                                  !!
+!! arguments:                                                             !!
+!!   iunit (in)  -- file unit to scan (already open)                      !!
+!!   text  (in)  -- text to search for                                    !!
+!!   ilog  (out) -- .true. if found and parsed, .false. otherwise         !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       function real_locate(iunit,text,ilog)
       implicit double precision(a-h,o-z)
-      character*(*)text
+      character*(*) text
       character*80 line
       real*8  real_locate
       logical ilog
@@ -916,16 +996,31 @@ C*****************************************************************
       rewind(iunit)
 1     read(iunit,'(a80)',end=99) line
       if(index(line,text).eq.0) then
-       goto 1
+        goto 1
       else
-       read(line(50:71),*,err=99) real_locate
-       ilog=.true.
-       go to 2
+        read(line(50:71),*,err=99) real_locate
+        ilog=.true.
+        go to 2
       end if
 99    real_locate=0
 2     continue
       end
 
+!! ********************************************************************* !!
+!! subroutine: do_potential                                              !!
+!! purpose: McMurchie-Davidson analytical electron-nuclear attraction    !!
+!! integrals (E/R recurrence, Boys function via do_potential's own       !!
+!! Taylor/asymptotic/series branches or the Boys_expansionn table).      !!
+!! CONFIRMED DEAD: zero live call sites codebase-wide (found 2026-08-20  !!
+!! during the input2.f cleanup pass) -- flagged, not deleted, pending a  !!
+!! deprecation decision, same treatment as effao.f's uefomo/ueffaomull2/ !!
+!! ueffaolow2. Body left untouched (not worth a deep reformat of dead    !!
+!! code); only this header added.                                       !!
+!! arguments:                                                             !!
+!!   zn (in)  -- nuclear charges                                          !!
+!!   vv (out) -- basis-function-pair nuclear attraction potential matrix  !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine do_potential(zn,vv)
       use basis_set
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
@@ -1117,6 +1212,20 @@ C*****************************************************************
       deallocate(sp)
       end subroutine do_potential
 
+!! ********************************************************************* !!
+!! subroutine: Boys_expansionn                                           !!
+!! purpose: Boys function via Taylor expansion around a pretabulated     !!
+!! grid (WA_Boys data table, xT in [8,15]), for do_potential's Coulomb   !!
+!! recurrence. CONFIRMED DEAD: only called from do_potential, itself     !!
+!! dead (zero live call sites codebase-wide, found 2026-08-20) --        !!
+!! flagged, not deleted, pending a deprecation decision alongside        !!
+!! do_potential. Body left untouched; only this header added.            !!
+!! arguments:                                                             !!
+!!   n_max (in)  -- Boys function order                                   !!
+!!   xT    (in)  -- argument                                              !!
+!!   Boys  (out) -- Boys function value                                   !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       SUBROUTINE Boys_expansionn(n_max,xT,Boys)
       use basis_set
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
