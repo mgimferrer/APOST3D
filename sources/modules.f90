@@ -613,8 +613,12 @@
    end if
 
 !! Rotation angles... they are zero for one-el part, just to be consistent !!
-   pha=ZERO
-   phb=ZERO
+!! written as a literal, not the ZERO symbol -- this module-CONTAINS      !!
+!! subroutine can't include parameter.h (see do_overlap above), and ZERO  !!
+!! is not declared here, so it was silently an untyped uninitialized      !!
+!! variable, not the constant 0.0d0 (found 2026-08-20).                   !!
+   pha=0.0d0
+   phb=0.0d0
 
    call print_box('SETTING ATOMIC GRIDS FOR INTEGRATION')
    write(*,'(2x,a,1x,i0)') 'Radial points  :',nrad

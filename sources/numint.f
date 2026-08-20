@@ -185,6 +185,7 @@
       subroutine ao_to_mo_grid(itotps,igr,nmo,coef,chpao,chpmo)
 
       implicit real*8(a-h,o-z)
+      include 'parameter.h'
 
       integer, intent(in) :: itotps,igr,nmo
       dimension coef(igr,igr),chpao(itotps,igr),chpmo(itotps,nmo)
@@ -226,6 +227,7 @@
       subroutine ao_to_mo_grid_t(itotps,igr,nmo,coef,chpao,chpmo,chpmot)
 
       implicit real*8(a-h,o-z)
+      include 'parameter.h'
 
       integer, intent(in) :: itotps,igr,nmo
       dimension coef(igr,igr),chpao(itotps,igr),chpmo(itotps,nmo),chpmot(nmo,itotps)
