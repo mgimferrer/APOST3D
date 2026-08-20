@@ -206,10 +206,31 @@
           "tol_abs": 1e-3
         },
         {
+          "label": "H TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.050605,
+          "tol_abs": 1e-3
+        },
+        {
           "label": "C-F bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+C\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.812947,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C-H bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "1\\s+C\\s+\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.915475,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "C total valence",
+          "section": "TOTAL VALENCES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 3.559854,
           "tol_abs": 1e-3
         },
         {
@@ -225,6 +246,20 @@
           "pattern": "1\\.06204\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.35476,
           "tol_abs": 5e-3
+        },
+        {
+          "label": "F fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.00,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00,
+          "tol_abs": 0.05
         }
       ]
     },
@@ -383,6 +418,34 @@
           "tol_abs": 1e-3
         },
         {
+          "label": "O TFVC electron population",
+          "section": "ELECTRON POPULATIONS",
+          "pattern": "2\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 8.903168,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe-O bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "1\\s*Fe\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.549239,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "cis O-O bond order",
+          "section": "BOND ORDER MATRIX",
+          "pattern": "2\\s+O\\s+\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.268367,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "Fe total valence",
+          "section": "TOTAL VALENCES",
+          "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 6.196322,
+          "tol_abs": 1e-3
+        },
+        {
           "label": "Fe OSLO oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
@@ -401,6 +464,13 @@
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00010,
+          "tol_abs": 1e-3
+        },
+        {
+          "label": "OSLO 5 FOLI value (fully localized)",
+          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
+          "pattern": "FOLI Value\\s+:\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00000,
           "tol_abs": 1e-3
         }
       ]
