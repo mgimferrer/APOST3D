@@ -134,13 +134,16 @@ PRINT NON-ORTHO
 
 The evaluation of oxidation states using the OSLO method is requested.
 
-The AIM requested for the numerical integration is TFVC (mandatory for
-OSLO calculations), and fragments have been defined: fragment 1 consists
-of atom 1, fragment 2 consists of two atoms (2 and 3), and fragment 3
-gathers the rest of the atoms of the molecule.
+`TFVC` in `# METHOD` builds the numerical-integration grid OSLO always
+needs to localize orbitals onto fragments — this is mandatory
+independently of the AIM scheme chosen below in `# OSLO`; see
+[Block section # OSLO](oslo.md) for why. Fragments have been defined:
+fragment 1 consists of atom 1, fragment 2 consists of two atoms (2 and
+3), and fragment 3 gathers the rest of the atoms of the molecule.
 
-The AIM requested for FOLI values evaluation is LOWDIN, with a tolerance
-value of 3 (real(10^-3), the default). Printing of the selected OSLOs
+The AIM requested for FOLI values (i.e. the fragment-population step, not
+the numerical integration above) is LOWDIN, with a tolerance value of 3
+(real(10^-3), the default). Printing of the selected OSLOs
 pre-orthogonalization (non-orthogonal if two or more OSLOs are selected in
 the same iteration AND belong to different fragments) is invoked. As a
 result, a new `.fchk` file is created containing these OSLOs.
