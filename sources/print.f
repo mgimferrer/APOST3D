@@ -8,6 +8,9 @@
 !! Shared building block, used by every banner-style print_box call below: !!
 !!   print_box           -- auto-sized rule around a title, no manual      !!
 !!                           blank-line management needed by callers       !!
+!!   print_subbox        -- same, no leading blank -- for a box that       !!
+!!                           immediately follows another print_box/        !!
+!!                           print_subbox with nothing printed between     !!
 !! Per-atom vector/matrix printers (no border):                            !!
 !!   VPRINT               -- per-atom vector or 2-column matrix            !!
 !!   MPRINT_NLOP           -- per-atom 3-column (X/Y/Z) matrix             !!
@@ -59,6 +62,33 @@
       write(*,'(2x,a,/)')  repeat('-',n)
 
       END SUBROUTINE print_box
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: print_subbox                                              !!
+!! purpose: same as print_box, but without the leading blank line -- for !!
+!!   a box that immediately follows another print_box call with nothing  !!
+!!   printed in between, so the two don't stack into a double gap.       !!
+!!   (a separate subroutine rather than an optional argument on          !!
+!!   print_box: this codebase has no explicit interfaces, and gfortran   !!
+!!   requires one for optional arguments at every one of print_box's     !!
+!!   ~30 call sites.)                                                    !!
+!! arguments:                                                            !!
+!!   text (in) -- title to print, no leading/trailing padding needed     !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      SUBROUTINE print_subbox(text)
+      IMPLICIT NONE
+      character(len=*), intent(in) :: text
+      integer :: n
+
+      n=len_trim(text)+4
+      write(*,'(2x,a)')    repeat('-',n)
+      write(*,'(2x,2x,a)') trim(text)
+      write(*,'(2x,a,/)')  repeat('-',n)
+
+      END SUBROUTINE print_subbox
 
 !! ***** !!
 

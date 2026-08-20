@@ -75,9 +75,9 @@
 
       call print_box('DOING EFFAO-3D GENERAL FORMULATION')
       if(icase.eq.1) then
-        call print_box('EFFAOs FROM THE ALPHA DENSITY')
+        call print_subbox('EFFAOs FROM THE ALPHA DENSITY')
       else if(icase.eq.2) then
-        call print_box('EFFAOs FROM THE BETA DENSITY')
+        call print_subbox('EFFAOs FROM THE BETA DENSITY')
       end if
 
       ALLOCATE(scr(iatps*nat))
@@ -283,7 +283,6 @@
           iorbat(iorb,icase)=i
         end do
       end do
-      write(*,*) " "
       write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",iorb
 
       lorb(icase)=iorb
@@ -317,7 +316,7 @@
       if(dabs(occup(nnn,icase)-occup(nnn+k,icase)).lt.thres) go to 333
       k=k-1
       if(k.eq.0) then
-        write(*,*) "EOS: Unambiguous integer electron assignation"
+        call print_box('EOS: Unambiguous integer electron assignation')
         do i=1,iorb
           if(i.le.nnn) then
             occup2(i)=ONE
@@ -351,9 +350,9 @@
       end do
 
       if(icase.eq.1) then
-        call print_box('EOS ANALYSIS FOR ALPHA ELECTRONS')
+        call print_subbox('EOS ANALYSIS FOR ALPHA ELECTRONS')
       else if (icase.eq.2) then
-        call print_box('EOS ANALYSIS FOR BETA ELECTRONS')
+        call print_subbox('EOS ANALYSIS FOR BETA ELECTRONS')
       end if
       write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
       write(*,*) " ---------------------------------------- "
@@ -524,11 +523,10 @@
         else
           call print_box('DOING EFFAO LOWDIN FORMULATION')
         end if
-        call print_box('EFFAOs FROM THE ALPHA DENSITY')
+        call print_subbox('EFFAOs FROM THE ALPHA DENSITY')
       else if(icase.eq.2) then
         call print_box('EFFAOs FROM THE BETA DENSITY')
       end if
-      write(*,*) " "
 
 !! transform P with Splus into the orthogonalized basis -- EFOs are      !!
 !! back-transformed to the AO basis after diagonalization, below.        !!
@@ -675,13 +673,12 @@ c
         pk=p
       else if(icase.eq.1) then
         call print_box('DOING EFFAO MULLIKEN FORMULATION')
-        call print_box('EFFAOs FROM THE ALPHA DENSITY')
+        call print_subbox('EFFAOs FROM THE ALPHA DENSITY')
         pk=pa
       else if(icase.eq.2) then
         call print_box('EFFAOs FROM THE BETA DENSITY')
         pk=pb
       end if
-      write(*,*) " "
 
 !! AO-to-fragment map. !!
       iao_frag=0

@@ -772,23 +772,28 @@
       end do
 
       call print_box('"FUZZY ATOMS" COVARIANCE MATRIX')
-      call mprint(pca,nat,nat)
-      write(*,*)
+      call mprint2(pca,nat,nat)
 
       call diagonalize(nat,nat,pca,scr,0)
 
       call print_box('"FUZZY ATOMS" PCA EIGENVECTORS')
-      call mprint(pca,nat,nat)
+      call mprint2(pca,nat,nat)
       write(*,*)
-      write(*,'(8f10.4)') (scr(i,1),i=1,nat)
-      write(*,*)
+      write(*,'(2x,a)') 'First eigenvector (per-atom coefficients):'
+      write(*,'(2x,8f10.4)') (scr(i,1),i=1,nat)
 
+!! second column rescales the projection by scr(i,1) -- component i of  !!
+!! the FIRST eigenvector specifically, not eigenvector i. Looks like it !!
+!! may have meant pca(i,i) (eigenvalue i) or scr(i,i); not changed,     !!
+!! same "confirm intent first" caveat as the label-swap question above. !!
+      write(*,*)
+      write(*,'(2x,a)') 'PC sum checks (atomic-charge projection onto each eigenvector):'
       do i=1,nat
         xx=ZERO
         do k=1,nat
           xx=xx+pca(k,i)*qat(k,1)
         end do
-        write(*,'(2x,a,i3,a,2f14.6)') 'PC: ',i,' sum: ',xx,xx*scr(i,1)
+        write(*,'(2x,a,i3,a,2f14.6)') 'PC:',i,' sum:',xx,xx*scr(i,1)
       end do
 
       deallocate(pca,scr)
