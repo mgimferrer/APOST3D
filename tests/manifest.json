@@ -799,10 +799,53 @@
           "tol_abs": 0.05
         },
         {
+          "label": "SCF/DFT energy (au)",
+          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -1857.1187471128,
+          "tol_abs": 2e-6
+        },
+        {
           "label": "OSLO 1 alpha FOLI value",
           "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00035,
+          "tol_abs": 2e-4
+        },
+        {
+          "label": "OSLO 6 alpha FOLI value",
+          "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
+          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "match_index": 2,
+          "ref": 1.00020,
+          "tol_abs": 2e-4
+        },
+        {
+          "label": "OSLO 1 alpha fragment 1 population",
+          "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
+          "pattern": "Frg\\. Pop\\.\\s+1:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.99977,
+          "tol_abs": 2e-4
+        },
+        {
+          "label": "OSLO 1 beta FOLI value",
+          "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
+          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00035,
+          "tol_abs": 2e-4
+        },
+        {
+          "label": "OSLO 6 beta FOLI value",
+          "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
+          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "match_index": 2,
+          "ref": 1.00019,
+          "tol_abs": 2e-4
+        },
+        {
+          "label": "OSLO 1 beta fragment 1 population",
+          "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
+          "pattern": "Frg\\. Pop\\.\\s+1:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.99977,
           "tol_abs": 2e-4
         }
       ]
