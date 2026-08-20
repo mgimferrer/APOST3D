@@ -12,8 +12,12 @@
 !! restricted driver (prints in this order: .fchk output, per-OSLO       !!
 !! summary tables, fragment oxidation states last):                      !!
 !!   rwf_iterative_oslo     -- one oslo_channel_iterate call (nocc)       !!
-!!   rwf_uwf_frg_pop        -- per-fragment orbital population (shared    !!
-!!                             with the unrestricted driver too)          !!
+!!   rwf_uwf_orbpop_atom    -- per-atom orbital population, the expensive !!
+!!                             part of a fragment-population evaluation   !!
+!!                             (shared with the unrestricted driver and   !!
+!!                             LOBA too)                                  !!
+!!   rwf_uwf_frg_pop        -- cheap per-fragment sum of the above        !!
+!!                             (shared with the unrestricted driver too)  !!
 !!   rwf_orbprint           -- restricted OSLO .fchk writer               !!
 !!   rwf_uwf_print_OSLO_final -- per-OSLO summary table (shared with      !!
 !!                             the unrestricted driver too)               !!
@@ -209,7 +213,7 @@
 
       allocatable :: S0(:,:),Sm(:,:),Splus(:,:),smh(:,:),eigv(:,:)
       allocatable :: c0(:,:),pp0(:,:),cmat(:,:),cfrgoslo(:,:,:)
-      allocatable :: orbpop(:),deloc(:,:),clindep(:,:)
+      allocatable :: orbpop(:),orbpopat(:,:),deloc(:,:),clindep(:,:)
       allocatable :: infopop(:,:),scr(:)
       allocatable :: SSS(:,:),EEE(:,:)
       allocatable :: ccore(:,:),ccoreorth(:,:),pcore(:,:)
@@ -270,10 +274,13 @@
             end do
           end do
 
-!! Computing pipek delocalization, requires fragment populations !!
-          ALLOCATE(orbpop(nel))
+!! Computing pipek delocalization, requires fragment populations. cmat  !!
+!! is fixed for this ifrg, so the expensive per-atom population matrix  !!
+!! is computed once here, then just summed per fragment below.         !!
+          ALLOCATE(orbpop(nel),orbpopat(nel,nat))
+          call rwf_uwf_orbpop_atom(sat,nel,cmat,orbpopat)
           do jfrg=1,icufr
-            call rwf_uwf_frg_pop(jfrg,sat,nel,cmat,orbpop)
+            call rwf_uwf_frg_pop(jfrg,nel,orbpopat,orbpop)
             do ii=1,nel
               deloc(ifrg,ii)=deloc(ifrg,ii)+orbpop(ii)*orbpop(ii) !! Adding Q_A**2 inside deloc !!
 
@@ -284,7 +291,7 @@
               end if
             end do
           end do
-          DEALLOCATE(orbpop)
+          DEALLOCATE(orbpop,orbpopat)
 
 !! Now doing 1/deloc() !!
           do ii=1,nel
@@ -638,6 +645,7 @@
       allocatable :: coslo(:,:),cosloorth(:,:),delocoslo(:)
       allocatable :: ifrgel(:),iznfrg(:)
       allocatable :: orbpop(:),orbpop2(:),foslo(:,:),foslo2(:,:)
+      allocatable :: orbpopat(:,:),orbpopat2(:,:)
 
 !! Loading iopts !!
       ifolitol = iopt(96)
@@ -704,20 +712,27 @@
       write(*,*) " "
 
 !! Made A bit tricky... sorry !!
+!! coslo/cosloorth are fixed here, so their expensive per-atom         !!
+!! population matrices are each computed once, then just summed per   !!
+!! fragment below.                                                     !!
       ALLOCATE(orbpop(nocc),orbpop2(nocc))
+      ALLOCATE(orbpopat(nocc,nat),orbpopat2(nocc,nat))
       ALLOCATE(foslo(nocc,icufr),foslo2(nocc,icufr))
       foslo=ZERO
       foslo2=ZERO
+      call rwf_uwf_orbpop_atom(sat,nocc,coslo,orbpopat) !! For the non-orthogonal OSLOs (original) !!
+      call rwf_uwf_orbpop_atom(sat,nocc,cosloorth,orbpopat2) !! For the orthogonalized ones (printing later) !!
       do jfrg=1,icufr
         orbpop=ZERO
         orbpop2=ZERO
-        call rwf_uwf_frg_pop(jfrg,sat,nocc,coslo,orbpop) !! For the non-orthogonal OSLOs (original) !!
-        call rwf_uwf_frg_pop(jfrg,sat,nocc,cosloorth,orbpop2) !! For the orthogonalized ones (printing later) !!
+        call rwf_uwf_frg_pop(jfrg,nocc,orbpopat,orbpop)
+        call rwf_uwf_frg_pop(jfrg,nocc,orbpopat2,orbpop2)
         do ii=1,nocc
           foslo(ii,jfrg)=orbpop(ii)
           foslo2(ii,jfrg)=orbpop2(ii)
         end do
       end do
+      DEALLOCATE(orbpopat,orbpopat2)
       call rwf_uwf_print_OSLO_final(1,nocc,delocoslo,foslo)
       write(*,*) " --------------------------------------- "
       write(*,*) "  Summary of the selected OSLOs (final)  "
@@ -750,44 +765,31 @@
 !! ****** !!
 
 !! ********************************************************************* !!
-!! subroutine: rwf_uwf_frg_pop                                           !!
-!! purpose: per-orbital fragment population (Mulliken-type, via sat),    !!
-!! independent of the wavefunction type -- shared by the restricted and  !!
-!! unrestricted OSLO drivers, called once per fragment per iteration to  !!
-!! score how localized each candidate orbital is. No factor of 2 applied !!
-!! (the caller decides whether an orbital is singly- or doubly-occupied).!!
-!! frgpop is only written if DOFRAGS is set (idofr=1) -- always true in  !!
-!! practice since OSLO is meaningless without fragments, but left        !!
-!! unwritten (not zeroed) otherwise, matching this codebase's existing   !!
-!! convention elsewhere for that flag.                                   !!
+!! subroutine: rwf_uwf_orbpop_atom                                       !!
+!! purpose: per-atom, per-orbital population (Mulliken-type, via sat)    !!
+!! for a fixed set of orbital coefficients -- the expensive O(nat*norb*  !!
+!! igr^2) part of the old rwf_uwf_frg_pop, split out so callers that     !!
+!! need the same corb scored against every fragment (the usual case --  !!
+!! see oslo_channel_iterate's and both drivers' do jfrg=1,icufr loops)   !!
+!! compute it once instead of once per fragment.                        !!
 !! arguments:                                                             !!
-!!   ifrg   (in)  -- fragment to compute the population on                !!
 !!   sat    (in)  -- (igr,igr,nat) per-atom AO overlap                    !!
 !!   norb   (in)  -- number of orbitals in corb to score                  !!
 !!   corb   (in)  -- (igr,igr) candidate orbital coefficients (only the   !!
 !!                   first norb columns are read)                        !!
-!!   frgpop (out) -- (norb) population of each orbital on fragment ifrg   !!
+!!   orbpop (out) -- (norb,nat) population of each orbital on each atom   !!
 !! author: MGimf                                                          !!
 !! ********************************************************************* !!
-      subroutine rwf_uwf_frg_pop(ifrg,sat,norb,corb,frgpop)
+      subroutine rwf_uwf_orbpop_atom(sat,norb,corb,orbpop)
 
       implicit double precision(a-h,o-z)
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(200)
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
       dimension sat(igr,igr,nat)
-      dimension corb(igr,igr),frgpop(norb)
+      dimension corb(igr,igr),orbpop(norb,nat)
 
-      allocatable :: orbpop(:,:)
-
-      idofr=iopt(40)
-
-      ALLOCATE(orbpop(norb,nat))
-
-!! per-atom orbital populations. !!
       do icenter=1,nat
         do iorb=1,norb
           xx=ZERO
@@ -800,7 +802,43 @@
         end do
       end do
 
-!! grouped by fragment. !!
+      end
+
+!! ****** !!
+
+!! ********************************************************************* !!
+!! subroutine: rwf_uwf_frg_pop                                           !!
+!! purpose: sums a precomputed per-atom orbital population (see          !!
+!! rwf_uwf_orbpop_atom) onto one fragment -- independent of the          !!
+!! wavefunction type, shared by the restricted and unrestricted OSLO     !!
+!! drivers (and LOBA), called once per fragment per iteration to score   !!
+!! how localized each candidate orbital is. No factor of 2 applied (the  !!
+!! caller decides whether an orbital is singly- or doubly-occupied).     !!
+!! frgpop is only written if DOFRAGS is set (idofr=1) -- always true in  !!
+!! practice since OSLO is meaningless without fragments, but left        !!
+!! unwritten (not zeroed) otherwise, matching this codebase's existing   !!
+!! convention elsewhere for that flag.                                   !!
+!! arguments:                                                             !!
+!!   ifrg   (in)  -- fragment to compute the population on                !!
+!!   norb   (in)  -- number of orbitals scored                            !!
+!!   orbpop (in)  -- (norb,nat) per-atom orbital population, from         !!
+!!                   rwf_uwf_orbpop_atom                                 !!
+!!   frgpop (out) -- (norb) population of each orbital on fragment ifrg   !!
+!! author: MGimf                                                          !!
+!! ********************************************************************* !!
+      subroutine rwf_uwf_frg_pop(ifrg,norb,orbpop,frgpop)
+
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+
+      dimension orbpop(norb,nat),frgpop(norb)
+
+      idofr=iopt(40)
+
       if(idofr.eq.1) then
         do iorb=1,norb
           xx=ZERO
@@ -810,8 +848,6 @@
           frgpop(iorb)=xx
         end do
       end if
-
-      DEALLOCATE(orbpop)
 
       end
 
@@ -1023,6 +1059,7 @@
       allocatable :: ifrgel_a(:),ifrgel_b(:),iznfrg(:)
       allocatable :: poslo_a(:,:),poslo_b(:,:)
       allocatable :: orbpop(:),orbpop2(:),foslo(:,:),foslo2(:,:)
+      allocatable :: orbpopat(:,:),orbpopat2(:,:)
 
 !! Loading iopts !!
       ifolitol = iopt(96)
@@ -1107,20 +1144,27 @@
       write(*,*) "  Summary of the selected alpha OSLOs (pre-ortho)  "
       write(*,*) " ------------------------------------------------- "
       write(*,*) " "
+!! coslo_a/cosloorth_a are fixed here, so their expensive per-atom     !!
+!! population matrices are each computed once, then just summed per   !!
+!! fragment below.                                                     !!
       ALLOCATE(orbpop(nalf),orbpop2(nalf))
+      ALLOCATE(orbpopat(nalf,nat),orbpopat2(nalf,nat))
       ALLOCATE(foslo(nalf,icufr),foslo2(nalf,icufr))
       foslo=ZERO
       foslo2=ZERO
+      call rwf_uwf_orbpop_atom(sat,nalf,coslo_a,orbpopat) !! For the non-orthogonal OSLOs (original) !!
+      call rwf_uwf_orbpop_atom(sat,nalf,cosloorth_a,orbpopat2) !! For the orthogonalized ones (printing later) !!
       do jfrg=1,icufr
         orbpop=ZERO
         orbpop2=ZERO
-        call rwf_uwf_frg_pop(jfrg,sat,nalf,coslo_a,orbpop) !! For the non-orthogonal OSLOs (original) !!
-        call rwf_uwf_frg_pop(jfrg,sat,nalf,cosloorth_a,orbpop2) !! For the orthogonalized ones (printing later) !!
+        call rwf_uwf_frg_pop(jfrg,nalf,orbpopat,orbpop)
+        call rwf_uwf_frg_pop(jfrg,nalf,orbpopat2,orbpop2)
         do ii=1,nalf
           foslo(ii,jfrg)=orbpop(ii)
           foslo2(ii,jfrg)=orbpop2(ii)
         end do
       end do
+      DEALLOCATE(orbpopat,orbpopat2)
       call rwf_uwf_print_OSLO_final(1,nalf,delocoslo_a,foslo)
       write(*,*) " --------------------------------------------- "
       write(*,*) "  Summary of the selected alpha OSLOs (final)  "
@@ -1135,20 +1179,27 @@
       write(*,*) "  Summary of the selected beta OSLOs (pre-ortho)  "
       write(*,*) " ------------------------------------------------ "
       write(*,*) " "
+!! coslo_b/cosloorth_b are fixed here, so their expensive per-atom     !!
+!! population matrices are each computed once, then just summed per   !!
+!! fragment below.                                                     !!
       ALLOCATE(orbpop(nb),orbpop2(nb))
+      ALLOCATE(orbpopat(nb,nat),orbpopat2(nb,nat))
       ALLOCATE(foslo(nb,icufr),foslo2(nb,icufr))
       foslo=ZERO
       foslo2=ZERO
+      call rwf_uwf_orbpop_atom(sat,nb,coslo_b,orbpopat) !! For the non-orthogonal OSLOs (original) !!
+      call rwf_uwf_orbpop_atom(sat,nb,cosloorth_b,orbpopat2) !! For the orthogonalized ones (printing later) !!
       do jfrg=1,icufr
         orbpop=ZERO
         orbpop2=ZERO
-        call rwf_uwf_frg_pop(jfrg,sat,nb,coslo_b,orbpop) !! For the non-orthogonal OSLOs (original) !!
-        call rwf_uwf_frg_pop(jfrg,sat,nb,cosloorth_b,orbpop2) !! For the orthogonalized ones (printing later) !!
+        call rwf_uwf_frg_pop(jfrg,nb,orbpopat,orbpop)
+        call rwf_uwf_frg_pop(jfrg,nb,orbpopat2,orbpop2)
         do ii=1,nb
           foslo(ii,jfrg)=orbpop(ii)
           foslo2(ii,jfrg)=orbpop2(ii)
         end do
       end do
+      DEALLOCATE(orbpopat,orbpopat2)
       call rwf_uwf_print_OSLO_final(1,nb,delocoslo_b,foslo)
       write(*,*) " -------------------------------------------- "
       write(*,*) "  Summary of the selected beta OSLOs (final)  "
