@@ -588,7 +588,7 @@
     },
     {
       "name": "NaBH3--UHF",
-      "description": "Sodium borohydride anion, UHF — MULLI (Mulliken AIM), PCA, EOS together, DOFRAGS with 2 fragments. Combining PCA and EOS in one run used to fail to complete in the pre-migration codebase (reference split into two separate outputs, .apost for EOS-only and .apostPCA for PCA-only); this combined run is verified to match both split references exactly, confirming the coupling is fixed. Also first active-test coverage for pca_analysis (see Known Issue #23 — the PCA EIGENVECTORS block's diagonal is actually eigenvalues, a pre-existing label swap, not touched here).",
+      "description": "Sodium borohydride anion, UHF — MULLI (Mulliken AIM), PCA, EOS together, DOFRAGS with 2 fragments. Combining PCA and EOS in one run used to fail to complete in the pre-migration codebase (reference split into two separate outputs, .apost for EOS-only and .apostPCA for PCA-only); this combined run is verified to match both split references exactly, confirming the coupling is fixed. Also first active-test coverage for pca_analysis.",
       "tags": ["hf", "uhf", "mulliken", "pca", "eos", "fragments"],
       "timeout": 300,
       "extra_input_files": [],
@@ -626,7 +626,7 @@
           "tol_abs": 1e-4
         },
         {
-          "label": "PCA eigenvector block Na diagonal (mislabeled, see Known Issue #23)",
+          "label": "PCA eigenvector block Na diagonal",
           "section": "PCA EIGENVECTORS",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.632326,
