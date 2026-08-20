@@ -1,3 +1,35 @@
+!! ********************************************************************** !!
+!! .fchk READING, DM1/DM2 INPUT, AND .inp KEYWORD PARSING                 !!
+!! .fchk reader (native Gaussian/ORCA wavefunction file, unit 15):        !!
+!!   input           -- MO formalism/type, basis size, P/PS/spin density, !!
+!!                      CAS/CI spin-orbital counts                        !!
+!!   mga_misc        -- reference KE/E-N/E-E energies (project's own      !!
+!!                      post-processing fields) + ECP matrix if present   !!
+!!   field_misc      -- external static electric field, if present        !!
+!! post-HF 1-/2-RDM input (# DM keyword, PySCF/DMN codes -- zero test     !!
+!! coverage, see each routine's header):                                  !!
+!!   dm1input        -- spin-orbital 1-RDM + natural orbitals + P/Ps      !!
+!!                      reconstruction from it                            !!
+!!   dm2input_pyscf  -- active-space 2-RDM from PySCF's write_dm12        !!
+!!   dm2input_dmn    -- full spin-separated 2-RDM from the DMN code       !!
+!! .inp keyword parsers (unit 16, rewind+rescan per call -- architecturally !!
+!! fragile, not a current bottleneck) and their shared file-scanning       !!
+!! primitives:                                                            !!
+!!   readchar        -- bare-keyword presence check                       !!
+!!   readreal        -- keyword + real value, with default                !!
+!!   readint         -- keyword + integer value, with default             !!
+!!   locate          -- rewind + scan for a matching line (used by the    !!
+!!                      three above and by other files' .inp readers)     !!
+!!   int_locate      -- rewind + scan + fixed-column integer read (.fchk) !!
+!!   real_locate     -- rewind + scan + fixed-column real*8 read (.fchk)  !!
+!! DEAD CODE (zero live callers codebase-wide, flagged not deleted):      !!
+!!   do_potential    -- McMurchie-Davidson analytical E-N attraction      !!
+!!   Boys_expansionn -- Boys function via pretabulated Taylor expansion,  !!
+!!                      only ever called from do_potential                !!
+!! ********************************************************************** !!
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: input                                                     !!
 !! purpose: reads the native Gaussian .fchk (unit 15) into the           !!
@@ -195,7 +227,7 @@
       end if
 !! O(igr^2 x nocc) but a one-time setup cost (input() runs once per job), !!
 !! not a hot loop -- assessed, not worth OMP unlike the actual numerical  !!
-!! integration kernels this codebase parallelizes (see CLAUDE.md)         !!
+!! integration kernels this codebase parallelizes                        !!
       if(kop.eq.1) then
         do i=1,igr
           do j=1,igr
@@ -844,7 +876,7 @@
 !! if the whole section is missing, this jumps straight to the default -- !!
 !! the ilog=0 "required" stop below only fires when the section exists    !!
 !! but the keyword inside it doesn't (found during the 2026-08-17 cleanup !!
-!! pass, not fixed, see CLAUDE.md)                                        !!
+!! pass, not fixed -- intentional leniency vs. a real gap, needs sign-off) !!
       if(ii.eq.0) go to 10
       ii=0
       do while(ii.eq.0)
