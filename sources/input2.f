@@ -6,14 +6,13 @@
 !!   mga_misc        -- reference KE/E-N/E-E energies (project's own      !!
 !!                      post-processing fields) + ECP matrix if present   !!
 !!   field_misc      -- external static electric field, if present        !!
-!! post-HF 1-/2-RDM input (# DM keyword, PySCF/DMN codes -- zero test     !!
-!! coverage, see each routine's header):                                  !!
+!! post-HF 1-/2-RDM input (# DM keyword, PySCF/DMN codes:                 !!
 !!   dm1input        -- spin-orbital 1-RDM + natural orbitals + P/Ps      !!
 !!                      reconstruction from it                            !!
 !!   dm2input_pyscf  -- active-space 2-RDM from PySCF's write_dm12        !!
 !!   dm2input_dmn    -- full spin-separated 2-RDM from the DMN code       !!
-!! .inp keyword parsers (unit 16, rewind+rescan per call -- architecturally !!
-!! fragile, not a current bottleneck) and their shared file-scanning       !!
+!! .inp keyword parsers (unit 16, rewind+rescan per call and their        !!
+!! shared file-scanning                                                   !!
 !! primitives:                                                            !!
 !!   readchar        -- bare-keyword presence check                       !!
 !!   readreal        -- keyword + real value, with default                !!
@@ -39,7 +38,7 @@
 !! each value is determined (see the print_box call below).              !!
 !! arguments: none (unit 15 already open; output via COMMON /nat/,       !!
 !!   /coord/, /energ/, /cas/ and ao_matrices' P/PS/C/CB module arrays)   !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine input
       use basis_set
@@ -112,9 +111,9 @@
 
       call build_ao_matrices(igr) !MMO- WIP!
 
-      !! allocated here, right alongside build_ao_matrices, since igr and !!
-      !! nat are both known from this point on -- see modules.f90 for what !!
-      !! each of these three replaces (former common /effao/, /nao/, /stv/) !!
+!! allocated here, right alongside build_ao_matrices, since igr and   !!
+!! nat are both known from this point on -- see modules.f90 for what  !!
+!! each of these three replaces (former common /effao/, /nao/, /stv/) !!
       call allocate_effao(igr,nat)
       call allocate_nao(igr)
       call allocate_stv(igr)
@@ -161,6 +160,7 @@
             end do
           end do
         end if
+
 !! just in case not detected above !!
         iuhf=1
         kop=1
@@ -225,9 +225,7 @@
           enddo
         enddo
       end if
-!! O(igr^2 x nocc) but a one-time setup cost (input() runs once per job), !!
-!! not a hot loop -- assessed, not worth OMP unlike the actual numerical  !!
-!! integration kernels this codebase parallelizes                        !!
+
       if(kop.eq.1) then
         do i=1,igr
           do j=1,igr
@@ -314,21 +312,23 @@
 
       end
 
-!! ********************************************************************* !!
-!! subroutine: dm1input                                                  !!
+!! ***** !!
+
+!! ********************************************************************** !!
+!! subroutine: dm1input                                                   !!
 !! purpose: reads the spin-orbital 1-RDM (dm1) for a post-HF wavefunction !!
-!! -- either the full-space matrix from a DMN-code file (unit 11,        !!
-!! unformatted), or the active-space-only matrix from PySCF (unit 11,    !!
-!! formatted, inactive block assumed diagonally doubly occupied) --      !!
-!! then reconstructs the natural orbitals (occ_no/c_no) and overwrites   !!
+!! -- either the full-space matrix from a DMN-code file (unit 11,         !!
+!! unformatted), or the active-space-only matrix from PySCF (unit 11,     !!
+!! formatted, inactive block assumed diagonally doubly occupied) --       !!
+!! then reconstructs the natural orbitals (occ_no/c_no) and overwrites    !!
 !! the AO-basis P/Pa/Pb/Ps density matrices from it, replacing whatever   !!
-!! the .fchk itself provided. No active test exercises this path (# DM   !!
-!! PYSCF/ORCA); code preserved as-is during the 2026-08-20 cleanup pass, !!
-!! only comments/printing/indentation touched.                          !!
+!! the .fchk itself provided. No active test exercises this path (# DM    !!
+!! PYSCF/ORCA); code preserved as-is during the 2026-08-20 cleanup pass,  !!
+!! only comments/printing/indentation touched.                            !!
 !! arguments:                                                             !!
 !!   dm1 (out) -- spin-orbital 1-RDM, (nspinorb,nspinorb)                 !!
-!! author:                                                                 !!
-!! ********************************************************************* !!
+!! author:                                                                !!
+!! ********************************************************************** !!
       subroutine dm1input(dm1)
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -371,9 +371,9 @@
 !! assumed doubly occupied/diagonal, active-orbital indices offset by    !!
 !! ncore to land in the full spin-orbital space.                        !!
         ncore=(nspinorb-ncasorb*2)
-        write(*,*) "Nspinorb, Ncasorb, ncoreorb : ",nspinorb,ncasorb,ncore
-        write(*,*) 'Generating DM1 for inactive spin orbitals, ',ncore
-        write(*,*) 'Assuming diagonal dm1 '
+        write(*,'(2x,a,1x,i0,a,i0,a,i0)') 'Spin-orbitals (total/active/core):',nspinorb,' / ',ncasorb,' / ',ncore
+        write(*,'(2x,a,1x,i0)') 'Generating dm1 for inactive spin-orbitals:',ncore
+        write(*,*) 'Assuming diagonal dm1'
 
         do ii=1,ncore
           dm1(ii,ii)=ONE
@@ -405,7 +405,7 @@
         end do
       end do
       write(*,*) " "
-      write(*,*) " Max. deviation from idempotency = ",difi
+      write(*,'(2x,a,1x,f12.8)') 'Max. deviation from idempotency:',difi
       write(*,*) " "
 
       do i=1,norb
@@ -469,13 +469,14 @@
           p(i,j)=pa(i,j)+pb(i,j)
         end do
       end do
-      write(*,*) 'P (and Ps) in fchk overriden'
-      write(*,*) 'Max dif. P from dm1 and from FChk: ',dif
+      write(*,*) 'P (and Ps) in fchk overridden'
+      write(*,'(2x,a,1x,f12.8)') 'Max. deviation, P from dm1 vs. from .fchk:',dif
 
       deallocate(scr)
       end
 
 !! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: dm2input_pyscf                                            !!
 !! purpose: reads the active-space-only spinless 2-RDM (dm2) produced by !!
@@ -509,9 +510,9 @@
       ncore=ninact/2
       iorb=ncore+ncasorb
       if(iorb.ne.norb) stop 'inconsistency in norb'
-      write(*,*) 'Reconstructing rdm2 for ',ncore,' inactive orbitals'
-      write(*,*) 'Active orbitals : ', ncasorb
-      write(*,*) 'Total spinless rdm2 dimension : ', norb
+      write(*,'(2x,a,1x,i0)') 'Reconstructing rdm2 for inactive orbitals:',ncore
+      write(*,'(2x,a,1x,i0)') 'Active orbitals:',ncasorb
+      write(*,'(2x,a,1x,i0)') 'Total spinless rdm2 dimension:',norb
 
 !! active space, from *.dm2. !!
       rewind(12)
@@ -523,7 +524,7 @@
         icount=icount+1
       end do
 999   continue
-      write(*,*) 'rdm2 elements read:',icount
+      write(*,'(2x,a,1x,i0)') 'rdm2 elements read:',icount
 
 !! core and core-active blocks, reconstructed from the spin-resolved dm1. !!
 
@@ -568,14 +569,14 @@
           xx2=xx2+dm2(ii,ii,jj,jj)
         end do
       end do
-      write(*,*) 'Trace of inactive orbitals: ',xx2
+      write(*,'(2x,a,1x,f14.8)') 'Trace of inactive orbitals:',xx2
       xx2=ZERO
       do ii=ncore+1,norb
         do jj=ncore+1,norb
           xx2=xx2+dm2(ii,ii,jj,jj)
         end do
       end do
-      write(*,*) 'Trace of active orbitals: ',xx2
+      write(*,'(2x,a,1x,f14.8)') 'Trace of active orbitals:',xx2
       xx2=ZERO
       do ii=1,norb
         do jj=1,norb
@@ -584,7 +585,7 @@
       end do
       nelect=nalf+nb
       write(*,*) " "
-      write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2,nelect*(nelect-1)
+      write(*,'(2x,a,1x,f14.8,a,1x,i0)') 'Trace of the DM2, normalized to N(N-1):',xx2,' / ',nelect*(nelect-1)
       write(*,*) " "
       end
 
@@ -595,15 +596,12 @@
 !! purpose: reads the full spin-separated 2-RDM produced by the DMN code !!
 !! (unit 12, unformatted) -- only the i<=j, k<=l, i<=k elements are      !!
 !! stored on file, reconstructed here into the full spinless dm2(norb^4) !!
-!! via the AAAA/ABAB/BABA/BBBB and ABBA/BAAB symmetry relations. No      !!
-!! active test exercises this path (# DM ORCA/DMN); code preserved as-is !!
-!! during the 2026-08-20 cleanup pass, only comments/printing/           !!
-!! indentation touched.                                                  !!
-!! arguments:                                                             !!
-!!   dm1 (in)  -- spin-orbital 1-RDM, unused here (kept for a uniform     !!
+!! via the AAAA/ABAB/BABA/BBBB and ABBA/BAAB symmetry relations.         !!
+!! arguments:                                                            !!
+!!   dm1 (in)  -- spin-orbital 1-RDM, unused here (kept for a uniform    !!
 !!               call signature with dm2input_pyscf)                     !!
-!!   dm2 (out) -- spinless 2-RDM, (norb,norb,norb,norb)                   !!
-!! author:                                                                 !!
+!!   dm2 (out) -- spinless 2-RDM, (norb,norb,norb,norb)                  !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine dm2input_dmn(dm1,dm2)
       use ao_matrices
@@ -669,26 +667,26 @@
           xx2=xx2+dm2(ii,ii,jj,jj)
         end do
       end do
-      write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2
+      write(*,'(2x,a,1x,f14.8)') 'Trace of the DM2, normalized to N(N-1):',xx2
       write(*,*) " "
       end
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: mga_misc                                                  !!
-!! purpose: reads the reference one-/two-electron energy components      !!
-!! (kinetic, electron-nuclear, electron-electron) that ENPART's          !!
-!! integration-error checks compare against, from custom fields appended !!
-!! to the .fchk by the project's own post-processing scripts (Gaussian:  !!
+!! ********************************************************************** !!
+!! subroutine: mga_misc                                                   !!
+!! purpose: reads the reference one-/two-electron energy components       !!
+!! (kinetic, electron-nuclear, electron-electron) that ENPART's           !!
+!! integration-error checks compare against, from custom fields appended  !!
+!! to the .fchk by the project's own post-processing scripts (Gaussian:   !!
 !! utils/get_energy(_g16); ORCA: orca2fchk) -- not a stock Gaussian/ORCA  !!
-!! field. Also detects and reads an ECP matrix if present, returning     !!
-!! per-atom (Mulliken-type) ECP energies.                                !!
+!! field. Also detects and reads an ECP matrix if present, returning      !!
+!! per-atom (Mulliken-type) ECP energies.                                 !!
 !! arguments:                                                             !!
 !!   iecp (out) -- 1 if an ECP matrix was found in the .fchk, 0 otherwise !!
 !!   eecp (out) -- per-atom ECP energy (only filled if iecp=1)            !!
-!! author:                                                                 !!
-!! ********************************************************************* !!
+!! author: MGimf                                                          !!
+!! ********************************************************************** !!
       subroutine mga_misc(iecp,eecp)
       use basis_set
       use ao_matrices
@@ -740,13 +738,14 @@
 998   read(15,'(a80)',end=897) line
       if(index(line,"ECP Mat").ne.0) then
         iecp=1
-        write(*,*) ' Pseudopotential matrix found in fchk file'
+        write(*,'(2x,a)') 'Pseudopotential matrix found in .fchk file'
       else
         go to 998
       end if
 897   continue
 
       if(iecp.eq.1) then
+
 !! matched string is "ECP-Mat", not "ECP Mat" (no hyphen) as above --   !!
 !! a leading blank there previously broke the match.                    !!
 999     read(15,'(a80)',end=1000) line
@@ -799,9 +798,9 @@
 !! and reads its 4 components; ifield=1 if the x/y/z components are      !!
 !! non-negligible (the 4th component, magnitude, is read but not used    !!
 !! for this check).                                                      !!
-!! arguments:                                                             !!
-!!   ifield (out) -- 1 if a non-negligible field is present, 0 otherwise  !!
-!! author:                                                                 !!
+!! arguments:                                                            !!
+!!   ifield (out) -- 1 if a non-negligible field is present, 0 otherwise !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine field_misc(ifield)
       IMPLICIT REAL*8(A-H,O-Z)
@@ -823,6 +822,7 @@
 2     continue
       end
 
+!! ***** !!
 
 !! ********************************************************************* !!
 !! subroutine: readchar                                                  !!
@@ -830,9 +830,9 @@
 !! keyword; ival=1 if found before the section closes, 0 otherwise.      !!
 !! arguments:                                                            !!
 !!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
-!!   keyword (in)  -- keyword text to search for                        !!
+!!   keyword (in)  -- keyword text to search for                         !!
 !!   ival    (out) -- 1 if found, 0 otherwise                            !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine readchar(section,keyword,ival)
       character section*(*), keyword*(*)
@@ -854,17 +854,19 @@
       return
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: readreal                                                  !!
 !! purpose: scans an .inp section (unit 16, already open) for a keyword  !!
 !! followed by a real value; falls back to intdef if not found.          !!
 !! arguments:                                                            !!
 !!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
-!!   keyword (in)  -- keyword text to search for                        !!
+!!   keyword (in)  -- keyword text to search for                         !!
 !!   intv    (out) -- parsed value, or intdef if not found               !!
 !!   intdef  (in)  -- default value                                      !!
 !!   ilog    (in)  -- 0 = required (stop if missing), 1 = optional       !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine readreal(section,keyword,intv,intdef,ilog)
       character section*(*), keyword*(*)
@@ -873,10 +875,10 @@
       integer ilog
 
       call locate(16,section,ii)
+
 !! if the whole section is missing, this jumps straight to the default -- !!
 !! the ilog=0 "required" stop below only fires when the section exists    !!
-!! but the keyword inside it doesn't (found during the 2026-08-17 cleanup !!
-!! pass, not fixed -- intentional leniency vs. a real gap, needs sign-off) !!
+!! but the keyword inside it doesn't                                      !!
       if(ii.eq.0) go to 10
       ii=0
       do while(ii.eq.0)
@@ -890,7 +892,7 @@
         if(index(linea,"#").ne.0) ii=2
       end do
       if(ilog.eq.0.and.ii.ne.1) then
-        write(*,*) keyword,'is required.'
+        write(*,'(2x,a,1x,a)') trim(keyword),'is required.'
         stop
       else if(ii.eq.2) then
 10      intv=intdef
@@ -898,17 +900,19 @@
       return
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: readint                                                   !!
 !! purpose: scans an .inp section (unit 16, already open) for a keyword  !!
 !! followed by an integer value; falls back to intdef if not found.      !!
 !! arguments:                                                            !!
 !!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
-!!   keyword (in)  -- keyword text to search for                        !!
+!!   keyword (in)  -- keyword text to search for                         !!
 !!   intv    (out) -- parsed value, or intdef if not found               !!
 !!   intdef  (in)  -- default value                                      !!
 !!   ilog    (in)  -- 0 = required (stop if missing), 1 = optional       !!
-!! author:                                                                !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine readint(section,keyword,intv,intdef,ilog)
       character section*(*), keyword*(*)
@@ -916,7 +920,8 @@
       integer ipos,ii,intv,intdef,ilog
 
       call locate(16,section,ii)
-!! same pre-existing gap as readreal above -- a missing section jumps     !!
+
+!! same pre-existing gap as readreal above -- a missing section jumps    !!
 !! straight to the default, bypassing the ilog=0 "required" stop         !!
       if(ii.eq.0) goto 40
       ii=0
@@ -931,7 +936,7 @@
         if(index(linea,"#").ne.0) ii=2
       end do
       if(ilog.eq.0.and.ii.ne.1) then
-        write(*,*) keyword,"is required."
+        write(*,'(2x,a,1x,a)') trim(keyword),'is required.'
         stop
       else if(ii.eq.2) then
 40      intv=intdef
@@ -939,18 +944,19 @@
       return
       end
 
-C*****************************************************************
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: locate                                                    !!
 !! purpose: rewinds iunit and scans it for a line containing string,     !!
 !! leaving the file positioned just past that line for the caller to     !!
 !! keep reading from. Used throughout input()/read_input() to find       !!
 !! .fchk/.inp section markers before parsing what follows.               !!
-!! arguments:                                                             !!
-!!   iunit  (in)  -- file unit to scan (already open)                     !!
-!!   string (in)  -- text to search for                                   !!
-!!   ii     (out) -- 1 if found, 0 otherwise                              !!
-!! author:                                                                 !!
+!! arguments:                                                            !!
+!!   iunit  (in)  -- file unit to scan (already open)                    !!
+!!   string (in)  -- text to search for                                  !!
+!!   ii     (out) -- 1 if found, 0 otherwise                             !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       subroutine locate(iunit,string,ii)
       integer iunit
@@ -968,9 +974,11 @@ C*****************************************************************
         end if
       end do
 
-10    write(*,*) trim(string),' section not found '
+10    write(*,'(2x,a,1x,a)') trim(string),'section not found'
       return
       end
+
+!! ***** !!
 
 !! ********************************************************************* !!
 !! function: int_locate                                                  !!
@@ -978,11 +986,11 @@ C*****************************************************************
 !! reads an integer value from its fixed .fchk column position. Returns  !!
 !! 0 and ilog=.false. if text isn't found or the value can't be parsed.  !!
 !! See real_locate for the real*8 twin.                                  !!
-!! arguments:                                                             !!
-!!   iunit (in)  -- file unit to scan (already open)                      !!
-!!   text  (in)  -- text to search for                                    !!
-!!   ilog  (out) -- .true. if found and parsed, .false. otherwise         !!
-!! author:                                                                 !!
+!! arguments:                                                            !!
+!!   iunit (in)  -- file unit to scan (already open)                     !!
+!!   text  (in)  -- text to search for                                   !!
+!!   ilog  (out) -- .true. if found and parsed, .false. otherwise        !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       function int_locate(iunit,text,ilog)
       implicit double precision(a-h,o-z)
@@ -1005,17 +1013,19 @@ C*****************************************************************
 2     continue
       end
 
+!! ***** !!
+
 !! ********************************************************************* !!
 !! function: real_locate                                                 !!
 !! purpose: rewinds iunit and scans it for a line containing text, then  !!
 !! reads a real*8 value from its fixed .fchk column position. Returns 0  !!
 !! and ilog=.false. if text isn't found or the value can't be parsed.    !!
 !! See int_locate for the integer twin.                                  !!
-!! arguments:                                                             !!
-!!   iunit (in)  -- file unit to scan (already open)                      !!
-!!   text  (in)  -- text to search for                                    !!
-!!   ilog  (out) -- .true. if found and parsed, .false. otherwise         !!
-!! author:                                                                 !!
+!! arguments:                                                            !!
+!!   iunit (in)  -- file unit to scan (already open)                     !!
+!!   text  (in)  -- text to search for                                   !!
+!!   ilog  (out) -- .true. if found and parsed, .false. otherwise        !!
+!! author:                                                               !!
 !! ********************************************************************* !!
       function real_locate(iunit,text,ilog)
       implicit double precision(a-h,o-z)
@@ -1037,6 +1047,8 @@ C*****************************************************************
 99    real_locate=0
 2     continue
       end
+
+!! ***** !!
 
 !! ********************************************************************* !!
 !! subroutine: do_potential                                              !!
