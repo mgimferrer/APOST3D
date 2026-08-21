@@ -68,10 +68,7 @@
 
       iatps = nrad*nang
 
-      write(*,*) " --------------------------------------- "
-      write(*,*) "  CHARGE CENTER (R_F) FOR EACH FRAGMENT  "
-      write(*,*) " --------------------------------------- "
-      write(*,*) " "
+      call print_subbox('CHARGE CENTER (R_F) FOR EACH FRAGMENT')
       write(*,*) "  Frag.        Charge center (xyz)     "
       write(*,*) " ------------------------------------- "
       do ifrg=1,icufr
@@ -206,6 +203,8 @@
       integer,intent(in) :: ibranch
       real*8,intent(in) :: folitol
 
+      character*40 line
+
       dimension sat(igr,igr,nat)
       dimension Smat(icufr,igr,igr),pnocore(igr,igr)
       dimension coslo(igr,igr),cosloorth(igr,igr)
@@ -237,10 +236,8 @@
       iaddoslo=0
       iaddoslo2=0
       do iiter=1,niter
-        write(*,*) " ---------------------- "
-        write(*,'(3x,a16,x,i3)') "ITERATION NUMBER",iiter
-        write(*,*) " ---------------------- "
-        write(*,*) " "
+        write(line,'(a,i3)') "ITERATION NUMBER ",iiter
+        call print_subbox(trim(adjustl(line)))
 
 !! Zeroing the involved matrices !!
         pcore=ZERO
@@ -303,10 +300,8 @@
           end do
 
 !! Printing valuable information !!
-          write(*,*) " -------------------------------------- "
-          write(*,'(3x,a32,x,i3)') "ORBITAL INFORMATION FOR FRAGMENT",ifrg
-          write(*,*) " -------------------------------------- "
-          write(*,*) " "
+          write(line,'(a,i3)') "ORBITAL INFORMATION FOR FRAGMENT ",ifrg
+          call print_subbox(trim(adjustl(line)))
           write(*,*) "  Orb.    Spread      Frg. Pop.      FOLI   "
           write(*,*) " ------------------------------------------ "
           do ii=1,nel
@@ -353,11 +348,7 @@
 !! Printing !!
         write(*,'(2x,a27,x,i3,f10.5)') "Frg. and Lowest FOLI value:",iifrg,xcutoff
         write(*,'(2x,a56,x,i3,f10.5)') "Frg. and Lowest FOLI value including tolerance (cutoff):",jjfrg,xcutoff
-        write(*,*) " "
-        write(*,*) " ------------------- "
-        write(*,*) "  SELECTED ORBITALS  "
-        write(*,*) " ------------------- "
-        write(*,*) " "
+        call print_box('SELECTED ORBITALS')
 
 !! 3) Evaluating degeneracies !!
 !! Infopop(i,j): saving the fragment in i = 1 and orbital number in i = 2 !!
@@ -438,10 +429,7 @@
 
 !! Selecting the first out for evaluating LINDEP !!
         clindep=ZERO
-        write(*,*) " ------------------------------ "
-        write(*,*) "  CHECKING LINEAR DEPENDENCIES  "
-        write(*,*) " ------------------------------ "
-        write(*,*) " "
+        call print_subbox('CHECKING LINEAR DEPENDENCIES')
         write(*,*) "  Orb.   Frag.   FOLI  "
         write(*,*) " --------------------- "
         iselected=0
@@ -668,11 +656,7 @@
       call oslo_build_Smat(itotps,wp,omp2,chp,pcoord,Smat)
 
 !! Initial printing !!
-      write(*,*) " "
-      write(*,*) " ----------------------------------- "
-      write(*,*) "  STARTING ITERATIVE OSLO ALGORITHM  "
-      write(*,*) " ----------------------------------- "
-      write(*,*) " "
+      call print_box('STARTING ITERATIVE OSLO ALGORITHM')
       write(*,'(2x,a50,f10.5)') "Tolerance (in delta-FOLI) used for OSLO selection:",folitol
       write(*,*) " "
 
@@ -702,14 +686,8 @@
       DEALLOCATE(poslo)
 
 !! Evaluating final populations to compare !!
-      write(*,*) " ---------------------------------- "
-      write(*,*) "  PRINTING FINAL OSLOs INFORMATION  "
-      write(*,*) " ---------------------------------- "
-      write(*,*) " "
-      write(*,*) " ------------------------------------------- "
-      write(*,*) "  Summary of the selected OSLOs (pre-ortho)  "
-      write(*,*) " ------------------------------------------- "
-      write(*,*) " "
+      call print_subbox('PRINTING FINAL OSLOs INFORMATION')
+      call print_subbox('Summary of the selected OSLOs (pre-ortho)')
 
 !! Made A bit tricky... sorry !!
 !! coslo/cosloorth are fixed here, so their expensive per-atom         !!
@@ -734,18 +712,12 @@
       end do
       DEALLOCATE(orbpopat,orbpopat2)
       call rwf_uwf_print_OSLO_final(1,nocc,delocoslo,foslo)
-      write(*,*) " --------------------------------------- "
-      write(*,*) "  Summary of the selected OSLOs (final)  "
-      write(*,*) " --------------------------------------- "
-      write(*,*) " "
+      call print_subbox('Summary of the selected OSLOs (final)')
       call rwf_uwf_print_OSLO_final(0,nocc,delocoslo,foslo2) !! FOLI values given just for using the same routine !!
 
 !! Final oxidation-state assignment, printed last -- each assigned      !!
 !! orbital is doubly occupied.                                          !!
-      write(*,*) " --------------------------- "
-      write(*,*) "  FRAGMENT OXIDATION STATES  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      call print_subbox('FRAGMENT OXIDATION STATES')
       write(*,*) "  Frag.  Oxidation State  "
       write(*,*) " ------------------------ "
       do ifrg=1,icufr
@@ -790,11 +762,7 @@
       dimension sat(igr,igr,nat)
       dimension corb(igr,igr),orbpop(norb,nat)
 
-!! corb/sat read-only; each (icenter,iorb) pair accumulates into its own !!
-!! private xx and writes only its own orbpop slot, so no collisions.     !!
-!! COLLAPSE(2) is safe since neither bound depends on the other index,   !!
-!! and gives full nat*norb parallelism even when nat alone (icufr-sized  !!
-!! systems included) is too small to feed many cores.                   !!
+!! corb/sat read-only; each (icenter,iorb) writes only its own slot. !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iorb,jj,kk,xx)
       do icenter=1,nat
         do iorb=1,norb
@@ -1089,19 +1057,11 @@
       call oslo_build_Smat(itotps,wp,omp2,chp,pcoord,Smat)
 
 !! Initial printing !!
-      write(*,*) " "
-      write(*,*) " ----------------------------------- "
-      write(*,*) "  STARTING ITERATIVE OSLO ALGORITHM  "
-      write(*,*) " ----------------------------------- "
-      write(*,*) " "
+      call print_box('STARTING ITERATIVE OSLO ALGORITHM')
       write(*,'(2x,a50,f10.5)') "Tolerance (in delta-FOLI) used for OSLO selection:",folitol
-      write(*,*) " "
 
 !! Alpha channel !!
-      write(*,*) " ------------ "
-      write(*,*) "  ALPHA PART  "
-      write(*,*) " ------------ "
-      write(*,*) " "
+      call print_box('ALPHA PART')
 
       ALLOCATE(pnocore(igr,igr))
       pnocore=pa
@@ -1111,10 +1071,7 @@
       DEALLOCATE(pnocore)
 
 !! Beta channel !!
-      write(*,*) " ----------- "
-      write(*,*) "  BETA PART  "
-      write(*,*) " ----------- "
-      write(*,*) " "
+      call print_subbox('BETA PART')
 
       ALLOCATE(pnocore(igr,igr))
       pnocore=pb
@@ -1141,16 +1098,10 @@
       DEALLOCATE(poslo_a,poslo_b)
 
 !! Evaluating final populations to compare !!
-      write(*,*) " ---------------------------------- "
-      write(*,*) "  PRINTING FINAL OSLOs INFORMATION  "
-      write(*,*) " ---------------------------------- "
-      write(*,*) " "
+      call print_subbox('PRINTING FINAL OSLOs INFORMATION')
 
 !! First alpha !!
-      write(*,*) " ------------------------------------------------- "
-      write(*,*) "  Summary of the selected alpha OSLOs (pre-ortho)  "
-      write(*,*) " ------------------------------------------------- "
-      write(*,*) " "
+      call print_subbox('Summary of the selected alpha OSLOs (pre-ortho)')
 !! coslo_a/cosloorth_a are fixed here, so their expensive per-atom     !!
 !! population matrices are each computed once, then just summed per   !!
 !! fragment below.                                                     !!
@@ -1173,19 +1124,13 @@
       end do
       DEALLOCATE(orbpopat,orbpopat2)
       call rwf_uwf_print_OSLO_final(1,nalf,delocoslo_a,foslo)
-      write(*,*) " --------------------------------------------- "
-      write(*,*) "  Summary of the selected alpha OSLOs (final)  "
-      write(*,*) " --------------------------------------------- "
-      write(*,*) " "
+      call print_subbox('Summary of the selected alpha OSLOs (final)')
       call rwf_uwf_print_OSLO_final(0,nalf,delocoslo_a,foslo2) !! FOLI values given just for using same routine !!
       DEALLOCATE(orbpop,orbpop2)
       DEALLOCATE(foslo,foslo2)
 
 !! Now beta !!
-      write(*,*) " ------------------------------------------------ "
-      write(*,*) "  Summary of the selected beta OSLOs (pre-ortho)  "
-      write(*,*) " ------------------------------------------------ "
-      write(*,*) " "
+      call print_subbox('Summary of the selected beta OSLOs (pre-ortho)')
 !! coslo_b/cosloorth_b are fixed here, so their expensive per-atom     !!
 !! population matrices are each computed once, then just summed per   !!
 !! fragment below.                                                     !!
@@ -1208,20 +1153,14 @@
       end do
       DEALLOCATE(orbpopat,orbpopat2)
       call rwf_uwf_print_OSLO_final(1,nb,delocoslo_b,foslo)
-      write(*,*) " -------------------------------------------- "
-      write(*,*) "  Summary of the selected beta OSLOs (final)  "
-      write(*,*) " -------------------------------------------- "
-      write(*,*) " "
+      call print_subbox('Summary of the selected beta OSLOs (final)')
       call rwf_uwf_print_OSLO_final(0,nb,delocoslo_b,foslo2) !! FOLI values given just for using the same routine !!
       DEALLOCATE(orbpop,orbpop2)
       DEALLOCATE(foslo,foslo2)
 
 !! Final oxidation-state assignment, printed last -- each assigned      !!
 !! spin-orbital holds 1 electron.                                       !!
-      write(*,*) " --------------------------- "
-      write(*,*) "  FRAGMENT OXIDATION STATES  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      call print_subbox('FRAGMENT OXIDATION STATES')
       write(*,*) "  Frag.  Oxidation State  "
       write(*,*) " ------------------------ "
       do ifrg=1,icufr
