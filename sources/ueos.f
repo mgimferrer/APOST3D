@@ -300,10 +300,16 @@
       end do
 
       !! CREATING MATRIX OF IDEAL OCCUPATIONS !!
-      ALLOCATE(elec_id(lorb(1),2)) !! ALLOCATED TO lorb(1) FOR SIMPLICITY !!
-      ALLOCATE(elec2(lorb(1),2)) !! SAME HERE !!
+      !! sized to the larger of the two EFO counts -- previously always lorb(1)  !!
+      !! (paired), which silently ran elec_id out of bounds below whenever there !!
+      !! were more unpaired than paired EFOs (lorb(2).gt.lorb(1))               !!
+      ilorb=MAX(lorb(1),lorb(2))
+      ALLOCATE(elec_id(ilorb,2))
+      ALLOCATE(elec2(ilorb,2))
       elec_id=ZERO
-      elec2=occup
+      elec2=occup(1:ilorb,1:2) !! section, not whole-array -- keeps elec2 at ilorb !!
+                                !! (a bare "=occup" auto-reallocates to occup's own !!
+                                !! (nmax,2) shape per F2003 assignment semantics)   !!
 
       !! ASSIGNING ELECTRONS !!
       nnn=nalf+nb
@@ -351,7 +357,7 @@
       write(*,*) " "
 
       !! NOW GIVING THE LAST ELECTRON PAIR FROM THE PAIRED DENSITY TO THE MOST OCC. UNPAIRED, ITERATIVELY !!
-      ALLOCATE(tmp_elec_id(lorb(1),2))
+      ALLOCATE(tmp_elec_id(ilorb,2))
       tmp_elec_id=elec_id
       do while(npair.gt.0)
 
