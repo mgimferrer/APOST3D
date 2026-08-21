@@ -858,7 +858,7 @@
       "extra_input_files": ["LiH-35-CAS22.dm1", "LiH-35-CAS22.dm2"],
       "keywords": [
         "TFVC", "ENPART", "ENPART/CASSCF", "ENPART/THREBOD", "ENPART/MOD-GRIDTWOEL",
-        "DM", "DM/PYSCF", "SPIN"
+        "DM/PYSCF", "SPIN"
       ],
       "checks": [
         {
