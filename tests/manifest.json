@@ -849,6 +849,92 @@
           "tol_abs": 2e-4
         }
       ]
+    },
+    {
+      "name": "LiH-35-CAS22",
+      "description": "LiH, CASSCF(2,2)/def2-tzvp -- TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via # DM PYSCF (DM 2 also auto-enables SPIN, read_input.f). First active-test coverage for ENPART+CASSCF, # DM PYSCF, and corr.f's spincorr correlated-WF local-spin branch -- all previously at zero. Reference .fchk/.dm1/.dm2/.inp and the old-codebase .apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; this fresh run matches that old .apost exactly (every printed IQA energy term, to the last digit), so reference values here are taken straight from it.",
+      "tags": ["hf", "enpart", "casscf", "dm", "pyscf", "spin", "tfvc"],
+      "timeout": 300,
+      "extra_input_files": ["LiH-35-CAS22.dm1", "LiH-35-CAS22.dm2"],
+      "keywords": [
+        "TFVC", "ENPART", "ENPART/CASSCF", "ENPART/THREBOD", "ENPART/MOD-GRIDTWOEL",
+        "DM", "DM/PYSCF", "SPIN"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "SCF/DFT energy (au)",
+          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -7.9411447876,
+          "tol_abs": 2e-6
+        },
+        {
+          "label": "CAS active electrons",
+          "pattern": "CAS active electrons\\s*:\\s*(\\d+)",
+          "ref": 2,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "CAS active orbitals",
+          "pattern": "CAS active orbitals\\s*:\\s*(\\d+)",
+          "ref": 2,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Natural orbital occupation (2nd NO)",
+          "section": "Occupation numbers",
+          "pattern": "\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.54688,
+          "tol_abs": 2e-5
+        },
+        {
+          "label": "Electron-nuclei energy",
+          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -19.0204933,
+          "tol_abs": 2e-6
+        },
+        {
+          "label": "Kinetic energy",
+          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 7.8890984,
+          "tol_abs": 2e-6
+        },
+        {
+          "label": "Nuclear repulsion energy",
+          "pattern": "Nuclear repulsion energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.4535805,
+          "tol_abs": 2e-6
+        },
+        {
+          "label": "Post-Hartree-Fock exchange-correlation energy (interpolated)",
+          "section": "INTERPOLATED POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS",
+          "pattern": "Post-Hartree-Fock exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -2.0829236,
+          "tol_abs": 2e-6
+        },
+        {
+          "label": "Total integrated energy",
+          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -7.9411448,
+          "tol_abs": 2e-6
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.0000000,
+          "tol_abs": 2e-6
+        },
+        {
+          "label": "Effectively unpaired electrons sum check N_D",
+          "pattern": "Sum check N_D\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 1.40184,
+          "tol_abs": 2e-4
+        }
+      ]
     }
   ]
 }
