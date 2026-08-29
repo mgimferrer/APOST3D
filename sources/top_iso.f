@@ -680,6 +680,89 @@
       DEALLOCATE(th1,ph1)
 
       end
-      
+
+!*****
+
+!! moved here from tools.f (2026-08-29) -- name/arguments (sab/sab2 bond- !!
+!! order-density weights) match the old main.f's TOPOLOGY dispatch        !!
+!! (top_xc_dft_boden_1d, itopwf.eq.2), not the DFT-DM1/HIRAO feature it   !!
+!! shipped alongside. Not called by anything today -- old, unverified    !!
+!! topology-era code, parked here rather than with DFT-DM1 in dft_dm1.f   !!
+!! since it belongs to a different, currently-inert feature. Depends on  !!
+!! dft_dm1.f's drho_xyz (single-point AO gradient) and calc_uhf_dens-     !!
+!! style sigma machinery -- fixed to use ao_matrices/iopt(200) and to     !!
+!! drop the old gordermat call for the same reason as dft_dm1.f's own    !!
+!! sigma_uks_xyz (see that file): basis_set's coefpb already bakes the   !!
+!! pure-d/f transform into the contraction coefficients.
+
+      subroutine grdbod_uks_xyz(xabs,yabs,zabs,omp,chp2,chp3,grdaa,grdab,grdbb,iat,kat,sab,sab2)
+      use ao_matrices
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /actual/ iact,jat,icenter
+      common /nat/    nat,igr,ifg,nocc,nalf,nb,kop
+
+      allocatable :: chpd(:),chp(:),chpbd(:)
+
+      dimension :: omp(nat)
+      dimension :: chp2(nalf),chp3(nb)
+      dimension :: sab(nalf,nalf,nat),sab2(nb,nb,nat)
+
+      ALLOCATE(chpd(igr),chp(igr),chpbd(igr))
+
+!! GENERATING SIGMA BOND ORDER DENSITY !!
+
+      grdaa=ZERO
+      grdab=ZERO
+      grdbb=ZERO
+
+!! CALCULATING AND ACCUMULATING SIGMA BODEN (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
+
+      do ixyz=1,3
+
+!! COMPUTING THE GRADIENT AT A GIVEN POINT !!
+
+        do ii=1,igr
+          iact=ii
+          chp(iact)=drho_xyz(xabs,yabs,zabs,ixyz)
+        end do
+        do j=1,nalf
+          xx=ZERO
+          xxb=ZERO
+          do i=1,igr
+            xx=xx+c(i,j)*chp(i)
+            if(j.le.nb) xxb=xxb+cb(i,j)*chp(i)
+          end do
+          chpd(j)=xx
+          if(j.le.nb) chpbd(j)=xxb
+        end do
+
+!! CALCULATING SIGMA !!
+
+        w1=omp(iat)
+        w2=omp(kat)
+        xxa=ZERO
+        xxb=ZERO
+        do ii=1,nalf
+          do jj=1,nalf
+            gab=sab(ii,jj,iat)*w2+sab(ii,jj,kat)*w1
+            xxa=xxa+gab*chpd(jj)*chp2(ii)
+            if(jj.le.nb.and.ii.le.nb) then
+              gab2=sab2(ii,jj,iat)*w2+sab2(ii,jj,kat)*w1
+              xxb=xxb+gab2*chpbd(jj)*chp3(ii)
+            end if
+          end do
+        end do
+        grdaa=grdaa+xxa*xxa
+        grdab=grdab+xxa*xxb
+        grdbb=grdbb+xxb*xxb
+      end do
+      grdaa=FOUR*grdaa
+      grdab=FOUR*grdab
+      grdbb=FOUR*grdbb
+
+      DEALLOCATE(chpd,chpbd,chp)
+      end
+
 !*****
 
