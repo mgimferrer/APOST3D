@@ -837,6 +837,9 @@
               ithrebod,iexact,ihomo,idek,iionic,ianalytical,itop,ietop, &
               ipairs,iigrid
 
+!! DFT-DM1 (approximate one-particle RDM1, formerly HIRAO internally) !!
+   integer :: idftdm1,id_func_dm1
+
 !! EDAIQA !!
    integer :: iedaiqa,iflip
 

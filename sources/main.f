@@ -308,8 +308,8 @@ c      iopt(52) =
 c      iopt(53) =
 c      iopt(54) =
 c      iopt(55) =   !! itype/jtype, set below in ENPART dispatch (dynamic) !!
-      iopt(56) = idftdm1 !! MG: to be done -- idftdm1 is never assigned, no DFT-DM1 keyword exists yet !!
-c      iopt(57) =
+      iopt(56) = idftdm1
+      iopt(57) = id_func_dm1 !! dft_dm1.f's own functional-ID read (ifunc=Iopt(57)) !!
       iopt(58) = itop
       iopt(59) = iecorr
       iopt(60) = id_xcfunc
@@ -1004,22 +1004,41 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !       close(52)
 !     end if
 
-!! DFT-DM1 approximations -- to be done, no keyword wired in yet (dft_dm1.f !!
-!! itself is being modernized -- see CLAUDE.md Known Issue #22)             !!
-!     ndim=igr
-!     nrad=40
-!     nang=146
-!     rr00=0.50d0
-!     iatps=nang*nrad
-!     itotps=nrad*nang*nat
-!     pha=ZERO
-!     phb=ZERO
-!     call quad(nrad,nang)
-!     ALLOCATE(wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
-!     ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,igr))
-!     call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,0)
-!     DEALLOCATE(ibaspoint,omp,rho)
-!     if(idftdm1.eq.1) call dft_dm1(itotps,wp,omp2,pcoord,chp)
+!! DFT-DM1 approximate one-particle RDM1 (formerly HIRAO internally --   !!
+!! see CLAUDE.md Known Issue #22). Runs standalone, own dedicated grid   !!
+!! reusing the two-electron-type MOD-GRIDTWOEL settings (read_input.f's  !!
+!! read_gridtwoel), pha=phb=0 like any other primary/non-rotated grid -- !!
+!! dft_dm1 builds its own rotated second grid internally.                !!
+      if(idftdm1.eq.1) then
+        call print_box('DOING DFT-DM1 APPROXIMATE ONE-PARTICLE RDM1')
+        ndim=igr
+        nrad=nrad22
+        nang=nang22
+        rr00=rr0022
+        iatps=nang*nrad
+        itotps=nrad*nang*nat
+        pha=ZERO
+        phb=ZERO
+        call quad(nrad,nang)
+
+!! the primary grid (TFVC/Mulliken/etc.) may still be allocated here --  !!
+!! ENPART's own two teardown points only fire when ienpart=1, and        !!
+!! DFT-DM1 needs its own grid at nrad22/nang22 regardless                !!
+        if(allocated(wp))        DEALLOCATE(wp)
+        if(allocated(omp))       DEALLOCATE(omp)
+        if(allocated(omp2))      DEALLOCATE(omp2)
+        if(allocated(pcoord))    DEALLOCATE(pcoord)
+        if(allocated(ibaspoint)) DEALLOCATE(ibaspoint)
+        if(allocated(chp))       DEALLOCATE(chp)
+        if(allocated(rho))       DEALLOCATE(rho)
+
+        ALLOCATE(wp(itotps),omp(itotps),omp2(itotps,nat),rho(itotps))
+        ALLOCATE(pcoord(itotps,3),ibaspoint(itotps),chp(itotps,igr))
+        call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,ibaspoint,0)
+        DEALLOCATE(ibaspoint,omp,rho)
+        call dft_dm1(itotps,wp,omp2,pcoord,chp)
+        DEALLOCATE(wp,omp2,chp,pcoord)
+      end if
 
 !! OSLO -- variants of the procedure can be found in the dev version !!
       if(ioslo.eq.1) then
