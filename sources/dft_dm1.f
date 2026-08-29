@@ -6,6 +6,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /filename/name0
       common /iops/iopt(200)
+      common /dm1opt/densthresh_dm1
       character*80 ofile,ofile2
       character*60 name0
 
@@ -150,6 +151,7 @@
       end do
       write(*,*) " Calculated square number of electrons (N^2) : ",f2
       write(*,*) " "
+
       DEALLOCATE(rho,rhopha,exc,excb)
 
 !! CALCULATION OF THE HF RDM1 !!
@@ -208,7 +210,6 @@
               x0=wp(ifut)*omp2(ifut,icenter)
               irun=1
               do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-!               irun=irun+1
                 Rx=(pcoord(ifut,1)+pcoordpha(jfut,1))/TWO
                 Ry=(pcoord(ifut,2)+pcoordpha(jfut,2))/TWO
                 Rz=(pcoord(ifut,3)+pcoordpha(jfut,3))/TWO
@@ -218,6 +219,16 @@
 !! loop for the same pattern), so the old gordermat call is dropped.     !!
                 call gpoints(Rx,Ry,Rz,gx_ao,gy_ao,gz_ao,eval_ao)
                 call calc_uhf_dens(eval_ao,rhoa,rhob)
+
+!! prune on the density AT THE MIDPOINT R -- not at ifut/jfut themselves !!
+!! (a point being in a low-density tail on its own grid doesn't mean R,  !!
+!! the actual point the RDM1 kernel below is evaluated at, is negligible !!
+!! too). Controlled by # DFT-DM1's DENSTHRESH (default 1e-8). Skips the  !!
+!! rest of this pair's cost (sigma_uks_xyz, xc_uks_for_dm1, the Bessel-  !!
+!! kernel exchange accumulation) but not gpoints/calc_uhf_dens itself,   !!
+!! since R's density isn't known until after that call.                 !!
+                if(abs(rhoa+rhob).lt.densthresh_dm1) cycle
+
                 rho(1,irun)=rhoa
                 rho(2,irun)=rhob
 
@@ -306,7 +317,6 @@
 !               rdm1b(ifut,jfut)=THREE*xbfb*rho(2,irun)
                 xxrdm1=THREE*xbf*rho(1,irun)
                 xxrdm1b=THREE*xbfb*rho(2,irun)
-                if(abs(xxrdm1).gt.0.1) write(*,*) "ifut,jfut,r12,xxrdm1",ifut,jfut,r12,xxrdm1
 
 !! COMPUTING ONLY ONCE FROM RDM1 !!
 

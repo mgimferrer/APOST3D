@@ -18,42 +18,19 @@ C needs to be updated
       return
       end
 
-      function gxfunct(x,y,z)
-      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,idum(4)
-      common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp), ifill(nmax),ifiul(nmax)
-      common /coeff/coeff(maxp,maxc)
-      common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
-      
-      iactat=ihold(iact)
-      f=0.d0
-      xx=x-coord(1,iactat)   
-      yy=y-coord(2,iactat)   
-      zz=z-coord(3,iactat)   
-      rr=dsqrt(xx**2+yy**2+zz**2)
-      ngri=ifiul(iact)-ifill(iact)+1
-      do ki=1,ngri
-      ipr=ifill(iact)+ki-1
-      nn=n(ipr)
-      ll=l(ipr)
-      mm=m(ipr)
-c      if (abs(xx).lt.1.E-10.and.nn.eq.0)then 
-      if (nn.eq.0)then 
-       xprod=0.0d0
-      else
-       xprod=nn*xx**(nn-1)
-      end if
-      f=f+(xprod-2.d0*expp(ipr)*xx**(nn+1))*(yy**ll)*(zz**mm)*
-     $dexp(-expp(ipr)*(rr**2))*coeff(iact,ki)
-c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
-      enddo
+!! gxfunct/gyfunct/gzfunct used to each carry their own copy of this      !!
+!! primitive-loop derivative, against /data//coeff//lim//coord/ commons  !!
+!! that are dead everywhere in the current codebase (only ever declared  !!
+!! here and in the equally-stale code they were copied from -- found     !!
+!! 2026-08-29 chasing a real out-of-bounds crash: ihold(iact) read as 0  !!
+!! from those uninitialized commons). Replaced with thin wrappers around !!
+!! drho_xyz (dft_dm1.f), which does the exact same math (one function,  !!
+!! ixyz-selected, instead of three near-duplicates) against basis_set's  !!
+!! live nlm/coefpb/nprimbas/ihold/coord.                                 !!
 
-      gxfunct=f
-      
+      function gxfunct(x,y,z)
+      IMPLICIT REAL*8(A-H,O-Z)
+      gxfunct=drho_xyz(x,y,z,1)
       return
       end
 
@@ -83,82 +60,14 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       return
       end
       function gyfunct(x,y,z)
-      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,idum(4)
-      common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp), ifill(nmax),ifiul(nmax)
-      common /coeff/coeff(maxp,maxc)
-      common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
-      
-      iactat=ihold(iact)
-      f=0.d0
-c      write(*,*)'coordfunctbef',x,y,z
-      xx=x-coord(1,iactat)   
-      yy=y-coord(2,iactat)   
-      zz=z-coord(3,iactat)   
-      rr=dsqrt(xx**2+yy**2+zz**2)
-      ngri=ifiul(iact)-ifill(iact)+1
-      do ki=1,ngri
-      ipr=ifill(iact)+ki-1
-      nn=n(ipr)
-      ll=l(ipr)
-      mm=m(ipr)
-c      write(*,*)'coordfunct',xx,yy,zz
-      if (ll.eq.0)then 
-       xprod=0.0d0
-      else
-       xprod=ll*yy**(ll-1)     
-      end if
-      f=f+(xprod-2.d0*expp(ipr)*yy**(ll+1))*(xx**nn)*(zz**mm)*
-     $dexp(-expp(ipr)*(rr**2))*coeff(iact,ki)
-c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
-c      print *,'f',iact,ki,f
-      enddo
-
-c      print *,'f',iact,f
-      gyfunct=f
-      
+      gyfunct=drho_xyz(x,y,z,2)
       return
       end
 
       function gzfunct(x,y,z)
-      use stv_mod, only: sp,tt !! replaces common /stv/ -- see modules.f90 !!
       IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,idum(4)
-      common /data/expp(maxp),n(maxp),l(maxp),m(maxp),iat(maxp),ifill(nmax),ifiul(nmax)
-      common /coeff/coeff(maxp,maxc)
-      common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
-      
-      iactat=ihold(iact)
-      f=0.d0
-      xx=x-coord(1,iactat)   
-      yy=y-coord(2,iactat)   
-      zz=z-coord(3,iactat)   
-      rr=dsqrt(xx**2+yy**2+zz**2)
-      ngri=ifiul(iact)-ifill(iact)+1
-      do ki=1,ngri
-      ipr=ifill(iact)+ki-1
-      nn=n(ipr)
-      ll=l(ipr)
-      mm=m(ipr)
-      if (mm.eq.0)then 
-       xprod=0.0d0
-      else
-       xprod=mm*zz**(mm-1)
-      end if
-      f=f+(xprod-2.d0*expp(ipr)*zz**(mm+1))*(yy**ll)*(xx**nn)*
-     $dexp(-expp(ipr)*(rr**2))*coeff(iact,ki)
-c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
-      enddo
-
-      gzfunct=f
-      
+      gzfunct=drho_xyz(x,y,z,3)
       return
       end
 

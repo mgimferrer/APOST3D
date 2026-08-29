@@ -25,6 +25,7 @@
       common /erf/aerf,ierf
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
       common /modgrid2/thr3
+      common /dm1opt/densthresh_dm1
       common /edaiqa/xen,xcoul,xnn
       common /edaiqa2/i2deda,iipoints,xptxyz(2,3)
       common /twoel/twoeltoler
@@ -215,46 +216,7 @@
         call readchar("# ENPART","ANALYTIC",ianalytical)
 
 !! adding grid tuning for two-el integration !!
-        call readchar("# ENPART","MOD-GRIDTWOEL",iigrid)
-        if(iigrid.eq.1) then
-          call readint("# GRID","RADIAL",nrad22,150,1)
-          call readint("# GRID","ANGULAR",nang22,590,1)
-          call readreal("# GRID","rr00",rr0022,0.5d0,1)
-          call readreal("# GRID","phb1",phb12,0.169d0,1)
-          call readreal("# GRID","phb2",phb22,0.170d0,1)
-          call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
-        
-!! defaults, modified for safe integration setup !!
-        else
-          nrad22=150
-          nang22=590
-          rr0022=0.5
-          phb12=0.169d0
-          phb22=0.170d0
-          thr3=1.0d-12
-
-!! Warn if a # GRID block exists in the input but is being ignored because !!
-!! MOD-GRIDTWOEL wasn't set. Scan the file directly here rather than via   !!
-!! "locate", which always prints a "section not found" message on a miss   !!
-          igridpresent=0
-          rewind(16)
-          iiscan=0
-          do while(iiscan.eq.0)
-            read(16,"(a80)",end=234) linia
-            if(index(linia,"# GRID").ne.0) then
-              igridpresent=1
-              iiscan=1
-            end if
-          end do
-234      continue
-          if(igridpresent.eq.1) then
-            write(*,*) " "
-            write(*,*) "WARNING: a # GRID block was found in the input, but MOD-GRIDTWOEL"
-            write(*,*) "was not set in # ENPART. Using the default integration setup instead"
-            write(*,*) "Add MOD-GRIDTWOEL to # ENPART to apply your # GRID settings"
-            write(*,*) " "
-          end if
-        end if
+        call read_gridtwoel("# ENPART")
 
 !! for topology calculation !!
 !! MG: needs to be properly checked, done a long time ago                !!
@@ -289,6 +251,34 @@
         end if
 
 !! end of ENPART options !!
+      end if
+
+!! DFT-DM1 approximate one-particle RDM1 for UHF/UKS-DFT (formerly       !!
+!! referred to internally as HIRAO -- see CLAUDE.md Known Issue #22).     !!
+!! Runs standalone (no ENPART required), reusing the same two-electron-  !!
+!! type grid/defaults as ENPART's own MOD-GRIDTWOEL when ENPART itself   !!
+!! isn't also active for this run (if it is, its grid is reused as-is).  !!
+      idftdm1=0
+      id_func_dm1=0
+      call readchar("# METHOD","DFT-DM1",idftdm1)
+      if(idftdm1.eq.1) then
+        call readchar("# DFT-DM1 FUNCTIONAL","HF",ival)
+        if(ival.eq.1) then
+          id_func_dm1=999
+          go to 235
+        end if
+        call readchar("# DFT-DM1 FUNCTIONAL","LIBRARY",ilib)
+        if(ilib.eq.1) then
+          call readint("# DFT-DM1 FUNCTIONAL","EX_FUNCTIONAL",id_func_dm1,0,1)
+        end if
+235     continue
+        if(id_func_dm1.eq.0) stop "FUNCTIONAL ID NOT FOUND FOR DFT-DM1. REVISE inp"
+
+!! density-threshold pruning for the double loop's O(itotps^2) grid-point !!
+!! pairs -- see dft_dm1.f's build_significant_points                      !!
+        call readreal("# DFT-DM1","DENSTHRESH",densthresh_dm1,1.0d-8,1)
+
+        if(ienpart.ne.1) call read_gridtwoel("# DFT-DM1")
       end if
 
 !! EDAIQA options !!
@@ -510,5 +500,70 @@
 
 !! X-ray scattering factors !!
       call readchar("# METHOD","SCATT-FACT",iscattfact)
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: read_gridtwoel                                            !!
+!! purpose: reads the MOD-GRIDTWOEL/# GRID override shared by ENPART's   !!
+!!   own two-electron integration grid and DFT-DM1's grid (both default  !!
+!!   to 150/590 either way) -- extracted out of read_input()'s ENPART    !!
+!!   block so DFT-DM1 can reuse the exact same mechanism/defaults        !!
+!!   without requiring ENPART to also be active in the same run.         !!
+!! arguments:                                                            !!
+!!   section (in) -- .inp section to scan MOD-GRIDTWOEL/# GRID under     !!
+!!     (e.g. "# ENPART" or "# DFT-DM1")                                  !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine read_gridtwoel(section)
+      implicit real*8(a-h,o-z)
+      character section*(*)
+      character*80 linia
+      common /modgrid/nrad22,nang22,rr0022,phb12,phb22
+      common /modgrid2/thr3
+
+      call readchar(section,"MOD-GRIDTWOEL",iigrid)
+      if(iigrid.eq.1) then
+        call readint("# GRID","RADIAL",nrad22,150,1)
+        call readint("# GRID","ANGULAR",nang22,590,1)
+        call readreal("# GRID","rr00",rr0022,0.5d0,1)
+        call readreal("# GRID","phb1",phb12,0.169d0,1)
+        call readreal("# GRID","phb2",phb22,0.170d0,1)
+        call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
+
+!! defaults, modified for safe integration setup !!
+      else
+        nrad22=150
+        nang22=590
+        rr0022=0.5
+        phb12=0.169d0
+        phb22=0.170d0
+        thr3=1.0d-12
+
+!! Warn if a # GRID block exists in the input but is being ignored        !!
+!! because MOD-GRIDTWOEL wasn't set. Scan the file directly here rather   !!
+!! than via "locate", which always prints a "section not found" message  !!
+!! on a miss                                                              !!
+        igridpresent=0
+        rewind(16)
+        iiscan=0
+        do while(iiscan.eq.0)
+          read(16,"(a80)",end=234) linia
+          if(index(linia,"# GRID").ne.0) then
+            igridpresent=1
+            iiscan=1
+          end if
+        end do
+234     continue
+        if(igridpresent.eq.1) then
+          write(*,*) " "
+          write(*,*) "WARNING: a # GRID block was found in the input, but MOD-GRIDTWOEL"
+          write(*,*) "was not set in ",trim(section),". Using the default integration setup instead"
+          write(*,*) "Add MOD-GRIDTWOEL to ",trim(section)," to apply your # GRID settings"
+          write(*,*) " "
+        end if
+      end if
 
       end
