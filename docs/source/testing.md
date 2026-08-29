@@ -53,15 +53,22 @@ means exactly the same thing as `bash make_compile.sh NTHREADS=<n>` — see
 | `make update-ref [NTHREADS=<n>]` | Regenerate reference outputs after an intentional code change |
 | `make help` | List all available make targets and flags |
 
+Every run — whether via `make test` or the runner directly — saves the raw
+`.apost` output of each test to `tests/report/outputs/` (gitignored,
+regenerated on every run). There's no flag needed to opt into this, and
+none to turn it off; it's always there for a developer to inspect after
+the fact. Pass `--output-dir DIR` only if you specifically need it
+somewhere else (`tests/verify_omp_change.sh` uses this to keep three
+separate runs apart for its own comparison).
+
 For narrower runs during test development — a single test by name, a tag
-filter, verbose per-check output, keeping the raw `.apost` output — call
-the runner directly instead of going through `make`:
+filter, verbose per-check output — call the runner directly instead of
+going through `make`:
 
 ```bash
 python3 tests/run_tests.py --filter H2O
 python3 tests/run_tests.py --tags enpart
 python3 tests/run_tests.py --verbose
-python3 tests/run_tests.py --keep-output
 python3 tests/run_tests.py --help
 ```
 
