@@ -64,7 +64,7 @@ C        ---------------------
 c          P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer 
 c          J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                     
 c                                                                                  
-c      e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
+c      e-mail: psalse@gmail.com, mgimferrer18@gmail.com
 c                                                                                  
 c----------------------------------------------------------------------------------
 c      The program has been written by using parts of the program APOST by         

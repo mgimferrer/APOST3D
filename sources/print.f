@@ -122,7 +122,7 @@
       write(*,'(a80)') '      P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   '
       write(*,'(a80)') '      J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                '
       write(*,'(a80)') '                                                                              '
-      write(*,'(a80)') '  e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       '
+      write(*,'(a80)') '  e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            '
       write(*,'(a80)') '                                                                              '
       write(*,'(a80)') '    Available atomic definitions:                                             '
       write(*,'(a80)') '    ----------------------------                                              '

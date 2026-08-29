@@ -42,7 +42,7 @@ c    ---------------------                                                     c
 c            P. Salvador, E. Ramos-Cordoba, M. Gimferrer, M. Montilla          c
 C            Program APOST-3D, Version 5, Girona, 2020                         c
 c                                                                              c
-c  e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       c
+c  e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            c
 c                                                                              c
 c------------------------------------------------------------------------------c 
 C  The program has been written by using parts of the program APOST by         c
