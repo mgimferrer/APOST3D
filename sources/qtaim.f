@@ -65,9 +65,9 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       
       iactat=ihold(iact)
       f=0.d0
-      x=xabs-coord(1,iactat)
-      y=yabs-coord(2,iactat)
-      z=zabs-coord(3,iactat)
+      x=x-coord(1,iactat)
+      y=y-coord(2,iactat)
+      z=z-coord(3,iactat)
       rr=dsqrt(x**2+y**2+z**2)
       k=1
       do while(nprimbas(k,iact).ne.0)
