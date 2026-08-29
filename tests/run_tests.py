@@ -48,9 +48,11 @@ Options
   --nthreads N      OMP_NUM_THREADS (default: 1)
   --verbose         Show check details for passing checks too
   --no-color        Disable ANSI colour output
-  --keep-output[=DIR]  Save each test's raw .apost output (each test runs in
-                    a throwaway temp dir that's normally deleted on exit;
-                    default location: tests/report/outputs/)
+
+Every run's raw .apost output is always saved to tests/report/outputs/
+(each test itself still runs in a throwaway temp dir, but its output is
+copied out before that dir is deleted). Pass --output-dir to redirect it
+elsewhere; there is no flag to disable saving it.
 """
 
 import argparse
@@ -119,11 +121,10 @@ def parse_args():
                    help="Show check details even for passing checks")
     p.add_argument("--no-color",   action="store_true",
                    help="Disable ANSI colour output")
-    p.add_argument("--keep-output", nargs="?", const=True, default=False,
-                   metavar="DIR",
-                   help="Save each test's raw .apost output (default: "
-                        "<tests>/report/outputs/) instead of discarding it "
-                        "with the run's temp directory")
+    p.add_argument("--output-dir", default=None, metavar="DIR",
+                   help="Where to save each test's raw .apost output "
+                        "(default: <tests>/report/outputs/). Output is "
+                        "always saved; this only redirects where.")
     return p.parse_args()
 
 
@@ -260,15 +261,15 @@ def evaluate_check(output: str, check: dict) -> dict:
 
 
 def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
-             keep_output_dir: Path = None) -> dict:
+             output_dir: Path) -> dict:
     """
     Execute one test case and return a result dict.
 
     Each run happens in its own throwaway temp directory (auto-deleted on
     exit) so tests never leave .apost files behind in compiler-testset/ or
-    tests/. Pass keep_output_dir to additionally copy the raw <name>.apost
-    output there before it's deleted — useful for manually inspecting a run
-    (python3 tests/run_tests.py --keep-output).
+    tests/. The raw <name>.apost output is always copied to output_dir
+    before that temp dir is deleted, so every run's output is available
+    for inspection afterward.
 
     The binary is invoked as:
         cd <rundir> && apost3d <name>
@@ -334,9 +335,8 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
         elapsed = time.time() - t0
         output  = outfile.read_text(errors="replace")
 
-        if keep_output_dir is not None:
-            keep_output_dir.mkdir(parents=True, exist_ok=True)
-            shutil.copy(outfile, keep_output_dir / f"{name}.apost")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(outfile, output_dir / f"{name}.apost")
 
         # Evaluate all checks
         check_results = [evaluate_check(output, c) for c in test.get("checks", [])]
@@ -623,12 +623,10 @@ def main():
             print(yellow(f"No tests remain after --exclude-tags {args.exclude_tags!r}"))
             sys.exit(0)
 
-    # ── Resolve --keep-output ────────────────────────────────────────────────
-    keep_output_dir = None
-    if args.keep_output is True:
-        keep_output_dir = _tests_dir() / "report" / "outputs"
-    elif args.keep_output:
-        keep_output_dir = Path(args.keep_output)
+    # ── Output directory (every run's raw .apost is always saved here) ────────
+    output_dir = Path(args.output_dir) if args.output_dir else (
+        _tests_dir() / "report" / "outputs"
+    )
 
     # ── Validate binary ──────────────────────────────────────────────────────
     if not binary.exists() or not os.access(str(binary), os.X_OK):
@@ -644,7 +642,7 @@ def main():
         f"  APOST-3D Test Suite  ·  {len(tests)} test(s)"
         f"  ·  {args.nthreads} thread(s)"
         + ("  ·  verbose" if args.verbose else "")
-        + (f"  ·  keeping output -> {keep_output_dir}" if keep_output_dir else "")
+        + f"  ·  output -> {output_dir}"
     )
     print("═" * 64)
     print()
@@ -660,7 +658,7 @@ def main():
         print(f"  [{idx:2d}/{len(tests)}]  {bold(name):<30s} {tags}")
         sys.stdout.flush()
 
-        result = run_test(test, binary, input_dir, args.nthreads, keep_output_dir)
+        result = run_test(test, binary, input_dir, args.nthreads, output_dir)
         results.append(result)
 
         print_test_result(result, test, idx, len(tests), args.verbose)
@@ -678,6 +676,7 @@ def main():
     print(f"  Reports saved to:  {report_dir}/")
     print(f"    last_run.txt   — plain-text summary")
     print(f"    last_run.html  — open in browser for formatted view")
+    print(f"    outputs/       — raw .apost output of every test run")
     print()
 
     # ── Update references ─────────────────────────────────────────────────────

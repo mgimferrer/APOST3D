@@ -67,7 +67,7 @@ if ! git diff --quiet -- sources/ || ! git diff --cached --quiet -- sources/; th
 fi
 bash make_compile.sh clean >/dev/null
 bash make_compile.sh >/dev/null
-python3 tests/run_tests.py --nthreads 1 --keep-output="$BASE_OUT"
+python3 tests/run_tests.py --nthreads 1 --output-dir="$BASE_OUT"
 
 restore_stash
 
@@ -75,11 +75,11 @@ echo
 echo "=== 2/3: FIXED (working tree, NTHREADS=1) ==="
 bash make_compile.sh clean >/dev/null
 bash make_compile.sh >/dev/null
-python3 tests/run_tests.py --nthreads 1 --keep-output="$FIXED1_OUT"
+python3 tests/run_tests.py --nthreads 1 --output-dir="$FIXED1_OUT"
 
 echo
 echo "=== 3/3: FIXED at NTHREADS=$NTHREADS ==="
-python3 tests/run_tests.py --nthreads "$NTHREADS" --keep-output="$FIXEDN_OUT"
+python3 tests/run_tests.py --nthreads "$NTHREADS" --output-dir="$FIXEDN_OUT"
 
 echo
 echo "════════════════════════════════════════════════════════════"
