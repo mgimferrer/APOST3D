@@ -699,7 +699,8 @@
       use ao_matrices
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /actual/ iact,jat,icenter
+      common /actual_bf/ iact,jat,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       common /nat/    nat,igr,ifg,nocc,nalf,nb,kop
 
       allocatable :: chpd(:),chp(:),chpbd(:)

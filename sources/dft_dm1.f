@@ -641,10 +641,10 @@
       use ao_matrices
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /actual/ iact,jat,icenter
+      common /actual_bf/ iact,jat,icenter
 !! DFT-DM1's double loop (dft_dm1.f) calls this under OMP -- each thread  !!
 !! needs its own iact, not one shared across all of them.                !!
-!$OMP THREADPRIVATE(/actual/)
+!$OMP THREADPRIVATE(/actual_bf/)
       common /nat/    nat,igr,ifg,nocc,nalf,nb,kop
 
       dimension :: chp2(nalf),chp3(nb)
@@ -699,7 +699,7 @@
 !! ********************************************************************* !!
 !! function: drho_xyz                                                    !!
 !! purpose: AO gradient (ixyz component) at an arbitrary point, for one  !!
-!!   basis function (iact, via common/actual/ -- same convention         !!
+!!   basis function (iact, via common/actual_bf/ -- same convention      !!
 !!   qtaim.f's gpoints/gxfunct use). Same primitive-loop math as         !!
 !!   enpart_dft.f's sigma_uks, for a single point instead of a grid.     !!
 !! arguments:                                                            !!
@@ -711,10 +711,10 @@
       use basis_set
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /actual/ iact,jat,icenter
+      common /actual_bf/ iact,jat,icenter
 !! called (via gxfunct/gyfunct/gzfunct and sigma_uks_xyz) from DFT-DM1's !!
 !! OMP-parallelized loop -- each thread needs its own iact.              !!
-!$OMP THREADPRIVATE(/actual/)
+!$OMP THREADPRIVATE(/actual_bf/)
 
       iactat=ihold(iact)
       fx=ZERO
