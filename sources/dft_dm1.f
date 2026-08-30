@@ -9,15 +9,25 @@
       common /dm1opt/densthresh_dm1
       character*80 ofile,ofile2
       character*60 name0
+      integer*8 :: npairtot,npairskip
 
       dimension :: wp(itotps),omp2(itotps,nat),pcoord(itotps,3),chp(itotps,igr)
       dimension :: exch_hf(maxat,maxat)
 
+!! automatic (stack, non-allocatable) per-pair scratch for the main RDM1 !!
+!! double loop below -- sized by igr/nalf/nb, known at subroutine entry. !!
+!! Kept out of the allocatable lists on purpose: an OMP-PRIVATE          !!
+!! allocatable array gets each thread an unassociated copy that would    !!
+!! need its own per-thread ALLOCATE; a plain automatic array just works, !!
+!! same fix already used for enpart.f's multipolar (see its rvect).      !!
+      dimension :: eval_ao(igr),gx_ao(igr),gy_ao(igr),gz_ao(igr)
+      dimension :: chp2v(nalf),chp2bv(nb)
+      dimension :: rhoab(2,1),scrpt(3,1),excpt(1),excbpt(1)
+
       allocatable :: wppha(:),omp2pha(:,:),pcoordpha(:,:),chppha(:,:),omp(:),ibaspoint(:)
-      allocatable :: eval_ao(:),gx_ao(:),gy_ao(:),gz_ao(:),scr(:,:)
+      allocatable :: scr(:,:)
       allocatable :: chp2(:,:),chp2pha(:,:),rho(:,:),rhopha(:,:),exc(:)
       allocatable :: chp2b(:,:),chp2phab(:,:),excb(:)
-      allocatable :: xksiggga(:,:),chp2v(:),chp2bv(:)
       allocatable :: rdm1(:,:),rdm1b(:,:),dm1_mo(:,:),dm1_norm(:,:)
       allocatable :: rhoscr(:)
 
@@ -192,23 +202,33 @@
 
 !! CALCULATION OF THE DENSITY AND ITS GRADIENTS AT THE R ((r1+r2)/2) POINTS !!
 
-        ALLOCATE(eval_ao(igr),gx_ao(igr),gy_ao(igr),gz_ao(igr))
-!       ALLOCATE(rho(2,iatps),xksiggga(2,iatps),exc(iatps),excb(iatps))
-        ALLOCATE(rho(2,1),xksiggga(2,1),exc(1),excb(1))
-        ALLOCATE(chp2v(nalf),chp2bv(nb))
-!       if(itype.gt.1) ALLOCATE(scr(3,iatps))
-        if(itype.gt.1) ALLOCATE(scr(3,1))
         write(*,*) " GENERATING KS-DFT RDM1 "
         write(*,*) " "
         xexch=ZERO
         xexchb=ZERO
+        npairtot=0
+        npairskip=0
         do icenter=1,nat
           do jcenter=1,nat
             f3=ZERO
             f3b=ZERO
+
+!! parallel over ifut: gx_ao/gy_ao/gz_ao/eval_ao/chp2v/chp2bv/rhoab/scrpt/ !!
+!! excpt/excbpt are all automatic (not allocatable, see declaration       !!
+!! above), so PRIVATE gives each thread its own real copy, no per-thread  !!
+!! (re)allocation needed. gpoints/drho_xyz/sigma_uks_xyz pass which basis  !!
+!! function is "current" through common/actual/ (qtaim.f, dft_dm1.f) --   !!
+!! THREADPRIVATE'd at their own declarations so each thread gets its own. !!
+!! c/cb (ao_matrices) are shared but read-only here. jfut/f3/f3b/xexch/   !!
+!! xexchb/npairtot/npairskip are the only cross-iteration accumulators,   !!
+!! all via REDUCTION; everything else is written fresh every ifut.        !!
+!$OMP PARALLEL DO PRIVATE(jfut,Rx,Ry,Rz,rhoa,rhob,rhoab,imo,ibf,xx,xxb,
+!$OMP&  scraa,scrab,scrbb,scrpt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
+!$OMP&  xksigaa,xksigbb,xx0,xx0b,xkagga,xkbgga,xbf,xbfb,xxrdm1,xxrdm1b,
+!$OMP&  x0,eval_ao,gx_ao,gy_ao,gz_ao,chp2v,chp2bv)
+!$OMP&  REDUCTION(+:f3,f3b,xexch,xexchb,npairtot,npairskip)
             do ifut=iatps*(icenter-1)+1,iatps*icenter
               x0=wp(ifut)*omp2(ifut,icenter)
-              irun=1
               do jfut=iatps*(jcenter-1)+1,iatps*jcenter
                 Rx=(pcoord(ifut,1)+pcoordpha(jfut,1))/TWO
                 Ry=(pcoord(ifut,2)+pcoordpha(jfut,2))/TWO
@@ -219,6 +239,7 @@
 !! loop for the same pattern), so the old gordermat call is dropped.     !!
                 call gpoints(Rx,Ry,Rz,gx_ao,gy_ao,gz_ao,eval_ao)
                 call calc_uhf_dens(eval_ao,rhoa,rhob)
+                npairtot=npairtot+1
 
 !! prune on the density AT THE MIDPOINT R -- not at ifut/jfut themselves !!
 !! (a point being in a low-density tail on its own grid doesn't mean R,  !!
@@ -227,14 +248,17 @@
 !! rest of this pair's cost (sigma_uks_xyz, xc_uks_for_dm1, the Bessel-  !!
 !! kernel exchange accumulation) but not gpoints/calc_uhf_dens itself,   !!
 !! since R's density isn't known until after that call.                 !!
-                if(abs(rhoa+rhob).lt.densthresh_dm1) cycle
+                if(abs(rhoa+rhob).lt.densthresh_dm1) then
+                  npairskip=npairskip+1
+                  cycle
+                end if
 
-                rho(1,irun)=rhoa
-                rho(2,irun)=rhob
+                rhoab(1,1)=rhoa
+                rhoab(2,1)=rhob
 
 !! COMPUTING MOs FOR SIGMA CALCULATION !!
 
-                if(itype.gt.1) then 
+                if(itype.gt.1) then
                   do imo=1,nalf
                     xx=ZERO
                     xxb=ZERO
@@ -242,30 +266,20 @@
                       xx=xx+c(ibf,imo)*eval_ao(ibf)
                       if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
                     end do
-                    chp2(jfut,imo)=xx
                     chp2v(imo)=xx
-                    if(imo.le.nb) then
-                      chp2b(jfut,imo)=xxb
-                      chp2bv(imo)=xxb
-                    end if
+                    if(imo.le.nb) chp2bv(imo)=xxb
                   end do
                   call sigma_uks_xyz(Rx,Ry,Rz,chp2v,chp2bv,scraa,scrab,scrbb)
-                  scr(1,irun)=scraa
-                  scr(2,irun)=scrab
-                  scr(3,irun)=scrbb
-                end if 
-!             end do 
+                  scrpt(1,1)=scraa
+                  scrpt(2,1)=scrab
+                  scrpt(3,1)=scrbb
+                end if
 
 !! COMPUTING BOTH RDM1 AND EXCHANGE HERE !!
 
-!             call xc_uks_for_dm1(1,iatps,ifunc,rho,scr,exc)
-!             call xc_uks_for_dm1(2,iatps,ifunc,rho,scr,excb)
-              call xc_uks_for_dm1(1,irun,ifunc,rho,scr,exc)
-              call xc_uks_for_dm1(2,irun,ifunc,rho,scr,excb)
-              xfact=FOUR/THREE
-!             irun=0
-!             do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-!               irun=irun+1
+                call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
+                call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+                xfact=FOUR/THREE
                 r12=(pcoord(ifut,1)-pcoordpha(jfut,1))**TWO
                 r12=r12+((pcoord(ifut,2)-pcoordpha(jfut,2))**TWO)
                 r12=r12+((pcoord(ifut,3)-pcoordpha(jfut,3))**TWO)
@@ -274,24 +288,24 @@
 
 !! COMPUTING KsGGA (1 = ALPHA, 2 = BETA), GENERAL FOR ALL FUNCTIONALS FROM THE LIBRARY !!
 
-                xx1=(rho(1,irun)**xfact)
-                xx1b=(rho(2,irun)**xfact)
-                if(ABS(xx1).gt.1.0d-14) then 
-                  xksiggga(1,irun)=-TWO*exc(irun)/xx1
-                  xx0=(9.0d0*pi/xksiggga(1,irun))**HALF
-                else 
-                  xksiggga(1,irun)=ZERO
+                xx1=(rhoa**xfact)
+                xx1b=(rhob**xfact)
+                if(ABS(xx1).gt.1.0d-14) then
+                  xksigaa=-TWO*excpt(1)/xx1
+                  xx0=(9.0d0*pi/xksigaa)**HALF
+                else
+                  xksigaa=ZERO
                   xx0=ZERO
                 end if
                 if(ABS(xx1b).gt.1.0d-14) then
-                  xksiggga(2,irun)=-TWO*excb(irun)/xx1b
-                  xx0b=(9.0d0*pi/xksiggga(2,irun))**HALF
+                  xksigbb=-TWO*excbpt(1)/xx1b
+                  xx0b=(9.0d0*pi/xksigbb)**HALF
                 else
-                  xksiggga(2,irun)=ZERO
+                  xksigbb=ZERO
                   xx0b=ZERO
-                end if 
-                xkagga=xx0*(rho(1,irun)**(ONE/THREE))
-                xkbgga=xx0b*(rho(2,irun)**(ONE/THREE))
+                end if
+                xkagga=xx0*(rhoa**(ONE/THREE))
+                xkbgga=xx0b*(rhob**(ONE/THREE))
                 xx0=xkagga*r12
                 xx0b=xkbgga*r12
 
@@ -313,18 +327,12 @@
 
 !! RDM1 CONTAINING BOTH ALPHA AND BETA !!
 
-!               rdm1(ifut,jfut)=THREE*xbf*rho(1,irun)
-!               rdm1b(ifut,jfut)=THREE*xbfb*rho(2,irun)
-                xxrdm1=THREE*xbf*rho(1,irun)
-                xxrdm1b=THREE*xbfb*rho(2,irun)
+                xxrdm1=THREE*xbf*rhoa
+                xxrdm1b=THREE*xbfb*rhob
 
 !! COMPUTING ONLY ONCE FROM RDM1 !!
 
                 if(r12.gt.thresh) then
-!                 xexch=xexch-(rdm1(ifut,jfut)*rdm1(ifut,jfut)*x0*x1/r12)
-!                 xexchb=xexchb-(rdm1b(ifut,jfut)*rdm1b(ifut,jfut)*x0*x1/r12)
-!                 f3=f3+(rdm1(ifut,jfut)*rdm1(ifut,jfut)*x0*x1/r12)
-!                 f3b=f3b+(rdm1b(ifut,jfut)*rdm1b(ifut,jfut)*x0*x1/r12)
                   xexch=xexch-(xxrdm1*xxrdm1*x0*x1/r12)
                   xexchb=xexchb-(xxrdm1b*xxrdm1b*x0*x1/r12)
                   f3=f3+(xxrdm1*xxrdm1*x0*x1/r12)
@@ -332,6 +340,7 @@
                 end if
               end do
             end do
+!$OMP END PARALLEL DO
             if(icenter.ne.jcenter) then
               f3=TWO*f3
               f3b=TWO*f3b
@@ -340,10 +349,12 @@
           end do
         end do
 
-        DEALLOCATE(rho,xksiggga)
-        if(itype.gt.1) DEALLOCATE(scr)
+        write(*,*) " "
+        write(*,'(2x,a,1x,i14)') "Grid-point pairs evaluated:",npairtot
+        write(*,'(2x,a,1x,i14,1x,a,1x,f6.2,1x,a)') "Pairs pruned (R below DENSTHRESH):",
+     $npairskip,"(",100.0d0*dble(npairskip)/dble(npairtot),"%)"
+        write(*,*) " "
 
-        DEALLOCATE(eval_ao,gx_ao,gy_ao,gz_ao)
       end if
       call flush 
 
@@ -694,13 +705,17 @@
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /actual/ iact,jat,icenter
+!! DFT-DM1's double loop (dft_dm1.f) calls this under OMP -- each thread  !!
+!! needs its own iact, not one shared across all of them.                !!
+!$OMP THREADPRIVATE(/actual/)
       common /nat/    nat,igr,ifg,nocc,nalf,nb,kop
 
       dimension :: chp2(nalf),chp3(nb)
 
-      allocatable:: chpd(:),chp(:),chpbd(:)
-
-      ALLOCATE(chpd(igr),chp(igr),chpbd(igr))
+!! automatic (stack), not allocatable -- called concurrently from an OMP !!
+!! loop; an allocatable here would need re-ALLOCATEing per thread, an    !!
+!! automatic array just works (same fix as dft_dm1's own scratch).       !!
+      dimension :: chpd(igr),chp(igr),chpbd(igr)
 
 !! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
 
@@ -740,7 +755,6 @@
       scrab=FOUR*scrab
       scrbb=FOUR*scrbb
 
-      DEALLOCATE(chpd,chpbd,chp)
       end
 
 ! *****
@@ -758,6 +772,9 @@
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /actual/ iact,jat,icenter
+!! called (via gxfunct/gyfunct/gzfunct and sigma_uks_xyz) from DFT-DM1's !!
+!! OMP-parallelized loop -- each thread needs its own iact.              !!
+!$OMP THREADPRIVATE(/actual/)
 
       iactat=ihold(iact)
       fx=ZERO
