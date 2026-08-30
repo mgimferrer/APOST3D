@@ -5,6 +5,9 @@ C needs to be updated
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common/actual/iact,jat,icenter
+!! DFT-DM1 calls this from an OMP-parallelized loop (dft_dm1.f) -- each   !!
+!! thread needs its own iact, not one shared across all of them.         !!
+!$OMP THREADPRIVATE(/actual/)
       common /nat/ nat,igr,ifg,idum(4)
       dimension gxchp(igr),gychp(igr),gzchp(igr),aochp(igr)
 
