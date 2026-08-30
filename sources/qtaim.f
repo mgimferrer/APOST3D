@@ -4,10 +4,10 @@ C needs to be updated
       subroutine gpoints(x,y,z,gxchp,gychp,gzchp,aochp)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common/actual/iact,jat,icenter
+      common/actual_bf/iact,jat,icenter
 !! DFT-DM1 calls this from an OMP-parallelized loop (dft_dm1.f) -- each   !!
 !! thread needs its own iact, not one shared across all of them.         !!
-!$OMP THREADPRIVATE(/actual/)
+!$OMP THREADPRIVATE(/actual_bf/)
       common /nat/ nat,igr,ifg,idum(4)
       dimension gxchp(igr),gychp(igr),gzchp(igr),aochp(igr)
 
@@ -364,7 +364,8 @@ c     $  2.0d0+(x(3)-coordnna(3,iiat))**2.0d0)
       common /coeff/coeff(maxp,maxc)
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       
       iactat=ihold(iact)
       f=0.d0
@@ -404,7 +405,8 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       common /coeff/coeff(maxp,maxc)
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       
       iactat=ihold(iact)
       f=0.d0
@@ -445,7 +447,8 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       common /coeff/coeff(maxp,maxc)
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       
       iactat=ihold(iact)
       f=0.d0
@@ -480,7 +483,8 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
      $hxychp,hxzchp,hzychp)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common/actual/iact,jat,icenter
+      common/actual_bf/iact,jat,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       common /nat/ nat,igr,ifg,idum(4)
       dimension hxxchp(igr),hyychp(igr),hzzchp(igr)
       dimension hxychp(igr),hxzchp(igr),hzychp(igr)
@@ -500,7 +504,8 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       subroutine lappoints(x,y,z,hxxchp,hyychp,hzzchp)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common/actual/iact,jat,icenter
+      common/actual_bf/iact,jat,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       common /nat/ nat,igr,ifg,idum(4)
       dimension hxxchp(igr),hyychp(igr),hzzchp(igr)
 
@@ -523,7 +528,8 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       common /coeff/coeff(maxp,maxc)
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       
       iactat=ihold(iact)
       f=0.d0
@@ -567,7 +573,8 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       common /coeff/coeff(maxp,maxc)
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       
       iactat=ihold(iact)
       f=0.d0
@@ -611,7 +618,8 @@ c      print *,iact,ki,ipr,expp(ipr),coeff(iact,ki)
       common /coeff/coeff(maxp,maxc)
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       
       iactat=ihold(iact)
       f=0.d0
@@ -960,7 +968,8 @@ c       write(*,*)'resatom',atsphradi(i)
       use ao_matrices
       implicit real*8 (A-H,O-Z)
       include 'parameter.h'
-      common/actual/iact,jat,icenter
+      common/actual_bf/iact,jat,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/ iopt(200)
       dimension chp(ipoints,igr)
@@ -1024,7 +1033,8 @@ c      write(*,*)'LAPLACIAN TEST'
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /quadrat/th(1000),ph(1000),w(1000),wr(500),Xr(500)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       common/pha2/pha,phb,rr00
 
 
@@ -1081,7 +1091,8 @@ c angular point i, radial point k
       common /lim/ llim(nmax),iulim(nmax),ihold(nmax)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /quadrat/th(1000),ph(1000),w(1000),wr(500),Xr(500)
-      common/actual/iact,jact,icenter
+      common/actual_bf/iact,jact,icenter
+!$OMP THREADPRIVATE(/actual_bf/)
       
       iactat=ihold(iact)
       fx=0.d0
