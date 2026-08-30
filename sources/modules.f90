@@ -574,7 +574,10 @@
 !! prints the choice, then builds the grid via quad().                   !!
 !! arguments:                                                            !!
 !!   ienpart, ipolar, ifinegrid (in) -- select the high-accuracy         !!
-!!     defaults when any is set (see Known Issue #21 re: iedaiqa below)  !!
+!!     defaults when any is set. The EDAIQA branch also tests iedaiqa,   !!
+!!     which is never assigned anywhere (implicitly-typed local, not a   !!
+!!     dummy arg/COMMON/module var) -- undefined behavior, no test       !!
+!!     exercises # EDAIQA. Needs sign-off before fixing.                 !!
 !! author: MMO, MGimf                                                    !!
 !! ********************************************************************* !!
    SUBROUTINE build_integration_grid(ienpart, ipolar,ifinegrid)
