@@ -25,9 +25,9 @@
       dimension :: rhoab(2,1),scrpt(3,1),excpt(1),excbpt(1)
 
       allocatable :: wppha(:),omp2pha(:,:),pcoordpha(:,:),chppha(:,:),omp(:),ibaspoint(:)
-      allocatable :: scr(:,:)
-      allocatable :: chp2(:,:),chp2pha(:,:),rho(:,:),rhopha(:,:),exc(:)
-      allocatable :: chp2b(:,:),chp2phab(:,:),excb(:)
+      allocatable :: scr(:,:),scrpha(:,:)
+      allocatable :: chp2(:,:),chp2pha(:,:),rho(:,:),rhopha(:,:),exc(:),excpha(:)
+      allocatable :: chp2b(:,:),chp2phab(:,:),excb(:),excbpha(:)
       allocatable :: rdm1(:,:),rdm1b(:,:),dm1_mo(:,:),dm1_norm(:,:)
       allocatable :: rhoscr(:)
 
@@ -77,8 +77,8 @@
 
 !! TRANSFORMATION TO MOs !!
 
-      ALLOCATE(chp2(itotps,nalf),chp2pha(itotps,nalf),exc(itotps))
-      ALLOCATE(chp2b(itotps,nb),chp2phab(itotps,nb),excb(itotps))
+      ALLOCATE(chp2(itotps,nalf),chp2pha(itotps,nalf),exc(itotps),excpha(itotps))
+      ALLOCATE(chp2b(itotps,nb),chp2phab(itotps,nb),excb(itotps),excbpha(itotps))
       ALLOCATE(rho(2,itotps),rhopha(2,itotps))
       do kk=1,itotps
         xx0=ZERO
@@ -117,27 +117,48 @@
 
 !! CHECKING ONE- AND TWO-ELECTRON NUMERICAL INTEGRATION ACCURACY !!
 
-      if(ifunc.ne.999) then 
+      if(ifunc.ne.999) then
         if(itype.gt.1) then
-          ALLOCATE(scr(3,itotps))
+          ALLOCATE(scr(3,itotps),scrpha(3,itotps))
           call sigma_uks(pcoord,chp2,chp2b,scr)
-        end if 
+          call sigma_uks(pcoordpha,chp2pha,chp2phab,scrpha)
+        end if
         call xc_uks_for_dm1(1,itotps,ifunc,rho,scr,exc)
         call xc_uks_for_dm1(2,itotps,ifunc,rho,scr,excb)
-        if(itype.gt.1) DEALLOCATE(scr)
+!! debug check requested by Marti -- same LDA/GGA exchange-energy-       !!
+!! density evaluation, applied to the ROTATED grid's own density instead !!
+!! of the first grid's.                                                 !!
+        call xc_uks_for_dm1(1,itotps,ifunc,rhopha,scrpha,excpha)
+        call xc_uks_for_dm1(2,itotps,ifunc,rhopha,scrpha,excbpha)
+        if(itype.gt.1) DEALLOCATE(scr,scrpha)
       end if
 
       xx=ZERO
+      xxpha=ZERO
       xlsda=ZERO
+      xlsdapha=ZERO
       do icenter=1,nat
         do ifut=iatps*(icenter-1)+1,iatps*icenter
           xw=wp(ifut)*omp2(ifut,icenter)
+          xwpha=wppha(ifut)*omp2pha(ifut,icenter)
           xx=xx+xw*(rho(1,ifut)+rho(2,ifut))
-          if(ifunc.ne.999) xlsda=xlsda+xw*(exc(ifut)+excb(ifut))
+          xxpha=xxpha+xwpha*(rhopha(1,ifut)+rhopha(2,ifut))
+          if(ifunc.ne.999) then
+            xlsda=xlsda+xw*(exc(ifut)+excb(ifut))
+            xlsdapha=xlsdapha+xwpha*(excpha(ifut)+excbpha(ifut))
+          end if
         end do
       end do
       write(*,*) " Integrated Density from First Grid (Alpha+Beta) : ",xx
-      if(ifunc.ne.999) write(*,*) " One-el KS-Exchange (Alpha+Beta) : ",xlsda
+!! debug checks requested by Marti -- confirm the ROTATED grid alone     !!
+!! (same mechanism used as "r2" throughout the double loop below) is a   !!
+!! valid, correctly-weighted representation of the density/exchange-     !!
+!! energy on its own, independent of any r1/r2 pairing question.         !!
+      write(*,*) " Integrated Density from Rotated Grid (Alpha+Beta) : ",xxpha
+      if(ifunc.ne.999) then
+        write(*,*) " One-el KS-Exchange (Alpha+Beta) : ",xlsda
+        write(*,*) " One-el KS-Exchange from Rotated Grid (Alpha+Beta) : ",xlsdapha
+      end if
 
       write(*,*) " "
       write(*,*) " CHECKING TWO-ELECTRON INTEGRALS "
@@ -162,7 +183,7 @@
       write(*,*) " Calculated square number of electrons (N^2) : ",f2
       write(*,*) " "
 
-      DEALLOCATE(rho,rhopha,exc,excb)
+      DEALLOCATE(rho,rhopha,exc,excb,excpha,excbpha)
 
 !! CALCULATION OF THE HF RDM1 !!
 
