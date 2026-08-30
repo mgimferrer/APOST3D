@@ -931,13 +931,19 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         nang=nang22
         rr00=rr0022
 
-!! Analytical case !!
-!! MG: to modify as now default grid is larger than this one !!
-        if(ianalytical.eq.1) then
+!! Analytical case -- only step up to the 70/434 default when the user   !!
+!! hasn't configured # GRID themselves (ienpart_gridtwoel.eq.0); this     !!
+!! used to unconditionally overwrite nrad/nang, silently discarding an   !!
+!! explicit # GRID (and, since the plain default grew to 150/590, this   !!
+!! was a downgrade in that case, not the increase the message claims).   !!
+        if(ianalytical.eq.1.and.ienpart_gridtwoel.eq.0) then
           write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
           write(*,*) " "
           nrad=70
           nang=434
+        else if(ianalytical.eq.1) then
+          write(*,*) " Analytical calculation has been requested: keeping the user-configured # GRID (MOD-GRIDTWOEL) "
+          write(*,*) " "
         end if
 
 !! Printing info !!

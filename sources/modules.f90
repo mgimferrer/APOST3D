@@ -833,12 +833,14 @@
 !! local spin and correlated-WF input !!
    integer :: ispin,icorr,idafh
 
-!! ENPART -- iigrid (MOD-GRIDTWOEL) is reused by EDAIQA's own check too !!
-!! (read_input.f), so after read_input() returns it reflects whichever  !!
-!! of the two sections was parsed last, not necessarily ENPART's own    !!
+!! ENPART -- iigrid is EDAIQA's own MOD-GRIDTWOEL flag (read_input.f's    !!
+!! inline "# EDAIQA" readchar); ENPART's own MOD-GRIDTWOEL request goes    !!
+!! through read_gridtwoel("# ENPART", ienpart_gridtwoel) instead, its own !!
+!! dedicated flag -- the two used to alias the same variable (whichever   !!
+!! section parsed last in read_input.f won), a real bug fixed 2026-08-30. !!
    integer :: ienpart,ihf,id_xcfunc,id_xfunc,id_cfunc,iecorr, &
               ithrebod,iexact,ihomo,idek,iionic,ianalytical,itop,ietop, &
-              ipairs,iigrid
+              ipairs,iigrid,ienpart_gridtwoel
 
 !! DFT-DM1 (approximate one-particle RDM1, formerly HIRAO internally) !!
    integer :: idftdm1,id_func_dm1,inatorb_dm1

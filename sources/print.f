@@ -393,7 +393,7 @@
         write(*,'(2x,a,1x,a)')
      +    'Atom-pair skip threshold:',trim(cval)
 
-        if(iigrid.eq.1) write(*,'(2x,a,1x,a)')
+        if(ienpart_gridtwoel.eq.1) write(*,'(2x,a,1x,a)')
      +    'Two-electron grid       :',
      +    'MOD-GRIDTWOEL (user-selected integration grid)'
 
@@ -414,10 +414,9 @@
         if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
      +    'Extra options           :',trim(cbuf)
 
-!! MOD-GRIDTWOEL's own # GRID settings -- iigrid is shared with EDAIQA's !!
-!! own MOD-GRIDTWOEL check below; if both ENPART and EDAIQA are active   !!
-!! in the same run, whichever parses last in read_input.f wins here too  !!
-        if(iigrid.eq.1) then
+!! MOD-GRIDTWOEL's own # GRID settings -- ienpart_gridtwoel is ENPART's  !!
+!! own flag, distinct from iigrid below (EDAIQA's own, separate check).  !!
+        if(ienpart_gridtwoel.eq.1) then
           write(*,*)
           chdr='# GRID'
           write(*,'(2x,a)') trim(chdr)

@@ -216,7 +216,7 @@
         call readchar("# ENPART","ANALYTIC",ianalytical)
 
 !! adding grid tuning for two-el integration !!
-        call read_gridtwoel("# ENPART")
+        call read_gridtwoel("# ENPART",ienpart_gridtwoel)
 
 !! for topology calculation !!
 !! MG: needs to be properly checked, done a long time ago                !!
@@ -283,7 +283,9 @@
 !! unoptimized block, run only if requested)                              !!
         call readchar("# DFT-DM1","NATORB",inatorb_dm1)
 
-        if(ienpart.ne.1) call read_gridtwoel("# DFT-DM1")
+!! idftdm1grid is a throwaway local -- nothing outside this call needs   !!
+!! DFT-DM1's own MOD-GRIDTWOEL flag today, unlike ENPART's (see above).  !!
+        if(ienpart.ne.1) call read_gridtwoel("# DFT-DM1",idftdm1grid)
       end if
 
 !! EDAIQA options !!
@@ -518,19 +520,25 @@
 !!   block so DFT-DM1 can reuse the exact same mechanism/defaults        !!
 !!   without requiring ENPART to also be active in the same run.         !!
 !! arguments:                                                            !!
-!!   section (in) -- .inp section to scan MOD-GRIDTWOEL/# GRID under     !!
-!!     (e.g. "# ENPART" or "# DFT-DM1")                                  !!
+!!   section     (in)  -- .inp section to scan MOD-GRIDTWOEL/# GRID      !!
+!!     under (e.g. "# ENPART" or "# DFT-DM1")                            !!
+!!   igridtwoel  (out) -- 1 if MOD-GRIDTWOEL was set for this section,   !!
+!!     0 otherwise. Callers that need to know whether the returned       !!
+!!     nrad22/nang22 came from the user's own # GRID (vs. the plain      !!
+!!     defaults) must use this, not input_options_mod's iigrid -- that   !!
+!!     one is EDAIQA's own separate flag, not shared with this call.     !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      subroutine read_gridtwoel(section)
+      subroutine read_gridtwoel(section,igridtwoel)
       implicit real*8(a-h,o-z)
       character section*(*)
       character*80 linia
+      integer, intent(out) :: igridtwoel
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
       common /modgrid2/thr3
 
-      call readchar(section,"MOD-GRIDTWOEL",iigrid)
-      if(iigrid.eq.1) then
+      call readchar(section,"MOD-GRIDTWOEL",igridtwoel)
+      if(igridtwoel.eq.1) then
         call readint("# GRID","RADIAL",nrad22,150,1)
         call readint("# GRID","ANGULAR",nang22,590,1)
         call readreal("# GRID","rr00",rr0022,0.5d0,1)
