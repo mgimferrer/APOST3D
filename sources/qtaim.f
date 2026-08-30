@@ -45,17 +45,25 @@ C needs to be updated
       
       iactat=ihold(iact)
       f=0.d0
-      x=x-coord(1,iactat)
-      y=y-coord(2,iactat)
-      z=z-coord(3,iactat)
-      rr=dsqrt(x**2+y**2+z**2)
+!! xx/yy/zz, not x/y/z -- x,y,z are this function's own dummy arguments, !!
+!! and overwriting them (as this used to) mutates the CALLER's variables !!
+!! too (Fortran passes by reference): gpoints calls this last in a loop  !!
+!! over all basis functions reusing the same x,y,z, so every basis       !!
+!! function after the first silently got a corrupted point. Found        !!
+!! 2026-08-30 via a debug check comparing gpoints-evaluated density      !!
+!! against the same density computed through numint.f's fpoints (same    !!
+!! primitive-loop formula, but into local xx/yy/zz there too).           !!
+      xx=x-coord(1,iactat)
+      yy=y-coord(2,iactat)
+      zz=z-coord(3,iactat)
+      rr=dsqrt(xx**2+yy**2+zz**2)
       k=1
       do while(nprimbas(k,iact).ne.0)
        ipr=nprimbas(k,iact)
        nn=nlm(ipr,1)
        ll=nlm(ipr,2)
        mm=nlm(ipr,3)
-       f=f+(x**nn)*(y**ll)*(z**mm)*dexp(-expp(ipr)*(rr**2))*coefpb(ipr,iact)
+       f=f+(xx**nn)*(yy**ll)*(zz**mm)*dexp(-expp(ipr)*(rr**2))*coefpb(ipr,iact)
        k=k+1
       enddo
       aofunct=f
