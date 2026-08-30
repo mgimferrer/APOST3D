@@ -254,10 +254,9 @@
       end if
 
 !! DFT-DM1 approximate one-particle RDM1 for UHF/UKS-DFT (formerly       !!
-!! referred to internally as HIRAO -- see CLAUDE.md Known Issue #22).     !!
-!! Runs standalone (no ENPART required), reusing the same two-electron-  !!
-!! type grid/defaults as ENPART's own MOD-GRIDTWOEL when ENPART itself   !!
-!! isn't also active for this run (if it is, its grid is reused as-is).  !!
+!! referred to internally as HIRAO). Runs standalone (no ENPART          !!
+!! required), reusing ENPART's own two-electron grid/defaults if ENPART  !!
+!! is also active, else reading its own MOD-GRIDTWOEL under # DFT-DM1.   !!
       idftdm1=0
       id_func_dm1=0
       call readchar("# METHOD","DFT-DM1",idftdm1)

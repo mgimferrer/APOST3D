@@ -530,25 +530,11 @@
 !! both calls below are required for the thread count to actually take effect. !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-!! MG: restored real OpenMP parallelization here -- the old !DIR$
-!! PARALLEL directive is an Intel-ifort-only auto-parallelization hint that
-!! gfortran does not understand, so this loop has been running serially
-!! since the migration off ifort. The istart/iend chunking already
-!! partitions the work by 'ik' with a private accumulator slot per ik
-!! (f3k(ik), exch_hfk(icenter,ik)), which is exactly the data layout an
-!! OMP PARALLEL DO over ik needs -- no restructuring required, just the
-!! actual directive. !!
-!! MG: f3k(ik) used to be written on every innermost i/j iteration --
-!! O(nocc^2) shared-array writes per grid point, all landing on an array
-!! that's SHARED (not PRIVATE) across threads, just index-partitioned by ik.
-!! Adjacent ik slots sit in the same cache line, so this hammered the same
-!! handful of cache lines from every thread continuously -- a false-sharing
-!! pattern that got far more expensive once the loop actually ran in
-!! parallel under gfortran/libgomp. f3loc is a genuine PRIVATE scalar: it
-!! absorbs the whole i/j accumulation in a register, and f3k(ik)/exch_hfk
-!! are only touched once per ifut, exactly as exch_hfk already was. Same
-!! terms, same order, no numerical change -- purely removes redundant
-!! shared-memory traffic from the hot loop. !!
+!! real OMP restored here (the old !DIR$ PARALLEL was an ifort-only hint  !!
+!! gfortran ignores). f3loc is a genuine PRIVATE scalar absorbing the     !!
+!! i/j accumulation; f3k(ik)/exch_hfk(icenter,ik) -- SHARED but           !!
+!! index-partitioned by ik, one write per ifut -- avoid the false sharing !!
+!! adjacent ik slots would cause if written every inner iteration.        !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
             do ik=1,ithreads
               do ifut=istart(ik),iend(ik)
@@ -1548,12 +1534,8 @@
 !! both calls below are required for the thread count to actually take effect. !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-!! MG: restored real OpenMP parallelization here -- see the RHF
-!! twin (numint_two) above for the full explanation. Same fix, same
-!! already-safe per-ik data layout (f3k(ik), exch_hfk(icenter,ik)). !!
-!! MG: false-sharing fix -- see the RHF twin (numint_two) above for
-!! the full explanation. f3loc is a genuine PRIVATE scalar; exch_hfk is
-!! only touched once per ifut instead of on every i/j iteration. !!
+!! same real-OMP-plus-false-sharing fix as the RHF twin (numint_two)      !!
+!! above -- f3loc is PRIVATE, exch_hfk written once per ifut, not per i/j.!!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  i,j,f2,f2b,f3loc)
             do ik=1,ithreads

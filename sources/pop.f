@@ -47,12 +47,9 @@
           rindex(iat,ibt)=x
           rindex(ibt,iat)=x
         enddo
-!! diag(iat) is captured here from the P-only R-index, before the Ps    !!
-!! correction below is folded into rindex -- TOTAL VALENCES (built from !!
-!! diag, see the tail of this routine) is therefore P-only even for     !!
-!! open-shell (kop!=0), while the bond order matrix/valences-in-bonds   !!
-!! (built from rindex) do get the Ps correction. Possibly inconsistent  !!
-!! for open-shell systems; not changed pending confirmation.            !!
+!! diag(iat) is captured before the Ps correction below folds into      !!
+!! rindex -- TOTAL VALENCES stays P-only for open-shell while the bond   !!
+!! order matrix gets the correction. Possibly inconsistent, not changed. !!
         diag(iat)=rindex(iat,iat)
       enddo
 
@@ -244,12 +241,9 @@
         enddo
       enddo
 
-!! parallelization: not done. The O(nbasis^2*natoms^2) iat/ibt/mu/nu     !!
-!! loops below (a=3/4 and Davidson decompositions) are the dominant     !!
-!! cost, same profile as spincorr's in corr.f -- no codebase precedent  !!
-!! yet for an array-accumulate REDUCTION at this size, and every active !!
-!! test system here is small enough that it isn't currently a           !!
-!! bottleneck.                                                          !!
+!! parallelization: not done -- the O(nbasis^2*natoms^2) loops below are !!
+!! the dominant cost, but every active test system is small enough that !!
+!! it isn't currently a bottleneck.                                      !!
 
 !! Ps*S^A products, tts is their sum over atoms !!
       do iat=1,natoms

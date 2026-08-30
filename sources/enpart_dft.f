@@ -249,16 +249,9 @@
           bx0=bo(iatom,jatom)
           if(bx0.ge.threbod) then
             x1=ZERO
-!! MG: BODEN build -- ff2 is already a genuine per-grid-point local
-!! scalar and scr_a(jfut) is written at a unique index per iteration (no
-!! thread ever touches another thread's jfut), the same safe shape already
-!! parallelized in prenumint/numint_sat -- no false-sharing risk like the
-!! exch2 kernel had. x1 here is diagnostic-only (reset and recomputed by
-!! the ALLPOINTS INTEGRATION loop below before being stored in exch2), so
-!! a standard REDUCTION is exactly right for it. jfut is computed inside
-!! the loop body (rather than used as the inner loop's bounds) because
-!! gfortran's COLLAPSE requires the inner loop bounds to be loop-invariant
-!! -- 'iatps*(icenter-1)+1,iatps*icenter' isn't, 'jloc=1,iatps' is. !!
+!! ff2 is PRIVATE, scr_a(jfut) written at a unique index per iteration --  !!
+!! no false-sharing risk. x1 is diagnostic-only, REDUCTION is safe. jfut  !!
+!! is computed in the body since COLLAPSE needs loop-invariant bounds.    !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jloc,jfut,x2,wa,wb,ff2,i,j,ff) REDUCTION(+:x1)
             do icenter=1,nat
               do jloc=1,iatps
