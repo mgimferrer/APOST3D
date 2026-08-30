@@ -12,7 +12,7 @@
       integer*8 :: npairtot,npairskip
 
       dimension :: wp(itotps),omp2(itotps,nat),pcoord(itotps,3),chp(itotps,igr)
-      dimension :: exch_hf(maxat,maxat)
+      dimension :: exch_hf(maxat,maxat),bondorder(maxat,maxat)
 
 !! automatic (stack, non-allocatable) per-pair scratch for the main RDM1 !!
 !! double loop below -- sized by igr/nalf/nb, known at subroutine entry. !!
@@ -160,6 +160,86 @@
         write(*,*) " One-el KS-Exchange from Rotated Grid (Alpha+Beta) : ",xlsdapha
       end if
 
+!! debug checks requested by Marti -- isolate gpoints/calc_uhf_dens (the  !!
+!! same routines the main double loop below calls at the midpoint R)     !!
+!! from everything downstream (sigma_uks_xyz, the Bessel kernel): call   !!
+!! them AT THE GRID POINTS THEMSELVES (pcoord/pcoordpha, not a midpoint) !!
+!! and compare against rho/exc above, which come from a completely       !!
+!! independent path (numint.f's own precomputed chp AO-value table, not  !!
+!! basis_set's primitive-based aofunct/gxfunct gpoints itself calls). A  !!
+!! match here means gpoints/calc_uhf_dens are correct as a general       !!
+!! evaluate-at-any-point tool; a mismatch would mean the bug is in that  !!
+!! primitive-based AO evaluation itself, not downstream of it.           !!
+      xxg=ZERO
+      xxgpha=ZERO
+      xlsdag=ZERO
+      xlsdagpha=ZERO
+      do icenter=1,nat
+        do ifut=iatps*(icenter-1)+1,iatps*icenter
+          xw=wp(ifut)*omp2(ifut,icenter)
+          call gpoints(pcoord(ifut,1),pcoord(ifut,2),pcoord(ifut,3),gx_ao,gy_ao,gz_ao,eval_ao)
+          call calc_uhf_dens(eval_ao,rhoa,rhob)
+          xxg=xxg+xw*(rhoa+rhob)
+          if(ifunc.ne.999) then
+            rhoab(1,1)=rhoa
+            rhoab(2,1)=rhob
+            if(itype.gt.1) then
+              do imo=1,nalf
+                xx=ZERO
+                xxb=ZERO
+                do ibf=1,igr
+                  xx=xx+c(ibf,imo)*eval_ao(ibf)
+                  if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
+                end do
+                chp2v(imo)=xx
+                if(imo.le.nb) chp2bv(imo)=xxb
+              end do
+              call sigma_uks_xyz(pcoord(ifut,1),pcoord(ifut,2),pcoord(ifut,3),chp2v,chp2bv,scraa,scrab,scrbb)
+              scrpt(1,1)=scraa
+              scrpt(2,1)=scrab
+              scrpt(3,1)=scrbb
+            end if
+            call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
+            call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+            xlsdag=xlsdag+xw*(excpt(1)+excbpt(1))
+          end if
+
+          xwpha=wppha(ifut)*omp2pha(ifut,icenter)
+          call gpoints(pcoordpha(ifut,1),pcoordpha(ifut,2),pcoordpha(ifut,3),gx_ao,gy_ao,gz_ao,eval_ao)
+          call calc_uhf_dens(eval_ao,rhoa,rhob)
+          xxgpha=xxgpha+xwpha*(rhoa+rhob)
+          if(ifunc.ne.999) then
+            rhoab(1,1)=rhoa
+            rhoab(2,1)=rhob
+            if(itype.gt.1) then
+              do imo=1,nalf
+                xx=ZERO
+                xxb=ZERO
+                do ibf=1,igr
+                  xx=xx+c(ibf,imo)*eval_ao(ibf)
+                  if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
+                end do
+                chp2v(imo)=xx
+                if(imo.le.nb) chp2bv(imo)=xxb
+              end do
+              call sigma_uks_xyz(pcoordpha(ifut,1),pcoordpha(ifut,2),pcoordpha(ifut,3),chp2v,chp2bv,scraa,scrab,scrbb)
+              scrpt(1,1)=scraa
+              scrpt(2,1)=scrab
+              scrpt(3,1)=scrbb
+            end if
+            call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
+            call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+            xlsdagpha=xlsdagpha+xwpha*(excpt(1)+excbpt(1))
+          end if
+        end do
+      end do
+      write(*,*) " Integrated Density via gpoints (First Grid points) : ",xxg
+      write(*,*) " Integrated Density via gpoints (Rotated Grid points) : ",xxgpha
+      if(ifunc.ne.999) then
+        write(*,*) " One-el KS-Exchange via gpoints (First Grid points) : ",xlsdag
+        write(*,*) " One-el KS-Exchange via gpoints (Rotated Grid points) : ",xlsdagpha
+      end if
+
       write(*,*) " "
       write(*,*) " CHECKING TWO-ELECTRON INTEGRALS "
       write(*,*) " "
@@ -233,6 +313,8 @@
           do jcenter=1,nat
             f3=ZERO
             f3b=ZERO
+            fbo=ZERO
+            fbob=ZERO
 
 !! parallel over ifut: gx_ao/gy_ao/gz_ao/eval_ao/chp2v/chp2bv/rhoab/scrpt/ !!
 !! excpt/excbpt are all automatic (not allocatable, see declaration       !!
@@ -240,14 +322,15 @@
 !! (re)allocation needed. gpoints/drho_xyz/sigma_uks_xyz pass which basis  !!
 !! function is "current" through common/actual/ (qtaim.f, dft_dm1.f) --   !!
 !! THREADPRIVATE'd at their own declarations so each thread gets its own. !!
-!! c/cb (ao_matrices) are shared but read-only here. jfut/f3/f3b/xexch/   !!
-!! xexchb/npairtot/npairskip are the only cross-iteration accumulators,   !!
-!! all via REDUCTION; everything else is written fresh every ifut.        !!
+!! c/cb (ao_matrices) are shared but read-only here. jfut/f3/f3b/fbo/fbob/ !!
+!! xexch/xexchb/npairtot/npairskip are the only cross-iteration           !!
+!! accumulators, all via REDUCTION; everything else is written fresh      !!
+!! every ifut.                                                            !!
 !$OMP PARALLEL DO PRIVATE(jfut,Rx,Ry,Rz,rhoa,rhob,rhoab,imo,ibf,xx,xxb,
 !$OMP&  scraa,scrab,scrbb,scrpt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
 !$OMP&  xksigaa,xksigbb,xx0,xx0b,xkagga,xkbgga,xbf,xbfb,xxrdm1,xxrdm1b,
 !$OMP&  x0,eval_ao,gx_ao,gy_ao,gz_ao,chp2v,chp2bv)
-!$OMP&  REDUCTION(+:f3,f3b,xexch,xexchb,npairtot,npairskip)
+!$OMP&  REDUCTION(+:f3,f3b,fbo,fbob,xexch,xexchb,npairtot,npairskip)
             do ifut=iatps*(icenter-1)+1,iatps*icenter
               x0=wp(ifut)*omp2(ifut,icenter)
               do jfut=iatps*(jcenter-1)+1,iatps*jcenter
@@ -359,14 +442,24 @@
                   f3=f3+(xxrdm1*xxrdm1*x0*x1/r12)
                   f3b=f3b+(xxrdm1b*xxrdm1b*x0*x1/r12)
                 end if
+
+!! BOND ORDER (DELOCALIZATION INDEX) FROM THE SAME RDM1 -- same double   !!
+!! integral as the exchange energy above but without the 1/r12 weight,   !!
+!! so no r12>thresh guard is needed here (there's no singularity to      !!
+!! avoid once r12 isn't a denominator).                                  !!
+                fbo=fbo+(xxrdm1*xxrdm1*x0*x1)
+                fbob=fbob+(xxrdm1b*xxrdm1b*x0*x1)
               end do
             end do
 !$OMP END PARALLEL DO
             if(icenter.ne.jcenter) then
               f3=TWO*f3
               f3b=TWO*f3b
+              fbo=TWO*fbo
+              fbob=TWO*fbob
             end if
             exch_hf(icenter,jcenter)=-(f3+f3b)/TWO
+            bondorder(icenter,jcenter)=fbo+fbob
           end do
         end do
 
@@ -512,6 +605,11 @@
       write(*,*) " EXCHANGE ENERGY CONTRIBUTIONS FROM HIRAO'S RDM1 "
       write(*,*) " "
       call Mprint(exch_hf,nat,maxat)
+      write(*,*) " "
+
+      write(*,*) " BOND ORDERS FROM HIRAO'S RDM1 "
+      write(*,*) " "
+      call Mprint(bondorder,nat,maxat)
       write(*,*) " "
 
 !! PRINTING !!
