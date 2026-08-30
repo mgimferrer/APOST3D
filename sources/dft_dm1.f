@@ -1,6 +1,25 @@
+!! ********************************************************************* !!
+!! subroutine: dft_dm1                                                   !!
+!! purpose: DFT-DM1 (`# METHOD`/`DFT-DM1`, formerly referred to           !!
+!!   internally as HIRAO) -- builds a Hirao-style approximate one-       !!
+!!   particle RDM1 for UHF/UKS-DFT from the local exchange-energy        !!
+!!   density, then reports: the RDM1's exchange energy and bond-order    !!
+!!   (delocalization-index) matrices, the exact HF-type exchange from    !!
+!!   the real KS orbitals for comparison, and (opt-in, `# DFT-DM1`'s     !!
+!!   `NATORB`) the RDM1 projected onto the AO basis and diagonalized for !!
+!!   natural-orbital occupations. Builds its own rotated second grid      !!
+!!   internally (see `# DFT-DM1`'s `MOD-GRIDTWOEL`/`# GRID`); the first   !!
+!!   grid (`wp`/`omp2`/`pcoord`/`chp`) is the caller's (`main.f`).        !!
+!! arguments:                                                            !!
+!!   itotps (in) -- total grid points on the first grid                  !!
+!!   wp, omp2, pcoord, chp (in) -- first-grid quadrature weight, fuzzy-   !!
+!!     atom partition weight, coordinates, and AO values                 !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine dft_dm1(itotps,wp,omp2,pcoord,chp)
       use ao_matrices
       use integration_grid
+      use basis_set, only: s
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -12,7 +31,7 @@
       integer*8 :: npairtot,npairskip
 
       dimension :: wp(itotps),omp2(itotps,nat),pcoord(itotps,3),chp(itotps,igr)
-      dimension :: exch_hf(maxat,maxat),bondorder(maxat,maxat)
+      dimension :: exch_hf(maxat,maxat),bondorder(maxat,maxat),exact_exch(maxat,maxat)
 
 !! automatic (stack, non-allocatable) per-pair scratch for the main RDM1 !!
 !! double loop below -- sized by igr/nalf/nb, known at subroutine entry. !!
@@ -31,9 +50,16 @@
       allocatable :: rdm1(:,:),rdm1b(:,:),dm1_mo(:,:),dm1_norm(:,:)
       allocatable :: rhoscr(:)
 
+!! NATORB block only (RDM1 projected onto the AO basis, alpha/beta       !!
+!! separately) -- kept out of the always-used arrays above since this    !!
+!! whole block is opt-in and unrelated to anything else in the file.     !!
+      allocatable :: dm1_ao(:,:),dm1b_ao(:,:),s0no(:,:),smno(:,:),spno(:,:)
+      allocatable :: cno_a(:,:),cno_b(:,:)
+
       ofile  = trim(name0)//".dm1"
       ofile2 = trim(name0)//".dm1norm"
       ifunc  = Iopt(57)
+      inatorb= Iopt(63)
       iatps  = nrad*nang
 
       if(kop.ne.1) stop " Only implemented for unrestricted WF "
@@ -53,12 +79,7 @@
       write(*,*) " NUMBER OF RADIAL POINTS : ",nrad
       write(*,*) " NUMBER OF ANGULAR (PER RADIAL) POINTS : ",nang
       write(*,*) " R0 PARAMETER FOR THE GAUSS-LEGENDRE QUADRATURE : ",rr00
-      if(ifunc.eq.999) then 
-        write(*,*) " HF FUNCTIONAL SELECTED "
-        write(*,*) " "
-      else
-        call func_info_print(ifunc,itype,1)
-      end if
+      call func_info_print(ifunc,itype,1)
 
 !! GENERATING SECOND GRID (ROTATED) FOR NUMERICAL INTEGRATION !!
 !! chp: VALUE OF jj AO IN THE ii POINT (FIRST GRID) !!
@@ -117,21 +138,19 @@
 
 !! CHECKING ONE- AND TWO-ELECTRON NUMERICAL INTEGRATION ACCURACY !!
 
-      if(ifunc.ne.999) then
-        if(itype.gt.1) then
-          ALLOCATE(scr(3,itotps),scrpha(3,itotps))
-          call sigma_uks(pcoord,chp2,chp2b,scr)
-          call sigma_uks(pcoordpha,chp2pha,chp2phab,scrpha)
-        end if
-        call xc_uks_for_dm1(1,itotps,ifunc,rho,scr,exc)
-        call xc_uks_for_dm1(2,itotps,ifunc,rho,scr,excb)
+      if(itype.gt.1) then
+        ALLOCATE(scr(3,itotps),scrpha(3,itotps))
+        call sigma_uks(pcoord,chp2,chp2b,scr)
+        call sigma_uks(pcoordpha,chp2pha,chp2phab,scrpha)
+      end if
+      call xc_uks_for_dm1(1,itotps,ifunc,rho,scr,exc)
+      call xc_uks_for_dm1(2,itotps,ifunc,rho,scr,excb)
 !! debug check requested by Marti -- same LDA/GGA exchange-energy-       !!
 !! density evaluation, applied to the ROTATED grid's own density instead !!
 !! of the first grid's.                                                 !!
-        call xc_uks_for_dm1(1,itotps,ifunc,rhopha,scrpha,excpha)
-        call xc_uks_for_dm1(2,itotps,ifunc,rhopha,scrpha,excbpha)
-        if(itype.gt.1) DEALLOCATE(scr,scrpha)
-      end if
+      call xc_uks_for_dm1(1,itotps,ifunc,rhopha,scrpha,excpha)
+      call xc_uks_for_dm1(2,itotps,ifunc,rhopha,scrpha,excbpha)
+      if(itype.gt.1) DEALLOCATE(scr,scrpha)
 
       xx=ZERO
       xxpha=ZERO
@@ -143,10 +162,8 @@
           xwpha=wppha(ifut)*omp2pha(ifut,icenter)
           xx=xx+xw*(rho(1,ifut)+rho(2,ifut))
           xxpha=xxpha+xwpha*(rhopha(1,ifut)+rhopha(2,ifut))
-          if(ifunc.ne.999) then
-            xlsda=xlsda+xw*(exc(ifut)+excb(ifut))
-            xlsdapha=xlsdapha+xwpha*(excpha(ifut)+excbpha(ifut))
-          end if
+          xlsda=xlsda+xw*(exc(ifut)+excb(ifut))
+          xlsdapha=xlsdapha+xwpha*(excpha(ifut)+excbpha(ifut))
         end do
       end do
       write(*,*) " Integrated Density from First Grid (Alpha+Beta) : ",xx
@@ -155,10 +172,8 @@
 !! valid, correctly-weighted representation of the density/exchange-     !!
 !! energy on its own, independent of any r1/r2 pairing question.         !!
       write(*,*) " Integrated Density from Rotated Grid (Alpha+Beta) : ",xxpha
-      if(ifunc.ne.999) then
-        write(*,*) " One-el KS-Exchange (Alpha+Beta) : ",xlsda
-        write(*,*) " One-el KS-Exchange from Rotated Grid (Alpha+Beta) : ",xlsdapha
-      end if
+      write(*,*) " One-el KS-Exchange (Alpha+Beta) : ",xlsda
+      write(*,*) " One-el KS-Exchange from Rotated Grid (Alpha+Beta) : ",xlsdapha
 
 !! debug checks requested by Marti -- isolate gpoints/calc_uhf_dens (the  !!
 !! same routines the main double loop below calls at the midpoint R)     !!
@@ -180,65 +195,59 @@
           call gpoints(pcoord(ifut,1),pcoord(ifut,2),pcoord(ifut,3),gx_ao,gy_ao,gz_ao,eval_ao)
           call calc_uhf_dens(eval_ao,rhoa,rhob)
           xxg=xxg+xw*(rhoa+rhob)
-          if(ifunc.ne.999) then
-            rhoab(1,1)=rhoa
-            rhoab(2,1)=rhob
-            if(itype.gt.1) then
-              do imo=1,nalf
-                xx=ZERO
-                xxb=ZERO
-                do ibf=1,igr
-                  xx=xx+c(ibf,imo)*eval_ao(ibf)
-                  if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
-                end do
-                chp2v(imo)=xx
-                if(imo.le.nb) chp2bv(imo)=xxb
+          rhoab(1,1)=rhoa
+          rhoab(2,1)=rhob
+          if(itype.gt.1) then
+            do imo=1,nalf
+              xx=ZERO
+              xxb=ZERO
+              do ibf=1,igr
+                xx=xx+c(ibf,imo)*eval_ao(ibf)
+                if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
               end do
-              call sigma_uks_xyz(pcoord(ifut,1),pcoord(ifut,2),pcoord(ifut,3),chp2v,chp2bv,scraa,scrab,scrbb)
-              scrpt(1,1)=scraa
-              scrpt(2,1)=scrab
-              scrpt(3,1)=scrbb
-            end if
-            call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
-            call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
-            xlsdag=xlsdag+xw*(excpt(1)+excbpt(1))
+              chp2v(imo)=xx
+              if(imo.le.nb) chp2bv(imo)=xxb
+            end do
+            call sigma_uks_xyz(pcoord(ifut,1),pcoord(ifut,2),pcoord(ifut,3),chp2v,chp2bv,scraa,scrab,scrbb)
+            scrpt(1,1)=scraa
+            scrpt(2,1)=scrab
+            scrpt(3,1)=scrbb
           end if
+          call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
+          call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+          xlsdag=xlsdag+xw*(excpt(1)+excbpt(1))
 
           xwpha=wppha(ifut)*omp2pha(ifut,icenter)
           call gpoints(pcoordpha(ifut,1),pcoordpha(ifut,2),pcoordpha(ifut,3),gx_ao,gy_ao,gz_ao,eval_ao)
           call calc_uhf_dens(eval_ao,rhoa,rhob)
           xxgpha=xxgpha+xwpha*(rhoa+rhob)
-          if(ifunc.ne.999) then
-            rhoab(1,1)=rhoa
-            rhoab(2,1)=rhob
-            if(itype.gt.1) then
-              do imo=1,nalf
-                xx=ZERO
-                xxb=ZERO
-                do ibf=1,igr
-                  xx=xx+c(ibf,imo)*eval_ao(ibf)
-                  if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
-                end do
-                chp2v(imo)=xx
-                if(imo.le.nb) chp2bv(imo)=xxb
+          rhoab(1,1)=rhoa
+          rhoab(2,1)=rhob
+          if(itype.gt.1) then
+            do imo=1,nalf
+              xx=ZERO
+              xxb=ZERO
+              do ibf=1,igr
+                xx=xx+c(ibf,imo)*eval_ao(ibf)
+                if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
               end do
-              call sigma_uks_xyz(pcoordpha(ifut,1),pcoordpha(ifut,2),pcoordpha(ifut,3),chp2v,chp2bv,scraa,scrab,scrbb)
-              scrpt(1,1)=scraa
-              scrpt(2,1)=scrab
-              scrpt(3,1)=scrbb
-            end if
-            call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
-            call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
-            xlsdagpha=xlsdagpha+xwpha*(excpt(1)+excbpt(1))
+              chp2v(imo)=xx
+              if(imo.le.nb) chp2bv(imo)=xxb
+            end do
+            call sigma_uks_xyz(pcoordpha(ifut,1),pcoordpha(ifut,2),pcoordpha(ifut,3),chp2v,chp2bv,scraa,scrab,scrbb)
+            scrpt(1,1)=scraa
+            scrpt(2,1)=scrab
+            scrpt(3,1)=scrbb
           end if
+          call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
+          call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+          xlsdagpha=xlsdagpha+xwpha*(excpt(1)+excbpt(1))
         end do
       end do
       write(*,*) " Integrated Density via gpoints (First Grid points) : ",xxg
       write(*,*) " Integrated Density via gpoints (Rotated Grid points) : ",xxgpha
-      if(ifunc.ne.999) then
-        write(*,*) " One-el KS-Exchange via gpoints (First Grid points) : ",xlsdag
-        write(*,*) " One-el KS-Exchange via gpoints (Rotated Grid points) : ",xlsdagpha
-      end if
+      write(*,*) " One-el KS-Exchange via gpoints (First Grid points) : ",xlsdag
+      write(*,*) " One-el KS-Exchange via gpoints (Rotated Grid points) : ",xlsdagpha
 
       write(*,*) " "
       write(*,*) " CHECKING TWO-ELECTRON INTEGRALS "
@@ -267,45 +276,11 @@
 
 !! CALCULATION OF THE HF RDM1 !!
 
-!     write(*,*) " large allocating matrices "
-!     ALLOCATE(rdm1(itotps,itotps),rdm1b(itotps,itotps))
-      ALLOCATE(rdm1(1,1),rdm1b(1,1))
-!     write(*,*) " done "
-      if(ifunc.eq.999) then
-        write(*,*) " GENERATING HF RDM1 "
-        write(*,*) " "
-!! can be removed... if not, need to be adapted to unrestricted !!
-!       do icenter=1,nat
-!         do jcenter=1,nat
-!           do ifut=iatps*(icenter-1)+1,iatps*icenter
-!             x0=wp(ifut)*omp2(ifut,icenter)
-!             do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-!               x1=wppha(jfut)*omp2pha(jfut,jcenter)
-!               do imo=1,nocc
-!                 do imo2=imo,nocc
-
-!! ONLY ALPHA PART !!
-
-!                   xf=chp2(ifut,imo)*chp2pha(jfut,imo2)
-!                   if(imo2.ne.imo) xf=TWO*xf
-!                   rdm1(ifut,jfut)=rdm1(ifut,jfut)+xf
-!                 end do
-!               end do
-!             end do
-!           end do
-!         end do
-!       end do
-!! ------- !!
-
-!! NOW FOR KS-DFT FUNCTIONALS !!
-
-      else
-
 !! CALCULATION OF THE DENSITY AND ITS GRADIENTS AT THE R ((r1+r2)/2) POINTS !!
 
-        write(*,*) " GENERATING KS-DFT RDM1 "
-        write(*,*) " "
-        xexch=ZERO
+      write(*,*) " GENERATING KS-DFT RDM1 "
+      write(*,*) " "
+      xexch=ZERO
         xexchb=ZERO
         npairtot=0
         npairskip=0
@@ -471,8 +446,7 @@
      $npairtot-npairskip,"(",100.0d0*dble(npairtot-npairskip)/dble(npairtot),"%)"
         write(*,*) " "
 
-      end if
-      call flush 
+      call flush
 
 !! PROJECTION OF THE RDM1 INTO THE MOs FORMING DM1 !!
 
@@ -587,19 +561,8 @@
 !       end do
 !     end do
 
-!! checkings that can be removed !!
-      if(ifunc.eq.999) then
-        write(*,*) " EXCHANGE ENERGY (RDM1) : ",-xexch/FOUR
-!       write(*,*) " EXCHANGE ENERGY (DM1) : ",xexch2/FOUR
-!       write(*,*) " EXCHANGE ENERGY (NORMALIZED DM1) : ",xexch3/FOUR
-        write(*,*) " "
-
-      else
-        write(*,*) " EXCHANGE ENERGY (RDM1) : ",(xexch+xexchb)/TWO
-!       write(*,*) " EXCHANGE ENERGY (DM1) : ",xexch2/TWO
-!       write(*,*) " EXCHANGE ENERGY (NORMALIZED DM1) : ",xexch3/TWO
-        write(*,*) " "
-      end if
+      write(*,*) " EXCHANGE ENERGY (RDM1) : ",(xexch+xexchb)/TWO
+      write(*,*) " "
 
 !! printing terms !!
       write(*,*) " EXCHANGE ENERGY CONTRIBUTIONS FROM HIRAO'S RDM1 "
@@ -611,6 +574,222 @@
       write(*,*) " "
       call Mprint(bondorder,nat,maxat)
       write(*,*) " "
+
+!! EXACT HF-TYPE EXCHANGE FROM THE REAL KS ORBITALS, FOR COMPARISON !!
+
+!! same real-space same-spin exchange integral as enpart.f's numint_two/ !!
+!! numint_two_uhf, just reusing dft_dm1's own two grids instead of        !!
+!! hooking into ENPART's separate dispatch. Cheap relative to the RDM1   !!
+!! loop above: chp2/chp2pha/chp2b/chp2phab (the actual KS MO values on   !!
+!! both grids) were already computed once, at the top of this routine --  !!
+!! no gpoints/calc_uhf_dens/sigma_uks_xyz per pair needed, since nothing  !!
+!! here is being approximated.                                            !!
+      write(*,*) " "
+      write(*,*) " COMPUTING EXACT HF-TYPE EXCHANGE FROM KS ORBITALS "
+      write(*,*) " "
+      xexact=ZERO
+      xexactb=ZERO
+      do icenter=1,nat
+        do jcenter=1,nat
+          fex=ZERO
+          fexb=ZERO
+!$OMP PARALLEL DO PRIVATE(jfut,x1,r12,i,pab,pabb)
+!$OMP&  REDUCTION(+:fex,fexb,xexact,xexactb)
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            x0=wp(ifut)*omp2(ifut,icenter)
+            do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+              x1=wppha(jfut)*omp2pha(jfut,jcenter)
+              r12=(pcoord(ifut,1)-pcoordpha(jfut,1))**TWO
+              r12=r12+((pcoord(ifut,2)-pcoordpha(jfut,2))**TWO)
+              r12=r12+((pcoord(ifut,3)-pcoordpha(jfut,3))**TWO)
+              r12=dsqrt(r12)
+              if(r12.gt.thresh) then
+                pab=ZERO
+                do i=1,nalf
+                  pab=pab+chp2(ifut,i)*chp2pha(jfut,i)
+                end do
+                pabb=ZERO
+                do i=1,nb
+                  pabb=pabb+chp2b(ifut,i)*chp2phab(jfut,i)
+                end do
+                xexact=xexact-(pab*pab*x0*x1/r12)
+                xexactb=xexactb-(pabb*pabb*x0*x1/r12)
+                fex=fex+(pab*pab*x0*x1/r12)
+                fexb=fexb+(pabb*pabb*x0*x1/r12)
+              end if
+            end do
+          end do
+!$OMP END PARALLEL DO
+          if(icenter.ne.jcenter) then
+            fex=TWO*fex
+            fexb=TWO*fexb
+          end if
+          exact_exch(icenter,jcenter)=-(fex+fexb)/TWO
+        end do
+      end do
+      write(*,*) " EXACT EXCHANGE ENERGY (KS ORBITALS) : ",(xexact+xexactb)/TWO
+      write(*,*) " "
+      write(*,*) " EXACT EXCHANGE ENERGY CONTRIBUTIONS (KS ORBITALS) "
+      write(*,*) " "
+      call Mprint(exact_exch,nat,maxat)
+      write(*,*) " "
+
+!! RDM1 -> AO BASIS -> DIAGONALIZE -> NATURAL ORBITAL OCCUPATIONS !!
+
+!! opt-in (# DFT-DM1's NATORB keyword) -- only meaningful for the KS-DFT !!
+!! branch above (xxrdm1's construction via xc_uks_for_dm1/xksigaa has no !!
+!! HF-branch equivalent yet, see the "GENERATING HF RDM1" placeholder).  !!
+!! Deliberately its own separate, unoptimized pass: redoes the same      !!
+!! per-pair gpoints/calc_uhf_dens/sigma_uks_xyz/xc_uks_for_dm1/Bessel-    !!
+!! kernel work as the main double loop above, then ADDITIONALLY          !!
+!! accumulates an igr x igr matrix element per surviving pair -- an      !!
+!! O(igr^2) cost on top of everything else, serial on purpose (this is   !!
+!! already the most expensive block in the file and opt-in only; not     !!
+!! worth an OMP array-reduction's added complexity for now).             !!
+      if(inatorb.eq.1) then
+        write(*,*) " "
+        write(*,*) " PROJECTING THE RDM1 ONTO THE AO BASIS "
+        write(*,*) " "
+
+        ALLOCATE(dm1_ao(igr,igr),dm1b_ao(igr,igr))
+        dm1_ao=ZERO
+        dm1b_ao=ZERO
+
+        do icenter=1,nat
+          do jcenter=1,nat
+            do ifut=iatps*(icenter-1)+1,iatps*icenter
+              x0=wp(ifut)*omp2(ifut,icenter)
+              do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+                Rx=(pcoord(ifut,1)+pcoordpha(jfut,1))/TWO
+                Ry=(pcoord(ifut,2)+pcoordpha(jfut,2))/TWO
+                Rz=(pcoord(ifut,3)+pcoordpha(jfut,3))/TWO
+                call gpoints(Rx,Ry,Rz,gx_ao,gy_ao,gz_ao,eval_ao)
+                call calc_uhf_dens(eval_ao,rhoa,rhob)
+                if(abs(rhoa+rhob).lt.densthresh_dm1) cycle
+
+                rhoab(1,1)=rhoa
+                rhoab(2,1)=rhob
+                if(itype.gt.1) then
+                  do imo=1,nalf
+                    xx=ZERO
+                    xxb=ZERO
+                    do ibf=1,igr
+                      xx=xx+c(ibf,imo)*eval_ao(ibf)
+                      if(imo.le.nb) xxb=xxb+cb(ibf,imo)*eval_ao(ibf)
+                    end do
+                    chp2v(imo)=xx
+                    if(imo.le.nb) chp2bv(imo)=xxb
+                  end do
+                  call sigma_uks_xyz(Rx,Ry,Rz,chp2v,chp2bv,scraa,scrab,scrbb)
+                  scrpt(1,1)=scraa
+                  scrpt(2,1)=scrab
+                  scrpt(3,1)=scrbb
+                end if
+
+                call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
+                call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+                xfact=FOUR/THREE
+                xx1=(rhoa**xfact)
+                xx1b=(rhob**xfact)
+                if(ABS(xx1).gt.1.0d-14) then
+                  xksigaa=-TWO*excpt(1)/xx1
+                  xx0=(9.0d0*pi/xksigaa)**HALF
+                else
+                  xksigaa=ZERO
+                  xx0=ZERO
+                end if
+                if(ABS(xx1b).gt.1.0d-14) then
+                  xksigbb=-TWO*excbpt(1)/xx1b
+                  xx0b=(9.0d0*pi/xksigbb)**HALF
+                else
+                  xksigbb=ZERO
+                  xx0b=ZERO
+                end if
+                xkagga=xx0*(rhoa**(ONE/THREE))
+                xkbgga=xx0b*(rhob**(ONE/THREE))
+                r12=(pcoord(ifut,1)-pcoordpha(jfut,1))**TWO
+                r12=r12+((pcoord(ifut,2)-pcoordpha(jfut,2))**TWO)
+                r12=r12+((pcoord(ifut,3)-pcoordpha(jfut,3))**TWO)
+                r12=dsqrt(r12)
+                xx0=xkagga*r12
+                xx0b=xkbgga*r12
+                if(ABS(xx0).lt.thresh) then
+                  xbf=ONE/THREE
+                else
+                  xbf=(dsin(xx0)-xx0*dcos(xx0))/(xx0**THREE)
+                end if
+                if(ABS(xx0b).lt.thresh) then
+                  xbfb=ONE/THREE
+                else
+                  xbfb=(dsin(xx0b)-xx0b*dcos(xx0b))/(xx0b**THREE)
+                end if
+                xxrdm1=THREE*xbf*rhoa
+                xxrdm1b=THREE*xbfb*rhob
+
+                x1=wppha(jfut)*omp2pha(jfut,jcenter)
+                do mu=1,igr
+                  do nu=1,igr
+                    dm1_ao(mu,nu)=dm1_ao(mu,nu)+chp(ifut,mu)*xxrdm1*chppha(jfut,nu)*x0*x1
+                    dm1b_ao(mu,nu)=dm1b_ao(mu,nu)+chp(ifut,mu)*xxrdm1b*chppha(jfut,nu)*x0*x1
+                  end do
+                end do
+              end do
+            end do
+          end do
+        end do
+
+!! symmetrize -- gamma(r1,r2)=gamma(r2,r1) exactly for a real single-     !!
+!! determinant RDM1, but the two independently-rotated grids don't       !!
+!! enforce mu/nu symmetry numerically pair by pair.                      !!
+        do mu=1,igr
+          do nu=mu+1,igr
+            xx=(dm1_ao(mu,nu)+dm1_ao(nu,mu))/TWO
+            dm1_ao(mu,nu)=xx
+            dm1_ao(nu,mu)=xx
+            xx=(dm1b_ao(mu,nu)+dm1b_ao(nu,mu))/TWO
+            dm1b_ao(mu,nu)=xx
+            dm1b_ao(nu,mu)=xx
+          end do
+        end do
+
+!! dm1_ao is built from DOUBLE AO integrals (chp*xxrdm1*chppha), i.e.     !!
+!! D = S*P*S relative to the coefficient-built P (trace(PS)=N) that      !!
+!! gennatural's own S^1/2-based transform expects -- D already carries   !!
+!! two powers of S, so it needs S^-1/2 here (not S^1/2/splus, which      !!
+!! would leave it two powers of S too many and inflate every occupation  !!
+!! -- found via the trace summing to ~16 instead of ~1 for H2's alpha    !!
+!! spin). The eigenvector back-transform still uses S^-1/2 either way    !!
+!! (that step is about orbital coefficients, not the density matrix).    !!
+        ALLOCATE(s0no(igr,igr),smno(igr,igr),spno(igr,igr))
+        ALLOCATE(cno_a(igr,igr),cno_b(igr,igr))
+        s0no=s
+        call build_Smp(igr,s0no,smno,spno,0)
+
+        call to_lowdin_basis(igr,smno,dm1_ao)
+        call diagonalize(igr,igr,dm1_ao,cno_a,0)
+        call to_AO_basis(igr,igr,smno,cno_a)
+
+        call to_lowdin_basis(igr,smno,dm1b_ao)
+        call diagonalize(igr,igr,dm1b_ao,cno_b,0)
+        call to_AO_basis(igr,igr,smno,cno_b)
+
+!! occupations come out sorted by VALUE (descending), not by magnitude   !!
+!! -- unlike a real density matrix's eigenvalues (always in [0,~2]), an  !!
+!! approximate RDM1 built from a local Hirao-type model isn't guaranteed !!
+!! positive-semidefinite, so small negative artifacts can appear at the  !!
+!! tail. Printed in full (not cut off above some threshold) so the       !!
+!! magnitude of that negative tail is visible, not just assumed small.   !!
+        call print_box('DFT-DM1 NATURAL ORBITALS')
+        write(*,'(2x,a)') 'Alpha occupation numbers (all, including negative-tail artifacts):'
+        write(*,'(2x,8f10.5)') (dm1_ao(ii,ii),ii=1,igr)
+        write(*,*)
+
+        write(*,'(2x,a)') 'Beta occupation numbers (all, including negative-tail artifacts):'
+        write(*,'(2x,8f10.5)') (dm1b_ao(ii,ii),ii=1,igr)
+        write(*,*)
+
+        DEALLOCATE(dm1_ao,dm1b_ao,s0no,smno,spno,cno_a,cno_b)
+      end if
 
 !! PRINTING !!
 ! Unformatted printing of the DM1_MO

@@ -316,7 +316,7 @@ c      iopt(55) =   !! itype/jtype, set below in ENPART dispatch (dynamic) !!
 
       iopt(61) = id_xfunc
       iopt(62) = id_cfunc
-c      iopt(63) =
+      iopt(63) = inatorb_dm1 !! dft_dm1.f's own NATORB read !!
 c      iopt(64) =
 c      iopt(65) =   !! iposthf, set above in DEPENDENCIES & TO DO !!
 c      iopt(66) =

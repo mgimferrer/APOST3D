@@ -838,7 +838,7 @@
               ipairs,iigrid
 
 !! DFT-DM1 (approximate one-particle RDM1, formerly HIRAO internally) !!
-   integer :: idftdm1,id_func_dm1
+   integer :: idftdm1,id_func_dm1,inatorb_dm1
 
 !! EDAIQA !!
    integer :: iedaiqa,iflip

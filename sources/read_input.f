@@ -35,7 +35,7 @@
 
       dimension navect(maxat)
       dimension iatpairs(2,maxat)
-      character*80 linia,namedm
+      character*80 namedm
       character*80 namefchk1,namefchk2
 
 !! choose density from fchk file !!
@@ -262,21 +262,26 @@
       id_func_dm1=0
       call readchar("# METHOD","DFT-DM1",idftdm1)
       if(idftdm1.eq.1) then
-        call readchar("# DFT-DM1 FUNCTIONAL","HF",ival)
-        if(ival.eq.1) then
-          id_func_dm1=999
-          go to 235
-        end if
+!! DFT-DM1 is DFT-functional-only -- dft_dm1.f's RDM1 construction reads !!
+!! the local exchange-energy density straight out of libxc, which has no !!
+!! meaning for HF (no functional to evaluate); an old ifunc=999 HF        !!
+!! placeholder branch existed in dft_dm1.f but was never a real          !!
+!! implementation, and was removed 2026-08-30.                           !!
         call readchar("# DFT-DM1 FUNCTIONAL","LIBRARY",ilib)
         if(ilib.eq.1) then
           call readint("# DFT-DM1 FUNCTIONAL","EX_FUNCTIONAL",id_func_dm1,0,1)
         end if
-235     continue
         if(id_func_dm1.eq.0) stop "FUNCTIONAL ID NOT FOUND FOR DFT-DM1. REVISE inp"
 
 !! density-threshold pruning for the double loop's O(itotps^2) grid-point !!
-!! pairs -- see dft_dm1.f's build_significant_points                      !!
+!! pairs, checked at the pair's midpoint R (dft_dm1.f's main loop)        !!
         call readreal("# DFT-DM1","DENSTHRESH",densthresh_dm1,1.0d-8,1)
+
+!! project the RDM1 onto the AO basis and diagonalize for natural-orbital !!
+!! occupations -- opt-in, since this adds an O(igr^2) accumulation on     !!
+!! top of every surviving grid-point pair (dft_dm1.f's own separate,      !!
+!! unoptimized block, run only if requested)                              !!
+        call readchar("# DFT-DM1","NATORB",inatorb_dm1)
 
         if(ienpart.ne.1) call read_gridtwoel("# DFT-DM1")
       end if
