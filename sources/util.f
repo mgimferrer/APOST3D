@@ -1,12 +1,4 @@
 !! ********************************************************************* !!
-!! FILE STATUS (2026-08-17): Subroutine Cleanup Protocol still NOT       !!
-!! applied to: readintfiles, invert, svd, uvprint, inc, outc, outc23,    !!
-!! outc2. gennatural_old is confirmed dead (zero call sites codebase-    !!
-!! wide) but left alone pending a deprecation decision, same as          !!
-!! old_diagonalize.                                                      !!
-!! ********************************************************************* !!
-
-!! ********************************************************************* !!
 !! subroutine: gennatural                                                !!
 !! purpose: builds natural orbitals from the density matrix P (S^1/2     !!
 !! transform, diagonalize, back-transform to AO basis); prints their     !!
@@ -183,6 +175,10 @@ C trasnform to the AO basis
       end
 
 ! *****s
+!! confirmed dead -- zero call sites codebase-wide (both would-be callers, !!
+!! main.f and utils/main_eos.f, have theirs commented out). Left alone    !!
+!! pending a deprecation decision, same as gennatural_old/old_diagonalize !!
+!! above.                                                                 !!
       subroutine readintfiles(sat)
       use basis_set
       use ao_matrices
@@ -610,31 +606,35 @@ C       Transforms first na  orbitals from lowdin basis to AO basis
        end
 
 
-        subroutine invert(n,a) 
-        implicit double precision (a-h,o-z) 
+!! confirmed dead -- zero live call sites codebase-wide; the only caller  !!
+!! (devel.f's effao_minbas) is itself one of that file's 4 confirmed-dead !!
+!! subroutines. Left alone pending a deprecation decision, same as        !!
+!! gennatural_old/old_diagonalize above.                                  !!
+        subroutine invert(n,a)
+        implicit double precision (a-h,o-z)
         include 'parameter.h'
         integer, intent(in) :: n
-        dimension a(n,n) 
-        dimension x(n,n),b(n)  
-        real*8 d,e,an,t,s,ta,xh,vxkp,vxkq,vpk,vkp,vkq,vqk 
-        logical cont 
- 
- 
-C       DEFINIM LA TOLERANCIA DEL METODE         
+        dimension a(n,n)
+        dimension x(n,n),b(n)
+        real*8 d,e,an,t,s,ta,xh,vxkp,vxkq,vpk,vkp,vkq,vqk
+        logical cont
+
+C       Jacobi rotations: zero the largest off-diagonal element of A each
+C       pass, accumulating the rotation into X, until A is diagonal.
         tol=1.0d-12
- 
-C       INICIALITZEM LA MATRIU X COM A MATRIU IDENTITAT 
-         
-        do i=1,n 
-         do j=1,n 
-          x(i,j)=0.0d0 
-         end do 
-         x(i,i)=1.0d0 
-        end do 
-         
-        ia=0.0 
- 
-C       ALGORITME PRINCIPAL         
+
+C       initialize X to the identity matrix
+
+        do i=1,n
+         do j=1,n
+          x(i,j)=0.0d0
+         end do
+         x(i,i)=1.0d0
+        end do
+
+        ia=0.0
+
+C       main loop
  
         cont=.true. 
         do while (cont) 
@@ -702,7 +702,7 @@ C       ALGORITME PRINCIPAL
          end do 
  
  
-c       Obtencion de matriz inversa 
+c       recover the inverse matrix from the accumulated eigendecomposition
  
              do k=1,n 
                b(k)=1.0d0/a(k,k) 
@@ -720,10 +720,14 @@ c       Obtencion de matriz inversa
          return 
          end 
  
-c************************************************************************ 
-c*  SVD SUBROUTINES ***************************************************** 
-c************************************************************************ 
+c************************************************************************
+c*  SVD SUBROUTINES *****************************************************
+c************************************************************************
 
+!! confirmed dead -- zero call sites codebase-wide. Left alone pending a  !!
+!! deprecation decision, same as gennatural_old/old_diagonalize above;    !!
+!! body is an unmodified EISPACK translation (see its own header below),  !!
+!! not touched.                                                           !!
       subroutine svd(m,n,a,w,matu,u,matv,v,ierr)
       integer i,j,k,l,m,n,ii,i1,kk,k1,ll,l1,mn,nm,its,ierr
       real*8 a(m,n),w(n),u(m,n),v(m,n),rv1(n)
@@ -1082,6 +1086,9 @@ c                singular value after 30 iterations ..........
  1000 ierr = k
  1001 return
       end
+! *****
+!! confirmed dead -- zero call sites codebase-wide. Left alone pending a  !!
+!! deprecation decision, same as gennatural_old/old_diagonalize above.    !!
       subroutine uvprint(a,ndec,n,m)
       implicit real*8(a-h,o-z)
       dimension a(ndec,m)
@@ -1104,6 +1111,11 @@ c                singular value after 30 iterations ..........
       print *,' '
       goto 1
       end
+! *****
+!! confirmed dead -- zero call sites codebase-wide. Reads an old,         !!
+!! unrelated punch-file format (unit 15, "Molecule" marker) that nothing  !!
+!! else in the codebase writes. Left alone pending a deprecation          !!
+!! decision, same as gennatural_old/old_diagonalize above.                !!
       subroutine inc(C,m,n)
 c      subroutine inc(C,m,n,n1)
       implicit real*8(a-h,o-z)
@@ -1174,6 +1186,9 @@ c     enddo
 c     enddo
 c     print *,'x',x
       end 
+! *****
+!! confirmed dead -- zero call sites codebase-wide. Left alone pending a  !!
+!! deprecation decision, same as gennatural_old/old_diagonalize above.    !!
       subroutine outc(c,m,n,sigma,m0)
        implicit real*8(a-h,o-z)
       parameter (Large=1000)
@@ -1230,6 +1245,10 @@ c     print *,'    EIGENVALUES --     '
 c     goto 1
       return
       end
+! *****
+!! confirmed dead -- zero live call sites codebase-wide; its only caller  !!
+!! is outc2 below, itself dead. Left alone pending a deprecation          !!
+!! decision, same as gennatural_old/old_diagonalize above.                !!
       subroutine outc23(c,m,n,sigma,m0)
        implicit real*8(a-h,o-z)
       parameter (Large=1000)
@@ -1281,6 +1300,10 @@ c     print *,'    EIGENVALUES --     '
 c     goto 1
       return
       end
+! *****
+!! confirmed dead -- zero call sites codebase-wide. Reads the same old,   !!
+!! unrelated punch-file format as inc above. Left alone pending a         !!
+!! deprecation decision, same as gennatural_old/old_diagonalize above.    !!
       subroutine outc2(c,nbas,m2,sigma,m0)
       implicit real*8(a-h,o-z)
       parameter (Large=1000)
