@@ -271,11 +271,11 @@
       call flush
 
       call print_box('DFT-DM1 EXCHANGE ENERGY (RDM1)')
-      call Mprint(exch_hf,nat,maxat)
+      call MPRINT2(exch_hf,nat,maxat)
       write(*,'(2x,a,1x,f14.7)') 'Exchange energy (RDM1) :',(xexch+xexchb)/TWO
 
       call print_box('DFT-DM1 BOND ORDER (RDM1)')
-      call Mprint(bondorder,nat,maxat)
+      call MPRINT2(bondorder,nat,maxat)
 
 !! EXACT HF-TYPE EXCHANGE FROM THE REAL KS ORBITALS, FOR COMPARISON --    !!
 !! same real-space same-spin exchange integral as enpart.f's numint_two, !!
@@ -322,7 +322,7 @@
           exact_exch(icenter,jcenter)=-(fex+fexb)/TWO
         end do
       end do
-      call Mprint(exact_exch,nat,maxat)
+      call MPRINT2(exact_exch,nat,maxat)
       write(*,'(2x,a,1x,f14.7)') 'Exchange energy (exact) :',(xexact+xexactb)/TWO
 
 !! RDM1 -> AO BASIS -> DIAGONALIZE -> NATURAL ORBITAL OCCUPATIONS !!
