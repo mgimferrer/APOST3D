@@ -48,7 +48,7 @@
 !! separately) -- kept out of the always-used arrays above since this    !!
 !! whole block is opt-in and unrelated to anything else in the file.     !!
       allocatable :: dm1_ao(:,:),dm1b_ao(:,:),s0no(:,:),smno(:,:),spno(:,:)
-      allocatable :: cno_a(:,:),cno_b(:,:)
+      allocatable :: cno_a(:,:)
 
       ifunc  = Iopt(57)
       inatorb= Iopt(63)
@@ -614,12 +614,21 @@
           end do
         end do
 
+!! total RDM1 = alpha + beta, matching gennatural's convention (util.f): !!
+!! APOST-3D natural orbitals always come from one combined density, not !!
+!! separate alpha/beta sets, even for open-shell/unrestricted cases.     !!
+        do mu=1,igr
+          do nu=1,igr
+            dm1_ao(mu,nu)=dm1_ao(mu,nu)+dm1b_ao(mu,nu)
+          end do
+        end do
+
 !! dm1_ao (double AO integrals, chp*xxrdm1*chppha) is D = S*P*S relative !!
 !! to the coefficient-built P (trace(PS)=N) that gennatural's S^1/2      !!
 !! transform expects -- needs S^-1/2 here, not S^1/2, or every           !!
 !! occupation inflates (found via H2's alpha trace: ~16 instead of ~1).  !!
         ALLOCATE(s0no(igr,igr),smno(igr,igr),spno(igr,igr))
-        ALLOCATE(cno_a(igr,igr),cno_b(igr,igr))
+        ALLOCATE(cno_a(igr,igr))
         s0no=s
         call build_Smp(igr,s0no,smno,spno,0)
 
@@ -627,22 +636,14 @@
         call diagonalize(igr,igr,dm1_ao,cno_a,0)
         call to_AO_basis(igr,igr,smno,cno_a)
 
-        call to_lowdin_basis(igr,smno,dm1b_ao)
-        call diagonalize(igr,igr,dm1b_ao,cno_b,0)
-        call to_AO_basis(igr,igr,smno,cno_b)
-
 !! this approximate RDM1 isn't guaranteed positive-semidefinite, so a    !!
 !! negative tail can appear -- printed in full, not cut off, to show it. !!
         call print_box('DFT-DM1 NATURAL ORBITALS')
-        write(*,'(2x,a)') 'Alpha occupation numbers (all, including negative-tail artifacts):'
+        write(*,'(2x,a)') 'Occupation numbers (all, including negative-tail artifacts):'
         write(*,'(2x,8f10.5)') (dm1_ao(ii,ii),ii=1,igr)
         write(*,*)
 
-        write(*,'(2x,a)') 'Beta occupation numbers (all, including negative-tail artifacts):'
-        write(*,'(2x,8f10.5)') (dm1b_ao(ii,ii),ii=1,igr)
-        write(*,*)
-
-        DEALLOCATE(dm1_ao,dm1b_ao,s0no,smno,spno,cno_a,cno_b)
+        DEALLOCATE(dm1_ao,dm1b_ao,s0no,smno,spno,cno_a)
       end if
 
       end
