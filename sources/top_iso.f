@@ -683,17 +683,10 @@
 
 !*****
 
-!! moved here from tools.f (2026-08-29) -- name/arguments (sab/sab2 bond- !!
-!! order-density weights) match the old main.f's TOPOLOGY dispatch        !!
-!! (top_xc_dft_boden_1d, itopwf.eq.2), not the DFT-DM1/HIRAO feature it   !!
-!! shipped alongside. Not called by anything today -- old, unverified    !!
-!! topology-era code, parked here rather than with DFT-DM1 in dft_dm1.f   !!
-!! since it belongs to a different, currently-inert feature. Depends on  !!
-!! dft_dm1.f's drho_xyz (single-point AO gradient) and calc_uhf_dens-     !!
-!! style sigma machinery -- fixed to use ao_matrices/iopt(200) and to     !!
-!! drop the old gordermat call for the same reason as dft_dm1.f's own    !!
-!! sigma_uks_xyz (see that file): basis_set's coefpb already bakes the   !!
-!! pure-d/f transform into the contraction coefficients.
+!! belongs to the old TOPOLOGY/BODEN-profile feature (top_xc_dft_boden_1d, !!
+!! itopwf.eq.2), not DFT-DM1 despite depending on its drho_xyz -- kept    !!
+!! here since it's a different, currently-inert feature. Not called by   !!
+!! anything today, old/unverified.
 
       subroutine grdbod_uks_xyz(xabs,yabs,zabs,omp,chp2,chp3,grdaa,grdab,grdbb,iat,kat,sab,sab2)
       use ao_matrices

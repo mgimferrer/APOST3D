@@ -144,13 +144,8 @@
                 call calc_uhf_dens(eval_ao,rhoa,rhob)
                 npairtot=npairtot+1
 
-!! prune on the density AT THE MIDPOINT R -- not at ifut/jfut themselves !!
-!! (a point being in a low-density tail on its own grid doesn't mean R,  !!
-!! the actual point the RDM1 kernel below is evaluated at, is negligible !!
-!! too). Controlled by # DFT-DM1's DENSTHRESH (default 1e-8). Skips the  !!
-!! rest of this pair's cost (sigma_uks_xyz, xc_uks_for_dm1, the Bessel-  !!
-!! kernel exchange accumulation) but not gpoints/calc_uhf_dens itself,   !!
-!! since R's density isn't known until after that call.                 !!
+!! prune on the density at midpoint R, not at ifut/jfut -- a low-density !!
+!! endpoint doesn't mean R itself is negligible. Threshold: DENSTHRESH.  !!
                 if(abs(rhoa+rhob).lt.densthresh_dm1) then
                   npairskip=npairskip+1
                   cycle
@@ -528,11 +523,8 @@
 ! *****
 
 !! calc_rhf_dens/calc_uhf_dens/calc_phf_dens: density at a point from    !!
-!! its AO values (eval_ao), for RHF/UHF/post-HF wavefunctions. Moved     !!
-!! here from tools.f -- feature-specific helpers live with their driver, !!
-!! matching enpart_dft.f/oslo.f. Only calc_uhf_dens is called today      !!
-!! (dft_dm1 is UHF-only); the other two are kept for a possible future   !!
-!! restricted/CASSCF DM1 variant.                                        !!
+!! its AO values. Only calc_uhf_dens is called today (dft_dm1 is UHF-    !!
+!! only); the other two are kept for a possible restricted/CASSCF variant.!!
 
 !! ********************************************************************* !!
 !! subroutine: calc_rhf_dens                                             !!

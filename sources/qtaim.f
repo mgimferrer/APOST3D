@@ -21,15 +21,10 @@ C needs to be updated
       return
       end
 
-!! gxfunct/gyfunct/gzfunct used to each carry their own copy of this      !!
-!! primitive-loop derivative, against /data//coeff//lim//coord/ commons  !!
-!! that are dead everywhere in the current codebase (only ever declared  !!
-!! here and in the equally-stale code they were copied from -- found     !!
-!! 2026-08-29 chasing a real out-of-bounds crash: ihold(iact) read as 0  !!
-!! from those uninitialized commons). Replaced with thin wrappers around !!
-!! drho_xyz (dft_dm1.f), which does the exact same math (one function,  !!
-!! ixyz-selected, instead of three near-duplicates) against basis_set's  !!
-!! live nlm/coefpb/nprimbas/ihold/coord.                                 !!
+!! gxfunct/gyfunct/gzfunct used to duplicate this primitive-loop math    !!
+!! against dead /data//coeff//lim//coord/ commons (ihold(iact) read as 0, !!
+!! an out-of-bounds crash) -- now thin wrappers around drho_xyz          !!
+!! (dft_dm1.f), same math against basis_set's live arrays.                !!
 
       function gxfunct(x,y,z)
       IMPLICIT REAL*8(A-H,O-Z)
@@ -45,14 +40,10 @@ C needs to be updated
       
       iactat=ihold(iact)
       f=0.d0
-!! xx/yy/zz, not x/y/z -- x,y,z are this function's own dummy arguments, !!
-!! and overwriting them (as this used to) mutates the CALLER's variables !!
-!! too (Fortran passes by reference): gpoints calls this last in a loop  !!
-!! over all basis functions reusing the same x,y,z, so every basis       !!
-!! function after the first silently got a corrupted point. Found        !!
-!! 2026-08-30 via a debug check comparing gpoints-evaluated density      !!
-!! against the same density computed through numint.f's fpoints (same    !!
-!! primitive-loop formula, but into local xx/yy/zz there too).           !!
+!! xx/yy/zz, not x/y/z -- overwriting the dummy args (as this used to)   !!
+!! mutates gpoints' own x,y,z too (pass-by-reference): it calls this last !!
+!! in a loop reusing the same x,y,z, silently corrupting every basis     !!
+!! function's point after the first.                                     !!
       xx=x-coord(1,iactat)
       yy=y-coord(2,iactat)
       zz=z-coord(3,iactat)

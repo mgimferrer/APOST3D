@@ -124,16 +124,11 @@
       end do
 !$OMP END PARALLEL DO
 
-!! building aim weights for all gridpoints !!
-!! parallel over (icenter,k) grid-point pairs. ifut is now computed            !!
-!! directly from icenter/k instead of carried as a serially-incremented        !!
-!! counter, since a plain "ifut=ifut+1" is not safe once the loop is           !!
-!! split across threads -- the computed form gives the exact same values       !!
-!! (icenter=1,k=1..iatps -> ifut=1..iatps, icenter=2 -> ifut=iatps+1..2*iatps, !!
-!! etc.) as the original serial counter, so results are unchanged. each        !!
-!! iteration writes only its own omp(ifut)/omp2(ifut,:) and reads shared,      !!
-!! read-only data (pcoord); wat()/wathirsh() are themselves thread-safe        !!
-!! (no shared mutable state -- see wat.f, chi is now a passed argument).       !!
+!! building aim weights for all gridpoints, parallel over (icenter,k).   !!
+!! ifut is computed from icenter/k (a serial "ifut=ifut+1" isn't safe    !!
+!! split across threads); each iteration writes only its own             !!
+!! omp(ifut)/omp2(ifut,:), and wat()/wathirsh() are themselves            !!
+!! thread-safe (chi is a passed argument, no shared mutable state).      !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,k,ifut,xx0,yy0,zz0,jcenter)
       do icenter=1,nat
         do k=1,iatps

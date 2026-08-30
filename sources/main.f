@@ -1010,11 +1010,10 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !       close(52)
 !     end if
 
-!! DFT-DM1 approximate one-particle RDM1 (formerly HIRAO internally --   !!
-!! see CLAUDE.md Known Issue #22). Runs standalone, own dedicated grid   !!
-!! reusing the two-electron-type MOD-GRIDTWOEL settings (read_input.f's  !!
-!! read_gridtwoel), pha=phb=0 like any other primary/non-rotated grid -- !!
-!! dft_dm1 builds its own rotated second grid internally.                !!
+!! DFT-DM1 approximate one-particle RDM1 (formerly HIRAO internally).    !!
+!! Runs standalone, own dedicated grid reusing the two-electron-type      !!
+!! MOD-GRIDTWOEL settings (read_input.f's read_gridtwoel); dft_dm1        !!
+!! builds its own rotated second grid internally.                        !!
       if(idftdm1.eq.1) then
         call print_box('DOING DFT-DM1 APPROXIMATE ONE-PARTICLE RDM1')
         ndim=igr
