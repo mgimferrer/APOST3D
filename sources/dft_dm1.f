@@ -353,6 +353,8 @@
         write(*,'(2x,a,1x,i14)') "Grid-point pairs evaluated:",npairtot
         write(*,'(2x,a,1x,i14,1x,a,1x,f6.2,1x,a)') "Pairs pruned (R below DENSTHRESH):",
      $npairskip,"(",100.0d0*dble(npairskip)/dble(npairtot),"%)"
+        write(*,'(2x,a,1x,i14,1x,a,1x,f6.2,1x,a)') "Pairs kept (full cost paid):",
+     $npairtot-npairskip,"(",100.0d0*dble(npairtot-npairskip)/dble(npairtot),"%)"
         write(*,*) " "
 
       end if
