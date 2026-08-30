@@ -26,19 +26,14 @@
       common /filename/name0
       common /iops/iopt(200)
       common /dm1opt/densthresh_dm1
-      character*80 ofile,ofile2
       character*60 name0
       integer*8 :: npairtot,npairskip
 
       dimension :: wp(itotps),omp2(itotps,nat),pcoord(itotps,3),chp(itotps,igr)
       dimension :: exch_hf(maxat,maxat),bondorder(maxat,maxat),exact_exch(maxat,maxat)
 
-!! automatic (stack, non-allocatable) per-pair scratch for the main RDM1 !!
-!! double loop below -- sized by igr/nalf/nb, known at subroutine entry. !!
-!! Kept out of the allocatable lists on purpose: an OMP-PRIVATE          !!
-!! allocatable array gets each thread an unassociated copy that would    !!
-!! need its own per-thread ALLOCATE; a plain automatic array just works, !!
-!! same fix already used for enpart.f's multipolar (see its rvect).      !!
+!! automatic (stack) per-pair scratch for the double loops below --      !!
+!! OMP-PRIVATE needs this, not allocatable (see enpart.f's rvect).       !!
       dimension :: eval_ao(igr),gx_ao(igr),gy_ao(igr),gz_ao(igr)
       dimension :: chp2v(nalf),chp2bv(nb)
       dimension :: rhoab(2,1),scrpt(3,1),excpt(1),excbpt(1)
@@ -47,7 +42,6 @@
       allocatable :: scr(:,:),scrpha(:,:)
       allocatable :: chp2(:,:),chp2pha(:,:),rho(:,:),rhopha(:,:),exc(:),excpha(:)
       allocatable :: chp2b(:,:),chp2phab(:,:),excb(:),excbpha(:)
-      allocatable :: rdm1(:,:),rdm1b(:,:),dm1_mo(:,:),dm1_norm(:,:)
       allocatable :: rhoscr(:)
 
 !! NATORB block only (RDM1 projected onto the AO basis, alpha/beta       !!
@@ -56,8 +50,6 @@
       allocatable :: dm1_ao(:,:),dm1b_ao(:,:),s0no(:,:),smno(:,:),spno(:,:)
       allocatable :: cno_a(:,:),cno_b(:,:)
 
-      ofile  = trim(name0)//".dm1"
-      ofile2 = trim(name0)//".dm1norm"
       ifunc  = Iopt(57)
       inatorb= Iopt(63)
       iatps  = nrad*nang
@@ -71,8 +63,6 @@
       write(*,*) " "
       write(*,*) " GENERAL INFORMATION "
       write(*,*) " "
-!     write(*,*) " OUTPUT FILE FOR DM1 : ",trim(ofile)
-!     write(*,*) " OUTPUT FILE FOR NORMALIZED DM1 : ",trim(ofile2)
       write(*,*) " NUMBER OF BASIS FUNCTIONS : ",igr
       write(*,*) " NUMBER OF OCCUPIED ALPHA MOs : ",nalf
       write(*,*) " NUMBER OF OCCUPIED BETA MOs : ",nb
@@ -167,24 +157,16 @@
         end do
       end do
       write(*,*) " Integrated Density from First Grid (Alpha+Beta) : ",xx
-!! debug checks requested by Marti -- confirm the ROTATED grid alone     !!
-!! (same mechanism used as "r2" throughout the double loop below) is a   !!
-!! valid, correctly-weighted representation of the density/exchange-     !!
-!! energy on its own, independent of any r1/r2 pairing question.         !!
+!! sanity check: the rotated grid alone should reproduce the same        !!
+!! density/exchange energy as the first grid.                            !!
       write(*,*) " Integrated Density from Rotated Grid (Alpha+Beta) : ",xxpha
       write(*,*) " One-el KS-Exchange (Alpha+Beta) : ",xlsda
       write(*,*) " One-el KS-Exchange from Rotated Grid (Alpha+Beta) : ",xlsdapha
 
-!! debug checks requested by Marti -- isolate gpoints/calc_uhf_dens (the  !!
-!! same routines the main double loop below calls at the midpoint R)     !!
-!! from everything downstream (sigma_uks_xyz, the Bessel kernel): call   !!
-!! them AT THE GRID POINTS THEMSELVES (pcoord/pcoordpha, not a midpoint) !!
-!! and compare against rho/exc above, which come from a completely       !!
-!! independent path (numint.f's own precomputed chp AO-value table, not  !!
-!! basis_set's primitive-based aofunct/gxfunct gpoints itself calls). A  !!
-!! match here means gpoints/calc_uhf_dens are correct as a general       !!
-!! evaluate-at-any-point tool; a mismatch would mean the bug is in that  !!
-!! primitive-based AO evaluation itself, not downstream of it.           !!
+!! sanity check: gpoints/calc_uhf_dens evaluated AT THE GRID POINTS      !!
+!! themselves (not a midpoint) should reproduce rho/exc above, which     !!
+!! come from a completely independent path (numint.f's precomputed chp  !!
+!! table, not basis_set's primitive-based aofunct gpoints itself calls). !!
       xxg=ZERO
       xxgpha=ZERO
       xlsdag=ZERO
@@ -280,7 +262,7 @@
 
       write(*,*) " GENERATING KS-DFT RDM1 "
       write(*,*) " "
-      xexch=ZERO
+        xexch=ZERO
         xexchb=ZERO
         npairtot=0
         npairskip=0
@@ -291,16 +273,10 @@
             fbo=ZERO
             fbob=ZERO
 
-!! parallel over ifut: gx_ao/gy_ao/gz_ao/eval_ao/chp2v/chp2bv/rhoab/scrpt/ !!
-!! excpt/excbpt are all automatic (not allocatable, see declaration       !!
-!! above), so PRIVATE gives each thread its own real copy, no per-thread  !!
-!! (re)allocation needed. gpoints/drho_xyz/sigma_uks_xyz pass which basis  !!
-!! function is "current" through common/actual/ (qtaim.f, dft_dm1.f) --   !!
-!! THREADPRIVATE'd at their own declarations so each thread gets its own. !!
-!! c/cb (ao_matrices) are shared but read-only here. jfut/f3/f3b/fbo/fbob/ !!
-!! xexch/xexchb/npairtot/npairskip are the only cross-iteration           !!
-!! accumulators, all via REDUCTION; everything else is written fresh      !!
-!! every ifut.                                                            !!
+!! parallel over ifut: PRIVATE scratch is all automatic (no per-thread   !!
+!! allocation needed); gpoints/drho_xyz/sigma_uks_xyz's "current basis   !!
+!! function" state is THREADPRIVATE'd at its own declaration; c/cb are   !!
+!! shared but read-only; everything else accumulates via REDUCTION.      !!
 !$OMP PARALLEL DO PRIVATE(jfut,Rx,Ry,Rz,rhoa,rhob,rhoab,imo,ibf,xx,xxb,
 !$OMP&  scraa,scrab,scrbb,scrpt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
 !$OMP&  xksigaa,xksigbb,xx0,xx0b,xkagga,xkbgga,xbf,xbfb,xxrdm1,xxrdm1b,
@@ -448,119 +424,6 @@
 
       call flush
 
-!! PROJECTION OF THE RDM1 INTO THE MOs FORMING DM1 !!
-
-!     write(*,*) " COMPUTING DM1 (in MO's) DIRECTLY "
-!     write(*,*) " "
-!     ALLOCATE(dm1_mo(igr,igr))
-!     do imo=1,igr
-!       do imo2=imo,igr
-!         xdm1=ZERO
-!         do icenter=1,nat
-!           do jcenter=1,nat
-!             do ifut=iatps*(icenter-1)+1,iatps*icenter
-!               x0=wp(ifut)*omp2(ifut,icenter)
-!               do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-!                 x1=wppha(jfut)*omp2pha(jfut,jcenter)
-!                 xf=chp2(ifut,imo)*chp2pha(jfut,imo2)
-!                 xdm1=xdm1+rdm1(ifut,jfut)*xf*x0*x1
-!               end do
-!             end do
-!           end do
-!         end do
-!         dm1_mo(imo,imo2)=xdm1
-!         dm1_mo(imo2,imo)=xdm1
-!       end do
-!     end do
-
-!! EVALUATING THE TRACE OF THE DM1 OBTAINED !!
-
-!     xtr=ZERO
-!     do ii=1,igr
-!       do jj=1,igr
-!         if(ABS(dm1_mo(ii,jj)).gt.1.0d-4) write(*,*) " i,j,dm1(i,j) : ",ii,jj,dm1_mo(ii,jj)
-!       end do
-!       xtr=xtr+dm1_mo(ii,ii)
-!     end do
-!     write(*,*) " "
-!     write(*,*) " TRACE OF THE DM1 MATRIX : ",xtr
-!     write(*,*) " "
-!     call flush
-
-!! NORMALIZING THE DM1 !!
-
-!     ALLOCATE(dm1_norm(igr,igr))
-!     xnocc=REAL(nocc)*TWO
-!     xx0=ZERO
-!     do ii=1,igr
-!       do jj=1,igr
-!         dm1_norm(ii,jj)=dm1_mo(ii,jj)*xnocc/xtr
-!       end do
-!       xx0=xx0+dm1_norm(ii,ii)
-!     end do
-!     write(*,*) " TRACE OF THE NORMALIZED DM1 : ",xx0
-!     write(*,*) " "
-!     call flush
-
-!! COMPUTING THE EXCHANGE ENERGY !!
-
-!     write(*,*) " EXCHANGE ENERGY CALCULATION "
-!     write(*,*) " "
-!     xexch=ZERO
-!     xexchb=ZERO
-!     xexch2=ZERO
-!     xexch3=ZERO
-!     do icenter=1,nat
-!       do jcenter=1,nat
-!         f3=ZERO
-!         f3b=ZERO
-!         do ifut=iatps*(icenter-1)+1,iatps*icenter
-!           x0=wp(ifut)*omp2(ifut,icenter)
-!           do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-!             r12=(pcoord(ifut,1)-pcoordpha(jfut,1))**TWO
-!             r12=r12+((pcoord(ifut,2)-pcoordpha(jfut,2))**TWO)
-!             r12=r12+((pcoord(ifut,3)-pcoordpha(jfut,3))**TWO)
-!             r12=dsqrt(r12)
-!             x1=wppha(jfut)*omp2pha(jfut,jcenter)
-
-!! COMPUTING ONLY ONCE FROM RDM1 !!
-
-!             if(r12.gt.thresh) then
-!               xexch=xexch-(rdm1(ifut,jfut)*rdm1(ifut,jfut)*x0*x1/r12)
-!               xexchb=xexchb-(rdm1b(ifut,jfut)*rdm1b(ifut,jfut)*x0*x1/r12)
-!               f3=f3+(rdm1(ifut,jfut)*rdm1(ifut,jfut)*x0*x1/r12)
-!               f3b=f3b+(rdm1b(ifut,jfut)*rdm1b(ifut,jfut)*x0*x1/r12)
-!             end if
-
-!! NOW FROM DM1 AND NORMALIZED DM1 !!
-
-!             if(r12.gt.thresh) then
-!               do imo=1,igr
-!                 do imo2=imo,igr
-!                   xx0=dm1_mo(imo,imo2)*chp2(ifut,imo)*chp2pha(jfut,imo2)
-!                   xx1=dm1_norm(imo,imo2)*chp2(ifut,imo)*chp2pha(jfut,imo2)
-!                   if(imo2.ne.imo) then
-!                     xx0=TWO*xx0
-!                     xx1=TWO*xx1
-!                   end if
-!                   xexch2=xexch2-xx0*xx0*x0*x1/r12
-!                   xexch3=xexch3-xx1*xx1*x0*x1/r12
-!                  end do 
-!                end do 
-!             end if
-!           end do
-!         end do
-!         if(icenter.ne.jcenter) then
-!           f3=TWO*f3
-!           f3b=TWO*f3b
-!         end if 
-!         exch_hf(icenter,jcenter)=-(f3+f3b)/TWO
-
-!         if(ifunc.eq.999) exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)/TWO
-!         exch_hf(jcenter,icenter)=exch_hf(icenter,jcenter)
-!       end do
-!     end do
-
       write(*,*) " EXCHANGE ENERGY (RDM1) : ",(xexch+xexchb)/TWO
       write(*,*) " "
 
@@ -577,13 +440,9 @@
 
 !! EXACT HF-TYPE EXCHANGE FROM THE REAL KS ORBITALS, FOR COMPARISON !!
 
-!! same real-space same-spin exchange integral as enpart.f's numint_two/ !!
-!! numint_two_uhf, just reusing dft_dm1's own two grids instead of        !!
-!! hooking into ENPART's separate dispatch. Cheap relative to the RDM1   !!
-!! loop above: chp2/chp2pha/chp2b/chp2phab (the actual KS MO values on   !!
-!! both grids) were already computed once, at the top of this routine --  !!
-!! no gpoints/calc_uhf_dens/sigma_uks_xyz per pair needed, since nothing  !!
-!! here is being approximated.                                            !!
+!! same real-space same-spin exchange integral as enpart.f's numint_two, !!
+!! reusing dft_dm1's own grids. Cheap: chp2/chp2pha/chp2b/chp2phab (real !!
+!! MO values, both grids) are already computed, nothing here is approximated.!!
       write(*,*) " "
       write(*,*) " COMPUTING EXACT HF-TYPE EXCHANGE FROM KS ORBITALS "
       write(*,*) " "
@@ -636,16 +495,10 @@
 
 !! RDM1 -> AO BASIS -> DIAGONALIZE -> NATURAL ORBITAL OCCUPATIONS !!
 
-!! opt-in (# DFT-DM1's NATORB keyword) -- only meaningful for the KS-DFT !!
-!! branch above (xxrdm1's construction via xc_uks_for_dm1/xksigaa has no !!
-!! HF-branch equivalent yet, see the "GENERATING HF RDM1" placeholder).  !!
-!! Deliberately its own separate, unoptimized pass: redoes the same      !!
-!! per-pair gpoints/calc_uhf_dens/sigma_uks_xyz/xc_uks_for_dm1/Bessel-    !!
-!! kernel work as the main double loop above, then ADDITIONALLY          !!
-!! accumulates an igr x igr matrix element per surviving pair -- an      !!
-!! O(igr^2) cost on top of everything else, serial on purpose (this is   !!
-!! already the most expensive block in the file and opt-in only; not     !!
-!! worth an OMP array-reduction's added complexity for now).             !!
+!! opt-in (# DFT-DM1's NATORB) -- redoes the main loop's per-pair work,  !!
+!! then additionally accumulates an igr x igr matrix element per         !!
+!! surviving pair, so it's costly even parallelized; kept separate and   !!
+!! opt-in rather than folded into the main loop above.                   !!
       if(inatorb.eq.1) then
         write(*,*) " "
         write(*,*) " PROJECTING THE RDM1 ONTO THE AO BASIS "
@@ -657,6 +510,14 @@
 
         do icenter=1,nat
           do jcenter=1,nat
+!! same PRIVATE/THREADPRIVATE reasoning as the main double loop above;   !!
+!! dm1_ao/dm1b_ao add an array REDUCTION (gfortran/OpenMP 4.5+ supports  !!
+!! this for already-allocated arrays, which they are before this loop). !!
+!$OMP PARALLEL DO PRIVATE(jfut,Rx,Ry,Rz,rhoa,rhob,rhoab,imo,ibf,xx,xxb,
+!$OMP&  scraa,scrab,scrbb,scrpt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
+!$OMP&  xksigaa,xksigbb,xx0,xx0b,xkagga,xkbgga,xbf,xbfb,xxrdm1,xxrdm1b,
+!$OMP&  x0,eval_ao,gx_ao,gy_ao,gz_ao,chp2v,chp2bv,mu,nu)
+!$OMP&  REDUCTION(+:dm1_ao,dm1b_ao)
             do ifut=iatps*(icenter-1)+1,iatps*icenter
               x0=wp(ifut)*omp2(ifut,icenter)
               do jfut=iatps*(jcenter-1)+1,iatps*jcenter
@@ -735,6 +596,7 @@
                 end do
               end do
             end do
+!$OMP END PARALLEL DO
           end do
         end do
 
@@ -752,14 +614,10 @@
           end do
         end do
 
-!! dm1_ao is built from DOUBLE AO integrals (chp*xxrdm1*chppha), i.e.     !!
-!! D = S*P*S relative to the coefficient-built P (trace(PS)=N) that      !!
-!! gennatural's own S^1/2-based transform expects -- D already carries   !!
-!! two powers of S, so it needs S^-1/2 here (not S^1/2/splus, which      !!
-!! would leave it two powers of S too many and inflate every occupation  !!
-!! -- found via the trace summing to ~16 instead of ~1 for H2's alpha    !!
-!! spin). The eigenvector back-transform still uses S^-1/2 either way    !!
-!! (that step is about orbital coefficients, not the density matrix).    !!
+!! dm1_ao (double AO integrals, chp*xxrdm1*chppha) is D = S*P*S relative !!
+!! to the coefficient-built P (trace(PS)=N) that gennatural's S^1/2      !!
+!! transform expects -- needs S^-1/2 here, not S^1/2, or every           !!
+!! occupation inflates (found via H2's alpha trace: ~16 instead of ~1).  !!
         ALLOCATE(s0no(igr,igr),smno(igr,igr),spno(igr,igr))
         ALLOCATE(cno_a(igr,igr),cno_b(igr,igr))
         s0no=s
@@ -773,12 +631,8 @@
         call diagonalize(igr,igr,dm1b_ao,cno_b,0)
         call to_AO_basis(igr,igr,smno,cno_b)
 
-!! occupations come out sorted by VALUE (descending), not by magnitude   !!
-!! -- unlike a real density matrix's eigenvalues (always in [0,~2]), an  !!
-!! approximate RDM1 built from a local Hirao-type model isn't guaranteed !!
-!! positive-semidefinite, so small negative artifacts can appear at the  !!
-!! tail. Printed in full (not cut off above some threshold) so the       !!
-!! magnitude of that negative tail is visible, not just assumed small.   !!
+!! this approximate RDM1 isn't guaranteed positive-semidefinite, so a    !!
+!! negative tail can appear -- printed in full, not cut off, to show it. !!
         call print_box('DFT-DM1 NATURAL ORBITALS')
         write(*,'(2x,a)') 'Alpha occupation numbers (all, including negative-tail artifacts):'
         write(*,'(2x,8f10.5)') (dm1_ao(ii,ii),ii=1,igr)
@@ -791,70 +645,24 @@
         DEALLOCATE(dm1_ao,dm1b_ao,s0no,smno,spno,cno_a,cno_b)
       end if
 
-!! PRINTING !!
-! Unformatted printing of the DM1_MO
-
-!     open(unit=2,file=ofile,status='unknown',form='unformatted')
-!     do ii=1,igr
-!      do jj=1,igr
-!       write(2) 2*ii-1,2*jj-1,DM1_MO(ii,jj)
-!       write(2) 2*ii,2*jj,DM1_MO(ii,jj)
-!      end do
-!     end do
-!     write(2) 0,0,0.0E0
-!     close(2)
-
-! Unformatted printing of the DM1_NORM
-
-!     open(unit=3,file=ofile2,status='unknown',form='unformatted')
-!     do ii=1,igr
-!      do jj=1,igr
-!       write(3) 2*ii-1,2*jj-1,DM1_NORM(ii,jj)
-!       write(3) 2*ii,2*jj,DM1_NORM(ii,jj)
-!      end do
-!     end do
-!     write(3) 0,0,0.0E0
-!     close(3)
-
-! End of DM1_MO calculation in restricted case
-
-!     DEALLOCATE(rho,rho1,rho2,c,chp,chp2,chp3,dchp)
-!     DEALLOCATE(RDM1,DM1_MO,DM1_NORM,xdist)
-!     DEALLOCATE(nquant,xI)
-!     DEALLOCATE(rgrad)
-!     DEALLOCATE(wp,pcoord)
-!     DEALLOCATE(wp2,pcoord2)
-
       end
 
 ! *****
 
-      subroutine gen_ksgga(ifunc,rho0,xksgga)
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-
-      if(ifunc.eq.1) then
-        xkfunc=(THREE/(FOUR*pi))**(ONE/THREE)
-        xkfunc=THREE*xkfunc
-      else if(ifunc.eq.2) then
-        write(*,*) " B88 CALCULATION"
-      else if(ifunc.eq.3) then
-        write(*,*) " PBE CALCULATION"
-      else if(ifunc.eq.4) then
-        write(*,*) " PKZB CALCULATION"
-      else if(ifunc.eq.5) then
-        write(*,*) " TPSS CALCULATION"
-      end if
-
-!! COMPUTING THE ksGGA !!
-
-      xx0=(9.0d0*pi/xkfunc)**HALF
-      xksgga=xx0*(rho0**(ONE/THREE))
-
-      end
-
-! *****
-
+!! ********************************************************************* !!
+!! subroutine: xc_uks_for_dm1                                            !!
+!! purpose: evaluates one spin channel's LDA/GGA exchange energy density !!
+!!   (per electron, pre-multiplied by that spin's density) via libxc,    !!
+!!   for an arbitrary set of npt points.                                 !!
+!! arguments:                                                            !!
+!!   isigma (in) -- 1=alpha, 2=beta                                      !!
+!!   npt (in) -- number of points                                        !!
+!!   id_xfunc (in) -- libxc functional ID                                !!
+!!   scr_ab (in) -- density, (alpha,beta)                                !!
+!!   scr (in) -- sigma (grad-rho.grad-rho), (up-up,up-down,down-down)    !!
+!!   scr2 (out) -- exchange energy density for spin isigma               !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine xc_uks_for_dm1(isigma,npt,id_xfunc,scr_ab,scr,scr2)
       use xc_f90_types_m
       use xc_f90_lib_m
@@ -864,10 +672,6 @@
       include 'parameter.h'
 
       dimension :: scr_ab(2,npt),scr(3,npt),scr2(npt)
-
-!! scr_ab = RHO (ORDER: ALPHA, BETA) !!
-!! scr    = SIGMA RHO (ORDER: UP-UP, UP-DOWN, DOWN-DOWN) !!
-!! scr2   = EX (PER ELECTRON, MULTIPLICATION BY RHO REMAINING) !!
 
       call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_POLARIZED)
       select case (xc_f90_info_family(xc_info))
@@ -893,37 +697,19 @@
 
 ! *****
 
-!     subroutine gen_ksigmagga_uks(itype,itotps,chp2,chp2b,rho,xksiggga)
-!     IMPLICIT REAL*8(A-H,O-Z)
-!     include 'parameter.h'
-!     common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-!     common /iops/iopt(100)
+!! calc_rhf_dens/calc_uhf_dens/calc_phf_dens: density at a point from    !!
+!! its AO values (eval_ao), for RHF/UHF/post-HF wavefunctions. Moved     !!
+!! here from tools.f -- feature-specific helpers live with their driver, !!
+!! matching enpart_dft.f/oslo.f. Only calc_uhf_dens is called today      !!
+!! (dft_dm1 is UHF-only); the other two are kept for a possible future   !!
+!! restricted/CASSCF DM1 variant.                                        !!
 
-!     dimension :: chp2(itotps,nalf),chp2b(itotps,nb),rho(2,itotps)
-!     dimension :: scr(3,itotps),exc(itotps),excb(itotps)
-!     dimension :: xksiggga(2,itotps)
-
-!     ifunc  = Iopt(57)
-
-!     if(itype.gt.1) call sigma_uks(itotps,chp2,chp2b,scr)
-!     call xc_uks_for_dm1(1,itotps,ifunc,rho,scr,exc)
-!     call xc_uks_for_dm1(2,itotps,ifunc,rho,scr,excb)
-
-!     xfact=FOUR/THREE
-!     do ii=1,itotps
-!       xksiggga(1,ii)=-TWO*exc(ii)/(rho(1,ii)**xfact)
-!       xksiggga(2,ii)=-TWO*excb(ii)/(rho(2,ii)**xfact)
-!     end do
-
-!     end
-
-! *****
-
-!! moved here from tools.f -- DM1/HIRAO-specific helpers belong with their !!
-!! driver, matching how enpart_dft.f/oslo.f keep each feature's private   !!
-!! subroutines in the same file. Not called by dft_dm1 today (it's UHF-   !!
-!! only) but kept for a possible future restricted/CASSCF DM1 variant.   !!
-
+!! ********************************************************************* !!
+!! subroutine: calc_rhf_dens                                             !!
+!! purpose: RHF density at a point, from its AO values.                  !!
+!! arguments: eval_ao (in), rho (out)                                    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine calc_rhf_dens(eval_ao,rho)
       use ao_matrices
       IMPLICIT REAL*8(A-H,O-Z)
@@ -946,6 +732,12 @@
 
 ! *****
 
+!! ********************************************************************* !!
+!! subroutine: calc_uhf_dens                                             !!
+!! purpose: UHF alpha/beta density at a point, from its AO values.       !!
+!! arguments: eval_ao (in), rhoa, rhob (out)                             !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine calc_uhf_dens(eval_ao,rhoa,rhob)
       use ao_matrices
       IMPLICIT REAL*8(A-H,O-Z)
@@ -973,6 +765,13 @@
 
 ! *****
 
+!! ********************************************************************* !!
+!! subroutine: calc_phf_dens                                             !!
+!! purpose: post-HF density at a point (natural orbitals/occupations),   !!
+!!   from its AO values.                                                 !!
+!! arguments: eval_ao (in), rho (out)                                    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine calc_phf_dens(eval_ao,rho)
       use ao_matrices
       IMPLICIT REAL*8(A-H,O-Z)
@@ -996,10 +795,18 @@
 
 ! *****
 
-!! single-point UKS sigma (grad-rho.grad-rho contractions), needed at the !!
-!! (r1+r2)/2 midpoints dft_dm1's double loop evaluates -- distinct from   !!
-!! enpart_dft.f's sigma_uks, which only ever runs on a precomputed grid.  !!
-
+!! ********************************************************************* !!
+!! subroutine: sigma_uks_xyz                                             !!
+!! purpose: UKS sigma (grad-rho.grad-rho contractions) at an arbitrary   !!
+!!   point -- distinct from enpart_dft.f's sigma_uks, which only ever    !!
+!!   runs on a precomputed grid, not the (r1+r2)/2 midpoints dft_dm1's   !!
+!!   double loop needs.                                                  !!
+!! arguments:                                                            !!
+!!   xabs, yabs, zabs (in) -- point to evaluate at                       !!
+!!   chp2, chp3 (in) -- alpha/beta MO values at that point               !!
+!!   scraa, scrab, scrbb (out) -- sigma (up-up, up-down, down-down)      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       subroutine sigma_uks_xyz(xabs,yabs,zabs,chp2,chp3,scraa,scrab,scrbb)
       use ao_matrices
       IMPLICIT REAL*8(A-H,O-Z)
@@ -1059,14 +866,17 @@
 
 ! *****
 
-!! single-point AO gradient (ixyz component), one basis function (iact,   !!
-!! via common/actual/, same convention qtaim.f's gpoints/gxfunct use) per !!
-!! call. Rewritten against basis_set's nlm/coefpb/nprimbas/ihold/coord -- !!
-!! same primitive-loop math as enpart_dft.f's sigma_uks, just for a       !!
-!! single arbitrary point instead of the whole precomputed grid. Replaces !!
-!! the old common/data//coeff//lim//hold/-based version, which targeted   !!
-!! commons that no longer exist in this codebase.                        !!
-
+!! ********************************************************************* !!
+!! function: drho_xyz                                                    !!
+!! purpose: AO gradient (ixyz component) at an arbitrary point, for one  !!
+!!   basis function (iact, via common/actual/ -- same convention         !!
+!!   qtaim.f's gpoints/gxfunct use). Same primitive-loop math as         !!
+!!   enpart_dft.f's sigma_uks, for a single point instead of a grid.     !!
+!! arguments:                                                            !!
+!!   xabs, yabs, zabs (in) -- point to evaluate at                       !!
+!!   ixyz (in) -- gradient component, 1=x, 2=y, 3=z                      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
       function drho_xyz(xabs,yabs,zabs,ixyz)
       use basis_set
       IMPLICIT REAL*8(A-H,O-Z)
