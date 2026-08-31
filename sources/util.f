@@ -1,3 +1,25 @@
+!! *********************************************************************** !!
+!! LINEAR ALGEBRA -- natural orbitals, the shared symmetric eigensolver,    !!
+!! and the Lowdin-basis transform chain (build_Smp/to_lowdin_basis/         !!
+!! to_AO_basis) used throughout OSLO/DFT-DM1-NATORB/gennatural. Only        !!
+!! BLAS/LAPACK usage in the codebase (diagonalize, via dsyevd).             !!
+!!   gennatural      -- natural orbitals from the density matrix P, run     !!
+!!                       once per job when idono=1                         !!
+!!   diagonalize     -- symmetric eigensolver (LAPACK dsyevd), ~36 call     !!
+!!                       sites codebase-wide                                !!
+!!   build_Smp       -- S^-1/2 (and optionally S^1/2) from the overlap      !!
+!!                       matrix, via diagonalize                            !!
+!!   to_lowdin_basis -- similarity transform into the Lowdin basis          !!
+!!   to_AO_basis     -- back-transform from Lowdin basis to AO basis        !!
+!!   move_to         -- matrix copy (B=A), used by build_Smp                !!
+!! Dead code, flagged individually below, kept pending a deprecation        !!
+!! decision -- not deleted: gennatural_old, old_diagonalize (+ its SDIAG2   !!
+!! dependency), readintfiles, trans_rect_mat, invert, svd, uvprint, inc,    !!
+!! outc, outc23, outc2, solvesystem.                                        !!
+!! *********************************************************************** !!
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: gennatural                                                !!
 !! purpose: builds natural orbitals from the density matrix P (S^1/2     !!
@@ -220,7 +242,20 @@ C ONLY FOR RESTRICTED
        end
        
  
-! *****s
+! *****
+!! ********************************************************************* !!
+!! subroutine: build_Smp                                                 !!
+!! purpose: builds S^-1/2 (sm) and, if ip.ne.1, S^1/2 (sp) from the       !!
+!!   overlap matrix s0, via diagonalization -- the shared Lowdin-basis    !!
+!!   transform used throughout OSLO/DFT-DM1-NATORB/gennatural.           !!
+!! arguments:                                                            !!
+!!   n  (in)  -- matrix order                                            !!
+!!   s0 (in)  -- overlap matrix to decompose                             !!
+!!   sm (out) -- S^-1/2                                                  !!
+!!   sp (out) -- S^1/2 (only if ip.ne.1)                                 !!
+!!   ip (in)  -- 1 skips computing sp                                    !!
+!! author:                                                                !!
+!! ********************************************************************* !!
         Subroutine build_Smp(n,s0,sm,sp,ip)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
@@ -229,12 +264,16 @@ C ONLY FOR RESTRICTED
         allocatable :: x(:,:),s(:,:)
 
         allocate(x(n,n),s(n,n))
- 
-C       Builds Sm(p) matrix from eigenvectors and eigenvalues of
-C       overlap matrix S.IP controls whether to calculate Sp.
+
+!! diagonalize S: x holds eigenvectors, s's diagonal holds eigenvalues   !!
         call move_to(N,s0,s)
         call diagonalize(n,n,s,x,0)
- 
+
+!! parallelization: not done. This O(n^3) triple loop, plus the calling  !!
+!! chain's own to_lowdin_basis/to_AO_basis, is called once per fragment  !!
+!! per iteration from OSLO/DFT-DM1-NATORB -- fixing it needs a threaded/ !!
+!! BLAS eigensolver or fewer diagonalizations, a bigger, separately-     !!
+!! scoped task, not a local fix here.                                    !!
         do i=1,n
          do j=i,n
            Sm(j,i)=0.0d0
@@ -255,17 +294,27 @@ C       overlap matrix S.IP controls whether to calculate Sp.
         return
         end
 
-*********************************************************************
+! *****
+!! ********************************************************************* !!
+!! subroutine: to_lowdin_basis                                           !!
+!! purpose: similarity transform f -> x^T f x in place, e.g. projecting  !!
+!!   a Fock/density matrix (f) into the Lowdin basis defined by x         !!
+!!   (typically S^-1/2 from build_Smp).                                  !!
+!! arguments:                                                            !!
+!!   n (in)    -- matrix order                                           !!
+!!   x (in)    -- basis-change matrix                                    !!
+!!   f (inout) -- matrix to transform                                    !!
+!! author:                                                                !!
+!! ********************************************************************* !!
         Subroutine to_lowdin_basis(N,X,F)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
         integer,  intent(in) :: n
         dimension f(n,n), X(n,n)
         allocatable :: f0(:,:)
- 
+
         allocate (f0(n,n))
-C       Similarity transformation of Fock matrix into lowdin-basis
- 
+
         do j=1,n
          do i=1,n
           xx=0.0d0
@@ -298,6 +347,12 @@ C       Similarity transformation of Fock matrix into lowdin-basis
         return
         end
 
+! *****
+!! confirmed dead -- zero call sites codebase-wide. Note: its n,m         !!
+!! arguments don't actually size x/f (dimensioned via common /nat/'s      !!
+!! igr instead) -- a latent argument-shape mismatch, harmless since       !!
+!! unreachable. Left alone pending a deprecation decision, same as        !!
+!! gennatural_old/old_diagonalize above.                                  !!
         Subroutine trans_rect_mat(N,M,X,F)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
@@ -560,13 +615,19 @@ C DIAGONALIZATION OF THE REAL SYMMETRIC MATRIX X. IN D THE EIGENVALUES.
       X(1,1)=1.0D0
   410 RETURN
       END
-C*********************************************************************
+! *****
+!! ********************************************************************* !!
+!! subroutine: move_to                                                   !!
+!! purpose: copies matrix A into B (B=A), n x n.                         !!
+!! arguments: n (in), A (in), B (out)                                    !!
+!! author:                                                                !!
+!! ********************************************************************* !!
         Subroutine move_to(n,A,B)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
         integer, intent(in) :: n
         dimension A(n,n),B(n,n)
- 
+
         do j=1,N
          do i=1,N
           b(i,j)=a(i,j)
@@ -574,8 +635,20 @@ C*********************************************************************
         end do
         return
         end
-**********************************************************************
-        Subroutine to_AO_basis(n,na,X,C) 
+! *****
+!! ********************************************************************* !!
+!! subroutine: to_AO_basis                                               !!
+!! purpose: back-transforms the first na columns of C from the Lowdin    !!
+!!   basis to the AO basis, C(:,1:na) = X . C(:,1:na) (typically X is    !!
+!!   S^-1/2 from build_Smp).                                             !!
+!! arguments:                                                            !!
+!!   n  (in)    -- matrix order                                          !!
+!!   na (in)    -- number of columns (orbitals) to transform             !!
+!!   x  (in)    -- basis-change matrix                                   !!
+!!   c  (inout) -- orbital-coefficient matrix                            !!
+!! author:                                                                !!
+!! ********************************************************************* !!
+        Subroutine to_AO_basis(n,na,X,C)
         implicit double precision(a-h,o-z)
         include 'parameter.h'
         integer, intent(in) :: n
@@ -583,9 +656,7 @@ C*********************************************************************
         allocatable :: cx(:,:)
 
         allocate (cx(n,n))
-         
-C       Transforms first na  orbitals from lowdin basis to AO basis
- 
+
         do j=1,na
          do i=1,n
            cx(i,j)=0.0d0
@@ -1342,6 +1413,9 @@ c 220 print *,' III=',iii
   220 return
       end 
 
+! *****
+!! confirmed dead -- zero call sites codebase-wide. Left alone pending a  !!
+!! deprecation decision, same as gennatural_old/old_diagonalize above.    !!
        subroutine solvesystem(n,ndim,A,C,ilog)
        IMPLICIT DOUBLE PRECISION(A-H,O-Z)
        integer, intent(in) :: n,ndim
