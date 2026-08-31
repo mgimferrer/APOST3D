@@ -38,7 +38,7 @@
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
 
       use integration_grid
-      use effao_mod, only: p0,p0net,p0gro,ip0
+      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef
 
       implicit real*8(a-h,o-z)
 
@@ -206,9 +206,12 @@
         write(*,*) " "
 
 !! store this fragment's EFOs/occupations into effao_mod (see header).  !!
+!! p0coef persists across fragments (unlike scratch p0), feeding        !!
+!! eos_analysis's coefficient pooling for the .fchk EFO writer.         !!
         do k=1,imaxo
           do mu=1,igr
             p0(mu,k)=c0(mu,k)
+            p0coef(mu,k,iicenter)=c0(mu,k)
           end do
           p0net(k,iicenter)=pp0(k,k)
           p0gro(k,iicenter)=s0all(k)
@@ -240,7 +243,7 @@
       !! ********************************************************************* !!
       subroutine eos_analysis(idobeta,icase,thres)
 
-      use effao_mod, only: p0,p0net,p0gro,ip0
+      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef,p0poolcoef
 
       implicit real*8(a-h,o-z)
 
@@ -251,8 +254,17 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
+      common /iops/iopt(200)
 
+      character(len=20) :: ctype
       dimension occup2(igr)
+      dimension iorbslot(nmax,2)
+
+!! iopt(5): population-scheme selector (0 real-space/AIM, 1 Mulliken,   !!
+!! >1 Lowdin) -- coefficient pooling/writing below only makes sense for !!
+!! the real-space path, since p0coef is only ever filled by             !!
+!! ueffao3d_frag, not ueffaomull_frag/ueffaolow_frag.                   !!
+      imulli=iopt(5)
 
       if(idobeta.eq.0.and.icase.eq.2) then
         call print_box('SKIPPING EFFAOs FOR BETA ELECTRONS')
@@ -268,6 +280,8 @@
         do i=1,icufr
           elec(i)=ZERO
         end do
+        lorb(2)=0
+        if(imulli.eq.0) p0poolcoef(:,:,2)=ZERO
         go to 99
       end if
 
@@ -278,6 +292,7 @@
           iorb=iorb+1
           occup(iorb,icase)=p0gro(k,i)
           iorbat(iorb,icase)=i
+          iorbslot(iorb,icase)=k
         end do
       end do
       write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",iorb
@@ -285,7 +300,8 @@
       lorb(icase)=iorb
 
 !! pool every fragment's EFOs into one list, sorted by occupation        !!
-!! (descending); iorbat tracks which fragment each slot came from.       !!
+!! (descending); iorbat/iorbslot track which fragment and local EFO      !!
+!! index each slot came from.                                            !!
       do i=1,iorb-1
         do j=i+1,iorb
           if (occup(j,icase).gt.occup(i,icase))then
@@ -295,9 +311,26 @@
             ikk=iorbat(j,icase)
             iorbat(j,icase)=iorbat(i,icase)
             iorbat(i,icase)=ikk
+            ikk=iorbslot(j,icase)
+            iorbslot(j,icase)=iorbslot(i,icase)
+            iorbslot(i,icase)=ikk
           end if
         end do
       end do
+
+!! pooled+sorted coefficient columns for the real-space path only,      !!
+!! truncated to igr and zero-padded -- feeds the shared .fchk EFO       !!
+!! writer (print.f), same convention as GEOS's ueos_analysis.           !!
+      if(imulli.eq.0) then
+        p0poolcoef(:,:,icase)=ZERO
+        do jj=1,MIN(iorb,igr)
+          ii2=iorbat(jj,icase)
+          kk2=iorbslot(jj,icase)
+          do mu=1,igr
+            p0poolcoef(mu,jj,icase)=p0coef(mu,kk2,ii2)
+          end do
+        end do
+      end if
 
 !! nnn is the LO EFO index in the pooled, sorted list (alpha/beta          !!
 !! electron count); k/kk scan outward from it for EFOs within thres of     !!
@@ -425,6 +458,20 @@
 
         confi2=dmin1(confi,confi0)
         write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
+
+!! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
+!! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!
+!! own .fchk output. Real-space path only (see imulli guard above);     !!
+!! restricted wavefunctions have no Beta blocks to splice into at all,  !!
+!! hence the kop branch, same convention as GEOS's writer.              !!
+        if(imulli.eq.0) then
+          ctype="-EOS-EFOs"
+          if(kop.eq.0) then
+            call rwf_effao_orbprint(p0poolcoef(:,:,1),ctype)
+          else
+            call uwf_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
+          end if
+        end if
       end if
 
 !! printing formats !!
