@@ -1776,18 +1776,18 @@
 !!   and "Alpha MO coefficients" with pooled EFO coefficients (from      !!
 !!   ueos.f's ueos_analysis for GEOS, or effao.f's eos_analysis for      !!
 !!   plain EOS), sorted by decreasing gross occupation and used in place !!
-!!   of a real orbital energy, copying everything else through          !!
+!!   of a real orbital energy, copying everything else through           !!
 !!   unchanged (including Total SCF Density -- these are visualization   !!
 !!   orbitals, not a real wavefunction). Reuses the same splice pattern  !!
 !!   as OSLO's rwf_orbprint (oslo.f), extended to also cover the Orbital !!
 !!   Energies block. Called whenever GEOS or EOS runs (DOFRAGS, real-    !!
 !!   space path) on a restricted wavefunction -- see uwf_effao_orbprint  !!
 !!   for the unrestricted twin.                                          !!
-!! arguments:                                                             !!
+!! arguments:                                                            !!
 !!   pcoef (in) -- (igr,igr) pooled+sorted EFO coefficients, zero-padded !!
-!!                 beyond the actual count                                !!
+!!                 beyond the actual count                               !!
 !!   ctype (in) -- filename suffix, e.g. "-GEOS-EFOs" or "-EOS-EFOs"     !!
-!! author: MGimf                                                          !!
+!! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine rwf_effao_orbprint(pcoef,ctype)
 
@@ -1811,8 +1811,8 @@
       indepigr = int_locate(15,"Number of independ",ilog)
       norb     = igr*indepigr
 
-!! fake orbital energies: gross occupation of each pooled EFO, already  !!
-!! sorted decreasing by the caller, zero beyond the actual count.       !!
+!! fake orbital energies: gross occupation of each pooled EFO, already   !!
+!! sorted decreasing by the caller, zero beyond the actual count.        !!
       ALLOCATE(energ(indepigr))
       energ=ZERO
       do ii=1,MIN(lorb(1),indepigr)
@@ -1827,9 +1827,9 @@
 
       read(15,'(a80)') line
 
-!! standard/MOKIT .fchk layout: Alpha Orbital Energies precedes Alpha   !!
-!! MO coefficients. Q-Chem's is the other way around -- see uwf_effao_  !!
-!! orbprint's header for the same iqchem branch used by OSLO's own      !!
+!! standard/MOKIT .fchk layout: Alpha Orbital Energies precedes Alpha    !!
+!! MO coefficients. Q-Chem's is the other way around -- see uwf_effao_   !!
+!! orbprint's header for the same iqchem branch used by OSLO's own       !!
 !! printers.                                                             !!
       if(iqchem.eq.0) then
         do while(index(line,"Alpha Orbital").eq.0)
@@ -1865,7 +1865,7 @@
         write(69,13) (energ(ii),ii=1,indepigr)
       end if
 
-!! copy everything else through unchanged, Total SCF Density included !!
+!! copy everything else through unchanged, Total SCF Density included    !!
       do while(.true.)
         write(69,'(a80)') line
         read(15,'(a80)',end=99) line
@@ -1900,15 +1900,15 @@
 !!   own unrestricted OSLO printer only ever resumes after a single      !!
 !!   "Alpha Orbital" marker for that format, never distinguishing an     !!
 !!   Alpha/Beta split there.                                             !!
-!! arguments:                                                             !!
+!! arguments:                                                            !!
 !!   pcoef_a (in) -- (igr,igr) pooled+sorted first-channel (-> Alpha)    !!
 !!                   EFO coefficients, zero-padded beyond the actual     !!
-!!                   count                                                !!
+!!                   count                                               !!
 !!   pcoef_b (in) -- (igr,igr) pooled+sorted second-channel (-> Beta)    !!
 !!                   EFO coefficients, zero-padded beyond the actual     !!
-!!                   count                                                !!
+!!                   count                                               !!
 !!   ctype   (in) -- filename suffix, e.g. "-GEOS-EFOs" or "-EOS-EFOs"   !!
-!! author: MGimf                                                          !!
+!! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine uwf_effao_orbprint(pcoef_a,pcoef_b,ctype)
 
@@ -1932,8 +1932,8 @@
       indepigr = int_locate(15,"Number of independ",ilog)
       norb     = igr*indepigr
 
-!! fake orbital energies: gross occupation of each pooled EFO, already  !!
-!! sorted decreasing by the caller, zero beyond the actual count.       !!
+!! fake orbital energies: gross occupation of each pooled EFO, already   !!
+!! sorted decreasing by the caller, zero beyond the actual count.        !!
       ALLOCATE(energ_a(indepigr),energ_b(indepigr))
       energ_a=ZERO
       energ_b=ZERO
@@ -1954,8 +1954,8 @@
 
       if(iqchem.eq.0) then
 
-!! standard/MOKIT layout: both Orbital Energies blocks precede both MO  !!
-!! coefficient blocks.                                                  !!
+!! standard/MOKIT layout: both Orbital Energies blocks precede both MO   !!
+!! coefficient blocks.                                                   !!
         do while(index(line,"Alpha Orbital").eq.0)
           write(69,'(a80)') line
           read(15,'(a80)') line
@@ -1988,8 +1988,8 @@
         end if
       else
 
-!! Q-Chem layout: both MO coefficient blocks precede both Orbital       !!
-!! Energies blocks -- unverified, see header.                           !!
+!! Q-Chem layout: both MO coefficient blocks precede both Orbital        !!
+!! Energies blocks -- unverified, see header.                            !!
         do while(index(line,"Alpha MO co").eq.0)
           write(69,'(a80)') line
           read(15,'(a80)') line
@@ -2016,7 +2016,7 @@
         write(69,13) (energ_b(ii),ii=1,indepigr)
       end if
 
-!! copy everything else through unchanged, Total/Spin SCF Density       !!
+!! copy everything else through unchanged, Total/Spin SCF Density        !!
 !! included                                                              !!
       do while(.true.)
         write(69,'(a80)') line
