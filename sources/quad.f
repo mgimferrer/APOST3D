@@ -1,13 +1,38 @@
+!! *********************************************************************** !!
+!! ATOM-CENTERED INTEGRATION GRID -- radial (Gauss-Legendre, mapped to      !!
+!! [0,inf) via LEGZO below) x angular (Lebedev-Laikov, lebedev/Lebedev-     !!
+!! Laikov.F). Only APOST-3D-specific driver is quad; LEGZO is a standard    !!
+!! published algorithm, left untouched (same treatment as util.f's svd).   !!
+!!   quad  -- builds one atom's radial/angular grid (xr/wr/th/ph, all in    !!
+!!            integration_grid) for the given point counts                 !!
+!!   LEGZO -- Legendre-polynomial zeros/weights for Gauss-Legendre          !!
+!!            quadrature on [-1,1] (external algorithm, see its own        !!
+!!            header)                                                      !!
+!! *********************************************************************** !!
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: quad                                                      !!
+!! purpose: builds the radial (xr/wr) and angular (th/ph, from the       !!
+!!   Lebedev-Laikov tables) grid point arrays for one atom, into the      !!
+!!   integration_grid module.                                            !!
+!! arguments:                                                            !!
+!!   Nrad0    (in) -- number of radial points                            !!
+!!   Npoints  (in) -- number of angular (Lebedev) points                 !!
+!! author:                                                                !!
+!! ********************************************************************* !!
        subroutine quad(Nrad0,Npoints)
        use integration_grid
        implicit double precision(a-h,o-z)
        double precision x(1000),y(1000),z(1000)
 
-       PI=datan(1.0d0)*4.0d0
        r=rr00
 
-!! CLEANED VERSION OF THE SUBROUTINE !!
-!! DIFFERENT RADIAL QUADRATURES/DISTRIBUTIONS IN OLDER DEVELOPMENT (M. Gimferrer) VERSIONS !!
+!! radial part: Gauss-Legendre zeros/weights on [-1,1] (LEGZO), remapped !!
+!! to [0,inf) -- rr00 sets the point at which half the mass has been     !!
+!! distributed. Other radial quadratures existed in older development    !!
+!! versions, superseded by this one.                                     !!
        CALL LEGZO(Nrad0,XR,WR)
        do i=1,nrad0
          wR(i)=2.0d0*r*wr(i)/(1.0d0-Xr(i))**2.0d0

@@ -1,7 +1,27 @@
-!! ***** !!
-!! SET OF SUBROUTINES FOR THE EVALUATION OF X-RAY SCATTERING FACTORS !!
+!! *********************************************************************** !!
+!! X-RAY SCATTERING FACTORS (# METHOD/SCATT-FACT) -- one subroutine.       !!
+!!   scattering_factors -- per-atom real-space density, spherically        !!
+!!                         averaged, Fourier-transformed into XRSF(s)      !!
+!!                         values, written to <name>.xrsf                  !!
+!! *********************************************************************** !!
+
 !! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: scattering_factors                                       !!
+!! purpose: for each atom, extracts its real-space density (rho_at),     !!
+!!   spherically averages it over the angular grid (rho_sph), then       !!
+!!   Fourier-transforms it at a fixed table of scattering angles (sval)  !!
+!!   into X-ray scattering factors (fxA), written to <name>.xrsf.        !!
+!! arguments (all read-only):                                            !!
+!!   itotps (in) -- total number of grid points (nat*iatps)              !!
+!!   wp     (in) -- integration weight of each grid point                !!
+!!   rho    (in) -- electron density at each grid point                  !!
+!!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                  every atom                                           !!
+!!   pcoord (in) -- xyz coordinates of each grid point (unused today)     !!
+!! author:                                                                !!
+!! ********************************************************************* !!
       subroutine scattering_factors(itotps,wp,rho,omp2,pcoord)
 
       use ao_matrices
@@ -26,7 +46,7 @@
 
       allocatable :: rho_at(:),rho_sph(:),fxA(:)
 
-!! ENTERING s VALUES AS DATA HERE !!
+!! fixed table of scattering angles (inverse Angstrom) fxA is evaluated at !!
       double precision :: sval(56)
       data sval /0.00d0, 0.01d0, 0.02d0, 0.03d0, 0.04d0, 0.05d0, 0.06d0, 0.07d0, 0.08d0, 0.09d0,
      +           0.10d0, 0.11d0, 0.12d0, 0.13d0, 0.14d0, 0.15d0, 0.16d0, 0.17d0, 0.18d0, 0.19d0,
@@ -37,29 +57,25 @@
 
       iatps = nrad*nang
       isval = 56
-      write(*,*) "INFO: nrad, nang: ",nrad,nang
+      write(*,'(2x,a,1x,i0,1x,a,1x,i0)') 'Radial points:',nrad,'Angular points:',nang
       write(*,*) " "
 
-!! PREPARING OUTPUT FILE !!
       nameout=trim(name0)//".xrsf"
       open(69,file=nameout,status="unknown")
-      write(*,*) " Printing XRSF information in file ",trim(nameout)
+      write(*,'(2x,a,1x,a)') 'Printing XRSF information in file',trim(nameout)
       write(*,*) " "
 
-!! ALLOCATING RHO VECTORS !!
-      ALLOCATE(rho_at(iatps)) !! DIMENSIONATED TO THE SINGLE ATOM GRID SIZE !!
-      ALLOCATE(rho_sph(nrad)) !! DIMENSIONATED TO NUMBER OF RADIAL POINTS !!
+      ALLOCATE(rho_at(iatps))
+      ALLOCATE(rho_sph(nrad))
       ALLOCATE(fxA(isval))
 
-!! DOING FOR EACH ATOM !!
       do icenter=1,nat
 
-!! ZEROING MATRICES !!
         rho_at=ZERO
         rho_sph=ZERO
         fxA=ZERO
 
-!! OBTAINING RHO^A IN REAL-SPACE (NON-SPHERICAL) FROM RHO !!
+!! rho^A in real space (non-spherical), from the fuzzy-atom-weighted rho !!
         xrhoA=ZERO
         iifut=1
         do ifut=iatps*(icenter-1)+1,iatps*icenter
@@ -68,13 +84,11 @@
           iifut=iifut+1
         end do
 
-!! CHECK: iifut = iatps !!
-        if(iifut-1.ne.iatps) then
-          write(*,*) " Vector dimension problem, iifut =/ iatps "
-          stop
-        end if
+        if(iifut-1.ne.iatps) stop 'scattering_factors: vector dimension mismatch (iifut =/ iatps)'
 
-!! SPHERIZING RHO^A !!
+!! spherize rho^A: average over the angular grid at each radial shell    !!
+!! (angular weights sum to 1), then integrate the spherized density as a !!
+!! cross-check against xrhoA above.                                      !!
         xrhoA2=ZERO
         iifut=1
         do irad=1,nrad
@@ -83,30 +97,23 @@
             xxav=xxav+w(iang)*rho_at(iifut)
             iifut=iifut+1
           end do
-
-!! SAVING AVERAGE DENSITY VALUE IN rho_sph !!
-!! REMIND THAT SUM OF ANGULAR WEIGHTS IS 1 !!
           rho_sph(irad)=xxav
-
-!! CHECK: INTEGRATING NOW THE SPHERICAL AVERAGED RHO !!
           xrhoA2=xrhoA2+wr(irad)*xr(irad)*xr(irad)*rho_sph(irad)
         end do
-
-!! CHECK: FINAL VALUE OF xx2 !!
         xrhoA2=xrhoA2*FOUR*pi
 
-!! CHECK: PRINTING BOTH QUANTITIES INTEGRATED !!
-        write(*,'(a11,i3)') " For atom: ",icenter
-        write(*,'(a26,f11.6)') " Integrated rho^(A)     = ",xrhoA
-        write(*,'(a26,f11.6)') " Integrated rho^(A,sph) = ",xrhoA2
+        write(*,'(2x,a,1x,i0)') 'For atom:',icenter
+        write(*,'(2x,a,1x,f11.6)') 'Integrated rho^(A)     =',xrhoA
+        write(*,'(2x,a,1x,f11.6)') 'Integrated rho^(A,sph) =',xrhoA2
         write(*,*) " "
 
-!! FOURIER TRANSFORMATION TIME: USING rho_sph TO EVALUATE fx_A !!
+!! Fourier-transform the spherized density at each scattering angle sval !!
+!! (converted from inverse Angstrom to inverse Bohr); the s=0 limit is   !!
+!! just the (spherized) integrated density, sin(x)/x -> 1.               !!
         do iisval=1,isval
           xfxA=ZERO
-          xfxA2=ZERO
           xx=FOUR*pi*sval(iisval)
-          xx=xx*angtoau !! TRANSFORMING FROM INVERSE ANGSTROM TO INVERSE BOHR !! 
+          xx=xx*angtoau
           do irad=1,nrad
             if(sval(iisval).lt.10d-8) then
               xfxA=xfxA+wr(irad)*xr(irad)*xr(irad)*rho_sph(irad)
@@ -118,12 +125,11 @@
           fxA(iisval)=xfxA*FOUR*pi
         end do
 
-!! PRINTING THE fxA VALUES !!
-        write(69,'(a58,i3)') " Scattering angle (s) and associated XRSF values for Atom ",icenter
-        write(69,'(a38,f11.6)') " Atomic (electron) population        = ",xrhoA
-        write(69,'(a38,f11.6)') " Integrated spherized atomic density = ",xrhoA2
-        write(69,'(a38,1x,i3)') " Atom number                         = ",INT(zn(icenter))
-        write(69,'(a38,f11.6)') " Atomic (AIM) charge                 = ",zn(icenter)-xrhoA
+        write(69,'(a,1x,i0)') 'Scattering angle (s) and associated XRSF values for atom',icenter
+        write(69,'(a,1x,f11.6)') 'Atomic (electron) population        =',xrhoA
+        write(69,'(a,1x,f11.6)') 'Integrated spherized atomic density =',xrhoA2
+        write(69,'(a,1x,i0)') 'Atom number                         =',INT(zn(icenter))
+        write(69,'(a,1x,f11.6)') 'Atomic (AIM) charge                 =',zn(icenter)-xrhoA
         write(69,*) " "
         write(69,*) " ------------------------- "
         write(69,*) "       s        fxA(s)     "
@@ -135,12 +141,7 @@
         write(69,*) " "
       end do
 
-!! DEALLOCATING MATRICES !!
       DEALLOCATE(rho_at,rho_sph,fxA)
 
       close(69)
       end
-
-!! ***** !!
-
-
