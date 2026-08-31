@@ -207,7 +207,12 @@ c      -------------------------------------------------------------------------
       idono=0
       if(icas.eq.1.or.icisd.eq.1) iposthf=1
       iopt(65)=iposthf
-      if(iposthf.eq.1.or.kop.eq.1) idono=1
+!! GEOS (effao3d_u) needs occ_no/c_no even for a restricted SD          !!
+!! wavefunction -- there they're just the canonical MOs (integer        !!
+!! occupied), giving a trivially ~0 unpaired channel, same as a plain   !!
+!! restricted-wavefunction EFFAO run -- so force natural orbitals on    !!
+!! for GEOS regardless of kop.                                         !!
+      if(iposthf.eq.1.or.kop.eq.1.or.iueos.eq.1) idono=1
 
       if(iposthf.eq.1) then
         if(ispin.eq.1.and.icorr.lt.2) stop ' Local Spin needs dm1 and dm2 for correlated WFs'
@@ -218,7 +223,11 @@ c      -------------------------------------------------------------------------
       if (ipca.eq.1.and.iqtaim.ne.1) iopop=1
       if(imulli.gt.1.or.iqtaim.eq.1) iopop=0
       if(ihirsh.ne.0.and.idoat.eq.1) stop'Cant do HIRSH with DOATOMS'
-      if(ispin.eq.1.and.idono.eq.0)  then
+!! gated on the real restricted-SD condition directly, not on idono --  !!
+!! idono can now also be forced on by GEOS (see above) on a genuinely   !!
+!! restricted wavefunction, where Local Spin still doesn't make sense   !!
+!! (confirmed: produces nonsense u_A/N_D values, not a trivial zero).   !!
+      if(ispin.eq.1.and.kop.eq.0.and.iposthf.eq.0)  then
         write(*,*) 'No Local Spin Analysis needed for Restricted SD WFs'
         ispin=0
       end if

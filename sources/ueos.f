@@ -61,8 +61,10 @@
       allocatable :: Pno(:,:),Uno(:,:)
       allocatable :: S0(:,:),Sm(:,:),Splus(:,:),c0(:,:),pp0(:,:)
       allocatable :: scr(:),s0all(:)
-      allocatable :: iup0(:,:),up0net(:,:,:),up0gro(:,:,:)
+      allocatable :: iup0(:,:),up0net(:,:,:),up0gro(:,:,:),up0coef(:,:,:,:)
+      allocatable :: poolcoef(:,:,:)
       character(len=30) :: lbl30
+      character(len=20) :: ctype
 
       icube = iopt(13)
       iatps = nang*nrad
@@ -98,7 +100,8 @@
       ALLOCATE(scr(itotps))
       ALLOCATE(S0(igr,igr),s0all(igr),Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(c0(igr,igr),pp0(igr,igr))
-      if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr),up0gro(2,igr,icufr))
+      if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr),up0gro(2,igr,icufr),
+     +  up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2))
 
 !! icase=1: paired density (total-unpaired). icase=2: unpaired density. !!
       do icase=1,2
@@ -218,6 +221,9 @@
             if(iueos.eq.1) then
               up0net(icase,kk,iicenter)=pp0(kk,kk)
               up0gro(icase,kk,iicenter)=s0all(kk)
+              do mu=1,igr
+                up0coef(mu,kk,icase,iicenter)=c0(mu,kk)
+              end do
             end if
           end do
           ip0(iicenter)=imaxo
@@ -232,12 +238,27 @@
 
 !! electron/oxidation-state assignment across both channels together,   !!
 !! using gross populations                                              !!
-      if(iueos.eq.1) call ueos_analysis(iup0,up0gro)
+      if(iueos.eq.1) then
+        call ueos_analysis(iup0,up0gro,up0coef,poolcoef)
+
+!! pooled paired/unpaired EFOs as fake Alpha/Beta MOs in a .fchk, for    !!
+!! visualization in any standard viewer -- printed by default, same as  !!
+!! OSLO's own .fchk output, no separate keyword needed. Restricted      !!
+!! wavefunctions have no Beta blocks to splice into at all, hence the   !!
+!! kop branch (the unpaired channel is then trivially ~empty, same as   !!
+!! for a plain restricted-wavefunction EFFAO run).                      !!
+        ctype="-GEOS-EFOs"
+        if(kop.eq.0) then
+          call rwf_geos_orbprint(poolcoef(:,:,1),ctype)
+        else
+          call uwf_geos_orbprint(poolcoef(:,:,1),poolcoef(:,:,2),ctype)
+        end if
+      end if
 
       DEALLOCATE(S0,Splus,Sm)
       DEALLOCATE(scr,c0,pp0,s0all)
       DEALLOCATE(Pno,Uno)
-      DEALLOCATE(iup0,up0net,up0gro)
+      DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef)
 
 60    FORMAT("  OCCUP.",8f9.4)
 
@@ -251,14 +272,21 @@
 !!   occupations (from effao3d_u above), assigns integer electrons (2    !!
 !!   per paired EFO, 1 per unpaired) to whichever pooled slots minimize  !!
 !!   the RMSD against these occupations, then derives fragment           !!
-!!   oxidation states from the resulting electron counts.                !!
+!!   oxidation states from the resulting electron counts. Also pools     !!
+!!   and sorts each EFO's coefficient vector the same way, truncated to  !!
+!!   igr and zero-padded, feeding the GEOS .fchk splicer (rwf_geos_      !!
+!!   orbprint/uwf_geos_orbprint) below.                                  !!
 !! arguments:                                                            !!
-!!   iup0   (in) -- number of EFOs kept per (channel, fragment)          !!
-!!   up0gro (in) -- gross occupation of each EFO, per (channel, index,   !!
-!!                  fragment)                                            !!
+!!   iup0    (in)  -- number of EFOs kept per (channel, fragment)        !!
+!!   up0gro  (in)  -- gross occupation of each EFO, per (channel, index, !!
+!!                    fragment)                                          !!
+!!   up0coef (in)  -- AO coefficients of each EFO, per (basis fn, index, !!
+!!                    channel, fragment)                                 !!
+!!   poolcoef (out) -- pooled+sorted EFO coefficients, per (basis fn,    !!
+!!                    pooled index truncated to igr, channel)            !!
 !! author:                                                                !!
 !! ********************************************************************* !!
-      subroutine ueos_analysis(iup0,up0gro)
+      subroutine ueos_analysis(iup0,up0gro,up0coef,poolcoef)
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -270,14 +298,17 @@
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
 
       dimension iup0(2,icufr),up0gro(2,igr,icufr)
+      dimension up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2)
+      dimension iorbslot(nmax,2)
 
-      allocatable :: tmp_occup(:),tmp_iorbat(:)
+      allocatable :: tmp_occup(:),tmp_iorbat(:),tmp_iorbslot(:)
       allocatable :: elec2(:,:),elec_id(:,:)
       allocatable :: tmp_elec_id(:,:)
       allocatable :: elec_frg_count(:,:)
 
 !! pool every fragment's EFOs into one list per channel (1=paired,      !!
-!! 2=unpaired)                                                          !!
+!! 2=unpaired); iorbslot keeps each pooled slot's local (within-        !!
+!! fragment) EFO index, needed below to fetch its coefficient vector.   !!
       do icase=1,2
         iorb=0
         do ii=1,icufr
@@ -285,6 +316,7 @@
             iorb=iorb+1
             occup(iorb,icase)=up0gro(icase,kk,ii)
             iorbat(iorb,icase)=ii
+            iorbslot(iorb,icase)=kk
           end do
         end do
         lorb(icase)=iorb
@@ -292,13 +324,16 @@
       write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",lorb(1)+lorb(2)
 
 !! sort each channel's pooled EFOs by decreasing occupation, keeping    !!
-!! iorbat aligned so each slot still knows its source fragment.         !!
+!! iorbat/iorbslot aligned so each slot still knows its source fragment !!
+!! and local EFO index.                                                 !!
       do icase=1,2
         ALLOCATE(tmp_occup(lorb(icase)))
         ALLOCATE(tmp_iorbat(lorb(icase)))
+        ALLOCATE(tmp_iorbslot(lorb(icase)))
         do ii=1,lorb(icase)
           tmp_occup(ii)=occup(ii,icase)
           tmp_iorbat(ii)=iorbat(ii,icase)
+          tmp_iorbslot(ii)=iorbslot(ii,icase)
         end do
 
         do ii=1,lorb(icase)-1
@@ -311,6 +346,10 @@
               tmp_swap=tmp_iorbat(ii)
               tmp_iorbat(ii)=tmp_iorbat(jj)
               tmp_iorbat(jj)=tmp_swap
+
+              tmp_swap=tmp_iorbslot(ii)
+              tmp_iorbslot(ii)=tmp_iorbslot(jj)
+              tmp_iorbslot(jj)=tmp_swap
             end if
           end do
         end do
@@ -318,8 +357,24 @@
         do ii=1,lorb(icase)
           occup(ii,icase)=tmp_occup(ii)
           iorbat(ii,icase)=tmp_iorbat(ii)
+          iorbslot(ii,icase)=tmp_iorbslot(ii)
         end do
-        DEALLOCATE(tmp_occup,tmp_iorbat)
+        DEALLOCATE(tmp_occup,tmp_iorbat,tmp_iorbslot)
+      end do
+
+!! build the final, igr-wide pooled coefficient matrix per channel from !!
+!! the sorted order above -- zero-initialized, so any channel with      !!
+!! fewer than igr pooled EFOs above threshold is correctly zero-padded  !!
+!! (always the opposite in practice: more pooled EFOs than igr).        !!
+      poolcoef=ZERO
+      do icase=1,2
+        do jj=1,MIN(lorb(icase),igr)
+          ii=iorbat(jj,icase)
+          kk=iorbslot(jj,icase)
+          do mu=1,igr
+            poolcoef(mu,jj,icase)=up0coef(mu,kk,icase,ii)
+          end do
+        end do
       end do
 
 !! ideal-occupation matrix, sized to the larger of the two EFO counts   !!
@@ -528,6 +583,269 @@
 10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3)
 15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
 20    FORMAT(3x,i3,6x,f8.2)
+
+      end
+
+!! ****** !!
+
+!! ********************************************************************* !!
+!! subroutine: rwf_geos_orbprint                                         !!
+!! purpose: writes the restricted-wavefunction GEOS .fchk -- splices the !!
+!!   original .fchk's structure, replacing "Alpha Orbital Energies" and  !!
+!!   "Alpha MO coefficients" with the pooled paired-channel EFOs (from   !!
+!!   ueos_analysis), sorted by decreasing gross occupation and used in   !!
+!!   place of a real orbital energy, copying everything else through     !!
+!!   unchanged (including Total SCF Density -- these are visualization   !!
+!!   orbitals, not a real wavefunction). Reuses the same splice pattern  !!
+!!   as OSLO's rwf_orbprint (oslo.f), extended to also cover the Orbital !!
+!!   Energies block. Called whenever GEOS+DOFRAGS runs on a restricted   !!
+!!   wavefunction -- see uwf_geos_orbprint for the unrestricted twin.    !!
+!! arguments:                                                             !!
+!!   pcoef (in) -- (igr,igr) pooled+sorted paired-channel EFO            !!
+!!                 coefficients, zero-padded beyond the actual count     !!
+!!   ctype (in) -- filename suffix, e.g. "-GEOS-EFOs"                    !!
+!! author: MGimf                                                          !!
+!! ********************************************************************* !!
+      subroutine rwf_geos_orbprint(pcoef,ctype)
+
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /filename/name0
+      common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
+
+      character*80 line
+      character*60 name0,name1
+      character*20 ctype
+
+      dimension pcoef(igr,igr)
+      allocatable :: energ(:)
+
+      iqchem   = iopt(95)
+      imokit   = iopt(79)
+      indepigr = int_locate(15,"Number of independ",ilog)
+      norb     = igr*indepigr
+
+!! fake orbital energies: gross occupation of each pooled EFO, already  !!
+!! sorted decreasing by ueos_analysis, zero beyond the actual count.    !!
+      ALLOCATE(energ(indepigr))
+      energ=ZERO
+      do ii=1,MIN(lorb(1),indepigr)
+        energ(ii)=occup(ii,1)
+      end do
+
+!! Name of the .fchk file !!
+      name1=trim(name0)//trim(ctype)//".fchk"
+      open(unit=69,file=name1)
+      rewind(69)
+      rewind(15)
+
+      read(15,'(a80)') line
+
+!! standard/MOKIT .fchk layout: Alpha Orbital Energies precedes Alpha   !!
+!! MO coefficients. Q-Chem's is the other way around -- see uwf_geos_   !!
+!! orbprint's header for the same iqchem branch used by OSLO's own      !!
+!! printers.                                                             !!
+      if(iqchem.eq.0) then
+        do while(index(line,"Alpha Orbital").eq.0)
+          write(69,'(a80)') line
+          read(15,'(a80)') line
+        end do
+        write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
+        write(69,13) (energ(ii),ii=1,indepigr)
+
+        do while(index(line,"Alpha MO co").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,12) "Alpha MO coefficients","R","N= ",norb
+        write(69,13) ((pcoef(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        if(imokit.eq.0) then
+          do while(index(line,"Orthonormal basis").eq.0)
+            read(15,'(a80)') line
+          end do
+        end if
+      else
+        do while(index(line,"Alpha MO co").eq.0)
+          write(69,'(a80)') line
+          read(15,'(a80)') line
+        end do
+        write(69,12) "Alpha MO coefficients","R","N= ",norb
+        write(69,13) ((pcoef(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        do while(index(line,"Alpha Orbital").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
+        write(69,13) (energ(ii),ii=1,indepigr)
+      end if
+
+!! copy everything else through unchanged, Total SCF Density included !!
+      do while(.true.)
+        write(69,'(a80)') line
+        read(15,'(a80)',end=99) line
+      end do
+99    continue
+      close(69)
+      DEALLOCATE(energ)
+
+!! Printing formats !!
+11    FORMAT(a23,20x,a1,3x,a3,i11)
+12    FORMAT(a21,22x,a1,3x,a3,i11)
+13    FORMAT(5(1p,e16.8))
+
+      end
+
+!! ****** !!
+
+!! ********************************************************************* !!
+!! subroutine: uwf_geos_orbprint                                         !!
+!! purpose: writes the unrestricted-wavefunction GEOS .fchk -- splices   !!
+!!   the original .fchk's structure, replacing "Alpha/Beta Orbital       !!
+!!   Energies" and "Alpha/Beta MO coefficients" with the pooled paired   !!
+!!   (-> Alpha) and unpaired (-> Beta) channel EFOs (from ueos_analysis),!!
+!!   sorted by decreasing gross occupation and used in place of a real   !!
+!!   orbital energy, copying everything else through unchanged           !!
+!!   (including Total SCF/Spin SCF Density -- these are visualization    !!
+!!   orbitals, not a real wavefunction). Reuses the same splice pattern  !!
+!!   as OSLO's uwf_orbprint (oslo.f), extended to also cover the Orbital !!
+!!   Energies blocks. Q-Chem-format branch is unverified -- no active    !!
+!!   test exercises an unrestricted Q-Chem source, and the codebase's    !!
+!!   own unrestricted OSLO printer only ever resumes after a single      !!
+!!   "Alpha Orbital" marker for that format, never distinguishing an     !!
+!!   Alpha/Beta split there.                                             !!
+!! arguments:                                                             !!
+!!   pcoef_a (in) -- (igr,igr) pooled+sorted paired-channel (-> Alpha)   !!
+!!                   EFO coefficients, zero-padded beyond the actual     !!
+!!                   count                                                !!
+!!   pcoef_b (in) -- (igr,igr) pooled+sorted unpaired-channel (-> Beta)  !!
+!!                   EFO coefficients, zero-padded beyond the actual     !!
+!!                   count                                                !!
+!!   ctype   (in) -- filename suffix, e.g. "-GEOS-EFOs"                  !!
+!! author: MGimf                                                          !!
+!! ********************************************************************* !!
+      subroutine uwf_geos_orbprint(pcoef_a,pcoef_b,ctype)
+
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /filename/name0
+      common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
+
+      character*80 line
+      character*60 name0,name1
+      character*20 ctype
+
+      dimension pcoef_a(igr,igr),pcoef_b(igr,igr)
+      allocatable :: energ_a(:),energ_b(:)
+
+      iqchem   = iopt(95)
+      imokit   = iopt(79)
+      indepigr = int_locate(15,"Number of independ",ilog)
+      norb     = igr*indepigr
+
+!! fake orbital energies: gross occupation of each pooled EFO, already  !!
+!! sorted decreasing by ueos_analysis, zero beyond the actual count.    !!
+      ALLOCATE(energ_a(indepigr),energ_b(indepigr))
+      energ_a=ZERO
+      energ_b=ZERO
+      do ii=1,MIN(lorb(1),indepigr)
+        energ_a(ii)=occup(ii,1)
+      end do
+      do ii=1,MIN(lorb(2),indepigr)
+        energ_b(ii)=occup(ii,2)
+      end do
+
+!! Name of the .fchk file !!
+      name1=trim(name0)//trim(ctype)//".fchk"
+      open(unit=69,file=name1)
+      rewind(69)
+      rewind(15)
+
+      read(15,'(a80)') line
+
+      if(iqchem.eq.0) then
+
+!! standard/MOKIT layout: both Orbital Energies blocks precede both MO  !!
+!! coefficient blocks.                                                  !!
+        do while(index(line,"Alpha Orbital").eq.0)
+          write(69,'(a80)') line
+          read(15,'(a80)') line
+        end do
+        write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
+        write(69,13) (energ_a(ii),ii=1,indepigr)
+
+        do while(index(line,"Beta Orbital").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
+        write(69,13) (energ_b(ii),ii=1,indepigr)
+
+        do while(index(line,"Alpha MO co").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,12) "Alpha MO coefficients","R","N= ",norb
+        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        do while(index(line,"Beta MO coef").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,12) "Beta MO coefficients ","R","N= ",norb
+        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        if(imokit.eq.0) then
+          do while(index(line,"Orthonormal basis").eq.0)
+            read(15,'(a80)') line
+          end do
+        end if
+      else
+
+!! Q-Chem layout: both MO coefficient blocks precede both Orbital       !!
+!! Energies blocks -- unverified, see header.                           !!
+        do while(index(line,"Alpha MO co").eq.0)
+          write(69,'(a80)') line
+          read(15,'(a80)') line
+        end do
+        write(69,12) "Alpha MO coefficients","R","N= ",norb
+        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        do while(index(line,"Beta MO coef").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,12) "Beta MO coefficients ","R","N= ",norb
+        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        do while(index(line,"Alpha Orbital").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
+        write(69,13) (energ_a(ii),ii=1,indepigr)
+
+        do while(index(line,"Beta Orbital").eq.0)
+          read(15,'(a80)') line
+        end do
+        write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
+        write(69,13) (energ_b(ii),ii=1,indepigr)
+      end if
+
+!! copy everything else through unchanged, Total/Spin SCF Density       !!
+!! included                                                              !!
+      do while(.true.)
+        write(69,'(a80)') line
+        read(15,'(a80)',end=99) line
+      end do
+99    continue
+      close(69)
+      DEALLOCATE(energ_a,energ_b)
+
+!! Printing formats !!
+11    FORMAT(a23,20x,a1,3x,a3,i11)
+12    FORMAT(a21,22x,a1,3x,a3,i11)
+13    FORMAT(5(1p,e16.8))
 
       end
 
