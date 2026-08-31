@@ -23,7 +23,9 @@
 !!   Same per-fragment scheme as ueffao3d_frag (effao.f), run twice       !!
 !!   (icase=1 paired, icase=2 unpaired). Results are stored into          !!
 !!   effao_mod (p0/p0net/p0gro/ip0) and, if iueos=1, into the local       !!
-!!   up0net/up0gro/iup0 arrays consumed by ueos_analysis below.           !!
+!!   up0net/up0gro/up0coef/iup0 arrays consumed by ueos_analysis below,   !!
+!!   which also triggers writing the pooled EFOs into a .fchk (paired    !!
+!!   -> Alpha, unpaired -> Beta) for visualization.                       !!
 !! arguments:                                                             !!
 !!   itotps (in) -- total number of grid points (nat*iatps)               !!
 !!   ndim   (in) -- number of basis functions (leading dim of chp/sat)    !!
@@ -274,8 +276,8 @@
 !!   the RMSD against these occupations, then derives fragment           !!
 !!   oxidation states from the resulting electron counts. Also pools     !!
 !!   and sorts each EFO's coefficient vector the same way, truncated to  !!
-!!   igr and zero-padded, feeding the shared .fchk EFO splicer (print.f's !!
-!!   rwf_effao_orbprint/uwf_effao_orbprint, also used by plain EOS).      !!
+!!   igr and zero-padded, feeding the shared .fchk EFO splicer           !!
+!!   (print.f's rwf/uwf_effao_orbprint), also used by plain EOS.         !!
 !! arguments:                                                            !!
 !!   iup0    (in)  -- number of EFOs kept per (channel, fragment)        !!
 !!   up0gro  (in)  -- gross occupation of each EFO, per (channel, index, !!
@@ -365,7 +367,9 @@
 !! build the final, igr-wide pooled coefficient matrix per channel from !!
 !! the sorted order above -- zero-initialized, so any channel with      !!
 !! fewer than igr pooled EFOs above threshold is correctly zero-padded  !!
-!! (always the opposite in practice: more pooled EFOs than igr).        !!
+!! (always the opposite in practice: more pooled EFOs than igr). Left   !!
+!! serial: at most 2*igr*igr copies, once per run, negligible next to   !!
+!! the O(igr^2)/O(igr^3) diagonalization work already done above.       !!
       poolcoef=ZERO
       do icase=1,2
         do jj=1,MIN(lorb(icase),igr)

@@ -651,9 +651,9 @@
    real*8, allocatable :: p0net(:,:) !! p0net(igr,nat) -- net population, per basis fn/atom
    real*8, allocatable :: p0gro(:,:) !! p0gro(igr,nat) -- gross population, per basis fn/atom
    integer, allocatable :: ip0(:)    !! ip0(nat)       -- per-atom effective AO bookkeeping
-   real*8, allocatable :: p0coef(:,:,:)     !! p0coef(igr,igr,nat) -- per-fragment EFO coefficients (EOS real-space path),
+   real*8, allocatable :: p0coef(:,:,:)      !! p0coef(igr,igr,nat) -- per-fragment EFO coefficients (EOS real-space path),
                                              !! persists across ueffao3d_frag's per-fragment loop, unlike scratch p0
-   real*8, allocatable :: p0poolcoef(:,:,:) !! p0poolcoef(igr,igr,2) -- pooled+sorted+igr-truncated EFO coefficients per
+   real*8, allocatable :: p0poolcoef(:,:,:)  !! p0poolcoef(igr,igr,2) -- pooled+sorted+igr-truncated EFO coefficients per
                                              !! spin channel, built by eos_analysis, feeds the shared .fchk EFO writer
                                              !! (print.f's rwf_effao_orbprint/uwf_effao_orbprint)
 

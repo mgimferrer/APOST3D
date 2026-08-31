@@ -229,18 +229,22 @@
 
       end
 
+!! ****** !!
 
-      !! ********************************************************************* !!
-      !! subroutine: eos_analysis                                              !!
-      !! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
-      !!   electron counts per fragment (EOS), then derives oxidation states.  !!
-      !!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
-      !! arguments:                                                            !!
-      !!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
-      !!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
-      !!   thres   (in) -- degeneracy threshold for integer electron count     !!
-      !! author: PSalse, ERaco, MGimf                                          !!
-      !! ********************************************************************* !!
+!! ********************************************************************* !!
+!! subroutine: eos_analysis                                              !!
+!! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
+!!   electron counts per fragment (EOS), then derives oxidation states.  !!
+!!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
+!!   Also pools/sorts each EFO's coefficient vector the same way,        !!
+!!   truncated to igr and zero-padded, feeding the shared .fchk EFO      !!
+!!   splicer (print.f's rwf/uwf_effao_orbprint) for the real-space path. !!
+!! arguments:                                                            !!
+!!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
+!!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
+!!   thres   (in) -- degeneracy threshold for integer electron count     !!
+!! author: PSalse, ERaco, MGimf                                          !!
+!! ********************************************************************* !!
       subroutine eos_analysis(idobeta,icase,thres)
 
       use effao_mod, only: p0,p0net,p0gro,ip0,p0coef,p0poolcoef
@@ -320,7 +324,9 @@
 
 !! pooled+sorted coefficient columns for the real-space path only,      !!
 !! truncated to igr and zero-padded -- feeds the shared .fchk EFO       !!
-!! writer (print.f), same convention as GEOS's ueos_analysis.           !!
+!! writer (print.f), same convention as GEOS's ueos_analysis. Left      !!
+!! serial: at most igr*igr copies, once per icase, negligible next to   !!
+!! the O(igr^2)/O(igr^3) diagonalization work already done above.       !!
       if(imulli.eq.0) then
         p0poolcoef(:,:,icase)=ZERO
         do jj=1,MIN(iorb,igr)
