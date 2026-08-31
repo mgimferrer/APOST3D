@@ -29,6 +29,9 @@
 
        r=rr00
 
+!! parallelization: not worth it -- called a handful of times per job    !!
+!! (once per distinct grid setup, not per atom or per grid point), so    !!
+!! its cost is negligible regardless of system size.                     !!
 !! radial part: Gauss-Legendre zeros/weights on [-1,1] (LEGZO), remapped !!
 !! to [0,inf) -- rr00 sets the point at which half the mass has been     !!
 !! distributed. Other radial quadratures existed in older development    !!

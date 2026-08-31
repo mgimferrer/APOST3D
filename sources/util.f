@@ -315,6 +315,8 @@ C ONLY FOR RESTRICTED
 
         allocate (f0(n,n))
 
+!! parallelization: not done -- same O(n^3)/per-call-chain reasoning as  !!
+!! build_Smp above (part of the same bigger, separately-scoped task).    !!
         do j=1,n
          do i=1,n
           xx=0.0d0
@@ -628,6 +630,8 @@ C DIAGONALIZATION OF THE REAL SYMMETRIC MATRIX X. IN D THE EIGENVALUES.
         integer, intent(in) :: n
         dimension A(n,n),B(n,n)
 
+!! parallelization: not worth it -- O(n^2) memory-bound copy, thread     !!
+!! overhead would exceed the benefit at any realistic n.                 !!
         do j=1,N
          do i=1,N
           b(i,j)=a(i,j)
@@ -657,6 +661,8 @@ C DIAGONALIZATION OF THE REAL SYMMETRIC MATRIX X. IN D THE EIGENVALUES.
 
         allocate (cx(n,n))
 
+!! parallelization: not done -- same reasoning as build_Smp/            !!
+!! to_lowdin_basis above.                                                !!
         do j=1,na
          do i=1,n
            cx(i,j)=0.0d0
