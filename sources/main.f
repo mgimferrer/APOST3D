@@ -675,7 +675,7 @@ c          end if
       if (ieffao.ne.0) then
 
 !! accumulate eos_analysis time separately (see print_timer calls below). !!
-!! not wired up for ieffao.eq.3 (EOS-U) -- effao3d_u times as EFFAO only. !!
+!! not wired up for ieffao.eq.3 (GEOS) -- effao3d_u times as EFFAO only. !!
         xeos_cpu=ZERO
         xeos_wall=ZERO
 

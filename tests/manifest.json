@@ -1036,11 +1036,11 @@
       ]
     },
     {
-      "name": "NaBH3--B3LYP-EOSU",
-      "description": "Sodium borohydride, UKS B3LYP — TFVC, EOS-U (paired/unpaired-density EFOs), 2 fragments (soon renamed GEOS)",
+      "name": "NaBH3--B3LYP-GEOS",
+      "description": "Sodium borohydride, UKS B3LYP — TFVC, GEOS (paired/unpaired-density EFOs, formerly EOS-U), 2 fragments",
       "tags": [
         "dft",
-        "eos-u",
+        "geos",
         "effao",
         "tfvc",
         "uks",
@@ -1051,7 +1051,7 @@
       "extra_input_files": [],
       "keywords": [
         "TFVC",
-        "EOS-U",
+        "GEOS",
         "DOFRAGS"
       ],
       "checks": [
@@ -1087,6 +1087,13 @@
           "tol_abs": 0.0002
         },
         {
+          "label": "Fragment 1 paired EFO #6 net occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+([\\d.]+)",
+          "ref": 0.7192,
+          "tol_abs": 0.002
+        },
+        {
           "label": "Fragment 2 paired net occupation",
           "section": "EFFAOs FROM THE PAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
@@ -1099,6 +1106,13 @@
           "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 8.41027,
           "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 paired EFO #5 net occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+([\\d.]+)",
+          "ref": 0.3784,
+          "tol_abs": 0.002
         },
         {
           "label": "Fragment 1 unpaired net occupation",
@@ -1115,6 +1129,13 @@
           "tol_abs": 0.0002
         },
         {
+          "label": "Fragment 1 unpaired EFO #1 net occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+([\\d.]+)",
+          "ref": 0.4067,
+          "tol_abs": 0.002
+        },
+        {
           "label": "Fragment 2 unpaired net occupation",
           "section": "EFFAOs FROM THE UNPAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
@@ -1127,6 +1148,13 @@
           "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.4119,
           "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 unpaired EFO #1 net occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+([\\d.]+)",
+          "ref": 0.3663,
+          "tol_abs": 0.002
         },
         {
           "label": "Fragment 1 oxidation state",

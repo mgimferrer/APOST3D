@@ -1,6 +1,7 @@
 !! *********************************************************************** !!
-!! EOS-U (SOON "GEOS") -- effective atomic/fragment orbitals from the      !!
-!! paired and unpaired densities separately (open-shell systems), then     !!
+!! GEOS ("Generalized Effective Oxidation State", `.inp` keyword GEOS,     !!
+!! formerly EOS-U) -- effective atomic/fragment orbitals from the paired   !!
+!! and unpaired densities separately (open-shell systems), then            !!
 !! electron/oxidation-state assignment across both channels together.      !!
 !!   effao3d_u    -- real-space (3D grid) EFOs from the paired/unpaired    !!
 !!                   densities (Takatsuka's definition), one fragment at   !!
