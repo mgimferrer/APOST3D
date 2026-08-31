@@ -152,7 +152,12 @@
           call diagonalize(igr,igr,pp0,c0,0)
           call to_AO_basis(igr,igr,Sm,c0)
 
-!! keep EFOs above xminocc; pp0's diagonal is already sorted decreasing !!
+!! keep EFOs above xminocc; pp0's diagonal is already sorted decreasing.  !!
+!! imaxo starts at 0 so a channel with no EFO above threshold (e.g. the  !!
+!! unpaired channel on a restricted wavefunction, where Uno is ~0 for    !!
+!! integer NO occupations) correctly ends up with imaxo=0 instead of     !!
+!! carrying over a stale value from the previous fragment/icase.         !!
+          imaxo=0
           ii=1
           do while(pp0(ii,ii).ge.xminocc.and.ii.le.igr)
             imaxo=ii
