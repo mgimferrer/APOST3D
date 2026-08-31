@@ -61,6 +61,7 @@
       allocatable :: S0(:,:),Sm(:,:),Splus(:,:),c0(:,:),pp0(:,:)
       allocatable :: scr(:),s0all(:)
       allocatable :: iup0(:,:),up0net(:,:,:),up0gro(:,:,:)
+      allocatable :: xnetpair(:),xtrpnos0(:)
       character(len=30) :: lbl30
 
       icube = iopt(13)
@@ -97,6 +98,7 @@
       ALLOCATE(scr(itotps))
       ALLOCATE(S0(igr,igr),s0all(igr),Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(c0(igr,igr),pp0(igr,igr))
+      ALLOCATE(xnetpair(icufr),xtrpnos0(icufr))
       if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr),up0gro(2,igr,icufr))
 
 !! icase=1: paired density (total-unpaired). icase=2: unpaired density. !!
@@ -139,6 +141,19 @@
 !$OMP END PARALLEL DO
           call build_Smp(igr,S0,Sm,Splus,0)
 
+!! Tr(Pno*S0) is trace-linear in the Lowdin transform below, so it must  !!
+!! equal this fragment's paired+unpaired net occupation sum regardless  !!
+!! of the later diagonalization -- computed once per fragment (S0/Pno   !!
+!! don't depend on icase), checked once both channels are in below.     !!
+          if(icase.eq.1) then
+            xtrpnos0(iicenter)=ZERO
+            do ii=1,igr
+              do jj=1,igr
+                xtrpnos0(iicenter)=xtrpnos0(iicenter)+Pno(ii,jj)*S0(ii,jj)
+              end do
+            end do
+          end if
+
 !! select the paired or unpaired AO density for this icase !!
           do ii=1,igr
             do jj=1,igr
@@ -169,6 +184,15 @@
           write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
           write(*,60) (pp0(mu,mu),mu=1,imaxo)
           write(*,*) " "
+
+!! sanity check: paired+unpaired net occupation must equal Tr(Pno*S0)   !!
+          if(icase.eq.1) xnetpair(iicenter)=xmaxo
+          if(icase.eq.2) then
+            lbl30="Sum check vs Tr(Pno.S0)"
+            write(*,'(2x,a30,i4,2f11.5)') lbl30,iicenter,
+     +        xnetpair(iicenter)+xmaxo,xtrpnos0(iicenter)
+            write(*,*) " "
+          end if
 
 !! gross occupation of each EFO via sat, scaled by its net occupation.  !!
 !! parallel over ii: independent per EFO, writes only s0all(ii); xx0 is !!
@@ -226,6 +250,7 @@
       DEALLOCATE(S0,Splus,Sm)
       DEALLOCATE(scr,c0,pp0,s0all)
       DEALLOCATE(Pno,Uno)
+      DEALLOCATE(xnetpair,xtrpnos0)
       DEALLOCATE(iup0,up0net,up0gro)
 
 60    FORMAT("  OCCUP.",8f9.4)
@@ -283,9 +308,6 @@
 !! sort each channel's pooled EFOs by decreasing occupation, keeping    !!
 !! iorbat aligned so each slot still knows its source fragment.         !!
       do icase=1,2
-        write(*,*) " "
-        write(*,*) "icase: ",icase
-
         ALLOCATE(tmp_occup(lorb(icase)))
         ALLOCATE(tmp_iorbat(lorb(icase)))
         do ii=1,lorb(icase)
@@ -312,11 +334,6 @@
           iorbat(ii,icase)=tmp_iorbat(ii)
         end do
         DEALLOCATE(tmp_occup,tmp_iorbat)
-
-        write(*,*) "occ,frg"
-        do ii=1,lorb(icase)
-          write(*,*) occup(ii,icase),iorbat(ii,icase)
-        end do
       end do
 
 !! ideal-occupation matrix, sized to the larger of the two EFO counts   !!
@@ -334,7 +351,6 @@
 !! rest as electron pairs                                               !!
       nnn=nalf+nb
       nunp=nalf-nb
-      write(*,*) "Number of for sure unpaired electrons: ",nunp
       if(nunp.ne.0) then
         do ii=1,nunp
           elec_id(ii,2)=ONE
@@ -343,13 +359,12 @@
       end if
 
       npair=nnn/2
-      write(*,*) "NUMBER OF EL. PAIRS TO ASSIGN: ",npair
-
       do ii=1,npair
         elec_id(ii,1)=TWO
         nnn=nnn-2
       end do
-      write(*,*) "END NUMBER OF EL. PAIRS TO ASSIGN: ",nnn/2
+      write(*,'(2x,a,i0,a,i0,a)') 'Ideal assignment: ',nunp,
+     +  ' forced-unpaired electron(s), ',npair,' electron pair(s)'
 
 !! RMSD between the actual pooled occupations and this ideal assignment !!
       xrmsd=ZERO
@@ -362,11 +377,8 @@
       end do
       xrmsd=xrmsd/REAL(nalf+nb)
       xrmsd=dsqrt(xrmsd)
-      write(*,*) "INITIAL RMSD: ",xrmsd
-
-      write(*,*) " "
-      write(*,*) " Number of pairs: ",npair
-      write(*,*) " "
+      write(*,'(2x,a,f8.5)') 'Initial RMSD:',xrmsd
+      write(*,*)
 
 !! iteratively move the least-occupied paired electron pair to the two  !!
 !! most-occupied unpaired slots, keeping the move only while it lowers  !!
@@ -374,12 +386,9 @@
       ALLOCATE(tmp_elec_id(ilorb,2))
       tmp_elec_id=elec_id
       do while(npair.gt.0)
-        write(*,*) " Unoccupying paired EFOs with occ value of: ",elec2(npair,1)
         tmp_elec_id(npair,1)=ZERO
-
         tmp_elec_id(nunp+1,2)=ONE
         tmp_elec_id(nunp+2,2)=ONE
-        write(*,*) " Occupying unpaired EFOs with occ value of: ",elec2(nunp+1,2),elec2(nunp+2,2)
 
         xrmsd2=ZERO
         do icase=1,2
@@ -391,15 +400,18 @@
         end do
         xrmsd2=xrmsd2/REAL(nalf+nb)
         xrmsd2=dsqrt(xrmsd2)
-        write(*,*) " New RMSD: ",xrmsd2
-        write(*,*) " "
 
+        write(*,'(2x,a,i0,a,f7.4,a,i0,a,f7.4,a,i0,a,f7.4,a)')
+     +    'Trying: paired EFO (frag ',iorbat(npair,1),', occ ',elec2(npair,1),
+     +    ') -> unpaired (frag ',iorbat(nunp+1,2),', occ ',elec2(nunp+1,2),
+     +    ' / frag ',iorbat(nunp+2,2),', occ ',elec2(nunp+2,2),')'
         if((xrmsd2-xrmsd).lt.ZERO) then
+          write(*,'(4x,a,f8.5,a)') 'RMSD = ',xrmsd2,' -- accepted'
           elec_id=tmp_elec_id
           xrmsd=xrmsd2
         else
-          write(*,*) " Lowest RMSD found "
-          write(*,*) " "
+          write(*,'(4x,a,f8.5,a,f8.5)') 'RMSD = ',xrmsd2,
+     +      ' -- rejected, keeping RMSD = ',xrmsd
           go to 69
         end if
 
@@ -407,6 +419,7 @@
         npair=npair-1
       end do
 69    continue
+      write(*,*)
       DEALLOCATE(tmp_elec_id)
 
 !! electrons assigned to each fragment, split by paired/unpaired for    !!
@@ -420,17 +433,16 @@
             ifrg=iorbat(ii,icase)
             elec(ifrg)=elec(ifrg)+elec_id(ii,icase)
             elec_frg_count(ifrg,icase)=elec_frg_count(ifrg,icase)+elec_id(ii,icase)
-            write(*,*) "elec_id,ifrg: ",elec_id(ii,icase),ifrg
           end if
         end do
       end do
-      write(*,*) " "
-      write(*,*) " Printing electrons assigned separately, for check"
-      write(*,*) " "
+
+      write(*,'(2x,a)') 'Electrons assigned per fragment (paired / unpaired):'
       do ifrg=1,icufr
-        write(*,*) "Fragment, paired e, unpaired e: ",ifrg,elec_frg_count(ifrg,1),elec_frg_count(ifrg,2)
+        write(*,'(4x,a,i0,a,f5.2,a,f5.2)') 'Fragment ',ifrg,': ',
+     +    elec_frg_count(ifrg,1),' / ',elec_frg_count(ifrg,2)
       end do
-      write(*,*) " "
+      write(*,*)
 
       do icase=1,2
         if(icase.eq.1) then
@@ -488,7 +500,6 @@
           end if
         end do
         write(*,*) " ---------------------------------------- "
-        write(*,*) "xlast, xfirst: ",xlast,xfirst
 
 !! reliability index: paired occupations run 0-2 instead of 0-1, so the !!
 !! gap is halved before the same +0.5 scaling used for unpaired/EOS.    !!
