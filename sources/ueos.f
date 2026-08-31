@@ -553,6 +553,7 @@
         if(icase.eq.2) confi=100.0*dmin1(1.0d0,xlast-xfirst+0.5d0)
         write(*,'(3x,a24,x,f7.3)') "RELIABILITY INDEX R(%) =",confi
         if(icase.eq.1) then
+          write(*,*)
           write(*,'(2x,a)') 'INFO: (paired) occ. values halved in R(%) calculation'
           confi0=confi
         end if
