@@ -69,6 +69,10 @@
       ALLOCATE(rho_sph(nrad))
       ALLOCATE(fxA(isval))
 
+!! parallelization: not done. The per-atom work (O(nrad*nang) spherize + !!
+!! O(isval*nrad) transform) is a plausible future OMP target if this     !!
+!! ever shows up as hot, but SCATT-FACT has zero test coverage and is    !!
+!! deprioritized, so not pursued now.                                    !!
       do icenter=1,nat
 
         rho_at=ZERO

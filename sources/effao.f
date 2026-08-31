@@ -1443,6 +1443,10 @@ c end loop over atoms
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
       ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
 
+!! per-atom loop kept serial on purpose: icuat/nat0 can be small on a    !!
+!! large system (or a DOATOMS-restricted handful) -- the O(igr^2)/O(igr^3)!!
+!! work inside each iteration is threaded instead, same lesson already   !!
+!! applied to ueffao3d_frag's per-fragment loop above.                   !!
       do iicenter=1,nat0
         icenter=iatlist(iicenter)
 
