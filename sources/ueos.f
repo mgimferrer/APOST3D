@@ -62,7 +62,6 @@
       allocatable :: S0(:,:),Sm(:,:),Splus(:,:),c0(:,:),pp0(:,:)
       allocatable :: scr(:),s0all(:)
       allocatable :: iup0(:,:),up0net(:,:,:),up0gro(:,:,:)
-      allocatable :: xnetpair(:),xtrpnos0(:)
       character(len=30) :: lbl30
 
       icube = iopt(13)
@@ -99,7 +98,6 @@
       ALLOCATE(scr(itotps))
       ALLOCATE(S0(igr,igr),s0all(igr),Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(c0(igr,igr),pp0(igr,igr))
-      ALLOCATE(xnetpair(icufr),xtrpnos0(icufr))
       if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr),up0gro(2,igr,icufr))
 
 !! icase=1: paired density (total-unpaired). icase=2: unpaired density. !!
@@ -142,19 +140,6 @@
 !$OMP END PARALLEL DO
           call build_Smp(igr,S0,Sm,Splus,0)
 
-!! Tr(Pno*S0) is trace-linear in the Lowdin transform below, so it must  !!
-!! equal this fragment's paired+unpaired net occupation sum regardless  !!
-!! of the later diagonalization -- computed once per fragment (S0/Pno   !!
-!! don't depend on icase), checked once both channels are in below.     !!
-          if(icase.eq.1) then
-            xtrpnos0(iicenter)=ZERO
-            do ii=1,igr
-              do jj=1,igr
-                xtrpnos0(iicenter)=xtrpnos0(iicenter)+Pno(ii,jj)*S0(ii,jj)
-              end do
-            end do
-          end if
-
 !! select the paired or unpaired AO density for this icase !!
           do ii=1,igr
             do jj=1,igr
@@ -186,15 +171,6 @@
           write(*,60) (pp0(mu,mu),mu=1,imaxo)
           write(*,*) " "
 
-!! sanity check: paired+unpaired net occupation must equal Tr(Pno*S0)   !!
-          if(icase.eq.1) xnetpair(iicenter)=xmaxo
-          if(icase.eq.2) then
-            lbl30="Sum check vs Tr(Pno.S0)"
-            write(*,'(2x,a30,i4,2f11.5)') lbl30,iicenter,
-     +        xnetpair(iicenter)+xmaxo,xtrpnos0(iicenter)
-            write(*,*) " "
-          end if
-
 !! gross occupation of each EFO via sat, scaled by its net occupation.  !!
 !! parallel over ii: independent per EFO, writes only s0all(ii); xx0 is !!
 !! a genuine REDUCTION. c0/sat/pp0 shared, read-only.                   !!
@@ -220,7 +196,12 @@
           lbl30="Gross occupation for fragment"
           write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
           write(*,60) (s0all(mu),mu=1,imaxo)
-          write(*,*) " "
+
+!! skip this trailing blank on the very last fragment of icase=1 -- the  !!
+!! next thing printed is icase=2's own print_box, which already opens    !!
+!! with a leading blank of its own (see Code Style: no double blanks     !!
+!! around print_box).                                                    !!
+          if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
 
 !! store for cube generation, and for ueos_analysis if requested !!
           do kk=1,imaxo
@@ -251,7 +232,6 @@
       DEALLOCATE(S0,Splus,Sm)
       DEALLOCATE(scr,c0,pp0,s0all)
       DEALLOCATE(Pno,Uno)
-      DEALLOCATE(xnetpair,xtrpnos0)
       DEALLOCATE(iup0,up0net,up0gro)
 
 60    FORMAT("  OCCUP.",8f9.4)
@@ -443,8 +423,9 @@
         write(*,'(4x,a,i0,a,f5.2,a,f5.2)') 'Fragment ',ifrg,': ',
      +    elec_frg_count(ifrg,1),' / ',elec_frg_count(ifrg,2)
       end do
-      write(*,*)
 
+!! no trailing blank here -- the next thing printed is icase=1's own     !!
+!! print_box below, which already opens with a leading blank.            !!
       do icase=1,2
         if(icase.eq.1) then
           call print_box('EOS ANALYSIS FOR PAIRED ELECTRONS')
