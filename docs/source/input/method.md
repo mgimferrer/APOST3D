@@ -21,7 +21,7 @@
 | UEFFAO | Spin-resolved effective Atomic/Fragment Orbitals from the alpha and beta densities |
 | EFFAO-U | Effective Atomic/Fragment Orbitals from the paired and unpaired densities |
 | EOS | Effective Oxidation States (EOS) analysis |
-| EOS-U | Effective Oxidation States analysis from the paired and unpaired density functions (EOS-U) |
+| GEOS | Generalized Effective Oxidation States analysis, from the paired and unpaired density functions (GEOS) |
 | OS-CENTROID | Oxidation states from centroids of localized orbitals |
 | OSLO | Oxidation States Localized Orbitals (OSLO). Requires an additional `# OSLO` block section — and `TFVC` here in `# METHOD`, always, see [Block section # OSLO](oslo.md) |
 | SPIN | Local Spin Analysis (LSA) |

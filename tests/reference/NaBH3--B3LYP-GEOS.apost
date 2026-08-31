@@ -113,8 +113,7 @@
   --------
   Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
   Overlap population analysis          : OPOP
-  Oxidation states analysis            : EOS (Effective Oxidation States, fragment-based)
-  Oxidation states analysis            : EOS-U (open-shell, unpaired-density-based)
+  Oxidation states analysis            : GEOS (open-shell, unpaired-density-based)
   Fragment analysis                    : 2 fragments (see below)
 
   # FRAGMENTS  (2 fragments)
@@ -159,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.54 s
-  TIMING WALL :: atomic definition                                 0.54 s
+  TIMING CPU  :: atomic definition                                 0.53 s
+  TIMING WALL :: atomic definition                                 0.53 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -483,8 +482,8 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 0.69 s
-  TIMING WALL :: EFFAO computation                                 0.70 s
+  TIMING CPU  :: EFFAO computation                                 0.68 s
+  TIMING WALL :: EFFAO computation                                 0.68 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

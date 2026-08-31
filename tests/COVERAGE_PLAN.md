@@ -80,7 +80,7 @@ listed for completeness, not worth a separate test.
 | **MULLI/LOWDIN pop.** (`main.f` top-level `tomull`/`tolow`/`tonao`/`tolow2`) | — | — | — | — | ① | ① | ≈dup of LOWDIN | ① | ② |
 | **ENPART** (`enpart.f`) | ✅ done (H2O, C2H6) | ① | ① | ② | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a |
 | **EOS/EFFAO** (`effao.f`) | ✅ done (FeCO2, alpha-only) | ① | ① | ② | ① | ① | ≈dup of LOWDIN (`main.f:1243`, `imulli.gt.1` branch) | ① — genuinely distinct, `ueffaolow_frag` special-cases `imulli.eq.4` (`effao.f:476`) | ②, likely ≈dup of LOWDIN inside `ueffaolow_frag` (only `imulli.eq.4` is special-cased there) — **worth confirming, not assuming** |
-| **EOS-U** (`ueos.f`, open-shell paired/unpaired) | ① (untested; FeCO2 skips beta) | ② | ② | ② | ➖ untested if Hilbert-space even reachable for EOS-U — check `main.f` `ieffao.eq.3` dispatch before assuming | | | | |
+| **GEOS** (`ueos.f`, open-shell paired/unpaired, formerly EOS-U) | ✅ done (NaBH3--B3LYP-GEOS, TFVC/3D-space) | ② | ② | ② | ➖ untested if Hilbert-space even reachable for GEOS — check `main.f` `ieffao.eq.3` dispatch before assuming | | | | |
 | **OSLO** (`oslo.f`) | ✅ done (CH3F, FeO4-2, default/real-space) | ② | ② | ② | ① (`# OSLO / MULLIKEN`) | ① (`# OSLO / LOWDIN`) | ≈dup of LOWDIN (`main.f:1538`, `ilow2.eq.2.or.ilow2.eq.3`) | ① (`# OSLO / NAO-BASIS`) | ➖ not an OSLO sub-option (only MULLIKEN/LOWDIN/LOWDIN-DAVIDSON/NAO-BASIS exist under `# OSLO`) |
 | **LOBA** (`loba.f`) | ① (untested) | ② | ② | ② | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a |
 | **SPIN** (`corr.f`) | ✅ done (H2O) | ② | ② | ② | ② | ② | ≈dup | ② | ② |
@@ -111,9 +111,10 @@ listed for completeness, not worth a separate test.
    `# OSLO` line).
 4. **LOBA** — currently zero tests at all (`LOBA` isn't in any `manifest.json`
    entry's keywords). Needs `DOFRAGS` + a real-space scheme; TFVC first.
-5. **EOS-U** — open-shell paired/unpaired EOS, zero tests currently. Check
-   `main.f`'s `ieffao.eq.3` dispatch first to confirm which AIM schemes are
-   actually reachable before writing the input.
+5. **GEOS** (formerly EOS-U) — TFVC/3D-space now covered
+   (`NaBH3--B3LYP-GEOS`); Hilbert-space combos (Mulliken/Löwdin) still
+   untested. Check `main.f`'s `ieffao.eq.3` dispatch first to confirm
+   which AIM schemes are actually reachable before writing that input.
 6. Everything tagged "①  (untested)" further down the matrix — POLAR,
    SCATT-FACT, TOPOLOGY, EDAIQA — lower urgency since they're not the
    most-used features, but currently at zero coverage each.
@@ -130,8 +131,8 @@ interface (`QCHEM`/`MOKIT`/`ORCA`/`pySCF`) to be meaningful.
   numerically different EOS results from plain Löwdin, or does the transform
   end up equivalent for the test systems on hand? Only a real run will show
   this — don't assume from the code alone.
-- `EOS-U`'s Hilbert-space reachability (`ieffao.eq.3` dispatch) — read
-  `main.f` around that branch before writing an EOS-U + Mulliken/Löwdin input,
+- `GEOS`'s Hilbert-space reachability (`ieffao.eq.3` dispatch) — read
+  `main.f` around that branch before writing a GEOS + Mulliken/Löwdin input,
   it may not be wired up at all.
 - `EDAIQA`/`POLAR`/`SCATT-FACT`/`TOPOLOGY`'s Hilbert-space compatibility
   wasn't traced in this pass — check for a `main.f` disable-with-warning or

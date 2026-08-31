@@ -135,11 +135,17 @@
         call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 
-!! EOS from the paired and unpaired densities !!
-      call readchar("# METHOD","EOS-U",iueos)
-      if(iueos.eq.1) then 
+!! GEOS: EOS from the paired and unpaired densities !!
+      call readchar("# METHOD","GEOS",iueos)
+      if(iueos.eq.1) then
         iopop=1
         ieffao=3
+!! readchar matches by substring, so the "EOS" scan just above also        !!
+!! matched this GEOS line (pre-existing issue, same as EFFAO/EFFAO-U/UEFFAO !!
+!! below -- harmless there since ieffao gets overwritten either way, but   !!
+!! ieos/iueos are separate flags with their own downstream consumers, so   !!
+!! undo that false positive here.                                          !!
+        ieos=0
         call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
 

@@ -36,7 +36,7 @@ can be requested in the same run:
 
 - **EFFAO / UEFFAO / EFFAO-U** — effective atomic and fragment orbitals from
   the total, spin-resolved, or paired/unpaired electron density.
-- **EOS / EOS-U** — effective oxidation states, from the regular or the
+- **EOS / GEOS** — effective oxidation states, from the regular or the
   paired/unpaired density functions.
 - **OSLO / OS-CENTROID** — oxidation states from localized orbitals, or from
   the centroids of localized orbitals.

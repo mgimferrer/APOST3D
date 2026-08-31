@@ -285,7 +285,7 @@
      +  'EOS (Effective Oxidation States, fragment-based)'
       if(iueos.eq.1) write(*,'(2x,a,1x,a)')
      +  'Oxidation states analysis            :',
-     +  'EOS-U (open-shell, unpaired-density-based)'
+     +  'GEOS (open-shell, unpaired-density-based)'
       if(ieoscent.eq.1) write(*,'(2x,a,1x,a)')
      +  'Oxidation states analysis            :','OS-CENTROID'
       if(ioslo.eq.1) write(*,'(2x,a,1x,a)')
