@@ -3,14 +3,26 @@
     {
       "name": "H2O-T-B3LYP",
       "description": "Water molecule, RKS B3LYP / aug-cc-pVTZ — TFVC populations, ENPART (DFT), local spin",
-      "tags": ["dft", "enpart", "spin", "tfvc", "rks"],
+      "tags": [
+        "dft",
+        "enpart",
+        "spin",
+        "tfvc",
+        "rks"
+      ],
       "timeout": 600,
       "extra_input_files": [],
       "keywords": [
         "TFVC",
         "SPIN",
-        "ENPART", "ENPART/B3LYP", "ENPART/THREBOD", "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL", "GRID/ANGULAR", "GRID/PHB1", "GRID/PHB2"
+        "ENPART",
+        "ENPART/B3LYP",
+        "ENPART/THREBOD",
+        "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL",
+        "GRID/ANGULAR",
+        "GRID/PHB1",
+        "GRID/PHB2"
       ],
       "checks": [
         {
@@ -22,76 +34,87 @@
           "label": "Total KS-DFT energy (au)",
           "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -76.2241116,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
           "ref": -8e-07,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.551876,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.275938,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "O spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.235156,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "H spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.382422,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "O-H TFVC bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+O\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.707736,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "O IQA self-energy (au)",
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -75.021251,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "O-H IQA interaction (au)",
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.237810,
-          "tol_abs": 2e-5
+          "ref": -0.23781,
+          "tol_abs": 2e-05
         }
       ]
     },
-
     {
       "name": "C2H6-B3LYP",
       "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT+IQA) with THREBOD/MOD-GRIDTWOEL on an 8-atom, 160-basis-function system. ~85s single-threaded; part of the default 'make test' run like every other case (use NTHREADS=n to speed it up).",
-      "tags": ["dft", "enpart", "tfvc", "rks", "threbod"],
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "rks",
+        "threbod"
+      ],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [
         "TFVC",
-        "ENPART", "ENPART/B3LYP", "ENPART/THREBOD", "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL", "GRID/ANGULAR", "GRID/PHB1", "GRID/PHB2"
+        "ENPART",
+        "ENPART/B3LYP",
+        "ENPART/THREBOD",
+        "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL",
+        "GRID/ANGULAR",
+        "GRID/PHB1",
+        "GRID/PHB2"
       ],
       "checks": [
         {
@@ -103,72 +126,80 @@
           "label": "Total KS-DFT energy (au)",
           "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -79.8655614,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 0.0000520,
-          "tol_abs": 2e-6
+          "ref": 5.2e-05,
+          "tol_abs": 2e-06
         },
         {
           "label": "C TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.287036,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.095671,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "C-C TFVC bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+C\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.949832,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "C total valence",
           "section": "TOTAL VALENCES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 4.021652,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Electron-nuclei energy (au)",
           "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -268.6482977,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Kinetic energy (au)",
           "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 79.2827782,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "KS-DFT electron-electron energy (au)",
           "pattern": "KS-DFT electron-electron energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 67.2363766,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         }
       ]
     },
-
     {
       "name": "CH3F",
       "description": "Fluoromethane, RKS DFT — TFVC populations, fragment OSLO analysis",
-      "tags": ["dft", "oslo", "tfvc", "rks", "fragments"],
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "rks",
+        "fragments"
+      ],
       "timeout": 600,
       "extra_input_files": [],
       "keywords": [
         "TFVC",
-        "OSLO", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION", "OSLO/PRINT-NON-ORTHO",
+        "OSLO",
+        "OSLO/FOLI-TOLERANCE",
+        "OSLO/BRANCH-ITERATION",
+        "OSLO/PRINT-NON-ORTHO",
         "DOFRAGS"
       ],
       "checks": [
@@ -182,92 +213,99 @@
           "section": "ELECTRON POPULATIONS",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.126631,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "F TFVC electron population",
           "section": "ELECTRON POPULATIONS",
           "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
           "ref": 9.721908,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "C TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.873369,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "F TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.721908,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.050605,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "C-F bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+C\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.812947,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "C-H bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+C\\s+\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.915475,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "C total valence",
           "section": "TOTAL VALENCES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 3.559854,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "OSLO 1 FOLI value",
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00002,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "OSLO 9 FOLI value (most delocalized)",
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "1\\.06204\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.35476,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "F fragment OSLO oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -1.00,
+          "ref": -1.0,
           "tol_abs": 0.05
         },
         {
           "label": "CH3 fragment OSLO oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 1.00,
+          "ref": 1.0,
           "tol_abs": 0.05
         }
       ]
     },
-
     {
       "name": "FeCO2-PBEPBE",
       "description": "Iron dicarbonyl cation, UKS PBE/PBE — TFVC, fragment EOS analysis (open-shell)",
-      "tags": ["dft", "eos", "effao", "tfvc", "uks", "fragments", "openshell"],
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "tfvc",
+        "uks",
+        "fragments",
+        "openshell"
+      ],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [
@@ -286,49 +324,49 @@
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.443242,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "C TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+C\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.412799,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "4\\s+O\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.134560,
-          "tol_abs": 2e-5
+          "ref": -0.13456,
+          "tol_abs": 2e-05
         },
         {
           "label": "Fe fragment EFO net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 12.11696,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "Fe fragment EFO gross occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 12.27814,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "C fragment EFO net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.77991,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "C fragment EFO gross occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.85638,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "Fe frag 1 EFO 11 net occupation",
@@ -336,7 +374,7 @@
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 11,
           "ref": 0.8156,
-          "tol_abs": 2e-3
+          "tol_abs": 0.002
         },
         {
           "label": "Fe frag 1 EFO 11 gross occupation",
@@ -344,7 +382,7 @@
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 11,
           "ref": 0.8381,
-          "tol_abs": 2e-3
+          "tol_abs": 0.002
         },
         {
           "label": "C frag 2 EFO 7 net occupation",
@@ -352,28 +390,28 @@
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 7,
           "ref": 0.7473,
-          "tol_abs": 2e-3
+          "tol_abs": 0.002
         },
         {
           "label": "C frag 2 EFO 7 gross occupation",
           "section": "Gross occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\r?\\n",
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 7,
-          "ref": 0.7870,
-          "tol_abs": 2e-3
+          "ref": 0.787,
+          "tol_abs": 0.002
         },
         {
           "label": "Fe EOS alpha electrons (frag 1)",
           "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 12.00,
+          "ref": 12.0,
           "tol_abs": 0.05
         },
         {
           "label": "Fe fragment oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 2.00,
+          "ref": 2.0,
           "tol_abs": 0.05
         },
         {
@@ -384,16 +422,26 @@
         }
       ]
     },
-
     {
       "name": "FeO4-2",
       "description": "Ferrate(VI) dianion, UKS — TFVC, QCHEM interface, fragment OSLO + EOS",
-      "tags": ["dft", "eos", "oslo", "tfvc", "uks", "fragments", "openshell", "qchem"],
+      "tags": [
+        "dft",
+        "eos",
+        "oslo",
+        "tfvc",
+        "uks",
+        "fragments",
+        "openshell",
+        "qchem"
+      ],
       "timeout": 600,
       "extra_input_files": [],
       "keywords": [
         "TFVC",
-        "OSLO", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION",
+        "OSLO",
+        "OSLO/FOLI-TOLERANCE",
+        "OSLO/BRANCH-ITERATION",
         "DOFRAGS",
         "QCHEM"
       ],
@@ -407,78 +455,86 @@
           "label": "Fe TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 1.611910,
-          "tol_abs": 2e-5
+          "ref": 1.61191,
+          "tol_abs": 2e-05
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.903168,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "O TFVC electron population",
           "section": "ELECTRON POPULATIONS",
           "pattern": "2\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": 8.903168,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Fe-O bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s*Fe\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.549239,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "cis O-O bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "2\\s+O\\s+\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.268367,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Fe total valence",
           "section": "TOTAL VALENCES",
           "pattern": "1\\s*Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.196322,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Fe OSLO oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 6.00,
+          "ref": 6.0,
           "tol_abs": 0.05
         },
         {
           "label": "O OSLO oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -2.00,
+          "ref": -2.0,
           "tol_abs": 0.05
         },
         {
           "label": "OSLO 1 FOLI value",
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 1.00010,
-          "tol_abs": 2e-4
+          "ref": 1.0001,
+          "tol_abs": 0.0002
         },
         {
           "label": "OSLO 5 FOLI value (fully localized)",
           "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value\\s+:\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 1.00000,
-          "tol_abs": 2e-4
+          "ref": 1.0,
+          "tol_abs": 0.0002
         }
       ]
     },
     {
       "name": "H2O-Dimer-RHF",
       "description": "Water dimer, RHF — ENPART (HF) with THREBOD 10/MOD-GRIDTWOEL, DOFRAGS. THREBOD is tight enough to skip 6 atom pairs into the multipolar expansion path (enpart.f's multipolar), the only active-test coverage for it.",
-      "tags": ["hf", "enpart", "tfvc", "rhf", "threbod", "multipolar", "fragments"],
+      "tags": [
+        "hf",
+        "enpart",
+        "tfvc",
+        "rhf",
+        "threbod",
+        "multipolar",
+        "fragments"
+      ],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [
@@ -509,60 +565,68 @@
           "label": "Electron-nuclei energy (au)",
           "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -434.8233244,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Kinetic energy (au)",
           "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 151.9545478,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Interpolated HF exchange energy (au)",
           "pattern": "Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": -17.9479838,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy (au)",
           "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -152.0623834,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -0.0000151,
-          "tol_abs": 2e-6
+          "ref": -1.51e-05,
+          "tol_abs": 2e-06
         },
         {
           "label": "O TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -1.224594,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "H TFVC atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.621081,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "O-H fuzzy bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1\\s+O\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.621736,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         }
       ]
     },
     {
       "name": "FeCN5NO3--UBLYP",
       "description": "Iron pentacyanonitrosylferrate dianion, UKS BLYP — LOWDIN (Hilbert-space AIM), EFFAO, EOS, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for LOWDIN population/EFFAO/EOS on an open-shell, many-fragment system. Cube generation (# CUBE) verified separately, one-time, against reference .cube files — not part of this active test (see REFERENCE-OUTPUTS/compiler-testset).",
-      "tags": ["dft", "lowdin", "effao", "eos", "uks", "fragments", "openshell"],
+      "tags": [
+        "dft",
+        "lowdin",
+        "effao",
+        "eos",
+        "uks",
+        "fragments",
+        "openshell"
+      ],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [
@@ -582,42 +646,42 @@
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1 Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.516733,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Fe Lowdin spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "1 Fe\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.286012,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Fe-C1 fuzzy bond order",
           "section": "BOND ORDER MATRIX",
           "pattern": "1 Fe\\s+\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.873759,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Fe fragment EFO alpha net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 13.40094,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "Fe fragment EFO beta net occupation",
           "section": "EFFAOs FROM THE BETA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 13.11495,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "CN ligand fragment EFO alpha net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.74761,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "EOS alpha reliability index R(%)",
@@ -644,14 +708,14 @@
           "label": "Fe fragment oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 2.00,
+          "ref": 2.0,
           "tol_abs": 0.05
         },
         {
           "label": "NO ligand fragment oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "7\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.00,
+          "ref": 0.0,
           "tol_abs": 0.05
         }
       ]
@@ -659,7 +723,14 @@
     {
       "name": "NaBH3--UHF",
       "description": "Sodium borohydride anion, UHF — MULLI (Mulliken AIM), PCA, EOS together, DOFRAGS with 2 fragments. Combining PCA and EOS in one run used to fail to complete in the pre-migration codebase (reference split into two separate outputs, .apost for EOS-only and .apostPCA for PCA-only); this combined run is verified to match both split references exactly, confirming the coupling is fixed. Also first active-test coverage for pca_analysis.",
-      "tags": ["hf", "uhf", "mulliken", "pca", "eos", "fragments"],
+      "tags": [
+        "hf",
+        "uhf",
+        "mulliken",
+        "pca",
+        "eos",
+        "fragments"
+      ],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [
@@ -679,56 +750,56 @@
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.344363,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "B Mulliken spin population",
           "section": "SPIN POPULATIONS",
           "pattern": "2\\s+B\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.941932,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "PCA covariance matrix Na diagonal",
           "section": "COVARIANCE MATRIX",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.631461,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "PCA eigenvector 1, Na component",
           "section": "PCA EIGENVECTORS",
           "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.999883,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "PCA eigenvalue 1",
           "section": "Eigenvalues:",
           "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 5.6323,
-          "tol_abs": 2e-3
+          "tol_abs": 0.002
         },
         {
           "label": "PC 1 sum check",
           "section": "PCA SUM CHECKS",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 63.895144,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "EOS alpha net occupation fragment 1",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.16096,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "EOS beta net occupation fragment 1",
           "section": "EFFAOs FROM THE BETA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 6.00909,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "EOS alpha reliability index R(%)",
@@ -741,21 +812,21 @@
           "label": "EOS beta reliability index R(%)",
           "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
-          "ref": 100.000,
+          "ref": 100.0,
           "tol_abs": 0.02
         },
         {
           "label": "Fragment 1 oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.00,
+          "ref": 0.0,
           "tol_abs": 0.05
         },
         {
           "label": "Fragment 2 oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -1.00,
+          "ref": -1.0,
           "tol_abs": 0.05
         }
       ]
@@ -763,12 +834,24 @@
     {
       "name": "FeCN5NO3--UBLYP-t2",
       "description": "Iron pentacyanonitrosylferrate dianion, UKS BLYP — TFVC (mandatory for OSLO's grid-dependent Smat) + OSLO with LOWDIN as the # OSLO fragment-population scheme, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for uwf_iterative_oslo (unrestricted OSLO) -- CH3F/FeO4-2 are both closed-shell despite earlier notes, so this is genuinely the first open-shell OSLO run in the suite. Reference .fchk/.inp/.apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; reference values here are a fresh run against the current codebase (the supplied .apost predates several printing changes, so its raw text doesn't diff cleanly, but the physics -- oxidation states, natural-orbital occupations -- matches it exactly).",
-      "tags": ["dft", "oslo", "lowdin", "tfvc", "uks", "fragments", "openshell"],
+      "tags": [
+        "dft",
+        "oslo",
+        "lowdin",
+        "tfvc",
+        "uks",
+        "fragments",
+        "openshell"
+      ],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [
         "TFVC",
-        "OSLO", "OSLO/LOWDIN", "OSLO/FOLI-TOLERANCE", "OSLO/BRANCH-ITERATION", "OSLO/PRINT-NON-ORTHO",
+        "OSLO",
+        "OSLO/LOWDIN",
+        "OSLO/FOLI-TOLERANCE",
+        "OSLO/BRANCH-ITERATION",
+        "OSLO/PRINT-NON-ORTHO",
         "DOFRAGS"
       ],
       "checks": [
@@ -781,57 +864,57 @@
           "label": "Fe fragment oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 2.00,
+          "ref": 2.0,
           "tol_abs": 0.05
         },
         {
           "label": "CN ligand fragment oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -1.00,
+          "ref": -1.0,
           "tol_abs": 0.05
         },
         {
           "label": "NO3 fragment oxidation state",
           "section": "FRAGMENT OXIDATION STATES",
           "pattern": "7\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.00,
+          "ref": 0.0,
           "tol_abs": 0.05
         },
         {
           "label": "SCF/DFT energy (au)",
           "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -1857.1187471128,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "OSLO 1 alpha FOLI value",
           "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00035,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "OSLO 6 alpha FOLI value",
           "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
           "match_index": 2,
-          "ref": 1.00020,
-          "tol_abs": 2e-4
+          "ref": 1.0002,
+          "tol_abs": 0.0002
         },
         {
           "label": "OSLO 1 alpha fragment 1 population",
           "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
           "pattern": "Frg\\. Pop\\.\\s+1:\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.99977,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "OSLO 1 beta FOLI value",
           "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
           "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00035,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "OSLO 6 beta FOLI value",
@@ -839,26 +922,42 @@
           "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": 1.00019,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         },
         {
           "label": "OSLO 1 beta fragment 1 population",
           "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
           "pattern": "Frg\\. Pop\\.\\s+1:\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.99977,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
         }
       ]
     },
     {
       "name": "LiH-35-CAS22",
       "description": "LiH, CASSCF(2,2)/def2-tzvp -- TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via # DM PYSCF (DM 2 also auto-enables SPIN, read_input.f). First active-test coverage for ENPART+CASSCF, # DM PYSCF, and corr.f's spincorr correlated-WF local-spin branch -- all previously at zero. Reference .fchk/.dm1/.dm2/.inp and the old-codebase .apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; this fresh run matches that old .apost exactly (every printed IQA energy term, to the last digit), so reference values here are taken straight from it.",
-      "tags": ["hf", "enpart", "casscf", "dm", "pyscf", "spin", "tfvc"],
+      "tags": [
+        "hf",
+        "enpart",
+        "casscf",
+        "dm",
+        "pyscf",
+        "spin",
+        "tfvc"
+      ],
       "timeout": 300,
-      "extra_input_files": ["LiH-35-CAS22.dm1", "LiH-35-CAS22.dm2"],
+      "extra_input_files": [
+        "LiH-35-CAS22.dm1",
+        "LiH-35-CAS22.dm2"
+      ],
       "keywords": [
-        "TFVC", "ENPART", "ENPART/CASSCF", "ENPART/THREBOD", "ENPART/MOD-GRIDTWOEL",
-        "DM/PYSCF", "SPIN"
+        "TFVC",
+        "ENPART",
+        "ENPART/CASSCF",
+        "ENPART/THREBOD",
+        "ENPART/MOD-GRIDTWOEL",
+        "DM/PYSCF",
+        "SPIN"
       ],
       "checks": [
         {
@@ -870,7 +969,7 @@
           "label": "SCF/DFT energy (au)",
           "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -7.9411447876,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "CAS active electrons",
@@ -889,50 +988,171 @@
           "section": "Occupation numbers",
           "pattern": "\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.54688,
-          "tol_abs": 2e-5
+          "tol_abs": 2e-05
         },
         {
           "label": "Electron-nuclei energy",
           "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -19.0204933,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Kinetic energy",
           "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 7.8890984,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Nuclear repulsion energy",
           "pattern": "Nuclear repulsion energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.4535805,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Post-Hartree-Fock exchange-correlation energy (interpolated)",
           "section": "INTERPOLATED POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS",
           "pattern": "Post-Hartree-Fock exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -2.0829236,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy",
           "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -7.9411448,
-          "tol_abs": 2e-6
+          "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -0.0000000,
-          "tol_abs": 2e-6
+          "ref": -0.0,
+          "tol_abs": 2e-06
         },
         {
           "label": "Effectively unpaired electrons sum check N_D",
           "pattern": "Sum check N_D\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "ref": 1.40184,
-          "tol_abs": 2e-4
+          "tol_abs": 0.0002
+        }
+      ]
+    },
+    {
+      "name": "NaBH3--B3LYP-EOSU",
+      "description": "Sodium borohydride, UKS B3LYP — TFVC, EOS-U (paired/unpaired-density EFOs), 2 fragments (soon renamed GEOS)",
+      "tags": [
+        "dft",
+        "eos-u",
+        "effao",
+        "tfvc",
+        "uks",
+        "fragments",
+        "openshell"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS-U",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "SCF/DFT energy",
+          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -189.1470282,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Number of natural orbitals (NOs)",
+          "pattern": "Number of natural orbitals \\(NOs\\):\\s*(\\d+)",
+          "ref": 19,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Fragment 1 paired net occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 10.6802,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 paired gross occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 10.77144,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 paired net occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 8.32578,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 paired gross occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 8.41027,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 unpaired net occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.46524,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 unpaired gross occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.48539,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 unpaired net occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.39196,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 unpaired gross occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.4119,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Fragment 2 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 80.734,
+          "tol_abs": 0.02
+        },
+        {
+          "label": "Electronic assignment RMSD value",
+          "pattern": "ELECTRONIC ASSIGNMENT RMSD VALUE\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.274,
+          "tol_abs": 0.01
         }
       ]
     }
