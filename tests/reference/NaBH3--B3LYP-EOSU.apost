@@ -132,8 +132,8 @@
 
   Checking NO overlap matrix
 
-  TIMING CPU  :: initialization                                    0.03 s
-  TIMING WALL :: initialization                                    0.04 s
+  TIMING CPU  :: initialization                                    0.05 s
+  TIMING WALL :: initialization                                    0.05 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -159,8 +159,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.53 s
-  TIMING WALL :: atomic definition                                 0.53 s
+  TIMING CPU  :: atomic definition                                 0.54 s
+  TIMING WALL :: atomic definition                                 0.54 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -416,6 +416,8 @@
   Net occupation using >    0.00010
   OCCUP.   0.4067   0.0585
   
+  Sum check vs Tr(Pno.S0)          1   11.14544   11.14544
+  
   Gross occupation for fragment    1    0.48539
   OCCUP.   0.4154   0.0700
   
@@ -425,77 +427,24 @@
   Net occupation using >    0.00010
   OCCUP.   0.3663   0.0233   0.0009   0.0009   0.0001   0.0001   0.0001   0.0001
   
+  Sum check vs Tr(Pno.S0)          2    8.71774    8.71774
+  
   Gross occupation for fragment    2    0.41190
   OCCUP.   0.3774   0.0322   0.0009   0.0009   0.0001   0.0001   0.0001   0.0001
   
   Total number of eff-AO-s for analysis:   27
-  
- icase:            1
- occ,frg
-   2.0000003071138135                2
-   1.9999999501679699                1
-   1.9999566669490025                1
-   1.9992916910613909                1
-   1.9992915017401856                1
-   1.9956040522928822                1
-   1.9948629312431394                2
-   1.9942325293189804                2
-   1.9907244516174589                2
-  0.76451652253665447                1
-  0.42494445576489509                2
-   5.3050779948055410E-003           1
-   5.3027683703981542E-003           1
-   4.0225611453756646E-003           2
-   2.1739130841835143E-003           1
-   7.4442350677476139E-004           2
-   7.3639930046017008E-004           2
-  
- icase:            2
- occ,frg
-  0.41536890446672725                1
-  0.37735957478181398                2
-   7.0021174464100000E-002           1
-   3.2195009115455676E-002           2
-   9.4948070282725001E-004           2
-   9.0821742473374742E-004           2
-   1.2691163900698809E-004           2
-   1.2688294519578097E-004           2
-   1.1756848943627269E-004           2
-   1.1756427194739572E-004           2
- Number of for sure unpaired electrons:            0
- NUMBER OF EL. PAIRS TO ASSIGN:           10
- END NUMBER OF EL. PAIRS TO ASSIGN:            0
- INITIAL RMSD:   0.31844264351709717     
-  
-  Number of pairs:           10
-  
-  Unoccupying paired EFOs with occ value of:   0.76451652253665447     
-  Occupying unpaired EFOs with occ value of:   0.41536890446672725       0.37735957478181398     
-  New RMSD:   0.27392731479834903     
-  
-  Unoccupying paired EFOs with occ value of:    1.9907244516174589     
-  Occupying unpaired EFOs with occ value of:    7.0021174464100000E-002   3.2195009115455676E-002
-  New RMSD:   0.60246115705344028     
-  
-  Lowest RMSD found 
-  
- elec_id,ifrg:    2.0000000000000000                2
- elec_id,ifrg:    2.0000000000000000                1
- elec_id,ifrg:    2.0000000000000000                1
- elec_id,ifrg:    2.0000000000000000                1
- elec_id,ifrg:    2.0000000000000000                1
- elec_id,ifrg:    2.0000000000000000                1
- elec_id,ifrg:    2.0000000000000000                2
- elec_id,ifrg:    2.0000000000000000                2
- elec_id,ifrg:    2.0000000000000000                2
- elec_id,ifrg:    1.0000000000000000                1
- elec_id,ifrg:    1.0000000000000000                2
-  
-  Printing electrons assigned separately, for check
-  
- Fragment, paired e, unpaired e:            1   10.000000000000000        1.0000000000000000     
- Fragment, paired e, unpaired e:            2   8.0000000000000000        1.0000000000000000     
-  
+  Ideal assignment: 0 forced-unpaired electron(s), 10 electron pair(s)
+  Initial RMSD: 0.31844
+
+  Trying: paired EFO (frag 1, occ  0.7645) -> unpaired (frag 1, occ  0.4154 / frag 2, occ  0.3774)
+    RMSD =  0.27393 -- accepted
+  Trying: paired EFO (frag 2, occ  1.9907) -> unpaired (frag 1, occ  0.0700 / frag 2, occ  0.0322)
+    RMSD =  0.60246 -- rejected, keeping RMSD =  0.27393
+
+  Electrons assigned per fragment (paired / unpaired):
+    Fragment 1: 10.00 /  1.00
+    Fragment 2:  8.00 /  1.00
+
 
   -------------------------------------
     EOS ANALYSIS FOR PAIRED ELECTRONS
@@ -506,7 +455,6 @@
      1    10.00     1.996     0.765
      2     8.00     1.991     0.425
   ---------------------------------------- 
- xlast, xfirst:    1.9907244516174589       0.76451652253665447     
    RELIABILITY INDEX R(%) = 100.000
   INFO: (paired) occ. values halved in R(%) calculation
 
@@ -519,7 +467,6 @@
      1     1.00     0.415     0.070
      2     1.00     0.377     0.032
   ---------------------------------------- 
- xlast, xfirst:   0.37735957478181398        7.0021174464100000E-002
    RELIABILITY INDEX R(%) =  80.734
 
   -----------------------------
@@ -536,8 +483,8 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 0.67 s
-  TIMING WALL :: EFFAO computation                                 0.67 s
+  TIMING CPU  :: EFFAO computation                                 0.69 s
+  TIMING WALL :: EFFAO computation                                 0.70 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
