@@ -1517,14 +1517,14 @@
       end if
 
       if(imaxeff.gt.imineff) then
-       write(*,*) ' No eff-AOs in the occupation range'
+       write(*,*) '  No eff-AOs in the occupation range'
        write(*,*) " "
        deallocate(c0)
        return
       end if
 
       write(*,22)'Generating cube files for eff-AOs',imaxeff,' to',imineff,' of atom/fragment ',ifrag
-22    format (a33,i3,a3,i3,a18,i3)
+22    format (2x,a33,i3,a3,i3,a18,i3)
 
         if (imulli.eq.1) then
          name2="mulliken"
@@ -1588,7 +1588,7 @@
       end do
 
 !! now the grid !!
-      write(*,'(a21,3i4)')'Size of cube (x,y,z):',(igrid(i),i=1,3)
+      write(*,'(2x,a21,3i4)')'Size of cube (x,y,z):',(igrid(i),i=1,3)
       allocate ( xyz(igrid(1),igrid(2),igrid(3)))
 
       do ivec=imaxeff,imineff
@@ -1643,7 +1643,7 @@
         end do
        end do
 !$OMP END PARALLEL DO
-       write(*,'(a25,f7.4)') 'Normalization from cube: ',x0*volume/(igrid(1)*igrid(2)*igrid(3))
+       write(*,'(2x,a25,f7.4)') 'Normalization from cube: ',x0*volume/(igrid(1)*igrid(2)*igrid(3))
        write(*,*) " "
 
 !! output !!
