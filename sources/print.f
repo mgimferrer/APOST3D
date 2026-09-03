@@ -1476,14 +1476,14 @@
      $ 'Th','Pa',' U'  /
 
       dimension pgrid(maxgrid,3),igrid(3),xgrid(3,3)
-      dimension pop(maxat)          
+      dimension pop(maxat)
       allocatable c0(:,:),xyz(:,:,:)
 
       ihirsh=iopt(6)
-      imulli= Iopt(5) 
+      imulli= Iopt(5)
       ibcp=Iopt(14)
-      iqtaim = Iopt(16)  
-      inewbec = Iopt(31) 
+      iqtaim = Iopt(16)
+      inewbec = Iopt(31)
       idofr=Iopt(40)
       jcubthr=iopt(41)
       kcubthr=iopt(42)
@@ -1499,62 +1499,62 @@
 
 !! setting actual effos to print, instead !!
       if(jcubthr.lt.0) then
-       imaxeff=abs(jcubthr)
-       imineff=abs(kcubthr)
+        imaxeff=abs(jcubthr)
+        imineff=abs(kcubthr)
       else
-       imaxeff=0
-       xmaxeff=float(jcubthr)*1.0d-3
-       if (icase.eq.0.or.icase.eq.3) xmaxeff=2.0d0*xmaxeff
+        imaxeff=0
+        xmaxeff=float(jcubthr)*1.0d-3
+        if (icase.eq.0.or.icase.eq.3) xmaxeff=2.0d0*xmaxeff
 
 1      imaxeff= imaxeff+1
-       if(p0net(imaxeff,ifrag).ge.xmaxeff) go to 1
-       imineff=imaxo+1
-       xmineff=float(kcubthr)*1.0d-3   
-       if (icase.eq.0.or.icase.eq.3) xmineff=2.0d0*xmineff
+        if(p0net(imaxeff,ifrag).ge.xmaxeff) go to 1
+        imineff=imaxo+1
+        xmineff=float(kcubthr)*1.0d-3
+        if (icase.eq.0.or.icase.eq.3) xmineff=2.0d0*xmineff
 
 2      imineff= imineff - 1
-       if(p0net(imineff,ifrag).le.xmineff) go to 2
+        if(p0net(imineff,ifrag).le.xmineff) go to 2
       end if
 
       if(imaxeff.gt.imineff) then
-       write(*,*) '  No eff-AOs in the occupation range'
-       write(*,*) " "
-       deallocate(c0)
-       return
+        write(*,*) '  No eff-AOs in the occupation range'
+        write(*,*) " "
+        deallocate(c0)
+        return
       end if
 
       write(*,22)'Generating cube files for eff-AOs',imaxeff,' to',imineff,' of atom/fragment ',ifrag
 22    format (2x,a33,i3,a3,i3,a18,i3)
 
-        if (imulli.eq.1) then
-         name2="mulliken"
-        else if (imulli.gt.1) then
-         name2="lowdin"
-        else
+      if (imulli.eq.1) then
+        name2="mulliken"
+      else if (imulli.gt.1) then
+        name2="lowdin"
+      else
         if (ihirsh.eq.0) then
-         name2="becke"
-         if(ibcp.eq.1) then 
+          name2="becke"
+          if(ibcp.eq.1) then
             if(inewbec.eq.0)then
               name2="beckerho"
             else
-             name2="tfvc"
+              name2="tfvc"
             end if
-         end if
-         if(iqtaim.eq.1) name2="qtaim"
+          end if
+          if(iqtaim.eq.1) name2="qtaim"
         else if(ihirsh.eq.1) then
-         name2="hirsh"
+          name2="hirsh"
         else if(ihirsh.eq.2) then
-         name2="hirsh-it"
-         do i=1,nat
-          pop(i)=qat(i,1)
-         end do
+          name2="hirsh-it"
+          do i=1,nat
+            pop(i)=qat(i,1)
+          end do
         end if
-        end if
-        if(icase.eq.3) name2=trim(name2)//"_paired"
-        if(icase.eq.4) name2=trim(name2)//"_unpaired"
+      end if
+      if(icase.eq.3) name2=trim(name2)//"_paired"
+      if(icase.eq.4) name2=trim(name2)//"_unpaired"
 
 !! assuming rectangular grid !!
-       xgrid=0.0d0
+      xgrid=0.0d0
 
 !! adaptive-size cube: fixed point spacing (# CUBE SPACING), padding      !!
 !! scaled by RADIUS_SCALE times the extremal atom's covalent radius       !!
@@ -1563,28 +1563,28 @@
       volume=1.0d0
 !! furthest x y z atomic positions of the fragment !!
       do i=1,3
-       xmax=-1.0d8
-       xmin=1.0d8
-       do jatom=1,nfrlist(ifrag)
-        iatom=ifrlist(jatom,ifrag)
-        if(coord(i,iatom).lt.xmin) then
-         xmin=coord(i,iatom)
-         iiatom=iatom
-        end if
-        if(coord(i,iatom).gt.xmax) then
-         xmax=coord(i,iatom)
-         iiiatom=iatom
-        end if
-       end do
-       xmin=xmin-rrmax*atr(iiatom)
-       xmax=xmax+rrmax*atr(iiiatom)
-       dist0=xmax-xmin
-       xgrid(i,i)=xmesh
-       igrid(i)=int(dist0/xmesh)+1
-       do j=1,igrid(i)
-        pgrid(j,i)=xmin+(j-1)*xgrid(i,i)
-       end do
-       volume=volume*dist0
+        xmax=-1.0d8
+        xmin=1.0d8
+        do jatom=1,nfrlist(ifrag)
+          iatom=ifrlist(jatom,ifrag)
+          if(coord(i,iatom).lt.xmin) then
+            xmin=coord(i,iatom)
+            iiatom=iatom
+          end if
+          if(coord(i,iatom).gt.xmax) then
+            xmax=coord(i,iatom)
+            iiiatom=iatom
+          end if
+        end do
+        xmin=xmin-rrmax*atr(iiatom)
+        xmax=xmax+rrmax*atr(iiiatom)
+        dist0=xmax-xmin
+        xgrid(i,i)=xmesh
+        igrid(i)=int(dist0/xmesh)+1
+        do j=1,igrid(i)
+          pgrid(j,i)=xmin+(j-1)*xgrid(i,i)
+        end do
+        volume=volume*dist0
       end do
 
 !! now the grid !!
@@ -1598,119 +1598,119 @@
 !! plus read-only shared state (c0/coord/COMMON), safe to call in          !!
 !! parallel (see wat.f)                                                    !!
 !$OMP PARALLEL DO COLLAPSE(3) PRIVATE(i,j,k,xabs,yabs,zabs,ww,iatom,jjat)
-       do i=1,igrid(1)
-        do j=1,igrid(2)
-         do k=1,igrid(3)
-          xabs=pgrid(i,1)
-          yabs=pgrid(j,2)
-          zabs=pgrid(k,3)
+        do i=1,igrid(1)
+          do j=1,igrid(2)
+            do k=1,igrid(3)
+              xabs=pgrid(i,1)
+              yabs=pgrid(j,2)
+              zabs=pgrid(k,3)
 
-          if(imulli.ne.0) then
-           xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)
-          else
-           ww=0.0d0
-           do iatom=1,nfrlist(ifrag)
-            jjat=ifrlist(iatom,ifrag)
-            if(ihirsh.eq.0.and.iqtaim.eq.0) then
-              ww=ww+wat(jjat,xabs,yabs,zabs)
-            else if(ihirsh.eq.1) then
-              ww=ww+wathirsh(jjat,xabs,yabs,zabs)
-            else if(ihirsh.eq.2) then
-              ww=ww+wathirsh2(jjat,xabs,yabs,zabs,pop)
-            else if(iqtaim.eq.1) then
+              if(imulli.ne.0) then
+                xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)
+              else
+                ww=0.0d0
+                do iatom=1,nfrlist(ifrag)
+                  jjat=ifrlist(iatom,ifrag)
+                  if(ihirsh.eq.0.and.iqtaim.eq.0) then
+                    ww=ww+wat(jjat,xabs,yabs,zabs)
+                  else if(ihirsh.eq.1) then
+                    ww=ww+wathirsh(jjat,xabs,yabs,zabs)
+                  else if(ihirsh.eq.2) then
+                    ww=ww+wathirsh2(jjat,xabs,yabs,zabs,pop)
+                  else if(iqtaim.eq.1) then
 !! QTAIM cube weighting was never wired up (cubeqtaim doesn't exist       !!
 !! codebase-wide) -- ww stays 0 here, so a QTAIM-weighted cube would be   !!
 !! all zeros rather than erroring. Unreachable in practice regardless:    !!
 !! main.f:218 hard-stops the whole run at startup when iqtaim=1.          !!
-            end if
-           end do
-           xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)*ww
-          end if
-         end do
+                  end if
+                end do
+                xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)*ww
+              end if
+            end do
+          end do
         end do
-       end do
 !$OMP END PARALLEL DO
 
 !! approximate normalization of orbital -- same independence argument,   !!
 !! reduction on x0                                                        !!
-       x0=ZERO
+        x0=ZERO
 !$OMP PARALLEL DO COLLAPSE(3) PRIVATE(i,j,k) REDUCTION(+:x0)
-       do i=1,igrid(1)
-        do j=1,igrid(2)
-         do k=1,igrid(3)
-          x0=x0+xyz(i,j,k)*xyz(i,j,k)
-         end do
+        do i=1,igrid(1)
+          do j=1,igrid(2)
+            do k=1,igrid(3)
+              x0=x0+xyz(i,j,k)*xyz(i,j,k)
+            end do
+          end do
         end do
-       end do
 !$OMP END PARALLEL DO
-       write(*,'(2x,a25,f7.4)') 'Normalization from cube: ',x0*volume/(igrid(1)*igrid(2)*igrid(3))
-       write(*,*) " "
+        write(*,'(2x,a25,f7.4)') 'Normalization from cube: ',x0*volume/(igrid(1)*igrid(2)*igrid(3))
+        write(*,*) " "
 
 !! output !!
 
         if(idofr.eq.0) then
-        read(mend(iznuc(ifrag)),'(A2)')charnu
-         charnu=adjustl(charnu)
+          read(mend(iznuc(ifrag)),'(A2)')charnu
+          charnu=adjustl(charnu)
         else
-         charnu="FR"
-        end if   
+          charnu="FR"
+        end if
 !! assuming up to 99 atoms !!
         if(ifrag.lt.10) then
-           write(atnu,'(i1)')ifrag
+          write(atnu,'(i1)')ifrag
         else
-           write(atnu,'(i2)')ifrag
+          write(atnu,'(i2)')ifrag
         end if
         if(ivec.lt.10) then
-         write(charnu1,'(i1)')ivec
+          write(charnu1,'(i1)')ivec
         else if (ivec.lt.100) then
-         write(charnu1,'(i2)')ivec
+          write(charnu1,'(i2)')ivec
         else
-         write(charnu1,'(i3)')ivec
+          write(charnu1,'(i3)')ivec
         end if
-         if(icase.ne.2) then
-         nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
+        if(icase.ne.2) then
+          nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
      +   trim(atnu)//"_"//trim(charnu1)
-         else                
-         nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
+        else
+          nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
      +   trim(atnu)//"_"//trim(charnu1)//"beta"
-         end if 
-       j=len(nameaim)
-       do i=1,j
-        if(nameaim(i:i).eq.' ') then
-         llen=i-1
-         go to 10
         end if
-       end do
+        j=len(nameaim)
+        do i=1,j
+          if(nameaim(i:i).eq.' ') then
+            llen=i-1
+            go to 10
+          end if
+        end do
   10   continue
-       nameaim=nameaim(1:llen)//".cube"
+        nameaim=nameaim(1:llen)//".cube"
 
-       open(44,file=nameaim,status="unknown")
-       rewind(44)
-       write(44,*)'Cube generated with APOST-3D code '
-       if(idofr.eq.0) then
-       write(44,41) trim(name),name2,' EFFAO',ivec," for atom",
+        open(44,file=nameaim,status="unknown")
+        rewind(44)
+        write(44,*)'Cube generated with APOST-3D code '
+        if(idofr.eq.0) then
+          write(44,41) trim(name),name2,' EFFAO',ivec," for atom",
      + mend(iznuc(ifrag)),"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
      + p0net(ivec,ifrag)
-       else
-       write(44,44) trim(name),name2,' EFFAO',ivec," for frag",
+        else
+          write(44,44) trim(name),name2,' EFFAO',ivec," for frag",
      + ifrag,"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
      + p0net(ivec,ifrag)
-       end if
-       write(44,42) nat,(pgrid(1,j),j=1,3)
-       do i=1,3
-        write(44,42) igrid(i),(xgrid(i,j),j=1,3)
-       end do
-       do i=1,nat
-        write(44,43) iznuc(i),zn(i),(coord(j,i),j=1,3)
-       end do
-       ione=1
-       write(44,'(2i5)')ione,ione
-       do i=1,igrid(1)
-       do j=1,igrid(2)
-        write(44,40)(xyz(i,j,k),k=1,igrid(3))
-       end do
-       end do
-       close(44)
+        end if
+        write(44,42) nat,(pgrid(1,j),j=1,3)
+        do i=1,3
+          write(44,42) igrid(i),(xgrid(i,j),j=1,3)
+        end do
+        do i=1,nat
+          write(44,43) iznuc(i),zn(i),(coord(j,i),j=1,3)
+        end do
+        ione=1
+        write(44,'(2i5)')ione,ione
+        do i=1,igrid(1)
+          do j=1,igrid(2)
+            write(44,40)(xyz(i,j,k),k=1,igrid(3))
+          end do
+        end do
+        close(44)
       end do
 41    format(a8,x,a8,a7,i3,a9,a2,a11,f8.4,a9,f8.4)
 44    format(a8,x,a8,a7,i3,a9,i2,a11,f8.4,a9,f8.4)
