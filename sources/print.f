@@ -1770,6 +1770,42 @@
 !! ***** !!
 
 !! ********************************************************************* !!
+!! subroutine: skip_fchk_orbblock                                        !!
+!! purpose: skips exactly the original data of an Alpha/Beta Orbital     !!
+!!   Energies or MO coefficients block just overwritten by the caller,   !!
+!!   landing on whatever line follows -- used by rwf_effao_orbprint/     !!
+!!   uwf_effao_orbprint in place of searching for the next section's     !!
+!!   header. The .fchk format always writes an R-type block as exactly   !!
+!!   ceil(nval/5) lines of 5 values each immediately after its header,   !!
+!!   regardless of which program wrote the file, so this is robust even  !!
+!!   when the source .fchk omits optional sections a marker search would !!
+!!   otherwise hang or run off the end of the file looking for (MOKIT/   !!
+!!   pySCF-written files routinely omit "Orthonormal basis", for one).   !!
+!! arguments:                                                            !!
+!!   iunit (in)    -- unit number of the source .fchk, already           !!
+!!                    positioned right after the block's header line     !!
+!!   nval  (in)    -- number of values in the block (e.g. indepigr or    !!
+!!                    igr*indepigr)                                      !!
+!!   line  (inout) -- on return, holds the line immediately following    !!
+!!                    the skipped block                                  !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine skip_fchk_orbblock(iunit,nval,line)
+
+      implicit double precision(a-h,o-z)
+      character*80 line
+
+      nskip=(nval+4)/5
+      do ii=1,nskip
+        read(iunit,'(a80)') line
+      end do
+      read(iunit,'(a80)') line
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
 !! subroutine: rwf_effao_orbprint                                        !!
 !! purpose: writes a restricted-wavefunction pooled-EFO .fchk -- splices !!
 !!   the original .fchk's structure, replacing "Alpha Orbital Energies"  !!
@@ -1807,7 +1843,6 @@
       allocatable :: energ(:)
 
       iqchem   = iopt(95)
-      imokit   = iopt(79)
       indepigr = int_locate(15,"Number of independ",ilog)
       norb     = igr*indepigr
 
@@ -1839,17 +1874,11 @@
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
         write(69,13) (energ(ii),ii=1,indepigr)
 
-        do while(index(line,"Alpha MO co").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,indepigr,line)
         write(69,12) "Alpha MO coefficients","R","N= ",norb
         write(69,13) ((pcoef(ii,jj),ii=1,igr),jj=1,indepigr)
 
-        if(imokit.eq.0) then
-          do while(index(line,"Orthonormal basis").eq.0)
-            read(15,'(a80)') line
-          end do
-        end if
+        call skip_fchk_orbblock(15,norb,line)
       else
         do while(index(line,"Alpha MO co").eq.0)
           write(69,'(a80)') line
@@ -1858,11 +1887,11 @@
         write(69,12) "Alpha MO coefficients","R","N= ",norb
         write(69,13) ((pcoef(ii,jj),ii=1,igr),jj=1,indepigr)
 
-        do while(index(line,"Alpha Orbital").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,norb,line)
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
         write(69,13) (energ(ii),ii=1,indepigr)
+
+        call skip_fchk_orbblock(15,indepigr,line)
       end if
 
 !! copy everything else through unchanged, Total SCF Density included    !!
@@ -1895,11 +1924,14 @@
 !!   (including Total SCF/Spin SCF Density -- these are visualization    !!
 !!   orbitals, not a real wavefunction). Reuses the same splice pattern  !!
 !!   as OSLO's uwf_orbprint (oslo.f), extended to also cover the Orbital !!
-!!   Energies blocks. Q-Chem-format branch is unverified -- no active    !!
-!!   test exercises an unrestricted Q-Chem source, and the codebase's    !!
-!!   own unrestricted OSLO printer only ever resumes after a single      !!
-!!   "Alpha Orbital" marker for that format, never distinguishing an     !!
-!!   Alpha/Beta split there.                                             !!
+!!   Energies blocks and to skip past every original block by its known  !!
+!!   size (skip_fchk_orbblock) rather than searching for the next        !!
+!!   section's header -- robust to MOKIT/pySCF-written .fchk files that  !!
+!!   omit optional sections like "Orthonormal basis" a search would      !!
+!!   otherwise run off the end of the file looking for. Q-Chem-format    !!
+!!   branch is still unverified by an active test (no unrestricted       !!
+!!   Q-Chem source in the suite), though structurally symmetric with the !!
+!!   standard/MOKIT branch now.                                          !!
 !! arguments:                                                            !!
 !!   pcoef_a (in) -- (igr,igr) pooled+sorted first-channel (-> Alpha)    !!
 !!                   EFO coefficients, zero-padded beyond the actual     !!
@@ -1928,7 +1960,6 @@
       allocatable :: energ_a(:),energ_b(:)
 
       iqchem   = iopt(95)
-      imokit   = iopt(79)
       indepigr = int_locate(15,"Number of independ",ilog)
       norb     = igr*indepigr
 
@@ -1963,29 +1994,19 @@
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
         write(69,13) (energ_a(ii),ii=1,indepigr)
 
-        do while(index(line,"Beta Orbital").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,indepigr,line)
         write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
         write(69,13) (energ_b(ii),ii=1,indepigr)
 
-        do while(index(line,"Alpha MO co").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,indepigr,line)
         write(69,12) "Alpha MO coefficients","R","N= ",norb
         write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
 
-        do while(index(line,"Beta MO coef").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,norb,line)
         write(69,12) "Beta MO coefficients ","R","N= ",norb
         write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
 
-        if(imokit.eq.0) then
-          do while(index(line,"Orthonormal basis").eq.0)
-            read(15,'(a80)') line
-          end do
-        end if
+        call skip_fchk_orbblock(15,norb,line)
       else
 
 !! Q-Chem layout: both MO coefficient blocks precede both Orbital        !!
@@ -1997,23 +2018,19 @@
         write(69,12) "Alpha MO coefficients","R","N= ",norb
         write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
 
-        do while(index(line,"Beta MO coef").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,norb,line)
         write(69,12) "Beta MO coefficients ","R","N= ",norb
         write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
 
-        do while(index(line,"Alpha Orbital").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,norb,line)
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
         write(69,13) (energ_a(ii),ii=1,indepigr)
 
-        do while(index(line,"Beta Orbital").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_orbblock(15,indepigr,line)
         write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
         write(69,13) (energ_b(ii),ii=1,indepigr)
+
+        call skip_fchk_orbblock(15,indepigr,line)
       end if
 
 !! copy everything else through unchanged, Total/Spin SCF Density        !!
