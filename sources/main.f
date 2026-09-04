@@ -217,6 +217,16 @@ c      -------------------------------------------------------------------------
       if(iposthf.eq.1) then
         if(ispin.eq.1.and.icorr.lt.2) stop ' Local Spin needs dm1 and dm2 for correlated WFs'
         if(ienpart.eq.1.and.icorr.lt.2) stop ' Enpart needs dm1 and dm2 for correlated WFs'
+!! OSLO's iterative localize/assign/deflate algorithm assumes integer-  !!
+!! occupied canonical-type orbitals -- it has no defined behavior for a !!
+!! multireference wavefunction's fractionally-occupied natural orbitals !!
+!! (CASSCF/CISD/FCI). A bare stop's message only reaches stderr, not    !!
+!! the saved .apost output, so write it explicitly first.               !!
+        if(ioslo.eq.1) then
+          write(*,'(2x,a)')
+     +      'OSLO cannot be performed for multireference (CASSCF/CISD/FCI) wavefunctions'
+          stop ' OSLO cannot be performed for multireference wavefunctions'
+        end if
       end if
       if(iqtaim.eq.1) stop'This version can not do QTAIM'
 
