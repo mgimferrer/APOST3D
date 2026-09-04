@@ -467,13 +467,25 @@
 
 !! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
 !! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!
-!! own .fchk output. Real-space path only (see imulli guard above);     !!
-!! restricted wavefunctions have no Beta blocks to splice into at all,  !!
-!! hence the kop branch, same convention as GEOS's writer.              !!
+!! own .fchk output. Real-space path only (see imulli guard above). A   !!
+!! restricted wavefunction (kop=0) has no Beta blocks to splice into,   !!
+!! but its beta channel isn't always empty -- e.g. a restricted-orbital !!
+!! open-shell CASSCF source (idobeta=1 despite kop=0, main.f's own      !!
+!! dispatch condition) genuinely populates it. Gated on idobeta itself, !!
+!! not lorb(2): the idobeta=0 branch above sets lorb(2)=lorb(1) purely  !!
+!! to duplicate occup/iorbat for this print, without ever touching      !!
+!! p0poolcoef(:,:,2) -- lorb(2)>0 there does NOT mean real coefficients !!
+!! exist. rwfu_effao_orbprint inserts a synthetic Beta MO set next to   !!
+!! the real Alpha one when idobeta=1, same convention as GEOS's writer; !!
+!! otherwise fall back to the plain restricted, single-channel writer.  !!
         if(imulli.eq.0) then
           ctype="-EOS-EFOs"
           if(kop.eq.0) then
-            call rwf_effao_orbprint(p0poolcoef(:,:,1),ctype)
+            if(idobeta.eq.1) then
+              call rwfu_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
+            else
+              call rwf_effao_orbprint(p0poolcoef(:,:,1),ctype)
+            end if
           else
             call uwf_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
           end if

@@ -2049,3 +2049,135 @@
 13    FORMAT(5(1p,e16.8))
 
       end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: rwfu_effao_orbprint                                       !!
+!! purpose: writes a pooled-EFO .fchk for a restricted-wavefunction      !!
+!!   source (kop=0) whose unpaired/second channel is genuinely populated !!
+!!   -- e.g. a restricted-orbital post-HF wavefunction (CASSCF/FCI/CISD) !!
+!!   with real fractional natural-orbital occupations, not the trivial   !!
+!!   ~0 unpaired channel of an ordinary restricted single-determinant    !!
+!!   wavefunction (see rwf_effao_orbprint for that case). The source     !!
+!!   .fchk has no Beta MO set to splice into, so this *inserts* a        !!
+!!   synthetic Beta Orbital Energies/MO coefficients block (second       !!
+!!   channel) immediately next to the real Alpha one (first channel),    !!
+!!   rather than searching for and overwriting an existing Beta block    !!
+!!   the way uwf_effao_orbprint does for a genuinely unrestricted        !!
+!!   source -- nothing needs skipping for the inserted blocks since      !!
+!!   nothing existed there before; the original Alpha-block data is      !!
+!!   still skipped by its known size (skip_fchk_orbblock), same as       !!
+!!   rwf_effao_orbprint. Total SCF Density and everything else is        !!
+!!   copied through unchanged, exactly as the other two writers.         !!
+!! arguments:                                                            !!
+!!   pcoef_a (in) -- (igr,igr) pooled+sorted first-channel (-> Alpha)    !!
+!!                   EFO coefficients, zero-padded beyond the actual     !!
+!!                   count                                               !!
+!!   pcoef_b (in) -- (igr,igr) pooled+sorted second-channel (-> Beta,    !!
+!!                   synthetic) EFO coefficients, zero-padded beyond     !!
+!!                   the actual count                                    !!
+!!   ctype   (in) -- filename suffix, e.g. "-GEOS-EFOs" or "-EOS-EFOs"   !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine rwfu_effao_orbprint(pcoef_a,pcoef_b,ctype)
+
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /filename/name0
+      common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
+
+      character*80 line
+      character*60 name0,name1
+      character*20 ctype
+
+      dimension pcoef_a(igr,igr),pcoef_b(igr,igr)
+      allocatable :: energ_a(:),energ_b(:)
+
+      iqchem   = iopt(95)
+      indepigr = int_locate(15,"Number of independ",ilog)
+      norb     = igr*indepigr
+
+!! fake orbital energies: gross occupation of each pooled EFO, already   !!
+!! sorted decreasing by the caller, zero beyond the actual count.        !!
+      ALLOCATE(energ_a(indepigr),energ_b(indepigr))
+      energ_a=ZERO
+      energ_b=ZERO
+      do ii=1,MIN(lorb(1),indepigr)
+        energ_a(ii)=occup(ii,1)
+      end do
+      do ii=1,MIN(lorb(2),indepigr)
+        energ_b(ii)=occup(ii,2)
+      end do
+
+!! Name of the .fchk file !!
+      name1=trim(name0)//trim(ctype)//".fchk"
+      open(unit=69,file=name1)
+      rewind(69)
+      rewind(15)
+
+      read(15,'(a80)') line
+
+      if(iqchem.eq.0) then
+
+!! standard/MOKIT layout: Alpha Orbital Energies precedes Alpha MO      !!
+!! coefficients in the source -- insert the synthetic Beta block right  !!
+!! after each real Alpha one.                                           !!
+        do while(index(line,"Alpha Orbital").eq.0)
+          write(69,'(a80)') line
+          read(15,'(a80)') line
+        end do
+        write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
+        write(69,13) (energ_a(ii),ii=1,indepigr)
+        write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
+        write(69,13) (energ_b(ii),ii=1,indepigr)
+
+        call skip_fchk_orbblock(15,indepigr,line)
+        write(69,12) "Alpha MO coefficients","R","N= ",norb
+        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+        write(69,12) "Beta MO coefficients ","R","N= ",norb
+        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        call skip_fchk_orbblock(15,norb,line)
+      else
+
+!! Q-Chem layout: Alpha MO coefficients precedes Alpha Orbital Energies !!
+!! in the source -- unverified, no restricted+Q-Chem+post-HF source     !!
+!! available to test against, but structurally symmetric with the       !!
+!! standard/MOKIT branch above.                                         !!
+        do while(index(line,"Alpha MO co").eq.0)
+          write(69,'(a80)') line
+          read(15,'(a80)') line
+        end do
+        write(69,12) "Alpha MO coefficients","R","N= ",norb
+        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+        write(69,12) "Beta MO coefficients ","R","N= ",norb
+        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+
+        call skip_fchk_orbblock(15,norb,line)
+        write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
+        write(69,13) (energ_a(ii),ii=1,indepigr)
+        write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
+        write(69,13) (energ_b(ii),ii=1,indepigr)
+
+        call skip_fchk_orbblock(15,indepigr,line)
+      end if
+
+!! copy everything else through unchanged, Total SCF Density included    !!
+      do while(.true.)
+        write(69,'(a80)') line
+        read(15,'(a80)',end=99) line
+      end do
+99    continue
+      close(69)
+      DEALLOCATE(energ_a,energ_b)
+
+!! Printing formats !!
+11    FORMAT(a23,20x,a1,3x,a3,i11)
+12    FORMAT(a21,22x,a1,3x,a3,i11)
+13    FORMAT(5(1p,e16.8))
+
+      end
