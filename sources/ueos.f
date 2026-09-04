@@ -1,22 +1,21 @@
 !! *********************************************************************** !!
-!! GEOS ("Generalized Effective Oxidation State", `.inp` keyword GEOS,     !!
-!! formerly EOS-U) -- effective atomic/fragment orbitals from the paired   !!
-!! and unpaired densities separately (open-shell systems), then            !!
-!! electron/oxidation-state assignment across both channels together.      !!
-!!   effao3d_u    -- real-space (3D grid) EFOs from the paired/unpaired    !!
-!!                   densities (Takatsuka's definition), one fragment at   !!
-!!                   a time                                                !!
+!! GEOS ("Generalized Effective Oxidation State", `.inp` keyword GEOS      !!
+!!   -- effective atomic/fragment orbitals from the paired and unpaired    !!
+!!      densities separately (open-shell systems), then electron/oxidation !!
+!!      state assignment across both channels together.                    !!
+!!   effao3d_u    -- real-space EFOs from the paired/unpaired densities    !!
+!!                   (Takatsuka's definition), one fragment at a time      !!                                                !!
 !!   ueos_analysis -- pools every fragment's paired/unpaired EFOs, assigns !!
-!!                   electrons to minimize the RMSD against ideal (2 for   !!
-!!                   paired, 1 for unpaired) occupations, then derives     !!
-!!                   fragment oxidation states                             !!
+!!                    electrons to minimize the RMSD against ideal (2 for  !!
+!!                    paired, 1 for unpaired) occupations, then derives    !!
+!!                    fragment oxidation states                            !!
 !! *********************************************************************** !!
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: effao3d_u                                                 !!
-!! purpose: computes real-space (3D grid) effective fragment orbitals    !!
+!! ********************************************************************** !!
+!! subroutine: effao3d_u                                                  !!
+!! purpose: computes real-space (3D grid) effective fragment orbitals     !!
 !!   (EFOs) separately from the paired and unpaired one-particle          !!
 !!   densities, using Takatsuka's definition of the unpaired density      !!
 !!   (u = n(2-n) per natural-orbital occupation n; paired = total - u).   !!
@@ -24,7 +23,7 @@
 !!   (icase=1 paired, icase=2 unpaired). Results are stored into          !!
 !!   effao_mod (p0/p0net/p0gro/ip0) and, if iueos=1, into the local       !!
 !!   up0net/up0gro/up0coef/iup0 arrays consumed by ueos_analysis below,   !!
-!!   which also triggers writing the pooled EFOs into a .fchk (paired    !!
+!!   which also triggers writing the pooled EFOs into a .fchk (paired     !!
 !!   -> Alpha, unpaired -> Beta) for visualization.                       !!
 !! arguments:                                                             !!
 !!   itotps (in) -- total number of grid points (nat*iatps)               !!
@@ -37,8 +36,8 @@
 !!                  every atom                                            !!
 !!   iueos  (in) -- 1 to also run the electron/oxidation-state assignment !!
 !!                  (ueos_analysis) once both densities are done          !!
-!! author:                                                                 !!
-!! ********************************************************************* !!
+!! author: MGimf                                                          !!
+!! ********************************************************************** !!
       subroutine effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2,iueos)
 
       use basis_set
@@ -56,6 +55,7 @@
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /iops/iopt(200)
+      common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
 
       dimension chp(itotps,ndim),omp(itotps),omp2(itotps,nat),wp(itotps)
       dimension sat(ndim,ndim,nat)
@@ -113,9 +113,9 @@
           call print_box('EFFAOs FROM THE UNPAIRED DENSITY')
         end if
 
-!! per-fragment loop kept serial on purpose: icufr can be small on a     !!
-!! large system -- the O(igr^2)/O(igr^3) work inside each iteration is   !!
-!! threaded instead, same lesson already applied throughout effao.f.     !!
+!! per-fragment loop kept serial on purpose: icufr can be small on a    !!
+!! large system -- the O(igr^2)/O(igr^3) work inside each iteration is  !!
+!! threaded instead, same lesson already applied throughout effao.f.    !!
         do iicenter=1,icufr
 
 !! W_A (fragment iicenter's total becke/tfvc weight at each grid point) !!
@@ -157,7 +157,7 @@
           call diagonalize(igr,igr,pp0,c0,0)
           call to_AO_basis(igr,igr,Sm,c0)
 
-!! keep EFOs above xminocc; pp0's diagonal is already sorted decreasing.  !!
+!! keep EFOs above xminocc; pp0's diagonal is already sorted decreasing  !!
 !! imaxo starts at 0 so a channel with no EFO above threshold (e.g. the  !!
 !! unpaired channel on a restricted wavefunction, where Uno is ~0 for    !!
 !! integer NO occupations) correctly ends up with imaxo=0 instead of     !!
@@ -207,10 +207,7 @@
           write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
           write(*,60) (s0all(mu),mu=1,imaxo)
 
-!! skip this trailing blank on the very last fragment of icase=1 -- the  !!
-!! next thing printed is icase=2's own print_box, which already opens    !!
-!! with a leading blank of its own (see Code Style: no double blanks     !!
-!! around print_box).                                                    !!
+!! just for printing purposes... style of the output !!
           if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
 
 !! store for cube generation, and for ueos_analysis if requested !!
@@ -245,13 +242,24 @@
 
 !! pooled paired/unpaired EFOs as fake Alpha/Beta MOs in a .fchk, for    !!
 !! visualization in any standard viewer -- printed by default, same as  !!
-!! OSLO's own .fchk output, no separate keyword needed. Restricted      !!
-!! wavefunctions have no Beta blocks to splice into at all, hence the   !!
-!! kop branch (the unpaired channel is then trivially ~empty, same as   !!
-!! for a plain restricted-wavefunction EFFAO run).                      !!
+!! OSLO's own .fchk output, no separate keyword needed. A restricted    !!
+!! wavefunction (kop=0) has no Beta blocks to splice into, but its      !!
+!! unpaired channel isn't always trivially empty -- e.g. a restricted-  !!
+!! orbital post-HF wavefunction (CASSCF/FCI/CISD, kop=0 since pySCF's   !!
+!! writer never emits a Beta MO set for these regardless of spin state) !!
+!! can have real fractional natural-orbital occupations and hence a     !!
+!! genuinely populated unpaired channel. When that happens (lorb(2)>0), !!
+!! rwfu_effao_orbprint inserts a synthetic Beta MO set (unpaired) next  !!
+!! to the real Alpha one (paired) so both channels still end up in one  !!
+!! file -- otherwise fall back to the plain restricted, single-channel  !!
+!! writer, same as for an ordinary restricted-wavefunction EFFAO run.   !!
         ctype="-GEOS-EFOs"
         if(kop.eq.0) then
-          call rwf_effao_orbprint(poolcoef(:,:,1),ctype)
+          if(lorb(2).gt.0) then
+            call rwfu_effao_orbprint(poolcoef(:,:,1),poolcoef(:,:,2),ctype)
+          else
+            call rwf_effao_orbprint(poolcoef(:,:,1),ctype)
+          end if
         else
           call uwf_effao_orbprint(poolcoef(:,:,1),poolcoef(:,:,2),ctype)
         end if
@@ -286,7 +294,7 @@
 !!                    channel, fragment)                                 !!
 !!   poolcoef (out) -- pooled+sorted EFO coefficients, per (basis fn,    !!
 !!                    pooled index truncated to igr, channel)            !!
-!! author:                                                                !!
+!! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine ueos_analysis(iup0,up0gro,up0coef,poolcoef)
 
@@ -381,13 +389,12 @@
         end do
       end do
 
-!! ideal-occupation matrix, sized to the larger of the two EFO counts   !!
-!! (previously always lorb(1)/paired, which ran elec_id out of bounds   !!
-!! whenever there were more unpaired than paired EFOs -- fixed 2026-08-21) !!
+!! ideal-occupation matrix, sized to the larger of the two EFO counts !!
       ilorb=MAX(lorb(1),lorb(2))
       ALLOCATE(elec_id(ilorb,2))
       ALLOCATE(elec2(ilorb,2))
       elec_id=ZERO
+
 !! section, not whole-array -- keeps elec2 at ilorb (a bare "=occup"    !!
 !! would auto-reallocate to occup's own (nmax,2) shape, F2003 semantics) !!
       elec2=occup(1:ilorb,1:2)
@@ -427,7 +434,7 @@
 
 !! iteratively move the least-occupied paired electron pair to the two  !!
 !! most-occupied unpaired slots, keeping the move only while it lowers  !!
-!! the RMSD -- stops at the first move that doesn't help.               !!
+!! the RMSD. code stops at the first move that doesn't help.            !!
       ALLOCATE(tmp_elec_id(ilorb,2))
       tmp_elec_id=elec_id
       do while(npair.gt.0)
@@ -488,8 +495,6 @@
      +    elec_frg_count(ifrg,1),' / ',elec_frg_count(ifrg,2)
       end do
 
-!! no trailing blank here -- the next thing printed is icase=1's own     !!
-!! print_box below, which already opens with a leading blank.            !!
       do icase=1,2
         if(icase.eq.1) then
           call print_box('EOS ANALYSIS FOR PAIRED ELECTRONS')
@@ -590,3 +595,5 @@
 20    FORMAT(3x,i3,6x,f8.2)
 
       end
+
+!! ***** !!
