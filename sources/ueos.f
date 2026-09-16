@@ -24,7 +24,11 @@
 !!   effao_mod (p0/p0net/p0gro/ip0) and, if iueos=1, into the local       !!
 !!   up0net/up0gro/up0coef/iup0 arrays consumed by ueos_analysis below,   !!
 !!   which also triggers writing the pooled EFOs into a .fchk (paired     !!
-!!   -> Alpha, unpaired -> Beta) for visualization.                       !!
+!!   -> Alpha, unpaired -> Beta) for visualization. Also scans the paired !!
+!!   channel (only -- Pno-Uno isn't PSD, Uno alone is) for EFOs with      !!
+!!   significant negative net occupation (below xminocc_neg) and stores   !!
+!!   them separately (ineg_frg/xneg_net/xneg_gro/cneg), excluded from     !!
+!!   oxidation-state assignment but still exported to the .fchk.          !!
 !! arguments:                                                             !!
 !!   itotps (in) -- total number of grid points (nat*iatps)               !!
 !!   ndim   (in) -- number of basis functions (leading dim of chp/sat)    !!
@@ -65,6 +69,7 @@
       allocatable :: scr(:),s0all(:)
       allocatable :: iup0(:,:),up0net(:,:,:),up0gro(:,:,:),up0coef(:,:,:,:)
       allocatable :: poolcoef(:,:,:)
+      allocatable :: ineg_frg(:),xneg_net(:,:),xneg_gro(:,:),cneg(:,:,:)
       character(len=30) :: lbl30
       character(len=20) :: ctype
 
@@ -73,6 +78,13 @@
 
 !! EFO occupation cutoff for the net-population sum below !!
       xminocc=1.0d-4
+
+!! independent threshold for significant negative net occupation, paired !!
+!! channel only (icase=1): Pno-Uno is a difference of two PSD matrices,   !!
+!! not itself PSD, so genuine negative eigenvalues are possible after the !!
+!! congruence transform below. Uno alone (icase=2) is PSD and never       !!
+!! triggers this. Hand-tuned for now, expect per-system adjustment.       !!
+      xminocc_neg=-0.05d0
 
       call print_box('DOING EFFAO-3D FROM U FUNCTION')
       write(*,'(2x,a)') 'EFFAO-U: paired and unpaired densities treated separately'
@@ -104,6 +116,8 @@
       ALLOCATE(c0(igr,igr),pp0(igr,igr))
       if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr),up0gro(2,igr,icufr),
      +  up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2))
+      if(iueos.eq.1) ALLOCATE(ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr),
+     +  cneg(igr,igr,icufr))
 
 !! icase=1: paired density (total-unpaired). icase=2: unpaired density. !!
       do icase=1,2
@@ -168,6 +182,19 @@
             imaxo=ii
             ii=ii+1
           end do
+
+!! significant-negative-occupation EFOs, paired channel only: pp0's       !!
+!! diagonal is sorted decreasing, so these sit as a contiguous block at   !!
+!! the tail, past index imaxo.                                           !!
+          ineg=0
+          if(iueos.eq.1.and.icase.eq.1) then
+            jj=igr
+            do while(jj.gt.imaxo.and.pp0(jj,jj).le.xminocc_neg)
+              ineg=ineg+1
+              jj=jj-1
+            end do
+          end if
+
           xmaxo=ZERO
           do ii=1,igr
             xmaxo=xmaxo+pp0(ii,ii)
@@ -207,6 +234,37 @@
           write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
           write(*,60) (s0all(mu),mu=1,imaxo)
 
+!! gross occupation of the significant-negative-occupation EFOs found     !!
+!! above (paired channel only) -- same sat contraction as the positive    !!
+!! EFOs, kept in its own loop since these live at the opposite end of     !!
+!! pp0's sorted diagonal and are never mixed into imaxo/s0all/xx0/the     !!
+!! oxidation-state assignment (see ueos_analysis).                        !!
+          if(ineg.gt.0) then
+!$OMP PARALLEL DO PRIVATE(ii,iorb,icenter,jcenter,jj,kk,xx,xxx)
+            do ii=1,ineg
+              iorb=igr-ineg+ii
+              xxx=ZERO
+              do icenter=1,nfrlist(iicenter)
+                jcenter=ifrlist(icenter,iicenter)
+                xx=ZERO
+                do jj=1,igr
+                  do kk=1,igr
+                    xx=xx+c0(kk,iorb)*sat(kk,jj,jcenter)*c0(jj,iorb)
+                  end do
+                end do
+                xxx=xxx+xx
+              end do
+              xxx=xxx*pp0(iorb,iorb)
+              xneg_gro(ii,iicenter)=xxx
+              xneg_net(ii,iicenter)=pp0(iorb,iorb)
+              do kk=1,igr
+                cneg(kk,ii,iicenter)=c0(kk,iorb)
+              end do
+            end do
+!$OMP END PARALLEL DO
+          end if
+          if(iueos.eq.1.and.icase.eq.1) ineg_frg(iicenter)=ineg
+
 !! just for printing purposes... style of the output !!
           if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
 
@@ -238,7 +296,8 @@
 !! electron/oxidation-state assignment across both channels together,   !!
 !! using gross populations                                              !!
       if(iueos.eq.1) then
-        call ueos_analysis(iup0,up0gro,up0coef,poolcoef)
+        call ueos_analysis(iup0,up0gro,up0coef,poolcoef,
+     +    ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg)
 
 !! pooled paired/unpaired EFOs as fake Alpha/Beta MOs in a .fchk, for    !!
 !! visualization in any standard viewer -- printed by default, same as  !!
@@ -269,6 +328,7 @@
       DEALLOCATE(scr,c0,pp0,s0all)
       DEALLOCATE(Pno,Uno)
       DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef)
+      DEALLOCATE(ineg_frg,xneg_net,xneg_gro,cneg)
 
 60    FORMAT("  OCCUP.",8f9.4)
 
@@ -294,9 +354,18 @@
 !!                    channel, fragment)                                 !!
 !!   poolcoef (out) -- pooled+sorted EFO coefficients, per (basis fn,    !!
 !!                    pooled index truncated to igr, channel)            !!
+!!   ineg_frg (in) -- number of significant-negative-occupation paired   !!
+!!                    EFOs found per fragment (effao3d_u)                !!
+!!   xneg_net (in) -- their net occupation, per (index, fragment)        !!
+!!   xneg_gro (in) -- their gross occupation, per (index, fragment)      !!
+!!   cneg     (in) -- their AO coefficients, per (basis fn, index,       !!
+!!                    fragment)                                          !!
+!!   xminocc_neg (in) -- the negative-occupation threshold, for the      !!
+!!                    console report below                               !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      subroutine ueos_analysis(iup0,up0gro,up0coef,poolcoef)
+      subroutine ueos_analysis(iup0,up0gro,up0coef,poolcoef,
+     +  ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg)
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -310,11 +379,14 @@
       dimension iup0(2,icufr),up0gro(2,igr,icufr)
       dimension up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2)
       dimension iorbslot(nmax,2)
+      dimension ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr)
+      dimension cneg(igr,igr,icufr)
 
       allocatable :: tmp_occup(:),tmp_iorbat(:),tmp_iorbslot(:)
       allocatable :: elec2(:,:),elec_id(:,:)
       allocatable :: tmp_elec_id(:,:)
       allocatable :: elec_frg_count(:,:)
+      allocatable :: xnegnet_pool(:),xneggro_pool(:),neg_frg(:),neg_slot(:)
 
 !! pool every fragment's EFOs into one list per channel (1=paired,      !!
 !! 2=unpaired); iorbslot keeps each pooled slot's local (within-        !!
@@ -372,15 +444,78 @@
         DEALLOCATE(tmp_occup,tmp_iorbat,tmp_iorbslot)
       end do
 
-!! build the final, igr-wide pooled coefficient matrix per channel from !!
+!! pool every fragment's significant-negative-occupation paired EFOs      !!
+!! (effao3d_u) into one flat list, then sort by decreasing net occupation !!
+!! (least-negative first, most-negative last) -- independent of the       !!
+!! positive-channel pooling above, and never fed into occup/iorbat/lorb   !!
+!! or the electron-assignment logic below.                                !!
+      nneg=0
+      do ifrg=1,icufr
+        nneg=nneg+ineg_frg(ifrg)
+      end do
+
+      if(nneg.gt.0) then
+        ALLOCATE(xnegnet_pool(nneg),xneggro_pool(nneg),neg_frg(nneg),neg_slot(nneg))
+        iorb=0
+        do ifrg=1,icufr
+          do kk=1,ineg_frg(ifrg)
+            iorb=iorb+1
+            xnegnet_pool(iorb)=xneg_net(kk,ifrg)
+            xneggro_pool(iorb)=xneg_gro(kk,ifrg)
+            neg_frg(iorb)=ifrg
+            neg_slot(iorb)=kk
+          end do
+        end do
+
+        do ii=1,nneg-1
+          do jj=ii+1,nneg
+            if(xnegnet_pool(ii).lt.xnegnet_pool(jj)) then
+              tmp_swap=xnegnet_pool(ii)
+              xnegnet_pool(ii)=xnegnet_pool(jj)
+              xnegnet_pool(jj)=tmp_swap
+
+              tmp_swap=xneggro_pool(ii)
+              xneggro_pool(ii)=xneggro_pool(jj)
+              xneggro_pool(jj)=tmp_swap
+
+              itmp_swap=neg_frg(ii)
+              neg_frg(ii)=neg_frg(jj)
+              neg_frg(jj)=itmp_swap
+
+              itmp_swap=neg_slot(ii)
+              neg_slot(ii)=neg_slot(jj)
+              neg_slot(jj)=itmp_swap
+            end if
+          end do
+        end do
+
+        write(*,*)
+        write(*,'(2x,a,i0,a)') 'Found ',nneg,
+     +    ' EFO(s) with significant negative occupation in the paired channel'
+        write(*,'(2x,a,f7.4,a)') '(net occupation < ',xminocc_neg,
+     +    '), excluded from oxidation-state assignment:'
+        do ii=1,nneg
+          write(*,'(4x,a,i0,3x,a,f8.4,3x,a,f8.4)') 'Frag. ',neg_frg(ii),
+     +      ' Net occ. ',xnegnet_pool(ii),' Gross occ. ',xneggro_pool(ii)
+        end do
+        write(*,*)
+      end if
+
+!! build the final, igr-wide pooled coefficient matrix per channel from  !!
 !! the sorted order above -- zero-initialized, so any channel with      !!
 !! fewer than igr pooled EFOs above threshold is correctly zero-padded  !!
-!! (always the opposite in practice: more pooled EFOs than igr). Left   !!
+!! (always the opposite in practice: more pooled EFOs than igr). The    !!
+!! paired channel (icase=1) reserves its last nneg slots for the        !!
+!! significant-negative-occupation EFOs pooled/sorted above instead of  !!
+!! the next positive ones -- unpaired (icase=2) is never affected, this !!
+!! only ever happens for GEOS's paired density (see effao3d_u). Left    !!
 !! serial: at most 2*igr*igr copies, once per run, negligible next to   !!
 !! the O(igr^2)/O(igr^3) diagonalization work already done above.       !!
       poolcoef=ZERO
       do icase=1,2
-        do jj=1,MIN(lorb(icase),igr)
+        nwin=igr
+        if(icase.eq.1) nwin=igr-nneg
+        do jj=1,MIN(lorb(icase),nwin)
           ii=iorbat(jj,icase)
           kk=iorbslot(jj,icase)
           do mu=1,igr
@@ -388,6 +523,16 @@
           end do
         end do
       end do
+
+      if(nneg.gt.0) then
+        do jj=1,nneg
+          ii=neg_frg(jj)
+          kk=neg_slot(jj)
+          do mu=1,igr
+            poolcoef(mu,igr-nneg+jj,1)=cneg(mu,kk,ii)
+          end do
+        end do
+      end if
 
 !! ideal-occupation matrix, sized to the larger of the two EFO counts !!
       ilorb=MAX(lorb(1),lorb(2))
@@ -398,6 +543,18 @@
 !! section, not whole-array -- keeps elec2 at ilorb (a bare "=occup"    !!
 !! would auto-reallocate to occup's own (nmax,2) shape, F2003 semantics) !!
       elec2=occup(1:ilorb,1:2)
+
+!! patch the paired channel's tail slots with the negative EFOs' gross    !!
+!! occupation, matching where poolcoef placed their coefficients above -- !!
+!! purely cosmetic, feeds the .fchk writers' fake orbital energies        !!
+!! (print.f, occup(:,1)) with zero changes needed there. Done only after  !!
+!! elec2 has already captured the real (unpatched) values above, so the   !!
+!! electron-assignment logic below never sees these EFOs.                 !!
+      if(nneg.gt.0) then
+        do jj=1,nneg
+          occup(igr-nneg+jj,1)=xneggro_pool(jj)
+        end do
+      end if
 
 !! ideal assignment: nunp electrons forced unpaired (|nalf-nb|), the    !!
 !! rest as electron pairs                                               !!
@@ -488,6 +645,14 @@
           end if
         end do
       end do
+
+!! bump the paired channel's reported EFO count up to igr so print.f's   !!
+!! writers (rwf/rwfu/uwf_effao_orbprint, called after this returns) walk !!
+!! occup(:,1) all the way to where the negative-EFO tail was patched     !!
+!! above, even on a small system where the true positive-EFO count      !!
+!! (lorb(1)) is below igr -- every electron-assignment use of lorb(1)    !!
+!! above has already completed by this point, so this is safe.          !!
+      if(nneg.gt.0) lorb(1)=MAX(lorb(1),igr)
 
       write(*,'(2x,a)') 'Electrons assigned per fragment (paired / unpaired):'
       do ifrg=1,icufr
@@ -589,6 +754,7 @@
       write(*,'(2x,a34,x,f7.3)') "ELECTRONIC ASSIGNMENT RMSD VALUE =",xrmsd
 
       DEALLOCATE(elec_id,elec2,elec_frg_count)
+      if(nneg.gt.0) DEALLOCATE(xnegnet_pool,xneggro_pool,neg_frg,neg_slot)
 
 10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3)
 15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
