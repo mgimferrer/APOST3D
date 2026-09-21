@@ -1,58 +1,37 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# compile_libxc.sh — fetch, verify, and build libxc 7.1.2 with GCC/gfortran
+# compile_libxc.sh — fetch, verify, and build the pinned libxc release
 #
-# libxc is distributed as source only (no prebuilt binaries, no published
-# checksums beyond what we record ourselves here) — see libxc.gitlab.io/download.
-# This script fetches the exact pinned release tag archive from upstream,
-# verifies it against a recorded SHA256, and builds+installs it via CMake
-# into libxc-<version>/ under APOST3D_PATH — the same self-contained-prefix
-# convention the old libxc-4.2.3 setup used.
+# libxc ships source-only, no prebuilt binaries or published checksums.
+# Fetches the pinned release tag archive from upstream, verifies it
+# against the recorded SHA256, and builds+installs it via CMake into
+# libxc-<version>/ under APOST3D_PATH.
 #
-# CMake, not Autotools: verified 2026-09-21 that CMake (>= 3.21, required by
-# libxc's own CMakeLists.txt) builds libxc 7.1.2's Fortran interface
-# correctly — full parity with an Autotools build, confirmed by running
-# APOST3D's entire test suite against both. CMake also needs no bootstrap
-# step (Autotools' `autoreconf -fi`, and the autoconf/automake/libtool
-# prerequisites that implies, since the release tag archive ships no
-# pre-generated `configure`) and correctly detects the platform's own
-# archiver on its own (no GNU-vs-BSD ar/ranlib workaround needed, unlike
-# the old libxc-4.2.3 Autotools setup). Autotools is upstream's own
-# recommended default for older libxc releases, and is explicitly flagged
-# for removal in libxc 8.0.0 — CMake is also just the forward-compatible
-# choice for whenever the pinned version is next bumped.
+# CMake over Autotools: no bootstrap step needed (the tag archive ships
+# no pre-generated `configure`), fewer prerequisites, and Autotools is
+# deprecated upstream as of libxc 8.0.0.
 #
-# Usually you don't need to run this directly: make_compile.sh probes for
-# an already-usable libxc (an explicit LIBXC_DIR, a system/conda/Homebrew
-# install registered with pkg-config) first, and only falls back to this
-# script when nothing suitable is found.
+# Normally invoked automatically by make_compile.sh, which probes for an
+# already-usable libxc first and only falls back to this script.
 #
 # Usage:
 #   export APOST3D_PATH=/path/to/APOST3D
 #   bash compile_libxc.sh
 #
-# Air-gapped / no internet egress: pre-download the exact tarball below
-# (matching the recorded SHA256) and place it at
-# $APOST3D_PATH/libxc-7.1.2.tar.gz before running this script — it will
-# be used as-is instead of fetching.
+# No internet egress (air-gapped HPC): pre-place the tarball at
+# $APOST3D_PATH/libxc-<version>.tar.gz (matching LIBXC_SHA256 below) and
+# it will be used as-is instead of downloaded.
 # ==============================================================================
 
 set -euo pipefail
 
-# ------------------------------------------------------------------------------
-# Pinned version. Bumping this is a deliberate, reviewed action (different
-# libxc releases can carry different numerics for edge cases) — don't
-# auto-track "latest". Update LIBXC_SHA256 together with LIBXC_VERSION if
-# the pin ever moves.
-# ------------------------------------------------------------------------------
+# Pinned version -- don't auto-track "latest". Update LIBXC_SHA256 together
+# with LIBXC_VERSION when the pin moves.
 LIBXC_VERSION="7.1.2"
 LIBXC_URL="https://gitlab.com/libxc/libxc/-/archive/${LIBXC_VERSION}/libxc-${LIBXC_VERSION}.tar.gz"
 LIBXC_SHA256="c517ce61820ea8114664a4280b6a6bc74a4f22f1fd1ea4ddecd6df0caeeae4f4"
 LIBXC_CMAKE_MIN="3.21"
 
-# ------------------------------------------------------------------------------
-# Require APOST3D_PATH
-# ------------------------------------------------------------------------------
 if [[ -z "${APOST3D_PATH:-}" ]]; then
   echo "ERROR: APOST3D_PATH is not set."
   echo "       Run:  export APOST3D_PATH=/path/to/APOST3D"
@@ -62,13 +41,8 @@ fi
 LIBXCDIR="${APOST3D_PATH}/libxc-${LIBXC_VERSION}"
 TARBALL="${APOST3D_PATH}/libxc-${LIBXC_VERSION}.tar.gz"
 
-# ------------------------------------------------------------------------------
-# Auto-detect gcc / gfortran
-# Homebrew on macOS installs versioned binaries (gcc-14, gfortran-14, …),
-# and macOS's own /usr/bin/gcc is actually AppleClang in disguise — prefer
-# the versioned name so we don't silently hand CMake the wrong C compiler
-# for a Fortran-interoperable build.
-# ------------------------------------------------------------------------------
+# macOS's /usr/bin/gcc is AppleClang in disguise -- prefer Homebrew's
+# versioned binary (gcc-14 etc.) to avoid handing CMake the wrong compiler.
 find_compiler() {
   local name="$1"
   for v in 16 15 14 13 12 11 10; do
@@ -103,14 +77,8 @@ fi
 echo "Using C compiler  : $CC_CMD  ($(${CC_CMD} --version | head -1))"
 echo "Using FC compiler : $FC_CMD  ($(${FC_CMD} --version | head -1))"
 
-# ------------------------------------------------------------------------------
-# CMake prerequisite (>= 3.21, per libxc's own CMakeLists.txt).
-# Not needed by anything else in this codebase, so check explicitly with a
-# real version comparison rather than let a cryptic CMake error surface
-# mid-configure. If the system cmake is too old (common on conservative
-# HPC distros), `pip install --user cmake` or `pipx install cmake` gets a
-# modern prebuilt one with no compilation and no root needed.
-# ------------------------------------------------------------------------------
+# CMake >= 3.21 required (libxc's own CMakeLists.txt). Checked explicitly
+# so a version mismatch fails clearly instead of mid-configure.
 if ! command -v cmake &>/dev/null; then
   echo "ERROR: cmake not found (>= ${LIBXC_CMAKE_MIN} required)."
   echo "       Install with:"
@@ -132,9 +100,7 @@ fi
 echo "Using cmake       : $(command -v cmake)  (${CMAKE_VERSION})"
 echo ""
 
-# ------------------------------------------------------------------------------
-# Fetch (or reuse a pre-placed tarball) and verify checksum.
-# ------------------------------------------------------------------------------
+# Fetch (or reuse a pre-placed tarball), then verify checksum.
 cd "$APOST3D_PATH"
 
 if [[ -f "$TARBALL" ]]; then
@@ -177,20 +143,14 @@ fi
 echo "  OK: $ACTUAL_SHA256"
 echo ""
 
-# ------------------------------------------------------------------------------
-# Extract (always start from a clean tree)
-# ------------------------------------------------------------------------------
+# Always extract into a clean tree.
 echo "Extracting libxc-${LIBXC_VERSION}.tar.gz ..."
 rm -rf "$LIBXCDIR"
 tar -xzf "$TARBALL"
 echo ""
 
-# ------------------------------------------------------------------------------
-# Configure, build, install via CMake — installs into itself (LIBXCDIR) as
-# prefix, same self-contained convention as the old libxc-4.2.3 setup.
-# Static-only: apost3d links libxc in directly, no need to ship/rpath a
-# shared lib. ENABLE_FORTRAN is OFF by default upstream, must opt in.
-# ------------------------------------------------------------------------------
+# Configure, build, install via CMake into LIBXCDIR itself. Static-only
+# (apost3d links libxc in directly). ENABLE_FORTRAN defaults OFF upstream.
 cd "$LIBXCDIR"
 echo "Running cmake configure ..."
 cmake -B build \
