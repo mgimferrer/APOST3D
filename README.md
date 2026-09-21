@@ -28,9 +28,9 @@ throughout — no Intel compiler, no MKL, no license of any kind required.
 libxc (exchange-correlation functionals) is fetched and built
 automatically on first run if no suitable install (≥ 5, e.g. from a
 distro package, conda, or Homebrew) is already found — this needs
-`autoconf`/`automake`/`libtool` (e.g. `brew install autoconf automake
-libtool` on macOS, `apt install autoconf automake libtool` on
-Debian/Ubuntu), only if that automatic build actually has to run.
+**CMake ≥ 3.21** (e.g. `brew install cmake` on macOS, `apt install
+cmake` on Debian/Ubuntu), only if that automatic build actually has to
+run.
 
 ```bash
 # 1. Clone the repository

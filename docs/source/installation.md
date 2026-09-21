@@ -10,33 +10,42 @@ matching the same reasoning behind the ifort → gfortran move itself.
 
 libxc (exchange-correlation functionals — see the admonition below) is
 handled automatically by `make_compile.sh`, but if it needs to build its
-own copy from source, that build needs `autoconf`/`automake`/`libtool`
-too — install them up front to avoid a mid-build stop.
+own copy from source, that build needs **CMake ≥ 3.21** too — install it
+up front to avoid a mid-build stop.
 
 **Debian / Ubuntu / Linux Mint**
 
 ```bash
 sudo apt update
-sudo apt install gfortran gcc make libopenblas-dev autoconf automake libtool
+sudo apt install gfortran gcc make libopenblas-dev cmake
 ```
 
 **Fedora / RHEL / Rocky Linux**
 
 ```bash
-sudo dnf install gcc-gfortran gcc make openblas-devel autoconf automake libtool
+sudo dnf install gcc-gfortran gcc make openblas-devel cmake
 ```
 
 **openSUSE**
 
 ```bash
-sudo zypper install gcc-fortran gcc make openblas-devel autoconf automake libtool
+sudo zypper install gcc-fortran gcc make openblas-devel cmake
 ```
 
 **macOS (via Homebrew)**
 
 ```bash
-brew install gcc openblas autoconf automake libtool
+brew install gcc openblas cmake
 # gfortran ships bundled with gcc, e.g. as gfortran-14
+```
+
+```{admonition} CMake too old on your system?
+:class: tip
+
+Common on conservative HPC distros. `pip install --user cmake` (or
+`pipx install cmake`) gets a modern prebuilt binary with nothing to
+compile and no root needed — same spirit as the OpenBLAS/libxc
+"lives somewhere nonstandard" escape hatches below.
 ```
 
 ```{admonition} macOS: openblas is keg-only
@@ -82,7 +91,7 @@ Unlike OpenBLAS, libxc has no near-universal system package, so
 explicit `LIBXC_DIR` you set yourself, then `pkg-config` (covers a
 distro package, a conda environment, or Homebrew's `libxc` formula on
 macOS), in that order — and only if none of those are found does it
-fetch and build its own pinned copy under `libxc-<version>/`
+fetch and build its own pinned copy under `libxc-<version>/` via CMake
 (`compile_libxc.sh`, called automatically). That fetch step needs
 network access to `gitlab.com` and verifies the download against a
 checksum recorded in the script before building; on an air-gapped
