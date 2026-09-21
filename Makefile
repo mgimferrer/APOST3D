@@ -18,7 +18,10 @@ FC       = gfortran
 FC_INP   = gfortran
 
 ## DIRECTORIES
-LIBXCDIR = $(APOST3D_PATH)/libxc-7.1.2
+# LIBXC_VERSION is read from compile_libxc.sh (the one place it's pinned)
+# rather than repeated here, so a version bump only ever needs editing once.
+LIBXC_VERSION := $(shell grep -m1 '^LIBXC_VERSION=' $(APOST3D_PATH)/compile_libxc.sh | sed -E 's/^LIBXC_VERSION="([^"]+)"/\1/')
+LIBXCDIR = $(APOST3D_PATH)/libxc-$(LIBXC_VERSION)
 QUADDIR  = $(APOST3D_PATH)/lebedev
 SRCDIR   = $(APOST3D_PATH)/sources
 OBJDIR   = $(APOST3D_PATH)/objects

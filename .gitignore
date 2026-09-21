@@ -23,15 +23,11 @@ objects/
 testrun_*/
 ## libxc: fetched tarball + built tree (compile_libxc.sh fetches the
 ## pinned release from upstream and builds it here -- neither is
-## committed; see compile_libxc.sh for the pinned version/checksum)
+## committed; see compile_libxc.sh for the pinned version/checksum).
+## Glob, not a pinned version number, so a future version bump needs no
+## .gitignore edit.
 libxc-*.tar.gz
-libxc-7.1.2/
-## Configure junk (leftover from libxc configure runs)
-confdefs.h
-conftest
-conftest.*
-conftest2.*
-out/
+libxc-*/
 ## OSLO visualization output (written by apost3d itself during OSLO runs,
 ## e.g. if run manually inside compiler-testset/ instead of an isolated
 ## tempdir — not required input, regenerated on every run)
