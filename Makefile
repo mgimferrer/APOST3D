@@ -47,13 +47,10 @@ SFLAGS    = -ffixed-line-length-132 -fallow-argument-mismatch
 ## FULL FLAG SET
 FFLAGS    = $(OPTFLAGS) $(DBGFLAGS) $(OMPFLAGS) $(SFLAGS)
 
-## LIBXC (exchange-correlation functionals, xc_f03_* Fortran interface) —
-## layered detection, same pattern as OPENBLAS_LIB below: an explicit
-## override always wins, then pkg-config (what a system/conda/distro/
-## Homebrew install registers), then the bundled copy built by
-## compile_libxc.sh under LIBXCDIR. --static pulls in libxcf03.pc's
-## Requires.private (libxc itself) explicitly, needed for our own
-## --enable-shared=no bundled build and harmless against a shared one.
+## LIBXC (xc_f03_* Fortran interface) — layered detection, same pattern as
+## OPENBLAS_LIB below: override, then pkg-config, then the bundled copy
+## built by compile_libxc.sh. --static pulls in libxc itself via
+## libxcf03.pc's Requires.private (needed for our static bundled build).
 ifdef LIBXC_DIR
 LIBXC_INC = -I$(LIBXC_DIR)/include
 LIBXC_LIB = -L$(LIBXC_DIR)/lib -lxcf03 -lxc -lm
@@ -141,18 +138,15 @@ apost3d: $(OBJ_LIST) $(QUAD_OBJ)
 	  -o $(APOST3D_PATH)/apost3d
 
 ## LEBEDEV QUADRATURE OBJECT
-## Not tracked in git (build artifact) — depends on its source so editing
-## Lebedev-Laikov.F actually triggers a rebuild (same class of fix as modules.o).
+## Not tracked in git (build artifact); depends on its source so edits trigger a rebuild.
 $(QUADDIR)/Lebedev-Laikov.o: $(QUADDIR)/Lebedev-Laikov.F
 	$(FC) -c $(FFLAGS) $(QUADDIR)/Lebedev-Laikov.F -o $@
 
 ## F90 MODULES (must be compiled first — other sources USE these modules)
-# Depends on modules.f90 itself so that editing it (or a `make clean`
-# regenerating it under a different compiler) correctly triggers a rebuild.
-# Produces modules.o AND the .mod interface files (ao_matrices.mod,
-# basis_set.mod, integration_grid.mod) together in the same recipe, written
-# to $(APOST3D_PATH) (no -J given, so gfortran uses the cwd — this Makefile
-# is always invoked with `make -C $(APOST3D_PATH)`).
+# Produces modules.o plus the .mod interface files (ao_matrices.mod,
+# basis_set.mod, integration_grid.mod) in one recipe. No -J given, so
+# gfortran writes .mod files to the cwd ($(APOST3D_PATH), since this
+# Makefile is always invoked with `make -C $(APOST3D_PATH)`).
 $(SRCDIR)/modules.o: $(SRCDIR)/modules.f90
 	$(FC) -c $(FFLAGS) $(LIBXC_INC) \
 	  $(SRCDIR)/modules.f90 -o $@

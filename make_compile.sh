@@ -2,9 +2,6 @@
 # ==============================================================================
 # make_compile.sh — compile APOST-3D with GCC/gfortran
 #
-# Replaces the old Intel ifort/PGO two-step build with a single-
-# step portable gfortran build. No Profile-Guided Optimisation required.
-#
 # Usage:
 #   export APOST3D_PATH=/path/to/APOST3D   # or edit DEFAULT below
 #   bash make_compile.sh [clean] [NTHREADS=N] [help]
@@ -41,7 +38,7 @@ NTHREADS=""
 for arg in "$@"; do
   case "$arg" in
     help|--help|-h)
-      sed -n '2,25p' "$0" | sed 's/^# \{0,2\}//'
+      sed -n '2,22p' "$0" | sed 's/^# \{0,2\}//'
       exit 0
       ;;
     clean)
@@ -82,14 +79,10 @@ LIBXC_VERSION="$(grep -m1 '^LIBXC_VERSION=' "$APOST3D_PATH/compile_libxc.sh" | s
 BUNDLED_LIBXC_A="$APOST3D_PATH/libxc-${LIBXC_VERSION}/lib/libxcf03.a"
 
 # ------------------------------------------------------------------------------
-# libxc preflight/auto-build: probe for an already-usable libxc (>= 5,
-# xc_f03_* Fortran interface) first -- same layered order the Makefile
-# itself uses (LIBXC_DIR override, then pkg-config, then Homebrew's
-# keg-only prefix fed into pkg-config) -- and only fall back to fetching
-# and building our own bundled copy if none of those are found. This is
-# the one-command first-time-setup goal: a brand-new user never has to
-# remember to run compile_libxc.sh separately. Once libxc exists (detected
-# or freshly built), every subsequent call skips straight past this block.
+# libxc preflight/auto-build: probe for an already-usable libxc first, same
+# layered order as the Makefile (LIBXC_DIR override, then pkg-config, then
+# Homebrew's keg-only prefix), and only fetch+build our own bundled copy if
+# none of those are found.
 # ------------------------------------------------------------------------------
 LIBXC_READY=0
 if [[ -n "${LIBXC_DIR:-}" ]]; then
@@ -132,8 +125,7 @@ fi
 #      search path so step 2 catches it uniformly.
 #   4. Bare -lopenblas, relying on the default linker search path or an
 #      HPC `module load` that already exported LIBRARY_PATH/LD_LIBRARY_PATH.
-# Actually links a test program (not just checks for a file), since that's
-# what will actually be needed at build time.
+# Links a real test program, not just a file-existence check.
 # ------------------------------------------------------------------------------
 if [[ -n "${OPENBLAS_DIR:-}" ]]; then
   OPENBLAS_LDFLAGS="-L$OPENBLAS_DIR/lib -lopenblas"
@@ -223,16 +215,10 @@ echo "============================================================"
 echo ""
 
 # ------------------------------------------------------------------------------
-# Compiler-identity drift check.
-#
-# gfortran .mod files are NOT portable across compiler versions ("Cannot read
-# module file ... created by a different version of GNU Fortran"). The
-# Makefile's file-timestamp dependencies can't detect "same source, different
-# compiler" — only a change in the *compiler itself* triggers this. So we
-# stamp the compiler identity used for the last build and compare it here;
-# if it changed (new gfortran version, switched machines, etc.) we force a
-# clean before rebuilding instead of letting a cryptic module-version error
-# surface mid-build.
+# Compiler-identity drift check. gfortran .mod files aren't portable across
+# compiler versions, and the Makefile's timestamp-based deps can't detect
+# "same source, different compiler" — so stamp the compiler used for the
+# last build and force a clean if it changed.
 # ------------------------------------------------------------------------------
 COMPILER_STAMP="$APOST3D_PATH/objects/.gfortran_version"
 
@@ -269,14 +255,10 @@ make -f "$MAKEFILE" -C "$APOST3D_PATH" all
 echo ""
 
 # ------------------------------------------------------------------------------
-# Ad-hoc code signing (required on macOS, especially Apple Silicon, for
-# GCC-compiled binaries to be allowed to map the dyld shared cache — without
-# this, launching the binary fails with something like:
-#   dyld[...]: Library not loaded: /usr/lib/libSystem.B.dylib
-#              ... (no such file, no dyld cache)
-# which looks like a missing-library problem but is actually a missing/
-# invalid code signature. codesign doesn't exist on Linux, so this whole
-# block is skipped there — safe cross-platform.
+# Ad-hoc code signing (macOS/Apple Silicon: GCC-compiled binaries need a
+# valid signature to map the dyld shared cache, or they fail to launch with
+# a misleading "Library not loaded" error). codesign doesn't exist on
+# Linux, so this block is a no-op there.
 # ------------------------------------------------------------------------------
 if command -v codesign &>/dev/null; then
   echo "--- Ad-hoc code signing (macOS) ---"
@@ -310,16 +292,10 @@ done
 echo ""
 
 # ------------------------------------------------------------------------------
-# Smoke test: actually LAUNCH each binary, not just check the file exists.
-# A binary can exist, be executable, and still fail to launch (wrong
-# architecture, missing/invalid code signature, missing shared library) —
-# that only shows up at process-start time. Catching it here, once, with a
-# clear message, is a lot friendlier than the test suite reporting the same
-# dyld failure independently for every single test case.
-# All three are invoked with no arguments and stdin redirected from
-# /dev/null: apost3d and apost3d-eos read argc, print a usage/STOP message,
-# and exit immediately without touching stdin; eos_aom is defensively given
-# /dev/null too in case it ever prompts.
+# Smoke test: launch each binary. A binary can exist and be executable yet
+# still fail to launch (wrong arch, bad signature, missing shared lib) —
+# only shows up at process start. stdin is /dev/null since all three read
+# argc and exit immediately without prompting.
 # ------------------------------------------------------------------------------
 echo "--- Smoke test (launching each binary) ---"
 SMOKE_FAILED=0

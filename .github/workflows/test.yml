@@ -53,17 +53,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: libxc-${{ steps.toolchain.outputs.libxc_version }}
-          # Cache key includes the *actual resolved* compiler version so a
-          # gfortran upgrade on the runner image invalidates the cache
-          # (.mod files aren't portable across compiler versions). Hashing
-          # this workflow file instead of the real version (an earlier
-          # approach) missed exactly that case: the runner image can bump
-          # its default gfortran without this file ever changing, leaving
-          # a stale cached libxc built by a now-mismatched compiler --
-          # this is what broke run #53 (2026-08-30). Also keyed on the
-          # pinned libxc version itself (not a tarball hash -- the source
-          # tarball is fetched from upstream at build time, not committed)
-          # so a future version bump correctly invalidates the cache too.
+          # Keyed on both the resolved compiler version (.mod files aren't
+          # portable across gfortran versions -- a runner image compiler
+          # bump must invalidate the cache) and the pinned libxc version
+          # (not a tarball hash, since the tarball isn't committed).
           key: libxc-${{ steps.toolchain.outputs.libxc_version }}-${{ runner.os }}-gfortran-${{ steps.toolchain.outputs.gfortran_version }}
 
       - name: Build libxc
