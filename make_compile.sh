@@ -154,6 +154,9 @@ program t
   print *, "ok"
 end program t
 EOF
+# shellcheck disable=SC2086  # OPENBLAS_LDFLAGS is intentionally unquoted: it
+# can hold multiple space-separated flags (e.g. "-L/path -lopenblas") that
+# must split into separate arguments.
 if ! gfortran "$OPENBLAS_TEST_DIR/t.f90" $OPENBLAS_LDFLAGS -o "$OPENBLAS_TEST_DIR/t" &>/dev/null; then
   echo "ERROR: could not link against OpenBLAS (needed for LAPACK's dsyevd,"
   echo "       used by diagonalize() in sources/util.f)."
