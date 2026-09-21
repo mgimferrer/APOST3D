@@ -15,7 +15,6 @@
 
 ## COMPILER
 FC       = gfortran
-FC_INP   = gfortran
 
 ## DIRECTORIES
 # LIBXC_VERSION is read from compile_libxc.sh (the one place it's pinned)
@@ -126,7 +125,7 @@ OBJ_LIST_EOS := $(SRCDIR)/modules.o \
 ## BUILD TARGETS                                             ##
 ## --------------------------------------------------------- ##
 
-.PHONY: all clean util
+.PHONY: all clean test update-ref coverage help
 
 all: apost3d apost3d-eos eos_aom
 
@@ -144,11 +143,11 @@ $(QUADDIR)/Lebedev-Laikov.o: $(QUADDIR)/Lebedev-Laikov.F
 
 ## F90 MODULES (must be compiled first — other sources USE these modules)
 # Produces modules.o plus the .mod interface files (ao_matrices.mod,
-# basis_set.mod, integration_grid.mod) in one recipe. No -J given, so
-# gfortran writes .mod files to the cwd ($(APOST3D_PATH), since this
-# Makefile is always invoked with `make -C $(APOST3D_PATH)`).
+# basis_set.mod, integration_grid.mod) in one recipe. -J sends the .mod
+# files to $(OBJDIR) instead of littering the repo root; every rule below
+# that depends on modules.o adds -I$(OBJDIR) to find them again.
 $(SRCDIR)/modules.o: $(SRCDIR)/modules.f90
-	$(FC) -c $(FFLAGS) $(LIBXC_INC) \
+	$(FC) -c $(FFLAGS) $(LIBXC_INC) -J$(OBJDIR) \
 	  $(SRCDIR)/modules.f90 -o $@
 
 ## input2.f compiled WITHOUT -ffast-math to avoid floating-point parsing issues
@@ -156,23 +155,24 @@ $(SRCDIR)/modules.o: $(SRCDIR)/modules.f90
 # a different gfortran version) forces a recompile instead of a confusing
 # "module file created by a different version of GNU Fortran" error.
 $(OBJDIR)/input2.o: $(SRCDIR)/input2.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
-	$(FC_INP) -c -O1 $(SFLAGS) $(DBGFLAGS) \
-	  $(LIBXC_INC) \
+	$(FC) -c -O1 $(SFLAGS) $(DBGFLAGS) \
+	  $(LIBXC_INC) -I$(OBJDIR) \
 	  $(SRCDIR)/input2.f -o $@
 
 ## GENERAL RULE for all other .f sources
 # Depends on modules.o for the same reason as input2.o above (see comment).
 $(OBJDIR)/%.o: $(SRCDIR)/%.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
-	$(FC) -c $(FFLAGS) $(LIBXC_INC) $< -o $@
+	$(FC) -c $(FFLAGS) $(LIBXC_INC) -I$(OBJDIR) $< -o $@
 
 ## UTILS
 # Also depend on modules.o: several utils (e.g. eos_aom.f90, eos_alt.f90)
-# USE the same F90 modules as the main sources.
+# USE the same F90 modules as the main sources. -I$(SRCDIR) is for
+# `include 'parameter.h'`, separate from -I$(OBJDIR)'s module search.
 $(UTILDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
-	$(FC) -c $(FFLAGS) -I$(SRCDIR) $< -o $@
+	$(FC) -c $(FFLAGS) -I$(SRCDIR) -I$(OBJDIR) $< -o $@
 
 $(UTILDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
-	$(FC) -c $(FFLAGS) -I$(SRCDIR) $< -o $@
+	$(FC) -c $(FFLAGS) -I$(SRCDIR) -I$(OBJDIR) $< -o $@
 
 ## STANDALONE EOS EXECUTABLE
 apost3d-eos: $(SRCDIR)/modules.o $(UTILDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
@@ -184,9 +184,6 @@ apost3d-eos: $(SRCDIR)/modules.o $(UTILDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OB
 ## EOS-AOM UTILITY
 eos_aom: $(UTILDIR)/eos_aom.o
 	$(FC) $(FFLAGS) $(UTILDIR)/eos_aom.o -o $(APOST3D_PATH)/eos_aom
-
-## UTILS TARGET (compile utility programs)
-util: eos_aom
 
 ## TEST SUITE
 # Build (if needed) and run the ENTIRE regression test suite — every case in
@@ -260,11 +257,10 @@ coverage:
 ## CLEAN
 clean:
 	rm -f $(SRCDIR)/modules.o \
-	      $(SRCDIR)/*.mod \
 	      $(OBJDIR)/*.o \
+	      $(OBJDIR)/*.mod \
 	      $(UTILDIR)/*.o \
 	      $(QUADDIR)/Lebedev-Laikov.o \
-	      *.mod \
 	      $(APOST3D_PATH)/apost3d \
 	      $(APOST3D_PATH)/apost3d-eos \
 	      $(APOST3D_PATH)/eos_aom
@@ -300,7 +296,5 @@ help:
 	@echo ""
 	@echo "For narrower test runs (single test, tag filter, verbose output),"
 	@echo "call the runner directly: python3 tests/run_tests.py --help"
-
-.PHONY: test update-ref coverage help
 
 ## END Makefile
