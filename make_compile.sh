@@ -69,14 +69,17 @@ fi
 # Checks
 # ------------------------------------------------------------------------------
 MAKEFILE="$APOST3D_PATH/Makefile"
-LIBXC_VERSION="7.1.2"
-BUNDLED_LIBXC_A="$APOST3D_PATH/libxc-${LIBXC_VERSION}/lib/libxcf03.a"
 
 if [[ ! -f "$MAKEFILE" ]]; then
   echo "ERROR: Makefile not found at $APOST3D_PATH"
   echo "       Make sure APOST3D_PATH is set correctly."
   exit 1
 fi
+
+# Read from compile_libxc.sh (the one place it's pinned) rather than
+# repeated here, so a version bump only ever needs editing once.
+LIBXC_VERSION="$(grep -m1 '^LIBXC_VERSION=' "$APOST3D_PATH/compile_libxc.sh" | sed -E 's/^LIBXC_VERSION="([^"]+)"/\1/')"
+BUNDLED_LIBXC_A="$APOST3D_PATH/libxc-${LIBXC_VERSION}/lib/libxcf03.a"
 
 # ------------------------------------------------------------------------------
 # libxc preflight/auto-build: probe for an already-usable libxc (>= 5,
