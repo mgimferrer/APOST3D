@@ -671,7 +671,7 @@ c exchange
       character*80 line
 
       allocatable :: chp2(:,:),scr(:),rho(:),scrx(:,:)
-      allocatable :: scr_a(:),rho_a(:),scr2(:)
+      allocatable :: scr_a(:),rho_a(:),scr2(:),scr_tau(:)
       allocatable :: sab(:,:,:)
 
       i5d      =  Iopt(11)
@@ -681,10 +681,22 @@ c exchange
       ianalytical=  Iopt(90)
       iatps=nang*nrad
 
+!! meta-GGA's tau ingredient isn't wired into this analytical two-electron !!
+!! path (separately scoped, unrelated to the numerical-integration DFT    !!
+!! path -- see numint_dft) -- guard stops here, before any energy is       !!
+!! computed. !!
+      if(itype.eq.3) stop ' META-GGA not implemented for the ANALYTIC (ianalytical) two-electron path '
+
       ALLOCATE(chp2(itotps,nocc),scr(itotps),rho(itotps))
-      ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps))
+      ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps),scr_tau(itotps))
       ALLOCATE(sab(nocc,nocc,nat))
       ALLOCATE(scrx(igr,nocc))
+
+!! itype.eq.3 is stopped above, so xc's meta-GGA branch never actually    !!
+!! reads this -- zeroed only to avoid passing uninitialized memory.        !!
+      do kk=1,itotps
+        scr_tau(kk)=ZERO
+      end do
 
 !! BUILDING RHO!!
 
@@ -758,10 +770,9 @@ c exchange
         call sigma(pcoord,chp2,scr) !this line IS NEEDED for analytical as well
       end if
 
-!! CALCULATE "EXACT" (ONCE-CENTER) XC ENERGY !! 
-!! Laplacian for the MGGA functionals can be calculated using LAPLACIAN subroutine (qtaim.f). NOT IMPLEMENTED
+!! CALCULATE "EXACT" (ONCE-CENTER) XC ENERGY !!
 
-      call xc(itotps,rho,scr,scr2) 
+      call xc(itotps,rho,scr,scr_tau,scr2)
       xtot=ZERO
       do icenter=1,nat
         x=ZERO
@@ -802,7 +813,7 @@ c exchange
         call group_by_frag_mat(1,line,exch)
       end if
 
-      DEALLOCATE(chp2,scr,rho,scr_a,rho_a,scr2,sab,scrx)
+      DEALLOCATE(chp2,scr,rho,scr_a,rho_a,scr2,scr_tau,sab,scrx)
       end
 
       SUBROUTINE Population_analysis(aux_sat,nat0,igr0,aux_qat)

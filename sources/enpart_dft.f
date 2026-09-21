@@ -24,36 +24,42 @@
 !! purpose: restricted XC energy density at each grid point, via libxc.    !!
 !!   Exchange and correlation are queried separately when the input        !!
 !!   functional specifies them as distinct libxc ids (id_xfunc/id_cfunc),  !!
-!!   otherwise as one combined exchange-correlation id (id_xcfunc). MGGA   !!
-!!   Laplacian/kinetic-energy-density terms not implemented. See xc_uks    !!
-!!   for open-shell.                                                       !!
+!!   otherwise as one combined exchange-correlation id (id_xcfunc). The    !!
+!!   density-Laplacian ingredient libxc's MGGA call always requires is     !!
+!!   passed as a local zero array -- confirmed against libxc 7.1.2's own   !!
+!!   functional flags that M06-2X/TPSS (the only MGGA family wired in so   !!
+!!   far) declare XC_FLAGS_NEEDS_TAU only, never XC_FLAGS_NEEDS_LAPLACIAN. !!
+!!   See xc_uks for open-shell.                                            !!
 !! arguments:                                                              !!
 !!   npt    (in)  -- number of grid points                                 !!
 !!   scr_a  (in)  -- electron density at each point                        !!
 !!   scr    (in)  -- density gradient contraction (sigma) at each point,   !!
-!!                   only read for GGA/hybrid-GGA functionals              !!
+!!                   only read for GGA/hybrid-GGA/meta-GGA functionals     !!
+!!   tau    (in)  -- kinetic energy density at each point, only read for   !!
+!!                   meta-GGA functionals                                  !!
 !!   scr2   (out) -- XC energy density at each point (already multiplied   !!
 !!                   by the density)                                       !!
 !! author: PSalse, MGimf.                                                  !!
 !! *********************************************************************** !!
-      subroutine xc(npt,scr_a,scr,scr2)
+      subroutine xc(npt,scr_a,scr,tau,scr2)
       use xc_f03_lib_m
       implicit real*8(a-h,o-z)
       TYPE(xc_f03_func_t) :: xc_func
       TYPE(xc_f03_func_info_t) :: xc_info
       include 'parameter.h'
       integer npt
-      real*8 scr_a(npt),scr(npt),scr2(npt)
+      real*8 scr_a(npt),scr(npt),tau(npt),scr2(npt)
       common /iops/iopt(200)
-      allocatable :: scr2c(:)
+      allocatable :: scr2c(:),xlapl(:)
 
       id_xcfunc = iopt(60)
       id_cfunc  = iopt(62)
       id_xfunc  = iopt(61)
 
-      ALLOCATE(scr2c(npt))
+      ALLOCATE(scr2c(npt),xlapl(npt))
       do ii=1,npt
         scr2c(ii)=ZERO
+        xlapl(ii)=ZERO
       end do
 
 !! exchange-correlation, from libxc. !!
@@ -68,9 +74,9 @@
         case(XC_FAMILY_HYB_GGA)
           call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),xlapl(1),tau(1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),xlapl(1),tau(1),scr2(1))
         end select
         call xc_f03_func_end(xc_func)
       end if
@@ -87,9 +93,9 @@
         case(XC_FAMILY_HYB_GGA)
           call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2c(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),xlapl(1),tau(1),scr2c(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),xlapl(1),tau(1),scr2c(1))
         end select
         call xc_f03_func_end(xc_func)
       end if
@@ -106,9 +112,9 @@
         case(XC_FAMILY_HYB_GGA)
           call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),xlapl(1),tau(1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),xlapl(1),tau(1),scr2(1))
         end select
         call xc_f03_func_end(xc_func)
       end if
@@ -117,7 +123,7 @@
       do ii=1,npt
         scr2(ii)=(scr2c(ii)+scr2(ii))*scr_a(ii)
       end do
-      DEALLOCATE(scr2c)
+      DEALLOCATE(scr2c,xlapl)
 
       end
 
@@ -164,7 +170,7 @@
       character*80 line
 
       allocatable :: chp2(:,:),scr(:),scrx(:,:)
-      allocatable :: scr_a(:),rho_a(:),scr2(:)
+      allocatable :: scr_a(:),rho_a(:),scr2(:),scr_tau(:)
       allocatable :: sab(:,:,:),chpd(:,:,:)
 
       idofr    =  Iopt(40)
@@ -172,8 +178,15 @@
       itype    =  Iopt(55)
       iatps    =  nang*nrad
 
+!! the BODEN atom-pair kinetic-energy-density analog needed for meta-GGA's !!
+!! tau ingredient isn't implemented yet (unlike sigma, it doesn't follow   !!
+!! automatically from the same bond-order-density kernel -- see grdboden) !!
+!! -- guard stops here, before any energy is computed, same principle as  !!
+!! func_info_print's old blanket stop. !!
+      if(itype.eq.3) stop ' META-GGA atom-pair (BODEN) XC decomposition not yet implemented '
+
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
-      ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps))
+      ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps),scr_tau(itotps))
       ALLOCATE(sab(nocc,nocc,nat),chpd(itotps,nocc,3))
       ALLOCATE(scrx(igr,nocc))
 
@@ -238,6 +251,24 @@
 
       if(itype.gt.1) call grdrho(pcoord,chpd)
 
+!! kinetic energy density (tau), meta-GGA only -- reduction over chpd,     !!
+!! already computed by grdrho above, no new AO/derivative evaluation.      !!
+!! parallel over k: each iteration only reads its own chpd(k,:,:) and      !!
+!! writes its own scr_tau(k).                                              !!
+      if(itype.eq.3) then
+!$OMP PARALLEL DO PRIVATE(k,ii,ixyz,x)
+        do k=1,itotps
+          x=ZERO
+          do ii=1,nocc
+            do ixyz=1,3
+              x=x+chpd(k,ii,ixyz)*chpd(k,ii,ixyz)
+            end do
+          end do
+          scr_tau(k)=HALF*x
+        end do
+!$OMP END PARALLEL DO
+      end if
+
       call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
       write(*,*) " --------------------------- "
       write(*,*) "  Atom   Atom   BODEN value  "
@@ -277,10 +308,12 @@
             write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,x1
 
 !! BODEN gradient, for GGA functionals -- scr_a: BODEN for this atom pair, !!
-!! scr: sigma BODEN, scr2: XC functional value. MGGA Laplacian term not   !!
-!! implemented. !!
+!! scr: sigma BODEN, scr2: XC functional value. Unreachable for meta-GGA   !!
+!! today (see the itype.eq.3 guard above) -- scr_tau here is the whole-    !!
+!! molecule tau, not a real BODEN analog, passed only to keep xc's call    !!
+!! shape uniform with the exact one-center call below. !!
             if(itype.gt.1) call grdboden(itotps,omp2,chp2,chpd,scr,iatom,jatom,sab)
-            call xc(itotps,scr_a,scr,scr2)
+            call xc(itotps,scr_a,scr,scr_tau,scr2)
 
             x1=ZERO
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
@@ -310,8 +343,7 @@
       if(itype.gt.1) call sigma(pcoord,chp2,scr)
 
 !! "exact" one-center XC energy, by direct integration (no BODEN approximation). !!
-!! MGGA Laplacian term not implemented (would need qtaim.f's laplacian routine). !!
-      call xc(itotps,rho,scr,scr2)
+      call xc(itotps,rho,scr,scr_tau,scr2)
       xtot=ZERO
 !! parallel over icenter: each iteration writes only its own exch(icenter,icenter), !!
 !! xtot is a genuine running total. !!
@@ -373,7 +405,7 @@
         end do
       end do
       etot=xtot
-      DEALLOCATE(chp2,scr,scr_a,rho_a,scr2,sab,chpd,scrx)
+      DEALLOCATE(chp2,scr,scr_a,rho_a,scr2,scr_tau,sab,chpd,scrx)
       end
 
 !! ***** !!
@@ -691,20 +723,25 @@
 !! purpose: unrestricted XC energy density at each grid point, via libxc.  !!
 !!   Exchange and correlation are queried separately when the input        !!
 !!   functional specifies them as distinct libxc ids (id_xfunc/id_cfunc),  !!
-!!   otherwise as one combined exchange-correlation id (id_xcfunc). MGGA   !!
-!!   Laplacian/kinetic-energy-density terms not implemented. See xc for    !!
-!!   restricted/closed-shell.                                              !!
+!!   otherwise as one combined exchange-correlation id (id_xcfunc). The    !!
+!!   density-Laplacian ingredient libxc's MGGA call always requires is     !!
+!!   passed as a local zero array -- confirmed against libxc 7.1.2's own   !!
+!!   functional flags that M06-2X/TPSS (the only MGGA family wired in so   !!
+!!   far) declare XC_FLAGS_NEEDS_TAU only, never XC_FLAGS_NEEDS_LAPLACIAN. !!
+!!   See xc for restricted/closed-shell.                                   !!
 !! arguments:                                                              !!
 !!   npt    (in)  -- number of grid points                                 !!
 !!   scr_ab (in)  -- electron density at each point, order alpha then beta !!
 !!   scr    (in)  -- density gradient contraction (sigma) at each point,   !!
 !!                   order up-up/up-down/down-down, only read for GGA/     !!
-!!                   hybrid-GGA functionals                                 !!
+!!                   hybrid-GGA/meta-GGA functionals                       !!
+!!   tau    (in)  -- kinetic energy density at each point, order alpha     !!
+!!                   then beta, only read for meta-GGA functionals         !!
 !!   scr2   (out) -- XC energy density at each point (already multiplied   !!
 !!                   by the density)                                       !!
 !! author: MGimf.                                                          !!
 !! *********************************************************************** !!
-      subroutine xc_uks(npt,scr_ab,scr,scr2)
+      subroutine xc_uks(npt,scr_ab,scr,tau,scr2)
       use xc_f03_lib_m
       implicit real*8(a-h,o-z)
       TYPE(xc_f03_func_t) :: xc_func
@@ -712,16 +749,18 @@
       include 'parameter.h'
       integer npt
       common /iops/iopt(200)
-      dimension scr_ab(2,npt),scr(3,npt),scr2(npt)
-      allocatable :: scr2c(:)
+      dimension scr_ab(2,npt),scr(3,npt),tau(2,npt),scr2(npt)
+      allocatable :: scr2c(:),xlapl(:,:)
 
       id_xcfunc = iopt(60)
       id_cfunc  = iopt(62)
       id_xfunc  = iopt(61)
 
-      ALLOCATE(scr2c(npt))
+      ALLOCATE(scr2c(npt),xlapl(2,npt))
       do ii=1,npt
         scr2c(ii)=ZERO
+        xlapl(1,ii)=ZERO
+        xlapl(2,ii)=ZERO
       end do
 
 !! exchange-correlation, from libxc. !!
@@ -736,9 +775,9 @@
         case(XC_FAMILY_HYB_GGA)
           call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2(1))
         end select
         call xc_f03_func_end(xc_func)
       end if
@@ -755,9 +794,9 @@
         case(XC_FAMILY_HYB_GGA)
           call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2c(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2c(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2c(1))
         end select
         call xc_f03_func_end(xc_func)
       end if
@@ -774,9 +813,9 @@
         case(XC_FAMILY_HYB_GGA)
           call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2(1))
         end select
         call xc_f03_func_end(xc_func)
       end if
@@ -785,7 +824,7 @@
       do ii=1,npt
         scr2(ii)=(scr2c(ii)+scr2(ii))*(scr_ab(1,ii)+scr_ab(2,ii))
       end do
-      DEALLOCATE(scr2c)
+      DEALLOCATE(scr2c,xlapl)
       end
 
 !! ***** !!
@@ -829,12 +868,19 @@
       dimension exch2(maxat,maxat)
       allocatable :: chp2(:,:),chp3(:,:),rho(:,:),scrall(:,:),scr2(:)
       allocatable :: chpd(:,:,:),sab(:,:,:),sab2(:,:,:),scr_bod(:,:)
-      allocatable :: chpbd(:,:,:)
+      allocatable :: chpbd(:,:,:),tau(:,:)
 
       idofr    = Iopt(40)
       ithrebod = Iopt(44)
       itype    = Iopt(55)
       iatps    = nang*nrad
+
+!! the BODEN atom-pair kinetic-energy-density analog needed for meta-GGA's !!
+!! tau ingredient isn't implemented yet (unlike sigma, it doesn't follow   !!
+!! automatically from the same bond-order-density kernel -- see            !!
+!! grdboden_uks) -- guard stops here, before any energy is computed, same  !!
+!! principle as func_info_print's old blanket stop. !!
+      if(itype.eq.3) stop ' META-GGA atom-pair (BODEN) XC decomposition not yet implemented '
 
       if(ithrebod.lt.1) then
         threbod=ZERO
@@ -845,7 +891,7 @@
       ALLOCATE(chp2(itotps,nalf),rho(2,itotps),scr_bod(2,itotps))
       ALLOCATE(chpd(itotps,nalf,3),chpbd(itotps,nb,3),sab2(nb,nb,nat))
       ALLOCATE(scrall(3,itotps),chp3(itotps,nb),sab(nalf,nalf,nat))
-      ALLOCATE(scr2(itotps))
+      ALLOCATE(scr2(itotps),tau(2,itotps))
 
       exch2=ZERO
 
@@ -929,6 +975,31 @@
 
       if(itype.gt.1) call ugrdrho(pcoord,chpd,chpbd)
 
+!! kinetic energy density (tau), alpha/beta, meta-GGA only -- reduction    !!
+!! over chpd/chpbd, already computed by ugrdrho above, no new AO/          !!
+!! derivative evaluation. parallel over k: each iteration only reads its   !!
+!! own chpd(k,:,:)/chpbd(k,:,:) and writes its own tau(:,k).                !!
+      if(itype.eq.3) then
+!$OMP PARALLEL DO PRIVATE(k,ii,ixyz,xa,xb)
+        do k=1,itotps
+          xa=ZERO
+          xb=ZERO
+          do ii=1,nalf
+            do ixyz=1,3
+              xa=xa+chpd(k,ii,ixyz)*chpd(k,ii,ixyz)
+            end do
+          end do
+          do ii=1,nb
+            do ixyz=1,3
+              xb=xb+chpbd(k,ii,ixyz)*chpbd(k,ii,ixyz)
+            end do
+          end do
+          tau(1,k)=HALF*xa
+          tau(2,k)=HALF*xb
+        end do
+!$OMP END PARALLEL DO
+      end if
+
       call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
       write(*,*) " --------------------------- "
       write(*,*) "  Atom   Atom   BODEN value  "
@@ -981,9 +1052,12 @@
 !$OMP END PARALLEL DO
             write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,xx+xxb
 
-!! BODEN gradient, for unrestricted GGA functionals. !!
+!! BODEN gradient, for unrestricted GGA functionals. Unreachable for       !!
+!! meta-GGA today (see the itype.eq.3 guard above) -- tau here is the      !!
+!! whole-molecule tau, not a real BODEN analog, passed only to keep        !!
+!! xc_uks's call shape uniform with the exact one-center call below. !!
             if(itype.gt.1) call grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iatom,jatom,sab,sab2)
-            call xc_uks(itotps,scr_bod,scrall,scr2)
+            call xc_uks(itotps,scr_bod,scrall,tau,scr2)
             x1=ZERO
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
             do icenter=1,nat
@@ -1015,7 +1089,7 @@
       if(itype.gt.1) call sigma_uks(pcoord,chp2,chp3,scrall)
 
 !! "exact" one-center XC energy, by direct integration (no BODEN approximation). !!
-      call xc_uks(itotps,rho,scrall,scr2)
+      call xc_uks(itotps,rho,scrall,tau,scr2)
       xtot=ZERO
 !! parallel over icenter: each iteration writes only its own exch(icenter,icenter), !!
 !! xtot is a genuine running total. !!
@@ -1076,7 +1150,7 @@
           xtot=xtot+eto(ii,jj)
         end do
       end do
-      DEALLOCATE(chp2,rho,scr_bod,chpd,chpbd,sab2,scrall,chp3,sab,scr2)
+      DEALLOCATE(chp2,rho,scr_bod,chpd,chpbd,sab2,scrall,chp3,sab,scr2,tau)
       end
 
 !! ***** !!
@@ -1253,14 +1327,10 @@
       case(XC_FAMILY_MGGA)
         write(*,*) " META-GGA functional selected"
         itype=3
-        write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
-        stop
       case(XC_FAMILY_HYB_MGGA)
         write(*,*) " HYBRID-META-GGA functional selected"
         write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
         itype=3
-        write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
-        stop
       end select
       call xc_f03_func_end(xc_func)
 
