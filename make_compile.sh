@@ -69,7 +69,8 @@ fi
 # Checks
 # ------------------------------------------------------------------------------
 MAKEFILE="$APOST3D_PATH/Makefile"
-LIBXC_A="$APOST3D_PATH/libxc-4.2.3/lib/libxc.a"
+LIBXC_VERSION="7.1.2"
+BUNDLED_LIBXC_A="$APOST3D_PATH/libxc-${LIBXC_VERSION}/lib/libxcf03.a"
 
 if [[ ! -f "$MAKEFILE" ]]; then
   echo "ERROR: Makefile not found at $APOST3D_PATH"
@@ -77,10 +78,43 @@ if [[ ! -f "$MAKEFILE" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$LIBXC_A" ]]; then
-  echo "ERROR: libxc not built yet. Run first:"
-  echo "       bash $APOST3D_PATH/compile_libxc.sh"
-  exit 1
+# ------------------------------------------------------------------------------
+# libxc preflight/auto-build: probe for an already-usable libxc (>= 5,
+# xc_f03_* Fortran interface) first -- same layered order the Makefile
+# itself uses (LIBXC_DIR override, then pkg-config, then Homebrew's
+# keg-only prefix fed into pkg-config) -- and only fall back to fetching
+# and building our own bundled copy if none of those are found. This is
+# the one-command first-time-setup goal: a brand-new user never has to
+# remember to run compile_libxc.sh separately. Once libxc exists (detected
+# or freshly built), every subsequent call skips straight past this block.
+# ------------------------------------------------------------------------------
+LIBXC_READY=0
+if [[ -n "${LIBXC_DIR:-}" ]]; then
+  echo "  libxc: using LIBXC_DIR override ($LIBXC_DIR)"
+  LIBXC_READY=1
+else
+  BREW_LIBXC_PREFIX="$(brew --prefix libxc 2>/dev/null || true)"
+  if [[ -n "$BREW_LIBXC_PREFIX" ]]; then
+    export PKG_CONFIG_PATH="$BREW_LIBXC_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+  fi
+  if command -v pkg-config &>/dev/null && pkg-config --exists libxcf03 2>/dev/null; then
+    echo "  libxc: found via pkg-config ($(pkg-config --modversion libxcf03))"
+    LIBXC_READY=1
+  elif [[ -f "$BUNDLED_LIBXC_A" ]]; then
+    echo "  libxc: using already-built bundled copy ($APOST3D_PATH/libxc-${LIBXC_VERSION})"
+    LIBXC_READY=1
+  fi
+fi
+
+if [[ "$LIBXC_READY" -eq 0 ]]; then
+  echo "  libxc: not found -- fetching and building the pinned ${LIBXC_VERSION} release"
+  echo ""
+  bash "$APOST3D_PATH/compile_libxc.sh"
+  echo ""
+  if [[ ! -f "$BUNDLED_LIBXC_A" ]]; then
+    echo "ERROR: compile_libxc.sh ran but $BUNDLED_LIBXC_A still doesn't exist."
+    exit 1
+  fi
 fi
 
 # ------------------------------------------------------------------------------

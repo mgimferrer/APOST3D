@@ -34,30 +34,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install gfortran/gcc/make/openblas
+      - name: Install gfortran/gcc/make/openblas/autotools
         id: toolchain
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y gfortran gcc make libopenblas-dev
+          sudo apt-get install -y gfortran gcc make libopenblas-dev autoconf automake libtool
           gfortran --version
           echo "gfortran_version=$(gfortran -dumpfullversion)" >> "$GITHUB_OUTPUT"
+          # Extracted from compile_libxc.sh itself (not duplicated here) so
+          # bumping the pinned version there can never drift out of sync
+          # with this cache key.
+          libxc_version="$(grep -m1 '^LIBXC_VERSION=' compile_libxc.sh | sed -E 's/^LIBXC_VERSION="([^"]+)"/\1/')"
+          echo "libxc_version=$libxc_version" >> "$GITHUB_OUTPUT"
 
-      - name: Cache libxc-4.2.3 build
+      - name: Cache libxc build
         id: libxc-cache
         uses: actions/cache@v4
         with:
-          path: libxc-4.2.3
+          path: libxc-${{ steps.toolchain.outputs.libxc_version }}
           # Cache key includes the *actual resolved* compiler version so a
           # gfortran upgrade on the runner image invalidates the cache
           # (.mod files aren't portable across compiler versions). Hashing
-          # this workflow file instead of the real version (the previous
+          # this workflow file instead of the real version (an earlier
           # approach) missed exactly that case: the runner image can bump
           # its default gfortran without this file ever changing, leaving
           # a stale cached libxc built by a now-mismatched compiler --
-          # this is what broke run #53 (2026-08-30).
-          key: libxc-4.2.3-${{ runner.os }}-${{ hashFiles('libxc-4.2.3.tar.gz') }}-gfortran-${{ steps.toolchain.outputs.gfortran_version }}
+          # this is what broke run #53 (2026-08-30). Also keyed on the
+          # pinned libxc version itself (not a tarball hash -- the source
+          # tarball is fetched from upstream at build time, not committed)
+          # so a future version bump correctly invalidates the cache too.
+          key: libxc-${{ steps.toolchain.outputs.libxc_version }}-${{ runner.os }}-gfortran-${{ steps.toolchain.outputs.gfortran_version }}
 
-      - name: Build libxc-4.2.3
+      - name: Build libxc
         if: steps.libxc-cache.outputs.cache-hit != 'true'
         run: bash compile_libxc.sh
 

@@ -7,9 +7,18 @@ Normal — the program requires a job name argument (`apost3d jobname`).
 Run `ulimit -s unlimited` before launching; the code uses large
 stack-allocated arrays.
 
-**`cannot find -lxcf90` or `-lxc`**
-libxc wasn't built, or `APOST3D_PATH` isn't set. Re-run `bash
-compile_libxc.sh` with `APOST3D_PATH` exported.
+**`cannot find -lxcf03` or `-lxc`**
+libxc wasn't built, or `APOST3D_PATH` isn't set. `make_compile.sh`
+normally fetches and builds it automatically the first time — re-run
+`bash make_compile.sh` with `APOST3D_PATH` exported. To build it
+manually instead: `bash compile_libxc.sh`.
+
+**libxc build fails with `autoreconf: command not found` (or
+`configure.ac: error: possibly undefined macro: LT_INIT`)**
+`autoconf`/`automake`/`libtool` are missing — the pinned libxc release
+is fetched as a raw source-tag archive with no pre-generated `configure`
+script, so building it needs these to bootstrap one. Install them (see
+[Installation](installation.md)) and re-run.
 
 **`cannot find -lopenblas`**
 `make_compile.sh` checks this by actually linking a test program before

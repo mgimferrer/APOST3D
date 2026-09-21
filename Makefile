@@ -18,7 +18,7 @@ FC       = gfortran
 FC_INP   = gfortran
 
 ## DIRECTORIES
-LIBXCDIR = $(APOST3D_PATH)/libxc-4.2.3
+LIBXCDIR = $(APOST3D_PATH)/libxc-7.1.2
 QUADDIR  = $(APOST3D_PATH)/lebedev
 SRCDIR   = $(APOST3D_PATH)/sources
 OBJDIR   = $(APOST3D_PATH)/objects
@@ -44,9 +44,29 @@ SFLAGS    = -ffixed-line-length-132 -fallow-argument-mismatch
 ## FULL FLAG SET
 FFLAGS    = $(OPTFLAGS) $(DBGFLAGS) $(OMPFLAGS) $(SFLAGS)
 
-## LIBXC FLAGS
+## LIBXC (exchange-correlation functionals, xc_f03_* Fortran interface) —
+## layered detection, same pattern as OPENBLAS_LIB below: an explicit
+## override always wins, then pkg-config (what a system/conda/distro/
+## Homebrew install registers), then the bundled copy built by
+## compile_libxc.sh under LIBXCDIR. --static pulls in libxcf03.pc's
+## Requires.private (libxc itself) explicitly, needed for our own
+## --enable-shared=no bundled build and harmless against a shared one.
+ifdef LIBXC_DIR
+LIBXC_INC = -I$(LIBXC_DIR)/include
+LIBXC_LIB = -L$(LIBXC_DIR)/lib -lxcf03 -lxc -lm
+else
+BREW_LIBXC_PREFIX := $(shell brew --prefix libxc 2>/dev/null)
+ifneq ($(BREW_LIBXC_PREFIX),)
+export PKG_CONFIG_PATH := $(BREW_LIBXC_PREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+endif
+ifeq ($(shell command -v pkg-config >/dev/null 2>&1 && pkg-config --exists libxcf03 2>/dev/null && echo yes),yes)
+LIBXC_INC := $(shell pkg-config --cflags libxcf03)
+LIBXC_LIB := $(shell pkg-config --libs --static libxcf03) -lm
+else
 LIBXC_INC = -I$(LIBXCDIR)/include
-LIBXC_LIB = -L$(LIBXCDIR)/lib -lxcf90 -lxc -lm
+LIBXC_LIB = -L$(LIBXCDIR)/lib -lxcf03 -lxc -lm
+endif
+endif
 
 ## OPENBLAS (BLAS/LAPACK) — diagonalize() in util.f uses dsyevd. Layered
 ## detection so a build never fails just because OpenBLAS lives somewhere
@@ -84,9 +104,6 @@ endif
 ## LEBEDEV OBJECT
 QUAD_OBJ  = $(QUADDIR)/Lebedev-Laikov.o
 
-## LIBXC FORTRAN INTERFACE OBJECTS (compiled from F90 wrappers)
-LIBXC_OBJ = $(LIBXCDIR)/libxc_funcs.o $(LIBXCDIR)/libxc.o
-
 ## SOURCE LIST (all .f files in sources/)
 SRC_LIST  := $(wildcard $(SRCDIR)/*.f)
 OBJ_LIST  := $(SRCDIR)/modules.o \
@@ -114,9 +131,9 @@ OBJ_LIST_EOS := $(SRCDIR)/modules.o \
 all: apost3d apost3d-eos eos_aom
 
 ## MAIN EXECUTABLE
-apost3d: $(LIBXC_OBJ) $(OBJ_LIST) $(QUAD_OBJ)
+apost3d: $(OBJ_LIST) $(QUAD_OBJ)
 	$(FC) $(FFLAGS) \
-	  $(OBJ_LIST) $(LIBXC_OBJ) $(QUAD_OBJ) \
+	  $(OBJ_LIST) $(QUAD_OBJ) \
 	  $(LIBXC_LIB) $(OPENBLAS_LIB) \
 	  -o $(APOST3D_PATH)/apost3d
 
@@ -125,17 +142,6 @@ apost3d: $(LIBXC_OBJ) $(OBJ_LIST) $(QUAD_OBJ)
 ## Lebedev-Laikov.F actually triggers a rebuild (same class of fix as modules.o).
 $(QUADDIR)/Lebedev-Laikov.o: $(QUADDIR)/Lebedev-Laikov.F
 	$(FC) -c $(FFLAGS) $(QUADDIR)/Lebedev-Laikov.F -o $@
-
-## LIBXC F90 INTERFACE OBJECTS
-$(LIBXCDIR)/libxc_funcs.o:
-	$(FC) -c $(FFLAGS) $(LIBXC_INC) \
-	  -J$(LIBXCDIR)/include \
-	  $(LIBXCDIR)/libxc_funcs.f90 -o $@
-
-$(LIBXCDIR)/libxc.o: $(LIBXCDIR)/libxc_funcs.o
-	$(FC) -c $(FFLAGS) $(LIBXC_INC) \
-	  -J$(LIBXCDIR)/include \
-	  $(LIBXCDIR)/libxc.f90 -o $@
 
 ## F90 MODULES (must be compiled first — other sources USE these modules)
 # Depends on modules.f90 itself so that editing it (or a `make clean`
@@ -260,8 +266,6 @@ clean:
 	      $(SRCDIR)/*.mod \
 	      $(OBJDIR)/*.o \
 	      $(UTILDIR)/*.o \
-	      $(LIBXCDIR)/libxc_funcs.o \
-	      $(LIBXCDIR)/libxc.o \
 	      $(QUADDIR)/Lebedev-Laikov.o \
 	      *.mod \
 	      $(APOST3D_PATH)/apost3d \

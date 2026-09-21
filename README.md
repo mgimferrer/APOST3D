@@ -25,6 +25,13 @@ Requires GCC/gfortran **10 or newer** (12+ recommended), `make`, and
 `apt install libopenblas-dev` on Debian/Ubuntu). Free and open-source
 throughout — no Intel compiler, no MKL, no license of any kind required.
 
+libxc (exchange-correlation functionals) is fetched and built
+automatically on first run if no suitable install (≥ 5, e.g. from a
+distro package, conda, or Homebrew) is already found — this needs
+`autoconf`/`automake`/`libtool` (e.g. `brew install autoconf automake
+libtool` on macOS, `apt install autoconf automake libtool` on
+Debian/Ubuntu), only if that automatic build actually has to run.
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/mgimferrer/APOST3D.git
@@ -33,10 +40,8 @@ cd APOST3D
 # 2. Set the installation path (add this to your shell profile too)
 export APOST3D_PATH=$(pwd)
 
-# 3. Build the bundled libxc-4.2.3 library (once)
-bash compile_libxc.sh
-
-# 4. Build apost3d, apost3d-eos, and eos_aom
+# 3. Build apost3d, apost3d-eos, and eos_aom
+#    (fetches + builds libxc automatically first, if needed)
 bash make_compile.sh
 ```
 

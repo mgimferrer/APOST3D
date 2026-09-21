@@ -37,11 +37,10 @@
 !! author: PSalse, MGimf.                                                  !!
 !! *********************************************************************** !!
       subroutine xc(npt,scr_a,scr,scr2)
-      use xc_f90_types_m
-      use xc_f90_lib_m
+      use xc_f03_lib_m
       implicit real*8(a-h,o-z)
-      TYPE(xc_f90_pointer_t) :: xc_func
-      TYPE(xc_f90_pointer_t) :: xc_info
+      TYPE(xc_f03_func_t) :: xc_func
+      TYPE(xc_f03_func_info_t) :: xc_info
       include 'parameter.h'
       integer npt
       real*8 scr_a(npt),scr(npt),scr2(npt)
@@ -59,57 +58,60 @@
 
 !! exchange-correlation, from libxc. !!
       if(id_xcfunc.ne.0) then
-        call xc_f90_func_init(xc_func,xc_info,id_xcfunc,XC_UNPOLARIZED)
-        select case (xc_f90_info_family(xc_info))
+        call xc_f03_func_init(xc_func,id_xcfunc,XC_UNPOLARIZED)
+        xc_info = xc_f03_func_get_info(xc_func)
+        select case (xc_f03_func_info_get_family(xc_info))
         case(XC_FAMILY_LDA)
-          call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2(1))
+          call xc_f03_lda_exc(xc_func,int(npt,8),scr_a(1),scr2(1))
         case(XC_FAMILY_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2(1))
         case(XC_FAMILY_HYB_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
         end select
-        call xc_f90_func_end(xc_func)
-      end if 
+        call xc_f03_func_end(xc_func)
+      end if
 
 !! correlation, when specified as a separate libxc id. !!
       if(id_cfunc.ne.0) then
-        call xc_f90_func_init(xc_func,xc_info,id_cfunc,XC_UNPOLARIZED)
-        select case (xc_f90_info_family(xc_info))
+        call xc_f03_func_init(xc_func,id_cfunc,XC_UNPOLARIZED)
+        xc_info = xc_f03_func_get_info(xc_func)
+        select case (xc_f03_func_info_get_family(xc_info))
         case(XC_FAMILY_LDA)
-          call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2c(1))
+          call xc_f03_lda_exc(xc_func,int(npt,8),scr_a(1),scr2c(1))
         case(XC_FAMILY_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2c(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2c(1))
         case(XC_FAMILY_HYB_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2c(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2c(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2c(1))
         end select
-        call xc_f90_func_end(xc_func)
-      end if 
+        call xc_f03_func_end(xc_func)
+      end if
 
 !! exchange, when specified as a separate libxc id. !!
       if(id_xfunc.ne.0) then
-        call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_UNPOLARIZED)
-        select case (xc_f90_info_family(xc_info))
+        call xc_f03_func_init(xc_func,id_xfunc,XC_UNPOLARIZED)
+        xc_info = xc_f03_func_get_info(xc_func)
+        select case (xc_f03_func_info_get_family(xc_info))
         case(XC_FAMILY_LDA)
-          call xc_f90_lda_exc(xc_func,npt,scr_a(1),scr2(1))
+          call xc_f03_lda_exc(xc_func,int(npt,8),scr_a(1),scr2(1))
         case(XC_FAMILY_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2(1))
         case(XC_FAMILY_HYB_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_a(1),scr(1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_a(1),scr(1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_a(1),scr(1),lapl(1),tau(1),scr2(1))
         end select
-        call xc_f90_func_end(xc_func)
-      end if 
+        call xc_f03_func_end(xc_func)
+      end if
 
 !! combine exchange and correlation, multiply by the density. !!
       do ii=1,npt
@@ -144,8 +146,6 @@
 !! author: PSalse, MGimf.                                                  !!
 !! *********************************************************************** !!
       subroutine numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
-      use xc_f90_types_m
-      use xc_f90_lib_m
       use ao_matrices
       use integration_grid
       implicit real*8(a-h,o-z)
@@ -705,11 +705,10 @@
 !! author: MGimf.                                                          !!
 !! *********************************************************************** !!
       subroutine xc_uks(npt,scr_ab,scr,scr2)
-      use xc_f90_types_m
-      use xc_f90_lib_m
+      use xc_f03_lib_m
       implicit real*8(a-h,o-z)
-      TYPE(xc_f90_pointer_t) :: xc_func
-      TYPE(xc_f90_pointer_t) :: xc_info
+      TYPE(xc_f03_func_t) :: xc_func
+      TYPE(xc_f03_func_info_t) :: xc_info
       include 'parameter.h'
       integer npt
       common /iops/iopt(200)
@@ -727,57 +726,60 @@
 
 !! exchange-correlation, from libxc. !!
       if(id_xcfunc.ne.0) then
-        call xc_f90_func_init(xc_func,xc_info,id_xcfunc,XC_POLARIZED)
-        select case (xc_f90_info_family(xc_info))
+        call xc_f03_func_init(xc_func,id_xcfunc,XC_POLARIZED)
+        xc_info = xc_f03_func_get_info(xc_func)
+        select case (xc_f03_func_info_get_family(xc_info))
         case(XC_FAMILY_LDA)
-          call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2(1))
+          call xc_f03_lda_exc(xc_func,int(npt,8),scr_ab(1,1),scr2(1))
         case(XC_FAMILY_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_HYB_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
         end select
-        call xc_f90_func_end(xc_func)
-      end if 
+        call xc_f03_func_end(xc_func)
+      end if
 
 !! correlation, when specified as a separate libxc id. !!
       if(id_cfunc.ne.0) then
-        call xc_f90_func_init(xc_func,xc_info,id_cfunc,XC_POLARIZED)
-        select case (xc_f90_info_family(xc_info))
+        call xc_f03_func_init(xc_func,id_cfunc,XC_POLARIZED)
+        xc_info = xc_f03_func_get_info(xc_func)
+        select case (xc_f03_func_info_get_family(xc_info))
         case(XC_FAMILY_LDA)
-          call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2c(1))
+          call xc_f03_lda_exc(xc_func,int(npt,8),scr_ab(1,1),scr2c(1))
         case(XC_FAMILY_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2c(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2c(1))
         case(XC_FAMILY_HYB_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2c(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2c(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2c(1))
         end select
-        call xc_f90_func_end(xc_func)
-      end if 
+        call xc_f03_func_end(xc_func)
+      end if
 
 !! exchange, when specified as a separate libxc id. !!
       if(id_xfunc.ne.0) then
-        call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_POLARIZED)
-        select case (xc_f90_info_family(xc_info))
+        call xc_f03_func_init(xc_func,id_xfunc,XC_POLARIZED)
+        xc_info = xc_f03_func_get_info(xc_func)
+        select case (xc_f03_func_info_get_family(xc_info))
         case(XC_FAMILY_LDA)
-          call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2(1))
+          call xc_f03_lda_exc(xc_func,int(npt,8),scr_ab(1,1),scr2(1))
         case(XC_FAMILY_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_HYB_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!            call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+!            call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
         end select
-        call xc_f90_func_end(xc_func)
-      end if 
+        call xc_f03_func_end(xc_func)
+      end if
 
 !! combine exchange and correlation, multiply by the density. !!
       do ii=1,npt
@@ -1174,13 +1176,13 @@
 !! *********************************************************************** !!
       subroutine func_info_print(id_func,itype,ifirst)
 
-      use xc_f90_types_m
-      use xc_f90_lib_m
+      use xc_f03_lib_m
 
       implicit real*8(a-h,o-z)
 
-      TYPE(xc_f90_pointer_t) :: xc_func
-      TYPE(xc_f90_pointer_t) :: xc_info
+      TYPE(xc_f03_func_t) :: xc_func
+      TYPE(xc_f03_func_info_t) :: xc_info
+      TYPE(xc_f03_func_reference_t) :: xc_ref
 
       include 'parameter.h'
 
@@ -1190,10 +1192,11 @@
       character*120 name_ref
       character*80 name_func
 
-      if(kop.ne.1) call xc_f90_func_init(xc_func,xc_info,id_func,XC_UNPOLARIZED)
-      if(kop.eq.1) call xc_f90_func_init(xc_func,xc_info,id_func,XC_POLARIZED)
-      call xc_f90_hyb_exx_coef(xc_func,xmix)
-      call xc_f90_info_name(xc_info,name_func)
+      if(kop.ne.1) call xc_f03_func_init(xc_func,id_func,XC_UNPOLARIZED)
+      if(kop.eq.1) call xc_f03_func_init(xc_func,id_func,XC_POLARIZED)
+      xc_info = xc_f03_func_get_info(xc_func)
+      xmix = xc_f03_hyb_exx_coef(xc_func)
+      name_func = xc_f03_func_info_get_name(xc_info)
 
       if(ifirst.eq.1) then
         call print_subbox('DENSITY FUNCTIONAL INFORMATION')
@@ -1201,13 +1204,20 @@
         call print_box('DENSITY FUNCTIONAL INFORMATION')
       end if
       write(*,*) " Functional name --> ",trim(name_func)
+!! xc_f03_func_info_get_references uses lookahead semantics: the call that !!
+!! returns the LAST reference also sets ii=-1 on that same call (unlike    !!
+!! the old xc_f90_info_refs, which only signalled "done" on the following, !!
+!! empty call). irefref tracks the printed 1-based ordinal separately from !!
+!! ii, which is consumed as the next-index cursor. !!
       ii=0
-      call xc_f90_info_refs(xc_info,ii,name_ref)
+      irefref=0
       do while(ii.ge.0)
-        write(*,'(2x,a15,i2,a1,x,a120)') "Reference --> [",ii,"]",name_ref
-        call xc_f90_info_refs(xc_info,ii,name_ref)
+        xc_ref = xc_f03_func_info_get_references(xc_info,ii)
+        irefref=irefref+1
+        name_ref = xc_f03_func_reference_get_ref(xc_ref)
+        write(*,'(2x,a15,i2,a1,x,a120)') "Reference --> [",irefref,"]",name_ref
       end do
-      select case(xc_f90_info_kind(xc_info))
+      select case(xc_f03_func_info_get_kind(xc_info))
       case(XC_EXCHANGE)
         write(*,*) " Functional type --> exchange"
       case(XC_CORRELATION)
@@ -1223,7 +1233,7 @@
 !! itype: 1 LDA, 2 GGA, 3 meta-GGA. Hybrid functionals get xmix>0 as well. !!
 !! Caller stores the returned value in iopt(55) for later use. !!
       itype=0
-      select case(xc_f90_info_family(xc_info))
+      select case(xc_f03_func_info_get_family(xc_info))
       case(XC_FAMILY_UNKNOWN)
         write(*,*) " Family of the functional unknown"
         stop
@@ -1252,9 +1262,9 @@
         write(*,*) " META-GGA still in development!!!" !! MG: to-do !!
         stop
       end select
-      call xc_f90_func_end(xc_func)
+      call xc_f03_func_end(xc_func)
 
-      end 
+      end
 
 !! ***** !!
 
