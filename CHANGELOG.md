@@ -45,10 +45,15 @@ program, not a full development history — see `git log` for that.
 
 - **New compilation and testing setup** — the build is now driven by two
   scripts (`compile_libxc.sh`, `make_compile.sh`) that check for a
-  compatible compiler/OpenBLAS automatically; an automated regression
+  compatible compiler/OpenBLAS/libxc automatically; an automated regression
   test suite now runs on every change, checked against independently
   computed reference values, and runs automatically (via GitHub Actions)
   on every update to the code.
+- **libxc upgraded to 7.1.2** (from the previously bundled 4.2.3) — no
+  change to any computed energy or property, verified bit-for-bit against
+  reference outputs. Fetched and built automatically on first compile if
+  no suitable existing install is found, rather than shipped as a bundled
+  copy.
 - **New documentation website** — a full documentation site is now
   available at [apost3d.readthedocs.io](https://apost3d.readthedocs.io).
 - **More consistent program output** — formatting of the printed output
