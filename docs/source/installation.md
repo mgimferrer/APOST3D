@@ -8,29 +8,34 @@ for every diagonalization in the program). Free and open-source
 throughout — no Intel compiler, no MKL, no license of any kind required,
 matching the same reasoning behind the ifort → gfortran move itself.
 
+libxc (exchange-correlation functionals — see the admonition below) is
+handled automatically by `make_compile.sh`, but if it needs to build its
+own copy from source, that build needs `autoconf`/`automake`/`libtool`
+too — install them up front to avoid a mid-build stop.
+
 **Debian / Ubuntu / Linux Mint**
 
 ```bash
 sudo apt update
-sudo apt install gfortran gcc make libopenblas-dev
+sudo apt install gfortran gcc make libopenblas-dev autoconf automake libtool
 ```
 
 **Fedora / RHEL / Rocky Linux**
 
 ```bash
-sudo dnf install gcc-gfortran gcc make openblas-devel
+sudo dnf install gcc-gfortran gcc make openblas-devel autoconf automake libtool
 ```
 
 **openSUSE**
 
 ```bash
-sudo zypper install gcc-fortran gcc make openblas-devel
+sudo zypper install gcc-fortran gcc make openblas-devel autoconf automake libtool
 ```
 
 **macOS (via Homebrew)**
 
 ```bash
-brew install gcc openblas
+brew install gcc openblas autoconf automake libtool
 # gfortran ships bundled with gcc, e.g. as gfortran-14
 ```
 
@@ -69,6 +74,29 @@ it picks before touching the rest of the build, so a misconfigured
 into compilation.
 ```
 
+```{admonition} libxc: fetched and built automatically
+:class: tip
+
+Unlike OpenBLAS, libxc has no near-universal system package, so
+`make_compile.sh` probes for an already-usable install first — an
+explicit `LIBXC_DIR` you set yourself, then `pkg-config` (covers a
+distro package, a conda environment, or Homebrew's `libxc` formula on
+macOS), in that order — and only if none of those are found does it
+fetch and build its own pinned copy under `libxc-<version>/`
+(`compile_libxc.sh`, called automatically). That fetch step needs
+network access to `gitlab.com` and verifies the download against a
+checksum recorded in the script before building; on an air-gapped
+machine, pre-download the matching tarball named in `compile_libxc.sh`
+and place it at `$APOST3D_PATH/libxc-<version>.tar.gz` first.
+
+Either way, this only happens once — every subsequent
+`make_compile.sh`/`make apost3d` call reuses whatever was found or built
+the first time, same as OpenBLAS above:
+
+    export LIBXC_DIR=/path/to/libxc   # expects lib/ and include/ under it
+    bash make_compile.sh
+```
+
 Verify the versions before continuing:
 
 ```bash
@@ -85,10 +113,8 @@ cd APOST3D
 # 2. Set the installation path (add this to your shell profile too)
 export APOST3D_PATH=$(pwd)
 
-# 3. Build the bundled libxc-4.2.3 library (once)
-bash compile_libxc.sh
-
-# 4. Build apost3d, apost3d-eos, and eos_aom
+# 3. Build apost3d, apost3d-eos, and eos_aom
+#    (fetches + builds libxc automatically first, if needed — see above)
 bash make_compile.sh
 ```
 

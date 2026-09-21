@@ -651,8 +651,6 @@ c exchange
       END SUBROUTINE
 
       subroutine numint_dft_analytical(ndim,itotps,wp,omp,omp2,chp,eto,pcoord,sat)
-      use xc_f90_types_m
-      use xc_f90_lib_m
       USE ao_matrices
       USE integration_grid
       implicit real*8(a-h,o-z)

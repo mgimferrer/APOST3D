@@ -1,16 +1,42 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# compile_libxc_gfortran.sh — build libxc-4.2.3 with GCC/gfortran
+# compile_libxc.sh — fetch, verify, and build libxc 7.1.2 with GCC/gfortran
 #
-# Replaces compile_libxc.sh (which requires Intel icx/ifort).
-# Works on macOS (Homebrew gcc) and Linux (system gcc/gfortran).
+# libxc is distributed as source only (no prebuilt binaries, no published
+# checksums beyond what we record ourselves here) — see libxc.gitlab.io/download.
+# This script fetches the exact pinned release tag archive from upstream,
+# verifies it against a recorded SHA256, bootstraps its autotools build
+# (the tag archive ships configure.ac/Makefile.am but no pre-generated
+# `configure`), and builds+installs it into libxc-<version>/ under
+# APOST3D_PATH — the same self-contained-prefix convention the old
+# libxc-4.2.3 setup used.
+#
+# Usually you don't need to run this directly: make_compile.sh probes for
+# an already-usable libxc (an explicit LIBXC_DIR, a system/conda/Homebrew
+# install registered with pkg-config) first, and only falls back to this
+# script when nothing suitable is found.
 #
 # Usage:
 #   export APOST3D_PATH=/path/to/APOST3D
-#   bash compile_libxc_gfortran.sh
+#   bash compile_libxc.sh
+#
+# Air-gapped / no internet egress: pre-download the exact tarball below
+# (matching the recorded SHA256) and place it at
+# $APOST3D_PATH/libxc-7.1.2.tar.gz before running this script — it will
+# be used as-is instead of fetching.
 # ==============================================================================
 
 set -euo pipefail
+
+# ------------------------------------------------------------------------------
+# Pinned version. Bumping this is a deliberate, reviewed action (different
+# libxc releases can carry different numerics for edge cases) — don't
+# auto-track "latest". Update LIBXC_SHA256 together with LIBXC_VERSION if
+# the pin ever moves.
+# ------------------------------------------------------------------------------
+LIBXC_VERSION="7.1.2"
+LIBXC_URL="https://gitlab.com/libxc/libxc/-/archive/${LIBXC_VERSION}/libxc-${LIBXC_VERSION}.tar.gz"
+LIBXC_SHA256="c517ce61820ea8114664a4280b6a6bc74a4f22f1fd1ea4ddecd6df0caeeae4f4"
 
 # ------------------------------------------------------------------------------
 # Require APOST3D_PATH
@@ -21,7 +47,8 @@ if [[ -z "${APOST3D_PATH:-}" ]]; then
   exit 1
 fi
 
-LIBXCDIR="${APOST3D_PATH}/libxc-4.2.3"
+LIBXCDIR="${APOST3D_PATH}/libxc-${LIBXC_VERSION}"
+TARBALL="${APOST3D_PATH}/libxc-${LIBXC_VERSION}.tar.gz"
 
 # ------------------------------------------------------------------------------
 # Auto-detect gcc / gfortran
@@ -30,14 +57,12 @@ LIBXCDIR="${APOST3D_PATH}/libxc-4.2.3"
 # ------------------------------------------------------------------------------
 find_compiler() {
   local name="$1"
-  # Try versioned names 15 down to 10
-  for v in 15 14 13 12 11 10; do
+  for v in 16 15 14 13 12 11 10; do
     if command -v "${name}-${v}" &>/dev/null; then
       echo "${name}-${v}"
       return
     fi
   done
-  # Fall back to unversioned
   if command -v "${name}" &>/dev/null; then
     echo "${name}"
     return
@@ -63,6 +88,47 @@ fi
 
 echo "Using C compiler  : $CC_CMD  ($(${CC_CMD} --version | head -1))"
 echo "Using FC compiler : $FC_CMD  ($(${FC_CMD} --version | head -1))"
+
+# ------------------------------------------------------------------------------
+# Autotools prerequisites.
+#
+# The GitLab tag archive ships configure.ac/Makefile.am but no pre-generated
+# `configure` (unlike a curated release dist tarball) — building it needs
+# `autoreconf -fi` first, which needs autoconf/automake/libtool installed.
+# Not needed by anything else in this codebase, so check explicitly rather
+# than let a cryptic "autoreconf: command not found" surface mid-script.
+#
+# macOS-specific gotcha: /usr/bin/libtool is Apple's own static-library
+# archiver, unrelated to GNU libtool that autoreconf/LT_INIT actually
+# needs. Homebrew installs the real one under the keg-only names
+# glibtool/glibtoolize precisely to avoid clashing with Apple's — same
+# class of name collision as the AR/RANLIB workaround below, just for a
+# different tool. Prepending its gnubin dir to PATH makes plain
+# `libtoolize` resolve to the GNU one for the rest of this script.
+# ------------------------------------------------------------------------------
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  BREW_LIBTOOL_PREFIX="$(brew --prefix libtool 2>/dev/null || true)"
+  if [[ -n "$BREW_LIBTOOL_PREFIX" && -d "$BREW_LIBTOOL_PREFIX/libexec/gnubin" ]]; then
+    export PATH="$BREW_LIBTOOL_PREFIX/libexec/gnubin:$PATH"
+  fi
+fi
+
+MISSING_TOOLS=()
+for t in autoconf automake libtoolize; do
+  command -v "$t" &>/dev/null || MISSING_TOOLS+=("$t")
+done
+if [[ ${#MISSING_TOOLS[@]} -gt 0 ]]; then
+  echo "ERROR: missing autotools prerequisite(s): ${MISSING_TOOLS[*]}"
+  echo "       Needed to bootstrap libxc's build (autoreconf -fi)."
+  echo "       Install with:"
+  echo "         macOS:  brew install autoconf automake libtool"
+  echo "         Ubuntu: sudo apt install autoconf automake libtool"
+  echo "         Fedora: sudo dnf install autoconf automake libtool"
+  exit 1
+fi
+echo "Using autoconf    : $(command -v autoconf)  ($(autoconf --version | head -1))"
+echo "Using automake     : $(command -v automake)  ($(automake --version | head -1))"
+echo "Using libtoolize  : $(command -v libtoolize)"
 
 # ------------------------------------------------------------------------------
 # Force the platform-native ar/ranlib.
@@ -98,25 +164,72 @@ echo "Using RANLIB      : $RANLIB_CMD"
 echo ""
 
 # ------------------------------------------------------------------------------
-# Extract source (always start from a clean tree)
+# Fetch (or reuse a pre-placed tarball) and verify checksum.
 # ------------------------------------------------------------------------------
 cd "$APOST3D_PATH"
 
-if [[ ! -f libxc-4.2.3.tar.gz ]]; then
-  echo "ERROR: libxc-4.2.3.tar.gz not found in $APOST3D_PATH"
+if [[ -f "$TARBALL" ]]; then
+  echo "Found existing $TARBALL — reusing it (skipping download)."
+else
+  echo "Downloading libxc ${LIBXC_VERSION} from upstream..."
+  echo "  $LIBXC_URL"
+  if ! curl -fL --retry 3 -o "$TARBALL" "$LIBXC_URL"; then
+    echo ""
+    echo "ERROR: download failed. If this machine has no internet egress"
+    echo "       (e.g. an air-gapped HPC node), download the tarball"
+    echo "       elsewhere and place it at:"
+    echo "         $TARBALL"
+    echo "       then re-run this script."
+    rm -f "$TARBALL"
+    exit 1
+  fi
+fi
+
+echo "Verifying SHA256 checksum..."
+ACTUAL_SHA256=""
+if command -v sha256sum &>/dev/null; then
+  ACTUAL_SHA256=$(sha256sum "$TARBALL" | awk '{print $1}')
+elif command -v shasum &>/dev/null; then
+  ACTUAL_SHA256=$(shasum -a 256 "$TARBALL" | awk '{print $1}')
+else
+  echo "ERROR: neither sha256sum nor shasum found — cannot verify checksum."
   exit 1
 fi
 
-echo "Extracting libxc-4.2.3.tar.gz ..."
-rm -rf libxc-4.2.3
-tar -xzf libxc-4.2.3.tar.gz
+if [[ "$ACTUAL_SHA256" != "$LIBXC_SHA256" ]]; then
+  echo "ERROR: checksum mismatch for $TARBALL"
+  echo "  expected: $LIBXC_SHA256"
+  echo "  actual:   $ACTUAL_SHA256"
+  echo "The downloaded/pre-placed file does not match the pinned libxc"
+  echo "${LIBXC_VERSION} release — refusing to build from it. Delete it and"
+  echo "re-run this script to fetch a fresh copy."
+  exit 1
+fi
+echo "  OK: $ACTUAL_SHA256"
 echo ""
 
 # ------------------------------------------------------------------------------
-# Configure
+# Extract (always start from a clean tree)
+# ------------------------------------------------------------------------------
+echo "Extracting libxc-${LIBXC_VERSION}.tar.gz ..."
+rm -rf "$LIBXCDIR"
+tar -xzf "$TARBALL"
+echo ""
+
+# ------------------------------------------------------------------------------
+# Bootstrap the autotools build (no pre-generated `configure` in the tag
+# archive — see the header comment above).
 # ------------------------------------------------------------------------------
 cd "$LIBXCDIR"
+echo "Running autoreconf -fi ..."
+autoreconf -fi
+echo ""
 
+# ------------------------------------------------------------------------------
+# Configure — installs into itself (LIBXCDIR) as prefix, same
+# self-contained convention as the old libxc-4.2.3 setup. Static-only:
+# apost3d links libxc in directly, no need to ship/rpath a shared lib.
+# ------------------------------------------------------------------------------
 echo "Running configure ..."
 CC="$CC_CMD" \
 FC="$FC_CMD" \
@@ -150,18 +263,10 @@ for a in "$LIBXCDIR"/lib/*.a; do
 done
 echo ""
 
-# ------------------------------------------------------------------------------
-# Copy F90 interfaces needed by the main Makefile
-# ------------------------------------------------------------------------------
-cp src/libxc_funcs.f90 "$LIBXCDIR/"
-cp src/libxc.f90       "$LIBXCDIR/"
-
 echo "============================================================"
-echo "  libxc-4.2.3 built successfully."
-echo "  Headers : $LIBXCDIR/include/"
-echo "  Library : $LIBXCDIR/lib/libxc.a"
-echo "  F90 src : $LIBXCDIR/libxc_funcs.f90"
-echo "            $LIBXCDIR/libxc.f90"
+echo "  libxc-${LIBXC_VERSION} built successfully."
+echo "  Headers/modules : $LIBXCDIR/include/"
+echo "  Libraries       : $LIBXCDIR/lib/libxc.a, libxcf03.a"
 echo "============================================================"
 echo ""
 echo "Next step:"

@@ -21,8 +21,11 @@ eos_aom
 ## Build directories
 objects/
 testrun_*/
-## libxc built tree (rebuilt by compile_libxc.sh from the tarball)
-libxc-4.2.3/
+## libxc: fetched tarball + built tree (compile_libxc.sh fetches the
+## pinned release from upstream and builds it here -- neither is
+## committed; see compile_libxc.sh for the pinned version/checksum)
+libxc-*.tar.gz
+libxc-7.1.2/
 ## Configure junk (leftover from libxc configure runs)
 confdefs.h
 conftest

@@ -489,29 +489,29 @@
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine xc_uks_for_dm1(isigma,npt,id_xfunc,scr_ab,scr,scr2)
-      use xc_f90_types_m
-      use xc_f90_lib_m
+      use xc_f03_lib_m
       implicit real*8(a-h,o-z)
-      TYPE(xc_f90_pointer_t) :: xc_func
-      TYPE(xc_f90_pointer_t) :: xc_info
+      TYPE(xc_f03_func_t) :: xc_func
+      TYPE(xc_f03_func_info_t) :: xc_info
       include 'parameter.h'
 
       dimension :: scr_ab(2,npt),scr(3,npt),scr2(npt)
 
-      call xc_f90_func_init(xc_func,xc_info,id_xfunc,XC_POLARIZED)
-      select case (xc_f90_info_family(xc_info))
+      call xc_f03_func_init(xc_func,id_xfunc,XC_POLARIZED)
+      xc_info = xc_f03_func_get_info(xc_func)
+      select case (xc_f03_func_info_get_family(xc_info))
         case(XC_FAMILY_LDA)
-          call xc_f90_lda_exc(xc_func,npt,scr_ab(1,1),scr2(1))
+          call xc_f03_lda_exc(xc_func,int(npt,8),scr_ab(1,1),scr2(1))
         case(XC_FAMILY_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_HYB_GGA)
-          call xc_f90_gga_exc(xc_func,npt,scr_ab(1,1),scr(1,1),scr2(1))
+          call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_MGGA)
-!          call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+!          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!          call xc_f90_mgga_exc(xc_func,npt,scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+!          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
       end select
-      call xc_f90_func_end(xc_func)
+      call xc_f03_func_end(xc_func)
 
 !! MULTIPLYING ONLY ALPHA RHO !!
 
