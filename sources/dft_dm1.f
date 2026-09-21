@@ -36,7 +36,7 @@
 !! OMP-PRIVATE needs this, not allocatable (see enpart.f's rvect).       !!
       dimension :: eval_ao(igr),gx_ao(igr),gy_ao(igr),gz_ao(igr)
       dimension :: chp2v(nalf),chp2bv(nb)
-      dimension :: rhoab(2,1),scrpt(3,1),excpt(1),excbpt(1)
+      dimension :: rhoab(2,1),scrpt(3,1),taupt(2,1),excpt(1),excbpt(1)
 
       allocatable :: wppha(:),omp2pha(:,:),pcoordpha(:,:),chppha(:,:),omp(:),ibaspoint(:)
       allocatable :: chp2(:,:),chp2pha(:,:),chp2b(:,:),chp2phab(:,:)
@@ -126,7 +126,7 @@
 !! function" state is THREADPRIVATE'd at its own declaration; c/cb are   !!
 !! shared but read-only; everything else accumulates via REDUCTION.      !!
 !$OMP PARALLEL DO PRIVATE(jfut,Rx,Ry,Rz,rhoa,rhob,rhoab,imo,ibf,xx,xxb,
-!$OMP&  scraa,scrab,scrbb,scrpt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
+!$OMP&  scraa,scrab,scrbb,tauaa,taubb,scrpt,taupt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
 !$OMP&  xksigaa,xksigbb,xx0,xx0b,xkagga,xkbgga,xbf,xbfb,xxrdm1,xxrdm1b,
 !$OMP&  x0,eval_ao,gx_ao,gy_ao,gz_ao,chp2v,chp2bv)
 !$OMP&  REDUCTION(+:f3,f3b,fbo,fbob,xexch,xexchb,npairtot,npairskip)
@@ -167,16 +167,18 @@
                     chp2v(imo)=xx
                     if(imo.le.nb) chp2bv(imo)=xxb
                   end do
-                  call sigma_uks_xyz(Rx,Ry,Rz,chp2v,chp2bv,scraa,scrab,scrbb)
+                  call sigma_uks_xyz(Rx,Ry,Rz,chp2v,chp2bv,scraa,scrab,scrbb,tauaa,taubb)
                   scrpt(1,1)=scraa
                   scrpt(2,1)=scrab
                   scrpt(3,1)=scrbb
+                  taupt(1,1)=tauaa
+                  taupt(2,1)=taubb
                 end if
 
 !! COMPUTING BOTH RDM1 AND EXCHANGE HERE !!
 
-                call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
-                call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+                call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,taupt,excpt)
+                call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,taupt,excbpt)
                 xfact=FOUR/THREE
                 r12=(pcoord(ifut,1)-pcoordpha(jfut,1))**TWO
                 r12=r12+((pcoord(ifut,2)-pcoordpha(jfut,2))**TWO)
@@ -339,7 +341,7 @@
 !! dm1_ao/dm1b_ao add an array REDUCTION (gfortran/OpenMP 4.5+ supports  !!
 !! this for already-allocated arrays, which they are before this loop). !!
 !$OMP PARALLEL DO PRIVATE(jfut,Rx,Ry,Rz,rhoa,rhob,rhoab,imo,ibf,xx,xxb,
-!$OMP&  scraa,scrab,scrbb,scrpt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
+!$OMP&  scraa,scrab,scrbb,tauaa,taubb,scrpt,taupt,xfact,excpt,excbpt,r12,x1,xx1,xx1b,
 !$OMP&  xksigaa,xksigbb,xx0,xx0b,xkagga,xkbgga,xbf,xbfb,xxrdm1,xxrdm1b,
 !$OMP&  x0,eval_ao,gx_ao,gy_ao,gz_ao,chp2v,chp2bv,mu,nu)
 !$OMP&  REDUCTION(+:dm1_ao,dm1b_ao)
@@ -366,14 +368,16 @@
                     chp2v(imo)=xx
                     if(imo.le.nb) chp2bv(imo)=xxb
                   end do
-                  call sigma_uks_xyz(Rx,Ry,Rz,chp2v,chp2bv,scraa,scrab,scrbb)
+                  call sigma_uks_xyz(Rx,Ry,Rz,chp2v,chp2bv,scraa,scrab,scrbb,tauaa,taubb)
                   scrpt(1,1)=scraa
                   scrpt(2,1)=scrab
                   scrpt(3,1)=scrbb
+                  taupt(1,1)=tauaa
+                  taupt(2,1)=taubb
                 end if
 
-                call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,excpt)
-                call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,excbpt)
+                call xc_uks_for_dm1(1,1,ifunc,rhoab,scrpt,taupt,excpt)
+                call xc_uks_for_dm1(2,1,ifunc,rhoab,scrpt,taupt,excbpt)
                 xfact=FOUR/THREE
                 xx1=(rhoa**xfact)
                 xx1b=(rhob**xfact)
@@ -476,26 +480,40 @@
 
 !! ********************************************************************* !!
 !! subroutine: xc_uks_for_dm1                                            !!
-!! purpose: evaluates one spin channel's LDA/GGA exchange energy density !!
-!!   (per electron, pre-multiplied by that spin's density) via libxc,    !!
-!!   for an arbitrary set of npt points.                                 !!
+!! purpose: evaluates one spin channel's LDA/GGA/meta-GGA exchange       !!
+!!   energy density (per electron, pre-multiplied by that spin's        !!
+!!   density) via libxc, for an arbitrary set of npt points. The        !!
+!!   density-Laplacian ingredient libxc's MGGA call always requires is   !!
+!!   passed as a local zero array -- confirmed against libxc 7.1.2's own !!
+!!   functional flags that M06-2X/TPSS (the only MGGA family wired in    !!
+!!   so far) declare XC_FLAGS_NEEDS_TAU only, never                      !!
+!!   XC_FLAGS_NEEDS_LAPLACIAN.                                            !!
 !! arguments:                                                            !!
 !!   isigma (in) -- 1=alpha, 2=beta                                      !!
 !!   npt (in) -- number of points                                        !!
 !!   id_xfunc (in) -- libxc functional ID                                !!
 !!   scr_ab (in) -- density, (alpha,beta)                                !!
 !!   scr (in) -- sigma (grad-rho.grad-rho), (up-up,up-down,down-down)    !!
+!!   tau (in) -- kinetic energy density, (alpha,beta), only read for     !!
+!!   meta-GGA functionals                                                !!
 !!   scr2 (out) -- exchange energy density for spin isigma               !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      subroutine xc_uks_for_dm1(isigma,npt,id_xfunc,scr_ab,scr,scr2)
+      subroutine xc_uks_for_dm1(isigma,npt,id_xfunc,scr_ab,scr,tau,scr2)
       use xc_f03_lib_m
       implicit real*8(a-h,o-z)
       TYPE(xc_f03_func_t) :: xc_func
       TYPE(xc_f03_func_info_t) :: xc_info
       include 'parameter.h'
 
-      dimension :: scr_ab(2,npt),scr(3,npt),scr2(npt)
+!! xlapl is automatic (stack), not allocatable -- called concurrently from !!
+!! dft_dm1's OMP loop, same reason as sigma_uks_xyz's own scratch arrays. !!
+      dimension :: scr_ab(2,npt),scr(3,npt),tau(2,npt),scr2(npt),xlapl(2,npt)
+
+      do ii=1,npt
+        xlapl(1,ii)=ZERO
+        xlapl(2,ii)=ZERO
+      end do
 
       call xc_f03_func_init(xc_func,id_xfunc,XC_POLARIZED)
       xc_info = xc_f03_func_get_info(xc_func)
@@ -507,9 +525,9 @@
         case(XC_FAMILY_HYB_GGA)
           call xc_f03_gga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),scr2(1))
         case(XC_FAMILY_MGGA)
-!          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2(1))
         case(XC_FAMILY_HYB_MGGA)
-!          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1),lapl(1),tau(1),scr2(1))
+          call xc_f03_mgga_exc(xc_func,int(npt,8),scr_ab(1,1),scr(1,1),xlapl(1,1),tau(1,1),scr2(1))
       end select
       call xc_f03_func_end(xc_func)
 
@@ -627,9 +645,11 @@
 !!   xabs, yabs, zabs (in) -- point to evaluate at                       !!
 !!   chp2, chp3 (in) -- alpha/beta MO values at that point               !!
 !!   scraa, scrab, scrbb (out) -- sigma (up-up, up-down, down-down)      !!
+!!   tauaa, taubb (out) -- kinetic energy density, alpha/beta, reusing   !!
+!!     the same per-point MO gradient (chpd/chpbd) computed for sigma    !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      subroutine sigma_uks_xyz(xabs,yabs,zabs,chp2,chp3,scraa,scrab,scrbb)
+      subroutine sigma_uks_xyz(xabs,yabs,zabs,chp2,chp3,scraa,scrab,scrbb,tauaa,taubb)
       use ao_matrices
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
@@ -651,6 +671,8 @@
       scraa=ZERO
       scrab=ZERO
       scrbb=ZERO
+      tauaa=ZERO
+      taubb=ZERO
       do ixyz=1,3
         do ii=1,igr
           iact=ii
@@ -679,10 +701,22 @@
             if(i.le.nb.and.j.le.nb) scrbb=scrbb+chp3(i)*chp3(j)*chpbd(i)*chpbd(j)
           end do
         end do
+
+!! TAU IN A GIVEN POINT -- (1/2)*SUM OF |GRAD(MO)|^2 OVER OCCUPIED ORBITALS,  !!
+!! NO CHP2/CHP3 WEIGHTING (UNLIKE SIGMA, TAU IS A SUM OVER ORBITALS, NOT A   !!
+!! FUNCTION OF THE DENSITY GRADIENT). !!
+        do i=1,nalf
+          tauaa=tauaa+chpd(i)*chpd(i)
+        end do
+        do i=1,nb
+          taubb=taubb+chpbd(i)*chpbd(i)
+        end do
       end do
       scraa=FOUR*scraa
       scrab=FOUR*scrab
       scrbb=FOUR*scrbb
+      tauaa=HALF*tauaa
+      taubb=HALF*taubb
 
       end
 
