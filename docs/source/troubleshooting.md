@@ -13,12 +13,12 @@ normally fetches and builds it automatically the first time — re-run
 `bash make_compile.sh` with `APOST3D_PATH` exported. To build it
 manually instead: `bash compile_libxc.sh`.
 
-**libxc build fails with `autoreconf: command not found` (or
-`configure.ac: error: possibly undefined macro: LT_INIT`)**
-`autoconf`/`automake`/`libtool` are missing — the pinned libxc release
-is fetched as a raw source-tag archive with no pre-generated `configure`
-script, so building it needs these to bootstrap one. Install them (see
-[Installation](installation.md)) and re-run.
+**libxc build fails with `cmake: command not found` (or `CMake ...
+or higher is required`)**
+CMake is missing or too old — libxc 7.1.2 needs CMake ≥ 3.21. Install a
+newer one (see [Installation](installation.md)); on a system where you
+can't easily get one via the package manager, `pip install --user cmake`
+gets a modern prebuilt binary with nothing to compile.
 
 **`cannot find -lopenblas`**
 `make_compile.sh` checks this by actually linking a test program before

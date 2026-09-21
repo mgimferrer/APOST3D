@@ -34,12 +34,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install gfortran/gcc/make/openblas/autotools
+      - name: Install gfortran/gcc/make/openblas/cmake
         id: toolchain
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y gfortran gcc make libopenblas-dev autoconf automake libtool
+          sudo apt-get install -y gfortran gcc make libopenblas-dev cmake
           gfortran --version
+          cmake --version
           echo "gfortran_version=$(gfortran -dumpfullversion)" >> "$GITHUB_OUTPUT"
           # Extracted from compile_libxc.sh itself (not duplicated here) so
           # bumping the pinned version there can never drift out of sync
