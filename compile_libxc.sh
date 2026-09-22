@@ -151,10 +151,14 @@ echo ""
 
 # Configure, build, install via CMake into LIBXCDIR itself. Static-only
 # (apost3d links libxc in directly). ENABLE_FORTRAN defaults OFF upstream.
+# CMAKE_INSTALL_LIBDIR is pinned to "lib" -- CMake's GNUInstallDirs module
+# defaults 64-bit RHEL/CentOS/Rocky-family systems to "lib64" instead, and
+# every consumer here (Makefile, make_compile.sh) hardcodes .../lib/.
 cd "$LIBXCDIR"
 echo "Running cmake configure ..."
 cmake -B build \
   -DCMAKE_INSTALL_PREFIX="$LIBXCDIR" \
+  -DCMAKE_INSTALL_LIBDIR=lib \
   -DCMAKE_C_COMPILER="$CC_CMD" \
   -DCMAKE_Fortran_COMPILER="$FC_CMD" \
   -DCMAKE_BUILD_TYPE=Release \
