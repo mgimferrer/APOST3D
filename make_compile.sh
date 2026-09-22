@@ -97,8 +97,28 @@ else
     echo "  libxc: found via pkg-config ($(pkg-config --modversion libxcf03))"
     LIBXC_READY=1
   elif [[ -f "$BUNDLED_LIBXC_A" ]]; then
-    echo "  libxc: using already-built bundled copy ($APOST3D_PATH/libxc-${LIBXC_VERSION})"
-    LIBXC_READY=1
+    # gfortran .mod files aren't portable across compiler versions, and a
+    # file-existence check alone can't catch a stale bundled build (e.g.
+    # after an HPC `module load` swap) -- try actually reading the module,
+    # same "verify by using it" approach as the OpenBLAS link-test below,
+    # rather than deferring the failure to deep inside the real build with
+    # a confusing "different version of GNU Fortran" error.
+    LIBXC_MODTEST_DIR="$(mktemp -d)"
+    cat > "$LIBXC_MODTEST_DIR/t.f90" <<'EOF'
+program t
+  use xc_f03_lib_m
+end program t
+EOF
+    if gfortran "$LIBXC_MODTEST_DIR/t.f90" -I"$APOST3D_PATH/libxc-${LIBXC_VERSION}/include" \
+        -c -o "$LIBXC_MODTEST_DIR/t.o" &>/dev/null; then
+      echo "  libxc: using already-built bundled copy ($APOST3D_PATH/libxc-${LIBXC_VERSION})"
+      LIBXC_READY=1
+    else
+      echo "  libxc: bundled copy exists but its .mod files aren't readable by"
+      echo "         the current gfortran (likely built by a different version,"
+      echo "         e.g. after an HPC module swap) -- rebuilding."
+    fi
+    rm -rf "$LIBXC_MODTEST_DIR"
   fi
 fi
 
