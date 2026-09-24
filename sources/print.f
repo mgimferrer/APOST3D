@@ -547,8 +547,10 @@
         write(chdr,'(a,i0,a)') '# FRAGMENTS  (',icufr,' fragments)'
         write(*,'(2x,a)') trim(chdr)
         write(*,'(2x,a)') repeat('-',len_trim(chdr))
+!! Format reversion restarts at (15x,20i4), so >20 atoms wrap onto !!
+!! aligned continuation lines instead of reusing the leading a/i3   !!
         do i=1,icufr
-          write(*,'(2x,a,i3,a,20i4)') 'Fragment',i,' :',
+          write(*,'(2x,a,i3,a,20i4:/(15x,20i4))') 'Fragment',i,' :',
      +      (ifrlist(k,i),k=1,nfrlist(i))
         end do
       end if
