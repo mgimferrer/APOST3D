@@ -510,6 +510,11 @@
         write(*,'(2x,a,1x,a)') 'Grid spacing (bohr)     :',trim(adjustl(cval))
         write(cval,'(f6.3)') cuberadscale
         write(*,'(2x,a,1x,a)') 'Radius scale            :',trim(adjustl(cval))
+        if(inegefos.eq.1) then
+          write(cval,'(f7.3)') -REAL(inegcubthr)/1000.0d0
+          write(*,'(2x,a,1x,a,a)') 'Negative-occ. EFO cubes :',
+     +      'net occ. <= ',trim(adjustl(cval))//' (GEOS paired only)'
+        end if
       end if
 
 !! ----------------------------------------------------------------- !!
@@ -1442,8 +1447,9 @@
 !! grows with fragment size. icase selects RHF/UHF-alpha/UHF-beta/UEOS    !!
 !! paired/unpaired naming; imulli selects orbital-value output (Mulliken/ !!
 !! Lowdin) vs AIM-weighted density (Becke/TFVC/Hirshfeld/QTAIM).          !!
-!! icase=5: GEOS significant-negative paired EFOs, staged into            !!
-!! p0(:,1:ip0) by effao3d_u -- all plotted, MAX_OCC/MIN_OCC ignored.      !!
+!! icase=5: GEOS negative-occupation paired EFOs (# CUBE NEG_EFOS),       !!
+!! staged into p0(:,1:ip0) by effao3d_u -- all plotted, MAX_OCC/MIN_OCC   !!
+!! ignored.                                                               !!
 !! arguments: ifrag (in) -- fragment/atom index, icase (in) -- 0-5,       !!
 !! see above                                                              !!
 !! author: PSalse, MGimf                                                  !!
@@ -1501,26 +1507,29 @@
         end do
       end do
 
-!! setting actual effos to print, instead !!
+!! EFOs to plot: icase=5 plots every staged EFO; otherwise the first EFO !!
+!! with net occ. < MAX_OCC/1000 through the last with net occ. >         !!
+!! MIN_OCC/1000 (doubled for occupations up to 2), both scans capped to  !!
+!! this fragment's own 1..imaxo EFOs                                     !!
       if(icase.eq.5) then
         imaxeff=1
         imineff=imaxo
-      else if(jcubthr.lt.0) then
-        imaxeff=abs(jcubthr)
-        imineff=abs(kcubthr)
       else
-        imaxeff=0
         xmaxeff=float(jcubthr)*1.0d-3
         if (icase.eq.0.or.icase.eq.3) xmaxeff=2.0d0*xmaxeff
+        imaxeff=1
+        do while(imaxeff.le.imaxo)
+          if(p0net(imaxeff,ifrag).lt.xmaxeff) exit
+          imaxeff=imaxeff+1
+        end do
 
-1      imaxeff= imaxeff+1
-        if(p0net(imaxeff,ifrag).ge.xmaxeff) go to 1
-        imineff=imaxo+1
         xmineff=float(kcubthr)*1.0d-3
         if (icase.eq.0.or.icase.eq.3) xmineff=2.0d0*xmineff
-
-2      imineff= imineff - 1
-        if(p0net(imineff,ifrag).le.xmineff) go to 2
+        imineff=imaxo
+        do while(imineff.ge.1)
+          if(p0net(imineff,ifrag).gt.xmineff) exit
+          imineff=imineff-1
+        end do
       end if
 
       if(imaxeff.gt.imineff) then

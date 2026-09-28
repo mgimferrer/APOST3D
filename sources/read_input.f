@@ -118,6 +118,8 @@
 
       call readint("# METHOD","EFF_THRESH",ieffthr,1,1)
       call readchar("# METHOD","CUBE",icube)
+      inegefos=0
+      inegcubthr=50
       if(icube.eq.1) then
         call locate(16,"# CUBE",ii)
         if(ii.eq.0) stop'Required section # CUBE not found in input file'
@@ -125,6 +127,18 @@
         call readint("# CUBE","MIN_OCC",kcubthr,0,1)
         call readreal("# CUBE","SPACING",cubespacing,0.25d0,1)
         call readreal("# CUBE","RADIUS_SCALE",cuberadscale,2.0d0,1)
+        call readchar("# CUBE","NEG_EFOS",inegefos)
+        if(inegefos.eq.1)
+     +    call readint("# CUBE","NEG_EFOS",inegcubthr,50,1)
+!! occupations x1000, never negative -- negative-occupation EFOs have    !!
+!! their own NEG_EFOS keyword                                            !!
+        if(jcubthr.lt.0.or.kcubthr.lt.0) then
+          write(*,'(2x,a)') 'MAX_OCC/MIN_OCC must be >= 0 (occupation x 1000).'
+          write(*,'(2x,a)') 'For negative-occupation EFOs use NEG_EFOS instead.'
+          stop
+        end if
+        if(kcubthr.gt.jcubthr) stop 'MIN_OCC cannot be larger than MAX_OCC'
+        if(inegcubthr.lt.0) stop 'NEG_EFOS value must be >= 0 (|occupation| x 1000)'
       end if
 
 !! EOS (standard) !!
