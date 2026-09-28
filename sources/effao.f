@@ -21,11 +21,8 @@
 !! purpose: computes real-space (3D grid) effective fragment orbitals    !!
 !!   (EFOs) for EOS/EFFAO, one fragment at a time. Results are stored    !!
 !!   into effao_mod (p0/p0net/p0gro/ip0/p0coef), not returned via        !!
-!!   arguments. p0coef (used by eos_analysis's .fchk EFO export, unlike  !!
-!!   the scratch p0 cubegen_new consumes) holds each EFO reprojected     !!
-!!   (util.f's reproject_efos_ao) onto EFO*fragment-weight rather than   !!
-!!   the raw coefficients, so a standard .fchk viewer approximates what  !!
-!!   cubegen_new's own weighted cube shows.                              !!
+!!   arguments: p0 raw (for cubegen_new), p0coef projected onto          !!
+!!   EFO*fragment-weight (for eos_analysis's .fchk export).              !!
 !! arguments (all read-only):                                            !!
 !!   itotps (in) -- total number of grid points (nat*iatps)              !!
 !!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
@@ -87,10 +84,7 @@
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
       ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
 
-!! S^-1 (analytic overlap), built once for the whole call -- feeds        !!
-!! reproject_efos_ao below, which makes each exported EFO approximate     !!
-!! what cubegen_new's own fragment-weighted cube shows instead of the     !!
-!! raw, unweighted MO a standard .fchk viewer would otherwise read.       !!
+!! S^-1 for reproject_efos_ao, built once for all fragments !!
       ALLOCATE(Sinv(igr,igr),cprojfrag(igr,igr),xfitfrag(igr))
       call build_Sinv(igr,Sinv)
 
@@ -218,18 +212,13 @@
         write(*,60) (s0all(mu),mu=1,imaxo)
         write(*,*) " "
 
-!! store this fragment's EFOs/occupations into effao_mod (see header).  !!
-!! p0 keeps the raw c0 (cubegen_new weights it itself, see               !!
-!! reproject_efos_ao's header); p0coef persists across fragments (unlike !!
-!! scratch p0), feeding eos_analysis's coefficient pooling for the       !!
-!! .fchk EFO writer -- reprojected, so that export approximates the      !!
-!! weighted cube instead of the raw, unweighted MO.                      !!
+!! store this fragment's EFOs/occupations into effao_mod (see header):   !!
+!! p0 keeps the raw c0 (cubegen_new applies the fragment weight itself), !!
+!! p0coef (persists across fragments, pooled for the .fchk) gets the     !!
+!! projected coefficients. FIT % = 100*(1-xfit), per EFO.                !!
         if(imaxo.gt.0) then
           call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +      c0,1,imaxo,cprojfrag,xfitfrag)
-!! "% recovered" by the .fchk-export reprojection, same OCCUP-line style !!
-!! as net/gross above -- lets a user judge, per EFO, how faithfully the  !!
-!! exported .fchk orbital matches what cubegen_new's weighted cube shows.!!
           write(*,61) (100.0d0*(1.0d0-xfitfrag(mu)),mu=1,imaxo)
         end if
         do k=1,imaxo
@@ -273,7 +262,7 @@
 !! ********************************************************************* !!
       subroutine eos_analysis(idobeta,icase,thres)
 
-      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef,p0poolcoef
+      use effao_mod, only: p0gro,ip0,p0coef,p0poolcoef
 
       implicit real*8(a-h,o-z)
 
