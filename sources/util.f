@@ -12,8 +12,8 @@
 !!   to_lowdin_basis -- similarity transform into the Lowdin basis          !!
 !!   to_AO_basis     -- back-transform from Lowdin basis to AO basis        !!
 !!   build_Sinv      -- plain S^-1 (analytic overlap), via diagonalize      !!
-!!   reproject_efos_ao -- least-squares reprojects EFO*fragment-weight      !!
-!!                       back onto the AO basis, for GEOS/EOS .fchk export  !!
+!!   reproject_efos_ao -- least-squares projection of EFO*fragment-weight   !!
+!!                       onto the AO basis, for the GEOS/EOS EFO .fchk      !!
 !!   move_to         -- matrix copy (B=A), used by build_Smp                !!
 !! Dead code, flagged individually below, kept pending a deprecation        !!
 !! decision -- not deleted: gennatural_old, old_diagonalize (+ its SDIAG2   !!
@@ -396,43 +396,26 @@ C ONLY FOR RESTRICTED
 
 !! ********************************************************************* !!
 !! subroutine: reproject_efos_ao                                         !!
-!! purpose: least-squares reprojects EFO*fragment-weight back onto the   !!
-!!   AO basis (S*c'=b, S=basis_set's analytic overlap via Sinv, b        !!
-!!   integrated numerically on the same ALLPOINTS grid/weights the       !!
-!!   caller's own S0 is built from) for a contiguous block of columns    !!
-!!   of c0. This is what makes a pooled EFO's .fchk export approximate   !!
-!!   what a properly fragment-masked cube shows (cubegen_new's own       !!
-!!   orbxyz(...)*ww) instead of the raw, unweighted MO a standard        !!
-!!   viewer would otherwise read straight off the .fchk -- confirmed     !!
-!!   empirically 2026-09-23 (LiH-32-FCI, GEOS paired channel) to recover !!
-!!   97.6-99.5% of the weighted target's norm. Never applied to the      !!
-!!   coefficients cubegen_new itself consumes (effao_mod's p0) --        !!
-!!   cubegen_new already applies the weight correctly on its own; a      !!
-!!   pre-weighted export there would double it.                          !!
+!! purpose: least-squares projection of EFO(r)*w_F(r) (EFO times its     !!
+!!   fragment's real-space weight) onto the AO basis, S*c'=b, for EFO    !!
+!!   columns ilo:ihi of c0 -- the coefficients exported to the GEOS/EOS  !!
+!!   EFO .fchk, so a viewer approximates the fragment-weighted cube.     !!
 !! arguments:                                                            !!
 !!   igr    (in)  -- basis size                                          !!
 !!   itotps (in)  -- total grid points                                   !!
 !!   chp    (in)  -- basis-function values at each grid point            !!
 !!   wp     (in)  -- integration weight of each grid point               !!
-!!   omp    (in)  -- own-atom Becke/TFVC weight -- the multi-center       !!
-!!                   quadrature partition-of-unity factor, same one the  !!
-!!                   caller's own S0 build already uses; omitting it      !!
-!!                   overcounts roughly nat-fold (each atom's grid        !!
-!!                   nominally covers all space)                         !!
-!!   scr    (in)  -- fragment's own real-space weight at each grid point !!
+!!   omp    (in)  -- own-atom weight of each grid point (multi-center    !!
+!!                   quadrature factor)                                  !!
+!!   scr    (in)  -- fragment weight w_F at each grid point              !!
 !!   Sinv   (in)  -- inverse analytic AO overlap (build_Sinv)            !!
-!!   c0     (in)  -- (igr,igr) raw EFO coefficients (columns ilo:ihi     !!
-!!                   are the ones reprojected)                           !!
-!!   ilo,ihi(in)  -- column range to reproject                           !!
-!!   cproj  (out) -- (igr,igr), columns ilo:ihi hold the reprojected     !!
+!!   c0     (in)  -- (igr,igr) raw EFO coefficients                      !!
+!!   ilo,ihi(in)  -- column range to project                             !!
+!!   cproj  (out) -- (igr,igr), columns ilo:ihi get the projected        !!
 !!                   coefficients; other columns untouched               !!
-!!   xfit   (out) -- (igr), local-block-indexed (xfit(1) is column ilo,  !!
-!!                   xfit(nn) is column ihi) fit fraction per EFO --      !!
-!!                   ||residual||/||target|| on the same ALLPOINTS       !!
-!!                   quadrature the fit itself uses, i.e. 0=perfect,      !!
-!!                   1=no better than zero. Callers print "100*(1-xfit)" !!
-!!                   as a "% recovered" alongside each EFO's occupation.  !!
-!! author: MGimf                                                          !!
+!!   xfit   (out) -- ||residual||/||target|| per EFO (0 = exact), xfit(1)!!
+!!                   for column ilo ... xfit(ihi-ilo+1) for column ihi   !!
+!! author: MGimf                                                         !!
 !! ********************************************************************* !!
         subroutine reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +    c0,ilo,ihi,cproj,xfit)
@@ -464,8 +447,9 @@ C ONLY FOR RESTRICTED
         end do
 !$OMP END PARALLEL DO
 
-!! b_mu = integral of chi_mu*EFO*fragment-weight over all space, same    !!
-!! multi-center ALLPOINTS quadrature (wp*omp) as the caller's S0 build.  !!
+!! b_mu = integral of chi_mu*EFO*w_F, same multi-center quadrature       !!
+!! (wp*omp) as the caller's S0 -- without omp every atom's grid would    !!
+!! count all space once, overcounting ~nat-fold.                         !!
 !! parallel over mu: each mu writes only its own row of bvec.             !!
 !$OMP PARALLEL DO PRIVATE(mu,jj,ifut,xx)
         do mu=1,igr
@@ -490,20 +474,14 @@ C ONLY FOR RESTRICTED
           end do
         end do
 
-!! fit-quality diagnostic (closes the long-standing "EFO .fchk           !!
-!! projection-quality check" item, same question in concrete form):      !!
-!! ||residual||/||target|| per EFO, on the same ALLPOINTS quadrature      !!
-!! used for the fit itself, so it's a fair (non-circular) accuracy read. !!
-!! Printed as a single summary line per call (per fragment/channel/      !!
-!! block) rather than one line per EFO, to stay unobtrusive.             !!
-        xworst=ZERO
-        xmeanfrac=ZERO
-!$OMP PARALLEL DO PRIVATE(jj,iorb,ifut,mu,xproj,xtv,xres,xtarget,xfrac)
-!$OMP+ REDUCTION(max:xworst) REDUCTION(+:xmeanfrac)
+!! fit quality per EFO, ||residual||/||target|| on the same quadrature.  !!
+!! Threaded over grid points, not EFOs (often only 1-2 per call):        !!
+!! xres/xtarget are genuine reductions; cproj/chp/efoval/scr read-only.  !!
         do jj=1,nn
           iorb=ilo+jj-1
           xres=ZERO
           xtarget=ZERO
+!$OMP PARALLEL DO PRIVATE(ifut,mu,xproj,xtv) REDUCTION(+:xres,xtarget)
           do ifut=1,itotps
             xproj=ZERO
             do mu=1,igr
@@ -513,21 +491,10 @@ C ONLY FOR RESTRICTED
             xres=xres+wp(ifut)*omp(ifut)*(xproj-xtv)**2
             xtarget=xtarget+wp(ifut)*omp(ifut)*xtv**2
           end do
-          if(xtarget.gt.1.0d-8) then
-            xfrac=dsqrt(xres/xtarget)
-          else
-            xfrac=ZERO
-          end if
-          xfit(jj)=xfrac
-          xmeanfrac=xmeanfrac+xfrac
-          if(xfrac.gt.xworst) xworst=xfrac
-        end do
 !$OMP END PARALLEL DO
-        xmeanfrac=xmeanfrac/REAL(nn)
-        write(*,'(2x,a,i0,a,f6.2,a,f6.2,a)')
-     +    'EFO->AO reprojection fit (',nn,
-     +    ' EFOs): mean |residual|/|target| =',xmeanfrac*100.0d0,
-     +    '%, worst =',xworst*100.0d0,'%'
+          xfit(jj)=ZERO
+          if(xtarget.gt.1.0d-8) xfit(jj)=dsqrt(xres/xtarget)
+        end do
 
         DEALLOCATE(efoval,bvec)
         end

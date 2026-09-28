@@ -21,14 +21,11 @@
 !!   (u = n(2-n) per natural-orbital occupation n; paired = total - u).   !!
 !!   Same per-fragment scheme as ueffao3d_frag (effao.f), run twice       !!
 !!   (icase=1 paired, icase=2 unpaired). Results are stored into          !!
-!!   effao_mod (p0/p0net/p0gro/ip0, raw -- cubegen_new weights these      !!
-!!   itself) and, if iueos=1, into the local up0net/up0gro/up0coef/iup0   !!
-!!   arrays consumed by ueos_analysis below, which also triggers writing  !!
-!!   the pooled EFOs into a .fchk (paired -> Alpha, unpaired -> Beta) for !!
-!!   visualization -- up0coef/cneg (unlike p0) hold each EFO reprojected  !!
-!!   (util.f's reproject_efos_ao) onto EFO*fragment-weight rather than    !!
-!!   the raw coefficients, so a standard .fchk viewer approximates what   !!
-!!   cubegen_new's own weighted cube shows. Also scans the paired         !!
+!!   effao_mod (p0/p0net/p0gro/ip0, raw, for cubegen_new) and, if         !!
+!!   iueos=1, into the local up0net/up0gro/up0coef/iup0 arrays consumed   !!
+!!   by ueos_analysis below, which also writes the pooled EFOs into a     !!
+!!   .fchk (paired -> Alpha, unpaired -> Beta); up0coef/cneg hold the     !!
+!!   EFOs projected onto EFO*fragment-weight. Also scans the paired       !!
 !!   channel (only -- Pno-Uno isn't PSD, Uno alone is) for EFOs with      !!
 !!   significant negative net occupation (below xminocc_neg) and stores   !!
 !!   them separately (ineg_frg/xneg_net/xneg_gro/cneg), excluded from     !!
@@ -129,10 +126,7 @@
       if(iueos.eq.1) ALLOCATE(ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr),
      +  cneg(igr,igr,icufr),xneg_fit(igr,icufr))
 
-!! S^-1 (analytic overlap), built once for the whole call -- feeds        !!
-!! reproject_efos_ao below, which makes each exported EFO approximate     !!
-!! what cubegen_new's own fragment-weighted cube shows instead of the     !!
-!! raw, unweighted MO a standard .fchk viewer would otherwise read.       !!
+!! S^-1 for reproject_efos_ao, built once for all fragments/channels !!
       if(iueos.eq.1) then
         ALLOCATE(Sinv(igr,igr),cprojfrag(igr,igr),xfitfrag(igr))
         call build_Sinv(igr,Sinv)
@@ -259,10 +253,8 @@
 !! pp0's sorted diagonal and are never mixed into imaxo/s0all/xx0/the     !!
 !! oxidation-state assignment (see ueos_analysis).                        !!
           if(ineg.gt.0) then
-!! reprojected separately from the gross-occupation contraction below,   !!
-!! which must stay on the raw c0 (a real physical quantity, unrelated    !!
-!! to visualization) -- only the .fchk-export copy (cneg) switches to    !!
-!! the reprojected coefficients, same reasoning as the positive block.   !!
+!! gross occupations stay on the raw c0; only the .fchk copy (cneg) is   !!
+!! projected                                                             !!
             call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +        c0,igr-ineg+1,igr,cprojfrag,xfitfrag)
 !$OMP PARALLEL DO PRIVATE(ii,iorb,icenter,jcenter,jj,kk,xx,xxx)
@@ -294,15 +286,12 @@
 !! just for printing purposes... style of the output !!
           if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
 
-!! store for cube generation (raw c0 -- cubegen_new weights it itself,   !!
-!! see reproject_efos_ao's header), and for ueos_analysis if requested   !!
-!! (reprojected, so the .fchk export approximates the weighted cube).    !!
+!! store for cube generation (raw c0 -- cubegen_new applies the fragment !!
+!! weight itself) and, if requested, for ueos_analysis (projected, for   !!
+!! the .fchk). FIT % = 100*(1-xfit), per EFO.                            !!
           if(iueos.eq.1.and.imaxo.gt.0) then
             call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +        c0,1,imaxo,cprojfrag,xfitfrag)
-!! "% recovered" by the .fchk-export reprojection, same OCCUP-line style !!
-!! as net/gross above -- lets a user judge, per EFO, how faithfully the  !!
-!! exported .fchk orbital matches what cubegen_new's weighted cube shows.!!
             write(*,61) (100.0d0*(1.0d0-xfitfrag(mu)),mu=1,imaxo)
           end if
           do kk=1,imaxo
@@ -473,7 +462,8 @@
       dimension ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr)
       dimension cneg(igr,igr,icufr),xneg_fit(igr,icufr)
 
-      allocatable :: tmp_occup(:),tmp_iorbat(:),tmp_iorbslot(:)
+      allocatable :: tmp_occup(:)
+      integer, allocatable :: tmp_iorbat(:),tmp_iorbslot(:)
       allocatable :: elec2(:,:),elec_id(:,:)
       allocatable :: tmp_elec_id(:,:)
       allocatable :: elec_frg_count(:,:)
@@ -516,13 +506,13 @@
               tmp_occup(ii)=tmp_occup(jj)
               tmp_occup(jj)=tmp_swap
 
-              tmp_swap=tmp_iorbat(ii)
+              itmp_swap=tmp_iorbat(ii)
               tmp_iorbat(ii)=tmp_iorbat(jj)
-              tmp_iorbat(jj)=tmp_swap
+              tmp_iorbat(jj)=itmp_swap
 
-              tmp_swap=tmp_iorbslot(ii)
+              itmp_swap=tmp_iorbslot(ii)
               tmp_iorbslot(ii)=tmp_iorbslot(jj)
-              tmp_iorbslot(jj)=tmp_swap
+              tmp_iorbslot(jj)=itmp_swap
             end if
           end do
         end do
