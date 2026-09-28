@@ -835,6 +835,9 @@
               iloba
    real*8  :: xthresh
    real*8  :: cubespacing,cuberadscale !! # CUBE grid spacing (bohr) / atomic-radius padding scale !!
+!! # CUBE NEG_EFOS: cubes of GEOS paired EFOs with net occupation         !!
+!! <= -inegcubthr/1000 (flag + optional threshold, default 50)            !!
+   integer :: inegefos,inegcubthr
 
 !! local spin and correlated-WF input !!
    integer :: ispin,icorr,idafh

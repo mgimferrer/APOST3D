@@ -32,8 +32,9 @@
 !!   channel (only -- Pno-Uno isn't PSD, Uno alone is) for EFOs with      !!
 !!   significant negative net occupation (below xminocc_neg) and stores   !!
 !!   them separately (ineg_frg/xneg_net/xneg_gro/cneg), excluded from     !!
-!!   oxidation-state assignment but still exported to the .fchk and, with !!
-!!   CUBE, written as their own ..._paired_neg_... cube files.            !!
+!!   oxidation-state assignment but still exported to the .fchk. With     !!
+!!   # CUBE NEG_EFOS, paired EFOs below that keyword's own threshold get  !!
+!!   ..._paired_neg_... cube files (independent of xminocc_neg).          !!
 !! arguments:                                                             !!
 !!   itotps (in) -- total number of grid points (nat*iatps)               !!
 !!   ndim   (in) -- number of basis functions (leading dim of chp/sat)    !!
@@ -53,6 +54,7 @@
       use ao_matrices
       use integration_grid
       use effao_mod, only: p0,p0net,p0gro,ip0
+      use input_options_mod, only: inegefos,inegcubthr
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -325,25 +327,46 @@
           if(icase.eq.2) iicase=4
           if(icube.eq.1) call cubegen_new(iicenter,iicase)
 
-!! and the significant-negative paired EFOs, staged into p0's leading    !!
-!! columns from the raw c0 (not the reprojected cneg -- cubegen_new      !!
-!! applies the fragment weight itself); borrowed slots restored after.   !!
-          if(icube.eq.1.and.ineg.gt.0) then
-            ALLOCATE(p0sav(igr,ineg),occsav(ineg,2))
-            do ii=1,ineg
-              iorb=igr-ineg+ii
+!! # CUBE NEG_EFOS: paired EFOs with net occ. <= -inegcubthr/1000, own   !!
+!! selection independent of xminocc_neg (report/.fchk set), numbered     !!
+!! from the most negative. Staged into p0's leading columns from the raw !!
+!! c0 (cubegen_new applies the fragment weight itself), borrowed slots   !!
+!! restored after.                                                       !!
+          inegc=0
+          if(icube.eq.1.and.inegefos.eq.1.and.icase.eq.1) then
+            xnegthr=-REAL(inegcubthr)/1000.0d0
+            jj=igr
+            do while(jj.gt.imaxo.and.pp0(jj,jj).le.xnegthr)
+              inegc=inegc+1
+              jj=jj-1
+            end do
+          end if
+          if(inegc.gt.0) then
+            ALLOCATE(p0sav(igr,inegc),occsav(inegc,2))
+            do ii=1,inegc
+              iorb=igr-ii+1
               do mu=1,igr
                 p0sav(mu,ii)=p0(mu,ii)
                 p0(mu,ii)=c0(mu,iorb)
               end do
               occsav(ii,1)=p0net(ii,iicenter)
               occsav(ii,2)=p0gro(ii,iicenter)
-              p0net(ii,iicenter)=xneg_net(ii,iicenter)
-              p0gro(ii,iicenter)=xneg_gro(ii,iicenter)
+!! gross occupation: same sat contraction as the report's xneg_gro       !!
+              xxx=ZERO
+              do icenter=1,nfrlist(iicenter)
+                jcenter=ifrlist(icenter,iicenter)
+                do jj=1,igr
+                  do kk=1,igr
+                    xxx=xxx+c0(kk,iorb)*sat(kk,jj,jcenter)*c0(jj,iorb)
+                  end do
+                end do
+              end do
+              p0net(ii,iicenter)=pp0(iorb,iorb)
+              p0gro(ii,iicenter)=xxx*pp0(iorb,iorb)
             end do
-            ip0(iicenter)=ineg
+            ip0(iicenter)=inegc
             call cubegen_new(iicenter,5)
-            do ii=1,ineg
+            do ii=1,inegc
               do mu=1,igr
                 p0(mu,ii)=p0sav(mu,ii)
               end do
