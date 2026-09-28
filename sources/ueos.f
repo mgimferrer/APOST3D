@@ -32,7 +32,8 @@
 !!   channel (only -- Pno-Uno isn't PSD, Uno alone is) for EFOs with      !!
 !!   significant negative net occupation (below xminocc_neg) and stores   !!
 !!   them separately (ineg_frg/xneg_net/xneg_gro/cneg), excluded from     !!
-!!   oxidation-state assignment but still exported to the .fchk.          !!
+!!   oxidation-state assignment but still exported to the .fchk and, with !!
+!!   CUBE, written as their own ..._paired_neg_... cube files.            !!
 !! arguments:                                                             !!
 !!   itotps (in) -- total number of grid points (nat*iatps)               !!
 !!   ndim   (in) -- number of basis functions (leading dim of chp/sat)    !!
@@ -76,6 +77,7 @@
       allocatable :: ineg_frg(:),xneg_net(:,:),xneg_gro(:,:),cneg(:,:,:)
       allocatable :: xneg_fit(:,:)
       allocatable :: Sinv(:,:),cprojfrag(:,:),xfitfrag(:)
+      allocatable :: p0sav(:,:),occsav(:,:)
       character(len=30) :: lbl30
       character(len=20) :: ctype
 
@@ -322,6 +324,35 @@
           if(icase.eq.1) iicase=3
           if(icase.eq.2) iicase=4
           if(icube.eq.1) call cubegen_new(iicenter,iicase)
+
+!! and the significant-negative paired EFOs, staged into p0's leading    !!
+!! columns from the raw c0 (not the reprojected cneg -- cubegen_new      !!
+!! applies the fragment weight itself); borrowed slots restored after.   !!
+          if(icube.eq.1.and.ineg.gt.0) then
+            ALLOCATE(p0sav(igr,ineg),occsav(ineg,2))
+            do ii=1,ineg
+              iorb=igr-ineg+ii
+              do mu=1,igr
+                p0sav(mu,ii)=p0(mu,ii)
+                p0(mu,ii)=c0(mu,iorb)
+              end do
+              occsav(ii,1)=p0net(ii,iicenter)
+              occsav(ii,2)=p0gro(ii,iicenter)
+              p0net(ii,iicenter)=xneg_net(ii,iicenter)
+              p0gro(ii,iicenter)=xneg_gro(ii,iicenter)
+            end do
+            ip0(iicenter)=ineg
+            call cubegen_new(iicenter,5)
+            do ii=1,ineg
+              do mu=1,igr
+                p0(mu,ii)=p0sav(mu,ii)
+              end do
+              p0net(ii,iicenter)=occsav(ii,1)
+              p0gro(ii,iicenter)=occsav(ii,2)
+            end do
+            ip0(iicenter)=imaxo
+            DEALLOCATE(p0sav,occsav)
+          end if
         end do
       end do
 

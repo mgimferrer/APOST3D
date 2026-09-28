@@ -1442,7 +1442,9 @@
 !! grows with fragment size. icase selects RHF/UHF-alpha/UHF-beta/UEOS    !!
 !! paired/unpaired naming; imulli selects orbital-value output (Mulliken/ !!
 !! Lowdin) vs AIM-weighted density (Becke/TFVC/Hirshfeld/QTAIM).          !!
-!! arguments: ifrag (in) -- fragment/atom index, icase (in) -- 0-4,       !!
+!! icase=5: GEOS significant-negative paired EFOs, staged into            !!
+!! p0(:,1:ip0) by effao3d_u -- all plotted, MAX_OCC/MIN_OCC ignored.      !!
+!! arguments: ifrag (in) -- fragment/atom index, icase (in) -- 0-5,       !!
 !! see above                                                              !!
 !! author: PSalse, MGimf                                                  !!
 !! ********************************************************************** !!
@@ -1500,7 +1502,10 @@
       end do
 
 !! setting actual effos to print, instead !!
-      if(jcubthr.lt.0) then
+      if(icase.eq.5) then
+        imaxeff=1
+        imineff=imaxo
+      else if(jcubthr.lt.0) then
         imaxeff=abs(jcubthr)
         imineff=abs(kcubthr)
       else
@@ -1554,6 +1559,7 @@
       end if
       if(icase.eq.3) name2=trim(name2)//"_paired"
       if(icase.eq.4) name2=trim(name2)//"_unpaired"
+      if(icase.eq.5) name2=trim(name2)//"_paired_neg"
 
 !! assuming rectangular grid !!
       xgrid=0.0d0
