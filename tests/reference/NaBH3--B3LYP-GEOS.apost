@@ -131,8 +131,8 @@
 
   Checking NO overlap matrix
 
-  TIMING CPU  :: initialization                                    0.05 s
-  TIMING WALL :: initialization                                    0.05 s
+  TIMING CPU  :: initialization                                    0.04 s
+  TIMING WALL :: initialization                                    0.04 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.53 s
-  TIMING WALL :: atomic definition                                 0.53 s
+  TIMING CPU  :: atomic definition                                 0.57 s
+  TIMING WALL :: atomic definition                                 0.57 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -395,6 +395,8 @@
   OCCUP.   2.0000   2.0000   1.9993   1.9993   1.9956   0.7645   0.0053   0.0053
   OCCUP.   0.0022
   
+  FIT %     99.99    99.83    99.47    99.47    98.74    88.39    68.84    69.44
+  FIT %     67.68
   ** FRAGMENT   2 **
   
   Net occupation for fragment      2    8.32578
@@ -403,7 +405,7 @@
   
   Gross occupation for fragment    2    8.41027
   OCCUP.   2.0000   1.9949   1.9942   1.9907   0.4249   0.0040   0.0007   0.0007
-  
+  FIT %     99.97    98.70    98.73    98.63    83.77    52.00    50.03    49.99
 
   ------------------------------------
     EFFAOs FROM THE UNPAIRED DENSITY
@@ -415,23 +417,27 @@
   Net occupation using >    0.00010
   OCCUP.   0.4067   0.0585
   
-  Sum check vs Tr(Pno.S0)          1   11.14544   11.14544
-  
   Gross occupation for fragment    1    0.48539
   OCCUP.   0.4154   0.0700
   
+  FIT %     93.05    78.41
   ** FRAGMENT   2 **
   
   Net occupation for fragment      2    0.39196
   Net occupation using >    0.00010
   OCCUP.   0.3663   0.0233   0.0009   0.0009   0.0001   0.0001   0.0001   0.0001
   
-  Sum check vs Tr(Pno.S0)          2    8.71774    8.71774
-  
   Gross occupation for fragment    2    0.41190
   OCCUP.   0.3774   0.0322   0.0009   0.0009   0.0001   0.0001   0.0001   0.0001
   
+  FIT %     91.46    70.72    98.10    92.86    99.18    99.16    91.21    91.32
   Total number of eff-AO-s for analysis:   27
+
+  Found 2 EFO(s) with significant negative occupation in the paired channel
+  (net occupation < -0.0250), excluded from oxidation-state assignment:
+    Frag. 2    Net occ.  -0.0277    Gross occ.  -0.0358    % recovered  74.04
+    Frag. 1    Net occ.  -0.0378    Gross occ.  -0.0428    % recovered  80.97
+
   Ideal assignment: 0 forced-unpaired electron(s), 10 electron pair(s)
   Initial RMSD: 0.31844
 
@@ -444,7 +450,6 @@
     Fragment 1: 10.00 /  1.00
     Fragment 2:  8.00 /  1.00
 
-
   -------------------------------------
     EOS ANALYSIS FOR PAIRED ELECTRONS
   -------------------------------------
@@ -455,6 +460,7 @@
      2     8.00     1.991     0.425
   ---------------------------------------- 
    RELIABILITY INDEX R(%) = 100.000
+
   INFO: (paired) occ. values halved in R(%) calculation
 
   ---------------------------------------
@@ -482,8 +488,8 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 0.68 s
-  TIMING WALL :: EFFAO computation                                 0.68 s
+  TIMING CPU  :: EFFAO computation                                 0.91 s
+  TIMING WALL :: EFFAO computation                                 0.92 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

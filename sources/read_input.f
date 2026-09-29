@@ -119,7 +119,7 @@
       call readint("# METHOD","EFF_THRESH",ieffthr,1,1)
       call readchar("# METHOD","CUBE",icube)
       inegefos=0
-      inegcubthr=50
+      inegcubthr=25
       if(icube.eq.1) then
         call locate(16,"# CUBE",ii)
         if(ii.eq.0) stop'Required section # CUBE not found in input file'
@@ -129,7 +129,7 @@
         call readreal("# CUBE","RADIUS_SCALE",cuberadscale,2.0d0,1)
         call readchar("# CUBE","NEG_EFOS",inegefos)
         if(inegefos.eq.1)
-     +    call readint("# CUBE","NEG_EFOS",inegcubthr,50,1)
+     +    call readint("# CUBE","NEG_EFOS",inegcubthr,25,1)
 !! occupations x1000, never negative -- negative-occupation EFOs have    !!
 !! their own NEG_EFOS keyword                                            !!
         if(jcubthr.lt.0.or.kcubthr.lt.0) then
