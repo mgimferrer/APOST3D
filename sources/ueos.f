@@ -283,17 +283,17 @@
           end if
           if(iueos.eq.1.and.icase.eq.1) ineg_frg(iicenter)=ineg
 
-!! just for printing purposes... style of the output !!
-          if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
-
 !! store for cube generation (raw c0 -- cubegen_new applies the fragment !!
 !! weight itself) and, if requested, for ueos_analysis (projected, for   !!
-!! the .fchk). FIT % = 100*(1-xfit), per EFO.                            !!
+!! the .fchk). FIT % = 100*(1-xfit), per EFO, right under the gross rows !!
           if(iueos.eq.1.and.imaxo.gt.0) then
             call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +        c0,1,imaxo,cprojfrag,xfitfrag)
             write(*,61) (100.0d0*(1.0d0-xfitfrag(mu)),mu=1,imaxo)
           end if
+
+!! just for printing purposes... style of the output !!
+          if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
           do kk=1,imaxo
             do mu=1,igr
               p0(mu,kk)=c0(mu,kk)
