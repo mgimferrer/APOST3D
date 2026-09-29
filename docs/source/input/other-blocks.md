@@ -2,12 +2,31 @@
 
 ## Block section # CUBE
 
+Required whenever `CUBE` is set in `# METHOD` (it may be empty). A cube
+file is written for every effective orbital whose net occupation lies
+between `MIN_OCC`/1000 and `MAX_OCC`/1000, for each fragment (or atom) and
+each density.
+
 | Keyword | Description |
 | ------- | ----------- |
-| MAX_OCC=*val* | Maximal EFO occupation for generating its cube files. Integer *val* is in the [0, 1000] range and the occupation is defined as *val*/1000.0d0 |
-| MIN_OCC=*val* | Minimal EFO occupation for generating the cube file. Integer *val* is in the [0, 1000] range and the occupation is defined as *val*/1000.0d0 |
+| MAX_OCC=*val* | Upper net-occupation bound, as integer *val*/1000. Default *val*=1000, which leaves out fully occupied orbitals |
+| MIN_OCC=*val* | Lower net-occupation bound, as integer *val*/1000. Default *val*=0 |
 | SPACING=*val* | Double-precision grid point spacing, in bohr. Default *val*=0.25 |
 | RADIUS_SCALE=*val* | Double-precision multiplier applied to the extremal atom's covalent radius to set the cube padding beyond the fragment's bounding box (larger *val* gives a bigger cube). Default *val*=2.0 |
+| NEG_EFOS [*val*] | `GEOS` only: also write cube files of the paired orbitals with net occupation at or below −*val*/1000, whatever `MAX_OCC`/`MIN_OCC` are. Optional integer *val*, default 25 (−0.025). See [GEOS](../methods/geos.md) |
+
+- `MAX_OCC` and `MIN_OCC` must be ≥ 0, with `MIN_OCC` ≤ `MAX_OCC`;
+  otherwise the run stops. `MAX_OCC 0` / `MIN_OCC 0` selects no orbital,
+  which is useful together with `NEG_EFOS`.
+- Where occupations go up to 2 (`EFFAO`, and the paired density of
+  `GEOS`/`EFFAO-U`), both bounds are doubled: `MAX_OCC=700` then means
+  1.4. `NEG_EFOS` is never doubled.
+- Small fragments (e.g. a single H atom) get small boxes, which can cut
+  diffuse orbitals: increase `RADIUS_SCALE`, and check that the
+  `Normalization from cube` value in the main output is close to 1. Larger
+  boxes make larger files; a coarser `SPACING` compensates.
+
+File names and contents are described in [Output files](../output.md).
 
 ## Block section # GRID
 

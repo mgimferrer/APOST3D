@@ -19,9 +19,9 @@
 | ------- | ----------- |
 | EFFAO | Effective Atomic/Fragment Orbitals from the electron density |
 | UEFFAO | Spin-resolved effective Atomic/Fragment Orbitals from the alpha and beta densities |
-| EFFAO-U | Effective Atomic/Fragment Orbitals from the paired and unpaired densities |
-| EOS | Effective Oxidation States (EOS) analysis |
-| GEOS | Generalized Effective Oxidation States analysis, from the paired and unpaired density functions (GEOS) |
+| EFFAO-U | Effective Atomic/Fragment Orbitals from the paired and unpaired densities (the orbitals of `GEOS`, without its oxidation-state analysis). Real-space schemes only |
+| EOS | Effective Oxidation States (EOS) analysis. With a real-space scheme, also writes a `-EOS-EFOs.fchk` file (see [Output files](../output.md)) |
+| GEOS | Generalized Effective Oxidation States analysis, from the paired and unpaired density functions. Real-space schemes only; also writes a `-GEOS-EFOs.fchk` file. See [GEOS](../methods/geos.md) |
 | OS-CENTROID | Oxidation states from centroids of localized orbitals |
 | OSLO | Oxidation States Localized Orbitals (OSLO). Requires an additional `# OSLO` block section — and `TFVC` here in `# METHOD`, always, see [Block section # OSLO](oslo.md) |
 | SPIN | Local Spin Analysis (LSA) |
@@ -35,7 +35,7 @@
 | ------- | ----------- |
 | DOFRAGS | Definition of molecular fragments for the calculations. Requires an additional `# FRAGMENTS` block section |
 | DOINT | Generate `*.int` files for each atom with the Atomic Overlap Matrices in MO basis for the given AIM. These can be read with the ESI program |
-| CUBE | Plots cube-type files of the Effective Atomic/Fragment Orbitals. Requires an additional `# CUBE` block section |
+| CUBE | Plots cube-type files of the Effective Atomic/Fragment Orbitals. Requires an additional `# CUBE` block section (see [Other block sections](other-blocks.md)) |
 | DENS=*val* | Integer *val* controls which of the P-matrices present in the `.fchk` file is used. Default *val*=1 |
 | QCHEM | Required if the `.fchk` file originates from a Q-Chem calculation (different ordering of sections within) |
 | DM=*val* | Integer *val* indicates that files with the matrix representation of the RDM1 and RDM2 in MO basis will be provided (only for correlated WF methods). Requires an additional `# DM` block section. If *val*=1 the RDM1 file will be provided; *val*=2 indicates both RDM1 and RDM2 files will be provided. These files can be generated using an auxiliary function provided in `apost3d.py` |

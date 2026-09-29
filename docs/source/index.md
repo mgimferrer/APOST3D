@@ -48,10 +48,12 @@ can be requested in the same run:
 - **POLAR** — Bader-Keith decomposition of the molecular dipole moment.
 
 Fragments of atoms (rather than individual atoms) can be defined for any of
-the above via `DOFRAGS`, and cube files of the resulting orbitals can be
-generated directly. The full keyword-by-keyword reference is in
-[Input reference](input/index.md), with five worked examples in
-[Input examples](input/examples.md).
+the above via `DOFRAGS`. The effective orbitals can be written as cube
+files, and EOS/GEOS also write them into a `.fchk` file for any orbital
+viewer (see [Output files](output.md)). The full keyword-by-keyword
+reference is in [Input reference](input/index.md), with six worked examples
+in [Input examples](input/examples.md), and the analysis methods are
+described in [Analysis methods](methods/geos.md).
 
 ```{admonition} Cite this work
 :class: note
@@ -69,8 +71,18 @@ for the full reference list.
 
 installation
 quickstart
+output
 testing
 troubleshooting
+```
+
+## Analysis methods
+
+```{toctree}
+:maxdepth: 2
+:caption: Analysis methods
+
+methods/geos
 ```
 
 ## Input reference
