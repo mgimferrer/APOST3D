@@ -91,7 +91,7 @@
 !! not itself PSD, so genuine negative eigenvalues are possible after the !!
 !! congruence transform below. Uno alone (icase=2) is PSD and never       !!
 !! triggers this. Hand-tuned for now, expect per-system adjustment.       !!
-      xminocc_neg=-0.05d0
+      xminocc_neg=-0.025d0
 
       call print_box('DOING EFFAO-3D FROM U FUNCTION')
       write(*,'(2x,a)') 'EFFAO-U: paired and unpaired densities treated separately'

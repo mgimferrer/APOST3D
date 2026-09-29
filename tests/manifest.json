@@ -1181,6 +1181,32 @@
           "pattern": "ELECTRONIC ASSIGNMENT RMSD VALUE\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.274,
           "tol_abs": 0.01
+        },
+        {
+          "label": "Two significant negative paired EFOs found",
+          "type": "present",
+          "pattern": "Found 2 EFO\\(s\\) with significant negative occupation in the paired channel"
+        },
+        {
+          "label": "Negative EFO (frag 2) net occupation",
+          "section": "significant negative occupation in the paired channel",
+          "pattern": "Frag\\.\\s+2\\s+Net occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.0277,
+          "tol_abs": 0.002
+        },
+        {
+          "label": "Negative EFO (frag 1) net occupation",
+          "section": "significant negative occupation in the paired channel",
+          "pattern": "Frag\\.\\s+1\\s+Net occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.0378,
+          "tol_abs": 0.002
+        },
+        {
+          "label": "Negative EFO (frag 1) % recovered",
+          "section": "significant negative occupation in the paired channel",
+          "pattern": "Frag\\.\\s+1\\s+Net occ\\.[^\\n]*% recovered\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 80.97,
+          "tol_abs": 0.05
         }
       ]
     },
@@ -1346,7 +1372,7 @@
         {
           "label": "NEG_EFOS echoed in input summary",
           "type": "present",
-          "pattern": "Negative-occ\\. EFO cubes : net occ\\. <= -0\\.050 \\(GEOS paired only\\)"
+          "pattern": "Negative-occ\\. EFO cubes : net occ\\. <= -0\\.025 \\(GEOS paired only\\)"
         },
         {
           "label": "Negative-EFO cube generated (paired channel, frag 2 only)",
