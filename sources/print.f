@@ -1921,7 +1921,7 @@
       DEALLOCATE(energ)
 
 !! Printing formats !!
-11    FORMAT(a23,20x,a1,3x,a3,i11)
+11    FORMAT(a22,21x,a1,3x,a3,i11)
 12    FORMAT(a21,22x,a1,3x,a3,i11)
 13    FORMAT(5(1p,e16.8))
 
@@ -2061,7 +2061,7 @@
       DEALLOCATE(energ_a,energ_b)
 
 !! Printing formats !!
-11    FORMAT(a23,20x,a1,3x,a3,i11)
+11    FORMAT(a22,21x,a1,3x,a3,i11)
 12    FORMAT(a21,22x,a1,3x,a3,i11)
 13    FORMAT(5(1p,e16.8))
 
@@ -2193,7 +2193,7 @@
       DEALLOCATE(energ_a,energ_b)
 
 !! Printing formats !!
-11    FORMAT(a23,20x,a1,3x,a3,i11)
+11    FORMAT(a22,21x,a1,3x,a3,i11)
 12    FORMAT(a21,22x,a1,3x,a3,i11)
 13    FORMAT(5(1p,e16.8))
 
