@@ -394,9 +394,9 @@
   Gross occupation for fragment    1   10.77144
   OCCUP.   2.0000   2.0000   1.9993   1.9993   1.9956   0.7645   0.0053   0.0053
   OCCUP.   0.0022
-  
   FIT %     99.99    99.83    99.47    99.47    98.74    88.39    68.84    69.44
   FIT %     67.68
+  
   ** FRAGMENT   2 **
   
   Net occupation for fragment      2    8.32578
@@ -419,8 +419,8 @@
   
   Gross occupation for fragment    1    0.48539
   OCCUP.   0.4154   0.0700
-  
   FIT %     93.05    78.41
+  
   ** FRAGMENT   2 **
   
   Net occupation for fragment      2    0.39196
@@ -429,8 +429,8 @@
   
   Gross occupation for fragment    2    0.41190
   OCCUP.   0.3774   0.0322   0.0009   0.0009   0.0001   0.0001   0.0001   0.0001
-  
   FIT %     91.46    70.72    98.10    92.86    99.18    99.16    91.21    91.32
+  
   Total number of eff-AO-s for analysis:   27
 
   Found 2 EFO(s) with significant negative occupation in the paired channel
@@ -488,8 +488,8 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 0.91 s
-  TIMING WALL :: EFFAO computation                                 0.92 s
+  TIMING CPU  :: EFFAO computation                                 0.90 s
+  TIMING WALL :: EFFAO computation                                 0.90 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
