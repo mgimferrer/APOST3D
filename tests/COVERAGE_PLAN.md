@@ -1,147 +1,116 @@
-# APOST-3D Test Coverage Plan — AIM scheme × bonding-analysis tool
+# APOST-3D Test Coverage Plan — AIM scheme × analysis tool
 
-Working plan for building out `tests/manifest.json` toward a solid regression
-suite. Derived by reading the actual keyword dispatch in `sources/main.f`
-(`readchar`/`iopt` wiring) and the downstream subroutines it calls — not just
-the keyword list — so the compatibility/redundancy notes below reflect what
-the code actually does, not just what's documented on the
+Map for growing `tests/manifest.json` into a solid regression suite. The
+compatibility notes below come from the keyword dispatch in
+`sources/main.f` and the routines it calls, i.e. from what the code does,
+not only from what is documented on the
 [hosted docs site](https://apost3d.readthedocs.io).
 
-**Status: 2026-07-13.** Current suite has 5 tests (17/82 keywords covered per
-`make coverage`). This plan is the map for closing that gap. Nothing here has
-been built yet except what's noted "done" — this is the plan, not the
-tests themselves.
+**Status: 2026-09-29.** 12 tests, 30/87 keywords covered (`make coverage`,
+34%). Typical calculations for each method are being supplied and their
+code cleaned, so expect this to move quickly; update the matrix below as
+each test lands.
 
 ---
 
 ## Scope: QTAIM is excluded, on purpose
 
-`main.f:659`: `if(iqtaim.eq.1) stop'This version can not do QTAIM'`. QTAIM is
-not "low priority" — it's hard-disabled, the run stops immediately. Don't
-write tests for it; there's nothing to test. If QTAIM is ever revived, this
-plan should be revisited, but that's a separate decision, not a test-coverage
-gap.
+`main.f` stops immediately when `QTAIM` is requested (`This version can
+not do QTAIM`). There is nothing to test until it is revived.
 
 ---
 
-## The AIM/partitioning schemes (the "atom in a molecule" axis)
+## The AIM schemes
 
-Real-space (numerical grid integration, via `wat.f`/`numint.f`):
+Real-space (numerical integration, `wat.f`/`numint.f`): `TFVC`,
+`BECKE-RHO`, `HIRSH`, `HIRSH-IT`. `HIRSH`/`HIRSH-IT` need an external
+atomic-density file, `densoutput`, in the working directory; none exists in
+the repository yet, which blocks their tests.
 
-| Scheme | Keyword | How it's selected in code |
-|---|---|---|
-| TFVC | `TFVC` (or default) | `ibcp=0` in `sbecke()` — `chi = atr(ii)/atr(j)` |
-| Becke-rho | `BECKE-RHO` | `ibcp=1` in `sbecke()` — `chi = achi(ii,j)` (distinct branch, `wat.f:35-39`) |
-| Hirshfeld | `HIRSH` | `ihirsh=1` — `wathirsh()` instead of `wat()` in `prenumint`/`numint_sat` |
-| Hirshfeld-Iterative | `HIRSH-IT` | `ihirsh=2` — same as HIRSH plus `wathirshit3()` iterative refinement |
-
-Hilbert-space (basis-set overlap, via `mulliken.f`/`util.f`):
-
-| Scheme | Keyword | How it's selected in code |
-|---|---|---|
-| Mulliken | `MULLI` | `imulli=1` — `tomull(sat)` |
-| Löwdin | `LOWDIN` | `imulli=2` — `tolow(sat)` |
-| Löwdin-Davidson | `LOWDIN-DAVIDSON` | `imulli=3` — **same `tolow(sat)` call as plain Löwdin** at the top-level population stage (`main.f:1538`). Not a distinct code path there. |
-| NAO | `NAO-BASIS` | `imulli=4` — `tonao(sat)`, genuinely distinct |
-| Weighted Löwdin | `LOWDIN-W` | `imulli=5` — `tolow2(sat)`, genuinely distinct at the top-level population stage |
-
-**QTAIM excluded per above.**
+Hilbert-space (basis-set overlap, `mulliken.f`/`util.f`): `MULLI`,
+`LOWDIN`, `LOWDIN-DAVIDSON` (same `tolow` call as `LOWDIN` at the
+population stage), `NAO-BASIS` (distinct, needs a `.nao` file),
+`LOWDIN-W` (distinct).
 
 ---
 
-## Compatibility rules actually enforced in `main.f`
+## Combinations the code refuses
 
-These aren't style guidelines — the code hard-stops or silently disables on
-these combinations, so don't write tests expecting them to work:
+Don't write tests expecting these to work:
 
-- `HIRSH` + `DOATOMS` → hard stop (`main.f:663`).
-- `EOS` + `DOATOMS` → hard stop (`main.f:676`, EOS needs `DOFRAGS`).
-- Any Hilbert-space scheme (`imulli≠0`) + `ENPART` → ENPART silently disables
-  itself with a warning (`main.f:668-671`). **ENPART is real-space only.**
-- `LOBA` + any Hilbert-space scheme → hard stop, `"LOBA NOT IMPLEMENTED FOR
-  HILBERT-SPACE"` (`main.f:1316-1318`). **LOBA is real-space only.**
-- `QTAIM` + anything → hard stop, see above.
+- `HIRSH` + `DOATOMS`, `EOS` + `DOATOMS`: stop.
+- `GEOS`/`EFFAO-U` + any Hilbert-space scheme, or + `DOATOMS`: stop
+  (since `cfc0d47`; before, the first was silently skipped and the second
+  ran UEFFAO instead).
+- `ENPART` + any Hilbert-space scheme: ENPART is switched off with a
+  warning.
+- `LOBA` + any Hilbert-space scheme: stop.
+- `OSLO` on a multireference (CASSCF/CISD/FCI) wavefunction: stop.
+- `QTAIM`: stop, see above.
 
 ---
 
 ## Tool × AIM-scheme matrix
 
-Legend: **✅ done** = already in `manifest.json` · **① priority** = distinct
-code path, not yet tested, do this first · **② lower** = distinct code path
-but lower marginal value (rarely-used combo, or same numerical machinery as
-an already-tested combo just fed different upstream weights) · **➖ n/a** =
-incompatible per the rules above · **≈dup** = collapses to the *same*
-subroutine call as another cell in this row, so testing one covers both —
-listed for completeness, not worth a separate test.
+**✅** tested (test name) · **①** distinct code path, untested, do first ·
+**②** untested, lower value · **➖** refused by the code (see above) ·
+**≈dup** same routine as another cell in the row.
 
-| Tool | TFVC | BECKE-RHO | HIRSH | HIRSH-IT | MULLI | LOWDIN | LOWDIN-DAVIDSON | NAO-BASIS | LOWDIN-W |
-|---|---|---|---|---|---|---|---|---|---|
-| **TFVC pop./bond order** (no extra keyword — always computed) | ✅ done (all 5 tests) | ① | ① | ① | — | — | — | — | — |
-| **MULLI/LOWDIN pop.** (`main.f` top-level `tomull`/`tolow`/`tonao`/`tolow2`) | — | — | — | — | ① | ① | ≈dup of LOWDIN | ① | ② |
-| **ENPART** (`enpart.f`) | ✅ done (H2O, C2H6) | ① | ① | ② | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a |
-| **EOS/EFFAO** (`effao.f`) | ✅ done (FeCO2, alpha-only) | ① | ① | ② | ① | ① | ≈dup of LOWDIN (`main.f:1243`, `imulli.gt.1` branch) | ① — genuinely distinct, `ueffaolow_frag` special-cases `imulli.eq.4` (`effao.f:476`) | ②, likely ≈dup of LOWDIN inside `ueffaolow_frag` (only `imulli.eq.4` is special-cased there) — **worth confirming, not assuming** |
-| **GEOS** (`ueos.f`, open-shell paired/unpaired, formerly EOS-U) | ✅ done (NaBH3--B3LYP-GEOS, TFVC/3D-space) | ② | ② | ② | ➖ untested if Hilbert-space even reachable for GEOS — check `main.f` `ieffao.eq.3` dispatch before assuming | | | | |
-| **OSLO** (`oslo.f`) | ✅ done (CH3F, FeO4-2, default/real-space) | ② | ② | ② | ① (`# OSLO / MULLIKEN`) | ① (`# OSLO / LOWDIN`) | ≈dup of LOWDIN (`main.f:1538`, `ilow2.eq.2.or.ilow2.eq.3`) | ① (`# OSLO / NAO-BASIS`) | ➖ not an OSLO sub-option (only MULLIKEN/LOWDIN/LOWDIN-DAVIDSON/NAO-BASIS exist under `# OSLO`) |
-| **LOBA** (`loba.f`) | ① (untested) | ② | ② | ② | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a | ➖ n/a |
-| **SPIN** (`corr.f`) | ✅ done (H2O) | ② | ② | ② | ② | ② | ≈dup | ② | ② |
-| **EDAIQA** | ① (untested, needs a second `.fchk`/EDA setup) | ② | ② | ② | ➖ likely n/a, same real-space-only reasoning as ENPART — confirm | | | | |
-| **POLAR** | ① (untested) | ② | ② | ② | ? untested whether Hilbert-space is even wired for POLAR | | | | |
-| **SCATT-FACT** | ① (untested) | ② | ② | ② | ? untested | | | | |
-| **TOPOLOGY** | ① (untested) | ② | ② | ② | ? untested | | | | |
-| **DAFH** | in development per `keywords.json` — skip until it's actually finished | | | | | | | | |
+| Tool | TFVC | BECKE-RHO | HIRSH / HIRSH-IT | MULLI | LOWDIN | LOWDIN-DAVIDSON | NAO-BASIS | LOWDIN-W |
+|---|---|---|---|---|---|---|---|---|
+| **Populations / bond orders** (always computed) | ✅ all TFVC tests | ① | ① (needs `densoutput`) | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` | ≈dup of LOWDIN | ① | ② |
+| **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped) | ① | ① | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ≈dup of LOWDIN | ① | ② |
+| **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI` | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **CUBE** | ✅ `LiH-32-FCI` (`NEG_EFOS` only) | ② | ② | ② | ② | ≈dup | ② | ② |
+| **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2` | ② | ② | ① (`# OSLO MULLIKEN`) | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ① (`# OSLO NAO-BASIS`) | not an OSLO option |
+| **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `LiH-35-CAS22` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22` | ② | ② | ② | ② | ≈dup | ② | ② |
+| **PCA** | ② | ② | ② | ✅ `NaBH3--UHF` | ② | ② | ② | ② |
+| **LOBA** (`loba.f`) | ① | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **EDAIQA** | ① (needs two extra `.fchk`) | ② | ② | ? | ? | ? | ? | ? |
+| **POLAR** | ① | ② | ② | ? | ? | ? | ? | ? |
+| **DOINT** | ① | ② | ② | ② | ② | ② | ② | ② |
+| **SCATT-FACT**, **TOPOLOGY** | ② | ② | ② | ? | ? | ? | ? | ? |
+
+Still untested regardless of scheme:
+- **Interfaces:** `ORCA`, `MOKIT`, `WFN`, `DM/ORCA`, `DM/DMRG` (`QCHEM`
+  and `DM/PYSCF` are tested).
+- **Other keywords:** `OS-CENTROID`, `DOATOMS`, and the `ENPART`
+  functional variants (`LDA`, `BP86`, `EXC/EX/EC_FUNCTIONAL`), `CISD`,
+  `CORRELATION`, `ANALYTIC`.
 
 ---
 
-## Recommended build order (the "①" cells above, roughly by value)
+## Recommended order
 
-1. **EOS/EFFAO + HIRSH** and **EOS/EFFAO + MULLI or LOWDIN** — this is your
-   most-used feature (per our earlier discussion) and currently has exactly
-   one test (`FeCO2-PBEPBE`, TFVC/real-space only, alpha-electrons only since
-   it skips beta). Also exercises the untested `ieffao.eq.2` beta branch and
-   the `imulli.eq.4` NAO special-case in `ueffaolow_frag` if you go as far as
-   NAO-BASIS.
-2. **ENPART + HIRSH** (or `BECKE-RHO`) — `enpart.f`'s real-space weight
-   machinery is shared with TFVC via the same `prenumint`, but the `ihirsh`
-   branch inside it (`wathirsh()`/`wathirshit3()`) is currently untouched by
-   any test. Directly relevant since we just parallelized that exact code
-   path (`prenumint`, `numint_sat`) — this closes the gap flagged then.
-3. **OSLO + MULLIKEN / LOWDIN / NAO-BASIS** — `# OSLO` sub-keywords are a
-   clean, cheap way to add 3 tests exercising `tomull`/`tolow`/`tonao` inside
-   an already-working OSLO input (copy `CH3F.inp` or `FeO4-2.inp`, add one
-   `# OSLO` line).
-4. **LOBA** — currently zero tests at all (`LOBA` isn't in any `manifest.json`
-   entry's keywords). Needs `DOFRAGS` + a real-space scheme; TFVC first.
-5. **GEOS** (formerly EOS-U) — TFVC/3D-space now covered
-   (`NaBH3--B3LYP-GEOS`); Hilbert-space combos (Mulliken/Löwdin) still
-   untested. Check `main.f`'s `ieffao.eq.3` dispatch first to confirm
-   which AIM schemes are actually reachable before writing that input.
-6. Everything tagged "①  (untested)" further down the matrix — POLAR,
-   SCATT-FACT, TOPOLOGY, EDAIQA — lower urgency since they're not the
-   most-used features, but currently at zero coverage each.
+1. **`BECKE-RHO`**: a core real-space scheme with no test and no external
+   files needed. EOS or populations on an existing `.fchk` is enough.
+2. **`LOBA`** (TFVC + `DOFRAGS`) and **`POLAR`**: each blocks its own
+   file's cleanup pass.
+3. **`# OSLO MULLIKEN` / `NAO-BASIS`**: one extra line in a copy of an
+   existing OSLO input (`NAO-BASIS` also needs the `.nao` file).
+4. **Interfaces** (`ORCA`, `MOKIT`, `DM/ORCA`): need wavefunctions from
+   those programs.
+5. **`HIRSH`/`HIRSH-IT`**: as soon as `densoutput` files are available.
+6. **`EDAIQA`**, **`DOINT`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
+   urgency.
 
-For each new test: prefer reusing an existing `.fchk` in `compiler-testset/`
-where the keyword combination is chemically sensible (e.g. add `# OSLO /
-MULLIKEN` to a copy of the `CH3F` input) over generating a new wavefunction,
-unless the combination specifically needs open-shell/CASSCF/a different
-interface (`QCHEM`/`MOKIT`/`ORCA`/`pySCF`) to be meaningful.
+Prefer reusing an `.fchk` already in `compiler-testset/` when the
+combination is chemically sensible, rather than generating a new one.
 
-## Open questions to resolve while building these (not yet answered here)
+## Open questions
 
-- Does `ueffaolow_frag`'s `imulli.eq.4` (NAO) special-case actually produce
-  numerically different EOS results from plain Löwdin, or does the transform
-  end up equivalent for the test systems on hand? Only a real run will show
-  this — don't assume from the code alone.
-- `GEOS`'s Hilbert-space reachability (`ieffao.eq.3` dispatch) — read
-  `main.f` around that branch before writing a GEOS + Mulliken/Löwdin input,
-  it may not be wired up at all.
-- `EDAIQA`/`POLAR`/`SCATT-FACT`/`TOPOLOGY`'s Hilbert-space compatibility
-  wasn't traced in this pass — check for a `main.f` disable-with-warning or
-  hard-stop pattern (like ENPART's) before assuming Hilbert-space is valid or
-  invalid for them.
+- Does `ueffaolow_frag`'s NAO special case give EOS results different from
+  plain Löwdin on real systems? Only a run will tell.
+- Hilbert-space compatibility of `EDAIQA`/`POLAR`/`SCATT-FACT`/`TOPOLOGY`
+  hasn't been traced: look for a stop or disable in `main.f` before writing
+  such a test.
+- `ueffaolow_frag` writes `efo_occ.dat`/`efo_coeff.dat` only for alpha/beta
+  runs. With plain `EFFAO` + `LOWDIN` (total density) it writes to file
+  units that were never opened, which probably leaves stray `fort.44`/
+  `fort.45` files. Worth checking when that path gets a test.
 
 ## When a new test is added
 
-Follow the existing procedure in `CLAUDE.md` → Test Suite → "Adding a test".
-Update this file's matrix cell (✅ done, with test name) as each one lands, so
-it stays an accurate map rather than going stale like a to-do list nobody
-crosses items off of.
+Follow `CLAUDE.md` → Test Suite → "Adding a test", then update the status
+line and the matrix cell (✅ with the test name) here.

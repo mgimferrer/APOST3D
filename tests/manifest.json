@@ -2,13 +2,14 @@
   "tests": [
     {
       "name": "H2O-T-B3LYP",
-      "description": "Water molecule, RKS B3LYP / aug-cc-pVTZ — TFVC populations, ENPART (DFT), local spin",
+      "description": "Water molecule, triplet UKS B3LYP / cc-pVTZ — TFVC populations, ENPART (DFT), local spin",
       "tags": [
         "dft",
         "enpart",
         "spin",
         "tfvc",
-        "rks"
+        "uks",
+        "openshell"
       ],
       "timeout": 600,
       "extra_input_files": [],
@@ -296,15 +297,14 @@
     },
     {
       "name": "FeCO2-PBEPBE",
-      "description": "Iron dicarbonyl cation, UKS PBE/PBE — TFVC, fragment EOS analysis (open-shell)",
+      "description": "FeCO2 complex (charge +2, singlet), closed-shell RKS PBE/PBE — TFVC, fragment EOS analysis",
       "tags": [
         "dft",
         "eos",
         "effao",
         "tfvc",
-        "uks",
-        "fragments",
-        "openshell"
+        "rks",
+        "fragments"
       ],
       "timeout": 300,
       "extra_input_files": [],
@@ -424,15 +424,13 @@
     },
     {
       "name": "FeO4-2",
-      "description": "Ferrate(VI) dianion, UKS — TFVC, QCHEM interface, fragment OSLO + EOS",
+      "description": "Ferrate(VI) dianion, closed-shell RKS (Q-Chem) — TFVC, QCHEM interface, fragment OSLO",
       "tags": [
         "dft",
-        "eos",
         "oslo",
         "tfvc",
-        "uks",
+        "rks",
         "fragments",
-        "openshell",
         "qchem"
       ],
       "timeout": 600,
@@ -617,7 +615,7 @@
     },
     {
       "name": "FeCN5NO3--UBLYP",
-      "description": "Iron pentacyanonitrosylferrate dianion, UKS BLYP — LOWDIN (Hilbert-space AIM), EFFAO, EOS, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for LOWDIN population/EFFAO/EOS on an open-shell, many-fragment system. Cube generation (# CUBE) verified separately, one-time, against reference .cube files — not part of this active test (see REFERENCE-OUTPUTS/compiler-testset).",
+      "description": "Iron pentacyanonitrosylferrate complex (charge −3, doublet), UKS BLYP — LOWDIN (Hilbert-space AIM), EFFAO, EOS, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for LOWDIN population/EFFAO/EOS on an open-shell, many-fragment system. Cube generation (# CUBE) verified separately, one-time, against reference .cube files — not part of this active test (see REFERENCE-OUTPUTS/compiler-testset).",
       "tags": [
         "dft",
         "lowdin",
@@ -833,7 +831,7 @@
     },
     {
       "name": "FeCN5NO3--UBLYP-t2",
-      "description": "Iron pentacyanonitrosylferrate dianion, UKS BLYP — TFVC (mandatory for OSLO's grid-dependent Smat) + OSLO with LOWDIN as the # OSLO fragment-population scheme, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for uwf_iterative_oslo (unrestricted OSLO) -- CH3F/FeO4-2 are both closed-shell despite earlier notes, so this is genuinely the first open-shell OSLO run in the suite. Reference .fchk/.inp/.apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; reference values here are a fresh run against the current codebase (the supplied .apost predates several printing changes, so its raw text doesn't diff cleanly, but the physics -- oxidation states, natural-orbital occupations -- matches it exactly).",
+      "description": "Iron pentacyanonitrosylferrate complex (charge −3, doublet), UKS BLYP — TFVC (mandatory for OSLO's grid-dependent Smat) + OSLO with LOWDIN as the # OSLO fragment-population scheme, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for uwf_iterative_oslo (unrestricted OSLO) -- CH3F/FeO4-2 are both closed-shell despite earlier notes, so this is genuinely the first open-shell OSLO run in the suite. Reference .fchk/.inp/.apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; reference values here are a fresh run against the current codebase (the supplied .apost predates several printing changes, so its raw text doesn't diff cleanly, but the physics -- oxidation states, natural-orbital occupations -- matches it exactly).",
       "tags": [
         "dft",
         "oslo",
@@ -1037,7 +1035,7 @@
     },
     {
       "name": "NaBH3--B3LYP-GEOS",
-      "description": "Sodium borohydride, UKS B3LYP — TFVC, GEOS (paired/unpaired-density EFOs, formerly EOS-U), 2 fragments",
+      "description": "NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS (paired/unpaired-density EFOs, formerly EOS-U), 2 fragments, two negative paired EFOs",
       "tags": [
         "dft",
         "geos",
