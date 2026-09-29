@@ -250,6 +250,12 @@ c      -------------------------------------------------------------------------
         ienpart=0
       end if
       if(ieos.eq.1.and.idoat.eq.1) stop 'Cant do EOS with DOATOMS'
+!! GEOS/EFFAO-U (ieffao=3) only exist on the real-space fragment path    !!
+!! (effao3d_u): Hilbert-space runs used to skip them silently, and       !!
+!! DOATOMS ran the alpha/beta UEFFAO analysis in their place             !!
+      if(ieffao.eq.3.and.imulli.ne.0)
+     +  stop 'GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)'
+      if(ieffao.eq.3.and.idoat.eq.1) stop 'Cant do GEOS/EFFAO-U with DOATOMS'
 
       if(idoint.eq.1) then
         write(*,*) ' Will do atomic overlaps for FCALC'
