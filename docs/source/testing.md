@@ -76,18 +76,20 @@ python3 tests/run_tests.py --help
 
 | System | Description | Tags |
 |--------|-------------|------|
-| `H2O-T-B3LYP` | Water, RKS B3LYP — TFVC, ENPART (DFT+IQA), local spin | `dft enpart spin tfvc rks` |
+| `H2O-T-B3LYP` | Water, triplet UKS B3LYP — TFVC, ENPART (DFT+IQA), local spin | `dft enpart spin tfvc uks openshell` |
 | `CH3F` | Fluoromethane, RKS DFT — TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
-| `FeCO2-PBEPBE` | Iron dicarbonyl⁺, UKS PBE — TFVC, fragment EOS (open-shell), including per-EFO net/gross occupation checks | `dft eos effao tfvc uks fragments openshell` |
-| `FeO4-2` | Ferrate(VI)²⁻, RKS — TFVC, QCHEM interface, OSLO+EOS. Closed-shell despite the name (chosen to exercise the QCHEM `.fchk` interface, not open-shell coverage) | `dft eos oslo tfvc rks fragments qchem` |
+| `FeCO2-PBEPBE` | FeCO2 complex (charge +2), closed-shell RKS PBE — TFVC, fragment EOS, including per-EFO net/gross occupation checks | `dft eos effao tfvc rks fragments` |
+| `FeO4-2` | Ferrate(VI)²⁻, RKS — TFVC, QCHEM interface, fragment OSLO. Closed-shell (chosen to exercise the QCHEM `.fchk` interface, not open-shell coverage) | `dft oslo tfvc rks fragments qchem` |
 | `C2H6-B3LYP` | Ethane, RKS B3LYP — full ENPART, THREBOD/MOD-GRIDTWOEL, ~85s single-threaded | `dft enpart tfvc rks threbod` |
 | `H2O-Dimer-RHF` | Water dimer, RHF — ENPART (HF), THREBOD 10 skips 6 atom pairs into the multipolar-approximation path (only active coverage for it) | `hf enpart tfvc rhf threbod multipolar fragments` |
 | `FeCN5NO3--UBLYP` | Iron cyanide/nitrosyl/nitrate complex, UKS BLYP — LOWDIN (first Hilbert-space AIM coverage), EFFAO, EOS, 7 fragments, open-shell | `dft lowdin effao eos uks fragments openshell` |
 | `NaBH3--UHF` | UHF — MULLI, PCA+EOS together (first `pca_analysis` coverage) | `hf uhf mulliken pca eos fragments` |
 | `FeCN5NO3--UBLYP-t2` | Same complex as above, UKS BLYP — TFVC + OSLO with LOWDIN as the `# OSLO` fragment-population scheme, 7 fragments. First coverage of unrestricted OSLO (`CH3F`/`FeO4-2` above are both closed-shell) | `dft oslo lowdin tfvc uks fragments openshell` |
 | `LiH-35-CAS22` | LiH, CASSCF(2,2) — TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via `# DM PYSCF` (which also auto-enables local spin analysis). First coverage of `ENPART`+`CASSCF`, `# DM PYSCF`, and the correlated-WF local-spin branch | `hf enpart casscf dm pyscf spin tfvc` |
+| `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS, 2 fragments, with two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |
+| `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ — TFVC, GEOS with a negative paired EFO, `FIT %`, and `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
 
-All ten run every time `make test` is invoked.
+All twelve run every time `make test` is invoked.
 
 ## Adding a new test case
 
