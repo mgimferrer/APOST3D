@@ -534,6 +534,8 @@
       if(icorr.ne.1) then
         evee=coulen+exch_corr
         write(*,'(2x,a35,x,f14.7)') "Total two-electron part (coul+exc):",evee
+!! stays zero (no interpolation) when the .fchk has no reference energy. !!
+        twoelerr=ZERO
         if(evee0.ne.ZERO) then
           twoelerr=(evee-evee0)*tokcal
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
@@ -621,7 +623,7 @@
         deltaee=deltaee*tokcal
         phabest=ONE-(twoelerr/deltaee)
         write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-        if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+        if((twoelerr-deltaee)*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
         write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest  
 
 !! INTERPOLATING ENERGIES, REPLACING OLD COULOMB AND EXCHANGE-CORRELATION TERMS !!
