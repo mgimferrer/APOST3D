@@ -311,6 +311,23 @@
 !! ***** !!
 
 !! *********************************************************************** !!
+!! subroutine: print_no_ref_energy                                         !!
+!! purpose: explains, in the two-electron part of ENPART, that the .fchk   !!
+!!   carries no reference electron-electron energy -- so the two-electron  !!
+!!   integration error can't be estimated or corrected by interpolation.   !!
+!! arguments: none                                                         !!
+!! author: MGimf                                                           !!
+!! *********************************************************************** !!
+      subroutine print_no_ref_energy()
+      write(*,'(2x,a)') 'No reference electron-electron energy in the .fchk file:'
+      write(*,'(2x,a)') 'two-electron integration error not estimated or corrected.'
+      write(*,'(2x,a)') 'To enable it, append the reference energies to the .fchk'
+      write(*,'(2x,a)') '(Gaussian: utils/get_energy or utils/get_energy_g16).'
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
 !! subroutine: numint_two                                                  !!
 !! purpose: two-electron IQA/ENPART energy partition, RHF/RKS -- Coulomb   !!
 !!   (via calc_coul) and, if requested, HF-type exchange (same-center      !!
@@ -401,6 +418,11 @@
       idoex=0
       if(xmix.gt.ZERO) idoex=1
       iatps=nang*nrad
+!! zero-error strategy only possible with a reference electron-electron !!
+!! energy in the .fchk (evee0, see mga_misc); twoelerr stays defined.    !!
+      iref=0
+      if(evee0.ne.ZERO) iref=1
+      twoelerr=ZERO
 
       npass=2
       call print_box('GENERAL TWO-ELECTRON PART')
@@ -702,7 +724,8 @@
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
           write(*,*) " "
         else
-          evee0=evee    
+          evee0=evee
+          call print_no_ref_energy()
         end if
 
 !! hybrid KS-DFT case -- mix in the HF-exchange fraction (xmix). !!
@@ -730,6 +753,7 @@
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee0=evee
+          call print_no_ref_energy()
         end if
         write(*,*) " "
       end if
@@ -738,7 +762,7 @@
       write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
       write(*,*) " "
 
-      if(abs(twoelerr).gt.twoeltoler) then
+      if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) then
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
 !! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
@@ -851,7 +875,7 @@
         deltaee=deltaee*tokcal
         phabest=ONE-(twoelerr/deltaee)
         write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-        if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+        if((twoelerr-deltaee)*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
         write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
 
 !! interpolate energies, replacing the old Coulomb/exchange terms !!
@@ -1368,6 +1392,11 @@
       idoex=0
       if(xmix.gt.ZERO) idoex=1
       iatps=nang*nrad
+!! zero-error strategy only possible with a reference electron-electron !!
+!! energy in the .fchk (evee0, see mga_misc); twoelerr stays defined.    !!
+      iref=0
+      if(evee0.ne.ZERO) iref=1
+      twoelerr=ZERO
 
       npass=2
       call print_box('GENERAL TWO-ELECTRON PART')
@@ -1716,7 +1745,8 @@
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
           write(*,*) " "
         else
-          evee0=evee    
+          evee0=evee
+          call print_no_ref_energy()
         end if
 
 !! hybrid KS-DFT case -- mix in the HF-exchange fraction (xmix). !!
@@ -1744,6 +1774,7 @@
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee0=evee
+          call print_no_ref_energy()
         end if
         write(*,*) " "
       end if
@@ -1753,7 +1784,7 @@
       write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
       write(*,*) " "
 
-      if(abs(twoelerr).gt.twoeltoler) then
+      if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) then
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
 !! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
@@ -1900,7 +1931,7 @@
         deltaee=deltaee*tokcal
         phabest=ONE-(twoelerr/deltaee)
         write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-        if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+        if((twoelerr-deltaee)*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
         write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
 
 !! interpolate energies, replacing the old Coulomb/exchange terms !!
