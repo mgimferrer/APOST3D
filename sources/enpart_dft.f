@@ -178,11 +178,9 @@
       itype    =  Iopt(55)
       iatps    =  nang*nrad
 
-!! the BODEN atom-pair kinetic-energy-density analog needed for meta-GGA's !!
-!! tau ingredient isn't implemented yet (unlike sigma, it doesn't follow   !!
-!! automatically from the same bond-order-density kernel -- see grdboden) !!
-!! -- guard stops here, before any energy is computed, same principle as  !!
-!! func_info_print's old blanket stop. !!
+!! meta-GGA already stops in func_info_print; kept here because the BODEN !!
+!! loop below has no tau analog yet (unlike sigma, it doesn't follow from  !!
+!! the bond-order-density kernel -- see grdboden).                         !!
       if(itype.eq.3) stop ' META-GGA atom-pair (BODEN) XC decomposition not yet implemented '
 
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
@@ -241,7 +239,7 @@
             x=x+sab(ii,jj,kk)
           end do
           if(abs(x).gt.1.0d-3) then
-            write(*,*) ii,jj,xx
+            write(*,*) ii,jj,x
             stop " PROBLEM WITH MOs OVERLAPS "
           end if
         end do
@@ -253,8 +251,9 @@
 
 !! kinetic energy density (tau), meta-GGA only -- reduction over chpd,     !!
 !! already computed by grdrho above, no new AO/derivative evaluation.      !!
-!! parallel over k: each iteration only reads its own chpd(k,:,:) and      !!
-!! writes its own scr_tau(k).                                              !!
+!! Total tau for doubly occupied MOs: 2*(1/2)*sum|grad phi|^2, same total- !!
+!! density convention as sigma. parallel over k: each iteration only reads !!
+!! its own chpd(k,:,:) and writes its own scr_tau(k).                      !!
       if(itype.eq.3) then
 !$OMP PARALLEL DO PRIVATE(k,ii,ixyz,x)
         do k=1,itotps
@@ -264,7 +263,7 @@
               x=x+chpd(k,ii,ixyz)*chpd(k,ii,ixyz)
             end do
           end do
-          scr_tau(k)=HALF*x
+          scr_tau(k)=x
         end do
 !$OMP END PARALLEL DO
       end if
@@ -875,11 +874,9 @@
       itype    = Iopt(55)
       iatps    = nang*nrad
 
-!! the BODEN atom-pair kinetic-energy-density analog needed for meta-GGA's !!
-!! tau ingredient isn't implemented yet (unlike sigma, it doesn't follow   !!
-!! automatically from the same bond-order-density kernel -- see            !!
-!! grdboden_uks) -- guard stops here, before any energy is computed, same  !!
-!! principle as func_info_print's old blanket stop. !!
+!! meta-GGA already stops in func_info_print; kept here because the BODEN !!
+!! loop below has no tau analog yet (unlike sigma, it doesn't follow from  !!
+!! the bond-order-density kernel -- see grdboden_uks).                     !!
       if(itype.eq.3) stop ' META-GGA atom-pair (BODEN) XC decomposition not yet implemented '
 
       if(ithrebod.lt.1) then
@@ -1237,7 +1234,8 @@
 !! purpose: prints the density-functional identification block (name,     !!
 !!   references, exchange/correlation type, family) via libxc's own info   !!
 !!   query functions, and classifies the functional into itype (1 LDA,    !!
-!!   2 GGA, 3 meta-GGA) for the caller's gradient-calculation dispatch.    !!
+!!   2 GGA) for the caller's gradient-calculation dispatch. Stops cleanly  !!
+!!   on anything else (invalid id, meta-GGA, range-separated, VV10...).    !!
 !! arguments:                                                              !!
 !!   id_func (in)  -- libxc functional id (from iopt, read by the caller)  !!
 !!   itype   (out) -- functional family classification, see above          !!
@@ -1266,8 +1264,16 @@
       character*120 name_ref
       character*80 name_func
 
-      if(kop.ne.1) call xc_f03_func_init(xc_func,id_func,XC_UNPOLARIZED)
-      if(kop.eq.1) call xc_f03_func_init(xc_func,id_func,XC_POLARIZED)
+      if(kop.ne.1) call xc_f03_func_init(xc_func,id_func,XC_UNPOLARIZED,ierr)
+      if(kop.eq.1) call xc_f03_func_init(xc_func,id_func,XC_POLARIZED,ierr)
+!! an unknown id leaves xc_func without info -- querying it segfaults. !!
+      if(ierr.ne.0) then
+        write(*,*) " "
+        write(*,'(2x,a,1x,i0,1x,a)') 'ERROR: functional id',id_func,
+     +    'is not a valid libxc functional id.'
+        write(*,'(2x,a)') 'See https://libxc.gitlab.io/functionals/ for the list of ids.'
+        stop 'INVALID LIBXC FUNCTIONAL ID. REVISE inp'
+      end if
       xc_info = xc_f03_func_get_info(xc_func)
       xmix = xc_f03_hyb_exx_coef(xc_func)
       name_func = xc_f03_func_info_get_name(xc_info)
@@ -1306,14 +1312,11 @@
 
 !! itype: 1 LDA, 2 GGA, 3 meta-GGA. Hybrid functionals get xmix>0 as well. !!
 !! Caller stores the returned value in iopt(55) for later use. !!
+      iflags=xc_f03_func_info_get_flags(xc_info)
+      irsh=iand(iflags,XC_FLAGS_HYB_CAM+XC_FLAGS_HYB_CAMY+XC_FLAGS_HYB_LC
+     +  +XC_FLAGS_HYB_LCY)
       itype=0
       select case(xc_f03_func_info_get_family(xc_info))
-      case(XC_FAMILY_UNKNOWN)
-        write(*,*) " Family of the functional unknown"
-        stop
-      case(XC_FAMILY_NONE)
-        write(*,*) " Non-Family identified functional"
-        stop
       case(XC_FAMILY_LDA)
         write(*,*) " LDA functional selected"
         itype=1
@@ -1322,17 +1325,54 @@
         itype=2
       case(XC_FAMILY_HYB_GGA)
         write(*,*) " HYBRID-GGA functional selected"
-        write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
+!! for a range-separated hybrid this would be the long-range fraction only. !!
+        if(irsh.eq.0) write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
         itype=2
-      case(XC_FAMILY_MGGA)
+      case(XC_FAMILY_MGGA,XC_FAMILY_HYB_MGGA)
         write(*,*) " META-GGA functional selected"
         itype=3
-      case(XC_FAMILY_HYB_MGGA)
-        write(*,*) " HYBRID-META-GGA functional selected"
-        write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
-        itype=3
+      case default
+        itype=-1
       end select
+
+!! everything past this point is a clean stop for functionals APOST-3D !!
+!! can't decompose yet -- before any energy is computed, never silently. !!
+      ikind=xc_f03_func_info_get_kind(xc_info)
       call xc_f03_func_end(xc_func)
+
+!! meta-GGA: tau is wired into the one-center term and DFT-DM1, but the  !!
+!! BODEN atom-pair term still has no tau analog (under discussion).       !!
+      if(itype.eq.3) then
+        write(*,*) " "
+        write(*,'(2x,a)') 'Meta-GGA functionals are not supported yet (implementation'
+        write(*,'(2x,a)') 'in progress). Use an LDA, GGA or global-hybrid GGA functional.'
+        stop 'META-GGA FUNCTIONALS NOT YET SUPPORTED'
+      end if
+      if(itype.lt.0) then
+        write(*,*) " "
+        write(*,'(2x,a)') 'Only LDA, GGA and global-hybrid GGA functionals are supported.'
+        stop 'UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp'
+      end if
+      if(ikind.eq.XC_KINETIC) then
+        write(*,*) " "
+        write(*,'(2x,a)') 'This is a kinetic-energy functional, not an exchange or'
+        write(*,'(2x,a)') 'correlation one.'
+        stop 'KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp'
+      end if
+!! range-separated hybrids: hyb_exx_coef is only the long-range/full-     !!
+!! range fraction, the short-range exact exchange is never integrated;    !!
+!! VV10: libxc's exc omits the nonlocal correlation part.                 !!
+      if(irsh.ne.0) then
+        write(*,*) " "
+        write(*,'(2x,a)') 'Range-separated hybrids (CAM-B3LYP, wB97X, HSE, LC-...) are'
+        write(*,'(2x,a)') 'not supported: only global hybrids are.'
+        stop 'RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp'
+      end if
+      if(iand(iflags,XC_FLAGS_VV10).ne.0) then
+        write(*,*) " "
+        write(*,'(2x,a)') 'Functionals with VV10 nonlocal correlation are not supported.'
+        stop 'VV10 FUNCTIONAL NOT SUPPORTED. REVISE inp'
+      end if
 
       end
 

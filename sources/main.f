@@ -154,7 +154,6 @@ c      -------------------------------------------------------------------------
       dimension xhess(3,3)
 
       allocatable wp(:),omp(:),omp2(:,:),chp(:,:),pcoord(:,:),rho(:)
-      allocatable xkdens(:)
       allocatable ibaspoint(:)
       allocatable sss(:,:),sssi(:,:)
       allocatable sat(:,:,:)
@@ -873,6 +872,8 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !! Initialize DFT functional for info and initial printing !!
           if(id_xfunc.ne.-1) then
             ifuncfirst=1
+            itype=0
+            jtype=0
             if(id_xcfunc.ne.0) then
               call func_info_print(id_xcfunc,itype,ifuncfirst)
               ifuncfirst=0
@@ -891,8 +892,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
           end if
 
 !! Restricted case !!
-          if(kop.ne.1) then 
-            ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
+          if(kop.ne.1) then
 
 !! One-electron terms !!
             call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
@@ -915,11 +915,9 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
               time=time2
               wtime=wtime2
             end if
-            DEALLOCATE(xkdens)
 
 !! Unrestricted case !!
           else
-            ALLOCATE(xkdens(itotps)) ! (TO DO) Rethink how to include it... only used in metaGGA functionals
 
 !! One-electron terms !!
             call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
@@ -938,8 +936,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
               time=time2
               wtime=wtime2
             end if
-            DEALLOCATE(xkdens)
-          end if 
+          end if
 
 !! End of restricted/unrestricted dispatch !!
         end if

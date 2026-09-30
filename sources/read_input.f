@@ -189,7 +189,12 @@
           call readint("# ENPART","EC_FUNCTIONAL",id_cfunc,0,1)
           id_func=id_xfunc+id_cfunc+id_xcfunc
           if (id_func.eq.0) stop 'FUNCTIONAL ID NOT FOUND IN INPUT FILE'
-          go to 233
+!! xc (enpart_dft.f) and func_info_print's xmix assume one or the other. !!
+          if(id_xcfunc.ne.0.and.(id_xfunc.ne.0.or.id_cfunc.ne.0)) then
+            write(*,'(2x,a)') 'Give either EXC_FUNCTIONAL alone, or EX_FUNCTIONAL and/or'
+            write(*,'(2x,a)') 'EC_FUNCTIONAL -- not both kinds together.'
+            stop 'EXC_FUNCTIONAL COMBINED WITH EX/EC_FUNCTIONAL. REVISE inp'
+          end if
 !! specific keywords for functionals !!
         else
           call readchar("# ENPART","HF ",ihf)
