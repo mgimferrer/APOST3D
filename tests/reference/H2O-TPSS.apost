@@ -1,0 +1,258 @@
+  ------------------------------------------------------------------------------
+                                                                                
+                     ___    ____  ____  ___________   _____ ____                
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
+                 /_/  |_/_/    \____//____//_/     /____/_____/                 
+                                                                                
+                        Version 5   --   22 September 2026                      
+                         --------------------------------                       
+                                                                                
+      Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Documentation: https://apost3d.readthedocs.io                             
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
+                                                                                
+    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
+                                                                                
+      Available atomic definitions:                                             
+      ----------------------------                                              
+                                                                                
+      Real space:                                                               
+        Becke, J. Chem. Phys. 88 2547 1988                                      
+        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
+        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
+        Topological fuzzy Voronoi cells (TFVC), J Chem Phys 139 071103 2013     
+        QTAIM, J. Comput. Chem 30 1082 2009                                     
+                                                                                
+      Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
+                                                                                
+      Calculating:                                                              
+      ------------                                                              
+                                                                                
+        A) Atomic and overlap populations, bond orders and valences             
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
+                                                                                
+        B) Hartree-Fock molecular energy decomposition                          
+           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
+                                                                                
+        C) KS-DFT molecular energy decomposition                                
+           P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007                
+           M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
+                                                                                
+        D) Molecular energy decomposition for CAS/DMRG wavefunctions            
+                                                                                
+        E) Effective atomic orbitals:                                           
+           I. Mayer, J. Phys. Chem. 100 6249 1996                               
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
+                                                                                
+        F) Local spin analysis                                                  
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
+                                                                                
+        G) Effective Oxidation states analysis                                  
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
+                                                                                
+        H) Oxidation states from localized orbitals                             
+           M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020      
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
+           M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022         
+                                                                                
+        I) Decomposition of EDA quantities into one- and two-center IQA terms   
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
+                                                                                
+        J) Origin-independent decomposition of static polarizabilities          
+           M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021      
+                                                                                
+  ------------------------------------------------------------------------------
+                                                                                
+    The program has been written by using parts of the program APOST by         
+    I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
+                                                                                
+    The numerical integration utilizes the subroutines for Lebedev              
+    quadrature downloaded from CCL. The appropriate reference is:               
+    V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
+    131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
+                                                                                
+    The program makes use of libxc library when necessary, using the F90        
+    interfaces provided by the authors.                                         
+                   (see https://libxc.gitlab.io/)                               
+                                                                                
+    We are extremely grateful for the possibility of using these routines!      
+                                                                                
+  ------------------------------------------------------------------------------
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                     : Restricted
+  Calculation type                 : KS-DFT
+    (single det. built from the Kohn-Sham orbitals)
+  Number of atoms                  : 3
+  Number of basis functions        : 24
+  Primitive gaussians              : 47
+  Spin density (FChk)              : not found, reconstructed from MOs
+  Occupied MOs (nocc/alpha/beta)   : 5 / 5 / 5
+  SCF/DFT energy (au)              :       -76.4235561694
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  --------
+  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
+  Energy decomposition                 : ENPART (one- and two-center IQA terms, see below)
+
+  # ENPART
+  --------
+  Functional              : custom libxc ids 0 202 231
+  Atom-pair skip threshold: THREBOD = -1
+  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
+
+  # GRID
+  ------
+  Radial points              : 40
+  Angular points             : 146
+  Rotation angles (phb1/phb2):  0.162 /  0.182
+
+  TIMING CPU  :: initialization                                    0.00 s
+  TIMING WALL :: initialization                                    0.00 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points  : 150
+  Angular points : 590
+  r0 (radial)    :   0.500
+  Grid points    : 265500
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Using stiffness k: 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   2 : subdivision 23, ratio  4.05051
+  Atom pair   1 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   3 : subdivision 23, ratio  4.05051
+
+  Checking sum of AOs overlap matrices
+  (deviations may not affect overall accuracy of MOs)
+
+  TIMING CPU  :: atomic definition                                 0.25 s
+  TIMING WALL :: atomic definition                                 0.04 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Partial atomic charges
+  Atomic spin densities
+  Bond orders and Valences
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
+   1  O     9.120526    8.262353
+   2  H     0.439737    0.868824
+   3  H     0.439737    0.868824
+  ------------------------------
+     Sum    9.999999   10.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
+   1  O    -1.120526   -0.262353
+   2  H     0.560263    0.131176
+   3  H     0.560263    0.131176
+  ------------------------------
+     Sum    0.000001   -0.000000
+
+  -----------------------------------
+    "FUZZY ATOMS" BOND ORDER MATRIX
+  -----------------------------------
+
+  --------------------------------------------------------------------------------                    
+              1  O        2  H        3  H 
+  --------------------------------------------------------------------------------                    
+    1  O     8.420928    0.699596    0.699596
+    2  H     0.699596    0.085460    0.008957
+    3  H     0.699596    0.008957    0.085460
+  --------------------------------------------------------------------------------                    
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+    Atom         V_A
+  ------------------
+   1  O     1.399194
+   2  H     0.708554
+   3  H     0.708554
+  ------------------
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+ (SUM OF BOND ORDERS)
+
+    Atom        VB_A
+  ------------------
+   1  O     1.399192
+   2  H     0.708554
+   3  H     0.708554
+  ------------------
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+    Atom         F_A
+  ------------------
+   1  O     0.000002
+   2  H     0.000000
+   3  H     0.000000
+  ------------------
+
+  TIMING CPU  :: population analyses                               0.00 s
+  TIMING WALL :: population analyses                               0.00 s
+
+  ----------------------------------------
+    DOING MOLECULAR ENERGY DECOMPOSITION
+  ----------------------------------------
+
+  ----------------------------------
+    DENSITY FUNCTIONAL INFORMATION
+  ----------------------------------
+
+  Functional name --> Tao, Perdew, Staroverov & Scuseria
+  Reference --> [ 1] J. Tao, J. P. Perdew, V. N. Staroverov, and G. E. Scuseria,  Phys. Rev. Lett. 91, 146401 (2003)                         
+  Reference --> [ 2] J. P. Perdew, J. Tao, V. N. Staroverov, and G. E. Scuseria,  J. Chem. Phys. 120, 6898 (2004)                            
+Note: The following floating-point exceptions are signalling: IEEE_UNDERFLOW_FLAG
+STOP META-GGA FUNCTIONALS NOT YET SUPPORTED
+  Functional type --> correlation
+  META-GGA functional selected
+  
+  Meta-GGA functionals are not supported yet (implementation
+  in progress). Use an LDA, GGA or global-hybrid GGA functional.
