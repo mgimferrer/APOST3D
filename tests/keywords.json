@@ -109,6 +109,10 @@
      "description": "Custom exchange functional ID (libxc integer code)",                                     "priority": "low"},
     {"id": "ENPART/EC_FUNCTIONAL", "key": "EC_FUNCTIONAL", "section": "# ENPART",  "category": "energy",
      "description": "Custom correlation functional ID (libxc integer code)",                                  "priority": "low"},
+    {"id": "ENPART/LIBRARY",     "key": "LIBRARY",           "section": "# ENPART",   "category": "energy",
+     "description": "Give the functional as libxc ids (EXC_FUNCTIONAL, or EX_/EC_FUNCTIONAL)",               "priority": "high"},
+    {"id": "ENPART/TWOELTOLER",  "key": "TWOELTOLER",        "section": "# ENPART",   "category": "energy",
+     "description": "Two-electron error (kcal/mol) above which the zero-error interpolation is applied",     "priority": "low"},
 
     {"id": "EDAIQA/FLIPSPIN",       "key": "FLIPSPIN",       "section": "# EDAIQA",  "category": "energy",
      "description": "Flip alpha/beta spin labels in EDA-IQA",                                                  "priority": "low"},

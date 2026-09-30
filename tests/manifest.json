@@ -1418,6 +1418,201 @@
           "tol_abs": 0.002
         }
       ]
+    },
+    {
+      "name": "H2O-BLYP",
+      "description": "Water molecule, RKS BLYP / cc-pVDZ — ENPART with a pure GGA given as libxc ids (LIBRARY, EX_FUNCTIONAL 106 + EC_FUNCTIONAL 131)",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "rks",
+        "libxc-ids"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/LIBRARY",
+        "ENPART/EX_FUNCTIONAL",
+        "ENPART/EC_FUNCTIONAL",
+        "ENPART/THREBOD",
+        "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL",
+        "GRID/ANGULAR",
+        "GRID/PHB1",
+        "GRID/PHB2"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total KS-DFT energy (au)",
+          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -76.3984544,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 1.43e-05,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Pure KS-DFT XC energy, one-center exact (au)",
+          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.341487,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
+          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 37.548657,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "O-H BODEN XC term (au)",
+          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.197881,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O IQA self-energy (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -74.883547,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O-H IQA interaction (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.510625,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "H2O-T-BLYP",
+      "description": "Water molecule, triplet UKS BLYP — ENPART with a pure GGA given as libxc ids, open-shell twin of H2O-BLYP",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "uks",
+        "openshell",
+        "libxc-ids"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/LIBRARY",
+        "ENPART/EX_FUNCTIONAL",
+        "ENPART/EC_FUNCTIONAL",
+        "ENPART/THREBOD",
+        "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL",
+        "GRID/ANGULAR",
+        "GRID/PHB1",
+        "GRID/PHB2"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total KS-DFT energy (au)",
+          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -76.1309793,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 9.06e-05,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Pure KS-DFT XC energy, one-center exact (au)",
+          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.2197241,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
+          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 36.0247872,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "O-H BODEN XC term (au)",
+          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.164928,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O IQA self-energy (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -74.786669,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O-H IQA interaction (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.429062,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "H2O-TPSS",
+      "description": "Water molecule, RKS TPSS — meta-GGAs are not supported yet: ENPART must stop cleanly before any energy is computed",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "rks",
+        "meta-gga",
+        "expected-stop"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/LIBRARY",
+        "ENPART/EX_FUNCTIONAL",
+        "ENPART/EC_FUNCTIONAL"
+      ],
+      "checks": [
+        {
+          "label": "Meta-GGA stop message",
+          "type": "present",
+          "pattern": "META-GGA FUNCTIONALS NOT YET SUPPORTED"
+        },
+        {
+          "label": "No energy decomposition printed",
+          "type": "absent",
+          "pattern": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS"
+        },
+        {
+          "label": "No Normal Termination",
+          "type": "absent",
+          "pattern": "Normal Termination"
+        }
+      ]
     }
   ]
 }
