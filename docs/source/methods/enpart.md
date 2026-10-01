@@ -62,20 +62,8 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    terms are adjusted so that the total exchange-correlation energy does
    not change.
 
-   The default threshold (bond order 0.005) only affects distant pairs;
-   `THREBOD -1` computes every pair. The multipolar estimate reproduces
-   the integrated exchange of such pairs to within a few percent. For
-   KS-DFT, however, it is the exchange of the Kohn-Sham determinant,
-   which for pairs that still overlap somewhat is larger in magnitude
-   than the BODEN value obtained when the pair is computed: semilocal
-   functionals give an xc interaction that fades faster with distance
-   than exchange. This is why the default is 0.005: with 0.01, pairs such
-   as the 1-3 H–H of water or the 1-4 H–H of ethane (bond order about
-   0.008) would be skipped, at a cost of up to 1.7 kcal/mol for ethane
-   (B3LYP). With 0.005, every system checked (water with ten functionals,
-   the water dimer, ethane; HF and KS-DFT) stays within 0.04 kcal/mol of
-   computing all pairs. Use `THREBOD -1` when the exchange-correlation of
-   weakly bonded pairs is of interest.
+   The default threshold, a bond order of 0.005, was chosen for a good
+   accuracy/cost ratio; `THREBOD -1` computes every pair.
 5. **Zero-error strategy.** The 6-D integrations carry a numerical error
    of the order of 1 kcal/mol even with good grids. When the `.fchk` file
    contains the reference electron-electron energy (see below), the
