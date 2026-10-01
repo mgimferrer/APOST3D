@@ -119,11 +119,14 @@ The full keyword list is in [Block section # ENPART](../input/enpart.md).
 ### Choosing the functional
 
 The functional must be the one used to compute the wavefunction. Give it
-with a predefined keyword, or with `LIBRARY` and its
+with a predefined keyword (`SVWN`, `BLYP`, `BP86`, `PBE`, `B3LYP`,
+`B3PW91`, `B3P86`, `PBE0`, `BHANDHLYP`, ...), or with `LIBRARY` and its
 [libxc](https://libxc.gitlab.io/functionals/) identifiers: either
 `EXC_FUNCTIONAL` alone (a combined exchange-correlation functional), or
 `EX_FUNCTIONAL` and/or `EC_FUNCTIONAL` (separate exchange and correlation
-parts), never both kinds together.
+parts), never both kinds together. Each predefined keyword was checked to
+reproduce the Gaussian 16 functional of the same name; the full list,
+with libxc ids, is in [Block section # ENPART](../input/enpart.md).
 
 | Functional family | Supported |
 |---|---|
@@ -139,12 +142,13 @@ computed.
 ```{admonition} Same name, different functional
 :class: warning
 
-Programs do not agree on what some names mean. The `B3LYP` keyword (libxc
-id 402) is Gaussian's B3LYP, with the VWN-RPA local correlation. The
-B3LYP of ORCA or Turbomole uses VWN5 instead (`LIBRARY` +
-`EXC_FUNCTIONAL 475`). A mismatched functional is not always obvious in
-the output, because the zero-error strategy can absorb it into the
-one-center terms (see *Checking the result* below).
+Programs do not agree on what some names mean: ORCA's and Turbomole's
+B3LYP is not Gaussian's (libxc 475 instead of 402, about 23 kcal/mol
+apart for water), and libxc's own "B3P86" (403) is not Gaussian's either
+(the `B3P86` keyword uses 315). A mismatched functional is not always
+obvious in the output, because the zero-error strategy can absorb it into
+the one-center terms (see *Checking the result* below). Details in
+[Block section # ENPART](../input/enpart.md).
 ```
 
 ## Reading the output
