@@ -63,10 +63,17 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    not change.
 
    The default threshold (bond order 0.01) only affects distant or weakly
-   bonded pairs; `THREBOD -1` computes every pair. For a water dimer
-   (BLYP), the multipolar terms of the 9 pairs below the default
-   threshold add up to −0.0027 au, against −0.0022 au when all pairs are
-   computed with BODEN.
+   bonded pairs; `THREBOD -1` computes every pair. The multipolar
+   estimate reproduces the integrated exchange of such pairs to within a
+   few percent. For KS-DFT, however, it is the exchange of the Kohn-Sham
+   determinant, which for distant pairs is larger in magnitude than the
+   BODEN value obtained when the pair is computed: semilocal functionals
+   give an xc interaction that fades faster with distance than exchange.
+   Summed over the pairs below the default threshold, the difference with
+   `THREBOD -1` is a few tenths of a kcal/mol for a water molecule or the
+   water dimer, and −1.7 kcal/mol for the six 1-4 H–H pairs of ethane
+   (B3LYP). Use `THREBOD -1` when the exchange-correlation of weakly
+   bonded pairs is of interest.
 5. **Zero-error strategy.** The 6-D integrations carry a numerical error
    of the order of 1 kcal/mol even with good grids. When the `.fchk` file
    contains the reference electron-electron energy (see below), the
