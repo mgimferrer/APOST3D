@@ -3,12 +3,15 @@
 !! one-electron part:                                         !!
 !!   numint_one      -- RHF/RKS                               !!
 !!   numint_one_uhf  -- UHF/UKS                               !!
-!! two-electron part (both call calc_coul/multipolar          !!
+!! two-electron part (both call calc_coul/multipolar_mo       !!
 !! internally for the Coulomb/multipolar-expansion terms):    !!
 !!   numint_two      -- RHF/RKS                               !!
 !!   numint_two_uhf  -- UHF/UKS                               !!
 !!   calc_coul       -- Coulomb energy term                   !!
-!!   multipolar      -- multipolar-expansion XC approximation !!
+!! multipolar-expansion xc estimate for skipped atom pairs:   !!
+!!   multipolar      -- stored pair functions (CASSCF/CISD)   !!
+!!   multipolar_mo   -- MO products, formed on the fly        !!
+!!   mp_init/mp_moments/mp_pairs/mp_sum -- shared pieces      !!
 !! polarizability analysis (# POLAR keyword, standalone --    !!
 !! not part of the one/two-electron machinery above):         !!
 !!   polar                                                    !!
@@ -391,7 +394,7 @@
       character*80 line
       character*100 threadenv
 
-      allocatable :: chp2(:,:), fij(:,:),xocc(:,:)
+      allocatable :: chp2(:,:)
       allocatable :: chppha(:,:), wppha(:),pcoordpha(:,:),omppha(:)
       allocatable :: chp2pha(:,:),rhopha(:),omp2pha(:,:),ibaspointpha(:)
 
@@ -481,23 +484,8 @@
         if(idoex.eq.1) then
 
 !! multipolar approximation, used below for atom pairs skipped by THREBOD !!
-          norb2=nocc*(nocc+1)/2
-          ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
-          do ii=1,itotps
-            irun=0
-            do jj=1,nocc
-              do kk=jj,nocc
-                irun=irun+1
-                fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
-                if(ii.eq.1) then
-                  xocc(irun,irun)=-TWO
-                  if(jj.ne.kk) xocc(irun,irun)=-FOUR
-                end if
-              end do
-            end do
-          end do
-          call multipolar(nocc,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
-          DEALLOCATE(fij,xocc)
+!! (closed shell: weight -2 for phi_i^2, -4 for phi_i*phi_j, i<j)        !!
+          call multipolar_mo(nocc,itotps,wp,omp2,pcoord,chp2,-TWO,-FOUR,Excmp)
 
 !! loops reordered for parallelization purposes -- implementation !!
 !! performed thanks to Dr. R. Oswald.                             !!
@@ -1377,7 +1365,7 @@
       allocatable :: chppha(:,:), wppha(:),pcoordpha(:,:),omppha(:)
       allocatable :: chp2pha(:,:),omp2pha(:,:),ibaspointpha(:),rhopha(:)
       allocatable :: chp2(:,:), chp2b(:,:), chp2phab(:,:)
-      allocatable :: fij(:,:),fijb(:,:),xocc(:,:),xoccb(:,:),Excmpb(:,:)
+      allocatable :: Excmpb(:,:)
 
 !! parallelization-related arrays below. !!
       allocatable :: chp2s(:,:),chp2phas(:,:),chp2bs(:,:),chp2phabs(:,:) !! transposed layout (rows/columns swapped) !!
@@ -1483,41 +1471,17 @@
 
 !! multipolar approximation, used below for atom pairs skipped by THREBOD, !!
 !! computed for alpha and beta separately then summed. !!
-          norb2=nalf*(nalf+1)/2
-          norb2b=nb*(nb+1)/2
-          ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
-          ALLOCATE(fijb(itotps,norb2b),xoccb(norb2b,norb2b),Excmpb(maxat,maxat))
-          do ii=1,itotps
-            irun=0
-            irunb=0
-            do jj=1,nalf
-              do kk=jj,nalf
-                irun=irun+1
-                fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
-                if(ii.eq.1) then
-                  xocc(irun,irun)=-ONE
-                  if(jj.ne.kk) xocc(irun,irun)=-TWO
-                end if
-                if(jj.le.nb.and.kk.le.nb) then
-                  irunb=irunb+1
-                  fijb(ii,irunb)=chp2b(ii,jj)*chp2b(ii,kk)
-                  if(ii.eq.1) then
-                    xoccb(irunb,irunb)=-ONE
-                    if(jj.ne.kk) xoccb(irunb,irunb)=-TWO
-                  end if
-                end if 
-              end do
-            end do
-          end do
-          call multipolar(nalf,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
-          call multipolar(nb,itotps,wp,omp2,pcoord,fijb,xoccb,Excmpb)
+!! (per spin: weight -1 for phi_i^2, -2 for phi_i*phi_j, i<j)           !!
+          ALLOCATE(Excmpb(maxat,maxat))
+          call multipolar_mo(nalf,itotps,wp,omp2,pcoord,chp2,-ONE,-TWO,Excmp)
+          call multipolar_mo(nb,itotps,wp,omp2,pcoord,chp2b,-ONE,-TWO,Excmpb)
           do ii=1,nat
             do jj=ii+1,nat
               Excmp(ii,jj)=Excmp(ii,jj)+Excmpb(ii,jj)
               Excmp(jj,ii)=Excmp(ii,jj)
             end do 
           end do 
-          DEALLOCATE(fij,fijb,xocc,xoccb,Excmpb)
+          DEALLOCATE(Excmpb)
 
 !! loops reordered for parallelization purposes, mimicking numint_two's !!
 !! strategy (see there for the full explanation). !!
@@ -2459,213 +2423,340 @@ c  energetics
 
 !! *********************************************************************** !!
 !! subroutine: multipolar                                                  !!
-!! purpose: multipolar-expansion approximation to the HF-type exchange     !!
-!!   energy between atom pairs, used by numint_two/numint_two_uhf as a     !!
-!!   cheaper substitute for full numerical integration on atom pairs       !!
-!!   skipped by the THREBOD bond-order threshold. Expands each MO-pair     !!
-!!   "density" (fij) as charge/dipole/quadrupole moments per atom and      !!
-!!   sums the pairwise electrostatic terms up to quadrupole-quadrupole.    !!
+!! purpose: multipolar-expansion estimate of the exchange(-correlation)    !!
+!!   energy of every atom pair, used for pairs skipped by the THREBOD     !!
+!!   bond-order threshold. Each pair "density" f_ij of the xc density is  !!
+!!   expanded in per-atom charge/dipole/quadrupole moments, and the        !!
+!!   pairwise terms are summed up to quadrupole-quadrupole. This version  !!
+!!   takes the f_ij stored on the grid (CASSCF/CISD: eigenfunctions of     !!
+!!   the xc density); see multipolar_mo for products of MOs.               !!
 !! arguments:                                                              !!
-!!   norb   (in)  -- number of MOs (nocc, nalf or nb)                      !!
+!!   norb   (in)  -- number of orbitals, norb*(norb+1)/2 pair functions    !!
 !!   itotps (in)  -- total number of grid points                          !!
 !!   wp     (in)  -- integration weight of each grid point                 !!
 !!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
 !!                   every atom                                            !!
 !!   pcoord (in)  -- xyz coordinates of each grid point                    !!
-!!   fij    (in)  -- MO-pair product density on the grid, (itotps,norb2)   !!
-!!   xocc   (in)  -- MO-pair occupation factor (diagonal only is read)     !!
-!!   Excmp  (out) -- multipolar-approximation exchange energy per atom pair!!
+!!   fij    (in)  -- pair functions on the grid, (itotps,norb2)            !!
+!!   xocc   (in)  -- their weights (eigenvalues); only the diagonal is read !!
+!!   Excmp  (out) -- multipolar estimate per atom pair (i/=j elements)     !!
 !! author: PSalse, MGimf.                                                  !!
 !! *********************************************************************** !!
       subroutine multipolar(norb,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 muamub,muar,mubr,muaqbr,mubqar
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
 
       dimension :: Excmp(maxat,maxat),wp(itotps),pcoord(itotps,3)
       dimension :: fij(itotps,norb*(norb+1)/2),omp2(itotps,nat)
       dimension :: xocc(norb*(norb+1)/2,norb*(norb+1)/2)
-      dimension :: rvect(3)
 
-      allocatable :: dip(:,:),quadp(:,:,:),sij(:),atdist(:,:)
-      allocatable :: Excmp1(:,:),Excmp2(:,:),Excmp3(:,:),Excmp4(:,:)
-      allocatable :: Excmp5(:,:),Excmp6(:,:)
+      allocatable :: dip(:,:),quadp(:,:,:),sij(:),atdist(:,:),exk(:,:,:)
+      allocatable :: xones(:)
 
-      iatps = nang*nrad
       ALLOCATE(dip(nat,3),quadp(nat,3,3),sij(nat),atdist(nat,nat))
-      ALLOCATE(Excmp1(nat,nat),Excmp2(nat,nat),Excmp3(nat,nat))
-      ALLOCATE(Excmp4(nat,nat),Excmp5(nat,nat),Excmp6(nat,nat))
+      ALLOCATE(exk(nat,nat,6),xones(itotps))
+      xones=ONE
+      call mp_init(atdist,exk,Excmp)
+
+!! fij*1 is exact, so these moments are bit-identical to using fij alone. !!
+      irun=0
+      do i=1,norb
+        do j=i,norb
+          irun=irun+1
+          call mp_moments(itotps,wp,omp2,pcoord,fij(1,irun),xones,sij,dip,quadp)
+          call mp_pairs(xocc(irun,irun),sij,dip,quadp,atdist,exk)
+        end do
+      end do
+
+      call mp_sum(exk,Excmp)
+      DEALLOCATE(dip,quadp,sij,atdist,exk,xones)
+
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: multipolar_mo                                               !!
+!! purpose: same multipolar estimate as multipolar, for a single           !!
+!!   determinant, whose pair functions are the MO products phi_i*phi_j.   !!
+!!   Each product is formed inside the moment loop rather than stored, so  !!
+!!   memory is itotps*norb instead of itotps*norb*(norb+1)/2.              !!
+!! arguments:                                                              !!
+!!   norb   (in)  -- number of occupied MOs (nocc, nalf or nb)             !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   wp, omp2, pcoord (in) -- as in multipolar                             !!
+!!   chpmo  (in)  -- MO values at each grid point, (itotps,norb)           !!
+!!   ffd    (in)  -- weight of the i=j products (-2 closed shell, -1 per   !!
+!!                   spin)                                                 !!
+!!   ffo    (in)  -- weight of the i<j products (-4 closed shell, -2 per   !!
+!!                   spin)                                                 !!
+!!   Excmp  (out) -- multipolar estimate per atom pair (i/=j elements)     !!
+!! author: MGimf                                                           !!
+!! *********************************************************************** !!
+      subroutine multipolar_mo(norb,itotps,wp,omp2,pcoord,chpmo,ffd,ffo,Excmp)
+      use integration_grid
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+
+      dimension :: Excmp(maxat,maxat),wp(itotps),pcoord(itotps,3)
+      dimension :: chpmo(itotps,norb),omp2(itotps,nat)
+
+      allocatable :: dip(:,:),quadp(:,:,:),sij(:),atdist(:,:),exk(:,:,:)
+
+      ALLOCATE(dip(nat,3),quadp(nat,3,3),sij(nat),atdist(nat,nat))
+      ALLOCATE(exk(nat,nat,6))
+      call mp_init(atdist,exk,Excmp)
+
+      do i=1,norb
+        do j=i,norb
+          ffact=ffo
+          if(i.eq.j) ffact=ffd
+          call mp_moments(itotps,wp,omp2,pcoord,chpmo(1,i),chpmo(1,j),sij,dip,quadp)
+          call mp_pairs(ffact,sij,dip,quadp,atdist,exk)
+        end do
+      end do
+
+      call mp_sum(exk,Excmp)
+      DEALLOCATE(dip,quadp,sij,atdist,exk)
+
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: mp_init                                                     !!
+!! purpose: interatomic distances and zeroed accumulators for              !!
+!!   multipolar/multipolar_mo.                                             !!
+!! arguments:                                                              !!
+!!   atdist (out) -- distance between every pair of atoms                  !!
+!!   exk    (out) -- the six multipole-order accumulators, zeroed          !!
+!!   Excmp  (out) -- off-diagonal elements zeroed                          !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_init(atdist,exk,Excmp)
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      dimension :: atdist(nat,nat),exk(nat,nat,6),Excmp(maxat,maxat)
 
       do iat=1,nat
         atdist(iat,iat)=ZERO
         do jat=iat+1,nat
           xx=ZERO
           do ii=1,3
-            rvect(ii)=coord(ii,jat)-coord(ii,iat)
-            xx=xx+rvect(ii)*rvect(ii)
+            xx=xx+(coord(ii,jat)-coord(ii,iat))**2
           end do
           atdist(iat,jat)=dsqrt(xx)
           atdist(jat,iat)=atdist(iat,jat)
           Excmp(iat,jat)=ZERO
-          Excmp1(iat,jat)=ZERO
-          Excmp2(iat,jat)=ZERO
-          Excmp3(iat,jat)=ZERO
-          Excmp4(iat,jat)=ZERO
-          Excmp5(iat,jat)=ZERO
-          Excmp6(iat,jat)=ZERO
+          do k=1,6
+            exk(iat,jat,k)=ZERO
+          end do
         end do
       end do
 
-!! loop over MO pairs !!
+      end
 
-      irun=0
-      do i=1,norb
-        do j=i,norb
+!! ***** !!
 
-          irun=irun+1
-          ffact=xocc(irun,irun)
+!! *********************************************************************** !!
+!! subroutine: mp_moments                                                  !!
+!! purpose: per-atom charge, dipole and (traceless) quadrupole moments of  !!
+!!   one pair function f = fa*fb, each atom integrated on its own grid     !!
+!!   points with its own weight.                                           !!
+!! arguments:                                                              !!
+!!   itotps, wp, omp2, pcoord (in) -- as in multipolar                     !!
+!!   fa, fb (in)  -- the two factors of the pair function on the grid     !!
+!!   sij    (out) -- charge of each atom                                   !!
+!!   dip    (out) -- dipole of each atom                                   !!
+!!   quadp  (out) -- quadrupole of each atom                               !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_moments(itotps,wp,omp2,pcoord,fa,fb,sij,dip,quadp)
+      use integration_grid
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      dimension :: wp(itotps),pcoord(itotps,3),omp2(itotps,nat)
+      dimension :: fa(itotps),fb(itotps)
+      dimension :: sij(nat),dip(nat,3),quadp(nat,3,3)
 
-!! per-atom charge/dipole/quadrupole moments of this MO pair's density. !!
+      iatps = nang*nrad
+
 !! parallel over icenter: each iteration writes only its own dip(icenter,:), !!
 !! quadp(icenter,:,:) and sij(icenter), all independent across atoms.    !!
 !$OMP PARALLEL DO PRIVATE(icenter,xx,yy,zz,xy,xz,yz,x,y,z,ifut,distx,disty,distz,wccij)
-          do icenter=1,nat
+      do icenter=1,nat
 
-            xx=ZERO
-            yy=ZERO
-            zz=ZERO
-            xy=ZERO
-            xz=ZERO
-            yz=ZERO
+        xx=ZERO
+        yy=ZERO
+        zz=ZERO
+        xy=ZERO
+        xz=ZERO
+        yz=ZERO
 
-            x=ZERO
-            y=ZERO
-            z=ZERO
+        x=ZERO
+        y=ZERO
+        z=ZERO
 
-            sij(icenter)=ZERO
-            do ifut=iatps*(icenter-1)+1,iatps*icenter
-              distx=pcoord(ifut,1)-coord(1,icenter)
-              disty=pcoord(ifut,2)-coord(2,icenter)
-              distz=pcoord(ifut,3)-coord(3,icenter)
-              wccij=wp(ifut)*omp2(ifut,icenter)*fij(ifut,irun)
-              xx=xx+wccij*distx*distx
-              yy=yy+wccij*disty*disty
-              zz=zz+wccij*distz*distz
-              xy=xy+wccij*distx*disty
-              xz=xz+wccij*distx*distz
-              yz=yz+wccij*disty*distz
-              x=x+wccij*distx
-              y=y+wccij*disty
-              z=z+wccij*distz
-              sij(icenter)=sij(icenter)+wccij
-            end do
-            dip(icenter,1)=x
-            dip(icenter,2)=y
-            dip(icenter,3)=z
-            quadp(icenter,1,1)=xx-(yy+zz)/TWO
-            quadp(icenter,1,2)=(THREE/TWO)*xy
-            quadp(icenter,2,1)= quadp(icenter,1,2)
-            quadp(icenter,1,3)=(THREE/TWO)*xz
-            quadp(icenter,3,1)= quadp(icenter,1,3)
-            quadp(icenter,2,2)=yy-(xx+zz)/TWO
-            quadp(icenter,2,3)=(THREE/TWO)*yz
-            quadp(icenter,3,2)= quadp(icenter,2,3)
-            quadp(icenter,3,3)=zz-(yy+xx)/TWO
-          end do
+        sij(icenter)=ZERO
+        do ifut=iatps*(icenter-1)+1,iatps*icenter
+          distx=pcoord(ifut,1)-coord(1,icenter)
+          disty=pcoord(ifut,2)-coord(2,icenter)
+          distz=pcoord(ifut,3)-coord(3,icenter)
+          wccij=wp(ifut)*omp2(ifut,icenter)*(fa(ifut)*fb(ifut))
+          xx=xx+wccij*distx*distx
+          yy=yy+wccij*disty*disty
+          zz=zz+wccij*distz*distz
+          xy=xy+wccij*distx*disty
+          xz=xz+wccij*distx*distz
+          yz=yz+wccij*disty*distz
+          x=x+wccij*distx
+          y=y+wccij*disty
+          z=z+wccij*distz
+          sij(icenter)=sij(icenter)+wccij
+        end do
+        dip(icenter,1)=x
+        dip(icenter,2)=y
+        dip(icenter,3)=z
+        quadp(icenter,1,1)=xx-(yy+zz)/TWO
+        quadp(icenter,1,2)=(THREE/TWO)*xy
+        quadp(icenter,2,1)= quadp(icenter,1,2)
+        quadp(icenter,1,3)=(THREE/TWO)*xz
+        quadp(icenter,3,1)= quadp(icenter,1,3)
+        quadp(icenter,2,2)=yy-(xx+zz)/TWO
+        quadp(icenter,2,3)=(THREE/TWO)*yz
+        quadp(icenter,3,2)= quadp(icenter,2,3)
+        quadp(icenter,3,3)=zz-(yy+xx)/TWO
+      end do
 !$OMP END PARALLEL DO
+
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: mp_pairs                                                    !!
+!! purpose: adds one pair function's multipole-multipole terms, weighted  !!
+!!   by ffact, to the six accumulators of every atom pair.                 !!
+!! arguments:                                                              !!
+!!   ffact  (in)    -- weight of this pair function                        !!
+!!   sij, dip, quadp (in) -- its per-atom moments (from mp_moments)        !!
+!!   atdist (in)    -- interatomic distances (from mp_init)                !!
+!!   exk    (inout) -- charge-charge, charge-dipole, dipole-dipole,        !!
+!!                     charge-quadrupole, dipole-quadrupole and            !!
+!!                     quadrupole-quadrupole accumulators                  !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_pairs(ffact,sij,dip,quadp,atdist,exk)
+      IMPLICIT REAL*8(A-H,O-Z)
+      REAL*8 muamub,muar,mubr,muaqbr,mubqar
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      dimension :: sij(nat),dip(nat,3),quadp(nat,3,3)
+      dimension :: atdist(nat,nat),exk(nat,nat,6)
+      dimension :: rvect(3)
 
 !! pairwise electrostatic terms, iat==A, jat==B. parallel over iat: each   !!
-!! iteration only writes Excmp1..6(iat,jat>iat), a disjoint row per iat.  !!
-!! rvect is PRIVATE (plain fixed-size local, not the old shared          !!
-!! allocatable) so each thread gets its own scratch copy.                !!
+!! iteration only writes exk(iat,jat>iat,:), a disjoint row per iat.      !!
+!! rvect is PRIVATE (plain fixed-size local) so each thread gets its own  !!
+!! scratch copy.                                                          !!
 !$OMP PARALLEL DO PRIVATE(iat,jat,xx,ii,jj,kk,rvect,muamub,muar,mubr,
 !$OMP&  rqar,rqbr,muaqbr,mubqar,xm,qaqb,rqaqbr)
-          do iat=1,nat
-            do jat=iat+1,nat
-              xx=atdist(iat,jat)
-              do ii=1,3
-                rvect(ii)=coord(ii,jat)-coord(ii,iat)
-              end do
+      do iat=1,nat
+        do jat=iat+1,nat
+          xx=atdist(iat,jat)
+          do ii=1,3
+            rvect(ii)=coord(ii,jat)-coord(ii,iat)
+          end do
 
 !! charge-charge !!
-              Excmp1(iat,jat)=Excmp1(iat,jat)+ffact*sij(iat)*sij(jat)/xx
+          exk(iat,jat,1)=exk(iat,jat,1)+ffact*sij(iat)*sij(jat)/xx
 
 !! charge-dipole !!
-              muamub=ZERO
-              muar=ZERO
-              mubr=ZERO
-              do ii=1,3
-                muamub=muamub+dip(iat,ii)*dip(jat,ii)
-                muar=muar+dip(iat,ii)*rvect(ii)
-                mubr=mubr+dip(jat,ii)*rvect(ii)
-              end do
-              Excmp2(iat,jat)=Excmp2(iat,jat)+ffact*(muar*sij(jat)-mubr*sij(iat))/(xx**THREE)
+          muamub=ZERO
+          muar=ZERO
+          mubr=ZERO
+          do ii=1,3
+            muamub=muamub+dip(iat,ii)*dip(jat,ii)
+            muar=muar+dip(iat,ii)*rvect(ii)
+            mubr=mubr+dip(jat,ii)*rvect(ii)
+          end do
+          exk(iat,jat,2)=exk(iat,jat,2)+ffact*(muar*sij(jat)-mubr*sij(iat))/(xx**THREE)
 
 !! dipole-dipole !!
-              Excmp3(iat,jat)=Excmp3(iat,jat)-ffact*(THREE*muar*mubr/(xx**FIVE)-muamub/(xx**THREE))
+          exk(iat,jat,3)=exk(iat,jat,3)-ffact*(THREE*muar*mubr/(xx**FIVE)-muamub/(xx**THREE))
 
 !! charge-quadrupole !!
-              rqar=ZERO
-              rqbr=ZERO
-              do ii=1,3
-                do jj=1,3
-                  rqar=rqar+rvect(ii)*quadp(iat,ii,jj)*rvect(jj)
-                  rqbr=rqbr+rvect(ii)*quadp(jat,ii,jj)*rvect(jj)
-                end do
-              end do
-              Excmp4(iat,jat)=Excmp4(iat,jat)+ffact*(rqar*sij(jat)+rqbr*sij(iat))/(xx**FIVE)
-
-!! dipole-quadrupole !!
-              muaqbr=ZERO
-              mubqar=ZERO
-              do ii=1,3
-                do jj=1,3
-                  muaqbr=muaqbr+rvect(ii)*quadp(jat,ii,jj)*dip(iat,jj)
-                  mubqar=mubqar+rvect(ii)*quadp(iat,ii,jj)*dip(jat,jj)
-                end do
-              end do
-              xm=-FIVE*(mubr*rqar-muar*rqbr)+TWO*xx*xx*(mubqar-muaqbr)
-              Excmp5(iat,jat)=Excmp5(iat,jat)+ffact*xm/(xx**7.0d0)
-
-!! quadrupole-quadrupole !!
-              qaqb=ZERO
-              rqaqbr=ZERO
-              do ii=1,3
-                do jj=1,3
-                  qaqb=qaqb+quadp(jat,ii,jj)*quadp(iat,ii,jj)
-                  do kk=1,3
-                    rqaqbr=rqaqbr+rvect(ii)*quadp(jat,ii,kk)*quadp(iat,kk,jj)*rvect(jj)
-                  end do
-                end do
-              end do
-              xm=(35.0d0/THREE)*(rqar*rqbr)/(xx**9.0d0)+(TWO/THREE)*qaqb/(xx**FIVE)-(60.0/9.0d0)*rqaqbr/(xx**7.0d0)
-              Excmp6(iat,jat)=Excmp6(iat,jat)+ffact*xm
+          rqar=ZERO
+          rqbr=ZERO
+          do ii=1,3
+            do jj=1,3
+              rqar=rqar+rvect(ii)*quadp(iat,ii,jj)*rvect(jj)
+              rqbr=rqbr+rvect(ii)*quadp(jat,ii,jj)*rvect(jj)
             end do
           end do
-!$OMP END PARALLEL DO
+          exk(iat,jat,4)=exk(iat,jat,4)+ffact*(rqar*sij(jat)+rqbr*sij(iat))/(xx**FIVE)
 
-!! end loop over MO pairs !!
+!! dipole-quadrupole !!
+          muaqbr=ZERO
+          mubqar=ZERO
+          do ii=1,3
+            do jj=1,3
+              muaqbr=muaqbr+rvect(ii)*quadp(jat,ii,jj)*dip(iat,jj)
+              mubqar=mubqar+rvect(ii)*quadp(iat,ii,jj)*dip(jat,jj)
+            end do
+          end do
+          xm=-FIVE*(mubr*rqar-muar*rqbr)+TWO*xx*xx*(mubqar-muaqbr)
+          exk(iat,jat,5)=exk(iat,jat,5)+ffact*xm/(xx**7.0d0)
 
+!! quadrupole-quadrupole !!
+          qaqb=ZERO
+          rqaqbr=ZERO
+          do ii=1,3
+            do jj=1,3
+              qaqb=qaqb+quadp(jat,ii,jj)*quadp(iat,ii,jj)
+              do kk=1,3
+                rqaqbr=rqaqbr+rvect(ii)*quadp(jat,ii,kk)*quadp(iat,kk,jj)*rvect(jj)
+              end do
+            end do
+          end do
+          xm=(35.0d0/THREE)*(rqar*rqbr)/(xx**9.0d0)+(TWO/THREE)*qaqb/(xx**FIVE)-(60.0/9.0d0)*rqaqbr/(xx**7.0d0)
+          exk(iat,jat,6)=exk(iat,jat,6)+ffact*xm
         end do
       end do
+!$OMP END PARALLEL DO
 
-!! symmetrize and sum the six multipole-order contributions into Excmp. !!
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: mp_sum                                                      !!
+!! purpose: sums the six multipole orders into the symmetric Excmp.        !!
+!! arguments:                                                              !!
+!!   exk   (in)  -- the six accumulators (from mp_pairs)                   !!
+!!   Excmp (out) -- multipolar estimate per atom pair (i/=j elements)      !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_sum(exk,Excmp)
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      dimension :: exk(nat,nat,6),Excmp(maxat,maxat)
+
       do i=1,nat
         do j=i+1,nat
-          Excmp1(j,i)=Excmp1(i,j)
-          Excmp2(j,i)=Excmp2(i,j)
-          Excmp3(j,i)=Excmp3(i,j)
-          Excmp4(j,i)=Excmp4(i,j)
-          Excmp5(j,i)=Excmp5(i,j)
-          Excmp6(j,i)=Excmp6(i,j)
-          Excmp(i,j)=Excmp1(i,j)+Excmp2(i,j)+Excmp3(i,j)+Excmp4(i,j)+Excmp5(i,j)+Excmp6(i,j)
+          Excmp(i,j)=exk(i,j,1)+exk(i,j,2)+exk(i,j,3)+exk(i,j,4)+exk(i,j,5)+exk(i,j,6)
           Excmp(j,i)=Excmp(i,j)
         end do
       end do
-      DEALLOCATE(dip,quadp,sij,atdist,Excmp1,Excmp2,Excmp3,Excmp4,Excmp5,Excmp6)
 
       end
 
