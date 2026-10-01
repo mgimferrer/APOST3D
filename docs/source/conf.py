@@ -1,11 +1,12 @@
 """Sphinx configuration for the APOST-3D documentation site."""
 
 project = "APOST-3D"
-copyright = "P. Salvador and collaborators, Universitat de Girona"
-author = "P. Salvador and collaborators"
+copyright = "P. Salvador (University of Girona), M. Gimferrer (University of Göttingen) and collaborators"
+author = "P. Salvador, M. Gimferrer and collaborators"
 
 extensions = [
     "myst_parser",
+    "sphinx_copybutton",
 ]
 
 source_suffix = {
@@ -13,9 +14,18 @@ source_suffix = {
 }
 
 myst_enable_extensions = [
+    "amsmath",
     "colon_fence",
     "deflist",
+    "dollarmath",
 ]
+
+# Anchors for headings up to level 3, so pages can link to sections
+# ("page.md#section-title").
+myst_heading_anchors = 3
+
+# Copy buttons skip shell prompts and output lines.
+copybutton_exclude = ".linenos, .gp, .go"
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]

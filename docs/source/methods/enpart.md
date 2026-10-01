@@ -1,4 +1,4 @@
-# ENPART — Energy partitioning into one- and two-center terms (IQA)
+# ENPART - Energy partitioning into one- and two-center terms (IQA)
 
 `ENPART` decomposes the molecular energy into **one-center** (atomic
 self-energy) and **two-center** (interatomic interaction) terms, in the
@@ -78,22 +78,14 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
 - A **real-space** atomic definition (`TFVC` recommended). ENPART stops
   with an error for Hilbert-space schemes (`MULLIKEN`, `LOWDIN`, ...).
 - A `.fchk` file of the wavefunction. For correlated wavefunctions, the
-  1- and 2-RDMs in a `# DM` block (see [pySCF](../input/pyscf.md)).
-- **Reference energies**, recommended. The kinetic, electron-nuclear and
-  electron-electron energies of the calculation, appended to the `.fchk`,
-  enable the integration-error checks and the zero-error strategy. For
-  Gaussian, run with `#P`, `iop(3/33=3)` and `Pop=Full`, then:
-
-  ```bash
-  formchk mol.chk mol.fchk
-  $APOST3D_PATH/utils/get_energy_g16 mol.log >> mol.fchk   # Gaussian 16
-  $APOST3D_PATH/utils/get_energy mol.log >> mol.fchk       # Gaussian 09
-  ```
-
-  Both are built with the program by `make_compile.sh` (or `make utils`).
-
-  `.fchk` files written from pySCF with `utils/apost3d.py` (see [pySCF](../input/pyscf.md)) already contain
-  them.
+  1- and 2-RDMs in a [`# DM` block](../input/dm.md).
+- **Reference energies**, recommended: the kinetic, electron-nuclear and
+  electron-electron energies of the calculation, appended to the `.fchk`
+  file, enable the integration-error checks and the zero-error strategy.
+  For Gaussian they are added with `utils/get_energy_g16` (or
+  `get_energy` for Gaussian 09); `.fchk` files written from pySCF with
+  `utils/apost3d.py` already contain them. See
+  [Preparing the wavefunction](../guide/wavefunctions.md#gaussian).
 - Only the **electronic energy** is decomposed: wavefunctions from
   calculations with an empirical dispersion correction (e.g. Grimme's
   GD3) cannot be decomposed directly.
@@ -260,7 +252,7 @@ matrix. With `DOFRAGS`, every matrix is also condensed to fragments
   150 radial × 590 angular points per atom by default for ENPART.
 - **Two-electron grid**: set in the `# GRID` block, which is only read
   if `MOD-GRIDTWOEL` is given in `# ENPART` (see
-  [Block section # GRID](../input/other-blocks.md)). Defaults: 150/590
+  [Block section # GRID](../input/grid.md)). Defaults: 150/590
   with `phb1 0.169`, `phb2 0.170`. The rotation angles are calibrated for
   the grid: for 40/146 use `phb1 0.162`, `phb2 0.182`.
 - The 6-D two-electron integrations dominate the cost, which grows with

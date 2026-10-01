@@ -1,48 +1,51 @@
 # Block section # METHOD
 
-## Supported AIM definitions
+The main block, always required. It holds one atomic definition, one or
+more analyses and the general options.
 
-| Keyword | Description |
-| ------- | ----------- |
-| MULLIKEN | Hilbert-space Mulliken |
-| LOWDIN | Hilbert-space Lowdin |
-| LOWDIN-DAVIDSON | Hilbert-space Lowdin-Davidson |
-| NAO-BASIS | Hilbert-space based on Natural Atomic Orbitals |
-| HIRSH | Real-space Hirshfeld |
-| HIRSH-IT | Real-space Hirshfeld iterative |
-| BECKE-RHO | Real-space Becke-rho (deprecated) |
-| TFVC | Real-space Topological Fuzzy Voronoi Cells |
+## Atomic definition
 
-## Wavefunction analysis tools
+Give one. Without any, Becke's original fuzzy atoms are used; `TFVC` is
+recommended instead. How to choose is explained in
+[Atoms in molecules](../guide/aim.md).
 
-| Keyword | Description |
-| ------- | ----------- |
-| EFFAO | Effective Atomic/Fragment Orbitals from the electron density |
-| UEFFAO | Spin-resolved effective Atomic/Fragment Orbitals from the alpha and beta densities |
-| EFFAO-U | Effective Atomic/Fragment Orbitals from the paired and unpaired densities (the orbitals of `GEOS`, without its oxidation-state analysis). Real-space schemes only |
-| EOS | Effective Oxidation States (EOS) analysis. With a real-space scheme, also writes a `-EOS-EFOs.fchk` file (see [Output files](../output.md)) |
-| GEOS | Generalized Effective Oxidation States analysis, from the paired and unpaired density functions. Real-space schemes only; also writes a `-GEOS-EFOs.fchk` file. See [GEOS](../methods/geos.md) |
-| OS-CENTROID | Oxidation states from centroids of localized orbitals |
-| OSLO | Oxidation States Localized Orbitals (OSLO). Requires an additional `# OSLO` block section — and `TFVC` here in `# METHOD`, always, see [Block section # OSLO](oslo.md) |
-| SPIN | Local Spin Analysis (LSA) |
-| ENPART | Real-space-only energy partitioning into one- and two-center terms (IQA), see [ENPART](../methods/enpart.md). Requires an additional `# ENPART` block section |
-| EDAIQA | Real-space-only molecular energy decomposition of Energy Decomposition Analysis (EDA) terms. Requires an additional `# EDAIQA` block section |
-| POLAR | Bader-Keith decomposition of the dipole moment |
+| Keyword | Scheme | Type |
+| ------- | ------ | ---- |
+| `TFVC` | Topological fuzzy Voronoi cells | real space |
+| `HIRSH` | Hirshfeld (needs a `densoutput` file) | real space |
+| `HIRSH-IT` | Iterative Hirshfeld (needs a `densoutput` file) | real space |
+| `BECKE-RHO` | Becke atoms with radii from the density (superseded by `TFVC`) | real space |
+| `MULLIKEN` | Mulliken | Hilbert space |
+| `LOWDIN` | Löwdin | Hilbert space |
+| `LOWDIN-DAVIDSON` | Löwdin-Davidson | Hilbert space |
+| `NAO-BASIS` | Natural atomic orbitals (needs a `jobname.nao` file) | Hilbert space |
 
-## Additional options
+`QTAIM` is not available in this version: the run stops if it is
+requested.
 
-| Keyword | Description |
-| ------- | ----------- |
-| DOFRAGS | Definition of molecular fragments for the calculations. Requires an additional `# FRAGMENTS` block section |
-| DOINT | Generate `*.int` files for each atom with the Atomic Overlap Matrices in MO basis for the given AIM. These can be read with the ESI program |
-| CUBE | Plots cube-type files of the Effective Atomic/Fragment Orbitals. Requires an additional `# CUBE` block section (see [Other block sections](other-blocks.md)) |
-| DENS=*val* | Integer *val* controls which of the P-matrices present in the `.fchk` file is used. Default *val*=1 |
-| QCHEM | Required if the `.fchk` file originates from a Q-Chem calculation (different ordering of sections within) |
-| DM=*val* | Integer *val* indicates that files with the matrix representation of the RDM1 and RDM2 in MO basis will be provided (only for correlated WF methods). Requires an additional `# DM` block section. If *val*=1 the RDM1 file will be provided; *val*=2 indicates both RDM1 and RDM2 files will be provided. These files can be generated using an auxiliary function provided in `apost3d.py` |
+## Analyses
 
-```{admonition} QTAIM
-:class: warning
+The [population analysis](../methods/population.md) is always done. Any
+number of the following can be added:
 
-QTAIM is not a currently supported AIM scheme — the code stops immediately
-if requested. It is not covered by this documentation or by the test suite.
-```
+| Keyword | Analysis | Needs |
+| ------- | -------- | ----- |
+| `EFFAO` | [Effective atomic/fragment orbitals](../methods/effao.md) of the total density | |
+| `UEFFAO` | Effective atomic/fragment orbitals of the alpha and beta densities | |
+| `EFFAO-U` | Effective atomic/fragment orbitals of the paired and unpaired densities | real-space scheme |
+| `EOS` | [Effective oxidation states](../methods/eos.md) | |
+| `GEOS` | [Generalized effective oxidation states](../methods/geos.md) | real-space scheme |
+| `OSLO` | [Oxidation states from localized orbitals](../methods/oslo.md) | real-space scheme, `DOFRAGS`, a `# OSLO` block; single determinant |
+| `SPIN` | [Local spin analysis](../methods/spin.md) | `DM 2` for correlated wavefunctions |
+| `ENPART` | [Energy partitioning](../methods/enpart.md) (IQA) | real-space scheme, a `# ENPART` block |
+
+## Options
+
+| Keyword | Value | Default | Description |
+| ------- | ----- | ------- | ----------- |
+| `DOFRAGS` | | off | Group atoms into fragments, defined in a [`# FRAGMENTS`](fragments.md) block. Without it, every atom is a fragment. |
+| `CUBE` | | off | Write cube files of effective orbitals, selected in a [`# CUBE`](cube.md) block. |
+| `DM` | 1 or 2 | 0 | Read the 1-RDM (`DM 1`) or the 1- and 2-RDMs (`DM 2`) of a correlated wavefunction from the files of a [`# DM`](dm.md) block. `DM 2` also switches on `SPIN`. |
+| `DENS` | integer *n* | 1 | Use the *n*-th density of the `.fchk` file (1 is the SCF density; e.g. 2 for an MP2 or CI density written after it). Restricted wavefunctions only. |
+| `QCHEM` | | off | The `.fchk` file comes from Q-Chem. Needed for the `.fchk` files that the program writes (OSLO, EOS, GEOS orbitals), which follow the layout of the input file. |
+| `DOINT` | | off | Write the atomic overlap matrices in the MO basis, one `.int` file per atom (AIMPAC format), for external programs such as ESI-3D. See [Output files](../guide/output.md). |

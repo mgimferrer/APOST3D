@@ -1,58 +1,131 @@
 # Troubleshooting
 
-**`STOP The required input filename is missing`**
-Normal — the program requires a job name argument (`apost3d jobname`).
+Messages are quoted as the program prints them. A message starting with
+`STOP` ends the run; look for it in the last lines of the output.
 
-**Segmentation fault on large jobs**
-Run `ulimit -s unlimited` before launching; the code uses large
-stack-allocated arrays.
+## Building
+
+**`gfortran >= 10 is required`**
+Install a newer compiler (`sudo apt install gfortran-12`, `brew install
+gcc`, or `module load` a newer GCC on a cluster), then run
+`bash make_compile.sh` again; it rebuilds everything automatically.
+
+**`could not link against OpenBLAS`** (or `cannot find -lopenblas`)
+OpenBLAS is not installed, or is somewhere the script doesn't look.
+Install it (see [Installation](installation.md)), or point at it:
+`export OPENBLAS_DIR=/path/to/openblas` (the folder with `lib/` and
+`include/`), then rerun the script.
+
+**`cmake: command not found`, or `CMake 3.21 or higher is required`**
+The automatic libxc build needs CMake 3.21 or newer. `pip install --user
+cmake` installs one without administrator rights.
 
 **`cannot find -lxcf03` or `-lxc`**
-libxc wasn't built, or `APOST3D_PATH` isn't set. `make_compile.sh`
-normally fetches and builds it automatically the first time — re-run
-`bash make_compile.sh` with `APOST3D_PATH` exported. To build it
-manually instead: `bash compile_libxc.sh`.
+libxc was not built. Run `bash make_compile.sh`, which builds it; when
+building with `make` directly, run `bash compile_libxc.sh` first.
 
-**libxc build fails with `cmake: command not found` (or `CMake ...
-or higher is required`)**
-CMake is missing or too old — libxc 7.1.2 needs CMake ≥ 3.21. Install a
-newer one (see [Installation](installation.md)); on a system where you
-can't easily get one via the package manager, `pip install --user cmake`
-gets a modern prebuilt binary with nothing to compile.
-
-**`cannot find -lopenblas`**
-`make_compile.sh` checks this by actually linking a test program before
-building anything else, so you'll see this as a clear error message up
-front (including which detection method it tried) rather than a build
-failing partway through. Either OpenBLAS isn't installed — `brew install
-openblas`, `apt install libopenblas-dev`, `dnf install openblas-devel`
-(see [Installation](installation.md)) — or it's installed somewhere
-none of the automatic detection methods (env override, `pkg-config`,
-Homebrew prefix, default linker path) can find. For the latter, point at
-it directly and re-run:
-
-```bash
-export OPENBLAS_DIR=/path/to/openblas
-bash make_compile.sh
-```
-
-**Compiler version too old**
-`gfortran --version` must report 10 or newer (`-fallow-argument-mismatch`
-requires GCC 10+).
-
-**macOS: binary fails to launch (`dyld`, "Library not loaded", killed on
+**macOS: a program doesn't start (`dyld`, "Library not loaded", killed on
 start)**
-`make_compile.sh` ad-hoc code-signs and smoke-tests all three binaries
-automatically. If it still fails, or you rebuilt without it:
+`make_compile.sh` signs the programs for macOS. If one is still blocked,
+or was rebuilt with `make`:
 
 ```bash
 xattr -cr $APOST3D_PATH
 codesign --force --sign - $APOST3D_PATH/apost3d
 codesign --force --sign - $APOST3D_PATH/apost3d-eos
-codesign --force --sign - $APOST3D_PATH/utils/eos_aom
 ```
 
-## ENPART
+**`Illegal instruction`**
+The program was built with `ARCH=native` (or another `-march`) on a newer
+CPU than the one running it. Rebuild with the default:
+`bash make_compile.sh clean`.
+
+## Running
+
+**`STOP The required input filename is missing`**
+The job name is missing: `apost3d jobname`.
+
+**`# METHOD section not found`, followed by `Fortran runtime error: End of file`**
+The files `jobname.inp` and `jobname.fchk` were not found (a misspelled
+job name, a different folder, or an extension given: use `apost3d
+water`, not `apost3d water.inp`). The program then leaves empty files
+with those names behind; delete them.
+
+**Segmentation fault**
+Run `ulimit -s unlimited` before the program (in job scripts too).
+
+**The output ends without `...Normal Termination of APOST-3D...`**
+The run stopped early. The reason is in the last lines of the output
+(redirect the errors too: `> jobname.apost 2>&1`).
+
+## The input file
+
+**A keyword has no effect**
+Check the `INPUT SUMMARY` of the output: a keyword that is not listed
+there was not read. Usually it is typed in lower case (keywords are
+case-sensitive), placed after the closing `#` of its block, or placed
+after a line containing `#` (such as a comment), which ends the block.
+See the [input rules](input/index.md#rules).
+
+**`Required section not found in input file`**
+`DOFRAGS` is set but there is no `# FRAGMENTS` block.
+
+**`Required section # CUBE not found in input file`**
+`CUBE` is set but there is no `# CUBE` block (it may be empty).
+
+**`MIN_OCC cannot be larger than MAX_OCC`**, or a stop about a negative
+`MAX_OCC`/`MIN_OCC`
+See [# CUBE](input/cube.md).
+
+**`Missing/Additional atoms in fragment definition`**, **`Unassigned atom to fragment`**
+The fragments don't contain every atom exactly once. Check the counts and
+atom numbers in `# FRAGMENTS`, or end with `-1` for the remaining atoms.
+
+**`# DM section not found in input file`**
+`DM 1` or `DM 2` is set but there is no `# DM` block.
+
+## Atomic definitions
+
+**`ERROR: atom <El> is missing in densoutput`**, or an end-of-file error with `HIRSH`/`HIRSH-IT`
+The Hirshfeld schemes need a `densoutput` file with every element of the
+molecule in the working directory; build it with
+[`gen_hirsh`](tools/utilities.md).
+
+**A runtime error opening `jobname.nao`**
+`NAO-BASIS` needs the NAO transformation file; see
+[Preparing the wavefunction](guide/wavefunctions.md#gaussian).
+
+**`STOP This version can not do QTAIM`**
+QTAIM is not available; use `TFVC`, which gives very similar results.
+
+## Analyses
+
+**`STOP GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)`**,
+**`STOP ENPART needs a real-space AIM (e.g. TFVC)`**
+These analyses don't work with Mulliken, Löwdin or NAO atoms.
+
+**`STOP Local Spin needs dm1 and dm2 for correlated WFs`**,
+**`STOP Enpart needs dm1 and dm2 for correlated WFs`**
+For a correlated wavefunction, `SPIN` and `ENPART` need the 1- and 2-RDMs:
+`DM 2` and a [`# DM` block](input/dm.md).
+
+**`STOP OSLO cannot be performed for multireference wavefunctions`**
+OSLO needs a single determinant (HF or KS-DFT). For correlated
+wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
+
+**OSLO prints meaningless FOLI values (very large, or the same everywhere)**
+`DOFRAGS` and a `# FRAGMENTS` block are missing; OSLO needs fragments.
+
+**`No Local Spin Analysis needed for Restricted SD WFs`**
+Not an error: the local spins of a closed-shell restricted determinant are
+all zero, so `SPIN` is skipped.
+
+**`EOS: WARNING, PSEUDO-DEGENERACIES DETECTED`**
+Not an error: frontier orbitals of different fragments have almost the
+same occupation, and the electrons are shared among them (fractional
+oxidation states); see [EOS](methods/eos.md).
+
+### ENPART
 
 **`STOP META-GGA FUNCTIONALS NOT YET SUPPORTED`**
 Meta-GGA functionals (TPSS, M06-2X, ...) can't be decomposed yet. The run
@@ -74,23 +147,19 @@ a libxc functional. The list of ids is at
 Give either `EXC_FUNCTIONAL` alone, or `EX_FUNCTIONAL` and/or
 `EC_FUNCTIONAL`.
 
-**`STOP ENPART needs a real-space AIM (e.g. TFVC)`**
-ENPART only works with real-space atoms; it can't be combined with
-`MULLIKEN`, `LOWDIN` or other Hilbert-space schemes.
+**`STOP MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART`** / **`STOP GIVE
+EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART`**
+Give one functional only: one predefined keyword, or `LIBRARY` with its
+ids.
+
+**`STOP LDA KEYWORD REMOVED. REVISE inp`**
+The old `LDA` keyword meant Slater exchange only. Use `SVWN` or `SVWN5`,
+or `LIBRARY` + `EX_FUNCTIONAL 1` if exchange only is really intended.
 
 **Large integration error, and a note about the missing reference
 electron-electron energy**
 Without the reference energies in the `.fchk`, the two-electron
 integration error is neither estimated nor corrected, and it can reach
 tens of kcal/mol on coarse grids for heavier atoms. Append the reference
-energies (see [ENPART](methods/enpart.md)), or use a finer two-electron
-grid.
-
-**`STOP LDA KEYWORD REMOVED. REVISE inp`**
-The old `LDA` keyword meant Slater exchange only. Use `SVWN` or `SVWN5`,
-or `LIBRARY` + `EX_FUNCTIONAL 1` if exchange only is really intended.
-
-**`STOP MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART`** / **`STOP GIVE
-EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART`**
-Give one functional only: one predefined keyword, or `LIBRARY` with its
-ids.
+energies (see [Preparing the wavefunction](guide/wavefunctions.md#gaussian)),
+or use a finer two-electron grid.

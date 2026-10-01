@@ -1,9 +1,9 @@
-# GEOS
+# GEOS - Generalized effective oxidation states
 
 **Generalized effective oxidation states** (`GEOS`) assigns electrons, and
 from them oxidation states, to atoms or fragments using two density
 functions instead of one: the **paired** and the **unpaired** electron
-density. It extends the [EOS](../input/method.md) analysis to open-shell,
+density. It extends the [EOS](eos.md) analysis to open-shell,
 broken-symmetry and multiconfigurational (correlated) wavefunctions, where
 the alpha/beta picture used by EOS is not the natural one.
 
@@ -43,8 +43,7 @@ P. Salvador, *J. Chem. Theory Comput.*, **2015**, 11, 1501-1508. See
 ## Requirements and input
 
 - A **real-space** atomic definition (`TFVC` recommended). GEOS stops with
-  an error for Hilbert-space schemes (`MULLIKEN`, `LOWDIN`, ...) and for
-  `DOATOMS`.
+  an error for Hilbert-space schemes (`MULLIKEN`, `LOWDIN`, ...).
 - Any wavefunction whose `.fchk` provides the total density: restricted,
   unrestricted (including broken-symmetry), or correlated (e.g. a pySCF
   CASSCF/FCI `.fchk`; no `.dm1`/`.dm2` needed).
@@ -143,45 +142,24 @@ occupations are halved when computing R(%)), followed by:
 
 ## Orbitals in the .fchk file
 
-Every GEOS run writes `<jobname>-GEOS-EFOs.fchk`, a copy of the input
-`.fchk` whose orbitals are replaced by the EFOs, so they can be viewed in
-any program that reads `.fchk` files:
+Every GEOS run writes `<jobname>-GEOS-EFOs.fchk`, with the EFOs of all
+fragments as its orbitals (see [Visualizing orbitals](../guide/visualization.md)
+for the general layout and the meaning of `FIT %`):
 
 - **Alpha orbitals:** paired EFOs of all fragments, sorted by decreasing
   gross occupation; the negative paired EFOs, if any, are the **last**
   Alpha orbitals (most negative last).
 - **Beta orbitals:** unpaired EFOs, same ordering. For a restricted
   input `.fchk` with a non-empty unpaired density, a Beta set is added.
-- **"Orbital energy"** of each orbital: its gross occupation. Fragment
-  labels are not stored; match an orbital to its fragment by this value
-  and the output.
-- Everything else (geometry, basis set, densities) is copied unchanged.
+- **"Orbital energy"** of each orbital: its gross occupation.
 
-An EFO belongs to one fragment: in real space, it is the orbital multiplied
-by the fragment's weight function. A `.fchk` file can only hold orbitals
-expanded in the basis set, so the exported orbital is the **best
-basis-set approximation** of that fragment-restricted orbital. `FIT %`
-(and `% recovered` for negative EFOs) measures the quality:
-100 × (1 − ‖difference‖ / ‖orbital‖). Typical values:
-
-| EFO net occupation | Typical `FIT %` |
-|---|---|
-| ≳ 0.9 | 98–99.9 |
-| 0.4–0.8 | 84–95 |
-| 0.05–0.1 | 60–80 |
-| below ~0.01 | often ≤ 50 |
-
-The limit comes from the basis set, not from the integration grid: a
-larger basis set in the original calculation improves it, a finer grid
-does not. The measure is strict: 84% still captures about 97% of the
-orbital's squared norm. Occupations, oxidation states and all other
-results are always computed from the exact EFOs, never from the
-exported approximation.
+In the LiH example, the negative EFO of the H atom is the last Alpha
+orbital, with "orbital energy" −0.0978 (its gross occupation), and its
+`% recovered` of 84.36 is the `FIT %` of that orbital.
 
 ## Cube files
 
-With `CUBE` in `# METHOD` (and a `# CUBE` section), cube files of the EFOs
-are written (see [Block section # CUBE](../input/other-blocks.md)):
+With `CUBE` in `# METHOD` and a [`# CUBE` block](../input/cube.md):
 
 - `<jobname>_<scheme>_paired_FR<n>_<i>.cube` and `..._unpaired_...` for
   the EFOs selected by `MAX_OCC`/`MIN_OCC`. Paired occupations go up to 2,
@@ -192,18 +170,15 @@ are written (see [Block section # CUBE](../input/other-blocks.md)):
   used for the output and the `.fchk`: a smaller value plots more EFOs,
   some of which then have no `.fchk` counterpart.
 
-For only the negative EFOs, use an empty occupation window:
+For only the negative EFOs, use an empty occupation window, and a larger
+box (negative EFOs are diffuse, and the default box of a single H atom
+cuts them):
 
 ```text
 # CUBE
 MAX_OCC 0
 MIN_OCC 0
 NEG_EFOS 10
+RADIUS_SCALE 12.0
 #
 ```
-
-The cube and the `.fchk` orbital are on the same scale (neither is
-renormalized), so the same isovalue can be used to compare them. If a cube
-looks cut off, enlarge its box with `RADIUS_SCALE`: the `Normalization
-from cube` value printed for each cube approaches 1 when the box holds the
-whole orbital.
