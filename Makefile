@@ -9,9 +9,11 @@
 
 ## --------------------------------------------------------- ##
 ## USER SETTINGS                                             ##
-## Set APOST3D_PATH before running make, e.g.:              ##
-##   export APOST3D_PATH=/home/user/APOST3D                  ##
+## APOST3D_PATH defaults to the directory of this Makefile;  ##
+## an exported APOST3D_PATH (or make APOST3D_PATH=...) wins. ##
 ## --------------------------------------------------------- ##
+
+APOST3D_PATH ?= $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 ## COMPILER
 FC       = gfortran
@@ -209,7 +211,7 @@ eos_aom: $(UTILDIR)/eos_aom.o
 
 TESTS_DIR    := $(APOST3D_PATH)/tests
 TEST_RUNNER  := $(TESTS_DIR)/run_tests.py
-TEST_INPUTS  := $(APOST3D_PATH)/compiler-testset
+TEST_INPUTS  := $(TESTS_DIR)/inputs
 TEST_MANIFEST:= $(TESTS_DIR)/manifest.json
 TEST_REF     := $(TESTS_DIR)/reference
 NTHREADS     ?= 1

@@ -29,10 +29,12 @@ testrun_*/
 libxc-*.tar.gz
 libxc-*/
 ## OSLO visualization output (written by apost3d itself during OSLO runs,
-## e.g. if run manually inside compiler-testset/ instead of an isolated
+## e.g. if run manually inside tests/inputs/ instead of an isolated
 ## tempdir — not required input, regenerated on every run)
-compiler-testset/*OSLOs*.fchk
-compiler-testset/*.apost*
+tests/inputs/*OSLOs*.fchk
+tests/inputs/*EFOs*.fchk
+tests/inputs/*.apost*
+tests/inputs/*.cube
 ## Python cache
 utils/__pycache__
 tests/__pycache__

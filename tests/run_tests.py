@@ -36,7 +36,7 @@ Options
 -------
   --binary  PATH    Path to apost3d binary (default: <repo>/apost3d)
   --inputs  DIR     Directory with .fchk / .inp input files
-                    (default: <repo>/compiler-testset)
+                    (default: <tests>/inputs/)
   --manifest PATH   Path to manifest.json (default: <tests>/manifest.json)
   --ref     DIR     Directory with reference .apost files
                     (default: <tests>/reference/)
@@ -175,7 +175,7 @@ def resolve_paths(args):
     root = _repo_root()
     tdir = _tests_dir()
     binary       = Path(args.binary)   if args.binary   else root / "apost3d"
-    input_dir    = Path(args.inputs)   if args.inputs   else root / "compiler-testset"
+    input_dir    = Path(args.inputs)   if args.inputs   else tdir / "inputs"
     manifest_path = Path(args.manifest) if args.manifest else tdir / "manifest.json"
     ref_dir      = Path(args.ref)      if args.ref      else tdir / "reference"
     return binary, input_dir, manifest_path, ref_dir
@@ -322,7 +322,7 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
     Execute one test case and return a result dict.
 
     Each run happens in its own throwaway temp directory (auto-deleted on
-    exit) so tests never leave .apost files behind in compiler-testset/ or
+    exit) so tests never leave .apost files behind in tests/inputs/ or
     tests/. The raw <name>.apost output is always copied to output_dir
     before that temp dir is deleted, so every run's output is available
     for inspection afterward.
