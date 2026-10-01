@@ -25,7 +25,7 @@
 | OS-CENTROID | Oxidation states from centroids of localized orbitals |
 | OSLO | Oxidation States Localized Orbitals (OSLO). Requires an additional `# OSLO` block section — and `TFVC` here in `# METHOD`, always, see [Block section # OSLO](oslo.md) |
 | SPIN | Local Spin Analysis (LSA) |
-| ENPART | Real-space-only molecular energy decomposition (IQA). Requires an additional `# ENPART` block section |
+| ENPART | Real-space-only energy partitioning into one- and two-center terms (IQA), see [ENPART](../methods/enpart.md). Requires an additional `# ENPART` block section |
 | EDAIQA | Real-space-only molecular energy decomposition of Energy Decomposition Analysis (EDA) terms. Requires an additional `# EDAIQA` block section |
 | POLAR | Bader-Keith decomposition of the dipole moment |
 
