@@ -2,135 +2,138 @@
 
 **Chemical concepts from wave function analysis**
 
-APOST-3D is a Fortran-based code developed at the Universitat de Girona (UdG)
-by P. Salvador and collaborators. It takes a converged wavefunction (from
-Gaussian, Q-Chem, pySCF, or any other source that can produce a formatted
-checkpoint file) and extracts chemically meaningful, real-space or
-basis-set-based descriptors from it: how the electron density and orbitals
-are shared out among atoms and fragments, what that implies about bonding,
-oxidation states, and spin, and how the molecular energy itself decomposes
-into atomic and interatomic contributions.
+APOST-3D reads a converged wavefunction (a formatted checkpoint file from
+Gaussian, Q-Chem, pySCF, ...) and translates it into chemical language:
+atomic charges and bond orders, effective atomic and fragment orbitals,
+oxidation states, local spins, and a decomposition of the molecular
+energy into atomic and interatomic terms. It is developed at the
+Universitat de Girona by P. Salvador, M. Gimferrer and collaborators, and
+is free and open source ([GitHub](https://github.com/mgimferrer/APOST3D)).
 
-It builds with **GCC/gfortran** — free, open-source, and available on every
-Linux distribution, with no Intel compiler or license required.
+## What can I compute?
 
-```{admonition} Source code
-:class: tip
+Every run starts by choosing an **atoms-in-molecules (AIM) scheme**, the
+rule that splits the molecule into atoms ([Atoms in molecules](guide/aim.md)).
+On top of it, one or more analyses can be requested in the same run:
 
-The source and issue tracker live on GitHub:
-[github.com/mgimferrer/APOST3D](https://github.com/mgimferrer/APOST3D)
-```
+| Analysis | Keyword | What you get |
+|---|---|---|
+| [Population analysis](methods/population.md) | *(always)* | Atomic charges, spin populations, bond orders and valences |
+| [Effective atomic orbitals](methods/effao.md) | `EFFAO`, `UEFFAO`, `EFFAO-U` | The orbitals and occupations that describe each atom or fragment in the molecule |
+| [Effective oxidation states](methods/eos.md) | `EOS` | Oxidation states of atoms or fragments for any wavefunction, with a reliability index |
+| [Generalized EOS](methods/geos.md) | `GEOS` | Oxidation states from the paired and unpaired densities, for open-shell and correlated wavefunctions |
+| [Oxidation states from localized orbitals](methods/oslo.md) | `OSLO` | Fragment-localized orbitals (OSLOs) and the oxidation states they imply |
+| [Local spin](methods/spin.md) | `SPIN` | Atomic and diatomic contributions to ⟨*S*²⟩ |
+| [Energy partitioning](methods/enpart.md) | `ENPART` | The molecular energy split into atomic self-energies and interatomic interactions (IQA), for HF, KS-DFT and CASSCF/CISD |
 
-## What it does
+Atoms can be grouped into [fragments](guide/fragments.md) (ligands, metal
+centers, molecules) for any of these analyses.
 
-Every calculation starts by choosing an **atom-in-a-molecule (AIM) scheme**
-— the rule used to partition the molecule into atomic contributions. APOST-3D
-supports two families: **real-space** schemes that partition 3D space via
-numerical integration (`TFVC`, `HIRSH`, `HIRSH-IT`, the deprecated
-`BECKE-RHO`), and **Hilbert-space** schemes that partition the basis-set
-overlap instead (`MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`, `NAO-BASIS`). See
-the [AIM definitions table](input/method.md) for the full list.
+## Where to start
 
-On top of whichever AIM scheme is selected, one or more **analysis tools**
-can be requested in the same run:
-
-- **EFFAO / UEFFAO / EFFAO-U** — effective atomic and fragment orbitals from
-  the total, spin-resolved, or paired/unpaired electron density.
-- **EOS / GEOS** — effective oxidation states, from the regular or the
-  paired/unpaired density functions.
-- **OSLO / OS-CENTROID** — oxidation states from localized orbitals, or from
-  the centroids of localized orbitals.
-- **SPIN** — local spin analysis (LSA), including for correlated
-  wavefunctions via 1-/2-RDM input.
-- **ENPART / EDAIQA** — real-space molecular energy decomposition (IQA) for
-  HF, DFT, and correlated (CASSCF/CISD) wavefunctions, and decomposition of
-  Energy Decomposition Analysis (EDA) terms.
-- **POLAR** — Bader-Keith decomposition of the molecular dipole moment.
-
-Fragments of atoms (rather than individual atoms) can be defined for any of
-the above via `DOFRAGS`. The effective orbitals can be written as cube
-files, and EOS/GEOS also write them into a `.fchk` file for any orbital
-viewer (see [Output files](output.md)). The full keyword-by-keyword
-reference is in [Input reference](input/index.md), with six worked examples
-in [Input examples](input/examples.md), and the analysis methods are
-described in Analysis methods ([GEOS](methods/geos.md),
-[ENPART](methods/enpart.md)).
+1. [Install](installation.md) the program: one command builds everything.
+2. Follow the [tutorial](tutorial.md): a first calculation on a small
+   molecule, from the input file to the results.
+3. Look up what you need: the [user guide](guide/wavefunctions.md) (how to
+   prepare and run a calculation), one page per
+   [analysis method](methods/population.md), and the
+   [input reference](input/index.md) for every keyword.
 
 ```{admonition} Cite this work
 :class: note
 
-If you use APOST-3D in published work, please cite the code and the papers
-behind the specific analysis tools you used — see [Citations](citations.md)
-for the full reference list.
+If you use APOST-3D in published work, please cite the program paper and
+the papers of the methods you used; see [Citations](citations.md).
 ```
 
-## Getting started
-
 ```{toctree}
-:maxdepth: 2
+:hidden:
 :caption: Getting started
 
 installation
-quickstart
-output
-testing
-troubleshooting
+tutorial
 ```
 
-## Analysis methods
+```{toctree}
+:hidden:
+:caption: User guide
+
+guide/wavefunctions
+guide/running
+guide/aim
+guide/fragments
+guide/output
+guide/visualization
+```
 
 ```{toctree}
-:maxdepth: 2
+:hidden:
 :caption: Analysis methods
 
+methods/population
+methods/effao
+methods/eos
 methods/geos
+methods/oslo
+methods/spin
 methods/enpart
 ```
 
-## Input reference
-
 ```{toctree}
-:maxdepth: 2
+:hidden:
 :caption: Input reference
 
 input/index
 input/method
-input/oslo
 input/enpart
-input/other-blocks
+input/oslo
+input/cube
+input/grid
+input/dm
+input/fragments
 input/examples
-input/pyscf
 ```
 
-## Citations
+```{toctree}
+:hidden:
+:caption: Tools
+
+tools/apost3d-eos
+tools/utilities
+```
 
 ```{toctree}
-:maxdepth: 1
-:caption: Citations
+:hidden:
+:caption: Help and reference
 
+troubleshooting
+glossary
 citations
+changelog
+```
+
+```{toctree}
+:hidden:
+:caption: Developer guide
+
+developer/building
+developer/testing
 ```
 
 ## Acknowledgements
 
-The program has been written using parts of the program APOST by I. Mayer
-and A. Hamza, Budapest, 2000-2003.
+The program uses parts of the program APOST by I. Mayer and A. Hamza
+(Budapest, 2000-2003). The numerical integration uses the Lebedev-Laikov
+angular quadrature routines
+([source](http://www.ccl.net/cca/software/SOURCES/FORTRAN/Lebedev-Laikov-Grids/Lebedev-Laikov.F);
+V. I. Lebedev and D. N. Laikov, *Doklady Mathematics*, **1999**, 59,
+477-481), and exchange-correlation functionals come from the
+[libxc](https://libxc.gitlab.io/) library through its Fortran 2003
+interface. We are grateful for the possibility of using these routines,
+and thank R. Oswald for technical support with the parallelization and
+the build setup.
 
-The numerical integration utilizes the Lebedev quadrature subroutines
-[available here](http://www.ccl.net/cca/software/SOURCES/FORTRAN/Lebedev-Laikov-Grids/Lebedev-Laikov.F).
-The appropriate reference is: V.I. Lebedev and D.N. Laikov, "A quadrature
-formula for the sphere of the 131st algebraic order of accuracy," *Doklady
-Mathematics*, 59, 477-481 (1999).
+## Bug reports and questions
 
-The program makes use of the `Libxc` library when necessary, using the
-Fortran 2003 (`xc_f03`) interface provided by the authors (see
-https://libxc.gitlab.io/).
-
-We are extremely grateful for the possibility of using these routines. We
-also acknowledge R. Oswald for technical support in code parallelization and
-compilation setup preparation.
-
-## Bug reports and feature requests
-
-Please submit tickets on the [issues page](https://github.com/mgimferrer/APOST3D/issues),
-or send an email to mgimferrer18@gmail.com or pedro.salvador@udg.edu.
+Open an issue on [GitHub](https://github.com/mgimferrer/APOST3D/issues),
+or write to mgimferrer18@gmail.com or pedro.salvador@udg.edu.

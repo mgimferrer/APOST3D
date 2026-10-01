@@ -2,154 +2,59 @@
 
 ## Chemical concepts from wave function analysis
 
-A Fortran-based code developed at the Universitat de Girona (UdG) by the group of P. Salvador, M. Gimferrer and collaborators.
+APOST-3D reads a converged wavefunction (a formatted checkpoint file from
+Gaussian, Q-Chem, pySCF, ...) and translates it into chemical language:
+atomic charges and bond orders, effective atomic and fragment orbitals,
+oxidation states (EOS, GEOS, OSLO), local spins, and the decomposition of
+the molecular energy into atomic and interatomic terms (IQA). It is
+developed by P. Salvador (University of Girona), M. Gimferrer (University
+of Göttingen) and collaborators, and builds with free, open-source tools
+only (gfortran, OpenBLAS).
 
-Builds with **GCC/gfortran** — free, open-source, and available on every Linux
-distribution (no Intel compiler or license required).
+📖 **Documentation: https://apost3d.readthedocs.io** — installation,
+a tutorial, one page per analysis method, the complete input reference,
+and a [developer guide](https://apost3d.readthedocs.io/en/latest/developer/building.html)
+(building, the test suite, adding tests).
 
-📖 **Full documentation:** https://apost3d.readthedocs.io
+## Quick start
 
-## Shortcuts
-
-* [Installation](#installation)
-* [How to use](#how-to-use)
-* [Running the test suite](#running-the-test-suite)
-* [Documentation](#documentation)
-* [Cite the code](#citations)
-* [Bug reports and feature requests](#bug-reports-and-feature-requests)
-
-## Installation
-
-Requires GCC/gfortran **10 or newer** (12+ recommended), `make`, and
-**OpenBLAS** (BLAS/LAPACK — e.g. `brew install openblas` on macOS,
-`apt install libopenblas-dev` on Debian/Ubuntu). Free and open-source
-throughout — no Intel compiler, no MKL, no license of any kind required.
-
-libxc (exchange-correlation functionals) is fetched and built
-automatically on first run if no suitable install (≥ 5, e.g. from a
-distro package, conda, or Homebrew) is already found — this needs
-**CMake ≥ 3.21** (e.g. `brew install cmake` on macOS, `apt install
-cmake` on Debian/Ubuntu), only if that automatic build actually has to
-run.
+Install gfortran (10 or newer), OpenBLAS and CMake with your package
+manager (e.g. `sudo apt install gfortran libopenblas-dev cmake`), then
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/mgimferrer/APOST3D.git
 cd APOST3D
-
-# 2. Set the installation path (add this to your shell profile too)
-export APOST3D_PATH=$(pwd)
-
-# 3. Build apost3d, apost3d-eos and the utilities (utils/)
-#    (fetches + builds libxc automatically first, if needed)
-bash make_compile.sh
+bash make_compile.sh      # builds everything, including libxc
+make test                 # checks the build
 ```
 
-Both `make_compile.sh` and `make test` accept the same `NTHREADS=<n>` flag for the number of cores to use (e.g. `bash make_compile.sh NTHREADS=4`). Run `bash make_compile.sh help` or `make help` to see all available flags.
-
-Per-distro prerequisite commands, driving `make` directly, and verifying the install are covered in the [Installation](https://apost3d.readthedocs.io/en/latest/installation.html) page of the full documentation.
-
-## How to use
+and run a calculation from the folder with `jobname.fchk` and
+`jobname.inp`:
 
 ```bash
-ulimit -s unlimited          # the code uses large stack-allocated arrays
-export OMP_NUM_THREADS=4     # set to the number of cores you want to use
-
+ulimit -s unlimited
 $APOST3D_PATH/apost3d jobname > jobname.apost 2>&1
 ```
 
-`jobname.fchk` and `jobname.inp` must be present in the working directory. Correlated-wavefunction analyses (CASSCF, DMRG) also need `jobname.dm1`/`.dm2`.
+with `export APOST3D_PATH=/path/to/APOST3D` in your shell profile. The
+[installation page](https://apost3d.readthedocs.io/en/latest/installation.html)
+covers every system (including clusters and macOS), and the
+[tutorial](https://apost3d.readthedocs.io/en/latest/tutorial.html) walks
+through a first calculation.
 
-The full input-file format and keyword reference is in the
-[Documentation](#documentation).
+## Citing
 
-## Running the test suite
+Please cite the program paper,
 
-```bash
-make test               # build (if needed) + run the entire suite, 8 threads
-make test NTHREADS=4    # same, using 4 threads
-```
-
-`make test` always runs every case. The active test list, the check format, and how to add a new test case are covered in the [Running the test suite](https://apost3d.readthedocs.io/en/latest/testing.html) page of the full documentation.
-
-## Documentation
-
-Full documentation — installation, usage, the complete input-file keyword reference, worked examples, and troubleshooting — is hosted at **https://apost3d.readthedocs.io**.
-
-## Citations
-
-### Cite the code
-
-The following paper should be cited in publications utilizing `APOST-3D`:
-
-* P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer, *J. Chem. Phys.*, **2024**, 160, 172502
+* P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer,
+  *J. Chem. Phys.*, **2024**, 160, 172502.
   DOI: [10.1063/5.0206187](https://doi.org/10.1063/5.0206187)
 
-### Cite implemented methods
+and the papers of the analyses you used, listed on the
+[citations page](https://apost3d.readthedocs.io/en/latest/citations.html)
+(and printed at the top of every output).
 
-For atomic and overlap populations, bond orders and valences:
+## Bug reports and questions
 
-* I. Mayer and P. Salvador, *Chem. Phys. Lett.*, **2004**, 383, 368-375
-  DOI: [10.1016/j.cplett.2003.11.048](https://doi.org/10.1016/j.cplett.2003.11.048)
-
-For Hartree-Fock molecular energy decomposition:
-
-* P. Salvador, M. Duran and I.Mayer, *J. Chem. Phys.*, **2001**, 115, 1153-1157
-  DOI: [10.1063/1.1381407](https://doi.org/10.1063/1.1381407)
-* P. Salvador and I. Mayer, *J. Chem. Phys.*, **2004**, 120, 5046-5052
-  DOI: [10.1063/1.1646354](https://doi.org/10.1063/1.1646354)
-
-For KS-DFT molecular energy decomposition:
-
-* P. Salvador and I. Mayer, *J. Chem. Phys.*, **2007**, 126, 234113
-  DOI: [10.1063/1.2741258](https://doi.org/10.1063/1.2741258)
-* M. Gimferrer and P. Salvador, *J. Chem. Phys.*, **2023**, 158, 234105
-  DOI: [10.1063/5.0142778](https://doi.org/10.1063/5.0142778)
-
-For CAS/DMRG molecular energy decomposition:
-
-For effective atomic/fragment orbitals:
-
-* I. Mayer, *J. Phys. Chem.*, **1996**, 100, 6249
-  DOI: [10.1021/jp952779i](https://doi.org/10.1021/jp952779i)
-* I. Mayer and P. Salvador, *J. Chem. Phys.*, **2009**, 130, 234106
-  DOI: [10.1063/1.3153482](https://doi.org/10.1063/1.3153482)
-* E. Ramos-Cordoba, P. Salvador and I. Mayer, *J. Chem. Phys.*, **2013**, 138, 214107
-  DOI: [10.1063/1.4807775](https://doi.org/10.1063/1.4807775)
-
-For local spin analysis:
-
-* E. Ramos-Cordoba, E. Matito, I. Mayer and P. Salvador, *J. Chem. Theor. Comput.*, **2012**, 8, 1270-1279
-  DOI: [10.1021/ct300050c](https://doi.org/10.1021/ct300050c)
-* E. Ramos-Cordoba, E. Matito, P. Salvador and I. Mayer, *Phys. Chem. Chem. Phys.*, **2012**, 14, 15291-15298
-  DOI: [10.1039/C2CP42513K](https://doi.org/10.1039/C2CP42513K)
-
-For effective oxidation states analysis:
-
-* E. Ramos-Cordoba, V. Postils and P. Salvador, *J. Chem. Theor. Comput.*, **2015**, 11, 1501-1508
-  DOI: [10.1021/ct501088v](https://doi.org/10.1021/ct501088v)
-* M. Gimferrer and P. Salvador, _submitted_, **2024**
-  DOI: [XX](XX)
-
-For oxidation states from localized orbitals:
-
-* M. Gimferrer, G. Comas-Vila and P. Salvador, *Molecules*, **2020**, 25, 234
-  DOI: [10.3390/molecules25010234](https://doi.org/10.3390/molecules25010234)
-* M. Gimferrer, J. Van der Mynsbrugge, A. T. Bell, P. Salvador and M. Head-Gordon *Inorg. Chem.*, **2020**, 59, 15410-15420
-  DOI: [10.1021/acs.inorgchem.0c02405](https://doi.org/10.1021/acs.inorgchem.0c02405)
-* M. Gimferrer, A. Aldossary, P. Salvador and M. Head-Gordon, *J. Chem. Theor. Comput.*, **2022**, 18, 309-322
-  DOI: [10.1021/acs.jctc.1c01011](https://doi.org/10.1021/acs.jctc.1c01011)
-
-For decomposition of EDA quantities into one- and two-center IQA terms:
-
-* M. Gimferrer, S. Danes, D. M. Andrada and P. Salvador, *J. Chem. Theory Comput.*, **2023**, 19, 3469-3485
-  DOI: [10.1021/acs.jctc.3c00143](https://doi.org/10.1021/acs.jctc.3c00143)
-
-For origin-independent decomposition of static polarizabilities:
-
-* M. Montilla, J. M. Luis and P. Salvador, *J. Chem. Theor. Comput.*, **2021**, 17, 1098-1105
-  DOI: [10.1021/acs.jctc.0c00926](https://doi.org/10.1021/acs.jctc.0c00926)
-
-## Bug reports and feature requests
-
-Please submit tickets on the [issues](https://github.com/mgimferrer/APOST3D/issues) page, and/or send an email to mgimferrer18@gmail.com and pedro.salvador@udg.edu
+Please open an issue on the [issues page](https://github.com/mgimferrer/APOST3D/issues),
+or write to mgimferrer18@gmail.com or pedro.salvador@udg.edu.
