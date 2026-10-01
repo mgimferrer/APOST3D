@@ -6,8 +6,8 @@ compatibility notes below come from the keyword dispatch in
 not only from what is documented on the
 [hosted docs site](https://apost3d.readthedocs.io).
 
-**Status: 2026-10-01.** 20 tests, 37/96 keywords covered (`make coverage`,
-38%). Typical calculations for each method are being supplied and their
+**Status: 2026-10-01.** 17 tests, 36/96 keywords covered (`make coverage`,
+37%). Typical calculations for each method are being supplied and their
 code cleaned, so expect this to move quickly; update the matrix below as
 each test lands.
 
@@ -63,7 +63,7 @@ Don't write tests expecting these to work:
 | **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI` | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **CUBE** | ✅ `LiH-32-FCI` (`NEG_EFOS` only) | ② | ② | ② | ② | ≈dup | ② | ② |
 | **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2` | ② | ② | ① (`# OSLO MULLIKEN`) | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ① (`# OSLO NAO-BASIS`) | not an OSLO option |
-| **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `LiH-35-CAS22`, `H2O-BLYP`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-B3P86`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP`, `H2O-T-B3LYP-MP` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22` | ② | ② | ② | ② | ≈dup | ② | ② |
 | **PCA** | ② | ② | ② | ✅ `NaBH3--UHF` | ② | ② | ② | ② |
 | **LOBA** (`loba.f`) | ① | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
@@ -76,10 +76,10 @@ Still untested regardless of scheme:
 - **Interfaces:** `ORCA`, `MOKIT`, `WFN`, `DM/ORCA`, `DM/DMRG` (`QCHEM`
   and `DM/PYSCF` are tested).
 - **Other keywords:** `OS-CENTROID`, `DOATOMS`, and the `ENPART`
-  functional keywords other than `SVWN`/`BLYP`/`B3LYP`/`B3P86` and `EXC_FUNCTIONAL`
+  functional keywords other than `SVWN`/`BLYP`/`B3LYP` and `EXC_FUNCTIONAL`
   (all keywords were checked ad hoc against Gaussian 16 wavefunctions,
-  2026-10-01; `LIBRARY` + `EX_/EC_FUNCTIONAL` covered by `H2O-BLYP`/
-  `H2O-T-BLYP`), `CISD`,
+  2026-10-01; `LIBRARY` + `EX_/EC_FUNCTIONAL` covered by `H2O-T-BLYP`),
+  `CISD`,
   `CORRELATION`, `ANALYTIC`.
 
 ---
