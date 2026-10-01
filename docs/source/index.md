@@ -53,7 +53,8 @@ files, and EOS/GEOS also write them into a `.fchk` file for any orbital
 viewer (see [Output files](output.md)). The full keyword-by-keyword
 reference is in [Input reference](input/index.md), with six worked examples
 in [Input examples](input/examples.md), and the analysis methods are
-described in [Analysis methods](methods/geos.md).
+described in Analysis methods ([GEOS](methods/geos.md),
+[ENPART](methods/enpart.md)).
 
 ```{admonition} Cite this work
 :class: note
@@ -83,6 +84,7 @@ troubleshooting
 :caption: Analysis methods
 
 methods/geos
+methods/enpart
 ```
 
 ## Input reference
@@ -120,8 +122,9 @@ The appropriate reference is: V.I. Lebedev and D.N. Laikov, "A quadrature
 formula for the sphere of the 131st algebraic order of accuracy," *Doklady
 Mathematics*, 59, 477-481 (1999).
 
-The program makes use of the `Libxc` library when necessary, using the F90
-interfaces provided by the authors (see https://libxc.gitlab.io/).
+The program makes use of the `Libxc` library when necessary, using the
+Fortran 2003 (`xc_f03`) interface provided by the authors (see
+https://libxc.gitlab.io/).
 
 We are extremely grateful for the possibility of using these routines. We
 also acknowledge R. Oswald for technical support in code parallelization and

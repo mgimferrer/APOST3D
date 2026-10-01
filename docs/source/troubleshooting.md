@@ -51,3 +51,37 @@ codesign --force --sign - $APOST3D_PATH/apost3d
 codesign --force --sign - $APOST3D_PATH/apost3d-eos
 codesign --force --sign - $APOST3D_PATH/eos_aom
 ```
+
+## ENPART
+
+**`STOP META-GGA FUNCTIONALS NOT YET SUPPORTED`**
+Meta-GGA functionals (TPSS, M06-2X, ...) can't be decomposed yet. The run
+stops before any energy is computed. See [ENPART](methods/enpart.md) for
+the supported functionals.
+
+**`STOP RANGE-SEPARATED HYBRID NOT SUPPORTED`** / **`STOP VV10 FUNCTIONAL
+NOT SUPPORTED`**
+Range-separated hybrids (CAM-B3LYP, ωB97X, LC-ωPBE, HSE, ...) and
+functionals with VV10 nonlocal correlation are not supported. Only
+global hybrids are.
+
+**`STOP INVALID LIBXC FUNCTIONAL ID. REVISE inp`**
+The id given with `EXC_FUNCTIONAL`/`EX_FUNCTIONAL`/`EC_FUNCTIONAL` is not
+a libxc functional. The list of ids is at
+[libxc.gitlab.io/functionals](https://libxc.gitlab.io/functionals/).
+
+**`STOP EXC_FUNCTIONAL COMBINED WITH EX/EC_FUNCTIONAL. REVISE inp`**
+Give either `EXC_FUNCTIONAL` alone, or `EX_FUNCTIONAL` and/or
+`EC_FUNCTIONAL`.
+
+**`STOP ENPART needs a real-space AIM (e.g. TFVC)`**
+ENPART only works with real-space atoms; it can't be combined with
+`MULLIKEN`, `LOWDIN` or other Hilbert-space schemes.
+
+**Large integration error, and a note about the missing reference
+electron-electron energy**
+Without the reference energies in the `.fchk`, the two-electron
+integration error is neither estimated nor corrected, and it can reach
+tens of kcal/mol on coarse grids for heavier atoms. Append the reference
+energies (see [ENPART](methods/enpart.md)), or use a finer two-electron
+grid.

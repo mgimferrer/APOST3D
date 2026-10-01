@@ -71,7 +71,9 @@ phb2 0.170
 ```
 
 The IQA decomposition of the KS-DFT energy is requested. Functional
-ID=106 (B88) and ID=132 (P86) correspond to the well-known BP86 functional.
+ID=106 (B88) and ID=132 (P86) correspond to the well-known BP86 functional,
+so the `BP86` keyword gives the same result. See
+[ENPART](../methods/enpart.md) for how to read the output.
 
 The AIM requested is TFVC and fragments have been defined: fragment 1
 consists of atom 1, and fragment 2 gathers the rest of the atoms of the
