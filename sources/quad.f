@@ -1,7 +1,7 @@
 !! *********************************************************************** !!
 !! ATOM-CENTERED INTEGRATION GRID -- radial (Gauss-Legendre, mapped to      !!
-!! [0,inf) via LEGZO below) x angular (Lebedev-Laikov, lebedev/Lebedev-     !!
-!! Laikov.F). Only APOST-3D-specific driver is quad; LEGZO is a standard    !!
+!! [0,inf) via LEGZO below) x angular (Lebedev-Laikov, Lebedev-Laikov.F).   !!
+!! Only APOST-3D-specific driver is quad; LEGZO is a standard               !!
 !! published algorithm, left untouched (same treatment as util.f's svd).   !!
 !!   quad  -- builds one atom's radial/angular grid (xr/wr/th/ph, all in    !!
 !!            integration_grid) for the given point counts                 !!

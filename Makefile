@@ -31,7 +31,6 @@ FC       = gfortran
 # rather than repeated here, so a version bump only ever needs editing once.
 LIBXC_VERSION := $(shell grep -m1 '^LIBXC_VERSION=' $(APOST3D_PATH)/compile_libxc.sh | sed -E 's/^LIBXC_VERSION="([^"]+)"/\1/')
 LIBXCDIR = $(APOST3D_PATH)/libxc-$(LIBXC_VERSION)
-QUADDIR  = $(APOST3D_PATH)/lebedev
 SRCDIR   = $(APOST3D_PATH)/sources
 OBJDIR   = $(APOST3D_PATH)/objects
 UTILDIR  = $(APOST3D_PATH)/utils
@@ -128,8 +127,10 @@ endif
 MOD_OBJ   = $(OBJDIR)/modules.o
 QUAD_OBJ  = $(OBJDIR)/Lebedev-Laikov.o
 
-## SOURCE LIST (all .f files in sources/)
-SRC_LIST  := $(wildcard $(SRCDIR)/*.f)
+## SOURCE LIST: the .f files of sources/ except main_eos.f (main program of
+## apost3d-eos). filter keeps the match case-sensitive, so Lebedev-Laikov.F
+## (own rule below) stays out even on case-insensitive file systems.
+SRC_LIST  := $(filter-out $(SRCDIR)/main_eos.f,$(filter %.f,$(wildcard $(SRCDIR)/*.f)))
 OBJ_LIST  := $(MOD_OBJ) \
              $(addprefix $(OBJDIR)/,$(notdir $(SRC_LIST:.f=.o)))
 # Everything but the main program, for utilities that call program routines
@@ -193,8 +194,8 @@ apost3d: $(OBJ_LIST) $(QUAD_OBJ)
 
 ## LEBEDEV QUADRATURE OBJECT
 ## Not tracked in git (build artifact); depends on its source so edits trigger a rebuild.
-$(QUAD_OBJ): $(QUADDIR)/Lebedev-Laikov.F | $(OBJDIR)
-	$(FC) -c $(FFLAGS) $(QUADDIR)/Lebedev-Laikov.F -o $@
+$(QUAD_OBJ): $(SRCDIR)/Lebedev-Laikov.F | $(OBJDIR)
+	$(FC) -c $(FFLAGS) $(SRCDIR)/Lebedev-Laikov.F -o $@
 
 ## F90 MODULES (must be compiled first — other sources USE these modules)
 # Produces modules.o plus the .mod interface files (ao_matrices.mod,
@@ -220,8 +221,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.f $(SRCDIR)/parameter.h $(MOD_OBJ)
 	$(FC) -c $(FFLAGS) $(LIBXC_INC) -I$(OBJDIR) $< -o $@
 
 ## UTILS OBJECTS
-# Also depend on modules.o: some utils (e.g. gen_hirsh, main_eos) USE the
-# same F90 modules as the main sources. -I$(SRCDIR) is for
+# Also depend on modules.o: some utils (e.g. gen_hirsh) USE the same F90
+# modules as the main sources. -I$(SRCDIR) is for
 # `include 'parameter.h'`; a utility's own modules go to $(UTILOBJDIR).
 $(UTILOBJDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDIR)
 	$(FC) -c $(UTIL_FFLAGS) -I$(SRCDIR) -I$(OBJDIR) -J$(UTILOBJDIR) $< -o $@
@@ -229,14 +230,10 @@ $(UTILOBJDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDI
 $(UTILOBJDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDIR)
 	$(FC) -c $(UTIL_FFLAGS) -I$(SRCDIR) -I$(OBJDIR) -J$(UTILOBJDIR) $< -o $@
 
-# main_eos is the main program of apost3d-eos: full flags, OpenMP included
-$(UTILOBJDIR)/main_eos.o: $(UTILDIR)/main_eos.f $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDIR)
-	$(FC) -c $(FFLAGS) -I$(SRCDIR) -I$(OBJDIR) -J$(UTILOBJDIR) $< -o $@
-
-## STANDALONE EOS EXECUTABLE
-apost3d-eos: $(UTILOBJDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
+## STANDALONE EOS EXECUTABLE (main program: sources/main_eos.f)
+apost3d-eos: $(OBJDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
 	$(FC) $(FFLAGS) \
-	  $(QUAD_OBJ) $(OBJ_LIST_EOS) $(UTILOBJDIR)/main_eos.o \
+	  $(QUAD_OBJ) $(OBJ_LIST_EOS) $(OBJDIR)/main_eos.o \
 	  $(OPENBLAS_LIB) \
 	  -o $(APOST3D_PATH)/apost3d-eos
 
@@ -317,7 +314,7 @@ coverage:
 clean:
 	rm -rf $(OBJDIR)
 	rm -f $(APOST3D_PATH)/apost3d $(APOST3D_PATH)/apost3d-eos $(UTIL_BINS)
-	rm -f $(SRCDIR)/*.o $(QUADDIR)/*.o $(UTILDIR)/*.o $(APOST3D_PATH)/eos_aom
+	rm -f $(SRCDIR)/*.o $(APOST3D_PATH)/lebedev/*.o $(UTILDIR)/*.o $(APOST3D_PATH)/eos_aom
 
 ## HELP
 # `make` itself intercepts any --flag before a Makefile ever sees it, so

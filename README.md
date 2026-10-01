@@ -1,4 +1,4 @@
-<p align="center"><img width=25.0% src="https://github.com/mgimferrer/APOST3D/blob/master/media/logo-apost.png"></p>
+<p align="center"><img width=25.0% src="docs/source/_static/logo-apost.png"></p>
 
 ## Chemical concepts from wave function analysis
 
