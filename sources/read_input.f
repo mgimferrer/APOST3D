@@ -183,7 +183,10 @@
         id_xfunc=0
         id_cfunc=0
         call readchar("# ENPART","LIBRARY ",ilib)
+        call enpart_functional_keyword(ikwfunc,idkxc,idkx,idkc)
         if(ilib.eq.1) then
+          if(ikwfunc.eq.1)
+     +      stop 'GIVE EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART. REVISE inp'
           call readint("# ENPART","EXC_FUNCTIONAL",id_xcfunc,0,1)
           call readint("# ENPART","EX_FUNCTIONAL",id_xfunc,0,1)
           call readint("# ENPART","EC_FUNCTIONAL",id_cfunc,0,1)
@@ -203,20 +206,12 @@
             xmix=1.0d0
             goto 233
           end if
-          call readchar("# ENPART","LDA",ival )
-          if(ival.eq.1) then 
-            id_xfunc=1
-            go to 233
-          end if
-          call readchar("# ENPART","BP86",ival)
-          if(ival.eq.1) then
-            id_xfunc=106
-            id_cfunc=132
-            go to 233
-          end if
-          call readchar("# ENPART","B3LYP",ival)
-          if(ival.eq.1) then
-            id_xcfunc=402
+!! predefined functionals (SVWN, BLYP, B3LYP, PBE0, ...), table in      !!
+!! enpart_functional_keyword                                            !!
+          if(ikwfunc.eq.1) then
+            id_xcfunc=idkxc
+            id_xfunc=idkx
+            id_cfunc=idkc
             go to 233
           end if
 
@@ -602,5 +597,77 @@
           write(*,*) " "
         end if
       end if
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: enpart_functional_keyword                                 !!
+!! purpose: looks up a predefined functional keyword in the # ENPART     !!
+!!   section and returns its libxc ids. Matches the whole first word of  !!
+!!   each line, case-insensitive (readchar's substring match would mix   !!
+!!   up SVWN/SVWN5, PBE/PBE0, ...). Each mapping was checked against     !!
+!!   Gaussian 16 wavefunctions with ENPART's two-electron error.         !!
+!! arguments:                                                            !!
+!!   kfound (out) -- 1 if a functional keyword was found, 0 otherwise    !!
+!!   idxc, idx, idc (out) -- libxc ids: combined xc, exchange,           !!
+!!     correlation (0 where not used)                                    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine enpart_functional_keyword(kfound,idxc,idx,idc)
+      implicit none
+      integer, intent(out) :: kfound,idxc,idx,idc
+      integer, parameter :: nkw=13
+      character*10 kwname(nkw)
+      integer kwxc(nkw),kwx(nkw),kwc(nkw)
+      character*80 linea
+      character*10 tok
+      integer ii,k,kk,ic,iend,nfound
+
+!! idx=-2 marks a keyword that is refused with a message (see below).    !!
+!! B3P86 is 315, not 403: 403 is ~100 kcal/mol off Gaussian's B3P86.     !!
+      data kwname /'SVWN','SVWN5','BLYP','BP86','PBE','PBEPBE','B3LYP',
+     +  'B3PW91','B3P86','PBE0','PBE1PBE','BHANDHLYP','LDA'/
+      data kwxc /0,0,0,0,0,0,402,401,315,406,406,436,0/
+      data kwx  /1,1,106,106,101,101,0,0,0,0,0,0,-2/
+      data kwc  /8,7,131,132,130,130,0,0,0,0,0,0,0/
+
+      kfound=0
+      idxc=0
+      idx=0
+      idc=0
+      nfound=0
+      call locate(16,"# ENPART",ii)
+      if(ii.eq.0) return
+      do
+        read(16,'(a80)',end=10) linea
+        if(index(linea,"#").ne.0) exit
+        linea=adjustl(linea)
+        iend=scan(linea,' =')
+        if(iend.le.1) cycle
+        tok=linea(1:min(iend-1,10))
+        do kk=1,len_trim(tok)
+          ic=ichar(tok(kk:kk))
+          if(ic.ge.ichar('a').and.ic.le.ichar('z')) tok(kk:kk)=char(ic-32)
+        end do
+        do k=1,nkw
+          if(tok.eq.kwname(k)) then
+            nfound=nfound+1
+            if(kwx(k).eq.-2) then
+              write(*,'(2x,a)') 'The LDA keyword is no longer accepted (it meant Slater'
+              write(*,'(2x,a)') 'exchange only). Use SVWN or SVWN5, or LIBRARY with'
+              write(*,'(2x,a)') 'EX_FUNCTIONAL 1 for exchange only.'
+              stop 'LDA KEYWORD REMOVED. REVISE inp'
+            end if
+            kfound=1
+            idxc=kwxc(k)
+            idx=kwx(k)
+            idc=kwc(k)
+          end if
+        end do
+      end do
+10    continue
+      if(nfound.gt.1) stop 'MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART. REVISE inp'
 
       end
