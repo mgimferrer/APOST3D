@@ -137,7 +137,7 @@ rewrites the values at full printed precision.
 | `FeCN5NO3--UBLYP` | Iron cyanide/nitrosyl/nitrate complex, UKS BLYP — LOWDIN (first Hilbert-space AIM coverage), EFFAO, EOS, 7 fragments, open-shell | `dft lowdin effao eos uks fragments openshell` |
 | `NaBH3--UHF` | UHF — MULLI, PCA+EOS together (first `pca_analysis` coverage) | `hf uhf mulliken pca eos fragments` |
 | `FeCN5NO3--UBLYP-t2` | Same complex as above, UKS BLYP — TFVC + OSLO with LOWDIN as the `# OSLO` fragment-population scheme, 7 fragments. First coverage of unrestricted OSLO (`CH3F`/`FeO4-2` above are both closed-shell) | `dft oslo lowdin tfvc uks fragments openshell` |
-| `LiH-35-CAS22` | LiH, CASSCF(2,2) — TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via `# DM PYSCF` (which also auto-enables local spin analysis). First coverage of `ENPART`+`CASSCF`, `# DM PYSCF`, and the correlated-WF local-spin branch | `hf enpart casscf dm pyscf spin tfvc` |
+| `LiH-35-CAS22` | LiH, CASSCF(2,2) — TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via `# DM PYSCF`, every atom pair computed | `hf enpart casscf dm pyscf spin tfvc` |
 | `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS, 2 fragments, with two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |
 | `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ — TFVC, GEOS with a negative paired EFO, `FIT %`, and `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
 | `H2O-T-BLYP` | Water, triplet UKS BLYP — ENPART with a pure GGA given as libxc ids (`LIBRARY`, `EX_FUNCTIONAL`/`EC_FUNCTIONAL`), all pairs computed | `dft enpart tfvc uks openshell libxc-ids` |

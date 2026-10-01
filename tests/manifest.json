@@ -2,7 +2,7 @@
   "tests": [
     {
       "name": "H2O-T-B3LYP",
-      "description": "Water molecule, triplet UKS B3LYP / cc-pVTZ — TFVC populations, ENPART (DFT), local spin; THREBOD 2000 so the H-H pair (bond order 0.16) is skipped, covering the unrestricted multipolar paths (DFT part and HF-type exchange part)",
+      "description": "Water, triplet UKS B3LYP / cc-pVTZ — TFVC populations, local spin, ENPART (DFT). THREBOD 2000 skips the H–H pair (bond order 0.16): unrestricted multipolar paths, DFT part and HF-type exchange part.",
       "tags": [
         "dft",
         "enpart",
@@ -158,7 +158,7 @@
     },
     {
       "name": "C2H6-B3LYP",
-      "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT+IQA) with THREBOD/MOD-GRIDTWOEL on an 8-atom, 160-basis-function system. ~85s single-threaded; part of the default 'make test' run like every other case (use NTHREADS=n to speed it up).",
+      "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT) with THREBOD 5 and MOD-GRIDTWOEL; the largest ENPART case (8 atoms, 160 basis functions).",
       "tags": [
         "dft",
         "enpart",
@@ -247,7 +247,7 @@
     },
     {
       "name": "CH3F",
-      "description": "Fluoromethane, RKS DFT — TFVC populations, fragment OSLO analysis",
+      "description": "Fluoromethane, RKS DFT — TFVC populations, fragment OSLO.",
       "tags": [
         "dft",
         "oslo",
@@ -359,7 +359,7 @@
     },
     {
       "name": "FeCO2-PBEPBE",
-      "description": "FeCO2 complex (charge +2, singlet), closed-shell RKS PBE/PBE — TFVC, fragment EOS analysis",
+      "description": "FeCO2 complex (charge +2, singlet), RKS PBE — TFVC, fragment EOS with per-EFO net/gross occupations.",
       "tags": [
         "dft",
         "eos",
@@ -486,7 +486,7 @@
     },
     {
       "name": "FeO4-2",
-      "description": "Ferrate(VI) dianion, closed-shell RKS (Q-Chem) — TFVC, QCHEM interface, fragment OSLO",
+      "description": "Ferrate(VI) dianion, RKS, Q-Chem .fchk — QCHEM interface, TFVC, fragment OSLO.",
       "tags": [
         "dft",
         "oslo",
@@ -585,7 +585,7 @@
     },
     {
       "name": "H2O-Dimer-RHF",
-      "description": "Water dimer, RHF — ENPART (HF) with THREBOD 10/MOD-GRIDTWOEL, DOFRAGS. THREBOD is tight enough to skip 6 atom pairs into the multipolar expansion path (enpart.f's multipolar), the only active-test coverage for it.",
+      "description": "Water dimer, RHF — ENPART (HF) with THREBOD 10 and MOD-GRIDTWOEL, DOFRAGS; 6 atom pairs below the threshold take their exchange from the multipolar expansion.",
       "tags": [
         "hf",
         "enpart",
@@ -677,7 +677,7 @@
     },
     {
       "name": "FeCN5NO3--UBLYP",
-      "description": "Iron pentacyanonitrosylferrate complex (charge −3, doublet), UKS BLYP — LOWDIN (Hilbert-space AIM), EFFAO, EOS, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for LOWDIN population/EFFAO/EOS on an open-shell, many-fragment system. Cube generation (# CUBE) verified separately, one-time, against reference .cube files — not part of this active test (see REFERENCE-OUTPUTS/compiler-testset).",
+      "description": "[Fe(CN)5NO]3− doublet, UKS BLYP — LOWDIN (Hilbert-space atoms), EFFAO and EOS with 7 fragments (Fe, 5 CN, NO).",
       "tags": [
         "dft",
         "lowdin",
@@ -782,7 +782,7 @@
     },
     {
       "name": "NaBH3--UHF",
-      "description": "Sodium borohydride anion, UHF — MULLI (Mulliken AIM), PCA, EOS together, DOFRAGS with 2 fragments. Combining PCA and EOS in one run used to fail to complete in the pre-migration codebase (reference split into two separate outputs, .apost for EOS-only and .apostPCA for PCA-only); this combined run is verified to match both split references exactly, confirming the coupling is fixed. Also first active-test coverage for pca_analysis.",
+      "description": "NaBH3 anion, UHF — MULLI (Mulliken atoms), PCA and EOS in one run, 2 fragments.",
       "tags": [
         "hf",
         "uhf",
@@ -893,7 +893,7 @@
     },
     {
       "name": "FeCN5NO3--UBLYP-t2",
-      "description": "Iron pentacyanonitrosylferrate complex (charge −3, doublet), UKS BLYP — TFVC (mandatory for OSLO's grid-dependent Smat) + OSLO with LOWDIN as the # OSLO fragment-population scheme, DOFRAGS with 7 fragments (Fe + 5x CN + NO). First active-test coverage for uwf_iterative_oslo (unrestricted OSLO) -- CH3F/FeO4-2 are both closed-shell despite earlier notes, so this is genuinely the first open-shell OSLO run in the suite. Reference .fchk/.inp/.apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; reference values here are a fresh run against the current codebase (the supplied .apost predates several printing changes, so its raw text doesn't diff cleanly, but the physics -- oxidation states, natural-orbital occupations -- matches it exactly).",
+      "description": "[Fe(CN)5NO]3− doublet, UKS BLYP — TFVC and unrestricted OSLO with LOWDIN as the # OSLO fragment population, 7 fragments.",
       "tags": [
         "dft",
         "oslo",
@@ -995,7 +995,7 @@
     },
     {
       "name": "LiH-35-CAS22",
-      "description": "LiH, CASSCF(2,2)/def2-tzvp -- TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via # DM PYSCF (DM 2 also auto-enables SPIN, read_input.f). First active-test coverage for ENPART+CASSCF, # DM PYSCF, and corr.f's spincorr correlated-WF local-spin branch -- all previously at zero. Reference .fchk/.dm1/.dm2/.inp and the old-codebase .apost supplied by M. Gimferrer in REFERENCE-OUTPUTS/compiler-testset/; this fresh run matches that old .apost exactly (every printed IQA energy term, to the last digit), so reference values here are taken straight from it.",
+      "description": "LiH, CASSCF(2,2) / def2-TZVP — ENPART (CASSCF) with the 1- and 2-RDMs from pySCF (# DM PYSCF), every atom pair computed (THREBOD 0). SPIN is set, but the correlated local-spin analysis (spincorr) is not reached.",
       "tags": [
         "hf",
         "enpart",
@@ -1098,7 +1098,7 @@
     },
     {
       "name": "NaBH3--B3LYP-GEOS",
-      "description": "NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS (paired/unpaired-density EFOs, formerly EOS-U), 2 fragments, two negative paired EFOs",
+      "description": "NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS with 2 fragments, including two negative paired EFOs.",
       "tags": [
         "dft",
         "geos",
@@ -1273,7 +1273,7 @@
     },
     {
       "name": "LiH-32-FCI",
-      "description": "LiH at 3.2 A, pySCF FCI / cc-pVTZ (restricted .fchk, fractional NOs) — TFVC, GEOS with a significant negative paired EFO (report, % recovered), FIT %, and CUBE NEG_EFOS; 2 fragments",
+      "description": "LiH at 3.2 Å, pySCF FCI / cc-pVTZ (restricted .fchk, fractional natural orbitals) — TFVC, GEOS with 2 fragments: a negative paired EFO (report, % recovered), per-EFO FIT %, CUBE NEG_EFOS.",
       "tags": [
         "fci",
         "geos",
@@ -1484,7 +1484,7 @@
     },
     {
       "name": "H2O-T-BLYP",
-      "description": "Water molecule, triplet UKS BLYP — ENPART with a pure GGA given as libxc ids, open-shell twin of H2O-BLYP",
+      "description": "Water, triplet UKS BLYP / cc-pVDZ — ENPART with a pure GGA given by libxc ids (LIBRARY, EX_FUNCTIONAL 106, EC_FUNCTIONAL 131).",
       "tags": [
         "dft",
         "enpart",
@@ -1563,7 +1563,7 @@
     },
     {
       "name": "H2O-TPSS",
-      "description": "Water molecule, RKS TPSS — meta-GGAs are not supported yet: ENPART must stop cleanly before any energy is computed",
+      "description": "Water, RKS TPSS — meta-GGAs are not supported yet: ENPART must stop with its message before any energy is computed.",
       "tags": [
         "dft",
         "enpart",
@@ -1601,7 +1601,7 @@
     },
     {
       "name": "H2O-SVWN",
-      "description": "Water molecule, RKS SVWN / cc-pVDZ (Gaussian 16) — ENPART with the SVWN keyword (libxc 1 + 8, VWN-RPA): only LDA-family coverage",
+      "description": "Water, RKS SVWN / cc-pVDZ (Gaussian 16) — ENPART with the SVWN keyword (libxc 1 + 8, VWN-RPA), the LDA-family case.",
       "tags": [
         "dft",
         "enpart",
@@ -1678,7 +1678,7 @@
     },
     {
       "name": "H2O-Dimer-BLYP",
-      "description": "Water dimer, RKS BLYP / cc-pVDZ (Gaussian 16) — ENPART at the default THREBOD: the 7 weakly bonded pairs (bond order < 0.005) get their whole xc from the multipolar expansion instead of BODEN",
+      "description": "Water dimer, RKS BLYP / cc-pVDZ (Gaussian 16) — ENPART at the default THREBOD (bond order 0.005): the 7 weakly bonded pairs take their whole xc from the multipolar expansion instead of BODEN.",
       "tags": [
         "dft",
         "enpart",
@@ -1780,7 +1780,7 @@
     },
     {
       "name": "H2O-Dimer-B3LYP",
-      "description": "Water dimer, RKS B3LYP / cc-pVDZ (Gaussian 16) — ENPART at the default THREBOD (bond order 0.005), hybrid: skipped pairs get (1-xmix) x multipolar in the DFT part plus xmix x multipolar with the HF-type exchange",
+      "description": "Water dimer, RKS B3LYP / cc-pVDZ (Gaussian 16) — ENPART at the default THREBOD, hybrid: the skipped pairs get (1 − xmix) × multipolar in the DFT part and xmix × multipolar with the HF-type exchange.",
       "tags": [
         "dft",
         "enpart",
