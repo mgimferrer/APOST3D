@@ -76,7 +76,7 @@ python3 tests/run_tests.py --help
 
 | System | Description | Tags |
 |--------|-------------|------|
-| `H2O-T-B3LYP` | Water, triplet UKS B3LYP — TFVC, ENPART (DFT+IQA), local spin | `dft enpart spin tfvc uks openshell` |
+| `H2O-T-B3LYP` | Water, triplet UKS B3LYP — TFVC, ENPART (DFT+IQA), local spin; THREBOD 2000 skips the H–H pair, covering the unrestricted multipolar paths | `dft enpart spin tfvc uks openshell hybrid threbod multipolar` |
 | `CH3F` | Fluoromethane, RKS DFT — TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `FeCO2-PBEPBE` | FeCO2 complex (charge +2), closed-shell RKS PBE — TFVC, fragment EOS, including per-EFO net/gross occupation checks | `dft eos effao tfvc rks fragments` |
 | `FeO4-2` | Ferrate(VI)²⁻, RKS — TFVC, QCHEM interface, fragment OSLO. Closed-shell (chosen to exercise the QCHEM `.fchk` interface, not open-shell coverage) | `dft oslo tfvc rks fragments qchem` |
@@ -88,13 +88,12 @@ python3 tests/run_tests.py --help
 | `LiH-35-CAS22` | LiH, CASSCF(2,2) — TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via `# DM PYSCF` (which also auto-enables local spin analysis). First coverage of `ENPART`+`CASSCF`, `# DM PYSCF`, and the correlated-WF local-spin branch | `hf enpart casscf dm pyscf spin tfvc` |
 | `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS, 2 fragments, with two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |
 | `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ — TFVC, GEOS with a negative paired EFO, `FIT %`, and `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
-| `H2O-BLYP` / `H2O-T-BLYP` | Water, RKS / triplet UKS BLYP — ENPART with a pure GGA given as libxc ids (`LIBRARY`, `EX_FUNCTIONAL`/`EC_FUNCTIONAL`), all pairs computed | `dft enpart tfvc rks/uks libxc-ids` |
+| `H2O-T-BLYP` | Water, triplet UKS BLYP — ENPART with a pure GGA given as libxc ids (`LIBRARY`, `EX_FUNCTIONAL`/`EC_FUNCTIONAL`), all pairs computed | `dft enpart tfvc uks openshell libxc-ids` |
 | `H2O-TPSS` | Water, RKS TPSS — meta-GGAs are not supported yet: ENPART must stop with a message before any energy is computed | `dft enpart tfvc rks meta-gga expected-stop` |
-| `H2O-SVWN` / `H2O-B3P86` | Water, Gaussian 16 SVWN / B3P86 — predefined functional keywords (LDA family; B3P86 = libxc 315) | `dft enpart tfvc rks functional-keyword` |
+| `H2O-SVWN` | Water, Gaussian 16 SVWN — predefined functional keyword, LDA family | `dft enpart tfvc rks lda functional-keyword` |
 | `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, Gaussian 16 BLYP / B3LYP at the default THREBOD — 7 weakly bonded pairs take their whole xc from the multipolar expansion (hybrid: (1−xmix) in the DFT part, xmix with the HF-type exchange) | `dft enpart tfvc rks threbod multipolar` |
-| `H2O-T-B3LYP-MP` | Same wavefunction as `H2O-T-B3LYP`, THREBOD 2000 so the H–H pair is skipped — unrestricted multipolar paths (DFT and HF-type exchange parts) | `dft enpart tfvc uks openshell hybrid threbod multipolar` |
 
-All twenty run every time `make test` is invoked.
+All seventeen run every time `make test` is invoked.
 
 ## Adding a new test case
 

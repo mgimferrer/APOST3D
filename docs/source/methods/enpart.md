@@ -157,8 +157,7 @@ the one-center terms (see *Checking the result* below). Details in
 
 The excerpts below come from water, RKS BLYP/cc-pVDZ, given as
 `LIBRARY` + `EX_FUNCTIONAL 106` + `EC_FUNCTIONAL 131` with `THREBOD -1`
-and a 40/146 two-electron grid (`compiler-testset/H2O-BLYP` in the
-repository).
+and a 40/146 two-electron grid.
 
 **Functional information.** One box per libxc component, with its name,
 references, type and family.

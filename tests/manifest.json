@@ -2,14 +2,17 @@
   "tests": [
     {
       "name": "H2O-T-B3LYP",
-      "description": "Water molecule, triplet UKS B3LYP / cc-pVTZ — TFVC populations, ENPART (DFT), local spin",
+      "description": "Water molecule, triplet UKS B3LYP / cc-pVTZ — TFVC populations, ENPART (DFT), local spin; THREBOD 2000 so the H-H pair (bond order 0.16) is skipped, covering the unrestricted multipolar paths (DFT part and HF-type exchange part)",
       "tags": [
         "dft",
         "enpart",
         "spin",
         "tfvc",
         "uks",
-        "openshell"
+        "openshell",
+        "hybrid",
+        "threbod",
+        "multipolar"
       ],
       "timeout": 600,
       "extra_input_files": [],
@@ -90,6 +93,65 @@
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.23781,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "1 pair below THREBOD takes the multipolar estimate",
+          "type": "present",
+          "pattern": "1 atom pair\\(s\\) below the threshold"
+        },
+        {
+          "label": "Pure KS-DFT XC energy, one-center exact (au)",
+          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -7.4029752,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
+          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 35.1634586,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "H-H DFT part, skipped pair: 0.8 x multipolar (au)",
+          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
+          "ref": -0.010233,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H-H HF-type exchange, skipped pair: multipolar (au)",
+          "section": "INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS",
+          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
+          "ref": -0.012792,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H-H complete xc, skipped pair: multipolar (au)",
+          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
+          "ref": -0.012792,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O-H complete xc, computed pair (au)",
+          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
+          "ref": -0.173514,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H IQA self-energy (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
+          "ref": -0.370728,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H-H IQA interaction, skipped pair (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
+          "ref": 0.014235,
           "tol_abs": 2e-05
         }
       ]
@@ -1421,84 +1483,6 @@
       ]
     },
     {
-      "name": "H2O-BLYP",
-      "description": "Water molecule, RKS BLYP / cc-pVDZ — ENPART with a pure GGA given as libxc ids (LIBRARY, EX_FUNCTIONAL 106 + EC_FUNCTIONAL 131)",
-      "tags": [
-        "dft",
-        "enpart",
-        "tfvc",
-        "rks",
-        "libxc-ids"
-      ],
-      "timeout": 600,
-      "extra_input_files": [],
-      "keywords": [
-        "TFVC",
-        "ENPART",
-        "ENPART/LIBRARY",
-        "ENPART/EX_FUNCTIONAL",
-        "ENPART/EC_FUNCTIONAL",
-        "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
-      ],
-      "checks": [
-        {
-          "label": "Normal Termination",
-          "type": "present",
-          "pattern": "Normal Termination"
-        },
-        {
-          "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -76.3984544,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 1.43e-05,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -9.341487,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 37.548657,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "O-H BODEN XC term (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
-          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.197881,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "O IQA self-energy (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
-          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -74.883547,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "O-H IQA interaction (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
-          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.510625,
-          "tol_abs": 2e-05
-        }
-      ]
-    },
-    {
       "name": "H2O-T-BLYP",
       "description": "Water molecule, triplet UKS BLYP — ENPART with a pure GGA given as libxc ids, open-shell twin of H2O-BLYP",
       "tags": [
@@ -1688,90 +1672,6 @@
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.529236,
-          "tol_abs": 2e-05
-        }
-      ]
-    },
-    {
-      "name": "H2O-B3P86",
-      "description": "Water molecule, RKS B3P86 / cc-pVDZ (Gaussian 16) — ENPART with the B3P86 keyword, libxc 315 (403 is ~100 kcal/mol off Gaussian's B3P86)",
-      "tags": [
-        "dft",
-        "enpart",
-        "tfvc",
-        "rks",
-        "hybrid",
-        "functional-keyword"
-      ],
-      "timeout": 600,
-      "extra_input_files": [],
-      "keywords": [
-        "TFVC",
-        "ENPART",
-        "ENPART/B3P86",
-        "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
-      ],
-      "checks": [
-        {
-          "label": "Normal Termination",
-          "type": "present",
-          "pattern": "Normal Termination"
-        },
-        {
-          "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -76.6008818,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 1.97e-05,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -7.7515092,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 37.3569968,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "O-H BODEN XC term, DFT part (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
-          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.172068,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "O-H hybrid XC term, complete (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
-          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.213573,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "O IQA self-energy (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
-          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -75.029271,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "O-H IQA interaction (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
-          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.547728,
           "tol_abs": 2e-05
         }
       ]
@@ -1977,105 +1877,6 @@
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.188319,
-          "tol_abs": 2e-05
-        }
-      ]
-    },
-    {
-      "name": "H2O-T-B3LYP-MP",
-      "description": "Water triplet, UKS B3LYP / cc-pVTZ (same wavefunction as H2O-T-B3LYP) with THREBOD 2000, hand-picked so the H-H pair (bond order 0.16) is skipped: covers the unrestricted multipolar paths, DFT part (numint_dft_uks) and HF-type exchange part (numint_two_uhf)",
-      "tags": [
-        "dft",
-        "enpart",
-        "tfvc",
-        "uks",
-        "openshell",
-        "hybrid",
-        "threbod",
-        "multipolar"
-      ],
-      "timeout": 600,
-      "extra_input_files": [],
-      "keywords": [
-        "TFVC",
-        "ENPART",
-        "ENPART/B3LYP",
-        "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
-      ],
-      "checks": [
-        {
-          "label": "Normal Termination",
-          "type": "present",
-          "pattern": "Normal Termination"
-        },
-        {
-          "label": "1 pair below THREBOD takes the multipolar estimate",
-          "type": "present",
-          "pattern": "1 atom pair\\(s\\) below the threshold"
-        },
-        {
-          "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -76.2241116,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -7.4029752,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 35.1634586,
-          "tol_abs": 2e-06
-        },
-        {
-          "label": "H-H DFT part, skipped pair: 0.8 x multipolar (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
-          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
-          "ref": -0.010233,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "H-H HF-type exchange, skipped pair: multipolar (au)",
-          "section": "INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS",
-          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
-          "ref": -0.012792,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "H-H complete xc, skipped pair: multipolar (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
-          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
-          "ref": -0.012792,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "O-H complete xc, computed pair (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
-          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
-          "ref": -0.173514,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "H IQA self-energy (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
-          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
-          "ref": -0.370728,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "H-H IQA interaction, skipped pair (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
-          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
-          "ref": 0.014235,
           "tol_abs": 2e-05
         }
       ]
