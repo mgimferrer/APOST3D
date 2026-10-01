@@ -240,14 +240,10 @@ c      -------------------------------------------------------------------------
         write(*,*) 'No Local Spin Analysis needed for Restricted SD WFs'
         ispin=0
       end if
-      if(imulli.ne.0.and.ienpart.ne.0)  then
-        write(*,*) 'Can not do ENPART with Hilbert-space analysis'
-        ienpart=0
-      end if
-      if(iqtaim.ne.0.and.ienpart.ne.0)  then
-        write(*,*) 'Can not do ENPART with QTAIM '
-        ienpart=0
-      end if
+!! ENPART is real-space only: these used to skip it silently and carry on !!
+      if(imulli.ne.0.and.ienpart.ne.0)
+     +  stop 'ENPART needs a real-space AIM (e.g. TFVC)'
+      if(iqtaim.ne.0.and.ienpart.ne.0) stop 'Cant do ENPART with QTAIM'
       if(ieos.eq.1.and.idoat.eq.1) stop 'Cant do EOS with DOATOMS'
 !! GEOS/EFFAO-U (ieffao=3) only exist on the real-space fragment path    !!
 !! (effao3d_u): Hilbert-space runs used to skip them silently, and       !!
