@@ -180,10 +180,11 @@ ONE-CENTER TERMS (EXACT)` and, after rearranging, the final matrix:
   Sum of pure KS-DFT exchange-correlation energy:     -9.3414870
 ```
 
-For a hybrid functional, this is only the DFT part (hence the `WARNING:
-HF-exchange part missing` line). The exact-exchange part is added in the
-two-electron section, which then also prints `HARTREE-FOCK-TYPE EXCHANGE
-ENERGY TERMS` and `HYBRID KS-DFT XC TERMS`.
+For a hybrid functional, this matrix is only the DFT part, and a note
+says so. The exact-exchange part is added in the two-electron section,
+which prints `HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS` (the full HF-type
+exchange, before scaling by the exact-exchange fraction, also noted
+there) and then the complete `HYBRID KS-DFT XC TERMS`.
 
 **Two-electron part.** The Coulomb matrix, the electron-electron energy
 and its integration error, followed by the zero-error strategy:
@@ -194,15 +195,18 @@ and its integration error, followed by the zero-error strategy:
 
   Max error accepted on the two-electron part (kcal/mol):     0.25
 
+  Zero-error strategy applied: the INTERPOLATED tables below replace
+  the ones above (only their one-center terms change).
   Rotating for angles:   0.000000   0.182000
   New error after rotation:    -8.86
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.2261960
 ```
 
-The `INTERPOLATED ...` matrices that follow differ from the first ones
-only on the diagonal. Without reference energies, a note says that the
-error is neither estimated nor corrected.
+When the zero-error strategy is applied, a note says so, and the
+`INTERPOLATED ...` matrices that follow replace the first ones (they
+differ only on the diagonal). Without reference energies, a note says
+that the error is neither estimated nor corrected.
 
 **Final decomposition.**
 
@@ -224,8 +228,9 @@ error is neither estimated nor corrected.
   including the diagonal.
 - The same convention holds for every matrix printed before: each
   off-diagonal element is the full A–B term. The exchange-correlation
-  part of an interaction is the off-diagonal element of the final
-  exchange-correlation matrix (`HYBRID KS-DFT XC TERMS` for hybrids); its
+  part of an interaction is the off-diagonal element of the **last**
+  exchange-correlation matrix printed (for hybrids `HYBRID KS-DFT XC
+  TERMS`, or its `INTERPOLATED` version); its
   classical part is the rest, *E*<sub>int</sub>(A,B) − *V*<sub>xc</sub>(A,B).
 
 Hartree-Fock and CASSCF/CISD outputs follow the same pattern, with

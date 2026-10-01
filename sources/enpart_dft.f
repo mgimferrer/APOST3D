@@ -385,7 +385,9 @@
       write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       if(xmix.gt.ZERO) then
         write(*,*) " "
-        write(*,*) " WARNING: HF-exchange part missing "
+        write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
+     +    ' x HF-type exchange is added in the'
+        write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Exc Decomposition'
@@ -1129,7 +1131,9 @@
       write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       if(xmix.gt.ZERO) then
         write(*,*) " "
-        write(*,*) " WARNING: HF-exchange part missing "
+        write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
+     +    ' x HF-type exchange is added in the'
+        write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Exc Decomposition'

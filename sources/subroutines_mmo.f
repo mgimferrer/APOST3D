@@ -805,7 +805,9 @@ c exchange
       write(*,*) " Sum of (exact) DFT xc energy components : ",exchen
       write(*,*) " "
       if(xmix.gt.ZERO) then
-        write(*,*) " WARNING: HF-exchange part missing "
+        write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
+     +    ' x HF-type exchange is added in the'
+        write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
         write(*,*) " "
       end if
       if (idofr.eq.1) then
