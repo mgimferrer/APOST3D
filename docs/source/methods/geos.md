@@ -182,3 +182,12 @@ NEG_EFOS 10
 RADIUS_SCALE 12.0
 #
 ```
+
+## Checking the result
+
+- R(%) is read as in [EOS](eos.md#how-it-works), per density and overall.
+- `ELECTRONIC ASSIGNMENT RMSD VALUE` is the root-mean-square deviation
+  between the assigned and the actual EFO occupations: the smaller, the
+  closer the electron distribution is to the integer assignment.
+- For negative paired EFOs, `% recovered` tells how faithfully the
+  orbital in the `.fchk` file represents them.

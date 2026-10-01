@@ -11,8 +11,8 @@ make -C $APOST3D_PATH clean       # remove all objects and programs
 make -C $APOST3D_PATH help        # all targets and options
 ```
 
-`make` takes the same `NTHREADS`, `ARCH`, `OPENBLAS_DIR` and `LIBXC_DIR`
-settings as the script, but does not check the compiler version, build
+`make` takes the same `ARCH`, `OPENBLAS_DIR` and `LIBXC_DIR` settings as
+the script (the number of compile jobs is set with `-j`), but does not check the compiler version, build
 libxc, or sign the programs on macOS (run `bash compile_libxc.sh` once
 first if libxc is not installed).
 
@@ -36,10 +36,11 @@ when `ARCH` is set. `input2.f` (input parsing) is compiled at `-O1`. The
 utilities are compiled without `-fopenmp`: with it, gfortran places their
 large local arrays on the stack, which overflows it.
 
-For debugging, override the optimization flags:
+For debugging, rebuild with other optimization flags:
 
 ```bash
-make apost3d OPTFLAGS="-g -O0 -fbounds-check"
+make clean
+make -j8 apost3d OPTFLAGS="-g -O0 -fbounds-check"
 ```
 
 and run with `OMP_NUM_THREADS=1` first, to separate a bug from a

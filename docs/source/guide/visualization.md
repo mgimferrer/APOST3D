@@ -12,6 +12,15 @@ OSLOs) can be looked at in two ways:
 The `.fchk` files are the easiest way to browse all orbitals at once;
 cube files show an effective orbital exactly as the program computes it.
 
+```{admonition} APOST3Dview
+:class: tip
+
+[APOST3Dview](https://github.com/mgimferrer/APOST3Dview), the companion
+viewer of APOST-3D, opens `.fchk`, cube, `.molden` and `.xyz` files and
+draws orbitals directly from the wavefunction. It is under development:
+more features, such as reading the APOST-3D output itself, will come soon.
+```
+
 ## Orbital `.fchk` files
 
 | File | Written by | Orbitals |
@@ -65,7 +74,7 @@ default every orbital of each fragment below full occupation is written.
 **File names**: `<jobname>_<scheme><density>_<X><n>_<i>[beta].cube`
 
 - `<scheme>`: `tfvc`, `becke`, `beckerho`, `hirsh`, `hirsh-it`,
-  `mulliken` or `lowdin`;
+  `mulliken` or `lowdin` (also for `LOWDIN-DAVIDSON` and `NAO-BASIS`);
 - `<density>`: empty for EFFAO/EOS; `_paired`, `_unpaired` or
   `_paired_neg` for GEOS and EFFAO-U;
 - `<X><n>`: `FR<n>` for fragment *n* with `DOFRAGS`, otherwise the element

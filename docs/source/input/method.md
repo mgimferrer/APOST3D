@@ -5,7 +5,7 @@ more analyses and the general options.
 
 ## Atomic definition
 
-Give one. Without any, Becke's original fuzzy atoms are used; `TFVC` is
+Give one. Without any, Becke-type fuzzy atoms with fixed radii are used; `TFVC` is
 recommended instead. How to choose is explained in
 [Atoms in molecules](../guide/aim.md).
 

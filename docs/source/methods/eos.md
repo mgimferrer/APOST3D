@@ -106,7 +106,9 @@ fragment ([EFFAO](effao.md)), then the assignment for each spin:
 ```text
   Total number of eff-AO-s for analysis:   41
 
+  -------------------------------------------------
     EOS: Unambiguous integer electron assignation
+  -------------------------------------------------
 
   ------------------------------------
     EOS ANALYSIS FOR ALPHA ELECTRONS
@@ -132,9 +134,9 @@ Since the wavefunction is closed-shell, the beta part is skipped
 (`SKIPPING EFFAOs FOR BETA ELECTRONS`) and the final table follows:
 
 ```text
-  -------------------------------
+  -----------------------------
     FRAGMENT OXIDATION STATES
-  -------------------------------
+  -----------------------------
 
    Frag.  Oxidation State
   ------------------------
@@ -151,19 +153,19 @@ Iron receives 12 alpha and 12 beta electrons, 24 of its 26: Fe(II) with
 two neutral CO ligands, an unambiguous assignment. The total oxidation
 state is the charge of the molecule.
 
-A more covalent case: for an iron complex with cyanide, nitrosyl and
-nitrate ligands (UKS BLYP, Löwdin, test `FeCN5NO3--UBLYP`), the alpha
-frontier EFOs are 0.650 (a cyanide) and 0.505 (on Fe), giving
-R(%) = 64.5: the assignment Fe(II), five CN⁻ and a neutral NO₃ still
-holds, but with significant covalency.
+A more covalent case: for the doublet [Fe(CN)₅NO]³⁻ (UKS BLYP, Löwdin,
+test `FeCN5NO3--UBLYP`), the alpha frontier EFOs are 0.650 (a cyanide)
+and 0.505 (on Fe), giving R(%) = 64.5: the assignment Fe(II), five CN⁻
+and a neutral NO still holds, but with significant covalency.
 
 ## Files written
 
 - `<jobname>-EOS-EFOs.fchk` (real-space schemes): the EFOs of all
   fragments as orbitals, for any viewer that reads `.fchk` files; see
   [Visualizing orbitals](../guide/visualization.md).
-- `efo_occ.dat`, `efo_coeff.dat` (`LOWDIN`, `NAO-BASIS`): occupations and
-  coefficients as text, overwritten by the next run in the same folder.
+- `efo_occ.dat`, `efo_coeff.dat` (`LOWDIN`, `LOWDIN-DAVIDSON`,
+  `NAO-BASIS`): occupations and coefficients as text (see
+  [Output files](../guide/output.md#other-files)).
 - Cube files of selected EFOs with `CUBE`.
 
 ## Checking the result

@@ -86,9 +86,8 @@ between the atoms. The bond orders show it:
   ...
 ```
 
-Fe–C 1.11 and C–O 2.11, well below the triple bond of free CO: the iron
-gives electron density back into the π\* orbitals of CO
-(back-donation). The output ends with
+Fe–C 1.11 and C–O 2.11: each CO is bound to the iron through a bond of
+order about one. The output ends with
 
 ```text
   ...Normal Termination of APOST-3D...

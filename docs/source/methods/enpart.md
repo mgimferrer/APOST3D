@@ -141,9 +141,9 @@ the one-center terms (see *Checking the result* below). Details in
 
 ## Reading the output
 
-The excerpts below come from water, RKS BLYP/cc-pVDZ, given as
-`LIBRARY` + `EX_FUNCTIONAL 106` + `EC_FUNCTIONAL 131` with `THREBOD -1`
-and a 40/146 two-electron grid.
+The excerpts below come from water, RKS SVWN/cc-pVDZ from Gaussian 16,
+with the `SVWN` keyword, `THREBOD -1` and a 40 × 146 two-electron grid
+(test `H2O-SVWN`).
 
 **Functional information.** One box per libxc component, with its name,
 references, type and family.
@@ -154,7 +154,7 @@ reference energies in the `.fchk`, each total is followed by its
 integration error:
 
 ```text
-  Electron-nuclei energy:   -199.1113583
+  Electron-nuclei energy:   -198.9264417
   Integration error (kcal/mol):     0.01
 ```
 
@@ -166,10 +166,10 @@ ONE-CENTER TERMS (EXACT)` and, after rearranging, the final matrix:
 ```text
     FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS
               1  O        2  H        3  H
-    1  O    -8.818001   -0.197881   -0.197881
-    2  H    -0.197881   -0.063402   -0.000920
-    3  H    -0.197881   -0.000920   -0.063402
-  Sum of pure KS-DFT exchange-correlation energy:     -9.3414870
+    1  O    -8.498405   -0.181686   -0.181686
+    2  H    -0.181686   -0.059858   -0.000594
+    3  H    -0.181686   -0.000594   -0.059858
+  Sum of pure KS-DFT exchange-correlation energy:     -8.9820876
 ```
 
 For a hybrid functional, this matrix is only the DFT part, and a note
@@ -182,17 +182,17 @@ there) and then the complete `HYBRID KS-DFT XC TERMS`.
 and its integration error, followed by the zero-error strategy:
 
 ```text
-  KS-DFT electron-electron energy (au):     37.5486570
-  Integration error (kcal/mol):    -1.63
+  KS-DFT electron-electron energy (au):     37.8661299
+  Integration error (kcal/mol):    -3.09
 
   Max error accepted on the two-electron part (kcal/mol):     0.25
 
   Zero-error strategy applied: the INTERPOLATED tables below replace
   the ones above (only their one-center terms change).
   Rotating for angles:   0.000000   0.182000
-  New error after rotation:    -8.86
+  New error after rotation:   -10.41
   Same-sign error on both grids: extrapolating, not interpolating
-  Damping parameter       :      1.2261960
+  Damping parameter       :      1.4227849
 ```
 
 When the zero-error strategy is applied, a note says so, and the
@@ -205,13 +205,13 @@ that the error is neither estimated nor corrected.
 ```text
     FUZZY ATOMS KS-DFT ENERGY COMPONENTS
               1  O        2  H        3  H
-    1  O   -74.883547   -0.510625   -0.510625
-    2  H    -0.510625   -0.310642    0.127627
-    3  H    -0.510625    0.127627   -0.310642
-  Total KS-DFT energy      :    -76.3984544
-  Total energy in Fchk file:    -76.3984687
-  Integration error (au):      0.0000143
-  Integration error (kcal/mol):     0.01
+    1  O   -74.525615   -0.529236   -0.529236
+    2  H    -0.529236   -0.302629    0.138786
+    3  H    -0.529236    0.138786   -0.302629
+  Total KS-DFT energy      :    -76.0505604
+  Total energy in Fchk file:    -76.0505886
+  Integration error (au):      0.0000282
+  Integration error (kcal/mol):     0.02
 ```
 
 - The diagonal elements are the atomic self-energies *E*<sub>self</sub>(A)
@@ -232,15 +232,15 @@ ENERGY COMPONENTS` or `FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS`
 matrix. With `DOFRAGS`, every matrix is also condensed to fragments
 (`FRAGMENT ANALYSIS: ...`).
 
-### Checking the result
+## Checking the result
 
 - **The final integration error is not a quality check by itself** when
   the zero-error strategy has been applied: it is close to zero by
   construction, even if the functional does not match the wavefunction.
 - The informative numbers are the one-electron integration errors, the
   two-electron error **before** the zero-error strategy (a few kcal/mol
-  at most with sensible grids), and the damping parameter (typically
-  between 0 and about 1.3). A much larger error or damping parameter
+  at most with sensible grids), and the damping parameter (about 1.2 to
+  1.4 in the tests, with the 40 × 146 two-electron grid). A much larger error or damping parameter
   points to a functional that does not match the wavefunction.
 - Without reference energies, the final integration error is the raw
   numerical error and depends strongly on the two-electron grid,

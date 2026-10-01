@@ -135,7 +135,7 @@ then the selected ones:
 ```
 
 In the first iteration the F 1s (FOLI 1.00002) and the C 1s (1.00067,
-within the tolerance) are selected together. In the ninth and last
+within the tolerance) are selected together. In the sixth and last
 iteration the only orbital left, the C–F bond, is assigned to fluorine
 with a FOLI of 1.355 against 2.714 for the CH₃ candidate, a Δ-FOLI of
 1.359: a clear ionic assignment.
