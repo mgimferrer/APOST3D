@@ -1775,6 +1775,197 @@
           "tol_abs": 2e-05
         }
       ]
+    },
+    {
+      "name": "H2O-Dimer-BLYP",
+      "description": "Water dimer, RKS BLYP / cc-pVDZ (Gaussian 16) — ENPART at the default THREBOD: the 9 weakly bonded pairs get their whole xc from the multipolar expansion instead of BODEN",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "rks",
+        "threbod",
+        "multipolar"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/BLYP",
+        "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL",
+        "GRID/ANGULAR",
+        "GRID/PHB1",
+        "GRID/PHB2"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "9 pairs below THREBOD take the multipolar estimate",
+          "type": "present",
+          "pattern": "9 atom pair\\(s\\) below the threshold"
+        },
+        {
+          "label": "Total KS-DFT energy (au)",
+          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -152.8094344,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.1e-06,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Pure KS-DFT XC energy, one-center exact (au)",
+          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -18.6913761,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
+          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 93.4947027,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "O1-H5 xc, skipped pair: multipolar (au)",
+          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
+          "ref": -0.00015,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H5-H6 xc, skipped pair: multipolar (au)",
+          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "pattern": "5\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
+          "ref": -0.000954,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O4-H6 xc, computed pair: BODEN (au)",
+          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "pattern": "4\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
+          "ref": -0.161738,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O1-H5 IQA interaction, skipped pair (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
+          "ref": -0.098434,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O1-H6 IQA interaction, hydrogen bond (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
+          "ref": -0.177824,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "H2O-Dimer-B3LYP",
+      "description": "Water dimer, RKS B3LYP / cc-pVDZ (Gaussian 16) — ENPART at the default THREBOD, hybrid: skipped pairs get (1-xmix) x multipolar in the DFT part plus xmix x multipolar with the HF-type exchange",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "rks",
+        "hybrid",
+        "threbod",
+        "multipolar"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/B3LYP",
+        "ENPART/MOD-GRIDTWOEL",
+        "GRID/RADIAL",
+        "GRID/ANGULAR",
+        "GRID/PHB1",
+        "GRID/PHB2"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "9 pairs below THREBOD take the multipolar estimate",
+          "type": "present",
+          "pattern": "9 atom pair\\(s\\) below the threshold"
+        },
+        {
+          "label": "Total KS-DFT energy (au)",
+          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -152.8537641,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -1.05e-05,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Pure KS-DFT XC energy, one-center exact (au)",
+          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -15.1526092,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
+          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 93.4855281,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "O1-H5 xc, skipped pair: multipolar (au)",
+          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
+          "ref": -0.000135,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H5-H6 xc, skipped pair: multipolar (au)",
+          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "pattern": "5\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
+          "ref": -0.000898,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O4-H6 xc, computed pair: BODEN (au)",
+          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "pattern": "4\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
+          "ref": -0.165421,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O1-H5 IQA interaction, skipped pair (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
+          "ref": -0.103482,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O1-H6 IQA interaction, hydrogen bond (au)",
+          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
+          "ref": -0.188319,
+          "tol_abs": 2e-05
+        }
+      ]
     }
   ]
 }
