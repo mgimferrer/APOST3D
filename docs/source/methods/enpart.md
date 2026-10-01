@@ -48,20 +48,25 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
      from the `# DM` block) is diagonalized, and the resulting terms are
      integrated numerically. With `CORRELATION` the exchange and
      correlation parts are given separately.
-4. **Pairs with a small bond order (`THREBOD`).** The 6-D integrals for
-   pairs of atoms whose bond order is below the `THREBOD` threshold are
-   skipped, and the pair's term is estimated by a multipolar expansion
-   (charge-charge up to quadrupole-quadrupole) instead (E. Francisco
-   *et al.*, *J. Comput. Chem.*, **2017**, 38, 816-829):
-   - Hartree-Fock: the whole exchange term.
-   - CASSCF/CISD: the whole exchange-correlation term.
-   - KS-DFT: the BODEN term of such a pair is not computed, so its
-     exchange-correlation energy stays within the two one-center terms.
-     For a hybrid, the exact-exchange fraction of the pair comes from the
-     multipolar estimate.
+4. **Pairs with a small bond order (`THREBOD`).** For pairs of atoms
+   whose bond order is below the `THREBOD` threshold, the integration
+   (6-D for the exchange, BODEN for KS-DFT) is skipped, and the pair's
+   **whole** exchange-correlation term is estimated by a multipolar
+   expansion of the xc density, from charge-charge up to
+   quadrupole-quadrupole terms (E. Francisco *et al.*, *J. Comput.
+   Chem.*, **2017**, 38, 816-829). For Hartree-Fock and KS-DFT the xc
+   density is that of the (Kohn-Sham) determinant; for CASSCF/CISD, the
+   one built from the RDMs. For a hybrid functional, the (1 − *a*) share
+   appears in the DFT part and the *a* share, *a* being the
+   exact-exchange fraction, with the HF-type exchange. The one-center
+   terms are adjusted so that the total exchange-correlation energy does
+   not change.
 
-   The default threshold (bond order 0.01) only affects distant pairs;
-   `THREBOD -1` computes every pair.
+   The default threshold (bond order 0.01) only affects distant or weakly
+   bonded pairs; `THREBOD -1` computes every pair. For a water dimer
+   (BLYP), the multipolar terms of the 9 pairs below the default
+   threshold add up to −0.0027 au, against −0.0022 au when all pairs are
+   computed with BODEN.
 5. **Zero-error strategy.** The 6-D integrations carry a numerical error
    of the order of 1 kcal/mol even with good grids. When the `.fchk` file
    contains the reference electron-electron energy (see below), the
@@ -171,8 +176,9 @@ integration error:
   Integration error (kcal/mol):     0.01
 ```
 
-**KS-DFT exchange-correlation.** The BODEN of each computed pair, then
-the `DIATOMIC PURE KS-DFT XC TERMS (BODEN)`, the `PURE KS-DFT XC
+**KS-DFT exchange-correlation.** The BODEN of each pair (`multipolar`
+for pairs below `THREBOD`, followed by a note on how they are treated),
+then the `DIATOMIC PURE KS-DFT XC TERMS (BODEN)`, the `PURE KS-DFT XC
 ONE-CENTER TERMS (EXACT)` and, after rearranging, the final matrix:
 
 ```text

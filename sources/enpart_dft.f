@@ -165,7 +165,7 @@
       dimension eto(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps),pcoord(itotps,3)
-      dimension exch2(maxat,maxat)
+      dimension exch2(maxat,maxat),Excmp(maxat,maxat)
       dimension sat(igr,igr,nat)
       character*80 line
 
@@ -268,6 +268,17 @@
 !$OMP END PARALLEL DO
       end if
 
+!! pairs below the THREBOD bond-order threshold get no BODEN: their whole !!
+!! xc term comes from the multipolar expansion of the KS determinant's    !!
+!! exchange density (closed shell: -2 phi_i^2, -4 phi_i*phi_j), as for HF. !!
+      nskip=0
+      do iatom=1,nat
+        do jatom=iatom+1,nat
+          if(bo(iatom,jatom).lt.threbod) nskip=nskip+1
+        end do
+      end do
+      if(nskip.gt.0) call multipolar_mo(nocc,itotps,wp,omp2,pcoord,chp2,-TWO,-FOUR,Excmp)
+
       call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
       write(*,*) " --------------------------- "
       write(*,*) "  Atom   Atom   BODEN value  "
@@ -277,7 +288,11 @@
 
 !! BODEN for this atom pair, skipped below the THREBOD bond-order threshold. !!
           bx0=bo(iatom,jatom)
-          if(bx0.ge.threbod) then
+          if(bx0.lt.threbod) then
+!! a hybrid's xmix share is added with the HF-type exchange (numint_two). !!
+            exch2(iatom,jatom)=(ONE-xmix)*Excmp(iatom,jatom)
+            write(*,'(4x,i3,4x,i3,4x,a10)') iatom,jatom,'multipolar'
+          else
             x1=ZERO
 !! ff2 is PRIVATE, scr_a(jfut) written at a unique index per iteration --  !!
 !! no false-sharing risk. x1 is diagnostic-only, REDUCTION is safe. jfut  !!
@@ -328,6 +343,7 @@
         end do
       end do
       write(*,*) " --------------------------- "
+      if(nskip.gt.0) call print_skipped_pairs(nskip,xmix)
 
       call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
@@ -866,7 +882,7 @@
       dimension eto(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim)
       dimension omp(itotps),omp2(itotps,nat),pcoord(itotps,3)
-      dimension exch2(maxat,maxat)
+      dimension exch2(maxat,maxat),Excmp(maxat,maxat),Excmpb(maxat,maxat)
       allocatable :: chp2(:,:),chp3(:,:),rho(:,:),scrall(:,:),scr2(:)
       allocatable :: chpd(:,:,:),sab(:,:,:),sab2(:,:,:),scr_bod(:,:)
       allocatable :: chpbd(:,:,:),tau(:,:)
@@ -999,6 +1015,20 @@
 !$OMP END PARALLEL DO
       end if
 
+!! pairs below the THREBOD bond-order threshold get no BODEN: their whole !!
+!! xc term comes from the multipolar expansion of the KS determinant's    !!
+!! exchange density (per spin: -1 phi_i^2, -2 phi_i*phi_j), as for UHF.   !!
+      nskip=0
+      do iatom=1,nat
+        do jatom=iatom+1,nat
+          if(bo(iatom,jatom).lt.threbod) nskip=nskip+1
+        end do
+      end do
+      if(nskip.gt.0) then
+        call multipolar_mo(nalf,itotps,wp,omp2,pcoord,chp2,-ONE,-TWO,Excmp)
+        call multipolar_mo(nb,itotps,wp,omp2,pcoord,chp3,-ONE,-TWO,Excmpb)
+      end if
+
       call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
       write(*,*) " --------------------------- "
       write(*,*) "  Atom   Atom   BODEN value  "
@@ -1008,7 +1038,11 @@
 
 !! BODEN for this atom pair, skipped below the THREBOD bond-order threshold. !!
           bx0=bo(iatom,jatom)
-          if(bx0.ge.threbod) then
+          if(bx0.lt.threbod) then
+!! a hybrid's xmix share is added with the HF-type exchange (numint_two_uhf). !!
+            exch2(iatom,jatom)=(ONE-xmix)*(Excmp(iatom,jatom)+Excmpb(iatom,jatom))
+            write(*,'(4x,i3,4x,i3,4x,a10)') iatom,jatom,'multipolar'
+          else
             xx=ZERO
             xxb=ZERO
 !! MG: same false-sharing-free parallelization as the RHF twin
@@ -1071,6 +1105,7 @@
         end do
       end do
       write(*,*) " --------------------------- "
+      if(nskip.gt.0) call print_skipped_pairs(nskip,xmix)
 
       call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
@@ -1229,6 +1264,28 @@
           scrall(3,kk)=FOUR*scrall(3,kk)
         end do
       end if
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: print_skipped_pairs                                         !!
+!! purpose: explains, under the BODEN table, where the xc term of the      !!
+!!   atom pairs below the THREBOD threshold comes from.                    !!
+!! arguments:                                                              !!
+!!   nskip (in) -- number of such pairs                                    !!
+!!   xmix  (in) -- exact-exchange fraction of the functional               !!
+!! author: MGimf                                                           !!
+!! *********************************************************************** !!
+      subroutine print_skipped_pairs(nskip,xmix)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+
+      write(*,'(2x,i0,a)') nskip,' atom pair(s) below the threshold: exchange-correlation'
+      write(*,'(2x,a)') 'from the multipolar expansion, not BODEN.'
+      if(xmix.gt.ZERO) write(*,'(2x,a,f5.3,a,f5.3,a)') 'Here its (1 - ',xmix,
+     +  ') share; the ',xmix,' share comes with the HF-type exchange.'
+
       end
 
 !! ***** !!
