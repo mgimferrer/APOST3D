@@ -391,7 +391,7 @@
   Sum of pure KS-DFT exchange-correlation energy:     -9.2197241
   
   TIMING CPU  :: enpart dft                                        0.96 s
-  TIMING WALL :: enpart dft                                        0.20 s
+  TIMING WALL :: enpart dft                                        0.19 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -427,11 +427,11 @@
   KS-DFT electron-electron energy (au):     36.0247872
   Integration error (kcal/mol):    -2.10
   
-  Max error accepted on the two-electron part (kcal/mol):     0.00
+  Max error accepted on the two-electron part (kcal/mol):     0.25
   
   Rotating for angles:   0.000000   0.182000
   New error after rotation:   -10.13
-  WARNING: New error with same sign
+  Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.2609773
 
   ---------------------------------------------------------
@@ -466,7 +466,7 @@
   Integration error (au):      0.0000906
   Integration error (kcal/mol):     0.06
   
-  TIMING CPU  :: enpart two-electron                               0.43 s
+  TIMING CPU  :: enpart two-electron                               0.41 s
   TIMING WALL :: enpart two-electron                               0.08 s
 
   ...Normal Termination of APOST-3D...

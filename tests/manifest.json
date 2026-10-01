@@ -953,6 +953,7 @@
         "ENPART",
         "ENPART/CASSCF",
         "ENPART/THREBOD",
+        "ENPART/TWOELTOLER",
         "ENPART/MOD-GRIDTWOEL",
         "DM/PYSCF",
         "SPIN"

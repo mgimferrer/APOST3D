@@ -306,7 +306,7 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      9.1193799
   
-  TIMING CPU  :: enpart one-electron                               0.19 s
+  TIMING CPU  :: enpart one-electron                               0.20 s
   TIMING WALL :: enpart one-electron                               0.03 s
 
   --------------------------------
@@ -368,8 +368,8 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:     -9.3414870
   
-  TIMING CPU  :: enpart dft                                        0.68 s
-  TIMING WALL :: enpart dft                                        0.10 s
+  TIMING CPU  :: enpart dft                                        0.73 s
+  TIMING WALL :: enpart dft                                        0.11 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -405,15 +405,15 @@
   KS-DFT electron-electron energy (au):     37.5486570
   Integration error (kcal/mol):    -1.63
   
-  Max error accepted on the two-electron part (kcal/mol):     0.00
+  Max error accepted on the two-electron part (kcal/mol):     0.25
   
   Rotating for angles:   0.000000   0.182000
   New error after rotation:    -8.86
-  WARNING: New error with same sign
+  Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.2261960
   
-  TIMING CPU  :: Interpolated zero-error                           0.11 s
-  TIMING WALL :: Interpolated zero-error                           0.04 s
+  TIMING CPU  :: Interpolated zero-error                           0.10 s
+  TIMING WALL :: Interpolated zero-error                           0.03 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -447,7 +447,7 @@
   Integration error (au):      0.0000143
   Integration error (kcal/mol):     0.01
   
-  TIMING CPU  :: enpart two-electron                               0.42 s
+  TIMING CPU  :: enpart two-electron                               0.41 s
   TIMING WALL :: enpart two-electron                               0.08 s
 
   ...Normal Termination of APOST-3D...
