@@ -321,8 +321,10 @@
           do ii=1,nel
 
 !! Applying conditions to remove orbitals !!
+!! 1.0d-10: FOLIs equal up to rounding (symmetry-equivalent fragments) !!
+!! keep the first one found, so the choice is the same on any machine  !!
             xx=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
-            if(xx.lt.xcutoff) then
+            if(xx.lt.xcutoff-1.0d-10) then
               iiorb=ii
               iifrg=ifrg
               xcutoff=xx !! New lowest FOLI !!
@@ -337,7 +339,8 @@
         do ifrg=1,icufr
           do ii=1,nel
             xx=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
-            if(xcutoff+folitol.lt.xx.and.xx.lt.xfront) then
+!! 1.0d-10: same tie-break as for the cutoff above !!
+            if(xcutoff+folitol.lt.xx.and.xx.lt.xfront-1.0d-10) then
               jjorb=ii
               jjfrg=ifrg
               xfront=xx
