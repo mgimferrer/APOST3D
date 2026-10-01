@@ -5,6 +5,8 @@
 # No Profile-Guided Optimisation, no Intel-specific flags.   #
 # Built with -fopenmp; OMP_NUM_THREADS controls runtime      #
 # parallelism (see `make test NTHREADS=n` / `make help`).    #
+# Build products: objects/ (every .o/.mod), apost3d and      #
+# apost3d-eos in the repo root, utilities in utils/.         #
 ###############################################################
 
 ## --------------------------------------------------------- ##
@@ -14,6 +16,12 @@
 ## --------------------------------------------------------- ##
 
 APOST3D_PATH ?= $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+
+## THREADS: OMP_NUM_THREADS of the test runs, and the parallel compile jobs
+## of the test targets. Default 8, or fewer if the machine has fewer CPUs
+## (on a shared login node, pass a small value, e.g. NTHREADS=2).
+NTHREADS ?= $(shell n=$$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 1); \
+              if [ "$$n" -gt 8 ]; then echo 8; else echo $$n; fi)
 
 ## COMPILER
 FC       = gfortran
@@ -27,11 +35,11 @@ QUADDIR  = $(APOST3D_PATH)/lebedev
 SRCDIR   = $(APOST3D_PATH)/sources
 OBJDIR   = $(APOST3D_PATH)/objects
 UTILDIR  = $(APOST3D_PATH)/utils
+UTILOBJDIR = $(OBJDIR)/utils
 
 ## COMPILER FLAGS
 # -O3              : high optimisation (safe, standard)
 # -ffast-math      : aggressive floating-point (matches old -Ofast behaviour)
-# -march=native    : optimise for the CPU on the build machine
 # -fbacktrace      : print traceback on runtime errors (useful during testing)
 # -ffixed-line-length-132 : allow fixed-form lines up to 132 characters
 # -fallow-argument-mismatch : tolerate legacy implicit-interface rank/type
@@ -39,7 +47,18 @@ UTILDIR  = $(APOST3D_PATH)/utils
 #                   UHF branch is never reached at runtime). ifort silently
 #                   accepted these; gfortran >= 10 requires this flag.
 # -fdefault-integer-8     : NOT set — code uses IMPLICIT REAL*8, integers stay 4-byte
-OPTFLAGS  = -O3 -ffast-math -march=native
+# TARGET CPU (ARCH):
+#   unset (default) : generic code for the architecture (x86-64 or arm64),
+#                     runs on any CPU of that architecture. The safe choice
+#                     for clusters with nodes of different ages.
+#   ARCH=native     : use every instruction of the build machine's CPU (AVX2,
+#                     AVX-512, ...). Can be faster, but the binary may stop
+#                     with "Illegal instruction" on an older CPU: only when
+#                     the program runs on the machine that compiled it.
+#   ARCH=<cpu>      : any gcc -march value, e.g. x86-64-v3 (CPUs from ~2015 on).
+# Changing ARCH needs a clean rebuild (make_compile.sh does it by itself).
+ARCH     ?=
+OPTFLAGS  = -O3 -ffast-math $(if $(ARCH),-march=$(ARCH))
 DBGFLAGS  = -fbacktrace
 OMPFLAGS  = -fopenmp
 # Note: -mcmodel=medium is x86-only and not needed on aarch64/modern systems
@@ -47,6 +66,9 @@ SFLAGS    = -ffixed-line-length-132 -fallow-argument-mismatch
 
 ## FULL FLAG SET
 FFLAGS    = $(OPTFLAGS) $(DBGFLAGS) $(OMPFLAGS) $(SFLAGS)
+# Utilities are serial and get no -fopenmp: with it gfortran puts local
+# arrays on the stack, and get_energy's 3000x3000 matrices overflow it.
+UTIL_FFLAGS = $(OPTFLAGS) $(DBGFLAGS) $(SFLAGS)
 
 ## LIBXC (xc_f03_* Fortran interface) — layered detection, same pattern as
 ## OPENBLAS_LIB below: override, then pkg-config, then the bundled copy
@@ -102,16 +124,19 @@ OPENBLAS_LIB = -lopenblas
 endif
 endif
 
-## LEBEDEV OBJECT
-QUAD_OBJ  = $(QUADDIR)/Lebedev-Laikov.o
+## OBJECTS (all under $(OBJDIR))
+MOD_OBJ   = $(OBJDIR)/modules.o
+QUAD_OBJ  = $(OBJDIR)/Lebedev-Laikov.o
 
 ## SOURCE LIST (all .f files in sources/)
 SRC_LIST  := $(wildcard $(SRCDIR)/*.f)
-OBJ_LIST  := $(SRCDIR)/modules.o \
+OBJ_LIST  := $(MOD_OBJ) \
              $(addprefix $(OBJDIR)/,$(notdir $(SRC_LIST:.f=.o)))
+# Everything but the main program, for utilities that call program routines
+OBJ_LIST_NOMAIN := $(filter-out $(OBJDIR)/main.o,$(OBJ_LIST))
 
 ## EOS-only object list (standalone apost3d-eos executable)
-OBJ_LIST_EOS := $(SRCDIR)/modules.o \
+OBJ_LIST_EOS := $(MOD_OBJ) \
                 $(OBJDIR)/effao.o \
                 $(OBJDIR)/util.o \
                 $(OBJDIR)/print.o \
@@ -127,9 +152,37 @@ OBJ_LIST_EOS := $(SRCDIR)/modules.o \
 ## BUILD TARGETS                                             ##
 ## --------------------------------------------------------- ##
 
-.PHONY: all clean test test-strict update-ref coverage help
+.PHONY: all utils clean test test-strict update-ref coverage help
 
-all: apost3d apost3d-eos eos_aom
+all: apost3d apost3d-eos
+
+## UTILITIES (make utils), built into utils/:
+#   get_energy, get_energy_g16 : append the reference energies of a Gaussian
+#                                09/16 .log to its .fchk (ENPART zero-error
+#                                strategy)
+#   gen_hirsh                  : atomic densities file (densoutput) for
+#                                Hirshfeld / Hirshfeld-I
+#   wfn2fchk                   : .wfn (and PNOF/NWChem output) to .fchk
+#   group_frag                 : group ENPART energy terms by fragment
+#   eos_aom                    : EOS from AOMs of Multiwfn / AIMAll
+#   eos_alt                    : EOS variants from an APOST-3D output
+SIMPLE_UTILS := $(addprefix $(UTILDIR)/,get_energy get_energy_g16 wfn2fchk \
+                group_frag eos_aom eos_alt)
+UTIL_BINS    := $(SIMPLE_UTILS) $(UTILDIR)/gen_hirsh
+
+utils: $(UTIL_BINS)
+
+$(SIMPLE_UTILS): $(UTILDIR)/%: $(UTILOBJDIR)/%.o
+	$(FC) $(UTIL_FFLAGS) $< -o $@
+
+# gen_hirsh calls quad(); program objects come as a whole with modules.o,
+# and they need OpenMP at link time
+$(UTILDIR)/gen_hirsh: $(UTILOBJDIR)/gen_hirsh.o $(OBJ_LIST_NOMAIN) $(QUAD_OBJ)
+	$(FC) $(FFLAGS) $^ $(LIBXC_LIB) $(OPENBLAS_LIB) -o $@
+
+## BUILD DIRECTORIES
+$(OBJDIR) $(UTILOBJDIR):
+	mkdir -p $@
 
 ## MAIN EXECUTABLE
 apost3d: $(OBJ_LIST) $(QUAD_OBJ)
@@ -140,7 +193,7 @@ apost3d: $(OBJ_LIST) $(QUAD_OBJ)
 
 ## LEBEDEV QUADRATURE OBJECT
 ## Not tracked in git (build artifact); depends on its source so edits trigger a rebuild.
-$(QUADDIR)/Lebedev-Laikov.o: $(QUADDIR)/Lebedev-Laikov.F
+$(QUAD_OBJ): $(QUADDIR)/Lebedev-Laikov.F | $(OBJDIR)
 	$(FC) -c $(FFLAGS) $(QUADDIR)/Lebedev-Laikov.F -o $@
 
 ## F90 MODULES (must be compiled first — other sources USE these modules)
@@ -148,7 +201,7 @@ $(QUADDIR)/Lebedev-Laikov.o: $(QUADDIR)/Lebedev-Laikov.F
 # basis_set.mod, integration_grid.mod) in one recipe. -J sends the .mod
 # files to $(OBJDIR) instead of littering the repo root; every rule below
 # that depends on modules.o adds -I$(OBJDIR) to find them again.
-$(SRCDIR)/modules.o: $(SRCDIR)/modules.f90
+$(MOD_OBJ): $(SRCDIR)/modules.f90 | $(OBJDIR)
 	$(FC) -c $(FFLAGS) $(LIBXC_INC) -J$(OBJDIR) \
 	  $(SRCDIR)/modules.f90 -o $@
 
@@ -156,48 +209,43 @@ $(SRCDIR)/modules.o: $(SRCDIR)/modules.f90
 # Depends on modules.o so that a stale/incompatible .mod (e.g. left over from
 # a different gfortran version) forces a recompile instead of a confusing
 # "module file created by a different version of GNU Fortran" error.
-$(OBJDIR)/input2.o: $(SRCDIR)/input2.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
+$(OBJDIR)/input2.o: $(SRCDIR)/input2.f $(SRCDIR)/parameter.h $(MOD_OBJ)
 	$(FC) -c -O1 $(SFLAGS) $(DBGFLAGS) \
 	  $(LIBXC_INC) -I$(OBJDIR) \
 	  $(SRCDIR)/input2.f -o $@
 
 ## GENERAL RULE for all other .f sources
 # Depends on modules.o for the same reason as input2.o above (see comment).
-$(OBJDIR)/%.o: $(SRCDIR)/%.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
+$(OBJDIR)/%.o: $(SRCDIR)/%.f $(SRCDIR)/parameter.h $(MOD_OBJ)
 	$(FC) -c $(FFLAGS) $(LIBXC_INC) -I$(OBJDIR) $< -o $@
 
-## UTILS
-# Also depend on modules.o: several utils (e.g. eos_aom.f90, eos_alt.f90)
-# USE the same F90 modules as the main sources. -I$(SRCDIR) is for
-# `include 'parameter.h'`, separate from -I$(OBJDIR)'s module search.
-$(UTILDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
-	$(FC) -c $(FFLAGS) -I$(SRCDIR) -I$(OBJDIR) $< -o $@
+## UTILS OBJECTS
+# Also depend on modules.o: some utils (e.g. gen_hirsh, main_eos) USE the
+# same F90 modules as the main sources. -I$(SRCDIR) is for
+# `include 'parameter.h'`; a utility's own modules go to $(UTILOBJDIR).
+$(UTILOBJDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDIR)
+	$(FC) -c $(UTIL_FFLAGS) -I$(SRCDIR) -I$(OBJDIR) -J$(UTILOBJDIR) $< -o $@
 
-$(UTILDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h $(SRCDIR)/modules.o
-	$(FC) -c $(FFLAGS) -I$(SRCDIR) -I$(OBJDIR) $< -o $@
+$(UTILOBJDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDIR)
+	$(FC) -c $(UTIL_FFLAGS) -I$(SRCDIR) -I$(OBJDIR) -J$(UTILOBJDIR) $< -o $@
+
+# main_eos is the main program of apost3d-eos: full flags, OpenMP included
+$(UTILOBJDIR)/main_eos.o: $(UTILDIR)/main_eos.f $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDIR)
+	$(FC) -c $(FFLAGS) -I$(SRCDIR) -I$(OBJDIR) -J$(UTILOBJDIR) $< -o $@
 
 ## STANDALONE EOS EXECUTABLE
-apost3d-eos: $(SRCDIR)/modules.o $(UTILDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
+apost3d-eos: $(UTILOBJDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
 	$(FC) $(FFLAGS) \
-	  $(QUAD_OBJ) $(OBJ_LIST_EOS) $(UTILDIR)/main_eos.o \
+	  $(QUAD_OBJ) $(OBJ_LIST_EOS) $(UTILOBJDIR)/main_eos.o \
 	  $(OPENBLAS_LIB) \
 	  -o $(APOST3D_PATH)/apost3d-eos
 
-## EOS-AOM UTILITY
-eos_aom: $(UTILDIR)/eos_aom.o
-	$(FC) $(FFLAGS) $(UTILDIR)/eos_aom.o -o $(APOST3D_PATH)/eos_aom
-
 ## TEST SUITE
-# Build (if needed) and run the ENTIRE regression test suite — every case in
-# tests/manifest.json, every time. No fast/slow tiers: if a test becomes a
-# problem it gets fixed or rewritten, not quietly excluded by default.
+# Build (if needed, NTHREADS parallel jobs) and run the ENTIRE regression
+# test suite — every case in tests/manifest.json, every time.
 #
-# The only flag: NTHREADS=<n>, OMP_NUM_THREADS for the test runs (default: 1).
-# Same name, same meaning as make_compile.sh's NTHREADS=<n> — see `make help`.
-#
-# Examples:
-#   make test                # build (if needed) + run everything, 1 thread
-#   make test NTHREADS=4     # same, using 4 threads
+#   make test                # NTHREADS threads (default 8, see above)
+#   make test NTHREADS=4     # 4 threads
 #   make test-strict         # same, but any difference from tests/reference
 #                            # fails, layout/wording included (another
 #                            # machine or compiler, before a release)
@@ -205,8 +253,7 @@ eos_aom: $(UTILDIR)/eos_aom.o
 #                            # output change (manifest values: runner's
 #                            # --update-ref --update-manifest)
 #
-# For narrower runs during test development (single test by name, a tag
-# filter, verbose per-check output, keeping raw .apost output) call the
+# For narrower runs (single test, tag filter, verbose output) call the
 # runner directly — see `python3 tests/run_tests.py --help`.
 
 TESTS_DIR    := $(APOST3D_PATH)/tests
@@ -214,39 +261,30 @@ TEST_RUNNER  := $(TESTS_DIR)/run_tests.py
 TEST_INPUTS  := $(TESTS_DIR)/inputs
 TEST_MANIFEST:= $(TESTS_DIR)/manifest.json
 TEST_REF     := $(TESTS_DIR)/reference
-NTHREADS     ?= 1
+RUN_TESTS     = python3 $(TEST_RUNNER) \
+                  --binary   $(APOST3D_PATH)/apost3d \
+                  --inputs   $(TEST_INPUTS) \
+                  --manifest $(TEST_MANIFEST) \
+                  --ref      $(TEST_REF) \
+                  --nthreads $(NTHREADS)
 
-test: all
+test:
+	@$(MAKE) --no-print-directory -j$(NTHREADS) all
 	@echo ""
-	python3 $(TEST_RUNNER) \
-	  --binary   $(APOST3D_PATH)/apost3d \
-	  --inputs   $(TEST_INPUTS) \
-	  --manifest $(TEST_MANIFEST) \
-	  --ref      $(TEST_REF) \
-	  --nthreads $(NTHREADS)
+	$(RUN_TESTS)
 
 ## Same as test, but the full-output comparison fails on any difference
-test-strict: all
+test-strict:
+	@$(MAKE) --no-print-directory -j$(NTHREADS) all
 	@echo ""
-	python3 $(TEST_RUNNER) \
-	  --binary   $(APOST3D_PATH)/apost3d \
-	  --inputs   $(TEST_INPUTS) \
-	  --manifest $(TEST_MANIFEST) \
-	  --ref      $(TEST_REF) \
-	  --nthreads $(NTHREADS) \
-	  --strict
+	$(RUN_TESTS) --strict
 
 ## Rewrite the reference outputs (tests/reference/*.apost) from a fresh run.
 ## Manifest values are left alone (runner's --update-manifest rewrites them)
-update-ref: all
+update-ref:
+	@$(MAKE) --no-print-directory -j$(NTHREADS) all
 	@echo ""
-	python3 $(TEST_RUNNER) \
-	  --binary   $(APOST3D_PATH)/apost3d \
-	  --inputs   $(TEST_INPUTS) \
-	  --manifest $(TEST_MANIFEST) \
-	  --ref      $(TEST_REF) \
-	  --nthreads $(NTHREADS) \
-	  --update-ref
+	$(RUN_TESTS) --update-ref
 
 ## Show which APOST-3D keywords are covered / uncovered by the current test suite
 # Variables (all optional):
@@ -274,15 +312,12 @@ coverage:
 	  $(_COV_CATEGORY) $(_COV_PRIORITY) $(_COV_UNCOV) $(_COV_FORMAT)
 
 ## CLEAN
+# The last line removes leftovers of the old layout (objects in sources/,
+# lebedev/ and utils/, eos_aom in the repo root).
 clean:
-	rm -f $(SRCDIR)/modules.o \
-	      $(OBJDIR)/*.o \
-	      $(OBJDIR)/*.mod \
-	      $(UTILDIR)/*.o \
-	      $(QUADDIR)/Lebedev-Laikov.o \
-	      $(APOST3D_PATH)/apost3d \
-	      $(APOST3D_PATH)/apost3d-eos \
-	      $(APOST3D_PATH)/eos_aom
+	rm -rf $(OBJDIR)
+	rm -f $(APOST3D_PATH)/apost3d $(APOST3D_PATH)/apost3d-eos $(UTIL_BINS)
+	rm -f $(SRCDIR)/*.o $(QUADDIR)/*.o $(UTILDIR)/*.o $(APOST3D_PATH)/eos_aom
 
 ## HELP
 # `make` itself intercepts any --flag before a Makefile ever sees it, so
@@ -292,13 +327,22 @@ clean:
 help:
 	@echo "APOST-3D — available make targets and flags"
 	@echo ""
-	@echo "  make all                    Build apost3d, apost3d-eos, eos_aom"
+	@echo "  make all [ARCH=cpu]         Build apost3d and apost3d-eos. By"
+	@echo "                              default for any CPU of this"
+	@echo "                              architecture; ARCH=native for this"
+	@echo "                              machine's CPU only (make -j8 for a"
+	@echo "                              parallel build)."
+	@echo "  make utils                  Build the utilities into utils/:"
+	@echo "                              get_energy, get_energy_g16,"
+	@echo "                              gen_hirsh, wfn2fchk, group_frag,"
+	@echo "                              eos_aom, eos_alt."
 	@echo "  make clean                  Remove all build objects and binaries"
 	@echo "  make test [NTHREADS=n]      Build (if needed) and run the full"
 	@echo "                              regression test suite. NTHREADS sets"
-	@echo "                              OMP_NUM_THREADS for the test runs"
-	@echo "                              (default: 1). Same flag as"
-	@echo "                              'bash make_compile.sh NTHREADS=n'."
+	@echo "                              the threads of the test runs and the"
+	@echo "                              compile jobs (default: 8, or fewer"
+	@echo "                              if the machine has fewer CPUs). Same"
+	@echo "                              flag as 'bash make_compile.sh'."
 	@echo "                              Every test's raw .apost output is"
 	@echo "                              always saved to"
 	@echo "                              tests/report/outputs/ (no flag"

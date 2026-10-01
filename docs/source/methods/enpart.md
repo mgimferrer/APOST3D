@@ -90,13 +90,7 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
   $APOST3D_PATH/utils/get_energy mol.log >> mol.fchk       # Gaussian 09
   ```
 
-  Compile them once with:
-
-  ```bash
-  cd $APOST3D_PATH/utils
-  gfortran -o get_energy_g16 get_energy_g16.f
-  gfortran -o get_energy get_energy.f
-  ```
+  Both are built with the program by `make_compile.sh` (or `make utils`).
 
   `.fchk` files written from pySCF with `utils/apost3d.py` (see [pySCF](../input/pyscf.md)) already contain
   them.

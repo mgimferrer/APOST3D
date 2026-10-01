@@ -70,6 +70,16 @@ jobs:
       - name: Run regression test suite
         run: make test NTHREADS=$(nproc)
 
+      # The references were written on another machine and compiler: compare
+      # the outputs above at the strict level too. Informative only (shown as
+      # a warning, never fails the run): a difference here means the output
+      # is not reproduced exactly on this runner, worth a look before a
+      # release.
+      - name: Strict comparison with the references (informative)
+        if: always()
+        continue-on-error: true
+        run: python3 tests/compare_outputs.py --strict --ref-dir tests/reference --out-dir tests/report/outputs --max-show 5
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,12 +1,12 @@
 ## Files created after compilation — not tracked in git ##
 
-## Compiled objects and modules
+## Build output: every object/module goes to objects/; the programs to the
+## repo root (apost3d, apost3d-eos) and utils/ (make utils)
+objects/
 *.o
 *.mod
-*.optrpt
-*.dyn
-*pgopti*
-## Compiled executables
+apost3d
+apost3d-eos
 utils/eos_alt
 utils/eos_aom
 utils/gen_hirsh
@@ -14,13 +14,6 @@ utils/get_energy
 utils/get_energy_g16
 utils/group_frag
 utils/wfn2fchk
-lebedev/*.o
-apost3d
-apost3d-eos
-eos_aom
-## Build directories
-objects/
-testrun_*/
 ## libxc: fetched tarball + built tree (compile_libxc.sh fetches the
 ## pinned release from upstream and builds it here -- neither is
 ## committed; see compile_libxc.sh for the pinned version/checksum).

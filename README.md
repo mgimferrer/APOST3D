@@ -40,7 +40,7 @@ cd APOST3D
 # 2. Set the installation path (add this to your shell profile too)
 export APOST3D_PATH=$(pwd)
 
-# 3. Build apost3d, apost3d-eos, and eos_aom
+# 3. Build apost3d, apost3d-eos and the utilities (utils/)
 #    (fetches + builds libxc automatically first, if needed)
 bash make_compile.sh
 ```
@@ -66,7 +66,7 @@ The full input-file format and keyword reference is in the
 ## Running the test suite
 
 ```bash
-make test               # build (if needed) + run the entire suite, 1 thread
+make test               # build (if needed) + run the entire suite, 8 threads
 make test NTHREADS=4    # same, using 4 threads
 ```
 

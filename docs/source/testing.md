@@ -28,7 +28,7 @@ is for the same code on another machine or compiler, or before a release,
 where any difference is real.
 
 ```bash
-make test               # build (if needed) + run the entire suite, 1 thread
+make test               # build (if needed) + run the entire suite, 8 threads
 make test NTHREADS=4    # same, using 4 threads
 ```
 
@@ -60,7 +60,7 @@ means exactly the same thing as `bash make_compile.sh NTHREADS=<n>` — see
 
 | Command | Description |
 |---|---|
-| `make test` | Build (if needed) + run every test, 1 thread |
+| `make test` | Build (if needed) + run every test, 8 threads (fewer if the machine has fewer CPUs) |
 | `make test NTHREADS=<n>` | Same, using `<n>` threads |
 | `make test-strict [NTHREADS=<n>]` | Same, but any difference from the reference outputs fails |
 | `make update-ref [NTHREADS=<n>]` | Rewrite `tests/reference/*.apost` after an intended change of the output (manifest values are kept) |

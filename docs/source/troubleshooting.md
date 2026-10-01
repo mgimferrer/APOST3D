@@ -49,7 +49,7 @@ automatically. If it still fails, or you rebuilt without it:
 xattr -cr $APOST3D_PATH
 codesign --force --sign - $APOST3D_PATH/apost3d
 codesign --force --sign - $APOST3D_PATH/apost3d-eos
-codesign --force --sign - $APOST3D_PATH/eos_aom
+codesign --force --sign - $APOST3D_PATH/utils/eos_aom
 ```
 
 ## ENPART

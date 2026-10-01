@@ -2,22 +2,30 @@
 # ==============================================================================
 # make_compile.sh — compile APOST-3D with GCC/gfortran
 #
+# Builds apost3d, apost3d-eos and the utilities (utils/), fetching and
+# building libxc first if no usable copy is found.
+#
 # Usage:
-#   export APOST3D_PATH=/path/to/APOST3D   # or edit DEFAULT below
-#   bash make_compile.sh [clean] [NTHREADS=N] [help]
+#   bash make_compile.sh [clean] [NTHREADS=N] [ARCH=cpu] [help]
+#   (APOST3D_PATH defaults to this script's directory)
 #
 # Arguments (same grammar as `make`: bare words are actions, KEY=value sets
 # a parameter — and NTHREADS is spelled identically to `make test NTHREADS=N`):
 #   clean         Run 'make clean' before building
-#   NTHREADS=<N>  OMP_NUM_THREADS to report/export after the build, and to
-#                 use if you go on to run the test suite (default: all
-#                 logical CPUs)
+#   NTHREADS=<N>  Parallel compile jobs, and the OMP_NUM_THREADS suggested
+#                 for runs and tests (default: 8, or fewer if the machine
+#                 has fewer CPUs; use a small value on a shared login node)
+#   ARCH=<cpu>    Target CPU. Default: generic code that runs on any CPU of
+#                 this architecture (the safe choice for clusters with nodes
+#                 of different ages). ARCH=native: this machine's CPU only,
+#                 may be faster but can stop with "Illegal instruction"
+#                 elsewhere. Any gcc -march value works (e.g. x86-64-v3).
 #   help          Show this message (also: --help, -h)
 #
 # Examples:
 #   bash make_compile.sh
 #   bash make_compile.sh NTHREADS=4
-#   bash make_compile.sh clean NTHREADS=4
+#   bash make_compile.sh clean ARCH=native
 #   bash make_compile.sh help
 # ==============================================================================
 
@@ -30,6 +38,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APOST3D_PATH="${APOST3D_PATH:-$SCRIPT_DIR}"
 CLEAN=0
 NTHREADS=""
+ARCH=""
 
 # ------------------------------------------------------------------------------
 # Argument parsing — bare words are actions, KEY=value sets a parameter,
@@ -38,7 +47,7 @@ NTHREADS=""
 for arg in "$@"; do
   case "$arg" in
     help|--help|-h)
-      sed -n '2,22p' "$0" | sed 's/^# \{0,2\}//'
+      sed -n '2,29p' "$0" | sed 's/^# \{0,2\}//'
       exit 0
       ;;
     clean)
@@ -46,6 +55,9 @@ for arg in "$@"; do
       ;;
     NTHREADS=*)
       NTHREADS="${arg#NTHREADS=}"
+      ;;
+    ARCH=*)
+      ARCH="${arg#ARCH=}"
       ;;
     *)
       echo "Unknown argument: $arg"
@@ -56,10 +68,11 @@ for arg in "$@"; do
 done
 
 # ------------------------------------------------------------------------------
-# Auto-detect logical CPU count
+# Default threads: 8, or the logical CPU count if smaller
 # ------------------------------------------------------------------------------
 if [[ -z "$NTHREADS" ]]; then
-  NTHREADS=$(sysctl -n hw.logicalcpu 2>/dev/null || nproc 2>/dev/null || echo 1)
+  NCPU=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 1)
+  NTHREADS=$(( NCPU < 8 ? NCPU : 8 ))
 fi
 
 # ------------------------------------------------------------------------------
@@ -232,26 +245,28 @@ echo "============================================================"
 echo "  APOST3D_PATH : $APOST3D_PATH"
 echo "  Makefile     : $MAKEFILE"
 echo "  Compiler     : $GFORTRAN_VERSION_FULL"
-echo "  OMP threads  : $OMP_NUM_THREADS"
+echo "  Threads      : $NTHREADS (compile jobs, OMP_NUM_THREADS)"
+echo "  Target CPU   : ${ARCH:-generic (any CPU of this architecture)}"
 echo "  Started      : $(date)"
 echo "============================================================"
 echo ""
 
 # ------------------------------------------------------------------------------
-# Compiler-identity drift check. gfortran .mod files aren't portable across
-# compiler versions, and the Makefile's timestamp-based deps can't detect
-# "same source, different compiler" — so stamp the compiler used for the
-# last build and force a clean if it changed.
+# Compiler/target drift check. gfortran .mod files aren't portable across
+# compiler versions, and objects built for another ARCH would be mixed in:
+# the Makefile's timestamp-based deps can't detect either, so stamp the
+# compiler and ARCH of the last build and force a clean if they changed.
 # ------------------------------------------------------------------------------
 COMPILER_STAMP="$APOST3D_PATH/objects/.gfortran_version"
+BUILD_ID="$GFORTRAN_VERSION_FULL ARCH=${ARCH:-generic}"
 
 if [[ -f "$COMPILER_STAMP" ]]; then
   PREV_VERSION="$(cat "$COMPILER_STAMP")"
-  if [[ "$PREV_VERSION" != "$GFORTRAN_VERSION_FULL" ]] && [[ "$CLEAN" -ne 1 ]]; then
-    echo "--- Compiler change detected ---"
+  if [[ "$PREV_VERSION" != "$BUILD_ID" ]] && [[ "$CLEAN" -ne 1 ]]; then
+    echo "--- Compiler or target CPU change detected ---"
     echo "  Previous build : $PREV_VERSION"
-    echo "  Current        : $GFORTRAN_VERSION_FULL"
-    echo "  Forcing 'make clean' to avoid stale/incompatible .mod files."
+    echo "  Current        : $BUILD_ID"
+    echo "  Forcing 'make clean' so no object of the old build is reused."
     echo ""
     CLEAN=1
   fi
@@ -266,15 +281,18 @@ if [[ "$CLEAN" -eq 1 ]]; then
   echo ""
 fi
 
-# Record the compiler identity used for this build (written after clean so a
+# Record the compiler/ARCH used for this build (written after clean so a
 # failed/interrupted build doesn't falsely mark the stamp as up to date).
-echo "$GFORTRAN_VERSION_FULL" > "$COMPILER_STAMP"
+mkdir -p "$APOST3D_PATH/objects"
+echo "$BUILD_ID" > "$COMPILER_STAMP"
 
 # ------------------------------------------------------------------------------
-# Build main binary + standalone EOS + utility
+# Build main binary + standalone EOS + utilities
 # ------------------------------------------------------------------------------
-echo "--- Building apost3d, apost3d-eos, eos_aom ---"
-make -f "$MAKEFILE" -C "$APOST3D_PATH" all
+BINARIES=(apost3d apost3d-eos utils/get_energy utils/get_energy_g16 utils/gen_hirsh
+          utils/wfn2fchk utils/group_frag utils/eos_aom utils/eos_alt)
+echo "--- Building apost3d, apost3d-eos and the utilities ($NTHREADS jobs) ---"
+make -f "$MAKEFILE" -C "$APOST3D_PATH" -j"$NTHREADS" ARCH="$ARCH" all utils
 echo ""
 
 # ------------------------------------------------------------------------------
@@ -285,7 +303,7 @@ echo ""
 # ------------------------------------------------------------------------------
 if command -v codesign &>/dev/null; then
   echo "--- Ad-hoc code signing (macOS) ---"
-  for bin in apost3d apost3d-eos eos_aom; do
+  for bin in "${BINARIES[@]}"; do
     if [[ -x "$APOST3D_PATH/$bin" ]]; then
       # Clear extended attributes first (e.g. a stray com.apple.quarantine
       # flag, which can prevent an ad-hoc signature from being trusted).
@@ -305,7 +323,7 @@ fi
 # Verify binaries exist
 # ------------------------------------------------------------------------------
 echo "--- Binaries produced ---"
-for bin in apost3d apost3d-eos eos_aom; do
+for bin in "${BINARIES[@]}"; do
   if [[ -x "$APOST3D_PATH/$bin" ]]; then
     echo "  ✓  $APOST3D_PATH/$bin  ($(du -sh "$APOST3D_PATH/$bin" | cut -f1))"
   else
@@ -317,15 +335,17 @@ echo ""
 # ------------------------------------------------------------------------------
 # Smoke test: launch each binary. A binary can exist and be executable yet
 # still fail to launch (wrong arch, bad signature, missing shared lib) —
-# only shows up at process start. stdin is /dev/null since all three read
-# argc and exit immediately without prompting.
+# only shows up at process start. Run without arguments and with stdin
+# /dev/null, in a scratch directory: each one stops at once, asking for its
+# input file, and any file a utility opens lands there, not here.
 # ------------------------------------------------------------------------------
 echo "--- Smoke test (launching each binary) ---"
 SMOKE_FAILED=0
-for bin in apost3d apost3d-eos eos_aom; do
+SMOKE_DIR="$(mktemp -d)"
+for bin in "${BINARIES[@]}"; do
   bin_path="$APOST3D_PATH/$bin"
   [[ -x "$bin_path" ]] || continue
-  smoke_out="$("$bin_path" < /dev/null 2>&1 || true)"
+  smoke_out="$(cd "$SMOKE_DIR" && "$bin_path" < /dev/null 2>&1 || true)"
   if echo "$smoke_out" | grep -qi "dyld\|Library not loaded\|Killed\|Segmentation fault\|Trace/BPT"; then
     echo "  ✗  $bin failed to launch:"
     echo "$smoke_out" | sed 's/^/       /'
@@ -338,6 +358,8 @@ for bin in apost3d apost3d-eos eos_aom; do
 done
 echo ""
 
+rm -rf "$SMOKE_DIR"
+
 if [[ "$SMOKE_FAILED" -eq 1 ]]; then
   echo "============================================================"
   echo "  WARNING: one or more binaries failed to launch"
@@ -347,7 +369,7 @@ if [[ "$SMOKE_FAILED" -eq 1 ]]; then
   echo "    xattr -cr $APOST3D_PATH"
   echo "    codesign --force --sign - $APOST3D_PATH/apost3d"
   echo "    codesign --force --sign - $APOST3D_PATH/apost3d-eos"
-  echo "    codesign --force --sign - $APOST3D_PATH/eos_aom"
+  echo "    (and the same for each program in $APOST3D_PATH/utils)"
   echo ""
 fi
 

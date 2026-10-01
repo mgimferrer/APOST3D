@@ -89,6 +89,13 @@ program, not a full development history — see `git log` for that.
   on every update to the code. `make test` checks selected values and
   every printed number of each test; `make test-strict` also requires the
   whole output to match, to validate a build on another machine.
+- **Portable build by default** — the code is compiled for the generic
+  architecture, so one binary runs on every node of a cluster with CPUs
+  of different ages; `ARCH=native` optimizes for the build machine only.
+  Compilation and tests use 8 threads by default (`NTHREADS=<n>` to
+  change it), and `make_compile.sh` (or `make utils`) also builds the
+  utilities in `utils/` (`get_energy`, `get_energy_g16`, `gen_hirsh`,
+  `wfn2fchk`, `group_frag`, `eos_aom`, `eos_alt`).
 - **libxc upgraded to 7.1.2** (from the previously bundled 4.2.3) — no
   change to any computed energy or property, verified bit-for-bit against
   reference outputs. Fetched and built automatically on first compile if
