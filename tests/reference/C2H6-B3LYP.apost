@@ -19,7 +19,7 @@
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
                                                                                 
-    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
+    e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
                                                                                 
       Available atomic definitions:                                             
       ----------------------------                                              
@@ -162,8 +162,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                19.86 s
-  TIMING WALL :: atomic definition                                 2.72 s
+  TIMING CPU  :: atomic definition                                20.60 s
+  TIMING WALL :: atomic definition                                 2.95 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -403,8 +403,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     42.2635815
   
-  TIMING CPU  :: enpart one-electron                               2.89 s
-  TIMING WALL :: enpart one-electron                               0.43 s
+  TIMING CPU  :: enpart one-electron                               3.06 s
+  TIMING WALL :: enpart one-electron                               0.47 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -547,8 +547,8 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
   
-  TIMING CPU  :: enpart dft                                       14.50 s
-  TIMING WALL :: enpart dft                                        2.52 s
+  TIMING CPU  :: enpart dft                                       14.97 s
+  TIMING WALL :: enpart dft                                        2.68 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -596,8 +596,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     80.3392145
   
-  TIMING CPU  :: Coulomb energy                                    1.51 s
-  TIMING WALL :: Coulomb energy                                    0.24 s
+  TIMING CPU  :: Coulomb energy                                    1.60 s
+  TIMING WALL :: Coulomb energy                                    0.27 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -640,8 +640,8 @@
   Hartree-Fock exchange energy:    -12.4871105
   Note: full HF-type exchange, before scaling by 0.200.
   
-  TIMING CPU  :: Exact-exchange energy                            25.56 s
-  TIMING WALL :: Exact-exchange energy                             3.52 s
+  TIMING CPU  :: Exact-exchange energy                            26.66 s
+  TIMING WALL :: Exact-exchange energy                             3.79 s
 
   --------------------------
     HYBRID KS-DFT XC TERMS
@@ -686,8 +686,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.3799748
   
-  TIMING CPU  :: Interpolated zero-error                           6.73 s
-  TIMING WALL :: Interpolated zero-error                           0.93 s
+  TIMING CPU  :: Interpolated zero-error                           6.98 s
+  TIMING WALL :: Interpolated zero-error                           0.96 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -820,7 +820,7 @@
   Integration error (au):      0.0000520
   Integration error (kcal/mol):     0.03
   
-  TIMING CPU  :: enpart two-electron                              35.59 s
-  TIMING WALL :: enpart two-electron                               4.95 s
+  TIMING CPU  :: enpart two-electron                              37.09 s
+  TIMING WALL :: enpart two-electron                               5.30 s
 
   ...Normal Termination of APOST-3D...

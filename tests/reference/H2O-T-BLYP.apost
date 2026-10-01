@@ -19,7 +19,7 @@
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
                                                                                 
-    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
+    e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
                                                                                 
       Available atomic definitions:                                             
       ----------------------------                                              
@@ -163,7 +163,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.24 s
+  TIMING CPU  :: atomic definition                                 0.22 s
   TIMING WALL :: atomic definition                                 0.04 s
 
   -----------------------------
@@ -390,8 +390,8 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:     -9.2197241
   
-  TIMING CPU  :: enpart dft                                        0.93 s
-  TIMING WALL :: enpart dft                                        0.22 s
+  TIMING CPU  :: enpart dft                                        0.88 s
+  TIMING WALL :: enpart dft                                        0.21 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -421,7 +421,7 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     45.2445114
   
-  TIMING CPU  :: Coulomb energy                                    0.29 s
+  TIMING CPU  :: Coulomb energy                                    0.26 s
   TIMING WALL :: Coulomb energy                                    0.04 s
   
   KS-DFT electron-electron energy (au):     36.0247872
@@ -468,7 +468,7 @@
   Integration error (au):      0.0000906
   Integration error (kcal/mol):     0.06
   
-  TIMING CPU  :: enpart two-electron                               0.43 s
-  TIMING WALL :: enpart two-electron                               0.09 s
+  TIMING CPU  :: enpart two-electron                               0.39 s
+  TIMING WALL :: enpart two-electron                               0.08 s
 
   ...Normal Termination of APOST-3D...

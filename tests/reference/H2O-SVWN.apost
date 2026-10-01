@@ -19,7 +19,7 @@
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
                                                                                 
-    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
+    e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
                                                                                 
       Available atomic definitions:                                             
       ----------------------------                                              
@@ -153,7 +153,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.24 s
+  TIMING CPU  :: atomic definition                                 0.23 s
   TIMING WALL :: atomic definition                                 0.04 s
 
   -----------------------------
@@ -399,7 +399,7 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     46.8482175
   
-  TIMING CPU  :: Coulomb energy                                    0.27 s
+  TIMING CPU  :: Coulomb energy                                    0.25 s
   TIMING WALL :: Coulomb energy                                    0.04 s
   
   KS-DFT electron-electron energy (au):     37.8661299
@@ -449,7 +449,7 @@
   Integration error (au):      0.0000282
   Integration error (kcal/mol):     0.02
   
-  TIMING CPU  :: enpart two-electron                               0.40 s
+  TIMING CPU  :: enpart two-electron                               0.39 s
   TIMING WALL :: enpart two-electron                               0.08 s
 
   ...Normal Termination of APOST-3D...
