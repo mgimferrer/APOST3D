@@ -19,7 +19,7 @@
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
                                                                                 
-    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
+    e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
                                                                                 
       Available atomic definitions:                                             
       ----------------------------                                              
@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.89 s
-  TIMING WALL :: atomic definition                                 0.28 s
+  TIMING CPU  :: atomic definition                                 1.91 s
+  TIMING WALL :: atomic definition                                 0.29 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -329,7 +329,7 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     36.6642284
   
-  TIMING CPU  :: enpart one-electron                               0.79 s
+  TIMING CPU  :: enpart one-electron                               0.82 s
   TIMING WALL :: enpart one-electron                               0.12 s
 
   --------------------------------
@@ -418,8 +418,8 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
   
-  TIMING CPU  :: enpart dft                                        4.20 s
-  TIMING WALL :: enpart dft                                        0.72 s
+  TIMING CPU  :: enpart dft                                        4.10 s
+  TIMING WALL :: enpart dft                                        0.70 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -452,8 +452,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    112.2264252
   
-  TIMING CPU  :: Coulomb energy                                    1.05 s
-  TIMING WALL :: Coulomb energy                                    0.24 s
+  TIMING CPU  :: Coulomb energy                                    0.93 s
+  TIMING WALL :: Coulomb energy                                    0.16 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -481,7 +481,7 @@
   Hartree-Fock exchange energy:    -17.9413951
   Note: full HF-type exchange, before scaling by 0.200.
   
-  TIMING CPU  :: Exact-exchange energy                            12.02 s
+  TIMING CPU  :: Exact-exchange energy                            12.17 s
   TIMING WALL :: Exact-exchange energy                             1.70 s
 
   --------------------------
@@ -511,8 +511,8 @@
   New error after rotation:    -9.24
   Damping parameter       :      0.7065478
   
-  TIMING CPU  :: Interpolated zero-error                           5.30 s
-  TIMING WALL :: Interpolated zero-error                           0.73 s
+  TIMING CPU  :: Interpolated zero-error                           5.65 s
+  TIMING WALL :: Interpolated zero-error                           0.89 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -585,7 +585,7 @@
   Integration error (au):     -0.0000105
   Integration error (kcal/mol):    -0.01
   
-  TIMING CPU  :: enpart two-electron                              18.59 s
-  TIMING WALL :: enpart two-electron                               2.71 s
+  TIMING CPU  :: enpart two-electron                              18.96 s
+  TIMING WALL :: enpart two-electron                               2.78 s
 
   ...Normal Termination of APOST-3D...

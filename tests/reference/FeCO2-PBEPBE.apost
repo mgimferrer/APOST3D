@@ -19,7 +19,7 @@
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
                                                                                 
-    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
+    e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
                                                                                 
       Available atomic definitions:                                             
       ----------------------------                                              
@@ -436,8 +436,8 @@
   
   OVERALL RELIABILITY INDEX R(%) =  96.598
 
-  TIMING CPU  :: EFFAO computation                                 0.33 s
-  TIMING WALL :: EFFAO computation                                 0.07 s
+  TIMING CPU  :: EFFAO computation                                 0.34 s
+  TIMING WALL :: EFFAO computation                                 0.06 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
