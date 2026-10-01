@@ -61,7 +61,7 @@ c     Reading input
 
       write(3,*) "Starting to read the input file "
       idofr=0
-      call readchar ("# METODE","DO FRAGS",idofr)
+      call readchar ("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
        call locate(1,"# FRAGMENTS",ii)
        if(ii.eq.0) then

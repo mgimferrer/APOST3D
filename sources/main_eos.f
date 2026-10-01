@@ -133,44 +133,44 @@ CCCCCCCCCCCCCCCCCCCCC
       ndens0=1
 
 c look for options      
-      call readint("# METODE","DENS",ndens0,1,1)
-      call readchar("# METODE","WFN",iwfn)
-      call readchar("# METODE","ALLPOINTS",iallpo)
-      call readchar("# METODE","FULLPRECISION",iaccur)
+      call readint("# METHOD","DENS",ndens0,1,1)
+      call readchar("# METHOD","WFN",iwfn)
+      call readchar("# METHOD","ALLPOINTS",iallpo)
+      call readchar("# METHOD","FULLPRECISION",iaccur)
 
 C Atoms in molecules
-      call readchar("# METODE","MULLI",imulli)
-      call readchar("# METODE","LOWDIN",ilow)
+      call readchar("# METHOD","MULLI",imulli)
+      call readchar("# METHOD","LOWDIN",ilow)
       if(ilow.eq.1) imulli=2
-      call readchar("# METODE","LOWDIN-DAVIDSON",ilow)
+      call readchar("# METHOD","LOWDIN-DAVIDSON",ilow)
       if(ilow.eq.1) imulli=3
-      call readchar("# METODE","NAO-BASIS",ilow)
+      call readchar("# METHOD","NAO-BASIS",ilow)
       if(ilow.eq.1) imulli=4
-      call readchar("# METODE","LOWDIN-W",ilow)
+      call readchar("# METHOD","LOWDIN-W",ilow)
       if(ilow.eq.1) imulli=5
-      call readchar("# METODE","HIRSH",ihirsh)
-      call readchar("# METODE","HIRSH-IT",ihirsh0)
+      call readchar("# METHOD","HIRSH",ihirsh)
+      call readchar("# METHOD","HIRSH-IT",ihirsh0)
       if(ihirsh0.eq.1) ihirsh=2
-      call readchar("# METODE","BECKE-RHO",ibcp)
-      call readchar("# METODE","NEWBEC",inewbec)
-      call readchar("# METODE","TFVC",itfvc)
+      call readchar("# METHOD","BECKE-RHO",ibcp)
+      call readchar("# METHOD","NEWBEC",inewbec)
+      call readchar("# METHOD","TFVC",itfvc)
       if(itfvc.eq.1) then
         ibcp=1
         inewbec=1
         istiff=4
       end if
-      call readint("# METODE","STIFFNESS",istiff,4,1)
-      call readchar("# METODE","WMATRAD",iradmat)
-      call readchar("# METODE","RMATRAD",iradmat0)
+      call readint("# METHOD","STIFFNESS",istiff,4,1)
+      call readchar("# METHOD","WMATRAD",iradmat)
+      call readchar("# METHOD","RMATRAD",iradmat0)
       if(iradmat0.eq.1) iradmat=2
 
-      call readchar("# METODE","ERF_PROF",ierf)
-      call readreal("# METODE","ERF_PROF",aerf,6.266d0,1)
+      call readchar("# METHOD","ERF_PROF",ierf)
+      call readreal("# METHOD","ERF_PROF",aerf,6.266d0,1)
       if(ierf.eq.1)  istiff=0
 
 c ERC QTAIM input module
-c      call readchar("# METODE","QTAIM",iqtaim)
-c      call readchar("# METODE","READINT",ireadint)
+c      call readchar("# METHOD","QTAIM",iqtaim)
+c      call readchar("# METHOD","READINT",ireadint)
 c      if(ireadint.eq.1) iqtaim=2
 c      if(iqtaim.eq.1) then
 c       call readint("# QTAIM","STEP",istep,300,1)
@@ -181,48 +181,48 @@ c       call readint("# QTAIM","PATH",ipath,0,1)
 c      end if 
 
 c Miscellaneous options
-      call readchar("# METODE","OPOP",iopop)
-      call readchar("# METODE","SHANNON",isha)
-      call readchar("# METODE","DOINT",idoint)
-      call readchar("# METODE","PCA",ipca)
-      call readchar("# METODE","LAPLACIAN",ilaplacian)
-      call readchar("# METODE","FINEGRID",ifinegrid)
-c      call readchar("# METODE","ELCOUNT",ielcount) !MMO- NCTAIM
-      call readint("# METODE","RHO_CALC_AT",iatdens,0,1)
-      call readreal("# METODE","RHO_CALC_RAD",Rmax,0,1)
-      call readchar("# METODE","NOPOPU",inopop)
+      call readchar("# METHOD","OPOP",iopop)
+      call readchar("# METHOD","SHANNON",isha)
+      call readchar("# METHOD","DOINT",idoint)
+      call readchar("# METHOD","PCA",ipca)
+      call readchar("# METHOD","LAPLACIAN",ilaplacian)
+      call readchar("# METHOD","FINEGRID",ifinegrid)
+c      call readchar("# METHOD","ELCOUNT",ielcount) !MMO- NCTAIM
+      call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)
+      call readreal("# METHOD","RHO_CALC_RAD",Rmax,0,1)
+      call readchar("# METHOD","NOPOPU",inopop)
  
 C eff-AO-s and EOS
-      call readchar("# METODE","EFFAO",ieffao)
-      call readchar("# METODE","UEFFAO",idummy)
+      call readchar("# METHOD","EFFAO",ieffao)
+      call readchar("# METHOD","UEFFAO",idummy)
       if(idummy.eq.1) ieffao=2
-c      call readchar("# METODE","EFFAO-U",idummy)
+c      call readchar("# METHOD","EFFAO-U",idummy)
 c      if(idummy.eq.1) ieffao=3
-      call readint("# METODE","EFF_THRESH",ieffthr,1,1)
-      call readchar("# METODE","CUBE",icube)
+      call readint("# METHOD","EFF_THRESH",ieffthr,1,1)
+      call readchar("# METHOD","CUBE",icube)
       if(icube.eq.1) then
        call locate(16,"# CUBE",ii)
        if(ii.eq.0) stop'Required section # CUBE not found in input file'
        call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
        call readint("# CUBE","MIN_OCC",kcubthr,0,1)
       end if
-      call readchar("# METODE","EOS",ieos)
+      call readchar("# METHOD","EOS",ieos)
       if(ieos.eq.1) then 
        iopop=1
-       call readreal("# METODE","EOS_THRESH",xthresh,2.5d-3,1)
+       call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
        ieffao=2
       end if
-      call readchar("# METODE","OS-CENTROID",ieoscent)
+      call readchar("# METHOD","OS-CENTROID",ieoscent)
 
 c Local spin and methods for correlated WFs
-      call readchar("# METODE","SPIN",ispin)
-      call readint("# METODE","DM",icorr,0,1)
+      call readchar("# METHOD","SPIN",ispin)
+      call readint("# METHOD","DM",icorr,0,1)
       if(icorr.eq.2) ispin=1
-      call readchar("# METODE","DAFH",idafh)
+      call readchar("# METHOD","DAFH",idafh)
 
 C Do for restricted number of atoms
       idoat=0
-      call readchar("# METODE","DOATOMS",idoat)
+      call readchar("# METHOD","DOATOMS",idoat)
       if(idoat.eq.1) then
         call locate(16,"# ATOMS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
@@ -237,7 +237,7 @@ C Do for restricted number of atoms
 
 c Do for fragments
       idofr=0
-      call readchar("# METODE","DOFRAGS",idofr)
+      call readchar("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
         call locate(16,"# FRAGMENTS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
