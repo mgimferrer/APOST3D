@@ -81,15 +81,20 @@ python3 tests/run_tests.py --help
 | `FeCO2-PBEPBE` | FeCO2 complex (charge +2), closed-shell RKS PBE — TFVC, fragment EOS, including per-EFO net/gross occupation checks | `dft eos effao tfvc rks fragments` |
 | `FeO4-2` | Ferrate(VI)²⁻, RKS — TFVC, QCHEM interface, fragment OSLO. Closed-shell (chosen to exercise the QCHEM `.fchk` interface, not open-shell coverage) | `dft oslo tfvc rks fragments qchem` |
 | `C2H6-B3LYP` | Ethane, RKS B3LYP — full ENPART, THREBOD/MOD-GRIDTWOEL, ~85s single-threaded | `dft enpart tfvc rks threbod` |
-| `H2O-Dimer-RHF` | Water dimer, RHF — ENPART (HF), THREBOD 10 skips 6 atom pairs into the multipolar-approximation path (only active coverage for it) | `hf enpart tfvc rhf threbod multipolar fragments` |
+| `H2O-Dimer-RHF` | Water dimer, RHF — ENPART (HF), THREBOD 10 skips 6 atom pairs into the multipolar-approximation path | `hf enpart tfvc rhf threbod multipolar fragments` |
 | `FeCN5NO3--UBLYP` | Iron cyanide/nitrosyl/nitrate complex, UKS BLYP — LOWDIN (first Hilbert-space AIM coverage), EFFAO, EOS, 7 fragments, open-shell | `dft lowdin effao eos uks fragments openshell` |
 | `NaBH3--UHF` | UHF — MULLI, PCA+EOS together (first `pca_analysis` coverage) | `hf uhf mulliken pca eos fragments` |
 | `FeCN5NO3--UBLYP-t2` | Same complex as above, UKS BLYP — TFVC + OSLO with LOWDIN as the `# OSLO` fragment-population scheme, 7 fragments. First coverage of unrestricted OSLO (`CH3F`/`FeO4-2` above are both closed-shell) | `dft oslo lowdin tfvc uks fragments openshell` |
 | `LiH-35-CAS22` | LiH, CASSCF(2,2) — TFVC + ENPART/CASSCF with the 1-/2-RDM supplied via `# DM PYSCF` (which also auto-enables local spin analysis). First coverage of `ENPART`+`CASSCF`, `# DM PYSCF`, and the correlated-WF local-spin branch | `hf enpart casscf dm pyscf spin tfvc` |
 | `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS, 2 fragments, with two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |
 | `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ — TFVC, GEOS with a negative paired EFO, `FIT %`, and `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
+| `H2O-BLYP` / `H2O-T-BLYP` | Water, RKS / triplet UKS BLYP — ENPART with a pure GGA given as libxc ids (`LIBRARY`, `EX_FUNCTIONAL`/`EC_FUNCTIONAL`), all pairs computed | `dft enpart tfvc rks/uks libxc-ids` |
+| `H2O-TPSS` | Water, RKS TPSS — meta-GGAs are not supported yet: ENPART must stop with a message before any energy is computed | `dft enpart tfvc rks meta-gga expected-stop` |
+| `H2O-SVWN` / `H2O-B3P86` | Water, Gaussian 16 SVWN / B3P86 — predefined functional keywords (LDA family; B3P86 = libxc 315) | `dft enpart tfvc rks functional-keyword` |
+| `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, Gaussian 16 BLYP / B3LYP at the default THREBOD — 7 weakly bonded pairs take their whole xc from the multipolar expansion (hybrid: (1−xmix) in the DFT part, xmix with the HF-type exchange) | `dft enpart tfvc rks threbod multipolar` |
+| `H2O-T-B3LYP-MP` | Same wavefunction as `H2O-T-B3LYP`, THREBOD 2000 so the H–H pair is skipped — unrestricted multipolar paths (DFT and HF-type exchange parts) | `dft enpart tfvc uks openshell hybrid threbod multipolar` |
 
-All twelve run every time `make test` is invoked.
+All twenty run every time `make test` is invoked.
 
 ## Adding a new test case
 

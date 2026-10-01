@@ -72,7 +72,7 @@ The functional must be the one used to compute the wavefunction.
 | Keyword | Description |
 | ------- | ----------- |
 | CORRELATION | Correlated wavefunctions only: decompose exchange and correlation separately. By default they are decomposed together |
-| THREBOD=*val* | Bond-order threshold for the two-center terms, *val*/10000 (default *val*=100, i.e. 0.01). For pairs of atoms with a smaller bond order the integration (6-D exchange, or BODEN for KS-DFT) is skipped and the pair's whole exchange-correlation term is estimated by a multipolar expansion (see [ENPART](../methods/enpart.md)). Any *val* below 1 sets the threshold to zero, so every pair is computed |
+| THREBOD=*val* | Bond-order threshold for the two-center terms, *val*/10000 (default *val*=50, i.e. 0.005). For pairs of atoms with a smaller bond order the integration (6-D exchange, or BODEN for KS-DFT) is skipped and the pair's whole exchange-correlation term is estimated by a multipolar expansion (see [ENPART](../methods/enpart.md)). Any *val* below 1 sets the threshold to zero, so every pair is computed |
 | TWOELTOLER=*val* | Two-electron integration error (kcal/mol) above which the zero-error strategy is applied. Default *val*=0.25. *val*=0.00 always applies it. Has no effect if the `.fchk` file has no reference electron-electron energy |
 | MOD-GRIDTWOEL | User-defined grid for the two-electron integration. Requires an additional `# GRID` block |
 | ANALYTIC | Semianalytical integration of the two-electron energy, one-center terms only (under development) |
