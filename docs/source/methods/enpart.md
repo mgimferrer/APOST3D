@@ -92,8 +92,8 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
 
   ```bash
   cd $APOST3D_PATH/utils
-  gfortran -std=legacy -o get_energy_g16 get_energy_g16.f
-  gfortran -std=legacy -o get_energy get_energy.f
+  gfortran -o get_energy_g16 get_energy_g16.f
+  gfortran -o get_energy get_energy.f
   ```
 
   `.fchk` files written from pySCF with `utils/apost3d.py` (see [pySCF](../input/pyscf.md)) already contain

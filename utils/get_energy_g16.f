@@ -67,6 +67,7 @@ c     Reading matrices!
        read(1,'(a80)') line 
       end do 
       read(line(13:17),*) bf
+      if(bf.gt.maxdim) stop 'NBasis > maxdim (2000): increase it'
 
 c     P matrix
       
@@ -118,7 +119,7 @@ c ****
       implicit double precision (a-h,o-z)
       character(len=*) ::  key
       integer ival,jval
-      parameter (maxdim=10000)
+      parameter (maxdim=2000)
       dimension rmatrix(maxdim,maxdim)
       character(len=43) ::  title
 
@@ -132,7 +133,7 @@ c ****
       subroutine readXmatrix(x,bf,str)
       implicit double precision (a-h,o-z)
       integer b,d,i,j,k,bf
-      parameter (maxdim=10000)
+      parameter (maxdim=2000)
       dimension x(maxdim,maxdim)
       character*80 line
       character*8 str
@@ -188,7 +189,7 @@ c ****
       subroutine calcenergy(xx,yy,bf,xenergy)
       implicit double precision (a-h,o-z)
       integer bf,n,m
-      parameter (maxdim=10000)
+      parameter (maxdim=2000)
       dimension xx(maxdim,maxdim),yy(maxdim,maxdim),zz(maxdim,maxdim)
 
       n=bf
@@ -224,7 +225,7 @@ c ****
       subroutine readDmatrix(x,bf,str)
       implicit double precision (a-h,o-z)
       integer b,d,i,j,k,bf
-      parameter (maxdim=10000)
+      parameter (maxdim=2000)
       dimension x(maxdim,maxdim)
       character*80 line
       character*8 str
