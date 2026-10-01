@@ -514,7 +514,7 @@ c write to gaussian com file
 
     
 
-      call spline(xr, radial, nrad, -10.0d0, 0.0d0, y2)
+      call gh_spline(xr, radial, nrad, -10.0d0, 0.0d0, y2)
 
   
 
@@ -975,7 +975,7 @@ c       WRITE(*,*) 'dfac', dfac
      
       end 
 
-      SUBROUTINE spline(x,y,n,yp1,ypn,y2)
+      SUBROUTINE gh_spline(x,y,n,yp1,ypn,y2)
 
       INTEGER n,NMAX
       DOUBLE PRECISION yp1,ypn,x(n),y(n),y2(n)
@@ -1036,7 +1036,7 @@ c       WRITE(*,*) 'dfac', dfac
       endif
 
       h=xa(khi)-xa(klo)
-      if (h.eq.0.) pause 'bad xa input in splint'
+      if (h.eq.0.) stop 'bad xa input in splint'
       a=(xa(khi)-x)/h
       b=(x-xa(klo))/h
       y=a*ya(klo)+b*ya(khi)+((a**3-a)*y2a(klo)+(b**3-b)*y2a(khi))*(h**

@@ -119,10 +119,11 @@ gfortran --version   # must be >= 10.0
 git clone https://github.com/mgimferrer/APOST3D.git
 cd APOST3D
 
-# 2. Set the installation path (add this to your shell profile too)
+# 2. Set the installation path (add this to your shell profile too: it is
+#    how your job scripts find $APOST3D_PATH/apost3d)
 export APOST3D_PATH=$(pwd)
 
-# 3. Build apost3d, apost3d-eos, and eos_aom
+# 3. Build apost3d, apost3d-eos and the utilities in utils/
 #    (fetches + builds libxc automatically first, if needed — see above)
 bash make_compile.sh
 ```
@@ -139,8 +140,8 @@ dashed flags:
 
 ```bash
 bash make_compile.sh clean          # force a full rebuild
-bash make_compile.sh NTHREADS=8     # OMP_NUM_THREADS to report/export
-bash make_compile.sh clean NTHREADS=8
+bash make_compile.sh NTHREADS=4     # 4 compile jobs (default: 8)
+bash make_compile.sh ARCH=native    # optimize for this machine's CPU only
 bash make_compile.sh help           # list all available arguments
 ```
 
@@ -148,17 +149,55 @@ bash make_compile.sh help           # list all available arguments
 :class: tip
 
 `NTHREADS=<n>` means the same thing and is spelled the same way whether
-you're building (`bash make_compile.sh NTHREADS=4`) or running the test
-suite (`make test NTHREADS=4`) — see [Running the test suite](testing.md).
+you're building (`bash make_compile.sh NTHREADS=4`, the number of parallel
+compile jobs) or running the test suite (`make test NTHREADS=4`, the threads
+of each test) — see [Running the test suite](testing.md). The default is 8,
+or fewer if the machine has fewer CPUs. On a shared cluster login node, use a
+small value.
 ```
+
+### Which CPUs the build runs on (`ARCH`)
+
+By default the code is compiled for the generic architecture (x86-64 or
+arm64), so the same binary runs on every CPU of that family. This is the
+right choice for a cluster whose nodes are of different ages, or when you
+compile on a login node and run on compute nodes.
+
+`ARCH=native` compiles for the CPU of the machine doing the build, using all
+its instructions (AVX2, AVX-512, ...). That can be somewhat faster, but the
+binary may stop with `Illegal instruction` on an older CPU, so use it only if
+the program runs on the same kind of machine that compiled it. Any other
+`gcc -march` value also works, e.g. `ARCH=x86-64-v3` for CPUs from about 2015
+on. Changing `ARCH` triggers a full rebuild automatically.
+
+### Utilities
+
+`make_compile.sh` also builds the programs in `utils/`:
+
+| Program | Purpose |
+|---------|---------|
+| `get_energy_g16`, `get_energy` | Append the reference energies of a Gaussian 16 / 09 `.log` to its `.fchk` (needed by the zero-error strategy of [ENPART](methods/enpart.md)) |
+| `gen_hirsh` | Build the atomic densities file (`densoutput`) for Hirshfeld and Hirshfeld-I |
+| `wfn2fchk` | Convert a `.wfn` file to `.fchk` |
+| `group_frag` | Group ENPART energy terms by fragment |
+| `eos_aom` | EOS from atomic overlap matrices of Multiwfn or AIMAll |
+| `eos_alt` | EOS variants from an APOST-3D output |
+
+`utils/apost3d.py` writes `.fchk` files from pySCF (see [ENPART](methods/enpart.md)).
+
+### Using `make` directly
 
 If you'd rather drive `make` directly (custom build setups, CI, etc.):
 
 ```bash
-make -C $APOST3D_PATH all      # build apost3d, apost3d-eos, eos_aom
-make -C $APOST3D_PATH clean    # remove all objects and binaries
-make -C $APOST3D_PATH help     # list all available targets and flags
+make -C $APOST3D_PATH -j8 all    # build apost3d and apost3d-eos
+make -C $APOST3D_PATH -j8 utils  # build the utilities in utils/
+make -C $APOST3D_PATH clean      # remove all objects and binaries
+make -C $APOST3D_PATH help       # list all available targets and flags
 ```
+
+Object files go to `objects/`; `apost3d` and `apost3d-eos` are written to
+the repository root and the utilities to `utils/`.
 
 ## Verify the install
 

@@ -32,11 +32,8 @@ LIBXC_URL="https://gitlab.com/libxc/libxc/-/archive/${LIBXC_VERSION}/libxc-${LIB
 LIBXC_SHA256="c517ce61820ea8114664a4280b6a6bc74a4f22f1fd1ea4ddecd6df0caeeae4f4"
 LIBXC_CMAKE_MIN="3.21"
 
-if [[ -z "${APOST3D_PATH:-}" ]]; then
-  echo "ERROR: APOST3D_PATH is not set."
-  echo "       Run:  export APOST3D_PATH=/path/to/APOST3D"
-  exit 1
-fi
+# APOST3D_PATH defaults to this script's directory, like make_compile.sh
+APOST3D_PATH="${APOST3D_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 
 LIBXCDIR="${APOST3D_PATH}/libxc-${LIBXC_VERSION}"
 TARBALL="${APOST3D_PATH}/libxc-${LIBXC_VERSION}.tar.gz"
@@ -106,6 +103,7 @@ cd "$APOST3D_PATH"
 if [[ -f "$TARBALL" ]]; then
   echo "Found existing $TARBALL — reusing it (skipping download)."
 else
+  DOWNLOADED=1
   echo "Downloading libxc ${LIBXC_VERSION} from upstream..."
   echo "  $LIBXC_URL"
   if ! curl -fL --retry 3 -o "$TARBALL" "$LIBXC_URL"; then
@@ -167,7 +165,13 @@ cmake -B build \
   -DBUILD_TESTING=OFF
 echo ""
 
-NCPU=$(sysctl -n hw.logicalcpu 2>/dev/null || nproc 2>/dev/null || echo 4)
+# NTHREADS (as for make_compile.sh), else 8 or the CPU count if smaller
+if [[ -n "${NTHREADS:-}" ]]; then
+  NCPU="$NTHREADS"
+else
+  NCPU=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null || echo 1)
+  NCPU=$(( NCPU < 8 ? NCPU : 8 ))
+fi
 echo "Building with ${NCPU} parallel jobs ..."
 cmake --build build -j"$NCPU"
 echo ""
@@ -175,6 +179,17 @@ echo ""
 echo "Installing into $LIBXCDIR ..."
 cmake --install build
 echo ""
+
+if [[ ! -f "$LIBXCDIR/lib/libxcf03.a" ]]; then
+  echo "ERROR: install finished but $LIBXCDIR/lib/libxcf03.a is missing."
+  exit 1
+fi
+
+# A tarball this script downloaded is not needed any more; one placed by
+# hand (machine without internet access) is kept for a later rebuild.
+if [[ "${DOWNLOADED:-0}" -eq 1 ]]; then
+  rm -f "$TARBALL"
+fi
 
 echo "============================================================"
 echo "  libxc-${LIBXC_VERSION} built successfully."
