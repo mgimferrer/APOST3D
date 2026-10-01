@@ -6,21 +6,52 @@ described in [ENPART](../methods/enpart.md).
 
 ## Wavefunction and functional
 
-Give exactly one of:
+Give exactly one of: `HF`, a predefined functional keyword, `LIBRARY`
+(with libxc ids), `CASSCF` or `CISD`.
 
 | Keyword | Description |
 | ------- | ----------- |
 | HF | Hartree-Fock energy |
-| LDA | Slater exchange only (libxc id 1), **without** correlation |
-| BP86 | Becke 88 exchange + Perdew 86 correlation (libxc ids 106 + 132) |
-| B3LYP | Gaussian's B3LYP, with VWN-RPA local correlation (libxc id 402) |
-| LIBRARY | Any supported functional, given by its [libxc](https://libxc.gitlab.io/functionals/) ids (see below) |
 | CASSCF | CASSCF energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
 | CISD | CISD energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
+| LIBRARY | Any supported functional, given by its [libxc](https://libxc.gitlab.io/functionals/) ids (see below) |
 
-The functional must be the one used to compute the wavefunction. The
-B3LYP of ORCA or Turbomole is not the `B3LYP` keyword but `LIBRARY` +
-`EXC_FUNCTIONAL 475` (VWN5 instead of VWN-RPA).
+### Predefined functionals
+
+Each keyword reproduces the Gaussian 16 functional of the same name (checked
+on water with ENPART's own two-electron error, see
+[ENPART](../methods/enpart.md)). Keywords are case-insensitive.
+
+| Keyword | Functional | libxc ids |
+| ------- | ---------- | --------- |
+| SVWN | Slater exchange + VWN correlation, RPA fit (Gaussian's SVWN) | 1 + 8 |
+| SVWN5 | Slater exchange + VWN5 correlation | 1 + 7 |
+| BLYP | Becke 88 exchange + LYP correlation | 106 + 131 |
+| BP86 | Becke 88 exchange + Perdew 86 correlation | 106 + 132 |
+| PBE (or PBEPBE) | PBE exchange and correlation | 101 + 130 |
+| B3LYP | Gaussian's B3LYP (VWN-RPA local correlation) | 402 |
+| B3PW91 | B3PW91 | 401 |
+| B3P86 | Gaussian's B3P86 | 315 |
+| PBE0 (or PBE1PBE) | PBE0 | 406 |
+| BHANDHLYP | Gaussian's BHandHLYP (50% HF exchange, B88, LYP) | 436 |
+
+```{admonition} Same name, different functional
+:class: warning
+
+- The B3LYP of ORCA or Turbomole uses VWN5 instead of VWN-RPA: use
+  `LIBRARY` + `EXC_FUNCTIONAL 475`, not the `B3LYP` keyword. For water the
+  two differ by about 23 kcal/mol.
+- libxc's own "B3P86" (id 403) does not reproduce Gaussian's B3P86
+  (about 100 kcal/mol off for water); the `B3P86` keyword uses id 315.
+- For BP86, libxc id 217 (Perdew 86 with a more accurate constant) is
+  equally close to Gaussian's BP86 (0.05 kcal/mol for water); the keyword
+  uses the original definition, 132.
+```
+
+The former `LDA` keyword (Slater exchange only) is no longer accepted:
+use `SVWN`/`SVWN5`, or `LIBRARY` + `EX_FUNCTIONAL 1` for exchange only.
+
+### Functionals by libxc id
 
 With `LIBRARY`, give either `EXC_FUNCTIONAL` alone, or `EX_FUNCTIONAL`
 and/or `EC_FUNCTIONAL`, never both kinds together:
@@ -34,6 +65,7 @@ and/or `EC_FUNCTIONAL`, never both kinds together:
 `KEY val` and `KEY=val` are both accepted. LDA, GGA and global-hybrid GGA
 functionals are supported. Meta-GGAs (not yet), range-separated hybrids
 and VV10 functionals stop the run with a message, as does an invalid id.
+The functional must be the one used to compute the wavefunction.
 
 ## Extra options
 

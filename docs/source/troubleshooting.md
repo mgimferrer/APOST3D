@@ -85,3 +85,12 @@ integration error is neither estimated nor corrected, and it can reach
 tens of kcal/mol on coarse grids for heavier atoms. Append the reference
 energies (see [ENPART](methods/enpart.md)), or use a finer two-electron
 grid.
+
+**`STOP LDA KEYWORD REMOVED. REVISE inp`**
+The old `LDA` keyword meant Slater exchange only. Use `SVWN` or `SVWN5`,
+or `LIBRARY` + `EX_FUNCTIONAL 1` if exchange only is really intended.
+
+**`STOP MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART`** / **`STOP GIVE
+EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART`**
+Give one functional only: one predefined keyword, or `LIBRARY` with its
+ids.
