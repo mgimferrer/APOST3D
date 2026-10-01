@@ -201,7 +201,7 @@ C trasnform to the AO basis
 
 ! *****s
 !! confirmed dead -- zero call sites codebase-wide (both would-be callers, !!
-!! main.f and utils/main_eos.f, have theirs commented out). Left alone    !!
+!! main.f and main_eos.f, have theirs commented out). Left alone          !!
 !! pending a deprecation decision, same as gennatural_old/old_diagonalize !!
 !! above.                                                                 !!
       subroutine readintfiles(sat)
