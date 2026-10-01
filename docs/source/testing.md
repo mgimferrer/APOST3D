@@ -9,12 +9,23 @@ Each test is checked in two ways:
 
 - **Manifest checks**: selected quantities (energies, charges, oxidation
   states, ...) from `tests/manifest.json`, each with its own tolerance.
-- **Full output vs reference**: every number printed in the output, and the
-  text around it, compared with the stored `tests/reference/<name>.apost`.
-  Integers must match exactly; decimals may differ by at most 5 units of
-  their last printed digit, which covers a rounding change on another
-  machine or compiler but not a real change. Timings and the thread count
-  are ignored.
+- **Full output vs reference**: every number printed in the output
+  compared with the stored `tests/reference/<name>.apost`. Integers must
+  match exactly; decimals may differ by at most 5 units of their last
+  printed digit, which covers a rounding change on another machine or
+  compiler but not a real change. Timings and the thread count are ignored.
+
+The full-output comparison has two levels:
+
+| Command | A changed number | Layout or wording differs |
+|---|---|---|
+| `make test` | fails | note only (blank and border lines are not compared) |
+| `make test-strict` | fails | fails |
+
+`make test` is for day-to-day development: reformatting or rewording the
+output does not break it, but a number that changed does. `make test-strict`
+is for the same code on another machine or compiler, or before a release,
+where any difference is real.
 
 ```bash
 make test               # build (if needed) + run the entire suite, 1 thread
@@ -51,6 +62,7 @@ means exactly the same thing as `bash make_compile.sh NTHREADS=<n>` — see
 |---|---|
 | `make test` | Build (if needed) + run every test, 1 thread |
 | `make test NTHREADS=<n>` | Same, using `<n>` threads |
+| `make test-strict [NTHREADS=<n>]` | Same, but any difference from the reference outputs fails |
 | `make update-ref [NTHREADS=<n>]` | Rewrite `tests/reference/*.apost` after an intended change of the output (manifest values are kept) |
 | `make help` | List all available make targets and flags |
 
@@ -76,10 +88,10 @@ python3 tests/run_tests.py --help
 ## Checking a build on another machine
 
 Copy or clone the whole package (sources, `compiler-testset/` and `tests/`),
-build it as usual, and run `make test NTHREADS=<n>`. The references were
-written on the developers' machine, so a passing suite means the new build
-prints the same numbers. A failing full-output check lists the lines that
-differ, for example:
+build it as usual, and run `make test-strict NTHREADS=<n>`. The references
+were written on the developers' machine, so a passing suite means the new
+build prints exactly the same output. A failing full-output check lists the
+lines that differ, for example:
 
 ```text
            ✗  Full output vs reference               1 line(s) differ
@@ -97,14 +109,17 @@ python3 tests/compare_outputs.py --ref-dir tests/reference --out-dir tests/repor
 ```
 
 `--ulps K` (in both the runner and `compare_outputs.py`) changes the allowed
-deviation to `K` units of the last printed digit, and `--no-full` skips the
-full-output check in the runner.
+deviation to `K` units of the last printed digit, `--strict` selects the
+strict level, and `--no-full` skips the full-output check in the runner.
 
 ## Updating the references
 
-After an intended change of the output (new or reworded lines, a numerical
-fix), rewrite the references with `make update-ref` and commit them with the
-code change. It only writes the `.apost` files: a test whose manifest checks
+After an intended change of the output, rewrite the references with
+`make update-ref` and commit them with the code change. For a numerical
+change this is needed to make `make test` pass again; for a layout or
+wording change `make test` only prints a note listing the affected tests,
+but refresh the references anyway: a number that changes on a reworded line
+can only be reported as a wording difference. It only writes the `.apost` files: a test whose manifest checks
 fail is not written. If manifest values must change too, review the change
 and run `python3 tests/run_tests.py --update-ref --update-manifest`, which
 rewrites the values at full printed precision.
