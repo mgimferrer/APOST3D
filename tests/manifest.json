@@ -995,7 +995,7 @@
     },
     {
       "name": "LiH-35-CAS22",
-      "description": "LiH, CASSCF(2,2) / def2-TZVP — ENPART (CASSCF) with the 1- and 2-RDMs from pySCF (# DM PYSCF), every atom pair computed (THREBOD 0). SPIN is set, but the correlated local-spin analysis (spincorr) is not reached.",
+      "description": "LiH, CASSCF(2,2) / def2-TZVP — ENPART (CASSCF) with the 1- and 2-RDMs from pySCF (# DM PYSCF), every atom pair computed (THREBOD 0), and the correlated local spin analysis (SPIN, which also needs the 2-RDM).",
       "tags": [
         "hf",
         "enpart",
@@ -1093,6 +1093,32 @@
           "pattern": "Sum check N_D\\s*=\\s*([-+]?\\d+\\.\\d+)",
           "ref": 1.40184,
           "tol_abs": 0.0002
+        },
+        {
+          "label": "Correlated local spin analysis run",
+          "type": "present",
+          "pattern": "Localization/delocalization, correlated WF"
+        },
+        {
+          "label": "Local spin <S^2>_Li",
+          "section": "S\\^2 DECOMPOSITION \\(a=3/4\\)",
+          "pattern": "1 Li\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.452573,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Spin coupling <S^2>_LiH",
+          "section": "S\\^2 DECOMPOSITION \\(a=3/4\\)",
+          "pattern": "1 Li\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.452573,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Total <S^2> from the decomposition",
+          "section": "S\\^2 DECOMPOSITION \\(a=3/4\\)",
+          "pattern": "Sum check <S\\^2> =\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 2e-05
         }
       ]
     },
