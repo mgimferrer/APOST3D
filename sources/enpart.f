@@ -875,7 +875,8 @@
         deltaee=deltaee*tokcal
         phabest=ONE-(twoelerr/deltaee)
         write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-        if((twoelerr-deltaee)*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+        if((twoelerr-deltaee)*twoelerr.gt.ZERO) write(*,'(2x,a)')
+     +    'Same-sign error on both grids: extrapolating, not interpolating'
         write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
 
 !! interpolate energies, replacing the old Coulomb/exchange terms !!
@@ -1931,7 +1932,8 @@
         deltaee=deltaee*tokcal
         phabest=ONE-(twoelerr/deltaee)
         write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-        if((twoelerr-deltaee)*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
+        if((twoelerr-deltaee)*twoelerr.gt.ZERO) write(*,'(2x,a)')
+     +    'Same-sign error on both grids: extrapolating, not interpolating'
         write(*,'(2x,a25,x,f14.7)') "Damping parameter       :",phabest
 
 !! interpolate energies, replacing the old Coulomb/exchange terms !!

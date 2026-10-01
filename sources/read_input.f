@@ -237,7 +237,7 @@
         call readchar("# ENPART","HOMO",ihomo)
         call readchar("# ENPART","DEKIN",idek)
         call readchar("# ENPART","IONIC",iionic)
-        call readreal("# ENPART","TWOELTOLER",twoeltoler,0.00d0,1)
+        call readreal("# ENPART","TWOELTOLER",twoeltoler,0.25d0,1)
         call readchar("# ENPART","ANALYTIC",ianalytical)
 
 !! adding grid tuning for two-el integration !!
