@@ -705,6 +705,8 @@
           call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
           CALL MPRINT2(exch_hf,nat,maxat)
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
+     +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
           write(*,*) " "
           call cpu_time(xtime2)
           call get_wall_time(wxtime2)
@@ -763,6 +765,10 @@
       write(*,*) " "
 
       if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) then
+        write(*,'(2x,a)')
+     +    'Zero-error strategy applied: the INTERPOLATED tables below replace'
+        write(*,'(2x,a)')
+     +    'the ones above (only their one-center terms change).'
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
 !! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
@@ -916,6 +922,8 @@
             end do
           end do
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
+     +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
           if(ihf.eq.1) write(*,*) " "
 
           if(ihf.ne.1) then
@@ -1733,6 +1741,8 @@
           call print_box('HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS')
           call MPRINT2(exch_hf,nat,maxat)
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
+     +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
           if(ihf.eq.1) write(*,*) " "
         end if
       end if !MMO- non-analytical skip ends here
@@ -1786,6 +1796,10 @@
       write(*,*) " "
 
       if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) then
+        write(*,'(2x,a)')
+     +    'Zero-error strategy applied: the INTERPOLATED tables below replace'
+        write(*,'(2x,a)')
+     +    'the ones above (only their one-center terms change).'
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
 !! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
@@ -1969,6 +1983,8 @@
             end do
           end do
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
+          if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
+     +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
           if(ihf.eq.1) write(*,*) " "
 
           if(ihf.ne.1) then

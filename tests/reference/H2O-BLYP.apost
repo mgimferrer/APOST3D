@@ -153,7 +153,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.24 s
+  TIMING CPU  :: atomic definition                                 0.25 s
   TIMING WALL :: atomic definition                                 0.04 s
 
   -----------------------------
@@ -306,7 +306,7 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      9.1193799
   
-  TIMING CPU  :: enpart one-electron                               0.20 s
+  TIMING CPU  :: enpart one-electron                               0.19 s
   TIMING WALL :: enpart one-electron                               0.03 s
 
   --------------------------------
@@ -368,7 +368,7 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:     -9.3414870
   
-  TIMING CPU  :: enpart dft                                        0.73 s
+  TIMING CPU  :: enpart dft                                        0.71 s
   TIMING WALL :: enpart dft                                        0.11 s
 
   -------------------------------------------------------
@@ -399,7 +399,7 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     46.8901440
   
-  TIMING CPU  :: Coulomb energy                                    0.28 s
+  TIMING CPU  :: Coulomb energy                                    0.27 s
   TIMING WALL :: Coulomb energy                                    0.04 s
   
   KS-DFT electron-electron energy (au):     37.5486570
@@ -407,6 +407,8 @@
   
   Max error accepted on the two-electron part (kcal/mol):     0.25
   
+  Zero-error strategy applied: the INTERPOLATED tables below replace
+  the ones above (only their one-center terms change).
   Rotating for angles:   0.000000   0.182000
   New error after rotation:    -8.86
   Same-sign error on both grids: extrapolating, not interpolating

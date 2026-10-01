@@ -549,6 +549,10 @@
         write(*,*) " "
 
         if(abs(twoelerr).gt.twoeltoler) then
+          write(*,'(2x,a)')
+     +    'Zero-error strategy applied: the INTERPOLATED tables below replace'
+          write(*,'(2x,a)')
+     +    'the ones above (only their one-center terms change).'
 
 !! NEW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
