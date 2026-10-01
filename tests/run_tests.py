@@ -48,6 +48,9 @@ Options
   --update-manifest With --update-ref, also rewrite the manifest's ref values
                     from the fresh output (at full printed precision)
   --no-full         Skip the full-output comparison against tests/reference/
+  --strict          Full-output comparison fails on any difference, layout
+                    and wording included (default: only changed numbers fail,
+                    layout/wording differences are a note)
   --ulps K          Full-output tolerance, in units of each number's last
                     printed digit (default: 5)
   --nthreads N      OMP_NUM_THREADS (default: 1)
@@ -60,9 +63,10 @@ copied out before that dir is deleted). Pass --output-dir to redirect it
 elsewhere; there is no flag to disable saving it.
 
 Besides the manifest checks, every test's whole output is compared with
-tests/reference/<name>.apost (compare_outputs.py): every printed number, and
-the text around it. This is what a run on another machine or compiler is
-checked against.
+tests/reference/<name>.apost (compare_outputs.py). By default only a changed
+number fails it; layout and wording differences are reported as a note.
+With --strict (make test-strict) any difference fails: use it for the same
+code on another machine or compiler, or before a release.
 """
 
 import argparse
@@ -134,6 +138,9 @@ def parse_args():
     p.add_argument("--no-full", action="store_true",
                    help="Skip the full-output comparison against the "
                         "reference .apost files")
+    p.add_argument("--strict", action="store_true",
+                   help="Full-output comparison fails on any difference, "
+                        "layout and wording included")
     p.add_argument("--ulps", type=float, default=5, metavar="K",
                    help="Full-output tolerance in units of each number's "
                         "last printed digit (default: 5)")
@@ -279,17 +286,28 @@ def evaluate_check(output: str, check: dict) -> dict:
     return result
 
 
-def full_output_check(ref_file: Path, out_file: Path, ulps: float) -> dict:
-    """Compare the whole output with the stored reference .apost."""
-    result = {"label": "Full output vs reference", "type": "full"}
+def full_output_check(ref_file: Path, out_file: Path, ulps: float,
+                      strict: bool) -> dict:
+    """
+    Compare the whole output with the stored reference .apost. Status "warn"
+    (a note, not a failure) when only layout/wording differs at the default
+    level.
+    """
+    label = "Full output vs reference" + (" (strict)" if strict else "")
+    result = {"label": label, "type": "full"}
     if not ref_file.exists():
         result["status"] = "error"
         result["message"] = f"no reference file {ref_file.name}"
         return result
-    res = compare_files(ref_file, out_file, ulps)
-    result["status"] = "fail" if res["diffs"] else "pass"
+    res = compare_files(ref_file, out_file, ulps, strict)
+    if res["failed"]:
+        result["status"] = "fail"
+    elif res["text_diffs"]:
+        result["status"] = "warn"
+    else:
+        result["status"] = "pass"
     result["message"] = summary(res, ulps)
-    if res["diffs"]:
+    if res["num_diffs"] or res["text_diffs"]:
         result["details"] = format_diffs(res)
     return result
 
@@ -298,7 +316,8 @@ def full_output_check(ref_file: Path, out_file: Path, ulps: float) -> dict:
 
 
 def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
-             output_dir: Path, ref_dir: Path = None, ulps: float = 5) -> dict:
+             output_dir: Path, ref_dir: Path = None, ulps: float = 5,
+             strict: bool = False) -> dict:
     """
     Execute one test case and return a result dict.
 
@@ -379,7 +398,7 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
         check_results = [evaluate_check(output, c) for c in test.get("checks", [])]
         if ref_dir is not None:
             check_results.append(full_output_check(ref_dir / f"{name}.apost",
-                                                   outfile, ulps))
+                                                   outfile, ulps, strict))
 
         n_fail = sum(1 for r in check_results if r["status"] in ("fail", "error"))
 
@@ -420,7 +439,7 @@ def _print_check(cr: dict, verbose: bool):
         msg = cr["message"]
 
     print(f"           {sym}  {cr['label']:<38s} {msg}")
-    if cr["status"] != "pass":
+    if cr["status"] in ("fail", "error") or (cr["status"] == "warn" and verbose):
         for line in cr.get("details", []):
             print(f"                {line}")
 
@@ -442,11 +461,13 @@ def print_test_result(result: dict, test_meta: dict, idx: int, total: int, verbo
     for cr in result["checks"]:
         _print_check(cr, verbose)
 
-    n_pass  = sum(1 for r in result["checks"] if r["status"] == "pass")
+    n_pass  = sum(1 for r in result["checks"] if r["status"] in ("pass", "warn"))
     n_total = len(result["checks"])
+    n_note  = sum(1 for r in result["checks"] if r["status"] == "warn")
+    note    = f", {n_note} note" if n_note else ""
 
     if result["status"] == "pass":
-        print(f"           {green('PASSED')}  ({n_pass}/{n_total} checks)")
+        print(f"           {green('PASSED')}  ({n_pass}/{n_total} checks{note})")
     else:
         msg = result.get("reason", "")
         print(f"           {red('FAILED')}  ({n_pass}/{n_total} checks passed)  {msg}")
@@ -486,6 +507,13 @@ def print_summary(results: list, total_elapsed: float):
     if n_fail: parts.append(red(f"{n_fail} FAILED"))
     if n_skip: parts.append(yellow(f"{n_skip} SKIPPED"))
     print(f"  {'  ·  '.join(parts)}   {dim(f'({total_elapsed:.0f}s total)')}")
+    noted = [r["name"] for r in results
+             if any(c["status"] == "warn" for c in r.get("checks", []))]
+    if noted:
+        print(f"  {SYM_WARN}  Layout/wording differs from the reference in "
+              f"{len(noted)} test(s): {', '.join(noted)}")
+        print("     Not a failure. Check with --verbose (or "
+              "tests/compare_outputs.py) and refresh with 'make update-ref'.")
     print("═" * 64)
     print()
 
@@ -507,7 +535,7 @@ def write_text_report(results: list, path: Path):
         if r.get("reason"):
             lines.append(f"       Reason: {r['reason']}")
         for cr in r.get("checks", []):
-            sym = "✓" if cr["status"] == "pass" else "✗"
+            sym = {"pass": "✓", "warn": "!"}.get(cr["status"], "✗")
             lines.append(f"  {sym}  {cr['label']:<38s} {cr['message']}")
             if cr["status"] != "pass":
                 lines.extend(f"        {d}" for d in cr.get("details", []))
@@ -531,8 +559,9 @@ def write_html_report(results: list, path: Path):
             f"<td>{r['elapsed']:.0f}s</td><td></td></tr>"
         )
         for cr in r.get("checks", []):
-            sym  = "✓" if cr["status"] == "pass" else "✗"
-            ccol = "#1a6b3c" if cr["status"] == "pass" else "#9b2226"
+            sym  = {"pass": "✓", "warn": "!"}.get(cr["status"], "✗")
+            ccol = {"pass": "#1a6b3c", "warn": "#b07d00"}.get(cr["status"],
+                                                             "#9b2226")
             rows.append(
                 f"<tr style='font-size:0.88em'>"
                 f"<td style='padding-left:2em;color:#555'>{cr['label']}</td>"
@@ -699,6 +728,7 @@ def main():
     print(
         f"  APOST-3D Test Suite  ·  {len(tests)} test(s)"
         f"  ·  {args.nthreads} thread(s)"
+        + ("  ·  strict" if args.strict else "")
         + ("  ·  verbose" if args.verbose else "")
         + f"  ·  output -> {output_dir}"
     )
@@ -718,7 +748,7 @@ def main():
 
         full_ref = None if (args.no_full or args.update_ref) else ref_dir
         result = run_test(test, binary, input_dir, args.nthreads, output_dir,
-                          full_ref, args.ulps)
+                          full_ref, args.ulps, args.strict)
         results.append(result)
 
         print_test_result(result, test, idx, len(tests), args.verbose)

@@ -125,7 +125,7 @@ OBJ_LIST_EOS := $(SRCDIR)/modules.o \
 ## BUILD TARGETS                                             ##
 ## --------------------------------------------------------- ##
 
-.PHONY: all clean test update-ref coverage help
+.PHONY: all clean test test-strict update-ref coverage help
 
 all: apost3d apost3d-eos eos_aom
 
@@ -196,6 +196,9 @@ eos_aom: $(UTILDIR)/eos_aom.o
 # Examples:
 #   make test                # build (if needed) + run everything, 1 thread
 #   make test NTHREADS=4     # same, using 4 threads
+#   make test-strict         # same, but any difference from tests/reference
+#                            # fails, layout/wording included (another
+#                            # machine or compiler, before a release)
 #   make update-ref          # rewrite tests/reference/*.apost after an intended
 #                            # output change (manifest values: runner's
 #                            # --update-ref --update-manifest)
@@ -219,6 +222,17 @@ test: all
 	  --manifest $(TEST_MANIFEST) \
 	  --ref      $(TEST_REF) \
 	  --nthreads $(NTHREADS)
+
+## Same as test, but the full-output comparison fails on any difference
+test-strict: all
+	@echo ""
+	python3 $(TEST_RUNNER) \
+	  --binary   $(APOST3D_PATH)/apost3d \
+	  --inputs   $(TEST_INPUTS) \
+	  --manifest $(TEST_MANIFEST) \
+	  --ref      $(TEST_REF) \
+	  --nthreads $(NTHREADS) \
+	  --strict
 
 ## Rewrite the reference outputs (tests/reference/*.apost) from a fresh run.
 ## Manifest values are left alone (runner's --update-manifest rewrites them)
@@ -290,7 +304,13 @@ help:
 	@echo "                              each run alongside last_run.txt/"
 	@echo "                              last_run.html in tests/report/)."
 	@echo "                              Each output is also compared, number"
-	@echo "                              by number, with tests/reference/."
+	@echo "                              by number, with tests/reference/: a"
+	@echo "                              changed number fails, a layout/wording"
+	@echo "                              difference is only a note."
+	@echo "  make test-strict [NTHREADS=n]"
+	@echo "                              Same, but any difference from"
+	@echo "                              tests/reference/ fails. For another"
+	@echo "                              machine or compiler, or a release."
 	@echo "  make update-ref [NTHREADS=n]"
 	@echo "                              Rewrite tests/reference/*.apost after an"
 	@echo "                              intended change of the output. Manifest"
