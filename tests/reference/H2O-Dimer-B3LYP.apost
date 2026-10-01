@@ -126,7 +126,7 @@
   Angular points             : 146
   Rotation angles (phb1/phb2):  0.162 /  0.182
 
-  TIMING CPU  :: initialization                                    0.01 s
+  TIMING CPU  :: initialization                                    0.00 s
   TIMING WALL :: initialization                                    0.00 s
 
   ----------------------------------------
@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 2.01 s
-  TIMING WALL :: atomic definition                                 0.27 s
+  TIMING CPU  :: atomic definition                                 1.89 s
+  TIMING WALL :: atomic definition                                 0.28 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -329,8 +329,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     36.6642284
   
-  TIMING CPU  :: enpart one-electron                               0.83 s
-  TIMING WALL :: enpart one-electron                               0.10 s
+  TIMING CPU  :: enpart one-electron                               0.79 s
+  TIMING WALL :: enpart one-electron                               0.12 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -418,8 +418,8 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
   
-  TIMING CPU  :: enpart dft                                        4.16 s
-  TIMING WALL :: enpart dft                                        0.63 s
+  TIMING CPU  :: enpart dft                                        4.20 s
+  TIMING WALL :: enpart dft                                        0.72 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -434,7 +434,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over  10 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -452,8 +452,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    112.2264252
   
-  TIMING CPU  :: Coulomb energy                                    0.97 s
-  TIMING WALL :: Coulomb energy                                    0.14 s
+  TIMING CPU  :: Coulomb energy                                    1.05 s
+  TIMING WALL :: Coulomb energy                                    0.24 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -461,7 +461,7 @@
 
   Two-el integrations for    110 MO pairs
   Threshold for atom pair calculation:   0.005000
-  Two-el integration will be distributed over  10 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   Skipping numerical integration for     7 atom pairs
 
   -------------------------------------------
@@ -481,8 +481,8 @@
   Hartree-Fock exchange energy:    -17.9413951
   Note: full HF-type exchange, before scaling by 0.200.
   
-  TIMING CPU  :: Exact-exchange energy                            12.39 s
-  TIMING WALL :: Exact-exchange energy                             1.43 s
+  TIMING CPU  :: Exact-exchange energy                            12.02 s
+  TIMING WALL :: Exact-exchange energy                             1.70 s
 
   --------------------------
     HYBRID KS-DFT XC TERMS
@@ -511,8 +511,8 @@
   New error after rotation:    -9.24
   Damping parameter       :      0.7065478
   
-  TIMING CPU  :: Interpolated zero-error                           5.62 s
-  TIMING WALL :: Interpolated zero-error                           0.67 s
+  TIMING CPU  :: Interpolated zero-error                           5.30 s
+  TIMING WALL :: Interpolated zero-error                           0.73 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -585,7 +585,7 @@
   Integration error (au):     -0.0000105
   Integration error (kcal/mol):    -0.01
   
-  TIMING CPU  :: enpart two-electron                              19.18 s
-  TIMING WALL :: enpart two-electron                               2.27 s
+  TIMING CPU  :: enpart two-electron                              18.59 s
+  TIMING WALL :: enpart two-electron                               2.71 s
 
   ...Normal Termination of APOST-3D...

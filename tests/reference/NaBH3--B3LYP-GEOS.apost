@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.57 s
-  TIMING WALL :: atomic definition                                 0.57 s
+  TIMING CPU  :: atomic definition                                 0.70 s
+  TIMING WALL :: atomic definition                                 0.11 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -488,8 +488,8 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 0.90 s
-  TIMING WALL :: EFFAO computation                                 0.90 s
+  TIMING CPU  :: EFFAO computation                                 1.19 s
+  TIMING WALL :: EFFAO computation                                 0.28 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

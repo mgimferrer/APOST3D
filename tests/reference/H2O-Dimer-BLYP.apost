@@ -126,7 +126,7 @@
   Angular points             : 146
   Rotation angles (phb1/phb2):  0.162 /  0.182
 
-  TIMING CPU  :: initialization                                    0.01 s
+  TIMING CPU  :: initialization                                    0.00 s
   TIMING WALL :: initialization                                    0.00 s
 
   ----------------------------------------
@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.97 s
-  TIMING WALL :: atomic definition                                 0.26 s
+  TIMING CPU  :: atomic definition                                 1.87 s
+  TIMING WALL :: atomic definition                                 0.29 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -338,8 +338,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     36.6642284
   
-  TIMING CPU  :: enpart one-electron                               0.83 s
-  TIMING WALL :: enpart one-electron                               0.10 s
+  TIMING CPU  :: enpart one-electron                               0.77 s
+  TIMING WALL :: enpart one-electron                               0.12 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -423,8 +423,8 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:    -18.6913761
   
-  TIMING CPU  :: enpart dft                                        4.09 s
-  TIMING WALL :: enpart dft                                        0.59 s
+  TIMING CPU  :: enpart dft                                        4.16 s
+  TIMING WALL :: enpart dft                                        0.68 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -439,7 +439,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over  10 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -457,8 +457,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    112.1860788
   
-  TIMING CPU  :: Coulomb energy                                    0.96 s
-  TIMING WALL :: Coulomb energy                                    0.14 s
+  TIMING CPU  :: Coulomb energy                                    0.95 s
+  TIMING WALL :: Coulomb energy                                    0.15 s
   
   KS-DFT electron-electron energy (au):     93.4947027
   Integration error (kcal/mol):     5.25
@@ -491,7 +491,7 @@
   Coulomb energy:    112.1777147
   
   KS-DFT electron-electron energy:     93.4863386
-  Integration error (kcal/mol):     0.00
+  Integration error (kcal/mol):    -0.00
 
   ----------------------------------------
     FUZZY ATOMS KS-DFT ENERGY COMPONENTS

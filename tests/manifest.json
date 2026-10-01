@@ -85,7 +85,7 @@
           "label": "O IQA self-energy (au)",
           "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -75.021251,
+          "ref": -75.02127,
           "tol_abs": 2e-05
         },
         {
@@ -1124,7 +1124,7 @@
         {
           "label": "SCF/DFT energy",
           "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -189.1470282,
+          "ref": -189.147028212,
           "tol_abs": 2e-06
         },
         {

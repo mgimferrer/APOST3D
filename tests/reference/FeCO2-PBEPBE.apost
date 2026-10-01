@@ -1,10 +1,25 @@
   ------------------------------------------------------------------------------
                                                                                 
-                      Program APOST-3D, Version 4                               
-                               12-03-2025                                       
-                     --------------------------------                           
+                     ___    ____  ____  ___________   _____ ____                
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
+                 /_/  |_/_/    \____//____//_/     /____/_____/                 
+                                                                                
+                        Version 5   --   22 September 2026                      
+                         --------------------------------                       
                                                                                 
       Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Documentation: https://apost3d.readthedocs.io                             
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
+                                                                                
+    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
                                                                                 
       Available atomic definitions:                                             
       ----------------------------                                              
@@ -18,19 +33,18 @@
                                                                                 
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
                                                                                 
-                                                                                
       Calculating:                                                              
       ------------                                                              
                                                                                 
         A) Atomic and overlap populations, bond orders and valences             
-           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	        
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
                                                                                 
         B) Hartree-Fock molecular energy decomposition                          
            P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
                                                                                 
         C) KS-DFT molecular energy decomposition                                
-            P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
+           P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007                
            M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
                                                                                 
         D) Molecular energy decomposition for CAS/DMRG wavefunctions            
@@ -46,6 +60,7 @@
                                                                                 
         G) Effective Oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
                                                                                 
         H) Oxidation states from localized orbitals                             
            M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020      
@@ -58,15 +73,8 @@
         J) Origin-independent decomposition of static polarizabilities          
            M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021      
                                                                                 
-                                                                                
-      Cite this program as:                                                     
-      ---------------------                                                     
-        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
-        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
-                                                                                
-    e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
-                                                                                
   ------------------------------------------------------------------------------
+                                                                                
     The program has been written by using parts of the program APOST by         
     I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
                                                                                 
@@ -77,194 +85,232 @@
                                                                                 
     The program makes use of libxc library when necessary, using the F90        
     interfaces provided by the authors.                                         
-                   (see http://www.tddft.org/programs/libxc)                    
+                   (see https://libxc.gitlab.io/)                               
                                                                                 
     We are extremely grateful for the possibility of using these routines!      
                                                                                 
-   -----------------------------------------------------------------------------
-    DENS=   1
- Restricted MO formalism
- KS-DFT type calculation
- (single det. built up of the Kohn-Sham orbitals)
- Number of atoms:           5
- Number of basis functions:          86
- Total number of primitive gaussians         171
- Spin density not found in FChk
- Reconstructing spin density (if any) from MOs
-  
- nocc          26     nalpha          26     nbeta          26
-  
- E(SCF/DFT)=  -1488.2914233300880     
-  
-STIFFNES=   4
-RHO_CALC=   0
-EFF_THRE=   1
-      DM=   0
- Fragment:            1
-   1
- Fragment:            2
-   2   4
- Fragment:            3
-   3   5
+  ------------------------------------------------------------------------------
 
- TIMING CPU  :: initialization                                    0.01 s
- TIMING WALL :: initialization                                    0.01 s
-  
-  -------------------------------------
-  SETTING ATOMIC GRIDS FOR INTEGRATION 
-  -------------------------------------
-  
- Radial points  :   40
- Angular points :  146
- r0 (radial)    :  0.500
- Using stiffness k :    4
- Using density along atom pairs to set atomic radii.
- Subdivision :          11
- Atom pair:    1   2 Ratio:  0.96078
-  
- Subdivision :          11
- Atom pair:    1   3 Ratio:  0.96078
-  
- Subdivision :          21
- Atom pair:    2   4 Ratio:  0.78571
-  
- Subdivision :          21
- Atom pair:    3   5 Ratio:  0.78571
-  
-  Number of grid points:     29200
- Checking sum of AOs overlap matrices
- Deviations may not affect overall accuracy of MOs 
- TIMING CPU  :: atomic definition                                 0.25 s
- TIMING WALL :: atomic definition                                 0.10 s
-  
-  ---------------------------
-   DOING POPULATION ANALYSIS 
-    Partial atomic charges
-    Atomic spin densities 
-    Bond orders and Valences 
-  ---------------------------
-  
-   
-     ELECTRON POPULATIONS
-   
-   Atom   apost3d      Mulliken
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                     : Restricted
+  Calculation type                 : KS-DFT
+    (single det. built from the Kohn-Sham orbitals)
+  Number of atoms                  : 5
+  Number of basis functions        : 86
+  Primitive gaussians              : 171
+  Spin density (FChk)              : not found, reconstructed from MOs
+  Occupied MOs (nocc/alpha/beta)   : 26 / 26 / 26
+  SCF/DFT energy (au)              :     -1488.2914233301
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  --------
+  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
+  Overlap population analysis          : OPOP
+  Oxidation states analysis            : EOS (Effective Oxidation States, fragment-based)
+  Fragment analysis                    : 3 fragments (see below)
+
+  # FRAGMENTS  (3 fragments)
+  --------------------------
+  Fragment  1 :   1
+  Fragment  2 :   2   4
+  Fragment  3 :   3   5
+
+  TIMING CPU  :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.01 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points  : 40
+  Angular points : 146
+  r0 (radial)    :   0.500
+  Grid points    : 29200
+
   -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Using stiffness k: 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : subdivision 11, ratio  0.96078
+  Atom pair   1 -   3 : subdivision 11, ratio  0.96078
+  Atom pair   2 -   4 : subdivision 21, ratio  0.78571
+  Atom pair   3 -   5 : subdivision 21, ratio  0.78571
+
+  Checking sum of AOs overlap matrices
+  (deviations may not affect overall accuracy of MOs)
+
+  TIMING CPU  :: atomic definition                                 0.21 s
+  TIMING WALL :: atomic definition                                 0.03 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Partial atomic charges
+  Atomic spin densities
+  Bond orders and Valences
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
    1 Fe    24.556758   25.119036
    2  C     5.587201    5.587505
    3  C     5.587201    5.587505
    4  O     8.134560    7.852977
    5  O     8.134560    7.852977
-  -----------------------------
+  ------------------------------
      Sum   52.000281   52.000000
 
+  --------------------------------------------
+    FRAGMENT ANALYSIS : Electron populations
+  --------------------------------------------
 
+   Fragment    3D-space    Mulliken
+  ---------------------------------
+    1         24.556758   25.119036
+    2         13.721761   13.440482
+    3         13.721761   13.440482
+  ---------------------------------
+     Total:   52.000281   52.000000
 
-   FRAGMENT ANALYSIS : Electron populations                                     
-  
-              3D-space   Mulliken
-            ----------------------
-   1         24.556758   25.119036
-   2         13.721761   13.440482
-   3         13.721761   13.440482
-            ----------------------
-  Total:    52.000281    52.000000
-   
-     TOTAL ATOMIC CHARGES    
-   
-   Atom   apost3d      Mulliken
-  -----------------------------
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
    1 Fe     1.443242    0.880964
    2  C     0.412799    0.412495
    3  C     0.412799    0.412495
    4  O    -0.134560    0.147023
    5  O    -0.134560    0.147023
-  -----------------------------
+  ------------------------------
      Sum    1.999719    2.000000
-   
 
+  --------------------------------------
+    FRAGMENT ANALYSIS : Atomic Charges
+  --------------------------------------
 
+   Fragment    3D-space    Mulliken
+  ---------------------------------
+    1          1.443242    0.880964
+    2          0.278239    0.559518
+    3          0.278239    0.559518
+  ---------------------------------
+     Total:    1.999719    2.000000
 
-   FRAGMENT ANALYSIS : Atomic Charges                                           
-  
-              3D-space   Mulliken
-            ----------------------
-   1          1.443242    0.880964
-   2          0.278239    0.559518
-   3          0.278239    0.559518
-            ----------------------
-  Total:     1.999719     2.000000
-  
-           APOST3D  OVERLAP POPULATION MATRIX
-  
+  -------------------------------------
+    APOST3D OVERLAP POPULATION MATRIX
+  -------------------------------------
+
+  --------------------------------------------------------------------------------                    
               1 Fe        2  C        3  C        4  O        5  O 
+  --------------------------------------------------------------------------------                    
+    1 Fe    24.233578    0.161588    0.161588    0.000002    0.000002
+    2  C     0.161588    5.256395    0.000000    0.168960    0.000000
+    3  C     0.161588    0.000000    5.256395    0.000000    0.168960
+    4  O     0.000002    0.168960    0.000000    7.965783    0.000000
+    5  O     0.000002    0.000000    0.168960    0.000000    7.965783
+  --------------------------------------------------------------------------------                    
 
-   1 Fe    24.233578    0.161588    0.161588    0.000002    0.000002
-   2  C     0.161588    5.256395    0.000000    0.168960    0.000000
-   3  C     0.161588    0.000000    5.256395    0.000000    0.168960
-   4  O     0.000002    0.168960    0.000000    7.965783    0.000000
-   5  O     0.000002    0.000000    0.168960    0.000000    7.965783
-   
+  -------------------------------------------
+    FRAGMENT ANALYSIS : Overlap Populations
+  -------------------------------------------
 
+  --------------------------------------------------------------------------------                    
+                      1           2           3
+  --------------------------------------------------------------------------------                    
+    1         24.233578    0.161590    0.161590
+    2          0.161590   13.560098    0.000000
+    3          0.161590    0.000000   13.560098
+  --------------------------------------------------------------------------------                    
+     Total:   52.000135
 
+  -----------------------------------
+    "FUZZY ATOMS" BOND ORDER MATRIX
+  -----------------------------------
 
-   FRAGMENT ANALYSIS : Overlap Populations                                      
-  
-   1         24.233578    0.161590    0.161590
-   2          0.161590   13.560098    0.000000
-   3          0.161590    0.000000   13.560098
-  
-  Total:         52.0001353945019
-  
- Additional printing :
-  1  1    24.233578
-  1  2     0.161590
-  1  3     0.161590
-  2  1     0.161590
-  2  2    13.560098
-  2  3     0.000000
-  3  1     0.161590
-  3  2     0.000000
-  3  3    13.560098
-  
-
-                     "FUZZY ATOMS" BOND ORDER MATRIX
-
-
+  --------------------------------------------------------------------------------                    
               1 Fe        2  C        3  C        4  O        5  O 
+  --------------------------------------------------------------------------------                    
+    1 Fe    22.981403    1.110551    1.110551    0.465185    0.465185
+    2  C     1.110551    3.920762    0.052987    2.113519    0.055775
+    3  C     1.110551    0.052987    3.920762    0.055775    2.113519
+    4  O     0.465185    2.113519    0.055775    6.800707    0.033178
+    5  O     0.465185    0.055775    2.113519    0.033178    6.800707
+  --------------------------------------------------------------------------------                    
 
-   1 Fe    22.981403    1.110551    1.110551    0.465185    0.465185
-   2  C     1.110551    3.920762    0.052987    2.113519    0.055775
-   3  C     1.110551    0.052987    3.920762    0.055775    2.113519
-   4  O     0.465185    2.113519    0.055775    6.800707    0.033178
-   5  O     0.465185    0.055775    2.113519    0.033178    6.800707
-   
-    TOTAL VALENCES 
-   
-     Atom     V_A
-  -----------------
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+    Atom         V_A
+  ------------------
    1 Fe     3.150712
    2  C     3.332879
    3  C     3.332879
    4  O     2.667707
    5  O     2.667707
   ------------------
-   
- VALENCES USED IN BONDS
+
+  -------------------------------------
+    FRAGMENT ANALYSIS: Total valences
+  -------------------------------------
+
+   Fragment    3D-space
+  ---------------------
+    1          3.150712
+    2          6.000586
+    3          6.000586
+  ---------------------
+     Total:   15.151884
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
  (SUM OF BOND ORDERS)
-   
-     Atom     VB_A
-  -----------------
+
+    Atom        VB_A
+  ------------------
    1 Fe     3.151472
    2  C     3.332831
    3  C     3.332831
    4  O     2.667656
    5  O     2.667656
   ------------------
-   
-    FREE VALENCES
-  
-     Atom     F_A
+
+  ---------------------------------------------
+    FRAGMENT ANALYSIS: Valences used in bonds
+  ---------------------------------------------
+
+   Fragment    3D-space
+  ---------------------
+    1          3.151472
+    2          6.000487
+    3          6.000487
+  ---------------------
+     Total:   15.152447
+
   -----------------
+    FREE VALENCES
+  -----------------
+
+    Atom         F_A
+  ------------------
    1 Fe    -0.000760
    2  C     0.000048
    3  C     0.000048
@@ -272,30 +318,33 @@ EFF_THRE=   1
    5  O     0.000051
   ------------------
 
+  ------------------------------------
+    FRAGMENT ANALYSIS: Free valences
+  ------------------------------------
 
+   Fragment    3D-space
+  ---------------------
+    1         -0.000760
+    2          0.000099
+    3          0.000099
+  ---------------------
+     Total:   -0.000563
 
-   FRAGMENT ANALYSIS : Fuzzy Bond Order                                         
-  
-   1         22.981403    1.575736    1.575736
-   2          1.575736   12.834987    0.197714
-   3          1.575736    0.197714   12.834987
-  
-  Total:         52.0005626734637
-  
- Additional printing :
-  1  1    22.981403
-  1  2     1.575736
-  1  3     1.575736
-  2  1     1.575736
-  2  2    12.834987
-  2  3     0.197714
-  3  1     1.575736
-  3  2     0.197714
-  3  3    12.834987
-  
+  ----------------------------------------
+    FRAGMENT ANALYSIS : Fuzzy Bond Order
+  ----------------------------------------
 
- TIMING CPU  :: population analyses                               0.00 s
- TIMING WALL :: population analyses                               0.00 s
+  --------------------------------------------------------------------------------                    
+                      1           2           3
+  --------------------------------------------------------------------------------                    
+    1         22.981403    1.575736    1.575736
+    2          1.575736   12.834987    0.197714
+    3          1.575736    0.197714   12.834987
+  --------------------------------------------------------------------------------                    
+     Total:   52.000563
+
+  TIMING CPU  :: population analyses                               0.00 s
+  TIMING WALL :: population analyses                               0.00 s
    
   UEFFAO: alpha and beta treated separately
    
@@ -304,12 +353,11 @@ EFF_THRE=   1
     DOING EFFAO-3D GENERAL FORMULATION
   --------------------------------------
 
-
   ---------------------------------
     EFFAOs FROM THE ALPHA DENSITY
   ---------------------------------
 
-  ** FRAGMENT 1 **
+  ** FRAGMENT   1 **
   
   Net occupation for fragment      1   12.11696
   Net occupation using >    0.00100
@@ -322,7 +370,10 @@ EFF_THRE=   1
   OCCUP.   0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
   OCCUP.   0.0124   0.0117   0.0034
   
-  ** FRAGMENT 2 **
+  FIT %     99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
+  FIT %     94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
+  FIT %     70.62    70.47    58.34
+  ** FRAGMENT   2 **
   
   Net occupation for fragment      2    6.77991
   Net occupation using >    0.00100
@@ -333,7 +384,9 @@ EFF_THRE=   1
   OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
   OCCUP.   0.0822   0.0112   0.0047
   
-  ** FRAGMENT 3 **
+  FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
+  FIT %     76.77    53.13     8.70
+  ** FRAGMENT   3 **
   
   Net occupation for fragment      3    6.77991
   Net occupation using >    0.00100
@@ -344,9 +397,13 @@ EFF_THRE=   1
   OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
   OCCUP.   0.0822   0.0112   0.0047
   
-  
+  FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
+  FIT %     76.77    53.13     8.70
   Total number of eff-AO-s for analysis:   41
- EOS: Unambiguous integer electron assignation
+
+  -------------------------------------------------
+    EOS: Unambiguous integer electron assignation
+  -------------------------------------------------
 
   ------------------------------------
     EOS ANALYSIS FOR ALPHA ELECTRONS
@@ -379,9 +436,9 @@ EFF_THRE=   1
   
   OVERALL RELIABILITY INDEX R(%) =  96.598
 
- TIMING CPU  :: EFFAO computation                                 0.18 s
- TIMING WALL :: EFFAO computation                                 0.04 s
- TIMING CPU  :: EOS analysis                                      0.00 s
- TIMING WALL :: EOS analysis                                      0.00 s
-  
- ...Normal Termination of APOST-3D... 
+  TIMING CPU  :: EFFAO computation                                 0.33 s
+  TIMING WALL :: EFFAO computation                                 0.07 s
+  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.00 s
+
+  ...Normal Termination of APOST-3D...

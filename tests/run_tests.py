@@ -25,7 +25,8 @@ Usage
   # Run multiple tags (OR logic):
   python3 tests/run_tests.py --tags enpart,oslo
 
-  # After an intentional code change, regenerate reference outputs:
+  # After an intentional change of the output, regenerate the reference
+  # outputs (manifest values are only rewritten with --update-manifest):
   python3 tests/run_tests.py --update-ref
 
   # Verbose: show all check details even for passing checks:
@@ -43,8 +44,12 @@ Options
   --tags    LIST    Comma-separated tags; only run tests that have at least one
   --exclude-tags LIST  Comma-separated tags; skip tests carrying any of these
                     (applied after --tags/--filter)
-  --update-ref      Re-run all tests, write new reference outputs, and update
-                    ref values in manifest.json from the fresh output
+  --update-ref      Write each fresh output as the new tests/reference/<name>.apost
+  --update-manifest With --update-ref, also rewrite the manifest's ref values
+                    from the fresh output (at full printed precision)
+  --no-full         Skip the full-output comparison against tests/reference/
+  --ulps K          Full-output tolerance, in units of each number's last
+                    printed digit (default: 5)
   --nthreads N      OMP_NUM_THREADS (default: 1)
   --verbose         Show check details for passing checks too
   --no-color        Disable ANSI colour output
@@ -53,6 +58,11 @@ Every run's raw .apost output is always saved to tests/report/outputs/
 (each test itself still runs in a throwaway temp dir, but its output is
 copied out before that dir is deleted). Pass --output-dir to redirect it
 elsewhere; there is no flag to disable saving it.
+
+Besides the manifest checks, every test's whole output is compared with
+tests/reference/<name>.apost (compare_outputs.py): every printed number, and
+the text around it. This is what a run on another machine or compiler is
+checked against.
 """
 
 import argparse
@@ -65,6 +75,9 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from compare_outputs import compare_files, format_diffs, summary  # noqa: E402
 
 # ── ANSI colour helpers ───────────────────────────────────────────────────────
 
@@ -114,7 +127,16 @@ def parse_args():
                         "'make test', which always runs every case — this is "
                         "purely a script-level convenience for ad hoc runs.")
     p.add_argument("--update-ref", action="store_true",
-                   help="Regenerate reference outputs and manifest ref values")
+                   help="Write each fresh output as the new reference .apost")
+    p.add_argument("--update-manifest", action="store_true",
+                   help="With --update-ref, also rewrite the manifest's ref "
+                        "values from the fresh output")
+    p.add_argument("--no-full", action="store_true",
+                   help="Skip the full-output comparison against the "
+                        "reference .apost files")
+    p.add_argument("--ulps", type=float, default=5, metavar="K",
+                   help="Full-output tolerance in units of each number's "
+                        "last printed digit (default: 5)")
     p.add_argument("--nthreads",   default="1", metavar="N",
                    help="OMP_NUM_THREADS (default: 1)")
     p.add_argument("--verbose",    action="store_true",
@@ -257,11 +279,26 @@ def evaluate_check(output: str, check: dict) -> dict:
     return result
 
 
+def full_output_check(ref_file: Path, out_file: Path, ulps: float) -> dict:
+    """Compare the whole output with the stored reference .apost."""
+    result = {"label": "Full output vs reference", "type": "full"}
+    if not ref_file.exists():
+        result["status"] = "error"
+        result["message"] = f"no reference file {ref_file.name}"
+        return result
+    res = compare_files(ref_file, out_file, ulps)
+    result["status"] = "fail" if res["diffs"] else "pass"
+    result["message"] = summary(res, ulps)
+    if res["diffs"]:
+        result["details"] = format_diffs(res)
+    return result
+
+
 # ── Test execution ────────────────────────────────────────────────────────────
 
 
 def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
-             output_dir: Path) -> dict:
+             output_dir: Path, ref_dir: Path = None, ulps: float = 5) -> dict:
     """
     Execute one test case and return a result dict.
 
@@ -340,6 +377,9 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
 
         # Evaluate all checks
         check_results = [evaluate_check(output, c) for c in test.get("checks", [])]
+        if ref_dir is not None:
+            check_results.append(full_output_check(ref_dir / f"{name}.apost",
+                                                   outfile, ulps))
 
         n_fail = sum(1 for r in check_results if r["status"] in ("fail", "error"))
 
@@ -380,6 +420,9 @@ def _print_check(cr: dict, verbose: bool):
         msg = cr["message"]
 
     print(f"           {sym}  {cr['label']:<38s} {msg}")
+    if cr["status"] != "pass":
+        for line in cr.get("details", []):
+            print(f"                {line}")
 
 
 def print_test_result(result: dict, test_meta: dict, idx: int, total: int, verbose: bool):
@@ -466,6 +509,8 @@ def write_text_report(results: list, path: Path):
         for cr in r.get("checks", []):
             sym = "✓" if cr["status"] == "pass" else "✗"
             lines.append(f"  {sym}  {cr['label']:<38s} {cr['message']}")
+            if cr["status"] != "pass":
+                lines.extend(f"        {d}" for d in cr.get("details", []))
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -515,13 +560,15 @@ def write_html_report(results: list, path: Path):
 # ── update-ref mode ───────────────────────────────────────────────────────────
 
 
-def update_references(tests: list, results: list, ref_dir: Path, manifest_path: Path):
+def update_references(tests: list, results: list, ref_dir: Path,
+                      manifest_path: Path, update_manifest: bool):
     """
     For all non-skipped test results:
       1. Write the fresh output to tests/reference/<name>.apost
-      2. Re-extract all float check values and update manifest.json
+      2. Only with update_manifest: re-extract every float check value and
+         write it to manifest.json at full printed precision. Only the tests
+         that ran are touched; the rest of the manifest is kept as is.
 
-    Only updates tests that ran successfully (status != "skip").
     Prints a summary of what was updated.
     """
     ref_dir.mkdir(parents=True, exist_ok=True)
@@ -537,12 +584,21 @@ def update_references(tests: list, results: list, ref_dir: Path, manifest_path: 
             print(f"  {SYM_SKIP}  {name}: skipped — no output to capture")
             continue
 
+        if r["status"] == "fail" and not update_manifest:
+            print(f"  {SYM_FAIL}  {name}: not written, its checks fail "
+                  f"(fix them, or add --update-manifest if the change is "
+                  f"intended)")
+            continue
+
         output = r.get("output", "")
 
         # 1. Write reference output file
         ref_file = ref_dir / f"{name}.apost"
         ref_file.write_text(output, encoding="utf-8")
         print(f"  {SYM_PASS}  {name}: wrote {ref_file.name}")
+
+        if not update_manifest:
+            continue
 
         # 2. Update ref values in checks
         updated = 0
@@ -551,23 +607,25 @@ def update_references(tests: list, results: list, ref_dir: Path, manifest_path: 
                 continue
             try:
                 val = _extract_float(output, check)
-                # Round to 7 significant figures to avoid floating-point noise
-                check["ref"] = float(f"{val:.7g}")
-                updated += 1
+                if val != check.get("ref"):
+                    check["ref"] = val
+                    updated += 1
             except ValueError:
                 pass
         if updated:
             print(f"       Updated {updated} ref value(s) in manifest")
         any_updated = True
 
-    if any_updated:
-        # Re-write manifest with updated ref values
+    if any_updated and update_manifest:
+        # Merge the updated tests back by name: a --filter/--tags run must not
+        # drop the tests it did not run from the manifest
         with open(manifest_path) as f:
             manifest = json.load(f)
-        # Merge updated check refs back (tests list was mutated in-place above)
-        manifest["tests"] = tests
+        updated_by_name = {t["name"]: t for t in tests}
+        manifest["tests"] = [updated_by_name.get(t["name"], t)
+                             for t in manifest["tests"]]
         manifest_path.write_text(
-            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+            json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
         print(f"\n  {SYM_PASS}  Manifest updated: {manifest_path}")
     print()
@@ -658,7 +716,9 @@ def main():
         print(f"  [{idx:2d}/{len(tests)}]  {bold(name):<30s} {tags}")
         sys.stdout.flush()
 
-        result = run_test(test, binary, input_dir, args.nthreads, output_dir)
+        full_ref = None if (args.no_full or args.update_ref) else ref_dir
+        result = run_test(test, binary, input_dir, args.nthreads, output_dir,
+                          full_ref, args.ulps)
         results.append(result)
 
         print_test_result(result, test, idx, len(tests), args.verbose)
@@ -681,7 +741,8 @@ def main():
 
     # ── Update references ─────────────────────────────────────────────────────
     if args.update_ref:
-        update_references(tests, results, ref_dir, manifest_path)
+        update_references(tests, results, ref_dir, manifest_path,
+                          args.update_manifest)
 
     # ── Exit code ─────────────────────────────────────────────────────────────
     n_fail = sum(1 for r in results if r["status"] == "fail")
