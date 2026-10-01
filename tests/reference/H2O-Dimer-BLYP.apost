@@ -117,7 +117,7 @@
   # ENPART
   --------
   Functional              : custom libxc ids 0 106 131
-  Atom-pair skip threshold: THREBOD = 100
+  Atom-pair skip threshold: THREBOD = 50
   Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
 
   # GRID
@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 2.03 s
-  TIMING WALL :: atomic definition                                 0.27 s
+  TIMING CPU  :: atomic definition                                 1.97 s
+  TIMING WALL :: atomic definition                                 0.26 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -338,15 +338,15 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     36.6642284
   
-  TIMING CPU  :: enpart one-electron                               0.89 s
-  TIMING WALL :: enpart one-electron                               0.12 s
+  TIMING CPU  :: enpart one-electron                               0.83 s
+  TIMING WALL :: enpart one-electron                               0.10 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
   --------------------------------
 
   USING BOND ORDER DENSITY APPROACH 
-  Threshold for atom pair calculation:   0.010000
+  Threshold for atom pair calculation:   0.005000
 
   -----------------------------------------
     BOND ORDER DENSITY FOR ALL ATOM PAIRS
@@ -360,7 +360,7 @@
       1      4     0.0845767
       1      5    multipolar
       1      6     0.0965417
-      2      3    multipolar
+      2      3     0.0081502
       2      4    multipolar
       2      5    multipolar
       2      6    multipolar
@@ -369,9 +369,9 @@
       3      6    multipolar
       4      5     0.7114435
       4      6     0.5797554
-      5      6    multipolar
+      5      6     0.0072264
   --------------------------- 
-  9 atom pair(s) below the threshold: exchange-correlation
+  7 atom pair(s) below the threshold: exchange-correlation
   from the multipolar expansion, not BODEN.
 
   -----------------------------------------
@@ -382,11 +382,11 @@
               1  O        2  H        3  H        4  O        5  H        6  H 
   --------------------------------------------------------------------------------                    
     1  O     0.000000   -0.189268   -0.189267   -0.010827   -0.000150   -0.012713
-    2  H    -0.189268    0.000000   -0.001049   -0.000125   -0.000001   -0.000135
-    3  H    -0.189267   -0.001049    0.000000   -0.000125   -0.000001   -0.000135
+    2  H    -0.189268    0.000000   -0.000829   -0.000125   -0.000001   -0.000135
+    3  H    -0.189267   -0.000829    0.000000   -0.000125   -0.000001   -0.000135
     4  O    -0.010827   -0.000125   -0.000125    0.000000   -0.202119   -0.161738
-    5  H    -0.000150   -0.000001   -0.000001   -0.202119    0.000000   -0.000954
-    6  H    -0.012713   -0.000135   -0.000135   -0.161738   -0.000954    0.000000
+    5  H    -0.000150   -0.000001   -0.000001   -0.202119    0.000000   -0.000714
+    6  H    -0.012713   -0.000135   -0.000135   -0.161738   -0.000714    0.000000
   --------------------------------------------------------------------------------                    
 
   -------------------------------------------
@@ -415,16 +415,16 @@
               1  O        2  H        3  H        4  O        5  H        6  H 
   --------------------------------------------------------------------------------                    
     1  O    -8.819004   -0.189268   -0.189267   -0.010827   -0.000150   -0.012713
-    2  H    -0.189268   -0.059491   -0.001049   -0.000125   -0.000001   -0.000135
-    3  H    -0.189267   -0.001049   -0.059492   -0.000125   -0.000001   -0.000135
+    2  H    -0.189268   -0.059600   -0.000829   -0.000125   -0.000001   -0.000135
+    3  H    -0.189267   -0.000829   -0.059602   -0.000125   -0.000001   -0.000135
     4  O    -0.010827   -0.000125   -0.000125   -8.855566   -0.202119   -0.161738
-    5  H    -0.000150   -0.000001   -0.000001   -0.202119   -0.065298   -0.000954
-    6  H    -0.012713   -0.000135   -0.000135   -0.161738   -0.000954   -0.063918
+    5  H    -0.000150   -0.000001   -0.000001   -0.202119   -0.065419   -0.000714
+    6  H    -0.012713   -0.000135   -0.000135   -0.161738   -0.000714   -0.064038
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:    -18.6913761
   
-  TIMING CPU  :: enpart dft                                        4.05 s
-  TIMING WALL :: enpart dft                                        0.57 s
+  TIMING CPU  :: enpart dft                                        4.09 s
+  TIMING WALL :: enpart dft                                        0.59 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -457,7 +457,7 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    112.1860788
   
-  TIMING CPU  :: Coulomb energy                                    0.99 s
+  TIMING CPU  :: Coulomb energy                                    0.96 s
   TIMING WALL :: Coulomb energy                                    0.14 s
   
   KS-DFT electron-electron energy (au):     93.4947027
@@ -471,7 +471,7 @@
   New error after rotation:    -9.25
   Damping parameter       :      0.6381144
   
-  TIMING CPU  :: Interpolated zero-error                           0.34 s
+  TIMING CPU  :: Interpolated zero-error                           0.35 s
   TIMING WALL :: Interpolated zero-error                           0.06 s
 
   ---------------------------------------------------------
@@ -501,18 +501,18 @@
               1  O        2  H        3  H        4  O        5  H        6  H 
   --------------------------------------------------------------------------------                    
     1  O   -74.883797   -0.517551   -0.517586    0.231005   -0.098434   -0.177824
-    2  H    -0.517551   -0.303660    0.135585   -0.113439    0.046230    0.074056
-    3  H    -0.517586    0.135585   -0.303660   -0.113397    0.046216    0.074027
+    2  H    -0.517551   -0.303770    0.135804   -0.113439    0.046230    0.074056
+    3  H    -0.517586    0.135804   -0.303770   -0.113397    0.046216    0.074027
     4  O     0.231005   -0.113439   -0.113397  -74.862049   -0.519699   -0.517766
-    5  H    -0.098434    0.046230    0.046216   -0.519699   -0.315622    0.131104
-    6  H    -0.177824    0.074056    0.074027   -0.517766    0.131104   -0.303173
+    5  H    -0.098434    0.046230    0.046216   -0.519699   -0.315742    0.131344
+    6  H    -0.177824    0.074056    0.074027   -0.517766    0.131344   -0.303293
   --------------------------------------------------------------------------------                    
   Total KS-DFT energy      :   -152.8094344
   Total energy in Fchk file:   -152.8094254
   Integration error (au):     -0.0000091
   Integration error (kcal/mol):    -0.01
   
-  TIMING CPU  :: enpart two-electron                               1.55 s
-  TIMING WALL :: enpart two-electron                               0.23 s
+  TIMING CPU  :: enpart two-electron                               1.52 s
+  TIMING WALL :: enpart two-electron                               0.25 s
 
   ...Normal Termination of APOST-3D...

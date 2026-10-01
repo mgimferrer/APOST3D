@@ -227,7 +227,7 @@
         end if 
 
 !! extra options !!
-        call readint("# ENPART","THREBOD",ithrebod,100,1) !! a value below 1 sets it to zero !!
+        call readint("# ENPART","THREBOD",ithrebod,50,1) !! bond order 0.005; below 1 sets it to zero !!
         call readchar("# ENPART","EXACT",iexact)
         call readchar("# ENPART","HOMO",ihomo)
         call readchar("# ENPART","DEKIN",idek)
