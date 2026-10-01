@@ -145,7 +145,7 @@
 ! read  apost input file
        name=trim(name0)//".inp"
        open(1, file=name,status="OLD")
-       call locate(1,"# METODE",ii)
+       call locate(1,"# METHOD",ii)
        imultiwfn=0
        iaimall=0
        idofr=0
