@@ -8,6 +8,7 @@ name: APOST-3D build & test
 # time, so adding a new test is purely a data change:
 #   1. drop SystemName.fchk / SystemName.inp into compiler-testset/
 #   2. add a reference tests/reference/SystemName.apost
+#      (python3 tests/run_tests.py --filter SystemName --update-ref)
 #   3. add an entry to tests/manifest.json
 #   4. commit — CI picks it up automatically, no workflow edits required.
 #

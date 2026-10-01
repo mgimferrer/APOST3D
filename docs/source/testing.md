@@ -1,9 +1,20 @@
 # Running the test suite
 
-A regression test suite validates numerical output against reference values
-for a handful of representative systems (RKS/UKS DFT, fragment analysis,
-OSLO, EOS, QCHEM interface). It's the fastest way to confirm a build is
-working correctly, and the main safety net when modifying the code.
+A regression test suite validates the output of a set of representative
+systems (RKS/UKS DFT, HF, CASSCF, FCI, fragment analysis, OSLO, EOS, GEOS,
+ENPART, QCHEM and pySCF interfaces). It's the fastest way to confirm a build
+is working correctly, and the main safety net when modifying the code.
+
+Each test is checked in two ways:
+
+- **Manifest checks**: selected quantities (energies, charges, oxidation
+  states, ...) from `tests/manifest.json`, each with its own tolerance.
+- **Full output vs reference**: every number printed in the output, and the
+  text around it, compared with the stored `tests/reference/<name>.apost`.
+  Integers must match exactly; decimals may differ by at most 5 units of
+  their last printed digit, which covers a rounding change on another
+  machine or compiler but not a real change. Timings and the thread count
+  are ignored.
 
 ```bash
 make test               # build (if needed) + run the entire suite, 1 thread
@@ -24,33 +35,23 @@ means exactly the same thing as `bash make_compile.sh NTHREADS=<n>` — see
 ```
 
 ```text
-════════════════════════════════════════════════════════════════
-  APOST-3D Test Suite  ·  5 test(s)  ·  4 thread(s)
-════════════════════════════════════════════════════════════════
-
-  [ 1/5]  H2O-T-B3LYP                    dft enpart spin tfvc rks
-           (4s)
-           ✓  Normal Termination
-           ✓  Total KS-DFT energy (au)              got -76.22411   ref -76.22411   Δ 0.0e+00
+  [15/17]  H2O-SVWN                       dft enpart tfvc rks lda functional-keyword
+           (0s)
+           ✓  Normal Termination                     found in output
+           ✓  Total KS-DFT energy (au)               got -76.05056   ref -76.05056   Δ 0.0e+00   [abs 2e-06]
            ...
-           PASSED  (10/10 checks)
+           ✓  O-H IQA interaction (au)               got -0.529236   ref -0.529236   Δ 0.0e+00   [abs 2e-05]
+           ✓  Full output vs reference               362 numbers agree (largest deviation 0 of 5 last-digit units)
+           PASSED  (9/9 checks)
   ...
-════════════════════════════════════════════════════════════════
-  ✓  H2O-T-B3LYP                          4s
-  ✓  CH3F                                 0s
-  ✓  FeCO2-PBEPBE                         0s
-  ✓  FeO4-2                               1s
-  ✓  C2H6-B3LYP                          22s
-
-  5 PASSED   (27s total)
-════════════════════════════════════════════════════════════════
+  17 PASSED   (129s total)
 ```
 
 | Command | Description |
 |---|---|
 | `make test` | Build (if needed) + run every test, 1 thread |
 | `make test NTHREADS=<n>` | Same, using `<n>` threads |
-| `make update-ref [NTHREADS=<n>]` | Regenerate reference outputs after an intentional code change |
+| `make update-ref [NTHREADS=<n>]` | Rewrite `tests/reference/*.apost` after an intended change of the output (manifest values are kept) |
 | `make help` | List all available make targets and flags |
 
 Every run — whether via `make test` or the runner directly — saves the raw
@@ -71,6 +72,42 @@ python3 tests/run_tests.py --tags enpart
 python3 tests/run_tests.py --verbose
 python3 tests/run_tests.py --help
 ```
+
+## Checking a build on another machine
+
+Copy or clone the whole package (sources, `compiler-testset/` and `tests/`),
+build it as usual, and run `make test NTHREADS=<n>`. The references were
+written on the developers' machine, so a passing suite means the new build
+prints the same numbers. A failing full-output check lists the lines that
+differ, for example:
+
+```text
+           ✗  Full output vs reference               1 line(s) differ
+                  in 'FUZZY ATOMS KS-DFT ENERGY COMPONENTS':
+                    ref   443: 1  O   -74.525625   -0.529237   -0.529236
+                    new   443: 1  O   -74.525615   -0.529236   -0.529236   <- -74.525625 -> -74.525615 (off by 10 in the last digit)
+```
+
+The outputs of the run are in `tests/report/outputs/`, and any two of them
+can be compared directly:
+
+```bash
+python3 tests/compare_outputs.py tests/reference/C2H6-B3LYP.apost tests/report/outputs/C2H6-B3LYP.apost
+python3 tests/compare_outputs.py --ref-dir tests/reference --out-dir tests/report/outputs
+```
+
+`--ulps K` (in both the runner and `compare_outputs.py`) changes the allowed
+deviation to `K` units of the last printed digit, and `--no-full` skips the
+full-output check in the runner.
+
+## Updating the references
+
+After an intended change of the output (new or reworded lines, a numerical
+fix), rewrite the references with `make update-ref` and commit them with the
+code change. It only writes the `.apost` files: a test whose manifest checks
+fail is not written. If manifest values must change too, review the change
+and run `python3 tests/run_tests.py --update-ref --update-manifest`, which
+rewrites the values at full printed precision.
 
 ## Active test cases
 
@@ -98,14 +135,16 @@ All seventeen run every time `make test` is invoked.
 ## Adding a new test case
 
 1. Place `SystemName.fchk` and `SystemName.inp` in `compiler-testset/`.
-2. Generate and sanity-check a reference run:
+2. Run it once and check the output (`Normal Termination`, sensible values):
    ```bash
    cd compiler-testset && ulimit -s unlimited
-   ../apost3d SystemName > SystemName.apost 2>&1   # confirm "Normal Termination"
-   cp SystemName.apost ../tests/reference/SystemName.apost
+   ../apost3d SystemName > SystemName.apost 2>&1
    ```
 3. Add an entry to `tests/manifest.json` (copy an existing similar test and
    adapt the tags, patterns, and reference values).
-4. `python3 tests/run_tests.py --filter SystemName` until the checks pass.
-5. Commit the input files, the reference output, and the manifest entry
+4. `python3 tests/run_tests.py --filter SystemName --no-full` until the
+   checks pass.
+5. Write the reference output:
+   `python3 tests/run_tests.py --filter SystemName --update-ref`.
+6. Commit the input files, the reference output, and the manifest entry
    together.

@@ -153,7 +153,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.25 s
+  TIMING CPU  :: atomic definition                                 0.23 s
   TIMING WALL :: atomic definition                                 0.04 s
 
   -----------------------------

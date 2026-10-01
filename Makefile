@@ -196,7 +196,9 @@ eos_aom: $(UTILDIR)/eos_aom.o
 # Examples:
 #   make test                # build (if needed) + run everything, 1 thread
 #   make test NTHREADS=4     # same, using 4 threads
-#   make update-ref          # regenerate reference outputs after intentional change
+#   make update-ref          # rewrite tests/reference/*.apost after an intended
+#                            # output change (manifest values: runner's
+#                            # --update-ref --update-manifest)
 #
 # For narrower runs during test development (single test by name, a tag
 # filter, verbose per-check output, keeping raw .apost output) call the
@@ -218,7 +220,8 @@ test: all
 	  --ref      $(TEST_REF) \
 	  --nthreads $(NTHREADS)
 
-## Regenerate reference outputs and manifest ref values from a fresh run
+## Rewrite the reference outputs (tests/reference/*.apost) from a fresh run.
+## Manifest values are left alone (runner's --update-manifest rewrites them)
 update-ref: all
 	@echo ""
 	python3 $(TEST_RUNNER) \
@@ -286,9 +289,13 @@ help:
 	@echo "                              needed; gitignored, overwritten on"
 	@echo "                              each run alongside last_run.txt/"
 	@echo "                              last_run.html in tests/report/)."
+	@echo "                              Each output is also compared, number"
+	@echo "                              by number, with tests/reference/."
 	@echo "  make update-ref [NTHREADS=n]"
-	@echo "                              Regenerate reference outputs + manifest"
-	@echo "                              ref values after an intentional change."
+	@echo "                              Rewrite tests/reference/*.apost after an"
+	@echo "                              intended change of the output. Manifest"
+	@echo "                              values are kept (runner's"
+	@echo "                              --update-ref --update-manifest)."
 	@echo "  make coverage [CATEGORY=c] [PRIORITY=p] [UNCOVERED=1] [FORMAT=json]"
 	@echo "                              Show which input keywords are covered"
 	@echo "                              by the current test suite."

@@ -1,10 +1,25 @@
   ------------------------------------------------------------------------------
                                                                                 
-                      Program APOST-3D, Version 4                               
-                               12-03-2025                                       
-                     --------------------------------                           
+                     ___    ____  ____  ___________   _____ ____                
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
+                 /_/  |_/_/    \____//____//_/     /____/_____/                 
+                                                                                
+                        Version 5   --   22 September 2026                      
+                         --------------------------------                       
                                                                                 
       Real-space and Hilbert-space tools for wave function analysis             
+                                                                                
+      Documentation: https://apost3d.readthedocs.io                             
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
+                                                                                
+      Cite this program as:                                                     
+      ---------------------                                                     
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
+                                                                                
+    e-mail: psalse@gmail.com, mgimferrer18@gmail.com                            
                                                                                 
       Available atomic definitions:                                             
       ----------------------------                                              
@@ -18,19 +33,18 @@
                                                                                 
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
                                                                                 
-                                                                                
       Calculating:                                                              
       ------------                                                              
                                                                                 
         A) Atomic and overlap populations, bond orders and valences             
-           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	        
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
                                                                                 
         B) Hartree-Fock molecular energy decomposition                          
            P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
                                                                                 
         C) KS-DFT molecular energy decomposition                                
-            P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
+           P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007                
            M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
                                                                                 
         D) Molecular energy decomposition for CAS/DMRG wavefunctions            
@@ -46,6 +60,7 @@
                                                                                 
         G) Effective Oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
                                                                                 
         H) Oxidation states from localized orbitals                             
            M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020      
@@ -58,15 +73,8 @@
         J) Origin-independent decomposition of static polarizabilities          
            M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021      
                                                                                 
-                                                                                
-      Cite this program as:                                                     
-      ---------------------                                                     
-        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
-        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
-                                                                                
-    e-mail: psalse@gmail.com, eloy.raco@gmail.com, mgimferrer18@gmail.com       
-                                                                                
   ------------------------------------------------------------------------------
+                                                                                
     The program has been written by using parts of the program APOST by         
     I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
                                                                                 
@@ -77,171 +85,222 @@
                                                                                 
     The program makes use of libxc library when necessary, using the F90        
     interfaces provided by the authors.                                         
-                   (see http://www.tddft.org/programs/libxc)                    
+                   (see https://libxc.gitlab.io/)                               
                                                                                 
     We are extremely grateful for the possibility of using these routines!      
                                                                                 
-   -----------------------------------------------------------------------------
-    DENS=   1
- Restricted MO formalism
- KS-DFT type calculation
- (single det. built up of the Kohn-Sham orbitals)
- Number of atoms:           5
- Number of basis functions:         169
- Total number of primitive gaussians         306
- Spin density not found in FChk
- Reconstructing spin density (if any) from MOs
-  
- nocc          30     nalpha          30     nbeta          30
-  
- E(SCF/DFT)=   0.0000000000000000     
-  
-STIFFNES=   4
-RHO_CALC=   0
-EFF_THRE=   1
-      DM=   0
- Fragment:            1
-   1
- Fragment:            2
-   2
- Fragment:            3
-   3
- Fragment:            4
-   4
- Fragment:            5
-   5
-FOLI TOL=   3
-BRANCH I=   0
+  ------------------------------------------------------------------------------
 
- TIMING CPU  :: initialization                                    0.04 s
- TIMING WALL :: initialization                                    0.04 s
-  
-  -------------------------------------
-  SETTING ATOMIC GRIDS FOR INTEGRATION 
-  -------------------------------------
-  
- Radial points  :   40
- Angular points :  146
- r0 (radial)    :  0.500
- Using stiffness k :    4
- Using density along atom pairs to set atomic radii.
- Subdivision :          30
- Atom pair:    1   2 Ratio:  1.03666
-  
- Subdivision :          30
- Atom pair:    1   3 Ratio:  1.03666
-  
- Subdivision :          30
- Atom pair:    1   4 Ratio:  1.03666
-  
- Subdivision :          30
- Atom pair:    1   5 Ratio:  1.03666
-  
-  Number of grid points:     29200
- Checking sum of AOs overlap matrices
- Deviations may not affect overall accuracy of MOs 
- TIMING CPU  :: atomic definition                                 0.79 s
- TIMING WALL :: atomic definition                                 0.24 s
-  
-  ---------------------------
-   DOING POPULATION ANALYSIS 
-    Partial atomic charges
-    Atomic spin densities 
-    Bond orders and Valences 
-  ---------------------------
-  
-   
-     ELECTRON POPULATIONS
-   
-   Atom   apost3d      Mulliken
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                     : Restricted
+  Calculation type                 : KS-DFT
+    (single det. built from the Kohn-Sham orbitals)
+  Number of atoms                  : 5
+  Number of basis functions        : 169
+  Primitive gaussians              : 306
+  Spin density (FChk)              : not found, reconstructed from MOs
+  Occupied MOs (nocc/alpha/beta)   : 30 / 30 / 30
+  SCF/DFT energy (au)              :         0.0000000000
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  --------
+  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
+  Oxidation states analysis            : OSLO (oxidation states localized orbitals)
+  Fragment analysis                    : 5 fragments (see below)
+  Wavefunction source                  : QCHEM
+
+  # OSLO
+  ------
+  Overlap matrix          : TFVC/real-space (default)
+  FOLI tolerance          : 3
+  Branch iteration        : 0
+  Print non-orthogonalized: no
+
+  # FRAGMENTS  (5 fragments)
+  --------------------------
+  Fragment  1 :   1
+  Fragment  2 :   2
+  Fragment  3 :   3
+  Fragment  4 :   4
+  Fragment  5 :   5
+
+  TIMING CPU  :: initialization                                    0.04 s
+  TIMING WALL :: initialization                                    0.04 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points  : 40
+  Angular points : 146
+  r0 (radial)    :   0.500
+  Grid points    : 29200
+
   -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Using stiffness k: 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : subdivision 30, ratio  1.03666
+  Atom pair   1 -   3 : subdivision 30, ratio  1.03666
+  Atom pair   1 -   4 : subdivision 30, ratio  1.03666
+  Atom pair   1 -   5 : subdivision 30, ratio  1.03666
+
+  Checking sum of AOs overlap matrices
+  (deviations may not affect overall accuracy of MOs)
+
+  TIMING CPU  :: atomic definition                                 0.73 s
+  TIMING WALL :: atomic definition                                 0.11 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Partial atomic charges
+  Atomic spin densities
+  Bond orders and Valences
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
    1 Fe    24.388090   24.758424
    2  O     8.903168    8.810394
    3  O     8.903168    8.810394
    4  O     8.903168    8.810394
    5  O     8.903168    8.810394
-  -----------------------------
+  ------------------------------
      Sum   60.000764   60.000000
 
+  --------------------------------------------
+    FRAGMENT ANALYSIS : Electron populations
+  --------------------------------------------
 
+   Fragment    3D-space    Mulliken
+  ---------------------------------
+    1         24.388090   24.758424
+    2          8.903168    8.810394
+    3          8.903168    8.810394
+    4          8.903168    8.810394
+    5          8.903168    8.810394
+  ---------------------------------
+     Total:   60.000764   60.000000
 
-   FRAGMENT ANALYSIS : Electron populations                                     
-  
-              3D-space   Mulliken
-            ----------------------
-   1         24.388090   24.758424
-   2          8.903168    8.810394
-   3          8.903168    8.810394
-   4          8.903168    8.810394
-   5          8.903168    8.810394
-            ----------------------
-  Total:    60.000764    60.000000
-   
-     TOTAL ATOMIC CHARGES    
-   
-   Atom   apost3d      Mulliken
-  -----------------------------
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+    Atom     apost3d    Mulliken
+  ------------------------------
    1 Fe     1.611910    1.241576
    2  O    -0.903168   -0.810394
    3  O    -0.903168   -0.810394
    4  O    -0.903168   -0.810394
    5  O    -0.903168   -0.810394
-  -----------------------------
+  ------------------------------
      Sum   -2.000764   -2.000000
-   
 
+  --------------------------------------
+    FRAGMENT ANALYSIS : Atomic Charges
+  --------------------------------------
 
+   Fragment    3D-space    Mulliken
+  ---------------------------------
+    1          1.611910    1.241576
+    2         -0.903168   -0.810394
+    3         -0.903168   -0.810394
+    4         -0.903168   -0.810394
+    5         -0.903168   -0.810394
+  ---------------------------------
+     Total:   -2.000764   -2.000000
 
-   FRAGMENT ANALYSIS : Atomic Charges                                           
-  
-              3D-space   Mulliken
-            ----------------------
-   1          1.611910    1.241576
-   2         -0.903168   -0.810394
-   3         -0.903168   -0.810394
-   4         -0.903168   -0.810394
-   5         -0.903168   -0.810394
-            ----------------------
-  Total:    -2.000764    -2.000000
+  -----------------------------------
+    "FUZZY ATOMS" BOND ORDER MATRIX
+  -----------------------------------
 
-                     "FUZZY ATOMS" BOND ORDER MATRIX
-
-
+  --------------------------------------------------------------------------------                    
               1 Fe        2  O        3  O        4  O        5  O 
+  --------------------------------------------------------------------------------                    
+    1 Fe    21.289929    1.549239    1.549239    1.549239    1.549239
+    2  O     1.549239    7.795666    0.268367    0.198812    0.198812
+    3  O     1.549239    0.268367    7.795666    0.198812    0.198812
+    4  O     1.549239    0.198812    0.198812    7.795666    0.268367
+    5  O     1.549239    0.198812    0.198812    0.268367    7.795666
+  --------------------------------------------------------------------------------                    
 
-   1 Fe    21.289929    1.549239    1.549239    1.549239    1.549239
-   2  O     1.549239    7.795666    0.268367    0.198812    0.198812
-   3  O     1.549239    0.268367    7.795666    0.198812    0.198812
-   4  O     1.549239    0.198812    0.198812    7.795666    0.268367
-   5  O     1.549239    0.198812    0.198812    0.268367    7.795666
-   
-    TOTAL VALENCES 
-   
-     Atom     V_A
-  -----------------
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+    Atom         V_A
+  ------------------
    1 Fe     6.196322
    2  O     2.215006
    3  O     2.215006
    4  O     2.215006
    5  O     2.215006
   ------------------
-   
- VALENCES USED IN BONDS
+
+  -------------------------------------
+    FRAGMENT ANALYSIS: Total valences
+  -------------------------------------
+
+   Fragment    3D-space
+  ---------------------
+    1          6.196322
+    2          2.215006
+    3          2.215006
+    4          2.215006
+    5          2.215006
+  ---------------------
+     Total:   15.056345
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
  (SUM OF BOND ORDERS)
-   
-     Atom     VB_A
-  -----------------
+
+    Atom        VB_A
+  ------------------
    1 Fe     6.196956
    2  O     2.215229
    3  O     2.215229
    4  O     2.215229
    5  O     2.215229
   ------------------
-   
-    FREE VALENCES
-  
-     Atom     F_A
+
+  ---------------------------------------------
+    FRAGMENT ANALYSIS: Valences used in bonds
+  ---------------------------------------------
+
+   Fragment    3D-space
+  ---------------------
+    1          6.196956
+    2          2.215229
+    3          2.215229
+    4          2.215229
+    5          2.215229
+  ---------------------
+     Total:   15.057873
+
   -----------------
+    FREE VALENCES
+  -----------------
+
+    Atom         F_A
+  ------------------
    1 Fe    -0.000634
    2  O    -0.000224
    3  O    -0.000224
@@ -249,57 +308,46 @@ BRANCH I=   0
    5  O    -0.000224
   ------------------
 
+  ------------------------------------
+    FRAGMENT ANALYSIS: Free valences
+  ------------------------------------
 
+   Fragment    3D-space
+  ---------------------
+    1         -0.000634
+    2         -0.000224
+    3         -0.000224
+    4         -0.000224
+    5         -0.000224
+  ---------------------
+     Total:   -0.001528
 
-   FRAGMENT ANALYSIS : Fuzzy Bond Order                                         
-  
-   1         21.289929    1.549239    1.549239    1.549239    1.549239
-   2          1.549239    7.795666    0.268367    0.198812    0.198812
-   3          1.549239    0.268367    7.795666    0.198812    0.198812
-   4          1.549239    0.198812    0.198812    7.795666    0.268367
-   5          1.549239    0.198812    0.198812    0.268367    7.795666
-  
-  Total:         60.0015279681234
-  
- Additional printing :
-  1  1    21.289929
-  1  2     1.549239
-  1  3     1.549239
-  1  4     1.549239
-  1  5     1.549239
-  2  1     1.549239
-  2  2     7.795666
-  2  3     0.268367
-  2  4     0.198812
-  2  5     0.198812
-  3  1     1.549239
-  3  2     0.268367
-  3  3     7.795666
-  3  4     0.198812
-  3  5     0.198812
-  4  1     1.549239
-  4  2     0.198812
-  4  3     0.198812
-  4  4     7.795666
-  4  5     0.268367
-  5  1     1.549239
-  5  2     0.198812
-  5  3     0.198812
-  5  4     0.268367
-  5  5     7.795666
-  
+  ----------------------------------------
+    FRAGMENT ANALYSIS : Fuzzy Bond Order
+  ----------------------------------------
 
- TIMING CPU  :: population analyses                               0.01 s
- TIMING WALL :: population analyses                               0.01 s
-  
-  ------------------------------------------------------- 
-   DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)  
-  ------------------------------------------------------- 
-  
-  --------------------------------------- 
-   CHARGE CENTER (R_F) FOR EACH FRAGMENT  
-  --------------------------------------- 
-  
+  --------------------------------------------------------------------------------                    
+                      1           2           3           4           5
+  --------------------------------------------------------------------------------                    
+    1         21.289929    1.549239    1.549239    1.549239    1.549239
+    2          1.549239    7.795666    0.268367    0.198812    0.198812
+    3          1.549239    0.268367    7.795666    0.198812    0.198812
+    4          1.549239    0.198812    0.198812    7.795666    0.268367
+    5          1.549239    0.198812    0.198812    0.268367    7.795666
+  --------------------------------------------------------------------------------                    
+     Total:   60.001528
+
+  TIMING CPU  :: population analyses                               0.01 s
+  TIMING WALL :: population analyses                               0.01 s
+
+  ---------------------------------------------------------
+    DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
+  ---------------------------------------------------------
+
+  -----------------------------------------
+    CHARGE CENTER (R_F) FOR EACH FRAGMENT
+  -----------------------------------------
+
    Frag.        Charge center (xyz)     
   ------------------------------------- 
      1      0.00000   0.00000   0.00000
@@ -308,21 +356,21 @@ BRANCH I=   0
      4     -0.94446   0.94446  -0.94446
      5      0.94446  -0.94446  -0.94446
   ------------------------------------- 
-  
-  ----------------------------------- 
-   STARTING ITERATIVE OSLO ALGORITHM  
-  ----------------------------------- 
-  
+
+  -------------------------------------
+    STARTING ITERATIVE OSLO ALGORITHM
+  -------------------------------------
+
   Tolerance (in delta-FOLI) used for OSLO selection:   0.00100
   
-  ---------------------- 
-   ITERATION NUMBER   1
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   1
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    16.25805      0.01507     16.53375
@@ -357,10 +405,10 @@ BRANCH I=   0
     30     0.00441      1.00000      1.00000
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.97190      0.00156     36.93297
@@ -395,10 +443,10 @@ BRANCH I=   0
     30     0.05248      0.99998      1.00003
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.97190      0.00156     36.93297
@@ -433,10 +481,10 @@ BRANCH I=   0
     30     0.05248      0.99998      1.00003
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.97190      0.00156     36.93297
@@ -471,10 +519,10 @@ BRANCH I=   0
     30     0.05248      0.99998      1.00003
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.97190      0.00156     36.93297
@@ -511,11 +559,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   1   1.00000
   Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.00000
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     26      1   1.00010
@@ -532,12 +580,12 @@ BRANCH I=   0
   Number of OSLOs selected:   9
   delta-FOLI value:    0.01302
   
-  Electron pairs left to assign:  21
+  Orbitals left to assign:  21
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     25      1   1.01302
@@ -555,14 +603,14 @@ BRANCH I=   0
   
   Lowest eigenvalue obtained (LinDep):    0.99906
   
-  ---------------------- 
-   ITERATION NUMBER   2
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   2
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    16.25418      0.01502     16.56125
@@ -588,10 +636,10 @@ BRANCH I=   0
     21     0.75619      0.99141      1.01302
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -617,10 +665,10 @@ BRANCH I=   0
     21     1.77614      0.97183      1.04342
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -646,10 +694,10 @@ BRANCH I=   0
     21     1.77614      0.97183      1.04342
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -675,10 +723,10 @@ BRANCH I=   0
     21     1.77614      0.97183      1.04342
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -706,11 +754,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   1   1.01302
   Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.01302
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     21      1   1.01302
@@ -719,12 +767,12 @@ BRANCH I=   0
   Number of OSLOs selected:   1
   delta-FOLI value:    0.00842
   
-  Electron pairs left to assign:  20
+  Orbitals left to assign:  20
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     18      1   1.02166
@@ -736,14 +784,14 @@ BRANCH I=   0
   
   Lowest eigenvalue obtained (LinDep):    1.00000
   
-  ---------------------- 
-   ITERATION NUMBER   3
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   3
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    16.25418      0.01502     16.56125
@@ -768,10 +816,10 @@ BRANCH I=   0
     20     0.84954      0.98594      1.02144
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -796,10 +844,10 @@ BRANCH I=   0
     20     1.77627      0.97205      1.04306
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -824,10 +872,10 @@ BRANCH I=   0
     20     1.77627      0.97205      1.04306
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -852,10 +900,10 @@ BRANCH I=   0
     20     1.77627      0.97205      1.04306
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96451      0.00156     36.96252
@@ -882,11 +930,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   1   1.02144
   Frg. and Lowest FOLI value including tolerance (cutoff):   3   1.02144
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     18      1   1.02166
@@ -897,12 +945,12 @@ BRANCH I=   0
   Number of OSLOs selected:   3
   delta-FOLI value:    0.02162
   
-  Electron pairs left to assign:  17
+  Orbitals left to assign:  17
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     18      1   1.02166
@@ -917,14 +965,14 @@ BRANCH I=   0
   
   Lowest eigenvalue obtained (LinDep):    0.97791
   
-  ---------------------- 
-   ITERATION NUMBER   4
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   4
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    16.25418      0.01502     16.56125
@@ -946,10 +994,10 @@ BRANCH I=   0
     17     1.47471      0.93372      1.10765
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96274      0.00156     36.91980
@@ -971,10 +1019,10 @@ BRANCH I=   0
     17     1.77893      0.97374      1.04040
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96274      0.00156     36.91980
@@ -996,10 +1044,10 @@ BRANCH I=   0
     17     1.77893      0.97374      1.04040
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96274      0.00156     36.91980
@@ -1021,10 +1069,10 @@ BRANCH I=   0
     17     1.77893      0.97374      1.04040
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    33.96274      0.00156     36.91980
@@ -1048,11 +1096,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   3   1.04040
   Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.04040
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     17      2   1.04040
@@ -1064,12 +1112,12 @@ BRANCH I=   0
   Number of OSLOs selected:   4
   delta-FOLI value:    0.06725
   
-  Electron pairs left to assign:  13
+  Orbitals left to assign:  13
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     17      1   1.10765
@@ -1082,14 +1130,14 @@ BRANCH I=   0
   
   Lowest eigenvalue obtained (LinDep):    0.99864
   
-  ---------------------- 
-   ITERATION NUMBER   5
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   5
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    12.16438      0.02869     12.13632
@@ -1107,10 +1155,10 @@ BRANCH I=   0
     13     1.47471      0.93372      1.10765
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1128,10 +1176,10 @@ BRANCH I=   0
     13     3.14006      0.90177      1.16334
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1149,10 +1197,10 @@ BRANCH I=   0
     13     3.14006      0.90177      1.16334
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1170,10 +1218,10 @@ BRANCH I=   0
     13     3.14006      0.90177      1.16334
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1193,11 +1241,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   1   1.10765
   Frg. and Lowest FOLI value including tolerance (cutoff):   3   1.10765
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     13      1   1.10765
@@ -1206,12 +1254,12 @@ BRANCH I=   0
   Number of OSLOs selected:   1
   delta-FOLI value:    0.05569
   
-  Electron pairs left to assign:  12
+  Orbitals left to assign:  12
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     13      1   1.10765
@@ -1224,14 +1272,14 @@ BRANCH I=   0
   
   Lowest eigenvalue obtained (LinDep):    0.86923
   
-  ---------------------- 
-   ITERATION NUMBER   6
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   6
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    12.16438      0.02869     12.13632
@@ -1248,10 +1296,10 @@ BRANCH I=   0
     12     6.27626      0.48121      2.63694
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1268,10 +1316,10 @@ BRANCH I=   0
     12     3.16877      0.90179      1.16331
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1288,10 +1336,10 @@ BRANCH I=   0
     12     3.16877      0.90179      1.16331
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1308,10 +1356,10 @@ BRANCH I=   0
     12     3.16877      0.90179      1.16331
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    28.15124      0.00176     45.02390
@@ -1330,11 +1378,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   5   1.16331
   Frg. and Lowest FOLI value including tolerance (cutoff):   4   1.16331
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     12      2   1.16331
@@ -1346,12 +1394,12 @@ BRANCH I=   0
   Number of OSLOs selected:   4
   delta-FOLI value:    0.28780
   
-  Electron pairs left to assign:   8
+  Orbitals left to assign:   8
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
     11      2   1.45111
@@ -1367,14 +1415,14 @@ BRANCH I=   0
   
   Lowest eigenvalue obtained (LinDep):    0.89071
   
-  ---------------------- 
-   ITERATION NUMBER   7
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   7
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    11.82269      0.03098     11.70275
@@ -1387,10 +1435,10 @@ BRANCH I=   0
      8     6.27626      0.48121      2.63694
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    27.76171      0.00349     30.85459
@@ -1403,10 +1451,10 @@ BRANCH I=   0
      8     4.36177      0.75848      1.45707
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    27.76171      0.00349     30.85459
@@ -1419,10 +1467,10 @@ BRANCH I=   0
      8     4.36177      0.75848      1.45707
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    27.76171      0.00349     30.85459
@@ -1435,10 +1483,10 @@ BRANCH I=   0
      8     4.36177      0.75848      1.45707
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    27.76171      0.00349     30.85459
@@ -1453,11 +1501,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   4   1.45707
   Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.45707
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
      8      2   1.45707
@@ -1469,12 +1517,12 @@ BRANCH I=   0
   Number of OSLOs selected:   4
   delta-FOLI value:    0.16665
   
-  Electron pairs left to assign:   4
+  Orbitals left to assign:   4
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
      7      2   1.62373
@@ -1490,14 +1538,14 @@ BRANCH I=   0
   
   Lowest eigenvalue obtained (LinDep):    0.86047
   
-  ---------------------- 
-   ITERATION NUMBER   8
-  ---------------------- 
-  
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   1
-  -------------------------------------- 
-  
+  ------------------------
+    ITERATION NUMBER   8
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    11.13910      0.14292      5.85523
@@ -1506,10 +1554,10 @@ BRANCH I=   0
      4     7.81465      0.36331      3.43455
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   2
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    25.35254      0.01254     16.75421
@@ -1518,10 +1566,10 @@ BRANCH I=   0
      4     4.55812      0.68643      1.61866
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   3
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   3
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    25.35254      0.01254     16.75421
@@ -1530,10 +1578,10 @@ BRANCH I=   0
      4     4.55812      0.68643      1.61866
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   4
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   4
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    25.35254      0.01254     16.75421
@@ -1542,10 +1590,10 @@ BRANCH I=   0
      4     4.55812      0.68643      1.61866
   ------------------------------------------ 
   
-  -------------------------------------- 
-   ORBITAL INFORMATION FOR FRAGMENT   5
-  -------------------------------------- 
-  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   5
+  ----------------------------------------
+
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
      1    25.35254      0.01254     16.75421
@@ -1556,11 +1604,11 @@ BRANCH I=   0
   
   Frg. and Lowest FOLI value:   2   1.61866
   Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.61866
-  
-  ------------------- 
-   SELECTED ORBITALS  
-  ------------------- 
-  
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
      4      2   1.61866
@@ -1572,12 +1620,12 @@ BRANCH I=   0
   Number of OSLOs selected:   4
   delta-FOLI value:    1.81589
   
-  Electron pairs left to assign:   0
+  Orbitals left to assign:   0
   
-  ------------------------------ 
-   CHECKING LINEAR DEPENDENCIES  
-  ------------------------------ 
-  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
    Orb.   Frag.   FOLI  
   --------------------- 
      3      1   3.43455
@@ -1599,27 +1647,14 @@ BRANCH I=   0
   Selecting largest to proceed 
   RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT 
   
-  --------------------------- 
-   FRAGMENT OXIDATION STATES  
-  --------------------------- 
-  
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          6.00
-     2         -2.00
-     3         -2.00
-     4         -2.00
-     5         -2.00
-  ------------------------ 
-  
-  ---------------------------------- 
-   PRINTING FINAL OSLOs INFORMATION  
-  ---------------------------------- 
-  
-  ------------------------------------------- 
-   Summary of the selected OSLOs (pre-ortho)  
-  ------------------------------------------- 
-  
+  ------------------------------------
+    PRINTING FINAL OSLOs INFORMATION
+  ------------------------------------
+
+  ---------------------------------------------
+    Summary of the selected OSLOs (pre-ortho)
+  ---------------------------------------------
+
   OSLO Number :      1         2         3         4         5
   FOLI Value  :   1.00010   1.00010   1.00010   1.00010   1.00000
   Frg. Pop.  1:   0.99993   0.99993   0.99993   0.99993   1.00000
@@ -1668,10 +1703,10 @@ BRANCH I=   0
   Frg. Pop.  4:   0.01477   0.00893   0.00893   0.68643   0.00476
   Frg. Pop.  5:   0.75848   0.00893   0.00893   0.00476   0.68643
   
-  --------------------------------------- 
-   Summary of the selected OSLOs (final)  
-  --------------------------------------- 
-  
+  -----------------------------------------
+    Summary of the selected OSLOs (final)
+  -----------------------------------------
+
   OSLO Number :      1         2         3         4         5
   Frg. Pop.  1:   0.99993   0.99993   0.99993   0.99993   1.00000
   Frg. Pop.  2:   0.00002   0.00002   0.00002   0.00002   0.00000
@@ -1714,7 +1749,20 @@ BRANCH I=   0
   Frg. Pop.  4:   0.02096   0.00921   0.00921   0.69064   0.00644
   Frg. Pop.  5:   0.77075   0.00921   0.00921   0.00644   0.69064
   
- TIMING CPU  :: OSLO analysis                                     1.59 s
- TIMING WALL :: OSLO analysis                                     1.46 s
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
+   Frag.  Oxidation State  
+  ------------------------ 
+     1          6.00
+     2         -2.00
+     3         -2.00
+     4         -2.00
+     5         -2.00
+  ------------------------ 
   
- ...Normal Termination of APOST-3D... 
+  TIMING CPU  :: OSLO analysis                                     1.49 s
+  TIMING WALL :: OSLO analysis                                     1.34 s
+
+  ...Normal Termination of APOST-3D...
