@@ -55,5 +55,6 @@ analyses.
   written after the closing `#` of a block are ignored without warning.
 - Keywords are recognized anywhere in a line, also inside longer words, so
   don't add free text to keyword lines.
-- Check the `INPUT SUMMARY` at the top of the output: it lists every option
-  as the program understood it. A keyword missing from it was not read.
+- Check the `INPUT SUMMARY` at the top of the output: it lists the
+  analyses and options as the program understood them. An analysis
+  missing from it was not read.

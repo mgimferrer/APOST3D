@@ -60,7 +60,9 @@ Ask Q-Chem for the formatted checkpoint file with `GUI = 2` in the
 
 `utils/apost3d.py` writes the `.fchk` file from a pySCF calculation,
 including the reference energies needed by ENPART, and for CASSCF also the
-1- and 2-RDM files. Make it importable:
+1- and 2-RDM files. It works with pySCF up to version 2.7
+(`pip install "pyscf<2.8"`); newer versions are not supported yet. Make it
+importable:
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:$APOST3D_PATH/utils
@@ -108,7 +110,20 @@ apost.write_fchk(mol, mycas, molname, mf.get_ovlp())  # HF-CASSCF.fchk
 apost.write_dm12(mol, mycas, molname)                 # HF-CASSCF.dm1, .dm2
 ```
 
-and in the APOST-3D input:
+**FCI**: pass the FCI solver, and the mean-field calculation it started
+from as `myhf`:
+
+```python
+from pyscf import fci
+
+cisolver = fci.FCI(mf)
+cisolver.kernel()
+apost.write_fchk(mol, cisolver, 'HF-FCI', mf.get_ovlp(), myhf=mf)
+```
+
+The `.fchk` file of a CASSCF or FCI wavefunction is enough for the
+population analysis, EFFAO, EOS and GEOS. For SPIN and ENPART, give the
+RDM files in the APOST-3D input:
 
 ```text
 # METHOD

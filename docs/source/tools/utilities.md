@@ -1,7 +1,8 @@
 # Utilities
 
 `bash make_compile.sh` (or `make utils`) also builds a few helper
-programs into `$APOST3D_PATH/utils/`.
+programs into `$APOST3D_PATH/utils/`, which also holds the Python module
+`apost3d.py`.
 
 | Program | Purpose |
 |---|---|
@@ -83,14 +84,16 @@ files. Copy `densoutput` into the folder of every calculation that uses
 
 ## apost3d.py
 
-A Python module with two functions for [pySCF](https://pyscf.org)
+It works with pySCF up to version 2.7 (`pip install "pyscf<2.8"`); newer
+versions are not supported yet. A Python module with two functions for [pySCF](https://pyscf.org)
 calculations, described with examples in
 [Preparing the wavefunction](../guide/wavefunctions.md#pyscf):
 
-- `write_fchk(mol, mf, name, overlap)` writes `name.fchk` from a pySCF
-  mean-field (HF, KS-DFT, restricted, unrestricted or restricted
-  open-shell) or CASSCF object, `overlap` being `mf.get_ovlp()`. It
-  includes the reference energies needed by ENPART.
+- `write_fchk(mol, obj, name, overlap, myhf=None)` writes `name.fchk`
+  from a pySCF mean-field (HF, KS-DFT, restricted, unrestricted or
+  restricted open-shell), CASSCF or FCI object, `overlap` being
+  `mf.get_ovlp()`; for FCI, pass the underlying mean-field object as
+  `myhf`. It includes the reference energies needed by ENPART.
 - `write_dm12(mol, mycas, name)` writes the 1- and 2-RDMs of a CASSCF
   calculation to `name.dm1` and `name.dm2`.
 

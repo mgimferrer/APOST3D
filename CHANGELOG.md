@@ -12,7 +12,7 @@ program, not a full development history — see `git log` for that.
   oxidation-state analysis (`# METHOD GEOS`), built from paired/unpaired
   densities separately (Takatsuka's definition) rather than the total
   density alone, complementing the existing EOS method.
-- **DFT-DM1** — a new analysis method (`# METHOD DFT-DM1`) for
+- **DFT-DM1** (in development, not documented yet) — a new analysis method (`# METHOD DFT-DM1`) for
   UHF/UKS-DFT wavefunctions: builds an approximate one-particle density
   matrix from the local exchange-energy density and prints per-atom-pair
   exchange energies and bond orders, with an optional natural-orbital
@@ -21,7 +21,7 @@ program, not a full development history — see `git log` for that.
   fully supports unrestricted (UHF/UKS) wavefunctions, not just
   restricted ones.
 - **Orbitals exportable to `.fchk`** — OSLO orbitals, and now also the
-  Effective Atomic Orbitals (EFOs) from EOS and GEOS, can be written out
+  effective fragment orbitals (EFOs) from EOS and GEOS, can be written out
   to a standard `.fchk` file, so they can be viewed directly in any
   common orbital-viewer instead of only as cube files.
 - **New cube-file options** — `SPACING`/`RADIUS_SCALE` keywords under
@@ -56,7 +56,7 @@ program, not a full development history — see `git log` for that.
   `SVWN5`, or `LIBRARY` with `EX_FUNCTIONAL 1` for exchange only.
 - **Clear stops instead of wrong numbers** — meta-GGA functionals (not
   yet supported), range-separated hybrids, VV10 functionals, invalid libxc
-  ids, and ENPART with a Hilbert-space atom definition (`MULLI`, `LOWDIN`)
+  ids, and ENPART with a Hilbert-space atom definition (`MULLIKEN`, `LOWDIN`)
   now stop with a message before any energy is computed.
 - **Clearer output** — for hybrid functionals, the DFT-part tables now
   say that the HF-type exchange share is added in the two-electron part,

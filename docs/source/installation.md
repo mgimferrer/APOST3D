@@ -14,24 +14,25 @@ test suite). On most systems one command installs them all:
 
 ```bash
 sudo apt update
-sudo apt install gfortran gcc make libopenblas-dev cmake python3
+sudo apt install gfortran gcc make libopenblas-dev cmake python3 curl
 ```
 
 **Fedora, RHEL, Rocky Linux, AlmaLinux**
 
 ```bash
-sudo dnf install gcc-gfortran gcc make openblas-devel cmake python3
+sudo dnf install gcc-gfortran gcc make openblas-devel cmake python3 curl
 ```
 
 **openSUSE**
 
 ```bash
-sudo zypper install gcc-fortran gcc make openblas-devel cmake python3
+sudo zypper install gcc-fortran gcc make openblas-devel cmake python3 curl
 ```
 
 **macOS** (with [Homebrew](https://brew.sh))
 
 ```bash
+xcode-select --install       # command-line tools (make, python3), if not yet installed
 brew install gcc openblas cmake
 ```
 
@@ -64,9 +65,9 @@ bash make_compile.sh
 ```
 
 The first build takes a few minutes, most of it compiling libxc; later
-builds take seconds. The script checks every prerequisite before
-compiling and stops with a clear message, and the command to fix it, if
-one is missing (see [Troubleshooting](troubleshooting.md)). At the end it
+builds take seconds. If something is missing (CMake, OpenBLAS, a recent
+enough gfortran), the script stops with a clear message and the command
+to fix it (see [Troubleshooting](troubleshooting.md)). At the end it
 launches each program once and lists them:
 
 ```text
@@ -119,7 +120,7 @@ You are ready: continue with the [tutorial](tutorial.md).
 
 | Option | Effect |
 |---|---|
-| `NTHREADS=<n>` | Number of parallel compile jobs, and of threads used by `make test`. Default 8, or fewer if the machine has fewer CPUs. Use a small value on a shared login node. |
+| `NTHREADS=<n>` | Number of parallel compile jobs. Default 8, or fewer if the machine has fewer CPUs; use a small value on a shared login node. `make test` takes the same option for its threads (`make test NTHREADS=4`). |
 | `ARCH=native` | Optimize for the CPU of the machine that compiles. By default the program runs on every CPU of its family (x86-64 or arm64), which is what you want on a cluster with nodes of different ages, or when compiling on a login node. With `ARCH=native` it may be somewhat faster, but can stop with `Illegal instruction` on older CPUs. Any other `gcc -march` value also works, e.g. `ARCH=x86-64-v3`. |
 | `clean` | Remove everything compiled and rebuild from scratch. |
 | `help` | List all options. |
@@ -154,7 +155,10 @@ bash make_compile.sh
 
 **An existing libxc.** If libxc is already installed (a distribution
 package, conda, Homebrew's `libxc`), the script finds it through
-`pkg-config` and does not build its own. To use a specific copy:
+`pkg-config` and does not build its own. It must be libxc 7, built with the
+same gfortran; if an installed copy gives build errors, build the bundled
+one with `bash compile_libxc.sh` and point at it with
+`LIBXC_DIR=$APOST3D_PATH/libxc-7.1.2`. To use a specific copy:
 
 ```bash
 export LIBXC_DIR=/path/to/libxc       # the folder with lib/ and include/
@@ -162,10 +166,11 @@ bash make_compile.sh
 ```
 
 **A machine without internet access.** The script downloads libxc from
-`gitlab.com`. On a machine that cannot, download the file named in
-`compile_libxc.sh` (`libxc-<version>.tar.gz`) elsewhere, copy it into the
-APOST-3D folder, and run `bash make_compile.sh`: the file is used
-instead of downloading (and checked against the same checksum).
+`gitlab.com`. On a machine that cannot, download
+<https://gitlab.com/libxc/libxc/-/archive/7.1.2/libxc-7.1.2.tar.gz>
+elsewhere, copy it into the APOST-3D folder as `libxc-7.1.2.tar.gz`, and
+run `bash make_compile.sh`: the file is used instead of downloading (and
+checked against the same checksum).
 
 **CMake too old.** libxc needs CMake 3.21 or newer. `pip install --user
 cmake` installs a recent one without administrator rights.

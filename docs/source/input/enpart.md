@@ -11,10 +11,10 @@ Give exactly one of: `HF`, a predefined functional keyword, `LIBRARY`
 
 | Keyword | Description |
 | ------- | ----------- |
-| HF | Hartree-Fock energy |
-| CASSCF | CASSCF energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
-| CISD | CISD energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
-| LIBRARY | Any supported functional, given by its [libxc](https://libxc.gitlab.io/functionals/) ids (see below) |
+| `HF` | Hartree-Fock energy |
+| `CASSCF` | CASSCF energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
+| `CISD` | CISD energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
+| `LIBRARY` | Any supported functional, given by its [libxc](https://libxc.gitlab.io/functionals/) ids (see below) |
 
 ### Predefined functionals
 
@@ -22,16 +22,16 @@ Each keyword reproduces the Gaussian 16 functional of the same name (checked on 
 
 | Keyword | Functional | libxc ids |
 | ------- | ---------- | --------- |
-| SVWN | Slater exchange + VWN correlation, RPA fit (Gaussian's SVWN) | 1 + 8 |
-| SVWN5 | Slater exchange + VWN5 correlation | 1 + 7 |
-| BLYP | Becke 88 exchange + LYP correlation | 106 + 131 |
-| BP86 | Becke 88 exchange + Perdew 86 correlation | 106 + 132 |
-| PBE (or PBEPBE) | PBE exchange and correlation | 101 + 130 |
-| B3LYP | Gaussian's B3LYP (VWN-RPA local correlation) | 402 |
-| B3PW91 | B3PW91 | 401 |
-| B3P86 | Gaussian's B3P86 | 315 |
-| PBE0 (or PBE1PBE) | PBE0 | 406 |
-| BHANDHLYP | Gaussian's BHandHLYP (50% HF exchange, B88, LYP) | 436 |
+| `SVWN` | Slater exchange + VWN correlation, RPA fit (Gaussian's SVWN) | 1 + 8 |
+| `SVWN5` | Slater exchange + VWN5 correlation | 1 + 7 |
+| `BLYP` | Becke 88 exchange + LYP correlation | 106 + 131 |
+| `BP86` | Becke 88 exchange + Perdew 86 correlation | 106 + 132 |
+| `PBE` (or `PBEPBE`) | PBE exchange and correlation | 101 + 130 |
+| `B3LYP` | Gaussian's B3LYP (VWN-RPA local correlation) | 402 |
+| `B3PW91` | B3PW91 | 401 |
+| `B3P86` | Gaussian's B3P86 | 315 |
+| `PBE0` (or `PBE1PBE`) | PBE0 | 406 |
+| `BHANDHLYP` | Gaussian's BHandHLYP (50% HF exchange, B88, LYP) | 436 |
 
 ```{admonition} Same name, different functional
 :class: warning
@@ -56,11 +56,11 @@ and/or `EC_FUNCTIONAL`, never both kinds together:
 
 | Keyword | Description |
 | ------- | ----------- |
-| EXC_FUNCTIONAL=*val* | libxc id of a combined exchange-correlation functional |
-| EX_FUNCTIONAL=*val* | libxc id of the exchange functional |
-| EC_FUNCTIONAL=*val* | libxc id of the correlation functional |
+| `EXC_FUNCTIONAL` *n* | libxc id of a combined exchange-correlation functional |
+| `EX_FUNCTIONAL` *n* | libxc id of the exchange functional |
+| `EC_FUNCTIONAL` *n* | libxc id of the correlation functional |
 
-`KEY val` and `KEY=val` are both accepted. LDA, GGA and global-hybrid GGA
+LDA, GGA and global-hybrid GGA
 functionals are supported. Meta-GGAs (not yet), range-separated hybrids
 and VV10 functionals stop the run with a message, as does an invalid id.
 The functional must be the one used to compute the wavefunction.

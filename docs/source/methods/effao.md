@@ -79,8 +79,8 @@ only, since the beta ones are the same.
 - Any atomic definition (`TFVC` recommended, see
   [Atoms in molecules](../guide/aim.md)); `EFFAO-U` needs a real-space one.
 - Any wavefunction.
-- Fragments are optional. Without `DOFRAGS` every atom is a fragment and
-  the result are the effective atomic orbitals.
+- Fragments are optional. Without `DOFRAGS` every atom is a fragment, and
+  the result is the set of effective atomic orbitals.
 
 ```text
 # METHOD
@@ -128,14 +128,15 @@ fragment gets one entry per density:
   0.001 are listed.
 - `Gross occupation for fragment` and the second `OCCUP.` rows are the
   same for the gross occupations, in the same order.
-- `FIT %` measures how well the orbital written to the `.fchk` file
-  reproduces each EFO (only for runs that write it: real-space `EOS` and
-  `GEOS`; see [Visualizing orbitals](../guide/visualization.md)).
+- `FIT %` (real-space schemes) measures how well each EFO can be
+  written in terms of the basis functions, which is how `EOS` and `GEOS`
+  write them to a `.fchk` file (see
+  [Visualizing orbitals](../guide/visualization.md)).
 
-Here the iron alpha EFOs show five core-like orbitals at 1.000, eight
+Here the iron alpha EFOs show five core-like orbitals at 1.000, five
 more above 0.98 (the rest of the core and the 3d-type orbitals that keep
-their electrons), and then a gap: two EFOs at 0.84, one at 0.32 and small
-occupations after it. Where that gap falls, compared with the EFOs of the
+their electrons), and then a gap: two EFOs at 0.82, one at 0.28 and small
+occupations after it (0.84 and 0.32 as gross occupations). Where that gap falls, compared with the EFOs of the
 ligands, is what the [EOS](eos.md) analysis turns into an oxidation
 state.
 
@@ -149,10 +150,9 @@ occupations can slightly exceed 1.
   [Visualizing orbitals](../guide/visualization.md)).
 - `EFFAO`, `UEFFAO` and `EFFAO-U` on their own write no `.fchk` file of the
   orbitals: that is written by `EOS` (real-space schemes) and `GEOS`.
-- With `LOWDIN` or `NAO-BASIS` and `UEFFAO` or `EOS`, `efo_occ.dat` and
-  `efo_coeff.dat` hold the occupations and coefficients as text. Their
-  names don't include the job name, so a second run in the same folder
-  overwrites them.
+- With `LOWDIN`, `LOWDIN-DAVIDSON` or `NAO-BASIS` and `UEFFAO` or `EOS`,
+  `efo_occ.dat` and `efo_coeff.dat` hold the occupations and coefficients
+  as text (see [Output files](../guide/output.md#other-files)).
 
 ## Checking the result
 

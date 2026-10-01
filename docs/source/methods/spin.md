@@ -145,18 +145,16 @@ $\langle \hat S^2\rangle_{AB}$ (each pair appears twice, as AB and BA):
   Sum check <S^2> =    2.00524
 ```
 
-The two unpaired electrons are mostly on oxygen (1.08, about half way
-between one and two localized electrons), partly delocalized onto the
-hydrogens, and all couplings are positive (ferromagnetic), as expected for
+The two unpaired electrons are mostly on oxygen (1.08, compared with 0.75
+for one and 2 for two electrons localized on it), partly delocalized onto
+the hydrogens, and all couplings are positive (ferromagnetic), as expected for
 a triplet. The sum check is the total $\langle \hat S^2\rangle$ of the
 wavefunction: 2.00524 here, slightly above the exact 2 because of the spin
 contamination of the UKS determinant (it matches the `S**2` value of the
 `.fchk` file).
 
-A second matrix, `"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX`, gives the
-decomposition in the Clark–Davidson formulation, which has the same total
-but non-zero local spins even for closed-shell molecules. Use the
-$a=3/4$ matrix above.
+A second matrix, `"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX`, follows. It is
+under revision: use the $a=3/4$ matrix above.
 
 **Correlated wavefunction.** For LiH at 3.5 Å, CASSCF(2,2) (test
 `LiH-35-CAS22`), the section first prints bond order and

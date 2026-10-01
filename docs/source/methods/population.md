@@ -1,4 +1,4 @@
-# POPULATION - Atomic populations, bond orders and valences
+# Population analysis - Atomic populations, bond orders and valences
 
 Every run starts with a population analysis in the chosen
 [atomic definition](../guide/aim.md): electron and spin populations and
@@ -35,6 +35,13 @@ $Z_A$ is the nuclear charge (the effective one if a pseudopotential is
 used). The free valence is zero for a closed-shell single determinant;
 a non-zero value points to unpaired electrons, or to radical character in
 a correlated wavefunction.
+
+## Requirements and input
+
+None: the population analysis is done in every run, with any atomic
+definition and any wavefunction (the [atomic definition](../guide/aim.md)
+is the only keyword it uses). With `DOFRAGS`, it is also given for the
+fragments.
 
 ## Reading the output
 
@@ -92,6 +99,17 @@ With `DOFRAGS`, every table is followed by its fragment version
 ...), where the populations and charges are summed over the atoms of each
 fragment and the bond order between two fragments is the sum of the bond
 orders between their atoms (see [Fragments](../guide/fragments.md)).
+
+## Checking the result
+
+- With a real-space scheme, the sum of the populations should equal the
+  number of electrons (and the sum of the charges, the charge of the
+  molecule) up to a small integration error; a larger difference calls
+  for a larger grid (see [Running a calculation](../guide/running.md#integration-grid)).
+- For a closed-shell single determinant, the free valences are zero up to
+  the integration error.
+- Mulliken values (also printed for comparison) depend strongly on the
+  basis set; the real-space ones much less.
 
 ## Atomic overlap matrices for other programs
 

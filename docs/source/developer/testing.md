@@ -114,10 +114,10 @@ and then one against several threads.
 | `FeO4-2` | Ferrate(VI), RKS, Q-Chem `.fchk`: TFVC, fragment OSLO | `dft oslo tfvc rks fragments qchem` |
 | `C2H6-B3LYP` | Ethane, RKS B3LYP: full ENPART with `THREBOD` and `MOD-GRIDTWOEL`, the largest ENPART case | `dft enpart tfvc rks threbod` |
 | `H2O-Dimer-RHF` | Water dimer, RHF: ENPART (HF), `THREBOD 10` (6 pairs by the multipolar expansion), fragments | `hf enpart tfvc rhf threbod multipolar fragments` |
-| `FeCN5NO3--UBLYP` | Iron cyanide/nitrosyl/nitrate complex, UKS BLYP: LOWDIN, EFFAO, EOS, 7 fragments | `dft lowdin effao eos uks fragments openshell` |
+| `FeCN5NO3--UBLYP` | [Fe(CN)₅NO]³⁻ doublet, UKS BLYP: LOWDIN, EFFAO, EOS, 7 fragments | `dft lowdin effao eos uks fragments openshell` |
 | `NaBH3--UHF` | NaBH3 anion, UHF: MULLIKEN, EOS | `hf uhf mulliken pca eos fragments` |
 | `FeCN5NO3--UBLYP-t2` | Same complex, UKS BLYP: TFVC + unrestricted OSLO with LOWDIN fragment populations, 7 fragments | `dft oslo lowdin tfvc uks fragments openshell` |
-| `LiH-35-CAS22` | LiH, CASSCF(2,2) from pySCF (`# DM PYSCF`): ENPART (CASSCF), every pair computed | `hf enpart casscf dm pyscf spin tfvc` |
+| `LiH-35-CAS22` | LiH, CASSCF(2,2) from pySCF (`pySCF` in `# DM`): ENPART (CASSCF), every pair computed, and correlated local spin | `hf enpart casscf dm pyscf spin tfvc` |
 | `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP: GEOS, 2 fragments, two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |
 | `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ: GEOS with a negative paired EFO, `FIT %`, `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
 | `H2O-T-BLYP` | Water, triplet UKS BLYP given as libxc ids (`LIBRARY`): ENPART, every pair computed | `dft enpart tfvc uks openshell libxc-ids` |
@@ -129,10 +129,12 @@ and then one against several threads.
 
 1. Place `SystemName.fchk` and `SystemName.inp` (and any other file the
    input needs) in `tests/inputs/`.
-2. Run it once and check the output:
+2. Run it once in a scratch folder (not in `tests/inputs`, which must
+   not collect output files) and check the output:
    ```bash
-   cd tests/inputs && ulimit -s unlimited
-   ../../apost3d SystemName > SystemName.apost 2>&1
+   mkdir /tmp/newtest && cp tests/inputs/SystemName.* /tmp/newtest && cd /tmp/newtest
+   ulimit -s unlimited
+   $APOST3D_PATH/apost3d SystemName > SystemName.apost 2>&1
    ```
 3. Add an entry to `tests/manifest.json`: copy a similar test and adapt
    its description, tags, patterns and reference values. Choose each

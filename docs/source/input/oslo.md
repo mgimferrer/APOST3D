@@ -25,5 +25,3 @@ most one; without any, the real-space scheme of `# METHOD` is used.
 | `FOLI TOLERANCE` | integer *n* | 3 | Orbitals whose FOLI is within 10⁻ⁿ of the lowest one are selected together in an iteration. |
 | `PRINT NON-ORTHO` | | off | Also write the OSLOs before orthogonalization to `<jobname>-OSLOs-preortho.fchk`. The final OSLOs are always written to `<jobname>-OSLOs.fchk`. |
 | `BRANCH ITERATION` | integer | 0 | Branching (choosing an alternative orbital at a given iteration) is not available in this version: leave it at 0. Any other value stops the run at that iteration. |
-
-`KEY val` and `KEY=val` are both accepted, e.g. `FOLI TOLERANCE 4`.

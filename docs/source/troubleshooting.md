@@ -16,7 +16,7 @@ Install it (see [Installation](installation.md)), or point at it:
 `export OPENBLAS_DIR=/path/to/openblas` (the folder with `lib/` and
 `include/`), then rerun the script.
 
-**`cmake: command not found`, or `CMake 3.21 or higher is required`**
+**`ERROR: cmake not found (>= 3.21 required).`**, or **`ERROR: cmake <version> found, but libxc 7.1.2 needs >= 3.21.`**
 The automatic libxc build needs CMake 3.21 or newer. `pip install --user
 cmake` installs one without administrator rights.
 
@@ -51,6 +51,10 @@ job name, a different folder, or an extension given: use `apost3d
 water`, not `apost3d water.inp`). The program then leaves empty files
 with those names behind; delete them.
 
+**`# <BLOCK> section not found`, followed by `Fortran runtime error: End of file`**
+A keyword needs a block that is missing (e.g. `OSLO` without `# OSLO`,
+`ENPART` without `# ENPART`), or a block is not closed with `#`.
+
 **Segmentation fault**
 Run `ulimit -s unlimited` before the program (in job scripts too).
 
@@ -61,8 +65,9 @@ The run stopped early. The reason is in the last lines of the output
 ## The input file
 
 **A keyword has no effect**
-Check the `INPUT SUMMARY` of the output: a keyword that is not listed
-there was not read. Usually it is typed in lower case (keywords are
+Check the `INPUT SUMMARY` of the output: an analysis or option that is
+not listed there was not read (`DM`, `DENS` and `TWOELTOLER` are never
+listed). Usually it is typed in lower case (keywords are
 case-sensitive), placed after the closing `#` of its block, or placed
 after a line containing `#` (such as a comment), which ends the block.
 See the [input rules](input/index.md#rules).
@@ -83,6 +88,10 @@ atom numbers in `# FRAGMENTS`, or end with `-1` for the remaining atoms.
 
 **`# DM section not found in input file`**
 `DM 1` or `DM 2` is set but there is no `# DM` block.
+
+**`Density number <n> not found in the fchk file`**
+`DENS` asks for a density that the `.fchk` file doesn't contain; see
+[Preparing the wavefunction](guide/wavefunctions.md#gaussian).
 
 ## Atomic definitions
 
@@ -137,6 +146,16 @@ NOT SUPPORTED`**
 Range-separated hybrids (CAM-B3LYP, ωB97X, LC-ωPBE, HSE, ...) and
 functionals with VV10 nonlocal correlation are not supported. Only
 global hybrids are.
+
+**`STOP NO DFT/HF/CASSCF/CISD SELECTED FOR ENPART. REVISE inp`**,
+**`STOP FUNCTIONAL ID NOT FOUND IN INPUT FILE`**
+`# ENPART` must name the wavefunction: `HF`, a functional keyword,
+`LIBRARY` with its libxc ids, `CASSCF` or `CISD`
+(see [# ENPART](input/enpart.md)).
+
+**`STOP UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp`**, **`STOP KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp`**
+The libxc id is not an exchange-correlation functional of a supported
+family (LDA, GGA, global-hybrid GGA).
 
 **`STOP INVALID LIBXC FUNCTIONAL ID. REVISE inp`**
 The id given with `EXC_FUNCTIONAL`/`EX_FUNCTIONAL`/`EC_FUNCTIONAL` is not

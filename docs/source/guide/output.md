@@ -5,14 +5,15 @@
 All results are printed to the standard output, normally saved with
 `apost3d jobname > jobname.apost 2>&1`. It is printed in this order:
 
-1. the program header, with the references to cite for the analyses of
-   the run;
+1. the program header, with the references of the methods (see
+   [Citations](../citations.md));
 2. `WAVEFUNCTION SUMMARY`: what was read from the `.fchk` file (restricted
    or unrestricted, type of calculation, number of atoms, basis functions
    and electrons, energy);
-3. `INPUT SUMMARY`: every option of the input file, as the program
-   understood it. **Check it first when a result looks unexpected**: a
-   keyword that is not listed there was not read;
+3. `INPUT SUMMARY`: the options of the input file, as the program
+   understood them. **Check it first when a result looks unexpected**: an
+   analysis or option missing there was not read (a few settings, such as
+   `DM`, `DENS` and `TWOELTOLER`, are not listed);
 4. the integration grid and the atomic definition (real-space schemes);
 5. the [population analysis](../methods/population.md);
 6. the requested analyses, each with its own page in *Analysis methods*;
@@ -65,7 +66,7 @@ Written into the working directory, depending on the keywords:
 | `<jobname>-EOS-EFOs.fchk` | `EOS`, real-space schemes | Effective fragment orbitals as orbitals |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired and unpaired effective fragment orbitals |
 | `<jobname>_<scheme>..._<i>.cube` | `CUBE` | One cube file per selected effective orbital |
-| `efo_occ.dat`, `efo_coeff.dat` | `EOS`/`UEFFAO` with `LOWDIN` or `NAO-BASIS` | Effective orbital occupations and coefficients, as text |
+| `efo_occ.dat`, `efo_coeff.dat` | `EOS`/`UEFFAO` with `LOWDIN`, `LOWDIN-DAVIDSON` or `NAO-BASIS` | Effective orbital occupations and coefficients, as text |
 | `<jobname><ext>.files`, `<jobname><ext>_<El><n>.int` | `DOINT` | Atomic overlap matrices in the MO basis, one `.int` file per atom, and the list of files |
 
 In the `DOINT` file names, `<ext>` is `fuz` (TFVC and Becke), `hir`
