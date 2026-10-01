@@ -87,7 +87,7 @@ python3 tests/run_tests.py --help
 
 ## Checking a build on another machine
 
-Copy or clone the whole package (sources, `compiler-testset/` and `tests/`),
+Copy or clone the whole package (sources and `tests/`, which holds the inputs),
 build it as usual, and run `make test-strict NTHREADS=<n>`. The references
 were written on the developers' machine, so a passing suite means the new
 build prints exactly the same output. A failing full-output check lists the
@@ -149,11 +149,11 @@ All seventeen run every time `make test` is invoked.
 
 ## Adding a new test case
 
-1. Place `SystemName.fchk` and `SystemName.inp` in `compiler-testset/`.
+1. Place `SystemName.fchk` and `SystemName.inp` in `tests/inputs/`.
 2. Run it once and check the output (`Normal Termination`, sensible values):
    ```bash
-   cd compiler-testset && ulimit -s unlimited
-   ../apost3d SystemName > SystemName.apost 2>&1
+   cd tests/inputs && ulimit -s unlimited
+   ../../apost3d SystemName > SystemName.apost 2>&1
    ```
 3. Add an entry to `tests/manifest.json` (copy an existing similar test and
    adapt the tags, patterns, and reference values).

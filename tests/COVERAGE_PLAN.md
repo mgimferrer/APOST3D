@@ -98,7 +98,7 @@ Still untested regardless of scheme:
 6. **`EDAIQA`**, **`DOINT`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
    urgency.
 
-Prefer reusing an `.fchk` already in `compiler-testset/` when the
+Prefer reusing an `.fchk` already in `tests/inputs/` when the
 combination is chemically sensible, rather than generating a new one.
 
 ## Open questions

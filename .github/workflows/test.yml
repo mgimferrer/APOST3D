@@ -6,7 +6,7 @@ name: APOST-3D build & test
 # IMPORTANT: this workflow never needs to change when tests are added or
 # removed. `make test` discovers every case from tests/manifest.json at run
 # time, so adding a new test is purely a data change:
-#   1. drop SystemName.fchk / SystemName.inp into compiler-testset/
+#   1. drop SystemName.fchk / SystemName.inp into tests/inputs/
 #   2. add a reference tests/reference/SystemName.apost
 #      (python3 tests/run_tests.py --filter SystemName --update-ref)
 #   3. add an entry to tests/manifest.json

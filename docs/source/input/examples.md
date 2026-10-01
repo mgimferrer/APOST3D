@@ -199,7 +199,7 @@ NEG_EFOS
 
 The generalized effective oxidation states (GEOS) of LiH at 3.2 Å are
 requested, from a pySCF FCI/cc-pVTZ `.fchk` file (the files are in
-`compiler-testset/LiH-32-FCI.*` in the repository). Fragment 1 is the Li
+`tests/inputs/LiH-32-FCI.*` in the repository). Fragment 1 is the Li
 atom and fragment 2 the H atom.
 
 `MAX_OCC 0` / `MIN_OCC 0` select none of the regular orbitals, so the only
@@ -221,7 +221,7 @@ output.
 
 ## Real-case examples
 
-The `compiler-testset` folder of the repository contains the `.fchk` and
+The `tests/inputs` folder of the repository contains the `.fchk` and
 `.inp` files of the test suite (see [Testing](../testing.md)), which are
 complete, working inputs for a range of analyses; the matching outputs are
 in `tests/reference`. A curated set of examples with their outputs will be
