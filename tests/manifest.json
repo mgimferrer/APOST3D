@@ -1509,6 +1509,97 @@
       ]
     },
     {
+      "name": "CH3F-EFFAO-U",
+      "description": "CH3F, RKS (restricted single determinant) — TFVC, EFFAO-U with 2 fragments: paired/unpaired EFOs without oxidation states (empty unpaired channel).",
+      "tags": [
+        "dft",
+        "effao",
+        "tfvc",
+        "rks",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EFFAO-U",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "No oxidation-state assignment",
+          "type": "absent",
+          "pattern": "OXIDATION STATES"
+        },
+        {
+          "label": "SCF/DFT energy",
+          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -139.6281885899,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Number of natural orbitals (NOs)",
+          "pattern": "Number of natural orbitals \\(NOs\\):\\s*(\\d+)",
+          "ref": 9,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Fragment 1 paired net occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 9.59078,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 paired gross occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 9.72191,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 paired EFO #5 net occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+([\\d.]+)",
+          "ref": 1.566,
+          "tol_abs": 0.002
+        },
+        {
+          "label": "Fragment 2 paired net occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 8.14972,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 paired gross occupation",
+          "section": "EFFAOs FROM THE PAIRED DENSITY",
+          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 8.27858,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 unpaired net occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 unpaired net occupation",
+          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.0002
+        }
+      ]
+    },
+    {
       "name": "H2O-T-BLYP",
       "description": "Water, triplet UKS BLYP / cc-pVDZ — ENPART with a pure GGA given by libxc ids (LIBRARY, EX_FUNCTIONAL 106, EC_FUNCTIONAL 131).",
       "tags": [

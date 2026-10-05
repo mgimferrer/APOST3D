@@ -206,12 +206,12 @@ c      -------------------------------------------------------------------------
       idono=0
       if(icas.eq.1.or.icisd.eq.1) iposthf=1
       iopt(65)=iposthf
-!! GEOS (effao3d_u) needs occ_no/c_no even for a restricted SD          !!
-!! wavefunction -- there they're just the canonical MOs (integer        !!
-!! occupied), giving a trivially ~0 unpaired channel, same as a plain   !!
-!! restricted-wavefunction EFFAO run -- so force natural orbitals on    !!
-!! for GEOS regardless of kop.                                         !!
-      if(iposthf.eq.1.or.kop.eq.1.or.iueos.eq.1) idono=1
+!! GEOS and EFFAO-U (ieffao=3, effao3d_u) need occ_no/c_no even for a  !!
+!! restricted SD wavefunction -- there they're just the canonical MOs   !!
+!! (integer occupied), giving a trivially ~0 unpaired channel, same as  !!
+!! a plain restricted-wavefunction EFFAO run -- so force natural        !!
+!! orbitals on for both regardless of kop.                             !!
+      if(iposthf.eq.1.or.kop.eq.1.or.ieffao.eq.3) idono=1
 
       if(iposthf.eq.1) then
         if(ispin.eq.1.and.icorr.lt.2) stop ' Local Spin needs dm1 and dm2 for correlated WFs'
