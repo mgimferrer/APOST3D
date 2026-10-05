@@ -153,11 +153,12 @@
         call to_AO_basis(igr,igr,Sm,C0)
 
 !! keep EFOs above the EFF_THRESH cutoff (xminocc); pp0's diagonal is   !!
-!! already sorted decreasing, so this is a simple prefix.               !!
-        i=1
-        do while(pp0(i,i).ge.xminocc.and.i.le.igr)
+!! already sorted decreasing, so this is a simple prefix. imaxo starts   !!
+!! at 0: a fragment with no EFO above the cutoff keeps none.             !!
+        imaxo=0
+        do i=1,igr
+          if(pp0(i,i).lt.xminocc) exit
           imaxo=i
-          i=i+1
         end do
         xmaxo=ZERO
         do i=1,igr
@@ -276,8 +277,8 @@
       common /iops/iopt(200)
 
       character(len=20) :: ctype
-      dimension occup2(igr)
       dimension iorbslot(nmax,2)
+      allocatable :: occup2(:)
 
 !! iopt(5): population-scheme selector (0 real-space/AIM, 1 Mulliken,   !!
 !! >1 Lowdin) -- coefficient pooling/writing below only makes sense for !!
@@ -301,7 +302,21 @@
         end do
         lorb(2)=0
         if(imulli.eq.0) p0poolcoef(:,:,2)=ZERO
+!! no beta occupied/unoccupied boundary: the overall R is the alpha one !!
+        confi=confi0
         go to 99
+      end if
+
+!! the pooled list holds nmax EFOs (EFF_THRESH 0 or below keeps all of  !!
+!! every fragment's)                                                    !!
+      iorb=0
+      do i=1,icufr
+        iorb=iorb+ip0(i)
+      end do
+      if(iorb.gt.nmax) then
+        write(*,'(2x,a,i0,a,i0,a)') 'EOS: ',iorb,' EFOs above the '//
+     +    'EFF_THRESH cutoff, at most ',nmax,': raise EFF_THRESH'
+        stop ' EOS: too many EFOs (EFF_THRESH)'
       end if
 
       iorb=0
@@ -317,6 +332,7 @@
       write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",iorb
 
       lorb(icase)=iorb
+      ALLOCATE(occup2(iorb))
 
 !! pool every fragment's EFOs into one list, sorted by occupation        !!
 !! (descending); iorbat/iorbslot track which fragment and local EFO      !!
@@ -360,11 +376,23 @@
       k=0
       nnn=nalf
       if(icase.eq.2) nnn=nb
-!! nnn+k/nnn-kk below are not bounds-checked against 1..iorb -- possible    !!
-!! out-of-range read if nnn is within k/kk of iorb or 1. Not fixed here,    !!
-!! needs sign-off.                                                          !!
+!! a large EFF_THRESH can leave fewer pooled EFOs than electrons !!
+      if(nnn.gt.iorb) then
+        if(icase.eq.2) then
+          write(*,'(2x,a,i0,a,i0,a)') 'EOS: only ',iorb,
+     +      ' EFOs above the EFF_THRESH cutoff for ',nnn,
+     +      ' beta electrons: lower EFF_THRESH'
+        else
+          write(*,'(2x,a,i0,a,i0,a)') 'EOS: only ',iorb,
+     +      ' EFOs above the EFF_THRESH cutoff for ',nnn,
+     +      ' alpha electrons: lower EFF_THRESH'
+        end if
+        stop ' EOS: fewer EFOs than electrons (EFF_THRESH)'
+      end if
 333   k=k+1
-      if(dabs(occup(nnn,icase)-occup(nnn+k,icase)).lt.thres) go to 333
+      if(nnn+k.le.iorb) then
+        if(dabs(occup(nnn,icase)-occup(nnn+k,icase)).lt.thres) go to 333
+      end if
       k=k-1
       if(k.eq.0) then
         call print_box('EOS: Unambiguous integer electron assignation')
@@ -379,11 +407,14 @@
         call print_box('EOS: WARNING, PSEUDO-DEGENERACIES DETECTED')
         kk=0
 334     kk=kk+1
-        if(dabs(occup(nnn,icase)-occup(nnn-kk,icase)).lt.thres) go to 334
+        if(nnn-kk.ge.1) then
+          if(dabs(occup(nnn,icase)-occup(nnn-kk,icase)).lt.thres) go to 334
+        end if
         kk=kk-1
-!! split 1 electron evenly across the kk+k+1 quasi-degenerate EFOs !!
+!! the kk+1 electrons of the block's occupied EFOs, spread evenly over !!
+!! its kk+k+1 quasi-degenerate EFOs                                    !!
         frac=float(kk+1)/float(kk+k+1)
-        write(*,'(2x,a12,x,i4,x,a14,x,i4,x,a30)') "Distributing",kk+1,"electrons over",kk+k+1,
+        write(*,'(2x,a12,x,i0,x,a14,x,i0,x,a)') "Distributing",kk+1,"electrons over",kk+k+1,
      +  "pseudodegenerate atomic orbitals"
         do i=1,iorb
           if(i.lt.nnn-kk) then
@@ -399,6 +430,7 @@
       do i=1,iorb
         elec(iorbat(i,icase))=elec(iorbat(i,icase))+occup2(i)
       end do
+      DEALLOCATE(occup2)
 
       if(icase.eq.1) then
         call print_subbox('EOS ANALYSIS FOR ALPHA ELECTRONS')
@@ -1564,11 +1596,12 @@ c end loop over atoms
         call to_AO_basis(igr,igr,Sm,C0)
 
 !! keep EFAOs above the EFF_THRESH cutoff (xmaxocc); pp0's diagonal is  !!
-!! already sorted decreasing, so this is a simple prefix.               !!
-        i=1
-        do while(pp0(i,i).ge.xmaxocc.and.i.le.igr)
+!! already sorted decreasing, so this is a simple prefix. imaxo starts   !!
+!! at 0: an atom with no EFAO above the cutoff keeps none.               !!
+        imaxo=0
+        do i=1,igr
+          if(pp0(i,i).lt.xmaxocc) exit
           imaxo=i
-          i=i+1
         end do
         xmaxo=ZERO
         do i=1,igr

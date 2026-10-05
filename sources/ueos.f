@@ -190,10 +190,9 @@
 !! integer NO occupations) correctly ends up with imaxo=0 instead of     !!
 !! carrying over a stale value from the previous fragment/icase.         !!
           imaxo=0
-          ii=1
-          do while(pp0(ii,ii).ge.xminocc.and.ii.le.igr)
+          do ii=1,igr
+            if(pp0(ii,ii).lt.xminocc) exit
             imaxo=ii
-            ii=ii+1
           end do
 
 !! significant-negative-occupation EFOs, paired channel only: pp0's       !!

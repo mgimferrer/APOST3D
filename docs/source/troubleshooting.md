@@ -132,6 +132,12 @@ These analyses don't work with Mulliken, Löwdin or NAO atoms in
 For a correlated wavefunction, `SPIN` and `ENPART` need the 1- and 2-RDMs:
 `DM 2` and a [`# DM` block](input/dm.md).
 
+**`STOP EOS: fewer EFOs than electrons (EFF_THRESH)`**, **`STOP EOS: too many EFOs (EFF_THRESH)`**
+The cutoff on the occupation of the orbitals kept for EOS was changed
+with `EFF_THRESH` (in thousandths, default 1) and leaves too few orbitals
+to place every electron, or more than the program can pool. Remove the
+keyword or bring it back towards the default.
+
 **`STOP OSLO cannot be performed for multireference wavefunctions`**
 OSLO needs a single determinant (HF or KS-DFT). For correlated
 wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
