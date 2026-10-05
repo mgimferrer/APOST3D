@@ -66,6 +66,13 @@ program, not a full development history — see `git log` for that.
   reference energies to a Gaussian `.fchk`, now handle up to 3000 basis
   functions.
 
+### Other changes that affect inputs
+
+- **EOS and GEOS need fragments** — like OSLO, they now stop without
+  `DOFRAGS` and a `# FRAGMENTS` block instead of giving every atom its own
+  oxidation state by default. For one oxidation state per atom, define
+  every atom as a fragment of its own.
+
 ### Code optimization / parallelization
 
 - **Fully open-source build** — the program now builds with gfortran and
@@ -87,6 +94,15 @@ program, not a full development history — see `git log` for that.
   of the input `.fchk`.
 - **OSLO together with ENPART** — an input asking for both no longer
   crashes after the energy decomposition.
+- **Checked fragment definitions** — `# FRAGMENTS` with an atom that does
+  not exist, an atom in two fragments, or `-1` before the last fragment
+  now stops with a message naming the problem; atoms left out of the
+  fragments stop EOS, GEOS, OSLO and ENPART (other analyses warn). OSLO
+  and GEOS used to run on incomplete fragments and print wrong oxidation
+  states.
+- **OSLO input checks** — OSLO with a Mulliken, Löwdin or NAO scheme in
+  `# METHOD` stops with a message (those schemes go in `# OSLO`), and
+  open-shell systems with no beta electrons now run.
 
 ### Others
 

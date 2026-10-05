@@ -27,13 +27,25 @@ DOFRAGS
 |---|---|
 | [Population analysis](../methods/population.md) | Every table is repeated with the populations, charges and valences summed over each fragment, and the bond orders between fragments. |
 | [EFFAO](../methods/effao.md) | The effective orbitals belong to the fragment as a whole: for a ligand they resemble the orbitals of the free ligand. |
-| [EOS](../methods/eos.md), [GEOS](../methods/geos.md) | Oxidation states of the fragments. |
+| [EOS](../methods/eos.md), [GEOS](../methods/geos.md) | Required: oxidation states of the fragments. |
 | [OSLO](../methods/oslo.md) | Required: orbitals are localized onto fragments. |
 | [SPIN](../methods/spin.md) | Local spins and couplings summed over each fragment. |
 | [ENPART](../methods/enpart.md) | Every energy matrix is also condensed to fragments: self-energies and interaction energies of the fragments. |
 
-Without `DOFRAGS`, every atom is its own fragment (EOS then gives atomic
-oxidation states).
+EOS, GEOS and OSLO stop without `DOFRAGS`. For the other analyses, every
+atom is its own fragment without it. For one oxidation state per atom,
+define every atom as a fragment of its own, e.g. for a triatomic:
+
+```text
+# FRAGMENTS
+3
+1
+1
+1
+2
+-1
+#
+```
 
 **Choosing fragments.** For a transition-metal complex, the natural choice
 is one fragment per metal center and one per ligand, as a chemist would

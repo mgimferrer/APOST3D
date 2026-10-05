@@ -82,9 +82,15 @@ See the [input rules](input/index.md#rules).
 `MAX_OCC`/`MIN_OCC`
 See [# CUBE](input/cube.md).
 
-**`Missing/Additional atoms in fragment definition`**, **`Unassigned atom to fragment`**
-The fragments don't contain every atom exactly once. Check the counts and
-atom numbers in `# FRAGMENTS`, or end with `-1` for the remaining atoms.
+**`STOP EOS, GEOS and OSLO need fragments (DOFRAGS)`**
+These analyses need `DOFRAGS` and a [`# FRAGMENTS` block](input/fragments.md).
+For one oxidation state per atom, make every atom a fragment of its own.
+
+**`STOP Atoms missing in # FRAGMENTS`**, **`STOP Atom in two fragments in # FRAGMENTS`**,
+**`STOP Atom out of range in # FRAGMENTS`**, and the other `# FRAGMENTS` stops
+The line above the stop names the atom or fragment. Check the counts and
+atom numbers in `# FRAGMENTS`, or end with `-1` for the remaining atoms
+(see [# FRAGMENTS](input/fragments.md)).
 
 **`# DM section not found in input file`**
 `DM 1` or `DM 2` is set but there is no `# DM` block.
@@ -110,8 +116,11 @@ QTAIM is not available; use `TFVC`, which gives very similar results.
 ## Analyses
 
 **`STOP GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)`**,
-**`STOP ENPART needs a real-space AIM (e.g. TFVC)`**
-These analyses don't work with Mulliken, Löwdin or NAO atoms.
+**`STOP ENPART needs a real-space AIM (e.g. TFVC)`**,
+**`STOP OSLO needs a real-space AIM (e.g. TFVC)`**
+These analyses don't work with Mulliken, Löwdin or NAO atoms in
+`# METHOD`. For OSLO, those schemes can go in the
+[`# OSLO` block](input/oslo.md) instead, for the fragment populations.
 
 **`STOP Local Spin needs dm1 and dm2 for correlated WFs`**,
 **`STOP Enpart needs dm1 and dm2 for correlated WFs`**
@@ -121,9 +130,6 @@ For a correlated wavefunction, `SPIN` and `ENPART` need the 1- and 2-RDMs:
 **`STOP OSLO cannot be performed for multireference wavefunctions`**
 OSLO needs a single determinant (HF or KS-DFT). For correlated
 wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
-
-**OSLO prints meaningless FOLI values (very large, or the same everywhere)**
-`DOFRAGS` and a `# FRAGMENTS` block are missing; OSLO needs fragments.
 
 **`No Local Spin Analysis needed for Restricted SD WFs`**
 Not an error: the local spins of a closed-shell restricted determinant are

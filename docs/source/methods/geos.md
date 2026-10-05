@@ -47,8 +47,10 @@ P. Salvador, *J. Chem. Theory Comput.*, **2015**, 11, 1501-1508. See
 - Any wavefunction whose `.fchk` provides the total density: restricted,
   unrestricted (including broken-symmetry), or correlated (e.g. a pySCF
   CASSCF/FCI `.fchk`; no `.dm1`/`.dm2` needed).
-- Fragments via `DOFRAGS` are optional. Without them, every atom is its
-  own fragment.
+- Fragments are required (`DOFRAGS` and a
+  [`# FRAGMENTS` block](../input/fragments.md)), with every atom in exactly
+  one of them; the run stops otherwise. For one oxidation state per atom,
+  make every atom a fragment of its own.
 
 ```text
 # METHOD

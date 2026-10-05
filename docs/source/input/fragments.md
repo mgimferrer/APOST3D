@@ -37,10 +37,14 @@ line:
 
 (fragment 1 is atom 1, fragment 2 all the others).
 
-- Every atom must belong to exactly one fragment. `EOS` and `ENPART` check
-  this and stop with `Missing/Additional atoms in fragment definition` or
-  `Unassigned atom to fragment`; the other analyses don't, and silently
-  leave out an atom that is not listed.
+- The run stops, with a message naming the problem, for an atom number
+  that does not exist, an atom listed twice, a fragment with no atoms,
+  more fragments than atoms, or `-1` on a fragment that is not the last.
+- `EOS`, `GEOS`, `OSLO` and `ENPART` need every atom in a fragment and stop
+  otherwise (`atoms in no fragment: ...`). The other analyses run with the
+  listed fragments only and print a warning naming the atoms left out.
+- `EOS`, `GEOS` and `OSLO` need fragments: without `DOFRAGS` they stop. For
+  one result per atom, make every atom a fragment of its own.
 - A long atom list may continue on the next line.
 - The program echoes the fragments in the `INPUT SUMMARY` of the output
   (`Fragment  2 :   3   5`): check them there.

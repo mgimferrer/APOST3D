@@ -218,6 +218,17 @@
       allocatable :: ccore(:,:),ccoreorth(:,:),pcore(:,:)
       allocatable :: frgpop(:,:),frgspr(:,:)
 
+!! a channel with no electrons (e.g. beta of a high-spin H2 triplet) has  !!
+!! nothing to localize                                                   !!
+      if(nel.eq.0) then
+        ifrgel=0
+        coslo=ZERO
+        cosloorth=ZERO
+        write(*,'(2x,a)') 'No electrons in this channel: nothing to '//
+     +    'localize'
+        return
+      end if
+
       niter=999
 
       ALLOCATE(SSS(nel,nel),EEE(nel,nel))
