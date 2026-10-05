@@ -33,7 +33,7 @@
       common /printout/iaccur
       common /iops/iopt(200)
 
-      dimension navect(maxat)
+      dimension navect(maxat),missat(maxat)
       dimension iatpairs(2,maxat)
       character*80 namedm
       character*80 namefchk1,namefchk2
@@ -396,49 +396,77 @@
         call locate(16,"# FRAGMENTS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
         read(16,*) icufr
+        if(icufr.lt.1.or.icufr.gt.nat) then
+          write(*,'(2x,a,i0,a,i0,a)') '# FRAGMENTS: ',icufr,
+     +      ' fragments given, the molecule has ',nat,' atoms'
+          stop ' Wrong number of fragments in # FRAGMENTS'
+        end if
         do i=1,icufr
           read(16,*) nfrlist(i)
-          if(i.eq.icufr.and.nfrlist(i).eq.-1) then 
+          if(nfrlist(i).eq.-1.and.i.ne.icufr) then
+            write(*,'(2x,a,i0,a)') '# FRAGMENTS: -1 (all remaining '//
+     +        'atoms) given for fragment ',i,
+     +        ', only allowed for the last one'
+            stop ' -1 only allowed for the last fragment in # FRAGMENTS'
+          end if
+          if(nfrlist(i).eq.-1) then
             do l=1,nat
               navect(l)=0
-            end do 
+            end do
             do l=1,(icufr-1)
-              do k=1,nfrlist(l)    
+              do k=1,nfrlist(l)
                 navect(ifrlist(k,l))=1
-              end do 
+              end do
             end do
             k=0
-            do l=1,nat                     
+            do l=1,nat
               if(navect(l).eq.0) then
                 k=k+1
                 ifrlist(k,icufr)=l
-              end if 
-            end do  
-            nfrlist(icufr)=k       
-          else     
+              end if
+            end do
+            nfrlist(icufr)=k
+            if(k.eq.0) then
+              write(*,'(2x,a)') '# FRAGMENTS: no atoms left for the '//
+     +          'last fragment (-1)'
+              stop ' Empty fragment in # FRAGMENTS'
+            end if
+          else
+            if(nfrlist(i).lt.1.or.nfrlist(i).gt.nat) then
+              write(*,'(2x,a,i0,a,i0,a)') '# FRAGMENTS: fragment ',i,
+     +          ' has ',nfrlist(i),' atoms'
+              stop ' Wrong number of atoms in # FRAGMENTS'
+            end if
             read(16,*) (ifrlist(k,i),k=1,nfrlist(i))
+            do k=1,nfrlist(i)
+              if(ifrlist(k,i).lt.1.or.ifrlist(k,i).gt.nat) then
+                write(*,'(2x,a,i0,a,i0,a,i0,a)') '# FRAGMENTS: atom ',
+     +            ifrlist(k,i),' (fragment ',i,') does not exist, '//
+     +            'the molecule has ',nat,' atoms'
+                stop ' Atom out of range in # FRAGMENTS'
+              end if
+            end do
           end if
         end do
 
-        ixx=0
-        do i=1,icufr
-          ixx=ixx+nfrlist(i)
+!! jfrlist tells which fragment a given atom belongs to (0: none) !!
+        do i=1,nat
+          jfrlist(i)=0
         end do
-        if(ixx.ne.nat.and.(ieos.eq.1.or.ienpart.eq.1)) then
-          stop 'Missing/Additional atoms in fragment definition'
-        end if
-
-!! jfrlist tells which fragment a given atom belongs to !!
         do i=1,icufr
           do k=1,nfrlist(i)
+            if(jfrlist(ifrlist(k,i)).eq.i) then
+              write(*,'(2x,a,i0,a,i0)') '# FRAGMENTS: atom ',
+     +          ifrlist(k,i),' is listed twice in fragment ',i
+              stop ' Atom listed twice in # FRAGMENTS'
+            else if(jfrlist(ifrlist(k,i)).ne.0) then
+              write(*,'(2x,a,i0,a,i0,a,i0)') '# FRAGMENTS: atom ',
+     +          ifrlist(k,i),' is in fragments ',jfrlist(ifrlist(k,i)),
+     +          ' and ',i
+              stop ' Atom in two fragments in # FRAGMENTS'
+            end if
             jfrlist(ifrlist(k,i))=i
           end do
-        end do
-        do i=1,nat
-          if(jfrlist(i).eq.0.and.(ieos.eq.1.or.ienpart.eq.1)) then
-            write(*,*) 'Unassigned atom to fragment:',i
-            stop
-          end if
         end do
 !! for compatibility !!
       else
@@ -523,6 +551,37 @@
       call readchar("# METHOD","MOKIT",imokit)
 
 !! end of OSLO options !!
+
+!! fragments: required by the oxidation-state methods (EOS, GEOS, OSLO), !!
+!! which together with ENPART also need every atom in a fragment; other  !!
+!! analyses may leave atoms out on purpose, so only warn there           !!
+      if((ieos.eq.1.or.iueos.eq.1.or.ioslo.eq.1).and.idofr.eq.0) then
+        write(*,'(2x,a)') 'EOS, GEOS and OSLO need fragments: add '//
+     +    'DOFRAGS to # METHOD and a # FRAGMENTS block'
+        write(*,'(2x,a)') '(an atom can be a fragment on its own)'
+        stop ' EOS, GEOS and OSLO need fragments (DOFRAGS)'
+      end if
+      if(idofr.eq.1) then
+        nmiss=0
+        do i=1,nat
+          if(jfrlist(i).eq.0) then
+            nmiss=nmiss+1
+            missat(nmiss)=i
+          end if
+        end do
+        if(nmiss.gt.0) then
+          if(ieos.eq.1.or.iueos.eq.1.or.ioslo.eq.1.or.ienpart.eq.1) then
+            write(*,'(2x,a,*(1x,i0))') '# FRAGMENTS: atoms in no '//
+     +        'fragment:',(missat(i),i=1,nmiss)
+            write(*,'(2x,a)') 'EOS, GEOS, OSLO and ENPART need every '//
+     +        'atom in a fragment (-1 on the last one adds the rest)'
+            stop ' Atoms missing in # FRAGMENTS'
+          else
+            write(*,'(2x,a,*(1x,i0))') 'WARNING: # FRAGMENTS leaves '//
+     +        'out atoms',(missat(i),i=1,nmiss)
+          end if
+        end if
+      end if
 
 !! X-ray scattering factors !!
       call readchar("# METHOD","SCATT-FACT",iscattfact)

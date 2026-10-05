@@ -65,9 +65,10 @@ alpha one, so only the alpha EFOs are computed.
 - Any wavefunction: restricted or unrestricted single determinants, and
   correlated wavefunctions (their alpha and beta densities, from the
   `.fchk` file or from the 1-RDM in a [`# DM` block](../input/dm.md)).
-- Fragments are optional: without `DOFRAGS`, every atom gets its own
-  oxidation state. When fragments are defined, every atom must belong to
-  exactly one of them. A good choice for a complex is one fragment per
+- Fragments are required (`DOFRAGS` and a
+  [`# FRAGMENTS` block](../input/fragments.md)), with every atom in exactly
+  one of them; the run stops otherwise. For one oxidation state per atom,
+  make every atom a fragment of its own. A good choice for a complex is one fragment per
   metal center and one per ligand.
 
 ```text

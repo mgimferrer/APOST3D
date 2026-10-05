@@ -251,6 +251,15 @@ c      -------------------------------------------------------------------------
       if(ieffao.eq.3.and.imulli.ne.0)
      +  stop 'GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)'
       if(ieffao.eq.3.and.idoat.eq.1) stop 'Cant do GEOS/EFFAO-U with DOATOMS'
+!! OSLO integrates its spread matrix on the # METHOD grid; the atoms that !!
+!! assign OSLOs to fragments can still be Hilbert-space, set in # OSLO    !!
+      if(ioslo.eq.1.and.imulli.ne.0) then
+        write(*,'(2x,a)') 'OSLO needs a real-space AIM in # METHOD '//
+     +    '(e.g. TFVC), used for the numerical integration'
+        write(*,'(2x,a)') 'MULLIKEN, LOWDIN, LOWDIN-DAVIDSON or '//
+     +    'NAO-BASIS go in # OSLO, for the fragment populations'
+        stop ' OSLO needs a real-space AIM (e.g. TFVC)'
+      end if
 
       if(idoint.eq.1) then
         write(*,*) ' Will do atomic overlaps for FCALC'
