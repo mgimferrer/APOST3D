@@ -103,6 +103,10 @@ program, not a full development history — see `git log` for that.
 - **OSLO input checks** — OSLO with a Mulliken, Löwdin or NAO scheme in
   `# METHOD` stops with a message (those schemes go in `# OSLO`), and
   open-shell systems with no beta electrons now run.
+- **OSLO linear-dependency check** — with more candidate orbitals than
+  electrons in a spin channel (few electrons per channel), it wrote past
+  its arrays: the run could crash, or print a false linear-dependency
+  warning or garbage oxidation states.
 
 ### Others
 
