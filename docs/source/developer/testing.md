@@ -115,6 +115,7 @@ and then one against several threads.
 | `FeO4-2` | Ferrate(VI), RKS, Q-Chem `.fchk`: TFVC, fragment OSLO | `dft oslo tfvc rks fragments qchem` |
 | `C2H6-B3LYP` | Ethane, RKS B3LYP: full ENPART with `THREBOD` and `MOD-GRIDTWOEL`, the largest ENPART case | `dft enpart tfvc rks threbod` |
 | `H2O-Dimer-RHF` | Water dimer, RHF: ENPART (HF), `THREBOD 10` (6 pairs by the multipolar expansion), fragments | `hf enpart tfvc rhf threbod multipolar fragments` |
+| `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition) | `hf enpart oslo tfvc rhf fragments` |
 | `FeCN5NO3--UBLYP` | [Fe(CN)₅NO]³⁻ doublet, UKS BLYP: LOWDIN, EFFAO, EOS, 7 fragments | `dft lowdin effao eos uks fragments openshell` |
 | `NaBH3--UHF` | NaBH3 anion, UHF: MULLIKEN, EOS | `hf uhf mulliken pca eos fragments` |
 | `FeCN5NO3--UBLYP-t2` | Same complex, UKS BLYP: TFVC + unrestricted OSLO with LOWDIN fragment populations, 7 fragments | `dft oslo lowdin tfvc uks fragments openshell` |
