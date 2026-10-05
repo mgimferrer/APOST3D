@@ -402,9 +402,11 @@
       DEALLOCATE(S0,Splus,Sm)
       DEALLOCATE(scr,c0,pp0,s0all)
       DEALLOCATE(Pno,Uno)
-      DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef)
-      DEALLOCATE(ineg_frg,xneg_net,xneg_gro,cneg,xneg_fit)
-      if(iueos.eq.1) DEALLOCATE(Sinv,cprojfrag,xfitfrag)
+      if(iueos.eq.1) then
+        DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef)
+        DEALLOCATE(ineg_frg,xneg_net,xneg_gro,cneg,xneg_fit)
+        DEALLOCATE(Sinv,cprojfrag,xfitfrag)
+      end if
 
 60    FORMAT("  OCCUP.",8f9.4)
 61    FORMAT("  FIT % ",8f9.2)
