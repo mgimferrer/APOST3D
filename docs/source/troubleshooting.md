@@ -92,6 +92,11 @@ The line above the stop names the atom or fragment. Check the counts and
 atom numbers in `# FRAGMENTS`, or end with `-1` for the remaining atoms
 (see [# FRAGMENTS](input/fragments.md)).
 
+**`STOP Invalid angular grid`**, **`STOP Invalid radial grid`**
+The line above names the value and where it was given (`# GRID` or the
+command line): the angular points must be a Lebedev grid (the list is
+printed), the radial points between 1 and 500. See [# GRID](input/grid.md).
+
 **`# DM section not found in input file`**
 `DM 1` or `DM 2` is set but there is no `# DM` block.
 

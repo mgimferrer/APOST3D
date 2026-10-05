@@ -107,6 +107,11 @@ program, not a full development history — see `git log` for that.
   electrons in a spin channel (few electrons per channel), it wrote past
   its arrays: the run could crash, or print a false linear-dependency
   warning or garbage oxidation states.
+- **Integration grids are checked** — an angular number of points that is
+  not a Lebedev grid (in `# GRID` or on the command line), or a radial one
+  outside 1–500, now stops the run. In `# GRID` it used to give wrong
+  ENPART numbers, hidden by the zero-error interpolation; on the command
+  line it was silently rounded down.
 
 ### Others
 

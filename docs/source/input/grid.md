@@ -9,8 +9,8 @@ analysis is set on the command line instead (see
 
 | Keyword | Value | Default | Description |
 | ------- | ----- | ------- | ----------- |
-| `RADIAL` | integer | 150 | Radial points per atom. |
-| `ANGULAR` | integer | 590 | Angular (Lebedev-Laikov) points per radial shell. Must be one of 6, 14, 26, 38, 50, 74, 86, 110, 146, 170, 194, 230, 266, 302, 350, 434, 590, 770, 974: other values are not rounded, and give wrong results. |
+| `RADIAL` | integer | 150 | Radial points per atom, 1 to 500. |
+| `ANGULAR` | integer | 590 | Angular (Lebedev-Laikov) points per radial shell. Must be one of 6, 14, 26, 38, 50, 74, 86, 110, 146, 170, 194, 230, 266, 302, 350, 434, 590, 770, 974; any other value stops the run with a message. |
 | `rr00` | real | 0.5 | Radial scaling: the distance (in bohr) that contains half of the radial points (*r*ₘ in Eq. 25 of [Becke's scheme](https://doi.org/10.1063/1.454033)). |
 | `phb1` | real | 0.169 | Rotation angle (radians) of the grid of the second electron, for the one-center terms. |
 | `phb2` | real | 0.170 | Second rotation angle (radians), used by the zero-error strategy. |
