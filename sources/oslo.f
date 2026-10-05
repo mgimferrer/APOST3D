@@ -231,11 +231,9 @@
 
       niter=999
 
-      ALLOCATE(SSS(nel,nel),EEE(nel,nel))
       ALLOCATE(Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(c0(igr,igr),pp0(igr,igr))
       ALLOCATE(ccore(igr,igr),pcore(igr,igr),ccoreorth(igr,igr))
-      ALLOCATE(clindep(igr,igr))
       ALLOCATE(scr(nel))
       ALLOCATE(cmat(igr,igr),cfrgoslo(icufr,igr,igr))
       ALLOCATE(frgpop(icufr,nel),frgspr(icufr,nel))
@@ -441,7 +439,16 @@
           nnelect=nnelect+(nel-nnelect)
         end if
 
-!! Selecting the first out for evaluating LINDEP !!
+!! Selecting the first out for evaluating LINDEP. Counted first: the   !!
+!! candidates can outnumber the electrons and the basis functions      !!
+        iselected=0
+        do ifrg=1,icufr
+          do iorb=1,nel
+            xx=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))-xfront
+            if(xx.lt.folitol) iselected=iselected+1
+          end do
+        end do
+        ALLOCATE(clindep(igr,max(1,iselected)))
         clindep=ZERO
         call print_subbox('CHECKING LINEAR DEPENDENCIES')
         write(*,*) "  Orb.   Frag.   FOLI  "
@@ -481,28 +488,28 @@
 !! Evaluate LINDEP !!
         ilindep=0
         if(iilindep.eq.0) then !! If only 1 there is nothing to evaluate !!
-          SSS=ZERO
-          EEE=ZERO
-          do ii=1,iselected
-            do jj=1,iselected
-              xx=ZERO
-              do mu=1,igr
-                do nu=1,igr
-                  xx=xx+clindep(mu,ii)*clindep(nu,jj)*s(mu,nu)
+          xx=10.0d0 !! Absurt value, kept if there is nothing to evaluate !!
+          if(iselected.gt.0) then
+            ALLOCATE(SSS(iselected,iselected),EEE(iselected,iselected))
+            do ii=1,iselected
+              do jj=1,iselected
+                xx2=ZERO
+                do mu=1,igr
+                  do nu=1,igr
+                    xx2=xx2+clindep(mu,ii)*clindep(nu,jj)*s(mu,nu)
+                  end do
                 end do
+                SSS(ii,jj)=xx2
               end do
-              SSS(ii,jj)=xx
             end do
-          end do
 
-!! Diagonalizing all matrix, rest is zero so no affects !!
-          call diagonalize(nel,nel,SSS,EEE,0)
-
-!! Printing smallest eigenvalue !!
-          xx=10.0d0 !! Absurt value again... !!
-          do ii=1,iselected
-            if(SSS(ii,ii).lt.xx) xx=SSS(ii,ii)
-          end do
+!! Overlap of the candidates; its smallest eigenvalue measures LINDEP !!
+            call diagonalize(iselected,iselected,SSS,EEE,0)
+            do ii=1,iselected
+              if(SSS(ii,ii).lt.xx) xx=SSS(ii,ii)
+            end do
+            DEALLOCATE(SSS,EEE)
+          end if
           if(xx.lt.1.0d-4) ilindep=1 !! Threshold for liniar dependency !!
           write(*,'(2x,a36,x,f10.5)') "Lowest eigenvalue obtained (LinDep):",xx
           write(*,*) " "
@@ -517,6 +524,7 @@
           write(*,*) " RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT "
           write(*,*) " "
         end if
+        DEALLOCATE(clindep)
 
 !! Removing orbitals from P matrix, only if not all are assigned !!
 !! Orthogonalizing fragment CORE/SEMICORE orbitals !!
@@ -593,7 +601,7 @@
       end do
 666   continue
 
-      DEALLOCATE(SSS,EEE,Sm,Splus,c0,pp0,ccore,pcore,ccoreorth,clindep,scr,cmat,cfrgoslo)
+      DEALLOCATE(Sm,Splus,c0,pp0,ccore,pcore,ccoreorth,scr,cmat,cfrgoslo)
       DEALLOCATE(frgpop,frgspr)
 
 111   FORMAT(3x,i3,2x,f10.5,3x,f10.5,3x,f10.5)

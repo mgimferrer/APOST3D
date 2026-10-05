@@ -418,6 +418,58 @@
       ]
     },
     {
+      "name": "H2-T-OSLO",
+      "description": "H2 triplet, UKS B3LYP from pySCF — TFVC, fragment OSLO with no beta electrons (empty beta channel) and a linear-dependency check with more candidates than electrons.",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "uks",
+        "fragments",
+        "openshell",
+        "pyscf"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "SCF/DFT energy",
+          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.7777035451,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Empty beta channel skipped",
+          "type": "present",
+          "pattern": "No electrons in this channel: nothing to localize"
+        },
+        {
+          "label": "H1 fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H2 fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        }
+      ]
+    },
+    {
       "name": "FeCO2-PBEPBE",
       "description": "FeCO2 complex (charge +2, singlet), RKS PBE — TFVC, fragment EOS with per-EFO net/gross occupations.",
       "tags": [
