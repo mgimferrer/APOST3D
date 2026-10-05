@@ -12,6 +12,7 @@
       subroutine read_input()
 
       use input_options_mod
+      use integration_grid, only: check_grid
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -334,6 +335,7 @@
           call readreal("# GRID","rr00",rr0022,0.5d0,1)
           call readreal("# GRID","phb1",phb12,0.162d0,1)
           call readreal("# GRID","phb2",phb22,0.182d0,1)
+          call check_grid(nrad22,nang22,"# GRID")
 
 !! options to make 2D plots of electrostatic potentials !!
           i2deda=0
@@ -608,6 +610,7 @@
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine read_gridtwoel(section,igridtwoel)
+      use integration_grid, only: check_grid
       implicit real*8(a-h,o-z)
       character section*(*)
       character*80 linia
@@ -623,6 +626,7 @@
         call readreal("# GRID","phb1",phb12,0.169d0,1)
         call readreal("# GRID","phb2",phb22,0.170d0,1)
         call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
+        call check_grid(nrad22,nang22,"# GRID")
 
 !! defaults, modified for safe integration setup !!
       else

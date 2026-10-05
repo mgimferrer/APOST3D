@@ -590,15 +590,7 @@
    if(integ1.ne.' '.and.integ2.ne.' ') then
      read(integ1,'(i4)') Nrad
      read(integ2,'(i4)') Nang
-     if(Nrad.gt.500) stop 'Max number of radial points  is 500 '
-     do 111 i=1,18
-       npoints=leved(i)
-       if(nang.lt.leved(i+1)) goto 211
-  111 continue
-     npoints=leved(19)
-  211 continue
-     print *,' Angular points:',npoints
-     nang=npoints
+     call check_grid(Nrad,Nang,'command line')
      rr00=0.500d0
 
 !! ENPART/POLAR/EDAIQA defaults for high-accuracy one-el integrations !!
@@ -632,6 +624,36 @@
    call quad(nrad,nang)
 
    END SUBROUTINE build_integration_grid
+
+!! ---- !!
+
+!! ********************************************************************* !!
+!! subroutine: check_grid                                                !!
+!! purpose: stops the run unless the grid is one quad() can build: 1-500 !!
+!!   radial points (wr/xr hold 500) and a Lebedev-Laikov angular size    !!
+!!   (leved(1:19); quad() builds nothing for any other value).           !!
+!! arguments:                                                            !!
+!!   nrad0, nang0 (in) -- radial and angular points asked for            !!
+!!   where        (in) -- where they were given, for the message         !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+   SUBROUTINE check_grid(nrad0,nang0,where)
+   integer, intent(in) :: nrad0,nang0
+   character(len=*), intent(in) :: where
+
+   if(nrad0.lt.1.or.nrad0.gt.500) then
+     write(*,'(2x,a,a,i0,a)') where,': RADIAL ',nrad0, &
+       ' must be between 1 and 500'
+     stop ' Invalid radial grid'
+   end if
+   if(all(leved(1:19).ne.nang0)) then
+     write(*,'(2x,a,a,i0,a)') where,': ANGULAR ',nang0, &
+       ' is not a Lebedev-Laikov grid; use one of'
+     write(*,'(2x,19(1x,i0))') leved(1:19)
+     stop ' Invalid angular grid'
+   end if
+
+   END SUBROUTINE check_grid
 
    END MODULE integration_grid
 
