@@ -79,6 +79,13 @@ program, not a full development history — see `git log` for that.
   cube-file generation), giving real speedups on multi-core machines
   beyond what was already parallelized before.
 
+### Bug fixes
+
+- **OSLO with Gaussian 09 or pySCF wavefunctions** — OSLO no longer stops
+  with an end-of-file error (before printing the oxidation states) when
+  writing `<jobname>-OSLOs.fchk`; the written file now keeps every block
+  of the input `.fchk`.
+
 ### Others
 
 - **New compilation and testing setup** — the build is now driven by two

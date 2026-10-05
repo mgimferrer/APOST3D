@@ -836,8 +836,9 @@
 !! purpose: writes the restricted OSLO .fchk -- splices the original     !!
 !! wavefunction .fchk's structure, replacing "Alpha MO coefficients"     !!
 !! and "Total SCF Density" with the OSLO coefficients/density, copying   !!
-!! everything else through unchanged. See uwf_orbprint for the           !!
-!! unrestricted (alpha+beta combined) twin.                              !!
+!! everything else through unchanged. Each replaced block is skipped by  !!
+!! its own N= size (skip_fchk_block), so any .fchk layout works (G16,    !!
+!! G09, pySCF, Q-Chem). See uwf_orbprint for the unrestricted twin.      !!
 !! arguments:                                                             !!
 !!   cmat  (in) -- (igr,igr) OSLO coefficients (columns 1..nocc)          !!
 !!   pmat  (in) -- (igr,igr) OSLO density (2*C*C^T, doubly-occupied)      !!
@@ -850,7 +851,6 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(200)
       common /filename/name0
 
       character*80 line
@@ -859,8 +859,6 @@
 
       dimension cmat(igr,igr),pmat(igr,igr)
 
-      iqchem   = iopt(95)
-      imokit   = iopt(79)
       indepigr = int_locate(15,"Number of independ",ilog)
       norb     = igr*indepigr
       norbt    = igr*(igr+1)/2
@@ -878,20 +876,10 @@
         read(15,'(a80)') line
       end do
 
-!! Printing the new ones !!
+!! Printing the new ones, skipping the original block !!
       write(69,11) "Alpha MO coefficients","R","N= ",norb
       write(69,13) ((cmat(ii,jj),ii=1,igr),jj=1,indepigr)
-
-!! Now locating what is after it in the original one to continue !!
-      if(iqchem.eq.0.and.imokit.eq.0) then
-        do while(index(line,"Orthonormal basis").eq.0)
-          read(15,'(a80)') line
-        end do
-      else if(iqchem.eq.1) then
-        do while(index(line,"Alpha Orbital").eq.0)
-          read(15,'(a80)') line
-        end do
-      end if
+      call skip_fchk_block(15,line)
 
 !! Restart printing until next stop !!
       do while(index(line,"Total SCF Dens").eq.0)
@@ -899,20 +887,10 @@
         read(15,'(a80)') line
       end do
 
-!! Printing the new one !!
+!! Printing the new one, skipping the original block !!
       write(69,12) "Total SCF Density","R","N= ",norbt
       write(69,13) ((pmat(ii,jj),jj=1,ii),ii=1,igr)
-
-!! Now locating what is after it in the original one to continue !!
-      if(iqchem.eq.0.and.imokit.eq.0) then
-        do while(index(line,"Mulliken Charges").eq.0)
-          read(15,'(a80)') line
-        end do
-      else if(iqchem.eq.1) then
-        do while(index(line,"Pure Switching").eq.0)
-          read(15,'(a80)') line
-        end do
-      end if
+      call skip_fchk_block(15,line)
 
 !! Restart printing until the end !!
       do while(.true.)
@@ -1190,11 +1168,9 @@
 !! OSLO coefficients for each spin, and "Total SCF Density"/"Spin SCF    !!
 !! Density" with Pa_oslo+Pb_oslo / Pa_oslo-Pb_oslo -- everything else    !!
 !! copied through unchanged. The Spin SCF Density block is only written  !!
-!! if the source .fchk has one to begin with. Replaces the previous two  !!
-!! separate per-spin files (each mislabeling its own single-spin density !!
-!! as "Total SCF Density", with no Spin SCF Density at all) with one     !!
-!! properly-labeled file -- see git tag oslo-pre-refactor-2026-08-20 for !!
-!! the old behavior.                                                     !!
+!! if the source .fchk has one to begin with. Each replaced block is     !!
+!! skipped by its own N= size (skip_fchk_block), so any .fchk layout     !!
+!! works (G16, G09, pySCF, Q-Chem).                                      !!
 !! arguments:                                                             !!
 !!   cmat_a (in) -- (igr,igr) alpha OSLO coefficients (columns 1..nalf)   !!
 !!   cmat_b (in) -- (igr,igr) beta OSLO coefficients (columns 1..nb)      !!
@@ -1209,7 +1185,6 @@
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(200)
       common /filename/name0
 
       character*80 line
@@ -1219,8 +1194,6 @@
       dimension cmat_a(igr,igr),cmat_b(igr,igr)
       dimension pmat_a(igr,igr),pmat_b(igr,igr)
 
-      iqchem   = iopt(95)
-      imokit   = iopt(79)
       indepigr = int_locate(15,"Number of independ",ilog)
       norb     = igr*indepigr
       norbt    = igr*(igr+1)/2
@@ -1243,29 +1216,21 @@
         read(15,'(a80)') line
       end do
 
-!! Printing the new alpha block !!
+!! Printing the new alpha block, skipping the original one !!
       write(69,11) "Alpha MO coefficients","R","N= ",norb
       write(69,13) ((cmat_a(ii,jj),ii=1,igr),jj=1,indepigr)
+      call skip_fchk_block(15,line)
 
-!! Skipping the original alpha mo data, up to the beta marker !!
+!! Restart printing until the beta block !!
       do while(index(line,"Beta MO coef").eq.0)
+        write(69,'(a80)') line
         read(15,'(a80)') line
       end do
 
-!! Printing the new beta block !!
+!! Printing the new beta block, skipping the original one !!
       write(69,11) "Beta MO coefficients ","R","N= ",norb
       write(69,13) ((cmat_b(ii,jj),ii=1,igr),jj=1,indepigr)
-
-!! Now locating what is after it in the original one to continue !!
-      if(iqchem.eq.0.and.imokit.eq.0) then
-        do while(index(line,"Orthonormal basis").eq.0)
-          read(15,'(a80)') line
-        end do
-      else if(iqchem.eq.1) then
-        do while(index(line,"Alpha Orbital").eq.0)
-          read(15,'(a80)') line
-        end do
-      end if
+      call skip_fchk_block(15,line)
 
 !! Restart printing until total scf density !!
       do while(index(line,"Total SCF Dens").eq.0)
@@ -1273,31 +1238,23 @@
         read(15,'(a80)') line
       end do
 
-!! Printing the new total SCF density (Pa+Pb) !!
+!! Printing the new total SCF density (Pa+Pb), skipping the original !!
       write(69,12) "Total SCF Density","R","N= ",norbt
       write(69,13) ((pmat_a(ii,jj)+pmat_b(ii,jj),jj=1,ii),ii=1,igr)
+      call skip_fchk_block(15,line)
 
       if(ihasspin.eq.1) then
 
-!! Skipping the original total density data, up to the spin marker !!
+!! Restart printing until spin scf density !!
         do while(index(line,"Spin SCF Dens").eq.0)
+          write(69,'(a80)') line
           read(15,'(a80)') line
         end do
 
-!! Printing the new spin SCF density (Pa-Pb) !!
+!! Printing the new spin SCF density (Pa-Pb), skipping the original !!
         write(69,12) "Spin SCF Density ","R","N= ",norbt
         write(69,13) ((pmat_a(ii,jj)-pmat_b(ii,jj),jj=1,ii),ii=1,igr)
-      end if
-
-!! Now locating what is after it in the original one to continue !!
-      if(iqchem.eq.0.and.imokit.eq.0) then
-        do while(index(line,"Mulliken Charges").eq.0)
-          read(15,'(a80)') line
-        end do
-      else if(iqchem.eq.1) then
-        do while(index(line,"Pure Switching").eq.0)
-          read(15,'(a80)') line
-        end do
+        call skip_fchk_block(15,line)
       end if
 
 !! Restart printing until the end !!

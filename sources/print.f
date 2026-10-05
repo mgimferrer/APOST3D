@@ -1823,6 +1823,32 @@
 !! ***** !!
 
 !! ********************************************************************* !!
+!! subroutine: skip_fchk_block                                           !!
+!! purpose: skips the data of the R-type .fchk block whose header was    !!
+!!   just read into line, taking its size from the header's own "N="     !!
+!!   field (independent of the program that wrote the file), and lands  !!
+!!   on the line that follows the block.                                 !!
+!! arguments:                                                            !!
+!!   iunit (in)    -- unit number of the source .fchk, positioned right  !!
+!!                    after the header line                              !!
+!!   line  (inout) -- in: the block's header line; out: the line right   !!
+!!                    after the block                                    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine skip_fchk_block(iunit,line)
+
+      implicit double precision(a-h,o-z)
+      character*80 line
+
+      ipos=index(line,"N=")
+      read(line(ipos+2:),*) nval
+      call skip_fchk_orbblock(iunit,nval,line)
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
 !! subroutine: rwf_effao_orbprint                                        !!
 !! purpose: writes a restricted-wavefunction pooled-EFO .fchk -- splices !!
 !!   the original .fchk's structure, replacing "Alpha Orbital Energies"  !!

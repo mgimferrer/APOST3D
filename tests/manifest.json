@@ -358,6 +358,66 @@
       ]
     },
     {
+      "name": "CH3F-pySCF",
+      "description": "Fluoromethane, RKS B3LYP from pySCF (utils/apost3d.py .fchk, no \"Orthonormal basis\" block) — TFVC, fragment OSLO and its .fchk export.",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "rks",
+        "fragments",
+        "pyscf"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "SCF/DFT energy",
+          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -139.6309588681,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "C TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.908989,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "F TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.744989,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "F fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        }
+      ]
+    },
+    {
       "name": "FeCO2-PBEPBE",
       "description": "FeCO2 complex (charge +2, singlet), RKS PBE — TFVC, fragment EOS with per-EFO net/gross occupations.",
       "tags": [
