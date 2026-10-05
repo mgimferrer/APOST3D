@@ -538,6 +538,11 @@ c      iopt(200) =
 !! Prepare for numerical integrations !!
         call build_integration_grid(ienpart, ipolar,ifinegrid)
 
+!! kept to rebuild this grid after ENPART/DFT-DM1 replace it !!
+        nradp=nrad
+        nangp=nang
+        rr00p=rr00
+
         iatps=nang*nrad
         itotps=nat*iatps
         allocate (wp(itotps),omp(itotps),omp2(itotps,nat))
@@ -1063,6 +1068,32 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         DEALLOCATE(wp,omp2,chp,pcoord)
       end if
 
+!! ENPART and DFT-DM1 replace the primary grid with their own and free  !!
+!! it: rebuild it, with its original settings, for OSLO and SCATT-FACT  !!
+      if((ioslo.eq.1.or.iscattfact.eq.1).and.imulli.eq.0.and.
+     +   .not.allocated(wp)) then
+        nrad=nradp
+        nang=nangp
+        rr00=rr00p
+        pha=ZERO
+        phb=ZERO
+        call quad(nrad,nang)
+        ndim=igr
+        iatps=nang*nrad
+        itotps=nat*iatps
+        if(allocated(omp))       DEALLOCATE(omp)
+        if(allocated(omp2))      DEALLOCATE(omp2)
+        if(allocated(chp))       DEALLOCATE(chp)
+        if(allocated(rho))       DEALLOCATE(rho)
+        if(allocated(pcoord))    DEALLOCATE(pcoord)
+        if(allocated(ibaspoint)) DEALLOCATE(ibaspoint)
+        ALLOCATE(wp(itotps),omp(itotps),omp2(itotps,nat))
+        ALLOCATE(chp(itotps,ndim),rho(itotps))
+        ALLOCATE(pcoord(itotps,3),ibaspoint(itotps))
+        call prenumint(ndim,itotps,nat,wp,omp,omp2,chp,rho,pcoord,
+     +    ibaspoint,1)
+      end if
+
 !! OSLO -- variants of the procedure can be found in the dev version !!
       if(ioslo.eq.1) then
         call print_box('DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)')
@@ -1087,8 +1118,6 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
         call cpu_time(time2)
         call get_wall_time(wtime2)
         call print_timer('OSLO analysis',time2-time,wtime2-wtime)
-
-        DEALLOCATE(wp,omp,omp2,chp,pcoord)
       end if
 
 !! X-ray scattering factors !!

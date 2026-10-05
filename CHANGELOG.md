@@ -85,6 +85,8 @@ program, not a full development history — see `git log` for that.
   with an end-of-file error (before printing the oxidation states) when
   writing `<jobname>-OSLOs.fchk`; the written file now keeps every block
   of the input `.fchk`.
+- **OSLO together with ENPART** — an input asking for both no longer
+  crashes after the energy decomposition.
 
 ### Others
 
