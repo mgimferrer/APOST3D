@@ -468,6 +468,9 @@
       allocatable :: elec2(:,:),elec_id(:,:)
       allocatable :: tmp_elec_id(:,:)
       allocatable :: elec_frg_count(:,:)
+      dimension xlo(maxfrag),xfu(maxfrag),ilo(maxfrag),ifu(maxfrag)
+      dimension nlo(maxfrag),ncount(maxfrag)
+      dimension npool(2)
       allocatable :: xnegnet_pool(:),xneggro_pool(:),neg_frg(:),neg_slot(:)
 
 !! pool every fragment's EFOs into one list per channel (1=paired,      !!
@@ -736,6 +739,8 @@
 !! above, even on a small system where the true positive-EFO count      !!
 !! (lorb(1)) is below igr -- every electron-assignment use of lorb(1)    !!
 !! above has already completed by this point, so this is safe.          !!
+      npool(1)=lorb(1)
+      npool(2)=lorb(2)
       if(nneg.gt.0) lorb(1)=MAX(lorb(1),igr)
 
       write(*,'(2x,a)') 'Electrons assigned per fragment (paired / unpaired):'
@@ -753,11 +758,10 @@
         write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
         write(*,*) " ---------------------------------------- "
 
-!! last occupied / first unoccupied EFO gross occupation per fragment,  !!
-!! same convention as effao.f's eos_analysis                            !!
-        if(icase.eq.1) xlast=TWO
-        if(icase.eq.2) xlast=ONE
-        ilast=0
+!! last occupied / first unoccupied EFO gross occupation per fragment, !!
+!! as in effao.f's eos_analysis: with nn its occupied EFOs (pairs in    !!
+!! the paired density) rounded up, the nn-th (xlo) and (nn+1)-th (xfu)  !!
+!! of its EFOs in gross order, as met in the sorted pooled list         !!
         do ifrg=1,icufr
           if(icase.eq.1) then
             nn=INT(elec_frg_count(ifrg,icase))/2
@@ -767,19 +771,37 @@
             nn=INT(elec_frg_count(ifrg,icase))
             if(elec_frg_count(ifrg,icase)-nn.gt.thresh) nn=nn+1
           end if
-
-          if(nn+1.gt.iup0(icase,ifrg)) then
-            write(*,10) ifrg,elec_frg_count(ifrg,icase),up0gro(icase,nn,ifrg)
-          else
-            if(nn.ne.0) then
-              write(*,15) ifrg,elec_frg_count(ifrg,icase),up0gro(icase,nn,ifrg),up0gro(icase,nn+1,ifrg)
-            else
-              write(*,15) ifrg,elec_frg_count(ifrg,icase),ZERO,up0gro(icase,nn+1,ifrg)
-            end if
+          nlo(ifrg)=nn
+          ncount(ifrg)=0
+          ilo(ifrg)=0
+          ifu(ifrg)=0
+          xlo(ifrg)=ZERO
+          xfu(ifrg)=ZERO
+        end do
+        do ii=1,npool(icase)
+          ifrg=iorbat(ii,icase)
+          ncount(ifrg)=ncount(ifrg)+1
+          if(ncount(ifrg).eq.nlo(ifrg)) then
+            xlo(ifrg)=elec2(ii,icase)
+            ilo(ifrg)=1
+          else if(ncount(ifrg).eq.nlo(ifrg)+1) then
+            xfu(ifrg)=elec2(ii,icase)
+            ifu(ifrg)=1
           end if
-          if(nn.ne.0) then
-            if(up0gro(icase,nn,ifrg).lt.xlast) then
-              xlast=up0gro(icase,nn,ifrg)
+        end do
+
+        if(icase.eq.1) xlast=TWO
+        if(icase.eq.2) xlast=ONE
+        ilast=0
+        do ifrg=1,icufr
+          if(ifu(ifrg).eq.0) then
+            write(*,10) ifrg,elec_frg_count(ifrg,icase),xlo(ifrg)
+          else
+            write(*,15) ifrg,elec_frg_count(ifrg,icase),xlo(ifrg),xfu(ifrg)
+          end if
+          if(ilo(ifrg).eq.1) then
+            if(xlo(ifrg).lt.xlast) then
+              xlast=xlo(ifrg)
               ilast=ifrg
             end if
           end if
@@ -787,16 +809,8 @@
 
         xfirst=ZERO
         do ifrg=1,icufr
-          if(ifrg.ne.ilast) then
-            if(icase.eq.1) then
-              nn=INT(elec_frg_count(ifrg,icase))/2
-              if(elec_frg_count(ifrg,icase)/TWO-nn.gt.thresh) nn=nn+1
-            end if
-            if(icase.eq.2) then
-              nn=INT(elec_frg_count(ifrg,icase))
-              if(elec_frg_count(ifrg,icase)-nn.gt.thresh) nn=nn+1
-            end if
-            if(nn+1.ne.0.and.up0gro(icase,nn+1,ifrg).gt.xfirst) xfirst=up0gro(icase,nn+1,ifrg)
+          if(ifrg.ne.ilast.and.ifu(ifrg).eq.1) then
+            if(xfu(ifrg).gt.xfirst) xfirst=xfu(ifrg)
           end if
         end do
         write(*,*) " ---------------------------------------- "
