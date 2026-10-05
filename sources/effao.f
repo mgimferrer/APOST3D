@@ -278,6 +278,8 @@
 
       character(len=20) :: ctype
       dimension iorbslot(nmax,2)
+      dimension xlo(maxfrag),xfu(maxfrag),ilo(maxfrag),ifu(maxfrag)
+      dimension nlo(maxfrag),ncount(maxfrag)
       allocatable :: occup2(:)
 
 !! iopt(5): population-scheme selector (0 real-space/AIM, 1 Mulliken,   !!
@@ -430,7 +432,34 @@
       do i=1,iorb
         elec(iorbat(i,icase))=elec(iorbat(i,icase))+occup2(i)
       end do
+
       DEALLOCATE(occup2)
+
+!! frontier EFOs of each fragment: with nn its electrons rounded up, the  !!
+!! nn-th (last occupied, xlo) and (nn+1)-th (first unoccupied, xfu) of   !!
+!! its EFOs in gross order, i.e. as met in the pooled list, which is      !!
+!! sorted by gross occupation; ilo/ifu: 1 if that EFO exists              !!
+      do i=1,icufr
+        nn=int(elec(i))
+        if(elec(i)-nn.gt.thresh) nn=nn+1
+        nlo(i)=nn
+        ncount(i)=0
+        ilo(i)=0
+        ifu(i)=0
+        xlo(i)=ZERO
+        xfu(i)=ZERO
+      end do
+      do ii=1,iorb
+        i=iorbat(ii,icase)
+        ncount(i)=ncount(i)+1
+        if(ncount(i).eq.nlo(i)) then
+          xlo(i)=occup(ii,icase)
+          ilo(i)=1
+        else if(ncount(i).eq.nlo(i)+1) then
+          xfu(i)=occup(ii,icase)
+          ifu(i)=1
+        end if
+      end do
 
       if(icase.eq.1) then
         call print_subbox('EOS ANALYSIS FOR ALPHA ELECTRONS')
@@ -445,20 +474,14 @@
       xlast=ONE
       ilast=0
       do i=1,icufr
-        nn=int(elec(i))
-        if(elec(i)-nn.gt.thresh) nn=nn+1
-        if(nn+1.gt.ip0(i)) then
-          write(*,10) i,elec(i),p0gro(nn,i),'     -'
+        if(ifu(i).eq.0) then
+          write(*,10) i,elec(i),xlo(i),'     -'
         else
-          if(nn.ne.0) then
-            write(*,15) i,elec(i),p0gro(nn,i),p0gro(nn+1,i)
-          else
-            write(*,15) i,elec(i),ZERO,p0gro(nn+1,i)
-          end if
+          write(*,15) i,elec(i),xlo(i),xfu(i)
         end if
-        if(nn.ne.0) then
-          if(p0gro(nn,i).lt.xlast) then
-            xlast=p0gro(nn,i)
+        if(ilo(i).eq.1) then
+          if(xlo(i).lt.xlast) then
+            xlast=xlo(i)
             ilast=i
           end if
         end if
@@ -468,10 +491,8 @@
 !! other fragments -- how close the runner-up comes to being occupied.    !!
       xfirst=ZERO
       do i=1,icufr
-        if(i.ne.ilast) then
-          nn=int(elec(i))
-          if(elec(i)-nn.gt.thresh) nn=nn+1
-          if(nn+1.ne.0.and.p0gro(nn+1,i).gt.xfirst) xfirst=p0gro(nn+1,i)
+        if(i.ne.ilast.and.ifu(i).eq.1) then
+          if(xfu(i).gt.xfirst) xfirst=xfu(i)
         end if
       end do
       write(*,*) " ---------------------------------------- "
