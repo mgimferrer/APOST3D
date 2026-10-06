@@ -15,7 +15,11 @@
 ## an exported APOST3D_PATH (or make APOST3D_PATH=...) wins. ##
 ## --------------------------------------------------------- ##
 
-APOST3D_PATH ?= $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+# Evaluated once, here: a lazy ?= would be expanded after the include of
+# objects/libxc.mk below, which then is the last makefile read.
+ifndef APOST3D_PATH
+APOST3D_PATH := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+endif
 
 ## THREADS: OMP_NUM_THREADS of the test runs, and the parallel compile jobs
 ## of the test targets. Default 8, or fewer if the machine has fewer CPUs
