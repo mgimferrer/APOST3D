@@ -594,10 +594,8 @@
 !! subroutine: population_print_charges                                  !!
 !! purpose: prints electron populations and partial atomic charges       !!
 !! (plus per-fragment breakdowns where DOFRAGS is set) from qat, already !!
-!! filled by population_density. The ELCOUNT/NCTAIM call that used to    !!
-!! sit between these two prints stays in main.f (like idoint/print_int)  !!
-!! -- NCTAIM lives in subroutines_mmo.f, which apost3d-eos's link list   !!
-!! deliberately excludes, so pop.f itself must not reference it.         !!
+!! filled by population_density. The ELCOUNT/NCTAIM call between these   !!
+!! two prints stays in main.f (like idoint/print_int).                   !!
 !! arguments: none (all via qat/COMMON)                                  !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!

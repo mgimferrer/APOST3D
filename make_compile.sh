@@ -2,7 +2,7 @@
 # ==============================================================================
 # make_compile.sh — compile APOST-3D with GCC/gfortran
 #
-# Builds apost3d, apost3d-eos and the utilities (utils/), fetching and
+# Builds apost3d and the utilities (utils/), fetching and
 # building libxc first if no usable copy is found.
 #
 # Usage:
@@ -287,11 +287,11 @@ mkdir -p "$APOST3D_PATH/objects"
 echo "$BUILD_ID" > "$COMPILER_STAMP"
 
 # ------------------------------------------------------------------------------
-# Build main binary + standalone EOS + utilities
+# Build main binary + utilities
 # ------------------------------------------------------------------------------
-BINARIES=(apost3d apost3d-eos utils/get_energy utils/get_energy_g16 utils/gen_hirsh
-          utils/wfn2fchk utils/group_frag utils/eos_aom utils/eos_alt)
-echo "--- Building apost3d, apost3d-eos and the utilities ($NTHREADS jobs) ---"
+BINARIES=(apost3d utils/get_energy utils/get_energy_g16 utils/gen_hirsh
+          utils/wfn2fchk utils/eos_aom)
+echo "--- Building apost3d and the utilities ($NTHREADS jobs) ---"
 make -f "$MAKEFILE" -C "$APOST3D_PATH" -j"$NTHREADS" ARCH="$ARCH" all utils
 echo ""
 
@@ -368,7 +368,6 @@ if [[ "$SMOKE_FAILED" -eq 1 ]]; then
   echo "  issue, not a compilation problem. Try, then re-run this script:"
   echo "    xattr -cr $APOST3D_PATH"
   echo "    codesign --force --sign - $APOST3D_PATH/apost3d"
-  echo "    codesign --force --sign - $APOST3D_PATH/apost3d-eos"
   echo "    (and the same for each program in $APOST3D_PATH/utils)"
   echo ""
 fi

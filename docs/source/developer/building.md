@@ -5,7 +5,7 @@ prerequisites and then calls the `Makefile`. For development, or a custom
 build setup, `make` can be used directly:
 
 ```bash
-make -C $APOST3D_PATH -j8 all     # apost3d and apost3d-eos
+make -C $APOST3D_PATH -j8 all     # apost3d
 make -C $APOST3D_PATH -j8 utils   # the utilities in utils/
 make -C $APOST3D_PATH clean       # remove all objects and programs
 make -C $APOST3D_PATH help        # all targets and options
@@ -26,7 +26,7 @@ first if libxc is not installed).
 | `libxc-<version>/` | libxc, when built by `compile_libxc.sh` |
 | `tests/` | Test runner, inputs and reference outputs ([Running the test suite](testing.md)) |
 | `docs/source/` | This documentation |
-| `apost3d`, `apost3d-eos` | The programs |
+| `apost3d` | The program |
 
 ## Compiler flags
 

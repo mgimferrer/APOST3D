@@ -200,10 +200,9 @@ C trasnform to the AO basis
       end
 
 ! *****s
-!! confirmed dead -- zero call sites codebase-wide (both would-be callers, !!
-!! main.f and main_eos.f, have theirs commented out). Left alone          !!
-!! pending a deprecation decision, same as gennatural_old/old_diagonalize !!
-!! above.                                                                 !!
+!! confirmed dead -- zero call sites codebase-wide (main.f has its call  !!
+!! commented out). Left alone pending a deprecation decision, same as    !!
+!! gennatural_old/old_diagonalize above.                                 !!
       subroutine readintfiles(sat)
       use basis_set
       use ao_matrices

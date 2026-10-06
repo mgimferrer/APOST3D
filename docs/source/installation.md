@@ -73,7 +73,6 @@ launches each program once and lists them:
 ```text
 --- Binaries produced ---
   ✓  /home/user/APOST3D/apost3d  (...)
-  ✓  /home/user/APOST3D/apost3d-eos  (...)
 ...
 --- Smoke test (launching each binary) ---
   ✓  apost3d launches correctly
@@ -82,8 +81,7 @@ launches each program once and lists them:
 ```
 
 The programs are written into the repository folder: `apost3d` (the main
-program), `apost3d-eos` (a [standalone EOS program](tools/apost3d-eos.md))
-and the [utilities](tools/utilities.md) in `utils/`.
+program) and the [utilities](tools/utilities.md) in `utils/`.
 
 Finally, tell your shell where APOST-3D is, so that job scripts can find it.
 Add this line to your `~/.bashrc` (or `~/.zshrc` on macOS), replacing the

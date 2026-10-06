@@ -85,6 +85,10 @@ program, not a full development history — see `git log` for that.
   (`# OSLO`) are now written `FOLI_TOLERANCE`, `BRANCH_ITERATION` and
   `PRINT_NONORTHO`; the old spellings stop with a message. `MULLIKEN` and
   `MULLI` both select Mulliken atoms.
+- **`apost3d-eos`, `group_frag` and `eos_alt` removed** — `apost3d` does
+  everything `apost3d-eos` did; ENPART with `DOFRAGS` prints the fragment
+  terms `group_frag` computed; `eos_alt` did not work with version 5
+  outputs.
 
 ### Code optimization / parallelization
 
@@ -181,7 +185,7 @@ program, not a full development history — see `git log` for that.
   Compilation and tests use 8 threads by default (`NTHREADS=<n>` to
   change it), and `make_compile.sh` (or `make utils`) also builds the
   utilities in `utils/` (`get_energy`, `get_energy_g16`, `gen_hirsh`,
-  `wfn2fchk`, `group_frag`, `eos_aom`, `eos_alt`).
+  `wfn2fchk`, `eos_aom`).
 - **libxc upgraded to 7.1.2** (from the previously bundled 4.2.3) — no
   change to any computed energy or property, verified bit-for-bit against
   reference outputs. Fetched and built automatically on first compile if
