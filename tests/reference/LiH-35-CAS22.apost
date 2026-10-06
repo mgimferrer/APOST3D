@@ -134,6 +134,8 @@
   ----
   DM level: 2-RDM
   Source  : pySCF
+  1-RDM   : LiH-35-CAS22.dm1
+  2-RDM   : LiH-35-CAS22.dm2
 
   --------------------
     NATURAL ORBITALS
@@ -168,7 +170,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.07 s
+  TIMING CPU  :: atomic definition                                 0.06 s
   TIMING WALL :: atomic definition                                 0.07 s
 
   ---------------------------------
@@ -440,8 +442,8 @@
   --------------------------------------------------------------------------------                    
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
   
-  TIMING CPU  :: PHF Exc energy                                    0.50 s
-  TIMING WALL :: PHF Exc energy                                    0.50 s
+  TIMING CPU  :: PHF Exc energy                                    0.49 s
+  TIMING WALL :: PHF Exc energy                                    0.49 s
   
   Total two-electron part (coul+exc):      2.7365314
   Integration error (kcal/mol):    -0.09
@@ -499,6 +501,6 @@
   Integration error (au):     -0.0000000
   Integration error (kcal/mol):    -0.00
   TIMING CPU  :: enpart two-electron                               0.98 s
-  TIMING WALL :: enpart two-electron                               0.99 s
+  TIMING WALL :: enpart two-electron                               0.98 s
 
   ...Normal Termination of APOST-3D...

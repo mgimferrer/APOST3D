@@ -530,6 +530,7 @@
         call locate(16,"# DM",ii)
         read(16,'(a80)') namedm
         namedm=adjustl(namedm)
+        dmfile1=namedm
         if(iorca.eq.1.or.ipyscf.eq.1) then
           open(11,file=namedm,status='OLD',iostat=ios)
         else
@@ -542,6 +543,7 @@
         if(icorr.eq.2) then
           read(16,'(a80)') namedm
           namedm=adjustl(namedm)
+          dmfile2=namedm
           if(iorca.eq.1.or.ipyscf.eq.1) then
             open(12,file=namedm,status='OLD',iostat=ios)
           else
