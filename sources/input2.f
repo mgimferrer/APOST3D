@@ -859,7 +859,7 @@
       integer ipos,ii
 
       ival=0
-      call locate(16,section,ii)
+      call locate_block(16,section,ii)
 
 !! a missing block: the keyword is absent (the caller stops if the     !!
 !! block is required); the end of the file also ends the block         !!
@@ -867,8 +867,8 @@
       ii=0
       do while(ii.eq.0)
         read(16,"(a80)",end=20) linea
-        ipos=index(linea,keyword)
-        if(ipos.ne.0) then
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
           ival=1
           ii=1
         end if
@@ -898,7 +898,7 @@
       integer ilog,ios
 
       intv=intdef
-      call locate(16,section,ii)
+      call locate_block(16,section,ii)
       if(ii.eq.0) return
       ii=0
       do while(ii.eq.0)
@@ -937,7 +937,7 @@
       integer ipos,ii,intv,intdef,ilog,ival,ios
 
       intv=intdef
-      call locate(16,section,ii)
+      call locate_block(16,section,ii)
       if(ii.eq.0) return
       ii=0
       do while(ii.eq.0)
@@ -960,9 +960,10 @@
 
 !! ********************************************************************* !!
 !! subroutine: keyword_value                                             !!
-!! purpose: finds keyword in an .inp line as a word ending there         !!
-!!   (followed by a blank, "=" or the end of the line) and returns where !!
-!!   its value starts, after blanks and one optional "=".                !!
+!! purpose: finds keyword in an .inp line as a whole word -- at the      !!
+!!   start of the line or after a blank, and followed by a blank, "=" or !!
+!!   the end of the line ("-" and "_" belong to the word) -- and returns !!
+!!   where its value starts, after blanks and one optional "=".          !!
 !! arguments:                                                            !!
 !!   linea   (in)  -- the .inp line                                      !!
 !!   keyword (in)  -- keyword text to search for                         !!
@@ -972,16 +973,29 @@
 !! ********************************************************************* !!
       subroutine keyword_value(linea,keyword,ipos)
       character linea*(*), keyword*(*)
-      integer ipos,i,n
+      integer ipos,i,j,n,lk
+      logical lword
 
       n=len(linea)
+      lk=len_trim(keyword)
       ipos=0
-      i=index(linea,keyword)
-      if(i.eq.0) return
-      i=i+len(keyword)
-      if(i.le.n) then
-        if(linea(i:i).ne.' '.and.linea(i:i).ne.'=') return
-      end if
+      if(lk.eq.0) return
+      j=0
+      lword=.false.
+      do while(.not.lword)
+        i=index(linea(j+1:),keyword(1:lk))
+        if(i.eq.0) return
+        i=i+j
+        j=i
+        lword=.true.
+        if(i.gt.1) then
+          if(linea(i-1:i-1).ne.' ') lword=.false.
+        end if
+        i=i+lk
+        if(i.le.n) then
+          if(linea(i:i).ne.' '.and.linea(i:i).ne.'=') lword=.false.
+        end if
+      end do
       do while(i.le.n)
         if(linea(i:i).ne.' ') exit
         i=i+1
@@ -1049,6 +1063,68 @@
 
 10    write(*,'(2x,a,1x,a)') trim(string),'section not found'
       return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: locate_block                                              !!
+!! purpose: like locate, for an .inp block header: the line must be the  !!
+!!   header itself (blanks ignored), so "# DFTDM1" does not find         !!
+!!   "# DFTDM1_FUNCTIONAL". Leaves the file just past the header, and    !!
+!!   reports a missing block.                                            !!
+!! arguments:                                                            !!
+!!   iunit  (in)  -- file unit to scan (already open)                    !!
+!!   string (in)  -- block header, e.g. "# METHOD"                       !!
+!!   ii     (out) -- 1 if found, 0 otherwise                             !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine locate_block(iunit,string,ii)
+      integer iunit,ii
+      character string*(*)
+
+      call find_block(iunit,string,ii)
+      if(ii.eq.0) write(*,'(2x,a,1x,a)') trim(string),'section not found'
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: find_block                                                !!
+!! purpose: silent core of locate_block (see there).                     !!
+!! arguments: as locate_block                                            !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine find_block(iunit,string,ii)
+      integer iunit,ii,i,k
+      character string*(*)
+      character*80 linia,a,b
+
+      b=' '
+      k=0
+      do i=1,len(string)
+        if(string(i:i).ne.' ') then
+          k=k+1
+          b(k:k)=string(i:i)
+        end if
+      end do
+
+      rewind(iunit)
+      ii=0
+      do while(ii.eq.0)
+        read(iunit,'(a80)',end=10) linia
+        a=' '
+        k=0
+        do i=1,80
+          if(linia(i:i).ne.' '.and.linia(i:i).ne.char(9)) then
+            k=k+1
+            a(k:k)=linia(i:i)
+          end if
+        end do
+        if(a.eq.b) ii=1
+      end do
+10    return
       end
 
 !! ***** !!

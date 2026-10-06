@@ -26,7 +26,7 @@ more features, such as reading the APOST-3D output itself, will come soon.
 | File | Written by | Orbitals |
 |---|---|---|
 | `<jobname>-OSLOs.fchk` | `OSLO` | The final (orthogonalized) OSLOs |
-| `<jobname>-OSLOs-preortho.fchk` | `OSLO` with `PRINT NON-ORTHO` | The OSLOs before orthogonalization |
+| `<jobname>-OSLOs-preortho.fchk` | `OSLO` with `PRINT_NONORTHO` | The OSLOs before orthogonalization |
 | `<jobname>-EOS-EFOs.fchk` | `EOS` | Effective fragment orbitals: alpha in the Alpha set, beta in the Beta set (only alpha for closed shells) |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired orbitals in the Alpha set, unpaired ones in the Beta set (see [GEOS](../methods/geos.md#orbitals-in-the-fchk-file)) |
 

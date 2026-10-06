@@ -36,15 +36,30 @@
 
       dimension navect(maxat),missat(maxat)
       dimension iatpairs(2,maxat)
-      character*80 namedm
+      character*80 namedm,linedm
       character*80 namefchk1,namefchk2
 
 !! every input needs # METHOD !!
-      call locate(16,"# METHOD",ii)
+      call locate_block(16,"# METHOD",ii)
       if(ii.eq.0) then
         write(*,'(2x,a)') 'The input has no # METHOD block'
         stop ' # METHOD block not found'
       end if
+
+!! keywords and blocks renamed in version 5 (no blanks or hyphens      !!
+!! inside a name): the old spellings stop instead of being ignored      !!
+      call renamed_block("# DFT-DM1","# DFTDM1")
+      call renamed_block("# DFT-DM1 FUNCTIONAL","# DFTDM1_FUNCTIONAL")
+      call renamed_block("# ATOM PAIRS DEFINITION",
+     +  "# ATOM_PAIRS_DEFINITION")
+      call renamed_block("# 2D PLOTS","# 2D_PLOTS")
+      call renamed_keyword("# METHOD","DFT-DM1","DFTDM1")
+      call renamed_keyword("# OSLO","FOLI TOLERANCE","FOLI_TOLERANCE")
+      call renamed_keyword("# OSLO","BRANCH ITERATION","BRANCH_ITERATION")
+      call renamed_keyword("# OSLO","PRINT NON-ORTHO","PRINT_NONORTHO")
+      call renamed_keyword("# EDAIQA","eN pySCF","eN_pySCF")
+      call renamed_keyword("# EDAIQA","Coul pySCF","Coul_pySCF")
+      call renamed_keyword("# EDAIQA","NN pySCF","NN_pySCF")
 
 !! choose density from fchk file !!
       call readint("# METHOD","DENS",ndens0,1,1)
@@ -62,7 +77,9 @@
       call readchar("# METHOD","FULLPRECISION",iaccur)
 
 !! atoms in molecules !!
-      call readchar("# METHOD","MULLI",imulli)
+      call readchar("# METHOD","MULLIKEN",imulli)
+      call readchar("# METHOD","MULLI",ii)
+      if(ii.eq.1) imulli=1
       call readchar("# METHOD","LOWDIN",ilow)
       if(ilow.eq.1) imulli=2
       call readchar("# METHOD","LOWDIN-DAVIDSON",ilow)
@@ -146,7 +163,7 @@
       inegefos=0
       inegcubthr=25
       if(icube.eq.1) then
-        call locate(16,"# CUBE",ii)
+        call locate_block(16,"# CUBE",ii)
         if(ii.eq.0) stop'Required section # CUBE not found in input file'
         call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
         call readint("# CUBE","MIN_OCC",kcubthr,0,1)
@@ -203,7 +220,7 @@
 !! energy decomposition options !!
       call readchar("# METHOD","ENPART",ienpart )
       if(ienpart.eq.1) then
-        call locate(16,"# ENPART",ii)
+        call locate_block(16,"# ENPART",ii)
         if(ii.eq.0) then
           write(*,'(2x,a)') 'ENPART needs a # ENPART block'
           stop ' # ENPART block not found'
@@ -212,7 +229,7 @@
         id_xcfunc=0
         id_xfunc=0
         id_cfunc=0
-        call readchar("# ENPART","LIBRARY ",ilib)
+        call readchar("# ENPART","LIBRARY",ilib)
         call enpart_functional_keyword(ikwfunc,idkxc,idkx,idkc)
         if(ilib.eq.1) then
           if(ikwfunc.eq.1)
@@ -230,7 +247,7 @@
           end if
 !! specific keywords for functionals !!
         else
-          call readchar("# ENPART","HF ",ihf)
+          call readchar("# ENPART","HF",ihf)
           if(ihf.eq.1) then
             id_xfunc=-1
             xmix=1.0d0
@@ -276,8 +293,8 @@
         ipairs=0
         call readchar("# METHOD","TOPOLOGY",itop)
         if(itop.eq.1) then
-          call locate(16,"# ATOM PAIRS DEFINITION",ii)
-          if(ii.eq.0) stop " ATOM PAIRS DEFINITION SECTION MISSING "
+          call locate_block(16,"# ATOM_PAIRS_DEFINITION",ii)
+          if(ii.eq.0) stop " # ATOM_PAIRS_DEFINITION section missing"
           read(16,*) ipairs
           if(ipairs.gt.0) then
             do ii=1,ipairs
@@ -306,35 +323,35 @@
 !! DFT-DM1 approximate one-particle RDM1 for UHF/UKS-DFT (formerly       !!
 !! referred to internally as HIRAO). Runs standalone (no ENPART          !!
 !! required), reusing ENPART's own two-electron grid/defaults if ENPART  !!
-!! is also active, else reading its own MOD-GRIDTWOEL under # DFT-DM1.   !!
+!! is also active, else reading its own MOD-GRIDTWOEL under # DFTDM1.    !!
       idftdm1=0
       id_func_dm1=0
-      call readchar("# METHOD","DFT-DM1",idftdm1)
+      call readchar("# METHOD","DFTDM1",idftdm1)
       if(idftdm1.eq.1) then
 !! DFT-DM1 is DFT-functional-only -- dft_dm1.f's RDM1 construction reads !!
 !! the local exchange-energy density straight out of libxc, which has no !!
 !! meaning for HF (no functional to evaluate); an old ifunc=999 HF        !!
 !! placeholder branch existed in dft_dm1.f but was never a real          !!
 !! implementation, and was removed 2026-08-30.                           !!
-        call readchar("# DFT-DM1 FUNCTIONAL","LIBRARY",ilib)
+        call readchar("# DFTDM1_FUNCTIONAL","LIBRARY",ilib)
         if(ilib.eq.1) then
-          call readint("# DFT-DM1 FUNCTIONAL","EX_FUNCTIONAL",id_func_dm1,0,1)
+          call readint("# DFTDM1_FUNCTIONAL","EX_FUNCTIONAL",id_func_dm1,0,1)
         end if
         if(id_func_dm1.eq.0) stop "FUNCTIONAL ID NOT FOUND FOR DFT-DM1. REVISE inp"
 
 !! density-threshold pruning for the double loop's O(itotps^2) grid-point !!
 !! pairs, checked at the pair's midpoint R (dft_dm1.f's main loop)        !!
-        call readreal("# DFT-DM1","DENSTHRESH",densthresh_dm1,1.0d-8,1)
+        call readreal("# DFTDM1","DENSTHRESH",densthresh_dm1,1.0d-8,1)
 
 !! project the RDM1 onto the AO basis and diagonalize for natural-orbital !!
 !! occupations -- opt-in, since this adds an O(igr^2) accumulation on     !!
 !! top of every surviving grid-point pair (dft_dm1.f's own separate,      !!
 !! unoptimized block, run only if requested)                              !!
-        call readchar("# DFT-DM1","NATORB",inatorb_dm1)
+        call readchar("# DFTDM1","NATORB",inatorb_dm1)
 
 !! idftdm1grid is a throwaway local -- nothing outside this call needs   !!
 !! DFT-DM1's own MOD-GRIDTWOEL flag today, unlike ENPART's (see above).  !!
-        if(ienpart.ne.1) call read_gridtwoel("# DFT-DM1",idftdm1grid)
+        if(ienpart.ne.1) call read_gridtwoel("# DFTDM1",idftdm1grid)
       end if
 
 !! EDAIQA options !!
@@ -343,7 +360,7 @@
       call readchar("# METHOD","EDAIQA",iedaiqa)
       if(iedaiqa.eq.1) then
         ii=0
-        call locate(16,"# EDAIQA",ii)
+        call locate_block(16,"# EDAIQA",ii)
         if(ii.eq.1) then
           read(16,'(a80)') namefchk1
           read(16,'(a80)') namefchk2
@@ -352,9 +369,9 @@
           call readchar("# EDAIQA","FLIPSPIN",iflip) !! swaps alpha for beta !!
 
 !! adding pySCF reference values for the electrostatic calculation !!
-          call readreal("# EDAIQA","eN pySCF",xen,0.0d0,1)
-          call readreal("# EDAIQA","Coul pySCF",xcoul,0.0d0,1)
-          call readreal("# EDAIQA","NN pySCF",xnn,0.0d0,1)
+          call readreal("# EDAIQA","eN_pySCF",xen,0.0d0,1)
+          call readreal("# EDAIQA","Coul_pySCF",xcoul,0.0d0,1)
+          call readreal("# EDAIQA","NN_pySCF",xnn,0.0d0,1)
 
 !! adding grid tuning for two-el integration -- MG: repetitive with the  !!
 !! # ENPART block above, could be consolidated into one                 !!
@@ -368,7 +385,7 @@
 
 !! options to make 2D plots of electrostatic potentials !!
           i2deda=0
-          call locate(16,"# 2D PLOTS",i2deda)
+          call locate_block(16,"# 2D_PLOTS",i2deda)
           if(i2deda.eq.1) then
             read(16,*) iipoints
             read(16,*) (xptxyz(1,j),j=1,3)
@@ -409,7 +426,7 @@
       idoat=0
       call readchar("# METHOD","DOATOMS",idoat)
       if(idoat.eq.1) then
-        call locate(16,"# ATOMS",ii)
+        call locate_block(16,"# ATOMS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
         read(16,*) icuat
         read(16,*) (iatlist(i),i=1,icuat)
@@ -424,7 +441,7 @@
       idofr=0
       call readchar("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
-        call locate(16,"# FRAGMENTS",ii)
+        call locate_block(16,"# FRAGMENTS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
         read(16,*) icufr
         if(icufr.lt.1.or.icufr.gt.nat) then
@@ -521,37 +538,52 @@
 
 !! reading DM1 and DM2 !!
       if(icorr.ne.0) then
-        call locate(16,"# DM",ii)
+        call locate_block(16,"# DM",ii)
         if(ii.eq.0) stop " # DM section not found in input file "
-        call readchar("# DM","pySCF",ipyscf)
-        call readchar("# DM","ORCA",iorca)
-        call readchar("# DM","DMRG",idmrg)
 
-        call locate(16,"# DM",ii)
+!! the file names come first (one line each, read as they are, so a     !!
+!! name may hold any character); the format keywords only after them    !!
         read(16,'(a80)') namedm
-        namedm=adjustl(namedm)
-        dmfile1=namedm
+        dmfile1=adjustl(namedm)
+        dmfile2=' '
+        if(icorr.eq.2) then
+          read(16,'(a80)') namedm
+          dmfile2=adjustl(namedm)
+        end if
+        ipyscf=0
+        iorca=0
+        idmrg=0
+        ii=0
+        do while(ii.eq.0)
+          read(16,'(a80)',end=520) linedm
+          call keyword_value(linedm,"pySCF",ipos)
+          if(ipos.gt.0) ipyscf=1
+          call keyword_value(linedm,"ORCA",ipos)
+          if(ipos.gt.0) iorca=1
+          call keyword_value(linedm,"DMRG",ipos)
+          if(ipos.gt.0) idmrg=1
+          if(index(linedm,"#").ne.0) ii=1
+        end do
+ 520    continue
+
         if(iorca.eq.1.or.ipyscf.eq.1) then
-          open(11,file=namedm,status='OLD',iostat=ios)
+          open(11,file=dmfile1,status='OLD',iostat=ios)
         else
-          open(11,file=namedm,FORM='UNFORMATTED',status='OLD',iostat=ios)
+          open(11,file=dmfile1,FORM='UNFORMATTED',status='OLD',iostat=ios)
         end if
         if(ios.ne.0) then
-          write(*,'(2x,a,a,a)') '# DM: file ',trim(namedm),' not found'
+          write(*,'(2x,a,a,a)') '# DM: file ',trim(dmfile1),' not found'
           stop ' # DM file not found'
         end if
         if(icorr.eq.2) then
-          read(16,'(a80)') namedm
-          namedm=adjustl(namedm)
-          dmfile2=namedm
           if(iorca.eq.1.or.ipyscf.eq.1) then
-            open(12,file=namedm,status='OLD',iostat=ios)
+            open(12,file=dmfile2,status='OLD',iostat=ios)
           else
-            open(12,file=namedm,FORM='UNFORMATTED',status='OLD',
+            open(12,file=dmfile2,FORM='UNFORMATTED',status='OLD',
      +        iostat=ios)
           end if
           if(ios.ne.0) then
-            write(*,'(2x,a,a,a)') '# DM: file ',trim(namedm),' not found'
+            write(*,'(2x,a,a,a)') '# DM: file ',trim(dmfile2),' not found'
             stop ' # DM file not found'
           end if
         end if
@@ -562,7 +594,7 @@
       ioslo=0
       call readchar("# METHOD","OSLO",ioslo)
       if(ioslo.eq.1) then
-        call locate(16,"# OSLO",ii)
+        call locate_block(16,"# OSLO",ii)
         if(ii.eq.0) then
           write(*,'(2x,a)') 'OSLO needs a # OSLO block (it may be empty)'
           stop ' # OSLO block not found'
@@ -584,10 +616,10 @@
 
 !! extra options !!
 
-        call readint("# OSLO","FOLI TOLERANCE",ifolitol,3,1) !! FOLI value tolerance, for selection !!
-        call readint("# OSLO","BRANCH ITERATION",ibranch,0,1) !! iteration to invoke branching at !!
+        call readint("# OSLO","FOLI_TOLERANCE",ifolitol,3,1) !! FOLI value tolerance, for selection !!
+        call readint("# OSLO","BRANCH_ITERATION",ibranch,0,1) !! iteration to invoke branching at !!
         ioslofchk=1
-        call readchar("# OSLO","PRINT NON-ORTHO",ii) !! prints non-ortho OSLOs to an extra .fchk file !!
+        call readchar("# OSLO","PRINT_NONORTHO",ii) !! prints non-ortho OSLOs to an extra .fchk file !!
         if(ii.eq.1) ioslofchk=2
 
       end if
@@ -648,7 +680,7 @@
 !!   without requiring ENPART to also be active in the same run.         !!
 !! arguments:                                                            !!
 !!   section     (in)  -- .inp section to scan MOD-GRIDTWOEL/# GRID      !!
-!!     under (e.g. "# ENPART" or "# DFT-DM1")                            !!
+!!     under (e.g. "# ENPART" or "# DFTDM1")                            !!
 !!   igridtwoel  (out) -- 1 if MOD-GRIDTWOEL was set for this section,   !!
 !!     0 otherwise. Callers that need to know whether the returned       !!
 !!     nrad22/nang22 came from the user's own # GRID (vs. the plain      !!
@@ -748,7 +780,7 @@
       idx=0
       idc=0
       nfound=0
-      call locate(16,"# ENPART",ii)
+      call locate_block(16,"# ENPART",ii)
       if(ii.eq.0) return
       do
         read(16,'(a80)',end=10) linea
@@ -780,4 +812,56 @@
 10    continue
       if(nfound.gt.1) stop 'MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART. REVISE inp'
 
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: renamed_keyword                                           !!
+!! purpose: stops the run when an .inp block uses a keyword's old        !!
+!!   spelling, naming the new one.                                       !!
+!! arguments:                                                            !!
+!!   section, old, new (in) -- block header, old and new keyword         !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine renamed_keyword(section,old,new)
+      character section*(*), old*(*), new*(*)
+      character linea*80
+      integer ii,ipos
+
+      call find_block(16,section,ii)
+      if(ii.eq.0) return
+      ii=0
+      do while(ii.eq.0)
+        read(16,"(a80)",end=10) linea
+        call keyword_value(linea,old,ipos)
+        if(ipos.gt.0) then
+          write(*,'(2x,a,a,a,a,a,a)') trim(section),': ',old,
+     +      ' is now written ',new
+          stop ' Renamed keyword in the input'
+        end if
+        if(index(linea,"#").ne.0) ii=1
+      end do
+10    return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: renamed_block                                             !!
+!! purpose: stops the run when the .inp uses a block's old name, naming  !!
+!!   the new one.                                                        !!
+!! arguments:                                                            !!
+!!   old, new (in) -- old and new block header                           !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine renamed_block(old,new)
+      character old*(*), new*(*)
+      integer ii
+
+      call find_block(16,old,ii)
+      if(ii.eq.1) then
+        write(*,'(2x,a,a,a)') old,' is now written ',new
+        stop ' Renamed block in the input'
+      end if
       end

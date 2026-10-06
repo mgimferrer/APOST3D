@@ -81,7 +81,7 @@ OSLO
 DOFRAGS
 #
 # OSLO
-FOLI TOLERANCE 3
+FOLI_TOLERANCE 3
 #
 # FRAGMENTS
 2
@@ -191,7 +191,7 @@ available in this version.
   as its orbitals (and the matching density), for any orbital viewer. Every
   OSLO run writes it.
 - `<jobname>-OSLOs-preortho.fchk`: the OSLOs before orthogonalization,
-  with `PRINT NON-ORTHO` in `# OSLO`.
+  with `PRINT_NONORTHO` in `# OSLO`.
 
 See [Visualizing orbitals](../guide/visualization.md).
 
@@ -203,6 +203,6 @@ See [Visualizing orbitals](../guide/visualization.md).
   the ionic assignment is a close call.
 - **Several orbitals selected together** in a late iteration, in a molecule
   without symmetry, can change the result: rerun with a tighter tolerance
-  (`FOLI TOLERANCE 4`), so that orbitals are selected one by one.
+  (`FOLI_TOLERANCE 4`), so that orbitals are selected one by one.
 - **Compare population schemes** in borderline cases, e.g. the default
   real-space one against `NAO-BASIS` in `# OSLO`.
