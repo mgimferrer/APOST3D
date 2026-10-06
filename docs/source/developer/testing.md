@@ -119,6 +119,7 @@ and then one against several threads.
 | `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition) | `hf enpart oslo tfvc rhf fragments` |
 | `FeCN5NO3--UBLYP` | [Fe(CN)₅NO]³⁻ doublet, UKS BLYP: LOWDIN, EFFAO, EOS, 7 fragments | `dft lowdin effao eos uks fragments openshell` |
 | `NaBH3--UHF` | NaBH3 anion, UHF: MULLIKEN, EOS | `hf uhf mulliken pca eos fragments` |
+| `NaBH3--UHF-DAVIDSON` | Same wavefunction: LOWDIN-DAVIDSON, EFOs in the Davidson-Löwdin basis, EOS | `hf uhf lowdin eos effao fragments openshell` |
 | `FeCN5NO3--UBLYP-t2` | Same complex, UKS BLYP: TFVC + unrestricted OSLO with LOWDIN fragment populations, 7 fragments | `dft oslo lowdin tfvc uks fragments openshell` |
 | `LiH-35-CAS22` | LiH, CASSCF(2,2) from pySCF (`pySCF` in `# DM`): ENPART (CASSCF), every pair computed, and correlated local spin | `hf enpart casscf dm pyscf spin tfvc` |
 | `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP: GEOS, 2 fragments, two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |

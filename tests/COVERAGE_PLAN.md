@@ -6,8 +6,8 @@ compatibility notes below come from the keyword dispatch in
 not only from what is documented on the
 [hosted docs site](https://apost3d.readthedocs.io).
 
-**Status: 2026-10-05.** 21 tests, 37/97 keywords covered (`make coverage`,
-38%). Typical calculations for each method are being supplied and their
+**Status: 2026-10-06.** 22 tests, 38/97 keywords covered (`make coverage`,
+39%). Typical calculations for each method are being supplied and their
 code cleaned, so expect this to move quickly; update the matrix below as
 each test lands.
 
@@ -28,9 +28,9 @@ atomic-density file, `densoutput`, in the working directory; none exists in
 the repository yet, which blocks their tests.
 
 Hilbert-space (basis-set overlap, `mulliken.f`/`util.f`): `MULLI`,
-`LOWDIN`, `LOWDIN-DAVIDSON` (same `tolow` call as `LOWDIN` at the
-population stage), `NAO-BASIS` (distinct, needs a `.nao` file),
-`LOWDIN-W` (distinct).
+`LOWDIN`, `LOWDIN-DAVIDSON` (`tolow`, its own `davidson_lowdin` basis for
+populations and EFOs), `NAO-BASIS` (distinct, needs a `.nao` file),
+`LOWDIN-W` (distinct; EFFAO/EOS stop with it).
 
 ---
 
@@ -58,8 +58,8 @@ Don't write tests expecting these to work:
 
 | Tool | TFVC | BECKE-RHO | HIRSH / HIRSH-IT | MULLI | LOWDIN | LOWDIN-DAVIDSON | NAO-BASIS | LOWDIN-W |
 |---|---|---|---|---|---|---|---|---|
-| **Populations / bond orders** (always computed) | ✅ all TFVC tests | ① | ① (needs `densoutput`) | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` | ≈dup of LOWDIN | ① | ② |
-| **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped) | ① | ① | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ≈dup of LOWDIN | ① | ② |
+| **Populations / bond orders** (always computed) | ✅ all TFVC tests | ① | ① (needs `densoutput`) | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` | ✅ `NaBH3--UHF-DAVIDSON` | ① | ② |
+| **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped) | ① | ① | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ✅ `NaBH3--UHF-DAVIDSON` | ① | stop |
 | **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI`, `CH3F-EFFAO-U` (EFFAO-U alone) | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **CUBE** | ✅ `LiH-32-FCI` (`NEG_EFOS` only) | ② | ② | ② | ② | ≈dup | ② | ② |
 | **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2`, `CH3F-pySCF` (pySCF `.fchk`), `H2O-Dimer-RHF-OSLO` (after ENPART), `H2-T-OSLO` (no beta electrons) | ② | ② | ① (`# OSLO MULLIKEN`) | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ① (`# OSLO NAO-BASIS`) | not an OSLO option |

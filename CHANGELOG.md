@@ -119,6 +119,10 @@ program, not a full development history — see `git log` for that.
   from net/gross population` lines, which were not computed correctly.
   With Mulliken or Löwdin atoms, a fragment with a single basis function
   no longer loses its only orbital.
+- **EFFAO/EOS with `LOWDIN-DAVIDSON`** — the orbitals are now built in the
+  Davidson-Löwdin basis, as its populations are; they silently used plain
+  Löwdin, so oxidation states and R(%) were Löwdin ones. `EFFAO`/`EOS`
+  with the experimental `LOWDIN-W` now stop.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid (in `# GRID` or on the command line), or a radial one
   outside 1–500, now stops the run. In `# GRID` it used to give wrong

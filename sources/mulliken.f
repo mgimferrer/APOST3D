@@ -33,8 +33,8 @@
 !! purpose: builds the per-atom Lowdin (imulli=2) or Davidson-Lowdin     !!
 !!   (imulli=3) "overlap" matrix sat(:,:,i) -- symmetric S^-1/2          !!
 !!   orthogonalization for conventional Lowdin; Davidson-Lowdin instead  !!
-!!   orthogonalizes within each atom's own block first (ss/sm12/sp12),   !!
-!!   then combines with the usual S^1/2/S^-1/2 machinery.                !!
+!!   orthogonalizes within each atom's own block first, then does the    !!
+!!   symmetric step (davidson_lowdin).                                   !!
 !! arguments:                                                            !!
 !!   sat (out) -- per-atom AO overlap matrix                             !!
 !! author:                                                                !!
@@ -45,10 +45,9 @@
       include 'parameter.h'
       common /iops/ iopt(200)
       dimension sat(nbasis,nbasis,natoms)
-      allocatable ss(:,:),s12(:,:),sm12(:,:),sp12(:,:),x(:,:)
+      allocatable ss(:,:),s12(:,:),x(:,:)
 
-      allocate(ss(nbasis,nbasis),s12(nbasis,nbasis),sm12(nbasis,nbasis))
-      allocate(sp12(nbasis,nbasis),x(nbasis,nbasis))
+      allocate(ss(nbasis,nbasis),s12(nbasis,nbasis),x(nbasis,nbasis))
 
       imulli=iopt(5)
       idav=0
@@ -59,87 +58,24 @@
 !! independent-(i,j)-accumulate-over-k pattern already parallelized       !!
 !! elsewhere, e.g. ao_to_mo_grid), not done yet in this pass.             !!
       if(idav.eq.1) then
-!! Davidson: orthogonalize within each atom's own block first !!
-        do i=1,nbasis
-          do j=1,nbasis
-            ss(i,j)=0.0d0
-          enddo
-        enddo
-        do i=1,natoms
-          do mu=1,nbasis
-            if(ihold(mu).eq.i) then
-              do nu=1,nbasis
-                if(ihold(nu).eq.i) ss(mu,nu)=s(mu,nu)
-              enddo
-            endif
-          enddo
-        enddo
-
-        call diagonalize(nbasis,nbasis,ss,x,0)
-
-        do i=1,nbasis
-          do j=1,nbasis
-            sm12(i,j)=0.0d0
-            sp12(i,j)=0.0d0
-            do k=1,nbasis
-              sm12(i,j)=sm12(i,j)+x(i,k)*x(j,k)/dsqrt(ss(k,k))
-              sp12(i,j)=sp12(i,j)+x(i,k)*x(j,k)*dsqrt(ss(k,k))
-            enddo
-          enddo
-        enddo
-
-        do i=1,nbasis
-          do j=1,nbasis
-            ss(i,j)=0.0d0
-            do k=1,nbasis
-              ss(i,j)=ss(i,j)+sm12(k,i)*s(k,j)
-            enddo
-          enddo
-        enddo
-        do i=1,nbasis
-          do j=1,nbasis
-            s12(i,j)=0.0d0
-            do k=1,nbasis
-              s12(i,j)=s12(i,j)+ss(i,k)*sm12(k,j)
-            enddo
-          enddo
-        enddo
-
-        do i=1,nbasis
-          do j=1,nbasis
-            ss(i,j)=s12(i,j)
-          enddo
-        enddo
-
+!! Davidson: ss = S_at^1/2 S'^1/2 (see davidson_lowdin) !!
+        call davidson_lowdin(nbasis,ss,x)
       else
-!! conventional Lowdin !!
+!! conventional Lowdin: ss = S^1/2 !!
         do i=1,nbasis
           do j=1,nbasis
             ss(i,j)=s(i,j)
           enddo
         enddo
-      endif
-
-      call diagonalize(nbasis,nbasis,ss,x,0)
-      do i=1,nbasis
-        do j=1,nbasis
-          s12(i,j)=0.0d0
-          do k=1,nbasis
-            s12(i,j)=s12(i,j)+x(i,k)*dsqrt(ss(k,k))*x(j,k)
-          enddo
-        enddo
-      enddo
-
-      if(idav.eq.1) then
+        call diagonalize(nbasis,nbasis,ss,x,0)
         do i=1,nbasis
           do j=1,nbasis
-            ss(i,j)=0.0d0
+            s12(i,j)=0.0d0
             do k=1,nbasis
-              ss(i,j)=ss(i,j)+sp12(i,k)*s12(k,j)
+              s12(i,j)=s12(i,j)+x(i,k)*dsqrt(ss(k,k))*x(j,k)
             enddo
           enddo
         enddo
-      else
         do i=1,nbasis
           do j=1,nbasis
             ss(i,j)=s12(i,j)
@@ -157,7 +93,111 @@
           enddo
         enddo
       enddo
-      deallocate(ss,s12,sm12,sp12,x)
+      deallocate(ss,s12,x)
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: davidson_lowdin                                           !!
+!! purpose: Davidson-Lowdin orthogonalization T = S_at^-1/2 S'^-1/2:     !!
+!!   each atom's basis functions are orthonormalized first (S_at, the    !!
+!!   atom-block-diagonal overlap), then a symmetric Lowdin step on        !!
+!!   S' = S_at^-1/2 S S_at^-1/2. Shared by tolow (populations) and        !!
+!!   ueffaolow_frag (EFOs).                                              !!
+!! arguments:                                                            !!
+!!   n  (in)  -- number of basis functions                               !!
+!!   tp (out) -- S_at^1/2 S'^1/2 = T^-T: tp^T P tp is P in the            !!
+!!               orthogonal basis                                        !!
+!!   tm (out) -- T = S_at^-1/2 S'^-1/2: orthogonal-basis to AO            !!
+!!               coefficients                                            !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine davidson_lowdin(n,tp,tm)
+      use basis_set, only: s,ihold,natoms
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      integer, intent(in) :: n
+      dimension tp(n,n),tm(n,n)
+      allocatable ss(:,:),x(:,:),sm12(:,:),sp12(:,:),s12(:,:),s12m(:,:)
+
+      allocate(ss(n,n),x(n,n),sm12(n,n),sp12(n,n),s12(n,n),s12m(n,n))
+
+!! S_at, and its S^-1/2 (sm12) and S^1/2 (sp12) !!
+      do i=1,n
+        do j=1,n
+          ss(i,j)=0.0d0
+        enddo
+      enddo
+      do i=1,natoms
+        do mu=1,n
+          if(ihold(mu).eq.i) then
+            do nu=1,n
+              if(ihold(nu).eq.i) ss(mu,nu)=s(mu,nu)
+            enddo
+          endif
+        enddo
+      enddo
+      call diagonalize(n,n,ss,x,0)
+      do i=1,n
+        do j=1,n
+          sm12(i,j)=0.0d0
+          sp12(i,j)=0.0d0
+          do k=1,n
+            sm12(i,j)=sm12(i,j)+x(i,k)*x(j,k)/dsqrt(ss(k,k))
+            sp12(i,j)=sp12(i,j)+x(i,k)*x(j,k)*dsqrt(ss(k,k))
+          enddo
+        enddo
+      enddo
+
+!! S' = sm12^T S sm12, and its S'^1/2 (s12) and S'^-1/2 (s12m) !!
+      do i=1,n
+        do j=1,n
+          ss(i,j)=0.0d0
+          do k=1,n
+            ss(i,j)=ss(i,j)+sm12(k,i)*s(k,j)
+          enddo
+        enddo
+      enddo
+      do i=1,n
+        do j=1,n
+          s12(i,j)=0.0d0
+          do k=1,n
+            s12(i,j)=s12(i,j)+ss(i,k)*sm12(k,j)
+          enddo
+        enddo
+      enddo
+      do i=1,n
+        do j=1,n
+          ss(i,j)=s12(i,j)
+        enddo
+      enddo
+      call diagonalize(n,n,ss,x,0)
+      do i=1,n
+        do j=1,n
+          s12(i,j)=0.0d0
+          s12m(i,j)=0.0d0
+          do k=1,n
+            s12(i,j)=s12(i,j)+x(i,k)*dsqrt(ss(k,k))*x(j,k)
+            s12m(i,j)=s12m(i,j)+x(i,k)*x(j,k)/dsqrt(ss(k,k))
+          enddo
+        enddo
+      enddo
+
+!! tp = sp12 S'^1/2, tm = sm12 S'^-1/2 !!
+      do i=1,n
+        do j=1,n
+          tp(i,j)=0.0d0
+          tm(i,j)=0.0d0
+          do k=1,n
+            tp(i,j)=tp(i,j)+sp12(i,k)*s12(k,j)
+            tm(i,j)=tm(i,j)+sm12(i,k)*s12m(k,j)
+          enddo
+        enddo
+      enddo
+
+      deallocate(ss,x,sm12,sp12,s12,s12m)
 
       end
 
