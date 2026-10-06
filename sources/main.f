@@ -242,6 +242,13 @@ c      -------------------------------------------------------------------------
           stop ' OSLO cannot be performed for multireference wavefunctions'
         end if
       end if
+!! the RDMs are sized by the CASSCF/CI data of the .fchk: with a single  !!
+!! determinant they would be read as empty                              !!
+      if(icorr.ne.0.and.iposthf.eq.0) then
+        write(*,'(2x,a)') 'DM 1 / DM 2 read the RDMs of a correlated '//
+     +    'wavefunction: the .fchk must be a CASSCF, FCI or CI one'
+        stop ' DM needs a correlated-wavefunction .fchk'
+      end if
       if(iqtaim.eq.1) stop'This version can not do QTAIM'
 
       if (ipca.eq.1.and.iqtaim.ne.1) iopop=1

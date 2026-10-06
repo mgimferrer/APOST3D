@@ -150,6 +150,10 @@ with `EFF_THRESH` (in thousandths, default 1) and leaves too few orbitals
 to place every electron, or more than the program can pool. Remove the
 keyword or bring it back towards the default.
 
+**`STOP DM needs a correlated-wavefunction .fchk`**
+`DM 1`/`DM 2` are set with an HF or KS-DFT `.fchk`. The RDM files go with
+the `.fchk` of the correlated calculation (CASSCF, FCI, CI) they come from.
+
 **`STOP OSLO cannot be performed for multireference wavefunctions`**
 OSLO needs a single determinant (HF or KS-DFT). For correlated
 wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
