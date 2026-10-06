@@ -37,7 +37,7 @@ Gaussian version:
 
 ```bash
 $APOST3D_PATH/utils/get_energy_g16 mol.log >> mol.fchk    # Gaussian 16
-$APOST3D_PATH/utils/get_energy mol.log >> mol.fchk        # Gaussian 09
+$APOST3D_PATH/utils/get_energy mol.log >> mol.fchk        # Gaussian 09 (to be removed)
 ```
 
 **For NAO-BASIS**, the transformation to natural atomic orbitals comes
@@ -61,8 +61,8 @@ Ask Q-Chem for the formatted checkpoint file with `GUI = 2` in the
 `utils/apost3d.py` writes the `.fchk` file from a pySCF calculation,
 including the reference energies needed by ENPART, and for CASSCF also the
 1- and 2-RDM files. It works with pySCF up to version 2.7
-(`pip install "pyscf<2.8"`); newer versions are not supported yet. Make it
-importable:
+(`pip install "pyscf<2.8"`); newer versions are not supported yet.
+Pseudopotentials (`ecp=` in `gto.M`) are supported. Make it importable:
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:$APOST3D_PATH/utils

@@ -75,7 +75,7 @@
 !! IN CASE OF HAVING PSEUDOPOTENTIAL !!
       call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
-        write(*,*) " ADDING ECP ATOMIC ENERGIES TO E-N TERMS "
+        write(*,'(2x,a)') 'ECP atomic energies added to the E-N terms'
         do ii=1,nat
           epa(ii,ii)=eecp(ii)
         end do 

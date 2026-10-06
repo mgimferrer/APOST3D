@@ -168,6 +168,16 @@ program, not a full development history — see `git log` for that.
   outside 1–500, now stops the run. In `# GRID` it used to give wrong
   ENPART numbers, hidden by the zero-error interpolation; on the command
   line it was silently rounded down.
+- **ENPART with pseudopotentials** — no longer stops with `ECP Matrix not
+  found`. `.fchk` files written from pySCF with `utils/apost3d.py` now
+  carry the ECP matrix, and their reference electron-nuclear energy
+  includes the ECP energy: it used to be counted in the electron-electron
+  energy, which made the zero-error strategy distort the ENPART terms.
+- **`get_energy_g16`/`get_energy`** — an incomplete Gaussian output file
+  (calculation not ended normally) or one without the lines they need now
+  gives an error message and adds nothing to the `.fchk` file; they used
+  to crash or append wrong energies. `get_energy` (Gaussian 09) will be
+  removed in a future version.
 
 ### Others
 

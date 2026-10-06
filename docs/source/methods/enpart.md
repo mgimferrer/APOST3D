@@ -86,6 +86,11 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
   `get_energy` for Gaussian 09); `.fchk` files written from pySCF with
   `utils/apost3d.py` already contain them. See
   [Preparing the wavefunction](../guide/wavefunctions.md#gaussian).
+- **Pseudopotentials** (ECPs) are supported. The reference
+  electron-nuclear energy then includes the ECP energy, and the ECP
+  matrix appended to the `.fchk` file (by the same utilities) is split
+  among the atoms, Mulliken-like, and added to the one-atom
+  electron-nuclear terms.
 - Only the **electronic energy** is decomposed: wavefunctions from
   calculations with an empirical dispersion correction (e.g. Grimme's
   GD3) cannot be decomposed directly.

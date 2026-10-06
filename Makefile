@@ -65,8 +65,8 @@ SFLAGS    = -ffixed-line-length-132 -fallow-argument-mismatch
 
 ## FULL FLAG SET
 FFLAGS    = $(OPTFLAGS) $(DBGFLAGS) $(OMPFLAGS) $(SFLAGS)
-# Utilities are serial and get no -fopenmp: with it gfortran puts local
-# arrays on the stack, and get_energy's 3000x3000 matrices overflow it.
+# Utilities are serial and get no -fopenmp (with it gfortran puts local
+# arrays on the stack, which large fixed-size arrays can overflow).
 UTIL_FFLAGS = $(OPTFLAGS) $(DBGFLAGS) $(SFLAGS)
 
 ## LIBXC (xc_f03_* Fortran interface) — layered detection, same pattern as
