@@ -157,10 +157,7 @@ occupations can slightly exceed 1.
 - Cube files of selected EFOs, with `CUBE` and a `# CUBE` block (see
   [Visualizing orbitals](../guide/visualization.md)).
 - `EFFAO`, `UEFFAO` and `EFFAO-U` on their own write no `.fchk` file of the
-  orbitals: that is written by `EOS` (real-space schemes) and `GEOS`.
-- With `LOWDIN`, `LOWDIN-DAVIDSON` or `NAO-BASIS` and `UEFFAO` or `EOS`,
-  `efo_occ.dat` and `efo_coeff.dat` hold the occupations and coefficients
-  as text (see [Output files](../guide/output.md#other-files)).
+  orbitals: that is written by `EOS` and `GEOS`.
 
 ## Checking the result
 

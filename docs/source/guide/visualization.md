@@ -5,7 +5,7 @@ OSLOs) can be looked at in two ways:
 
 | | Orbital `.fchk` files | Cube files |
 |---|---|---|
-| Written by | `OSLO`, `GEOS`, and `EOS` with a real-space scheme, always | `EFFAO`, `UEFFAO`, `EFFAO-U`, `EOS`, `GEOS`, with `CUBE` in `# METHOD` and a [`# CUBE` block](../input/cube.md) |
+| Written by | `OSLO`, `GEOS` and `EOS`, always | `EFFAO`, `UEFFAO`, `EFFAO-U`, `EOS`, `GEOS`, with `CUBE` in `# METHOD` and a [`# CUBE` block](../input/cube.md) |
 | Content | All orbitals of all fragments, in one file | One file per selected orbital, values on a grid |
 | View with | Any program that reads `.fchk` files (GaussView, Avogadro, IQmol, Jmol, Multiwfn, ...) | Any program that reads cube files (VMD, Avogadro, VESTA, Chimera, ...) |
 
@@ -27,7 +27,7 @@ more features, such as reading the APOST-3D output itself, will come soon.
 |---|---|---|
 | `<jobname>-OSLOs.fchk` | `OSLO` | The final (orthogonalized) OSLOs |
 | `<jobname>-OSLOs-preortho.fchk` | `OSLO` with `PRINT NON-ORTHO` | The OSLOs before orthogonalization |
-| `<jobname>-EOS-EFOs.fchk` | `EOS` with a real-space scheme | Effective fragment orbitals: alpha in the Alpha set, beta in the Beta set (only alpha for closed shells) |
+| `<jobname>-EOS-EFOs.fchk` | `EOS` | Effective fragment orbitals: alpha in the Alpha set, beta in the Beta set (only alpha for closed shells) |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired orbitals in the Alpha set, unpaired ones in the Beta set (see [GEOS](../methods/geos.md#orbitals-in-the-fchk-file)) |
 
 Each file is a copy of the input `.fchk` whose molecular orbitals are
@@ -42,7 +42,10 @@ unchanged. In the EFO files:
 - the densities in the file are the original ones, not built from the
   EFOs.
 
-**How faithful the EFOs in the file are.** An effective fragment orbital
+**How faithful the EFOs in the file are.** With a Hilbert-space scheme
+(`MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`, `NAO-BASIS`) the EFOs are
+combinations of basis functions and are written exactly. With a
+real-space scheme, an effective fragment orbital
 is cut to its fragment by the fragment's weight function, and that shape
 can't be written exactly in terms of the basis functions, which is all a
 `.fchk` file can hold. The file contains its best basis-set

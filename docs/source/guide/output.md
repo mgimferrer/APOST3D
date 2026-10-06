@@ -63,16 +63,12 @@ Written into the working directory, depending on the keywords:
 | File | Written by | Contents |
 |---|---|---|
 | `<jobname>-OSLOs.fchk`, `<jobname>-OSLOs-preortho.fchk` | `OSLO` | OSLOs as orbitals ([Visualizing orbitals](visualization.md)) |
-| `<jobname>-EOS-EFOs.fchk` | `EOS`, real-space schemes | Effective fragment orbitals as orbitals |
+| `<jobname>-EOS-EFOs.fchk` | `EOS` | Effective fragment orbitals as orbitals |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired and unpaired effective fragment orbitals |
 | `<jobname>_<scheme>..._<i>.cube` | `CUBE` | One cube file per selected effective orbital |
-| `efo_occ.dat`, `efo_coeff.dat` | `EOS`/`UEFFAO` with `LOWDIN`, `LOWDIN-DAVIDSON` or `NAO-BASIS` | Effective orbital occupations and coefficients, as text |
 | `<jobname><ext>.files`, `<jobname><ext>_<El><n>.int` | `DOINT` | Atomic overlap matrices in the MO basis, one `.int` file per atom, and the list of files |
 
 In the `DOINT` file names, `<ext>` is `fuz` (TFVC and Becke), `hir`
 (Hirshfeld), `ihi` (iterative Hirshfeld), `mul` (Mulliken) or `low`
 (Löwdin, Löwdin-Davidson, NAO), and `<El><n>` is the element symbol and
 atom number: e.g. `waterfuz_O1.int`.
-
-`efo_occ.dat` and `efo_coeff.dat` don't carry the job name: a second run
-in the same folder overwrites them.
