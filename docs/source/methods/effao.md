@@ -58,10 +58,12 @@ the fragment of each EFO before it is cut by $w_F$. Gross occupations add
 up to the fragment's gross population, and over all fragments to the
 number of electrons.
 
-With a Hilbert-space definition (`MULLIKEN`, `LOWDIN`, `NAO-BASIS`, ...),
-the same construction uses the fragment's block of the density matrix in
-the chosen AO basis (Mayer's original formulation), and there is a single
-set of occupations.
+With a Hilbert-space definition (`MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`,
+`NAO-BASIS`), the same construction uses the fragment's block of the
+density matrix in the basis of that scheme (Mayer's original formulation):
+the original basis functions for `MULLIKEN`, the orthogonalized ones for
+the others, the same basis as their populations. There is a single set of
+occupations.
 
 Three variants differ in the density that is analyzed:
 

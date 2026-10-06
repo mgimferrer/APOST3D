@@ -1054,6 +1054,81 @@
       ]
     },
     {
+      "name": "NaBH3--UHF-DAVIDSON",
+      "description": "NaBH3 anion, UHF — Davidson-Löwdin atoms (LOWDIN-DAVIDSON): EFOs in the Davidson-Löwdin orthogonal basis and EOS, 2 fragments.",
+      "tags": [
+        "hf",
+        "uhf",
+        "lowdin",
+        "eos",
+        "effao",
+        "fragments",
+        "openshell"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "LOWDIN-DAVIDSON",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Na fragment Davidson-Lowdin population",
+          "section": "FRAGMENT ANALYSIS : Electron populations",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 11.567181,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Fragment 1 alpha EFO net occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 5.44972,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 2 alpha EFO net occupation",
+          "section": "EFFAOs FROM THE ALPHA DENSITY",
+          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 4.54913,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Fragment 1 beta EFO net occupation",
+          "section": "EFFAOs FROM THE BETA DENSITY",
+          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 6.11679,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Na fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "BH3 fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 81.713,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
       "name": "FeCN5NO3--UBLYP-t2",
       "description": "[Fe(CN)5NO]3− doublet, UKS BLYP — TFVC and unrestricted OSLO with LOWDIN as the # OSLO fragment population, 7 fragments.",
       "tags": [

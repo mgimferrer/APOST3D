@@ -251,6 +251,12 @@ c      -------------------------------------------------------------------------
       if(ieffao.eq.3.and.imulli.ne.0)
      +  stop 'GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)'
       if(ieffao.eq.3.and.idoat.eq.1) stop 'Cant do GEOS/EFFAO-U with DOATOMS'
+!! weighted Lowdin (LOWDIN-W) has no EFO construction of its own        !!
+      if(ieffao.ne.0.and.imulli.eq.5) then
+        write(*,'(2x,a)') 'EFFAO, UEFFAO and EOS are not available with '//
+     +    'LOWDIN-W'
+        stop ' EFFAO/EOS not available with LOWDIN-W'
+      end if
 !! OSLO integrates its spread matrix on the # METHOD grid; the atoms that !!
 !! assign OSLOs to fragments can still be Hilbert-space, set in # OSLO    !!
       if(ioslo.eq.1.and.imulli.ne.0) then
@@ -704,8 +710,8 @@ c          end if
 !! EFFAO part                                                          !!
 !! ieffao: 0 nothing, 1 eff-AOs, 2 spin-resolved eff-AOs (a must for   !!
 !!   EOS), 3 paired/unpaired eff-AOs                                   !!
-!! imulli: 1 Mulliken, 2 Lowdin, 3 Lowdin-Davidson (not implemented),   !!
-!!   4 NAO                                                              !!
+!! imulli: 1 Mulliken, 2 Lowdin, 3 Lowdin-Davidson, 4 NAO, 5 weighted   !!
+!!   Lowdin (no EFOs, stopped at the input checks)                       !!
       if (ieffao.ne.0) then
 
 !! accumulate eos_analysis time separately (see print_timer calls below). !!

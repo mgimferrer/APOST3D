@@ -647,6 +647,9 @@
             sm(i,j)=unao(i,j)
           end do
         end do
+      else if(imulli.eq.3) then
+!! Davidson-Lowdin orthogonal basis, same as its populations (tolow) !!
+        call davidson_lowdin(igr,splus,sm)
       else
         splus=s12p
         sm=s12m
@@ -656,6 +659,8 @@
 !! banner printed only once, on the alpha (or closed-shell) pass. !!
         if(imulli.eq.4) then
           call print_box('DOING EFFAO NAO FORMULATION')
+        else if(imulli.eq.3) then
+          call print_box('DOING EFFAO LOWDIN-DAVIDSON FORMULATION')
         else
           call print_box('DOING EFFAO LOWDIN FORMULATION')
         end if
