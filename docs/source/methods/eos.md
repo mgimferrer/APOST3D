@@ -161,12 +161,9 @@ and a neutral NO still holds, but with significant covalency.
 
 ## Files written
 
-- `<jobname>-EOS-EFOs.fchk` (real-space schemes): the EFOs of all
-  fragments as orbitals, for any viewer that reads `.fchk` files; see
+- `<jobname>-EOS-EFOs.fchk`: the EFOs of all fragments as orbitals, for
+  any viewer that reads `.fchk` files; see
   [Visualizing orbitals](../guide/visualization.md).
-- `efo_occ.dat`, `efo_coeff.dat` (`LOWDIN`, `LOWDIN-DAVIDSON`,
-  `NAO-BASIS`): occupations and coefficients as text (see
-  [Output files](../guide/output.md#other-files)).
 - Cube files of selected EFOs with `CUBE`.
 
 ## Checking the result

@@ -260,7 +260,7 @@
 !!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
 !!   Also pools/sorts each EFO's coefficient vector the same way,        !!
 !!   truncated to igr and zero-padded, feeding the shared .fchk EFO      !!
-!!   splicer (print.f's rwf/uwf_effao_orbprint) for the real-space path. !!
+!!   splicer (print.f's rwf/uwf_effao_orbprint), for every scheme.       !!
 !! arguments:                                                            !!
 !!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
 !!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
@@ -280,7 +280,6 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
-      common /iops/iopt(200)
 
       character(len=20) :: ctype
       dimension iorbslot(nmax,2)
@@ -288,11 +287,6 @@
       dimension nlo(maxfrag),ncount(maxfrag)
       allocatable :: occup2(:)
 
-!! iopt(5): population-scheme selector (0 real-space/AIM, 1 Mulliken,   !!
-!! >1 Lowdin) -- coefficient pooling/writing below only makes sense for !!
-!! the real-space path, since p0coef is only ever filled by             !!
-!! ueffao3d_frag, not ueffaomull_frag/ueffaolow_frag.                   !!
-      imulli=iopt(5)
 
       if(idobeta.eq.0.and.icase.eq.2) then
         call print_box('SKIPPING EFFAOs FOR BETA ELECTRONS')
@@ -309,7 +303,7 @@
           elec(i)=ZERO
         end do
         lorb(2)=0
-        if(imulli.eq.0) p0poolcoef(:,:,2)=ZERO
+        p0poolcoef(:,:,2)=ZERO
 !! no beta occupied/unoccupied boundary: the overall R is the alpha one !!
         confi=confi0
         go to 99
@@ -361,21 +355,18 @@
         end do
       end do
 
-!! pooled+sorted coefficient columns for the real-space path only,      !!
-!! truncated to igr and zero-padded -- feeds the shared .fchk EFO       !!
-!! writer (print.f), same convention as GEOS's ueos_analysis. Left      !!
-!! serial: at most igr*igr copies, once per icase, negligible next to   !!
-!! the O(igr^2)/O(igr^3) diagonalization work already done above.       !!
-      if(imulli.eq.0) then
-        p0poolcoef(:,:,icase)=ZERO
-        do jj=1,MIN(iorb,igr)
-          ii2=iorbat(jj,icase)
-          kk2=iorbslot(jj,icase)
-          do mu=1,igr
-            p0poolcoef(mu,jj,icase)=p0coef(mu,kk2,ii2)
-          end do
+!! pooled+sorted coefficient columns, truncated to igr and zero-padded  !!
+!! -- feeds the shared .fchk EFO writer (print.f), same convention as   !!
+!! GEOS's ueos_analysis. Left serial: at most igr*igr copies, once per  !!
+!! icase, negligible next to the diagonalizations done above.           !!
+      p0poolcoef(:,:,icase)=ZERO
+      do jj=1,MIN(iorb,igr)
+        ii2=iorbat(jj,icase)
+        kk2=iorbslot(jj,icase)
+        do mu=1,igr
+          p0poolcoef(mu,jj,icase)=p0coef(mu,kk2,ii2)
         end do
-      end if
+      end do
 
 !! nnn is the LO EFO index in the pooled, sorted list (alpha/beta          !!
 !! electron count); k/kk scan outward from it for EFOs within thres of     !!
@@ -541,7 +532,7 @@
 
 !! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
 !! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!
-!! own .fchk output. Real-space path only (see imulli guard above). A   !!
+!! own .fchk output, for every population scheme. A                    !!
 !! restricted wavefunction (kop=0) has no Beta blocks to splice into,   !!
 !! but its beta channel isn't always empty -- e.g. a restricted-orbital !!
 !! open-shell CASSCF source (idobeta=1 despite kop=0, main.f's own      !!
@@ -552,17 +543,15 @@
 !! exist. rwfu_effao_orbprint inserts a synthetic Beta MO set next to   !!
 !! the real Alpha one when idobeta=1, same convention as GEOS's writer; !!
 !! otherwise fall back to the plain restricted, single-channel writer.  !!
-        if(imulli.eq.0) then
-          ctype="-EOS-EFOs"
-          if(kop.eq.0) then
-            if(idobeta.eq.1) then
-              call rwfu_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
-            else
-              call rwf_effao_orbprint(p0poolcoef(:,:,1),ctype)
-            end if
+        ctype="-EOS-EFOs"
+        if(kop.eq.0) then
+          if(idobeta.eq.1) then
+            call rwfu_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
           else
-            call uwf_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
+            call rwf_effao_orbprint(p0poolcoef(:,:,1),ctype)
           end if
+        else
+          call uwf_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
         end if
       end if
 
@@ -591,7 +580,7 @@
 
       use basis_set
       use ao_matrices
-      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef
       use nao_mod, only: unao,ssnao !! replaces common /nao/ -- see modules.f90 !!
 
       implicit real*8(A-H,O-Z)
@@ -604,21 +593,16 @@
 
       dimension iao_frag(nmax)
 
-      character*(25) nameout
-
       allocatable :: s0(:,:), sm(:,:), c0(:,:), splus(:,:), pp0(:,:)
-      allocatable :: efo(:,:),efo2(:)
 
       icube   = Iopt(13)
       ieffthr = Iopt(24)
       imulli  = Iopt(5)
 
-      iefo=0
       xminocc=REAL(ieffthr)/1000.0d0
 
       ALLOCATE(s0(igr,igr),sm(igr,igr),splus(igr,igr))
       ALLOCATE(c0(igr,igr),pp0(igr,igr))
-      ALLOCATE(efo(igr,igr),efo2(igr))
 
 !! AO-to-fragment map. !!
       iao_frag=0
@@ -727,17 +711,15 @@ c actual number of effaos
         write(*,*) " "
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
-!! shared p0/p0net/p0gro/ip0 arrays and into the local efo/efo2 buffers !!
-!! (written out to efo_*.dat below).                                    !!
+!! shared effao_mod arrays; the coefficients are already in the AO      !!
+!! basis, so p0coef (pooled for the .fchk) takes them as they are       !!
         do k=1,imaxo
-          iefo=iefo+1
           do mu=1,igr
             p0(mu,k)=c0(mu,k)
-            efo(mu,iefo)=c0(mu,k)
+            p0coef(mu,k,ifrag)=c0(mu,k)
           end do
           p0net(k,ifrag)=pp0(k,k)
           p0gro(k,ifrag)=pp0(k,k)
-          efo2(iefo)=pp0(k,k)
         end do
         ip0(ifrag)=imaxo
 
@@ -746,34 +728,6 @@ c actual number of effaos
 
       end do
 
-!! EFO occupations/coefficients written out in a Gaussian-.fchk-like    !!
-!! array format (MG: this file-writing logic deserves a proper rewrite, !!
-!! to-do -- e.g. icase.eq.0/closed-shell never opens or writes these).  !!
-      ival=iefo*igr
-      nameout='efo_occ.dat'
-      nameout=adjustl(nameout)
-      if(icase.eq.1) then
-        open(unit=44,file=nameout) 
-        write(44,'(A49,I12)') "Alpha Orbital Energies                     R   N=",iefo
-        write(44,'(5ES16.8)') (efo2(i),i=1,iefo)
-c
-        nameout='efo_coeff.dat'
-        nameout=adjustl(nameout)
-        open(unit=45,file=nameout) 
-        write(45,'(A49,I12)') "Alpha MO coefficients                      R   N=",ival
-        write(45,'(5ES16.8)') ((efo(i,j),i=1,igr),j=1,iefo)
-      else
-        write(44,'(A49,I12)') "Beta Orbital Energies                      R   N=",iefo
-        write(44,'(5ES16.8)') (efo2(i),i=1,iefo)
-        write(45,'(A49,I12)') "Beta MO coefficients                       R   N=",ival
-        write(45,'(5ES16.8)') ((efo(i,j),i=1,igr),j=1,iefo)
-      end if
-      if(icase.eq.2) then
-        close(44)
-        close(45)
-      end if
-
-      DEALLOCATE(efo,efo2)
       DEALLOCATE(s0,sm,c0,splus,pp0)
 
 60    FORMAT("  OCCUP.",8f9.4)
@@ -798,7 +752,7 @@ c
 
       use basis_set
       use ao_matrices
-      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef
 
       implicit real*8(A-H,O-Z)
 
@@ -902,10 +856,12 @@ c
         write(*,*) " "
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
-!! shared p0/p0net/p0gro/ip0 arrays.                                     !!
+!! shared effao_mod arrays; the coefficients are already in the AO      !!
+!! basis, so p0coef (pooled for the .fchk) takes them as they are       !!
         do k=1,imaxo
           do mu=1,igr
             p0(mu,k)=c0(mu,k)
+            p0coef(mu,k,ifrag)=c0(mu,k)
           end do
           p0net(k,ifrag)=pp0(k,k)
           p0gro(k,ifrag)=pp0(k,k)

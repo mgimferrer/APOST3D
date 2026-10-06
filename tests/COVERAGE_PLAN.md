@@ -108,10 +108,6 @@ combination is chemically sensible, rather than generating a new one.
 - Hilbert-space compatibility of `EDAIQA`/`POLAR`/`SCATT-FACT`/`TOPOLOGY`
   hasn't been traced: look for a stop or disable in `main.f` before writing
   such a test.
-- `ueffaolow_frag` writes `efo_occ.dat`/`efo_coeff.dat` only for alpha/beta
-  runs. With plain `EFFAO` + `LOWDIN` (total density) it writes to file
-  units that were never opened, which probably leaves stray `fort.44`/
-  `fort.45` files. Worth checking when that path gets a test.
 
 ## When a new test is added
 

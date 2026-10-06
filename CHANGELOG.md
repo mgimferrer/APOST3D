@@ -21,9 +21,10 @@ program, not a full development history — see `git log` for that.
   fully supports unrestricted (UHF/UKS) wavefunctions, not just
   restricted ones.
 - **Orbitals exportable to `.fchk`** — OSLO orbitals, and now also the
-  effective fragment orbitals (EFOs) from EOS and GEOS, can be written out
-  to a standard `.fchk` file, so they can be viewed directly in any
-  common orbital-viewer instead of only as cube files.
+  effective fragment orbitals (EFOs) from EOS (with any population
+  scheme) and GEOS, are written out to a standard `.fchk` file, so they
+  can be viewed directly in any common orbital-viewer instead of only as
+  cube files.
 - **New cube-file options** — `SPACING`/`RADIUS_SCALE` keywords under
   `# CUBE` for finer control over the generated grid, backed by one
   unified, faster cube-generation routine.
@@ -123,6 +124,10 @@ program, not a full development history — see `git log` for that.
   Davidson-Löwdin basis, as its populations are; they silently used plain
   Löwdin, so oxidation states and R(%) were Löwdin ones. `EFFAO`/`EOS`
   with the experimental `LOWDIN-W` now stop.
+- **`efo_occ.dat`/`efo_coeff.dat` removed** — the EFOs of Löwdin,
+  Davidson-Löwdin and NAO EOS now go to `<jobname>-EOS-EFOs.fchk` like any
+  other scheme (Mulliken included); plain `EFFAO` with `LOWDIN` no longer
+  leaves stray `fort.44`/`fort.45` files.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid (in `# GRID` or on the command line), or a radial one
   outside 1–500, now stops the run. In `# GRID` it used to give wrong
