@@ -283,7 +283,7 @@
         enddo
         write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
      +    'found'
-      else if(icas.ne.1.or.icisd.ne.1) then
+      else if(icas.ne.1.and.icisd.ne.1) then
         write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
      +    'not found, reconstructed from MOs'
       end if
@@ -341,9 +341,8 @@
 !! formatted, inactive block assumed diagonally doubly occupied) --       !!
 !! then reconstructs the natural orbitals (occ_no/c_no) and overwrites    !!
 !! the AO-basis P/Pa/Pb/Ps density matrices from it, replacing whatever   !!
-!! the .fchk itself provided. No active test exercises this path (# DM    !!
-!! PYSCF/ORCA); code preserved as-is during the 2026-08-20 cleanup pass,  !!
-!! only comments/printing/indentation touched.                            !!
+!! the .fchk itself provided. The test LiH-35-CAS22 covers the pySCF      !!
+!! path; the ORCA path has no test.                                       !!
 !! arguments:                                                             !!
 !!   dm1 (out) -- spin-orbital 1-RDM, (nspinorb,nspinorb)                 !!
 !! author:                                                                !!
@@ -502,9 +501,7 @@
 !! PySCF's write_dm12 (unit 12, formatted *.dm2), then reconstructs the  !!
 !! core and core-active blocks analytically from the spin-resolved 1-RDM !!
 !! (dm1, already read by dm1input) assuming a closed-shell inactive      !!
-!! space. No active test exercises this path (# DM PYSCF); code          !!
-!! preserved as-is during the 2026-08-20 cleanup pass, only comments/    !!
-!! printing/indentation touched.                                        !!
+!! space. Covered by the test LiH-35-CAS22.                              !!
 !! arguments:                                                             !!
 !!   dm1 (in)  -- spin-orbital 1-RDM, (nspinorb,nspinorb)                 !!
 !!   dm2 (out) -- spinless active+core 2-RDM, (norb,norb,norb,norb)       !!
