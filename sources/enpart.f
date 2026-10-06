@@ -103,8 +103,8 @@
         write(*,*) "Electron-nuclear and nuclear repulsion terms are affected by E. field"
 !! parallel over icenter: each iteration writes only its own dip(icenter,:)/ !!
 !! ect(icenter,icenter); x/y/z/zztop/xtot are per-iteration scratch, not     !!
-!! running totals, so no reduction is needed. untested -- no # GRID/field    !!
-!! test exists in the suite.                                                 !!
+!! running totals, so no reduction is needed. Untested: no test uses an      !!
+!! external electric field.                                                  !!
 !$OMP PARALLEL DO PRIVATE(icenter,x,y,z,zztop,ifut,distx,disty,distz,xtot)
         do icenter=1,nat
           x=ZERO
@@ -1096,8 +1096,8 @@
         write(*,*) "Electron-nuclear and nuclear repulsion terms are affected by E. field"
 !! parallel over icenter: each iteration writes only its own dip(icenter,:)/ !!
 !! ect(icenter,icenter); x/y/z/zztop/xtot are per-iteration scratch, not     !!
-!! running totals, so no reduction is needed. untested -- no # GRID/field    !!
-!! test exists in the suite.                                                 !!
+!! running totals, so no reduction is needed. Untested: no test uses an      !!
+!! external electric field.                                                  !!
 !$OMP PARALLEL DO PRIVATE(icenter,x,y,z,zztop,ifut,distx,disty,distz,xtot)
         do icenter=1,nat
           x=ZERO

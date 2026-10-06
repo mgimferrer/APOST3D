@@ -47,9 +47,10 @@
           rindex(iat,ibt)=x
           rindex(ibt,iat)=x
         enddo
-!! diag(iat) is captured before the Ps correction below folds into      !!
-!! rindex -- TOTAL VALENCES stays P-only for open-shell while the bond   !!
-!! order matrix gets the correction. Possibly inconsistent, not changed. !!
+!! diag(iat) is taken before the Ps correction below: TOTAL VALENCES     !!
+!! follow Mayer's open-shell definition (from P only), while the bond    !!
+!! orders get the Ps term, so the one-center spin part shows up as the   !!
+!! free valence (total valence minus the sum of bond orders).            !!
         diag(iat)=rindex(iat,iat)
       enddo
 
@@ -214,8 +215,10 @@
 !!   determinant density (the SPIN keyword's default path -- spincorr    !!
 !!   in corr.f is the sibling correlated-wavefunction, icas/icisd        !!
 !!   branch). Prints effectively unpaired electrons (u_A), the a=3/4     !!
-!!   <S^2> decomposition (I. Mayer, P. Salvador), and its Davidson-      !!
-!!   Lowdin-basis twin.                                                  !!
+!!   <S^2> decomposition (I. Mayer, P. Salvador), and the "DAVIDSON      !!
+!!   SPIN DEC." matrix. That one is meant to be the Clark-Davidson       !!
+!!   decomposition (Ramos-Cordoba et al., JCTC 2012, 8, 1270), but its   !!
+!!   formula does not match that paper's yet and is under review.        !!
 !! arguments:                                                            !!
 !!   sat (in) -- per-atom AO overlap matrix (numint_sat/tomull/tolow)    !!
 !! author:                                                                !!
@@ -320,9 +323,10 @@
         enddo
       enddo
 
-!! Davidson-Lowdin-basis twin -- rindex is safely reused here, xlsa      !!
-!! already holds the a=3/4 result saved above. P*S^A products first,    !!
-!! then the Ps correction (open-shell only).                            !!
+!! "DAVIDSON SPIN DEC." matrix (meant as Clark-Davidson, formula under   !!
+!! review, see the header) -- rindex is safely reused here, xlsa already !!
+!! holds the a=3/4 result saved above. P*S^A products first, then the Ps !!
+!! correction (open-shell only).                                         !!
       do iat=1,natoms
         do mu=1,nbasis
           do nu=1,nbasis
