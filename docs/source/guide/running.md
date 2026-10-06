@@ -9,7 +9,8 @@ $APOST3D_PATH/apost3d jobname > jobname.apost 2>&1
 ```
 
 - **The job name has no extension**: `apost3d water`, not
-  `apost3d water.inp`. The program adds `.fchk` and `.inp` itself.
+  `apost3d water.inp` (the run stops with a message). The program adds
+  `.fchk` and `.inp` itself.
 - `ulimit -s unlimited` lifts the limit on the stack memory of the shell;
   without it, larger systems crash with a segmentation fault.
 - `OMP_NUM_THREADS` sets the number of CPU cores used. Without it, all

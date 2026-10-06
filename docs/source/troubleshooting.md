@@ -45,15 +45,21 @@ CPU than the one running it. Rebuild with the default:
 **`STOP The required input filename is missing`**
 The job name is missing: `apost3d jobname`.
 
-**`# METHOD section not found`, followed by `Fortran runtime error: End of file`**
-The files `jobname.inp` and `jobname.fchk` were not found (a misspelled
-job name, a different folder, or an extension given: use `apost3d
-water`, not `apost3d water.inp`). The program then leaves empty files
-with those names behind; delete them.
+**`STOP Input file not found`**, **`STOP Wavefunction file not found`**
+`jobname.inp` or `jobname.fchk` (named in the line above) is not in the
+folder: a misspelled job name or a different folder.
 
-**`# <BLOCK> section not found`, followed by `Fortran runtime error: End of file`**
-A keyword needs a block that is missing (e.g. `OSLO` without `# OSLO`,
-`ENPART` without `# ENPART`), or a block is not closed with `#`.
+**`STOP Job name given with its extension`**
+Give the job name alone: `apost3d water`, not `apost3d water.inp`.
+
+**`STOP # METHOD block not found`**, **`STOP # ENPART block not found`**,
+**`STOP # OSLO block not found`**
+The input has no `# METHOD` block, or `ENPART`/`OSLO` is requested
+without its block (`# OSLO` may be empty).
+
+**`STOP # DM file not found`**
+A file listed in the [`# DM` block](input/dm.md) (named in the line
+above) is not in the folder.
 
 **Segmentation fault**
 Run `ulimit -s unlimited` before the program (in job scripts too).
@@ -71,6 +77,10 @@ listed). Usually it is typed in lower case (keywords are
 case-sensitive), placed after the closing `#` of its block, or placed
 after a line containing `#` (such as a comment), which ends the block.
 See the [input rules](input/index.md#rules).
+
+**`STOP Wrong keyword value in the input`**
+The line above names the keyword, its block and the line: the value
+can't be read, e.g. a real number for an integer keyword.
 
 **`Required section not found in input file`**
 `DOFRAGS` is set but there is no `# FRAGMENTS` block.
