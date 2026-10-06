@@ -14,7 +14,11 @@ make -C $APOST3D_PATH help        # all targets and options
 `make` takes the same `ARCH`, `OPENBLAS_DIR` and `LIBXC_DIR` settings as
 the script (the number of compile jobs is set with `-j`), but does not check the compiler version, build
 libxc, or sign the programs on macOS (run `bash compile_libxc.sh` once
-first if libxc is not installed).
+first if libxc is not installed). After `make_compile.sh`, `make` uses the
+libxc the script checked (recorded in `objects/libxc.mk`, which
+`make clean` removes); `LIBXC_DIR` overrides it. `compile_libxc.sh` builds
+libxc with the `gfortran` on the `PATH`, the one the `Makefile` uses, and
+the `gcc` of the same version when there is one (`gcc-16`, ...).
 
 ## Layout
 

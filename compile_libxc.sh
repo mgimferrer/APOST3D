@@ -31,6 +31,10 @@ LIBXC_VERSION="7.1.2"
 LIBXC_URL="https://gitlab.com/libxc/libxc/-/archive/${LIBXC_VERSION}/libxc-${LIBXC_VERSION}.tar.gz"
 LIBXC_SHA256="c517ce61820ea8114664a4280b6a6bc74a4f22f1fd1ea4ddecd6df0caeeae4f4"
 LIBXC_CMAKE_MIN="3.21"
+# Oldest libxc an existing installation may have to be used instead of
+# building the pinned one (make_compile.sh checks it); newer ones are taken.
+# shellcheck disable=SC2034  # read by make_compile.sh
+LIBXC_MIN_VERSION="7.0.0"
 
 # APOST3D_PATH defaults to this script's directory, like make_compile.sh
 APOST3D_PATH="${APOST3D_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
@@ -38,36 +42,26 @@ APOST3D_PATH="${APOST3D_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 LIBXCDIR="${APOST3D_PATH}/libxc-${LIBXC_VERSION}"
 TARBALL="${APOST3D_PATH}/libxc-${LIBXC_VERSION}.tar.gz"
 
-# macOS's /usr/bin/gcc is AppleClang in disguise -- prefer Homebrew's
-# versioned binary (gcc-14 etc.) to avoid handing CMake the wrong compiler.
-find_compiler() {
-  local name="$1"
-  for v in 16 15 14 13 12 11 10; do
-    if command -v "${name}-${v}" &>/dev/null; then
-      echo "${name}-${v}"
-      return
-    fi
-  done
-  if command -v "${name}" &>/dev/null; then
-    echo "${name}"
-    return
-  fi
-  echo ""
-}
-
-CC_CMD=$(find_compiler gcc)
-FC_CMD=$(find_compiler gfortran)
-
-if [[ -z "$CC_CMD" ]]; then
-  echo "ERROR: gcc not found. Install with:"
-  echo "  macOS:  brew install gcc"
-  echo "  Ubuntu: sudo apt install gcc"
-  exit 1
-fi
-if [[ -z "$FC_CMD" ]]; then
+# Compilers: the plain gfortran on PATH, the one the Makefile uses (libxc's
+# Fortran modules must come from the same gfortran as APOST-3D). The C
+# compiler is the gcc of the same version when it exists under a versioned
+# name (Homebrew: gcc-16; macOS's own gcc is AppleClang), else plain gcc.
+if ! command -v gfortran &>/dev/null; then
   echo "ERROR: gfortran not found. Install with:"
   echo "  macOS:  brew install gcc"
   echo "  Ubuntu: sudo apt install gfortran"
+  exit 1
+fi
+FC_CMD=gfortran
+FC_MAJOR="$(gfortran -dumpversion | cut -d. -f1)"
+if command -v "gcc-${FC_MAJOR}" &>/dev/null; then
+  CC_CMD="gcc-${FC_MAJOR}"
+elif command -v gcc &>/dev/null; then
+  CC_CMD=gcc
+else
+  echo "ERROR: gcc not found. Install with:"
+  echo "  macOS:  brew install gcc"
+  echo "  Ubuntu: sudo apt install gcc"
   exit 1
 fi
 
@@ -95,6 +89,27 @@ if ! printf '%s\n%s\n' "$LIBXC_CMAKE_MIN" "$CMAKE_VERSION" | sort -C -V; then
   exit 1
 fi
 echo "Using cmake       : $(command -v cmake)  (${CMAKE_VERSION})"
+
+# The other tools, also before anything is downloaded.
+if ! command -v tar &>/dev/null; then
+  echo "ERROR: tar not found."
+  exit 1
+fi
+if command -v sha256sum &>/dev/null; then
+  SHA256_CMD="sha256sum"
+elif command -v shasum &>/dev/null; then
+  SHA256_CMD="shasum -a 256"
+else
+  echo "ERROR: neither sha256sum nor shasum found -- cannot verify the download."
+  exit 1
+fi
+if [[ ! -f "$TARBALL" ]] && ! command -v curl &>/dev/null; then
+  echo "ERROR: curl not found, needed to download libxc ${LIBXC_VERSION}."
+  echo "       Install it, or download the tarball elsewhere and place it at:"
+  echo "         $TARBALL"
+  echo "       (from $LIBXC_URL)"
+  exit 1
+fi
 echo ""
 
 # Fetch (or reuse a pre-placed tarball), then verify checksum.
@@ -119,15 +134,8 @@ else
 fi
 
 echo "Verifying SHA256 checksum..."
-ACTUAL_SHA256=""
-if command -v sha256sum &>/dev/null; then
-  ACTUAL_SHA256=$(sha256sum "$TARBALL" | awk '{print $1}')
-elif command -v shasum &>/dev/null; then
-  ACTUAL_SHA256=$(shasum -a 256 "$TARBALL" | awk '{print $1}')
-else
-  echo "ERROR: neither sha256sum nor shasum found — cannot verify checksum."
-  exit 1
-fi
+# shellcheck disable=SC2086  # SHA256_CMD may hold a command and its option
+ACTUAL_SHA256=$($SHA256_CMD "$TARBALL" | awk '{print $1}')
 
 if [[ "$ACTUAL_SHA256" != "$LIBXC_SHA256" ]]; then
   echo "ERROR: checksum mismatch for $TARBALL"

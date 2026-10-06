@@ -76,7 +76,8 @@ if [[ -z "$NTHREADS" ]]; then
 fi
 
 # ------------------------------------------------------------------------------
-# Checks
+# Checks, cheapest first: every prerequisite is checked before libxc, whose
+# build takes minutes, is started.
 # ------------------------------------------------------------------------------
 MAKEFILE="$APOST3D_PATH/Makefile"
 
@@ -86,64 +87,37 @@ if [[ ! -f "$MAKEFILE" ]]; then
   exit 1
 fi
 
-# Read from compile_libxc.sh (the one place it's pinned) rather than
-# repeated here, so a version bump only ever needs editing once.
-LIBXC_VERSION="$(grep -m1 '^LIBXC_VERSION=' "$APOST3D_PATH/compile_libxc.sh" | sed -E 's/^LIBXC_VERSION="([^"]+)"/\1/')"
-BUNDLED_LIBXC_A="$APOST3D_PATH/libxc-${LIBXC_VERSION}/lib/libxcf03.a"
-
-# ------------------------------------------------------------------------------
-# libxc preflight/auto-build: probe for an already-usable libxc first, same
-# layered order as the Makefile (LIBXC_DIR override, then pkg-config, then
-# Homebrew's keg-only prefix), and only fetch+build our own bundled copy if
-# none of those are found.
-# ------------------------------------------------------------------------------
-LIBXC_READY=0
-if [[ -n "${LIBXC_DIR:-}" ]]; then
-  echo "  libxc: using LIBXC_DIR override ($LIBXC_DIR)"
-  LIBXC_READY=1
-else
-  BREW_LIBXC_PREFIX="$(brew --prefix libxc 2>/dev/null || true)"
-  if [[ -n "$BREW_LIBXC_PREFIX" ]]; then
-    export PKG_CONFIG_PATH="$BREW_LIBXC_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
-  fi
-  if command -v pkg-config &>/dev/null && pkg-config --exists libxcf03 2>/dev/null; then
-    echo "  libxc: found via pkg-config ($(pkg-config --modversion libxcf03))"
-    LIBXC_READY=1
-  elif [[ -f "$BUNDLED_LIBXC_A" ]]; then
-    # gfortran .mod files aren't portable across compiler versions, and a
-    # file-existence check alone can't catch a stale bundled build (e.g.
-    # after an HPC `module load` swap) -- try actually reading the module,
-    # same "verify by using it" approach as the OpenBLAS link-test below,
-    # rather than deferring the failure to deep inside the real build with
-    # a confusing "different version of GNU Fortran" error.
-    LIBXC_MODTEST_DIR="$(mktemp -d)"
-    cat > "$LIBXC_MODTEST_DIR/t.f90" <<'EOF'
-program t
-  use xc_f03_lib_m
-end program t
-EOF
-    if gfortran "$LIBXC_MODTEST_DIR/t.f90" -I"$APOST3D_PATH/libxc-${LIBXC_VERSION}/include" \
-        -c -o "$LIBXC_MODTEST_DIR/t.o" &>/dev/null; then
-      echo "  libxc: using already-built bundled copy ($APOST3D_PATH/libxc-${LIBXC_VERSION})"
-      LIBXC_READY=1
-    else
-      echo "  libxc: bundled copy exists but its .mod files aren't readable by"
-      echo "         the current gfortran (likely built by a different version,"
-      echo "         e.g. after an HPC module swap) -- rebuilding."
-    fi
-    rm -rf "$LIBXC_MODTEST_DIR"
-  fi
+if ! command -v make &>/dev/null; then
+  echo "ERROR: make not found on PATH."
+  echo "       Install with:"
+  echo "         macOS:  xcode-select --install"
+  echo "         Ubuntu: sudo apt install make"
+  echo "         Fedora: sudo dnf install make"
+  exit 1
 fi
 
-if [[ "$LIBXC_READY" -eq 0 ]]; then
-  echo "  libxc: not found -- fetching and building the pinned ${LIBXC_VERSION} release"
-  echo ""
-  bash "$APOST3D_PATH/compile_libxc.sh"
-  echo ""
-  if [[ ! -f "$BUNDLED_LIBXC_A" ]]; then
-    echo "ERROR: compile_libxc.sh ran but $BUNDLED_LIBXC_A still doesn't exist."
-    exit 1
-  fi
+# ------------------------------------------------------------------------------
+# gfortran preflight: must exist and be >= 10 (required for
+# -fallow-argument-mismatch, used throughout the Makefile).
+# ------------------------------------------------------------------------------
+if ! command -v gfortran &>/dev/null; then
+  echo "ERROR: gfortran not found on PATH."
+  echo "       Install with:"
+  echo "         macOS:  brew install gcc"
+  echo "         Ubuntu: sudo apt install gfortran"
+  exit 1
+fi
+
+GFORTRAN_VERSION_FULL="$(gfortran --version | head -1)"
+GFORTRAN_VERSION_MAJOR="$(gfortran -dumpversion | cut -d. -f1)"
+
+if [[ ! "$GFORTRAN_VERSION_MAJOR" =~ ^[0-9]+$ ]] || (( GFORTRAN_VERSION_MAJOR < 10 )); then
+  echo "ERROR: gfortran >= 10 is required (found: $GFORTRAN_VERSION_FULL)."
+  echo "       -fallow-argument-mismatch was introduced in GCC 10."
+  echo "       Install a newer gfortran, e.g.:"
+  echo "         macOS:  brew install gcc"
+  echo "         Ubuntu: sudo apt install gfortran-12"
+  exit 1
 fi
 
 # ------------------------------------------------------------------------------
@@ -207,27 +181,159 @@ echo "  OpenBLAS found via: $OPENBLAS_METHOD"
 rm -rf "$OPENBLAS_TEST_DIR"
 
 # ------------------------------------------------------------------------------
-# gfortran preflight: must exist and be >= 10 (required for
-# -fallow-argument-mismatch, used throughout the Makefile).
+# libxc: use an existing installation if it passes the test below, else build
+# the pinned release (compile_libxc.sh). Candidates, in order:
+#   1. LIBXC_DIR set in the environment -> must pass, or the build stops.
+#   2. pkg-config (libxcf03; Homebrew's keg added to its search path).
+#   3. The bundled copy built earlier by compile_libxc.sh.
+#   4. Build the bundled copy now.
+# The test compiles, links and runs a program that uses the libxc interface
+# APOST-3D uses: it catches Fortran modules written by another gfortran
+# version, a changed interface, a library that links but cannot be loaded at
+# run time, and a version older than LIBXC_MIN_VERSION (newer ones are
+# taken). The choice is recorded in objects/libxc.mk for the Makefile.
 # ------------------------------------------------------------------------------
-if ! command -v gfortran &>/dev/null; then
-  echo "ERROR: gfortran not found on PATH."
-  echo "       Install with:"
-  echo "         macOS:  brew install gcc"
-  echo "         Ubuntu: sudo apt install gfortran"
-  exit 1
+# Read from compile_libxc.sh (the one place they're set) rather than
+# repeated here, so a version bump only ever needs editing once.
+LIBXC_VERSION="$(grep -m1 '^LIBXC_VERSION=' "$APOST3D_PATH/compile_libxc.sh" | sed -E 's/^LIBXC_VERSION="([^"]+)"/\1/')"
+LIBXC_MIN_VERSION="$(grep -m1 '^LIBXC_MIN_VERSION=' "$APOST3D_PATH/compile_libxc.sh" | sed -E 's/^LIBXC_MIN_VERSION="([^"]+)"/\1/')"
+BUNDLED_LIBXC_DIR="$APOST3D_PATH/libxc-${LIBXC_VERSION}"
+
+LIBXC_TEST_DIR="$(mktemp -d)"
+cat > "$LIBXC_TEST_DIR/t.f90" <<'EOF'
+program t
+  use xc_f03_lib_m
+  implicit none
+  type(xc_f03_func_t) :: f
+  type(xc_f03_func_info_t) :: info
+  type(xc_f03_func_reference_t) :: ref
+  integer :: vmaj, vmin, vmic, i
+  double precision :: rho(1), sigma(1), lapl(1), tau(1), exc(1)
+  character(len=256) :: text
+  rho = 0.1d0; sigma = 0.01d0; lapl = 0.0d0; tau = 0.05d0
+  call xc_f03_version(vmaj, vmin, vmic)
+  i = XC_FAMILY_LDA + XC_FAMILY_GGA + XC_FAMILY_MGGA + XC_FAMILY_HYB_MGGA &
+    + XC_EXCHANGE + XC_CORRELATION + XC_KINETIC + XC_POLARIZED
+! B3LYP: a global hybrid GGA with 20% exact exchange
+  call xc_f03_func_init(f, 402, XC_UNPOLARIZED)
+  info = xc_f03_func_get_info(f)
+  if (xc_f03_func_info_get_family(info) /= XC_FAMILY_HYB_GGA .and. &
+      xc_f03_func_info_get_family(info) /= XC_FAMILY_GGA) stop 2
+  if (xc_f03_func_info_get_kind(info) /= XC_EXCHANGE_CORRELATION) stop 3
+  if (iand(xc_f03_func_info_get_flags(info), XC_FLAGS_HYB_CAM + XC_FLAGS_HYB_CAMY &
+      + XC_FLAGS_HYB_LC + XC_FLAGS_HYB_LCY + XC_FLAGS_VV10) /= 0) stop 4
+  if (abs(xc_f03_hyb_exx_coef(f) - 0.2d0) > 1.0d-12) stop 5
+  text = xc_f03_func_info_get_name(info)
+  i = 0
+  ref = xc_f03_func_info_get_references(info, i)
+  text = xc_f03_func_reference_get_ref(ref)
+  call xc_f03_gga_exc(f, int(1,8), rho, sigma, exc)
+  call xc_f03_func_end(f)
+! Slater exchange (LDA) and TPSS exchange (meta-GGA): the other call shapes
+  call xc_f03_func_init(f, 1, XC_UNPOLARIZED)
+  call xc_f03_lda_exc(f, int(1,8), rho, exc)
+  call xc_f03_func_end(f)
+  call xc_f03_func_init(f, 202, XC_UNPOLARIZED)
+  call xc_f03_mgga_exc(f, int(1,8), rho, sigma, lapl, tau, exc)
+  call xc_f03_func_end(f)
+  print '(i0,".",i0,".",i0)', vmaj, vmin, vmic
+end program t
+EOF
+
+# libxc_try INC LIB: runs the test against one libxc. Sets LIBXC_FOUND_VERSION,
+# or LIBXC_WHY (the reason) and returns 1.
+libxc_try() {
+  local inc="$1" lib="$2" log="$LIBXC_TEST_DIR/log"
+  LIBXC_FOUND_VERSION=""
+  LIBXC_WHY=""
+  rm -f "$LIBXC_TEST_DIR/t.o" "$LIBXC_TEST_DIR/t"
+  # shellcheck disable=SC2086  # inc/lib hold several space-separated flags
+  if ! gfortran $inc -J"$LIBXC_TEST_DIR" -c "$LIBXC_TEST_DIR/t.f90" \
+      -o "$LIBXC_TEST_DIR/t.o" >"$log" 2>&1; then
+    if grep -q "Cannot open module file" "$log"; then
+      LIBXC_WHY="no Fortran interface (xc_f03_lib_m.mod not found)"
+    elif grep -q "different version of GNU Fortran" "$log"; then
+      LIBXC_WHY="its Fortran modules were written by another gfortran version"
+    else
+      LIBXC_WHY="its Fortran interface differs from the one APOST-3D uses ($( (grep -m1 -A1 'Error' "$log" || true) | tail -1 | sed 's/^ *//'))"
+    fi
+    return 1
+  fi
+  # shellcheck disable=SC2086
+  if ! gfortran "$LIBXC_TEST_DIR/t.o" $lib -o "$LIBXC_TEST_DIR/t" >"$log" 2>&1; then
+    LIBXC_WHY="a test program does not link against it"
+    return 1
+  fi
+  if ! LIBXC_FOUND_VERSION="$("$LIBXC_TEST_DIR/t" 2>"$log")"; then
+    LIBXC_WHY="a test program linked against it does not run (a shared library not found at run time? check LD_LIBRARY_PATH)"
+    return 1
+  fi
+  if ! printf '%s\n%s\n' "$LIBXC_MIN_VERSION" "$LIBXC_FOUND_VERSION" | sort -C -V; then
+    LIBXC_WHY="version $LIBXC_FOUND_VERSION is older than the oldest supported, $LIBXC_MIN_VERSION"
+    return 1
+  fi
+  return 0
+}
+
+LIBXC_SOURCE=""
+if [[ -n "${LIBXC_DIR:-}" ]]; then
+  LIBXC_INC="-I$LIBXC_DIR/include"
+  LIBXC_LIB="-L$LIBXC_DIR/lib -lxcf03 -lxc -lm"
+  if ! libxc_try "$LIBXC_INC" "$LIBXC_LIB"; then
+    echo "ERROR: the libxc in LIBXC_DIR ($LIBXC_DIR) cannot be used:"
+    echo "       $LIBXC_WHY."
+    echo "       Unset LIBXC_DIR to let this script find or build one."
+    rm -rf "$LIBXC_TEST_DIR"
+    exit 1
+  fi
+  LIBXC_SOURCE="LIBXC_DIR ($LIBXC_DIR)"
+else
+  BREW_LIBXC_PREFIX="$(brew --prefix libxc 2>/dev/null || true)"
+  if [[ -n "$BREW_LIBXC_PREFIX" ]]; then
+    export PKG_CONFIG_PATH="$BREW_LIBXC_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+  fi
+  if command -v pkg-config &>/dev/null && pkg-config --exists libxcf03 2>/dev/null; then
+    LIBXC_INC="$(pkg-config --cflags libxcf03)"
+    LIBXC_LIB="$(pkg-config --libs --static libxcf03) -lm"
+    if libxc_try "$LIBXC_INC" "$LIBXC_LIB"; then
+      LIBXC_SOURCE="pkg-config"
+    else
+      echo "  libxc: the one found by pkg-config ($(pkg-config --modversion libxcf03)) cannot be"
+      echo "         used: $LIBXC_WHY."
+      echo "         Using the bundled copy instead."
+    fi
+  fi
+  if [[ -z "$LIBXC_SOURCE" ]]; then
+    LIBXC_INC="-I$BUNDLED_LIBXC_DIR/include"
+    LIBXC_LIB="-L$BUNDLED_LIBXC_DIR/lib -lxcf03 -lxc -lm"
+    if [[ -f "$BUNDLED_LIBXC_DIR/lib/libxcf03.a" ]]; then
+      if libxc_try "$LIBXC_INC" "$LIBXC_LIB"; then
+        LIBXC_SOURCE="bundled copy ($BUNDLED_LIBXC_DIR)"
+      else
+        echo "  libxc: the bundled copy cannot be used ($LIBXC_WHY) -- rebuilding it."
+      fi
+    else
+      echo "  libxc: not found -- fetching and building the pinned ${LIBXC_VERSION} release"
+    fi
+    if [[ -z "$LIBXC_SOURCE" ]]; then
+      echo ""
+      NTHREADS="$NTHREADS" bash "$APOST3D_PATH/compile_libxc.sh"
+      echo ""
+      if ! libxc_try "$LIBXC_INC" "$LIBXC_LIB"; then
+        echo "ERROR: the libxc just built cannot be used: $LIBXC_WHY."
+        rm -rf "$LIBXC_TEST_DIR"
+        exit 1
+      fi
+      LIBXC_SOURCE="bundled copy, just built ($BUNDLED_LIBXC_DIR)"
+    fi
+  fi
 fi
-
-GFORTRAN_VERSION_FULL="$(gfortran --version | head -1)"
-GFORTRAN_VERSION_MAJOR="$(gfortran -dumpversion | cut -d. -f1)"
-
-if [[ ! "$GFORTRAN_VERSION_MAJOR" =~ ^[0-9]+$ ]] || (( GFORTRAN_VERSION_MAJOR < 10 )); then
-  echo "ERROR: gfortran >= 10 is required (found: $GFORTRAN_VERSION_FULL)."
-  echo "       -fallow-argument-mismatch was introduced in GCC 10."
-  echo "       Install a newer gfortran, e.g.:"
-  echo "         macOS:  brew install gcc"
-  echo "         Ubuntu: sudo apt install gfortran-12"
-  exit 1
+rm -rf "$LIBXC_TEST_DIR"
+echo "  libxc $LIBXC_FOUND_VERSION found via: $LIBXC_SOURCE"
+if [[ "$LIBXC_FOUND_VERSION" != "$LIBXC_VERSION" ]]; then
+  echo "  note: the test references were made with libxc $LIBXC_VERSION. With"
+  echo "        $LIBXC_FOUND_VERSION, 'make test' (numbers) should pass; 'make test-strict'"
+  echo "        can differ in libxc's own text, e.g. the functional citations."
 fi
 
 # ------------------------------------------------------------------------------
@@ -285,6 +391,14 @@ fi
 # failed/interrupted build doesn't falsely mark the stamp as up to date).
 mkdir -p "$APOST3D_PATH/objects"
 echo "$BUILD_ID" > "$COMPILER_STAMP"
+
+# Record the libxc checked above for the Makefile, so that a later plain
+# `make` (e.g. `make test`) uses the same one instead of detecting it again.
+cat > "$APOST3D_PATH/objects/libxc.mk" <<EOF
+# Written by make_compile.sh: libxc $LIBXC_FOUND_VERSION, $LIBXC_SOURCE
+LIBXC_INC := $LIBXC_INC
+LIBXC_LIB := $LIBXC_LIB
+EOF
 
 # ------------------------------------------------------------------------------
 # Build main binary + utilities

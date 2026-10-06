@@ -53,8 +53,10 @@ gfortran --version            # must say 10 or higher
 ```
 
 The exchange-correlation library [libxc](https://libxc.gitlab.io/) is also
-needed, but you don't have to install it: the build script downloads and
-compiles it the first time (this is what CMake is for).
+needed, but you don't have to install it. If libxc 7.0 or newer is already
+installed (with its Fortran interface, built by the same gfortran), the
+build script uses it; otherwise it downloads and compiles its own copy the
+first time (this is what CMake and curl are for).
 
 ## 2. Build the program
 
@@ -65,9 +67,9 @@ bash make_compile.sh
 ```
 
 The first build takes a few minutes, most of it compiling libxc; later
-builds take seconds. If something is missing (CMake, OpenBLAS, a recent
-enough gfortran), the script stops with a clear message and the command
-to fix it (see [Troubleshooting](troubleshooting.md)). At the end it
+builds take seconds. If something is missing (`make`, a recent enough
+gfortran, OpenBLAS, CMake, curl), the script stops with a clear message and
+the command to fix it, before compiling anything (see [Troubleshooting](troubleshooting.md)). At the end it
 launches each program once and lists them:
 
 ```text

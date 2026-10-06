@@ -89,6 +89,13 @@ LIBXC_INC = -I$(LIBXCDIR)/include
 LIBXC_LIB = -L$(LIBXCDIR)/lib -lxcf03 -lxc -lm
 endif
 endif
+# make_compile.sh checks the libxc it chooses (version, Fortran modules,
+# linking) and records it in objects/libxc.mk: that choice wins over the
+# detection above, so later make commands use the same one. LIBXC_DIR, set
+# by the user, still wins over both.
+ifndef LIBXC_DIR
+-include $(OBJDIR)/libxc.mk
+endif
 
 ## OPENBLAS (BLAS/LAPACK) — diagonalize() in util.f uses dsyevd. Layered
 ## detection so a build never fails just because OpenBLAS lives somewhere
