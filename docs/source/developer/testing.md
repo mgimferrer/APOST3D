@@ -185,3 +185,7 @@ A manifest check looks like:
 `type` is `float` (the default; `pattern` has one capture group),
 `present` or `absent`; `section` restricts the search to the output after
 that marker; `match_index` (1-based) picks one of several matches.
+
+A test must exit with code 0. A test of an expected stop declares the
+code of the stop in its entry, next to `timeout`: `"expected_rc": 1` (the
+code of every `STOP`).

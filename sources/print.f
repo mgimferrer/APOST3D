@@ -11,6 +11,8 @@
 !!   print_subbox        -- same, no leading blank -- for a box that       !!
 !!                           immediately follows another print_box/        !!
 !!                           print_subbox with nothing printed between     !!
+!! Ending a run on an error:                                               !!
+!!   apost_stop          -- "STOP <msg>" as the last output line, exit 1   !!
 !! Per-atom vector/matrix printers (no border):                            !!
 !!   VPRINT               -- per-atom vector or 2-column matrix            !!
 !!   MPRINT_NLOP           -- per-atom 3-column (X/Y/Z) matrix             !!
@@ -89,6 +91,30 @@
       write(*,'(2x,a,/)')  repeat('-',n)
 
       END SUBROUTINE print_subbox
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: apost_stop                                                !!
+!! purpose: ends the run on an error, in place of a stop statement:      !!
+!!   writes "STOP <msg>" to stdout and flushes it, so the message is the !!
+!!   last line of the output even when stdout is redirected (a stop      !!
+!!   statement writes to unbuffered stderr, above the buffered output),  !!
+!!   then exits with code 1 so job scripts can tell an error from a      !!
+!!   normal end. An empty msg writes no STOP line (the caller has        !!
+!!   printed the reason).                                                !!
+!! arguments:                                                            !!
+!!   msg (in) -- the message, as the stop statement had it               !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine apost_stop(msg)
+      character(len=*) msg
+
+      if(len_trim(msg).gt.0) write(*,'(a,a)') 'STOP ',msg
+      flush(6)
+      call exit(1)
+
+      end subroutine apost_stop
 
 !! ***** !!
 

@@ -496,7 +496,7 @@ C only if eff-AOs have been computed for all atoms
        write(*,*) ' '
        write(*,*) 'Using ',ieffdim,' eff orbitals as minimal basis' 
        write(*,*) ' '
-       if(ieffdim.ne.kk) stop 'inconsistency'
+       if(ieffdim.ne.kk) call apost_stop('inconsistency')
 
        allocate(scr(igr,igr),s_eff(ieffdim,ieffdim))
        allocate(sm(ieffdim,ieffdim),dum(ieffdim,ieffdim))
@@ -1087,7 +1087,7 @@ c check closest atom
        end do
        if(iter.gt.maxiter) then
         write(*,*) 'steepest ascent did not converge'
-        stop
+        call apost_stop('')
        else
         write(*,'(a16,i3,a6,i2,a17,f8.4,a6,i2)') 'QTAIM center:   ',iiat,
      + ' Frag.',jfrlist(iiat),' Distance (a.u.):',dsqrt(dist0)*toau,
@@ -1229,7 +1229,7 @@ c check closest atom
        end do
        if(iter.gt.maxiter) then
         write(*,*) 'steepest ascent did not converge'
-        stop
+        call apost_stop('')
        else
         write(*,'(a16,i3,a6,i2,a17,f8.4,a6,i2)') 'QTAIM center:   ',iiat,
      + ' Frag.',jfrlist(iiat),' Distance (a.u.):',dsqrt(dist0)*toau,

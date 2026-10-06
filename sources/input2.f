@@ -202,7 +202,7 @@
         if(ndens0.gt.ndens) then
           write(*,'(2x,a,i0,a,i0,a)') 'DENS ',ndens0,
      +      ' asked for, the number of densities in the .fchk is ',ndens
-          stop ' DENS: density not found'
+          call apost_stop(' DENS: density not found')
         end if
         ncou=0
         rewind 15
@@ -242,7 +242,7 @@
       if(ndens0.gt.1.and.kop.eq.1) then
         write(*,'(2x,a)') 'DENS above 1 is only available for '//
      +    'restricted wavefunctions'
-        stop ' DENS: unrestricted wavefunction'
+        call apost_stop(' DENS: unrestricted wavefunction')
       end if
 
       if(kop.eq.1) then
@@ -528,7 +528,7 @@
       ninact=(nspinorb-ncasorb*2)
       ncore=ninact/2
       iorb=ncore+ncasorb
-      if(iorb.ne.norb) stop 'inconsistency in norb'
+      if(iorb.ne.norb) call apost_stop('inconsistency in norb')
       write(*,'(2x,a,1x,i0)') 'Reconstructing rdm2 for inactive orbitals:',ncore
       write(*,'(2x,a,1x,i0)') 'Active orbitals:',ncasorb
       write(*,'(2x,a,1x,i0)') 'Total spinless rdm2 dimension:',norb
@@ -770,11 +770,11 @@
         if(nn.ne.ntri) then
           write(*,'(2x,a,i0,a,i0,a)') 'ECP Matrix: ',nn,
      +      ' values announced, ',ntri,' expected (lower triangle)'
-          stop ' Wrong ECP Matrix size in the .fchk file'
+          call apost_stop(' Wrong ECP Matrix size in the .fchk file')
         end if
         ALLOCATE(xecpv(ntri))
         read(15,*,iostat=ios) (xecpv(i),i=1,ntri)
-        if(ios.ne.0) stop ' ECP Matrix in the .fchk file is incomplete'
+        if(ios.ne.0) call apost_stop(' ECP Matrix in the .fchk file is incomplete')
 
 !! lower-triangular packed -> full symmetric matrix. !!
         ALLOCATE(xecpm(igr,igr))
@@ -1026,7 +1026,7 @@
       write(*,'(2x,a,a,a,a,a)') 'Cannot read the value of ',
      +  trim(keyword),' in ',trim(section),':'
       write(*,'(4x,a)') trim(linea)
-      stop ' Wrong keyword value in the input'
+      call apost_stop(' Wrong keyword value in the input')
 
       end
 

@@ -2231,7 +2231,7 @@ C ;excess unknowns require additional equations)
            do i=1,nat
              write(*,'(40i2)') (b(i,j),j=1,nat)
            end do
-           stop 'error in polar, ichi.inp file is needed'
+           call apost_stop('error in polar, ichi.inp file is needed')
          end if
          read(45,'(a80)') 
          read(45,*) N
@@ -2261,7 +2261,7 @@ C Labeling the unique q_ij, or Q(A|B), contributions.
            end if
          end do
        end do
-       if(l-1.ne.unique_qij) stop 'problem in polar'
+       if(l-1.ne.unique_qij) call apost_stop('problem in polar')
 C End of modifications. Final connectiviy matrix.
 
 C Additional equations for rings if needed. The same iexcess check is performed here,
@@ -2316,7 +2316,7 @@ C Building the matrix of coefficients.
          end do
        end do
 
-       if(iextra+nat-1.ne.unique_qij) stop 'problem building coeff matrix in polar'
+       if(iextra+nat-1.ne.unique_qij) call apost_stop('problem building coeff matrix in polar')
 
 c renormalizing atomic populations
         xx=0.0d0
@@ -2337,7 +2337,7 @@ c renormalizing atomic populations
         end do
 
         call SOLVESYSTEM(unique_qij,maxbonds,MAT,csolv,ilog)
-        if(ilog.eqv..false.) stop 'error in polar, CT decomposition'
+        if(ilog.eqv..false.) call apost_stop('error in polar, CT decomposition')
 
 
 C Echoing the solutions of the system of equations, for testing purposes.

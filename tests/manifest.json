@@ -1926,6 +1926,7 @@
         "meta-gga",
         "expected-stop"
       ],
+      "expected_rc": 1,
       "timeout": 600,
       "extra_input_files": [],
       "keywords": [

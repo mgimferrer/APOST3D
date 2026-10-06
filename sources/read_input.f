@@ -43,7 +43,7 @@
       call locate_block(16,"# METHOD",ii)
       if(ii.eq.0) then
         write(*,'(2x,a)') 'The input has no # METHOD block'
-        stop ' # METHOD block not found'
+        call apost_stop(' # METHOD block not found')
       end if
 
 !! keywords and blocks renamed in version 5 (no blanks or hyphens      !!
@@ -164,7 +164,7 @@
       inegcubthr=25
       if(icube.eq.1) then
         call locate_block(16,"# CUBE",ii)
-        if(ii.eq.0) stop'Required section # CUBE not found in input file'
+        if(ii.eq.0) call apost_stop('Required section # CUBE not found in input file')
         call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
         call readint("# CUBE","MIN_OCC",kcubthr,0,1)
         call readreal("# CUBE","SPACING",cubespacing,0.25d0,1)
@@ -177,10 +177,10 @@
         if(jcubthr.lt.0.or.kcubthr.lt.0) then
           write(*,'(2x,a)') 'MAX_OCC/MIN_OCC must be >= 0 (occupation x 1000).'
           write(*,'(2x,a)') 'For negative-occupation EFOs use NEG_EFOS instead.'
-          stop
+          call apost_stop('')
         end if
-        if(kcubthr.gt.jcubthr) stop 'MIN_OCC cannot be larger than MAX_OCC'
-        if(inegcubthr.lt.0) stop 'NEG_EFOS value must be >= 0 (|occupation| x 1000)'
+        if(kcubthr.gt.jcubthr) call apost_stop('MIN_OCC cannot be larger than MAX_OCC')
+        if(inegcubthr.lt.0) call apost_stop('NEG_EFOS value must be >= 0 (|occupation| x 1000)')
       end if
 
 !! EOS (standard) !!
@@ -223,7 +223,7 @@
         call locate_block(16,"# ENPART",ii)
         if(ii.eq.0) then
           write(*,'(2x,a)') 'ENPART needs a # ENPART block'
-          stop ' # ENPART block not found'
+          call apost_stop(' # ENPART block not found')
         end if
         xmix=ZERO
         id_xcfunc=0
@@ -233,17 +233,17 @@
         call enpart_functional_keyword(ikwfunc,idkxc,idkx,idkc)
         if(ilib.eq.1) then
           if(ikwfunc.eq.1)
-     +      stop 'GIVE EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART. REVISE inp'
+     +      call apost_stop('GIVE EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART. REVISE inp')
           call readint("# ENPART","EXC_FUNCTIONAL",id_xcfunc,0,1)
           call readint("# ENPART","EX_FUNCTIONAL",id_xfunc,0,1)
           call readint("# ENPART","EC_FUNCTIONAL",id_cfunc,0,1)
           id_func=id_xfunc+id_cfunc+id_xcfunc
-          if (id_func.eq.0) stop 'FUNCTIONAL ID NOT FOUND IN INPUT FILE'
+          if (id_func.eq.0) call apost_stop('FUNCTIONAL ID NOT FOUND IN INPUT FILE')
 !! xc (enpart_dft.f) and func_info_print's xmix assume one or the other. !!
           if(id_xcfunc.ne.0.and.(id_xfunc.ne.0.or.id_cfunc.ne.0)) then
             write(*,'(2x,a)') 'Give either EXC_FUNCTIONAL alone, or EX_FUNCTIONAL and/or'
             write(*,'(2x,a)') 'EC_FUNCTIONAL -- not both kinds together.'
-            stop 'EXC_FUNCTIONAL COMBINED WITH EX/EC_FUNCTIONAL. REVISE inp'
+            call apost_stop('EXC_FUNCTIONAL COMBINED WITH EX/EC_FUNCTIONAL. REVISE inp')
           end if
 !! specific keywords for functionals !!
         else
@@ -268,7 +268,7 @@
           call readchar("# ENPART","CISD",icisd)
           call readchar("# ENPART","CORRELATION",iecorr)
           if(icas.eq.0. and.icisd.eq.0) then
-            stop "NO DFT/HF/CASSCF/CISD SELECTED FOR ENPART. REVISE inp"
+            call apost_stop("NO DFT/HF/CASSCF/CISD SELECTED FOR ENPART. REVISE inp")
           end if
 233       continue
         end if 
@@ -294,7 +294,7 @@
         call readchar("# METHOD","TOPOLOGY",itop)
         if(itop.eq.1) then
           call locate_block(16,"# ATOM_PAIRS_DEFINITION",ii)
-          if(ii.eq.0) stop " # ATOM_PAIRS_DEFINITION section missing"
+          if(ii.eq.0) call apost_stop(" # ATOM_PAIRS_DEFINITION section missing")
           read(16,*) ipairs
           if(ipairs.gt.0) then
             do ii=1,ipairs
@@ -314,7 +314,7 @@
           if(itop2.eq.1) ietop=3
           call readchar("# TOPOLOGY","DENSITY",itop2)
           if(itop2.eq.1) ietop=9
-          if(ietop.eq.-1) stop " FUNCTION FOR TOPOLOGY NOT INTRODUCED "
+          if(ietop.eq.-1) call apost_stop(" FUNCTION FOR TOPOLOGY NOT INTRODUCED ")
         end if
 
 !! end of ENPART options !!
@@ -337,7 +337,7 @@
         if(ilib.eq.1) then
           call readint("# DFTDM1_FUNCTIONAL","EX_FUNCTIONAL",id_func_dm1,0,1)
         end if
-        if(id_func_dm1.eq.0) stop "FUNCTIONAL ID NOT FOUND FOR DFT-DM1. REVISE inp"
+        if(id_func_dm1.eq.0) call apost_stop("FUNCTIONAL ID NOT FOUND FOR DFT-DM1. REVISE inp")
 
 !! density-threshold pruning for the double loop's O(itotps^2) grid-point !!
 !! pairs, checked at the pair's midpoint R (dft_dm1.f's main loop)        !!
@@ -402,7 +402,7 @@
             write(*,*) " "
           end if
         else
-          stop "EDAIQA SECTION MISSING. REVISE inp"
+          call apost_stop("EDAIQA SECTION MISSING. REVISE inp")
         end if
 
 !! end of EDAIQA !!
@@ -427,7 +427,7 @@
       call readchar("# METHOD","DOATOMS",idoat)
       if(idoat.eq.1) then
         call locate_block(16,"# ATOMS",ii)
-        if(ii.eq.0) stop 'Required section not found in input file'
+        if(ii.eq.0) call apost_stop('Required section not found in input file')
         read(16,*) icuat
         read(16,*) (iatlist(i),i=1,icuat)
       else
@@ -442,12 +442,12 @@
       call readchar("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
         call locate_block(16,"# FRAGMENTS",ii)
-        if(ii.eq.0) stop 'Required section not found in input file'
+        if(ii.eq.0) call apost_stop('Required section not found in input file')
         read(16,*) icufr
         if(icufr.lt.1.or.icufr.gt.nat) then
           write(*,'(2x,a,i0,a,i0,a)') '# FRAGMENTS: ',icufr,
      +      ' fragments given, the molecule has ',nat,' atoms'
-          stop ' Wrong number of fragments in # FRAGMENTS'
+          call apost_stop(' Wrong number of fragments in # FRAGMENTS')
         end if
         do i=1,icufr
           read(16,*) nfrlist(i)
@@ -455,7 +455,7 @@
             write(*,'(2x,a,i0,a)') '# FRAGMENTS: -1 (all remaining '//
      +        'atoms) given for fragment ',i,
      +        ', only allowed for the last one'
-            stop ' -1 only allowed for the last fragment in # FRAGMENTS'
+            call apost_stop(' -1 only allowed for the last fragment in # FRAGMENTS')
           end if
           if(nfrlist(i).eq.-1) then
             do l=1,nat
@@ -477,13 +477,13 @@
             if(k.eq.0) then
               write(*,'(2x,a)') '# FRAGMENTS: no atoms left for the '//
      +          'last fragment (-1)'
-              stop ' Empty fragment in # FRAGMENTS'
+              call apost_stop(' Empty fragment in # FRAGMENTS')
             end if
           else
             if(nfrlist(i).lt.1.or.nfrlist(i).gt.nat) then
               write(*,'(2x,a,i0,a,i0,a)') '# FRAGMENTS: fragment ',i,
      +          ' has ',nfrlist(i),' atoms'
-              stop ' Wrong number of atoms in # FRAGMENTS'
+              call apost_stop(' Wrong number of atoms in # FRAGMENTS')
             end if
             read(16,*) (ifrlist(k,i),k=1,nfrlist(i))
             do k=1,nfrlist(i)
@@ -491,7 +491,7 @@
                 write(*,'(2x,a,i0,a,i0,a,i0,a)') '# FRAGMENTS: atom ',
      +            ifrlist(k,i),' (fragment ',i,') does not exist, '//
      +            'the molecule has ',nat,' atoms'
-                stop ' Atom out of range in # FRAGMENTS'
+                call apost_stop(' Atom out of range in # FRAGMENTS')
               end if
             end do
           end if
@@ -506,12 +506,12 @@
             if(jfrlist(ifrlist(k,i)).eq.i) then
               write(*,'(2x,a,i0,a,i0)') '# FRAGMENTS: atom ',
      +          ifrlist(k,i),' is listed twice in fragment ',i
-              stop ' Atom listed twice in # FRAGMENTS'
+              call apost_stop(' Atom listed twice in # FRAGMENTS')
             else if(jfrlist(ifrlist(k,i)).ne.0) then
               write(*,'(2x,a,i0,a,i0,a,i0)') '# FRAGMENTS: atom ',
      +          ifrlist(k,i),' is in fragments ',jfrlist(ifrlist(k,i)),
      +          ' and ',i
-              stop ' Atom in two fragments in # FRAGMENTS'
+              call apost_stop(' Atom in two fragments in # FRAGMENTS')
             end if
             jfrlist(ifrlist(k,i))=i
           end do
@@ -531,15 +531,15 @@
         if(idofr.eq.0) then
           write(*,*) " FRAGMENT DEFINITION REQUIRED FOR EDAIQA "
           write(*,*) " INFO : FRAGMENT ORDER MUST MATCH THE ISOLATED "
-          stop
+          call apost_stop('')
         end if
-        if(idofr.eq.1.and.icufr.ne.2) stop " ONLY 2 FRAGMENTS ALLOWED FOR EDAIQA "
+        if(idofr.eq.1.and.icufr.ne.2) call apost_stop(" ONLY 2 FRAGMENTS ALLOWED FOR EDAIQA ")
       end if
 
 !! reading DM1 and DM2 !!
       if(icorr.ne.0) then
         call locate_block(16,"# DM",ii)
-        if(ii.eq.0) stop " # DM section not found in input file "
+        if(ii.eq.0) call apost_stop(" # DM section not found in input file ")
 
 !! the file names come first (one line each, read as they are, so a     !!
 !! name may hold any character); the format keywords only after them    !!
@@ -573,7 +573,7 @@
         end if
         if(ios.ne.0) then
           write(*,'(2x,a,a,a)') '# DM: file ',trim(dmfile1),' not found'
-          stop ' # DM file not found'
+          call apost_stop(' # DM file not found')
         end if
         if(icorr.eq.2) then
           if(iorca.eq.1.or.ipyscf.eq.1) then
@@ -584,7 +584,7 @@
           end if
           if(ios.ne.0) then
             write(*,'(2x,a,a,a)') '# DM: file ',trim(dmfile2),' not found'
-            stop ' # DM file not found'
+            call apost_stop(' # DM file not found')
           end if
         end if
       end if
@@ -597,7 +597,7 @@
         call locate_block(16,"# OSLO",ii)
         if(ii.eq.0) then
           write(*,'(2x,a)') 'OSLO needs a # OSLO block (it may be empty)'
-          stop ' # OSLO block not found'
+          call apost_stop(' # OSLO block not found')
         end if
 
 !! MG: by default requires the TFVC AIM in # METHOD (numerical           !!
@@ -640,7 +640,7 @@
         write(*,'(2x,a)') 'EOS, GEOS and OSLO need fragments: add '//
      +    'DOFRAGS to # METHOD and a # FRAGMENTS block'
         write(*,'(2x,a)') '(an atom can be a fragment on its own)'
-        stop ' EOS, GEOS and OSLO need fragments (DOFRAGS)'
+        call apost_stop(' EOS, GEOS and OSLO need fragments (DOFRAGS)')
       end if
       if(idofr.eq.1) then
         nmiss=0
@@ -656,7 +656,7 @@
      +        'fragment:',(missat(i),i=1,nmiss)
             write(*,'(2x,a)') 'EOS, GEOS, OSLO and ENPART need every '//
      +        'atom in a fragment (-1 on the last one adds the rest)'
-            stop ' Atoms missing in # FRAGMENTS'
+            call apost_stop(' Atoms missing in # FRAGMENTS')
           else
             write(*,'(2x,a,*(1x,i0))') 'WARNING: # FRAGMENTS leaves '//
      +        'out atoms',(missat(i),i=1,nmiss)
@@ -800,7 +800,7 @@
               write(*,'(2x,a)') 'The LDA keyword is no longer accepted (it meant Slater'
               write(*,'(2x,a)') 'exchange only). Use SVWN or SVWN5, or LIBRARY with'
               write(*,'(2x,a)') 'EX_FUNCTIONAL 1 for exchange only.'
-              stop 'LDA KEYWORD REMOVED. REVISE inp'
+              call apost_stop('LDA KEYWORD REMOVED. REVISE inp')
             end if
             kfound=1
             idxc=kwxc(k)
@@ -810,7 +810,7 @@
         end do
       end do
 10    continue
-      if(nfound.gt.1) stop 'MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART. REVISE inp'
+      if(nfound.gt.1) call apost_stop('MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART. REVISE inp')
 
       end
 
@@ -838,7 +838,7 @@
         if(ipos.gt.0) then
           write(*,'(2x,a,a,a,a,a,a)') trim(section),': ',old,
      +      ' is now written ',new
-          stop ' Renamed keyword in the input'
+          call apost_stop(' Renamed keyword in the input')
         end if
         if(index(linea,"#").ne.0) ii=1
       end do
@@ -862,6 +862,6 @@
       call find_block(16,old,ii)
       if(ii.eq.1) then
         write(*,'(2x,a,a,a)') old,' is now written ',new
-        stop ' Renamed block in the input'
+        call apost_stop(' Renamed block in the input')
       end if
       end

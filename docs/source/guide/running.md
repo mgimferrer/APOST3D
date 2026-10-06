@@ -26,9 +26,11 @@ A run is complete when the output ends with
   ...Normal Termination of APOST-3D...
 ```
 
-If this line is missing, the run stopped early and the last lines of the
-output say why (see [Troubleshooting](../troubleshooting.md)). The exit
-code of the program is 0 even then, so scripts should check for this line.
+If this line is missing, the run stopped early and the last line of the
+output, starting with `STOP`, says why (see
+[Troubleshooting](../troubleshooting.md)). The program then exits with
+code 1 (0 after a normal end), so scripts can test it directly. A crash
+(not a `STOP`) also gives a nonzero code.
 
 ## Integration grid
 
@@ -80,8 +82,9 @@ ulimit -s unlimited
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 cd $SLURM_SUBMIT_DIR
-$APOST3D_PATH/apost3d mol > mol.apost 2>&1
-grep -q "Normal Termination" mol.apost || echo "APOST-3D stopped early, see mol.apost"
+if ! $APOST3D_PATH/apost3d mol > mol.apost 2>&1; then
+  echo "APOST-3D stopped early, see the end of mol.apost"
+fi
 ```
 
 APOST-3D runs on a single node (it is parallelized with OpenMP threads,

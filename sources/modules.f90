@@ -269,7 +269,7 @@
          icount=icount+15
        end do
      else
-       stop 'angular momentum not implemented'
+       call apost_stop('angular momentum not implemented')
      end if
    end do
 
@@ -644,13 +644,13 @@
    if(nrad0.lt.1.or.nrad0.gt.500) then
      write(*,'(2x,a,a,i0,a)') where,': RADIAL ',nrad0, &
        ' must be between 1 and 500'
-     stop ' Invalid radial grid'
+     call apost_stop(' Invalid radial grid')
    end if
    if(all(leved(1:19).ne.nang0)) then
      write(*,'(2x,a,a,i0,a)') where,': ANGULAR ',nang0, &
        ' is not a Lebedev-Laikov grid; use one of'
      write(*,'(2x,19(1x,i0))') leved(1:19)
-     stop ' Invalid angular grid'
+     call apost_stop(' Invalid angular grid')
    end if
 
    END SUBROUTINE check_grid

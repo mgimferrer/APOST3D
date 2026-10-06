@@ -52,7 +52,7 @@
       inatorb= Iopt(63)
       iatps  = nrad*nang
 
-      if(kop.ne.1) stop " Only implemented for unrestricted WF "
+      if(kop.ne.1) call apost_stop(" Only implemented for unrestricted WF ")
 
 !! GENERAL INFORMATION !!
 

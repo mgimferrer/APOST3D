@@ -127,7 +127,7 @@
   Rotation angles (phb1/phb2):  0.162 /  0.182
 
   TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING WALL :: initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -153,8 +153,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.23 s
-  TIMING WALL :: atomic definition                                 0.04 s
+  TIMING CPU  :: atomic definition                                 0.18 s
+  TIMING WALL :: atomic definition                                 0.18 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -249,10 +249,9 @@
   Functional name --> Tao, Perdew, Staroverov & Scuseria
   Reference --> [ 1] J. Tao, J. P. Perdew, V. N. Staroverov, and G. E. Scuseria,  Phys. Rev. Lett. 91, 146401 (2003)                         
   Reference --> [ 2] J. P. Perdew, J. Tao, V. N. Staroverov, and G. E. Scuseria,  J. Chem. Phys. 120, 6898 (2004)                            
-Note: The following floating-point exceptions are signalling: IEEE_UNDERFLOW_FLAG
-STOP META-GGA FUNCTIONALS NOT YET SUPPORTED
   Functional type --> correlation
   META-GGA functional selected
   
   Meta-GGA functionals are not supported yet (implementation
   in progress). Use an LDA, GGA or global-hybrid GGA functional.
+STOP META-GGA FUNCTIONALS NOT YET SUPPORTED

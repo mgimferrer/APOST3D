@@ -181,6 +181,10 @@ program, not a full development history — see `git log` for that.
 
 ### Others
 
+- **Errors end with exit code 1** — a run that stops on an error now
+  exits with code 1 (0 after a normal end), so job scripts and workflow
+  tools can detect it, and its `STOP` message is the last line of the
+  output (it used to appear above the output printed just before it).
 - **New compilation and testing setup** — the build is now driven by two
   scripts (`compile_libxc.sh`, `make_compile.sh`) that check for a
   compatible compiler/OpenBLAS/libxc automatically; an automated regression
