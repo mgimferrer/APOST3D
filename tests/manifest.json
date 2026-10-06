@@ -518,7 +518,7 @@
           "label": "Fe fragment EFO net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 12.11696,
+          "ref": 12.11689,
           "tol_abs": 0.0002
         },
         {
@@ -532,7 +532,7 @@
           "label": "C fragment EFO net occupation",
           "section": "EFFAOs FROM THE ALPHA DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 6.77991,
+          "ref": 6.77837,
           "tol_abs": 0.0002
         },
         {
@@ -1325,7 +1325,7 @@
           "label": "Fragment 1 paired net occupation",
           "section": "EFFAOs FROM THE PAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 10.6802,
+          "ref": 10.71802,
           "tol_abs": 0.0002
         },
         {
@@ -1346,7 +1346,7 @@
           "label": "Fragment 2 paired net occupation",
           "section": "EFFAOs FROM THE PAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 8.32578,
+          "ref": 8.35398,
           "tol_abs": 0.0002
         },
         {
@@ -1367,7 +1367,7 @@
           "label": "Fragment 1 unpaired net occupation",
           "section": "EFFAOs FROM THE UNPAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.46524,
+          "ref": 0.46521,
           "tol_abs": 0.0002
         },
         {
@@ -1519,14 +1519,14 @@
           "label": "Fragment 1 (Li) paired net occupation",
           "section": "EFFAOs FROM THE PAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 2.11489,
+          "ref": 2.11883,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 (H) paired net occupation",
           "section": "EFFAOs FROM THE PAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.95706,
+          "ref": 1.05137,
           "tol_abs": 0.0002
         },
         {
@@ -1568,14 +1568,14 @@
           "label": "Fragment 1 (Li) unpaired net occupation",
           "section": "EFFAOs FROM THE UNPAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.22187,
+          "ref": 0.22178,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 (H) unpaired net occupation",
           "section": "EFFAOs FROM THE UNPAIRED DENSITY",
           "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.60371,
+          "ref": 0.60346,
           "tol_abs": 0.0002
         },
         {

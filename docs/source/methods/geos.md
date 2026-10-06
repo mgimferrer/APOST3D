@@ -81,13 +81,14 @@ then `... UNPAIRED DENSITY`), with one entry per fragment:
 ```text
   ** FRAGMENT   2 **
 
-  Net occupation for fragment      2    0.95706
+  Net occupation for fragment      2    1.05137
   Net occupation using >    0.00010
   OCCUP.   1.0512   0.0002
 
   Gross occupation for fragment    2    1.08681
   OCCUP.   1.0861   0.0007
   FIT %     93.01    33.07
+  Left out by the cutoff (net / gross):   -0.09431   -0.10682
 ```
 
 - The first `OCCUP.` rows are the net occupations of the fragment's EFOs,
@@ -95,6 +96,10 @@ then `... UNPAIRED DENSITY`), with one entry per fragment:
   order. Paired occupations go up to 2, unpaired ones up to 1.
 - `FIT %` gives, for each EFO, how faithfully the orbital written to the
   `.fchk` file reproduces it (see *Orbitals in the .fchk file* below).
+- `Left out by the cutoff` is what the listed EFOs miss of the fragment's
+  net and gross population in that density (see [EFFAO](effao.md)). In
+  the paired density it can be negative, as here: the EFOs below the
+  cutoff include the negative ones described next.
 
 **Negative paired EFOs.** The paired density is the difference of two
 densities, so unlike a normal density it can yield EFOs with a *negative*

@@ -404,15 +404,17 @@
 
   ** FRAGMENT   1 **
   
-  Net occupation for fragment   1    5.16096
+  Net occupation for fragment      1    5.16096
   Net occupation using >    0.00100
   OCCUP.   1.0081   1.0000   1.0000   1.0000   0.9999   0.1529
+  Left out by the cutoff (net):    0.00239
   
   ** FRAGMENT   2 **
   
-  Net occupation for fragment   2    4.53857
+  Net occupation for fragment      2    4.53857
   Net occupation using >    0.00100
   OCCUP.   1.0245   1.0000   0.9817   0.9817   0.5505
+  Left out by the cutoff (net):    0.00001
   
   Total number of eff-AO-s for analysis:   11
 
@@ -437,15 +439,17 @@
 
   ** FRAGMENT   1 **
   
-  Net occupation for fragment   1    6.00909
+  Net occupation for fragment      1    6.00909
   Net occupation using >    0.00100
   OCCUP.   1.0107   1.0000   1.0000   1.0000   0.9999   0.9985
+  Left out by the cutoff (net):    0.00161
   
   ** FRAGMENT   2 **
   
-  Net occupation for fragment   2    3.94623
+  Net occupation for fragment      2    3.94623
   Net occupation using >    0.00100
   OCCUP.   1.0000   0.9860   0.9860   0.9742
+  Left out by the cutoff (net):    0.00052
   
   Total number of eff-AO-s for analysis:   10
 

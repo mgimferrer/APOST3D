@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.69 s
-  TIMING WALL :: atomic definition                                 0.10 s
+  TIMING CPU  :: atomic definition                                 0.56 s
+  TIMING WALL :: atomic definition                                 0.56 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -386,7 +386,7 @@
 
   ** FRAGMENT   1 **
   
-  Net occupation for fragment      1   10.68020
+  Net occupation for fragment      1   10.71802
   Net occupation using >    0.00010
   OCCUP.   2.0000   1.9999   1.9989   1.9989   1.9930   0.7192   0.0034   0.0034
   OCCUP.   0.0013
@@ -396,16 +396,18 @@
   OCCUP.   0.0022
   FIT %     99.99    99.83    99.47    99.47    98.74    88.39    68.84    69.44
   FIT %     67.68
+  Left out by the cutoff (net / gross):   -0.03782   -0.04283
   
   ** FRAGMENT   2 **
   
-  Net occupation for fragment      2    8.32578
+  Net occupation for fragment      2    8.35398
   Net occupation using >    0.00010
   OCCUP.   2.0000   1.9931   1.9924   1.9882   0.3784   0.0014   0.0002   0.0002
   
   Gross occupation for fragment    2    8.41027
   OCCUP.   2.0000   1.9949   1.9942   1.9907   0.4249   0.0040   0.0007   0.0007
   FIT %     99.97    98.70    98.73    98.63    83.77    52.00    50.03    49.99
+  Left out by the cutoff (net / gross):   -0.02820   -0.03631
 
   ------------------------------------
     EFFAOs FROM THE UNPAIRED DENSITY
@@ -413,13 +415,14 @@
 
   ** FRAGMENT   1 **
   
-  Net occupation for fragment      1    0.46524
+  Net occupation for fragment      1    0.46521
   Net occupation using >    0.00010
   OCCUP.   0.4067   0.0585
   
   Gross occupation for fragment    1    0.48539
   OCCUP.   0.4154   0.0700
   FIT %     93.05    78.41
+  Left out by the cutoff (net / gross):    0.00003    0.00005
   
   ** FRAGMENT   2 **
   
@@ -430,6 +433,7 @@
   Gross occupation for fragment    2    0.41190
   OCCUP.   0.3774   0.0322   0.0009   0.0009   0.0001   0.0001   0.0001   0.0001
   FIT %     91.46    70.72    98.10    92.86    99.18    99.16    91.21    91.32
+  Left out by the cutoff (net / gross):    0.00000    0.00000
   
   Total number of eff-AO-s for analysis:   27
 
@@ -488,8 +492,8 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 1.19 s
-  TIMING WALL :: EFFAO computation                                 0.27 s
+  TIMING CPU  :: EFFAO computation                                 0.89 s
+  TIMING WALL :: EFFAO computation                                 0.89 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

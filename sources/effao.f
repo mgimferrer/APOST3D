@@ -53,8 +53,6 @@
       common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /qat/qat(maxat,2),qsat(maxat,2)
 
       dimension chp(itotps,ndim),omp(itotps),omp2(itotps,nat)
       dimension wp(itotps)
@@ -160,24 +158,31 @@
           if(pp0(i,i).lt.xminocc) exit
           imaxo=i
         end do
+!! net occupation of the kept EFOs (xmaxo) and of all of them (xnetall, !!
+!! the fragment's net population): the difference is what the cutoff     !!
+!! leaves out                                                           !!
         xmaxo=ZERO
-        do i=1,igr
+        do i=1,imaxo
           xmaxo=xmaxo+pp0(i,i)
         end do
+        xnetall=ZERO
+        do i=1,igr
+          xnetall=xnetall+pp0(i,i)
+        end do
 
-!! xx0: op-matrix sum for the fragment; xx1: meant to be the qat sum,   !!
-!! same comparison -- xx1=xx0+qat(...) looks buggy, not fixed yet.      !!
-        xx0=ZERO
-        xx1=ZERO
+!! the fragment's gross population in this density, Tr(P S^F), for the  !!
+!! gross part of what the cutoff leaves out                             !!
+        xgroall=ZERO
         do icenter=1,nfrlist(iicenter)
-          xx1=xx0+qat(ifrlist(icenter,iicenter),1)
-          do jcenter=1,nfrlist(iicenter)
-            xx0=xx0+op(ifrlist(icenter,iicenter),ifrlist(jcenter,iicenter))
+          jcenter=ifrlist(icenter,iicenter)
+          do j=1,igr
+            do k=1,igr
+              xgroall=xgroall+pk(k,j)*sat(j,k,jcenter)
+            end do
           end do
         end do
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
         write(*,*) " "
-        if(icase.eq.0) write(*,'(2x,a29,x,f8.4)') "Deviation from net population",xmaxo-xx0
         lbl30="Net occupation for fragment"
         write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
@@ -209,7 +214,6 @@
 !$OMP END PARALLEL DO
         lbl30="Gross occupation for fragment"
         write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
-        if(icase.eq.0) write(*,'(2x,a31,x,f8.4)') "Deviation from gross population",xx0-xx1
         write(*,60) (s0all(mu),mu=1,imaxo)
         write(*,*) " "
 
@@ -222,6 +226,7 @@
      +      c0,1,imaxo,cprojfrag,xfitfrag)
           write(*,61) (100.0d0*(1.0d0-xfitfrag(mu)),mu=1,imaxo)
         end if
+        write(*,62) xnetall-xmaxo,xgroall-xx0
         do k=1,imaxo
           do mu=1,igr
             p0(mu,k)=c0(mu,k)
@@ -242,6 +247,7 @@
 
 60    FORMAT("  OCCUP.",8f9.4)
 61    FORMAT("  FIT % ",8f9.2)
+62    FORMAT("  Left out by the cutoff (net / gross):",2f11.5)
 
       end
 
@@ -688,20 +694,31 @@ c max number of effaos
         end do
 
 c actual number of effaos
-        xmaxo=ZERO
+!! kept EFOs: up to all imaxeff of the fragment, above the cutoff;     !!
+!! xmaxo sums their net occupations, xnetall all of them (the matrix is !!
+!! zero outside the fragment's block, so this is its net population)    !!
         imaxo=0
-        i=1
-        do while(pp0(i,i).ge.xminocc.and.i.lt.imaxeff) 
-          xmaxo=xmaxo+pp0(i,i)
+        do i=1,imaxeff
+          if(pp0(i,i).lt.xminocc) exit
           imaxo=i
-          i=i+1
+        end do
+        xmaxo=ZERO
+        do i=1,imaxo
+          xmaxo=xmaxo+pp0(i,i)
+        end do
+        xnetall=ZERO
+        do i=1,igr
+          xnetall=xnetall+pp0(i,i)
         end do
 
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
         write(*,*) " "
-        write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",ifrag,xmaxo
+        write(*,'(2x,a27,3x,i4,f11.5)') "Net occupation for fragment",
+     +    ifrag,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
+        write(*,'(2x,a,f11.5)') 'Left out by the cutoff (net):',
+     +    xnetall-xmaxo
         write(*,*) " "
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
@@ -852,20 +869,31 @@ c
         do i=1,igr
           if(iao_frag(i).eq.ifrag) imaxeff=imaxeff+1
         end do
-        xmaxo=ZERO
+!! kept EFOs: up to all imaxeff of the fragment, above the cutoff;     !!
+!! xmaxo sums their net occupations, xnetall all of them (the matrix is !!
+!! zero outside the fragment's block, so this is its net population)    !!
         imaxo=0
-        i=1
-        do while(pp0(i,i).ge.xminocc.and.i.lt.imaxeff)
-          xmaxo=xmaxo+pp0(i,i)
+        do i=1,imaxeff
+          if(pp0(i,i).lt.xminocc) exit
           imaxo=i
-          i=i+1
+        end do
+        xmaxo=ZERO
+        do i=1,imaxo
+          xmaxo=xmaxo+pp0(i,i)
+        end do
+        xnetall=ZERO
+        do i=1,igr
+          xnetall=xnetall+pp0(i,i)
         end do
 
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
         write(*,*) " "
-        write(*,'(2x,a27,x,i3,x,f10.5)') "Net occupation for fragment",ifrag,xmaxo
+        write(*,'(2x,a27,3x,i4,f11.5)') "Net occupation for fragment",
+     +    ifrag,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
+        write(*,'(2x,a,f11.5)') 'Left out by the cutoff (net):',
+     +    xnetall-xmaxo
         write(*,*) " "
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
@@ -1545,8 +1573,6 @@ c end loop over atoms
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /iops/iopt(200)
       common /atlist/iatlist(maxat),icuat
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /qat/qat(maxat,2),qsat(maxat,2)
 
       dimension chp(itotps,ndim),omp(itotps),omp2(itotps,nat)
       dimension wp(itotps)
@@ -1624,14 +1650,25 @@ c end loop over atoms
           if(pp0(i,i).lt.xmaxocc) exit
           imaxo=i
         end do
+!! kept EFAOs (xmaxo) and all of them (xnetall); Tr(P S^A) (xgroall) !!
+!! for the gross part of what the cutoff leaves out                    !!
         xmaxo=ZERO
-        do i=1,igr
+        do i=1,imaxo
           xmaxo=xmaxo+pp0(i,i)
+        end do
+        xnetall=ZERO
+        do i=1,igr
+          xnetall=xnetall+pp0(i,i)
+        end do
+        xgroall=ZERO
+        do j=1,igr
+          do k=1,igr
+            xgroall=xgroall+pk(k,j)*sat(j,k,icenter)
+          end do
         end do
 
         write(*,'(2x,a7,x,i3,x,a2)') "** ATOM",icenter,"**"
         write(*,*) " "
-        if(icase.eq.0) write(*,'(2x,a29,x,f8.4)') "Deviation from net population",xmaxo-op(icenter,icenter)
         lbl30="Net occupation for atom"
         write(*,'(2x,a30,i4,f11.5)') lbl30,icenter,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xmaxocc
@@ -1657,8 +1694,9 @@ c end loop over atoms
 !$OMP END PARALLEL DO
         lbl30="Gross occupation for atom"
         write(*,'(2x,a30,i4,f11.5)') lbl30,icenter,xx0
-        if(icase.eq.0) write(*,'(2x,a31,x,f8.4)') "Deviation from gross population",xx0-qat(icenter,1)
         write(*,60) (s0all(mu),mu=1,imaxo)
+        write(*,'(2x,a,2f11.5)') 'Left out by the cutoff '//
+     +    '(net / gross):',xnetall-xmaxo,xgroall-xx0
         write(*,*) " "
 
 !! store this atom's EFAOs/occupations into effao_mod (see header). !!

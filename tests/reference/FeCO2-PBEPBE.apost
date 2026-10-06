@@ -149,8 +149,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.21 s
-  TIMING WALL :: atomic definition                                 0.03 s
+  TIMING CPU  :: atomic definition                                 0.17 s
+  TIMING WALL :: atomic definition                                 0.17 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -359,7 +359,7 @@
 
   ** FRAGMENT   1 **
   
-  Net occupation for fragment      1   12.11696
+  Net occupation for fragment      1   12.11689
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
   OCCUP.   0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
@@ -373,9 +373,10 @@
   FIT %     99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
   FIT %     94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
   FIT %     70.62    70.47    58.34
+  Left out by the cutoff (net / gross):    0.00007    0.00024
   ** FRAGMENT   2 **
   
-  Net occupation for fragment      2    6.77991
+  Net occupation for fragment      2    6.77837
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
   OCCUP.   0.0708   0.0060   0.0019
@@ -386,9 +387,10 @@
   
   FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
   FIT %     76.77    53.13     8.70
+  Left out by the cutoff (net / gross):    0.00154    0.00450
   ** FRAGMENT   3 **
   
-  Net occupation for fragment      3    6.77991
+  Net occupation for fragment      3    6.77837
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
   OCCUP.   0.0708   0.0060   0.0019
@@ -399,6 +401,7 @@
   
   FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
   FIT %     76.77    53.13     8.70
+  Left out by the cutoff (net / gross):    0.00154    0.00450
   Total number of eff-AO-s for analysis:   41
 
   -------------------------------------------------
@@ -436,9 +439,9 @@
   
   OVERALL RELIABILITY INDEX R(%) =  96.598
 
-  TIMING CPU  :: EFFAO computation                                 0.34 s
-  TIMING WALL :: EFFAO computation                                 0.06 s
+  TIMING CPU  :: EFFAO computation                                 0.27 s
+  TIMING WALL :: EFFAO computation                                 0.27 s
   TIMING CPU  :: EOS analysis                                      0.00 s
-  TIMING WALL :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.01 s
 
   ...Normal Termination of APOST-3D...
