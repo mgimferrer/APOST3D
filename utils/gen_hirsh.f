@@ -361,14 +361,36 @@ c write to gaussian com file
 
       CALL sameline("Shell types",l,57,nsh)        
       write (*,*) 'shelltypes: ',nsh
+      if(nsh.gt.maxshells.or.nbasf.gt.maxbasisf) then
+        write(*,'(a,a,a,i0,a,i0,a)') ' gen_hirsh: ',trim(fileout),
+     +    ' exceeds ',maxshells,' shells or ',maxbasisf,
+     +    ' basis functions'
+        stop
+      end if
       READ (l,*) shelltypes(1:nsh)
       write(*,*) shelltypes(1:nsh)
+
+!! rho1 evaluates s, sp, p and Cartesian d (6D) and f (10F) shells only; !!
+!! any other type would silently give wrong densities                   !!
+      do nn=1,nsh
+        if(shelltypes(nn).lt.-1.or.shelltypes(nn).gt.3) then
+          write(*,'(a,i0,a,a)') ' gen_hirsh needs Cartesian functions '//
+     +      '(6D 10F in $Gaussian) and no g shells: shell type ',
+     +      shelltypes(nn),' found in ',trim(fileout)
+          stop
+        end if
+      end do
 
 
 
 
       CALL sameline("Number of primitives per shell",l,57,npr)  
       READ (l,*) nprimi(1:npr)
+      if(maxval(nprimi(1:npr)).gt.maxprimicoeff) then
+        write(*,'(a,a,a,i0,a)') ' gen_hirsh: ',trim(fileout),
+     +    ' has shells with more than ',maxprimicoeff,' primitives'
+        stop
+      end if
        
 
       CALL sameline("Primitive exponents",l,57,nprco)
