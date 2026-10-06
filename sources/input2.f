@@ -54,7 +54,7 @@
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension clin(nmax**2)
-      character*80 line
+      character*80 line,line2
       character*20 cform,ctype
       logical ilog
 
@@ -79,6 +79,21 @@
       else if(index(line(11:11),"U").ne.0) then
         cform='Unrestricted'
         iuhf=1
+      else
+
+!! no R/U in the header (pySCF CASSCF, FCI, CCSD): unrestricted only if  !!
+!! the file has Beta MO coefficients, as for kop below                   !!
+        cform='Restricted'
+        do while(.true.)
+          read(15,'(a80)',end=5) line2
+          if(index(line2,"Beta MO co").ne.0) then
+            cform='Unrestricted'
+            exit
+          end if
+        end do
+5       rewind 15
+        read(15,'(a80)') line2
+        read(15,'(a80)') line2
       end if
       write(*,'(2x,a,1x,a)') 'MO formalism                     :',
      +  trim(cform)
