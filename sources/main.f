@@ -184,15 +184,30 @@ c      -------------------------------------------------------------------------
         name3=name0(1:l)//".inp"
         namepat=name0(1:l)
       else
-9999   stop 'The required input filename is missing'
+        stop 'The required input filename is missing'
       end if
 
 !! print version info !!
       call kiir()
 
-!! Processing .inp file !!
-      open (16,file=name3,err=9999)
-      open (15,file=name,err=9999)
+!! the job name is given without extension; both files must exist (an   !!
+!! open without status='old' would create them empty)                   !!
+      if(index(name0(1:l),'.inp',back=.true.).eq.l-3.and.l.ge.4.or.
+     +   index(name0(1:l),'.fchk',back=.true.).eq.l-4.and.l.ge.5) then
+        write(*,'(2x,a,a,a)') 'Give the job name without extension: ',
+     +    'apost3d <jobname> reads <jobname>.inp and <jobname>.fchk'
+        stop ' Job name given with its extension'
+      end if
+      open(16,file=name3,status='old',iostat=ios)
+      if(ios.ne.0) then
+        write(*,'(2x,a,a,a)') 'Input file ',trim(name3),' not found'
+        stop ' Input file not found'
+      end if
+      open(15,file=name,status='old',iostat=ios)
+      if(ios.ne.0) then
+        write(*,'(2x,a,a,a)') 'Wavefunction file ',trim(name),' not found'
+        stop ' Wavefunction file not found'
+      end if
 
       call read_input()
 

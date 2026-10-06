@@ -841,9 +841,13 @@
 
       ival=0
       call locate(16,section,ii)
+
+!! a missing block: the keyword is absent (the caller stops if the     !!
+!! block is required); the end of the file also ends the block         !!
+      if(ii.eq.0) return
       ii=0
       do while(ii.eq.0)
-        read(16,"(a80)") linea
+        read(16,"(a80)",end=20) linea
         ipos=index(linea,keyword)
         if(ipos.ne.0) then
           ival=1
@@ -851,7 +855,7 @@
         end if
         if(index(linea,"#").ne.0) ii=2
       end do
-      return
+20    return
       end
 
 !! ***** !!
@@ -865,39 +869,33 @@
 !!   keyword (in)  -- keyword text to search for                         !!
 !!   intv    (out) -- parsed value, or intdef if not found               !!
 !!   intdef  (in)  -- default value                                      !!
-!!   ilog    (in)  -- 0 = required (stop if missing), 1 = optional       !!
+!!   ilog    (in)  -- unused, kept for the call sites                    !!
 !! author:                                                               !!
 !! ********************************************************************* !!
       subroutine readreal(section,keyword,intv,intdef,ilog)
       character section*(*), keyword*(*)
       character linea*80
-      real*8 intv,intdef
-      integer ilog
+      real*8 intv,intdef,xval
+      integer ilog,ios
 
+      intv=intdef
       call locate(16,section,ii)
-
-!! if the whole section is missing, this jumps straight to the default -- !!
-!! the ilog=0 "required" stop below only fires when the section exists    !!
-!! but the keyword inside it doesn't                                      !!
-      if(ii.eq.0) go to 10
+      if(ii.eq.0) return
       ii=0
       do while(ii.eq.0)
-        read(16,"(a80)") linea
-        ipos=index(linea,keyword)
-        if(ipos.ne.0) then
-          ipos=ipos+1+len(keyword)
-          read(linea(ipos:),*,err=10,end=10) intv
-          ii=1
+        read(16,"(a80)",end=10) linea
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
+          if(linea(ipos:).ne.' ') then
+            read(linea(ipos:),*,iostat=ios) xval
+            if(ios.ne.0) call bad_value(section,keyword,linea)
+            ii=1
+          end if
         end if
         if(index(linea,"#").ne.0) ii=2
       end do
-      if(ilog.eq.0.and.ii.ne.1) then
-        write(*,'(2x,a,1x,a)') trim(keyword),'is required.'
-        stop
-      else if(ii.eq.2) then
-10      intv=intdef
-      end if
-      return
+      if(ii.eq.1) intv=xval
+10    return
       end
 
 !! ***** !!
@@ -911,37 +909,93 @@
 !!   keyword (in)  -- keyword text to search for                         !!
 !!   intv    (out) -- parsed value, or intdef if not found               !!
 !!   intdef  (in)  -- default value                                      !!
-!!   ilog    (in)  -- 0 = required (stop if missing), 1 = optional       !!
+!!   ilog    (in)  -- unused, kept for the call sites                    !!
 !! author:                                                               !!
 !! ********************************************************************* !!
       subroutine readint(section,keyword,intv,intdef,ilog)
       character section*(*), keyword*(*)
       character linea*80
-      integer ipos,ii,intv,intdef,ilog
+      integer ipos,ii,intv,intdef,ilog,ival,ios
 
+      intv=intdef
       call locate(16,section,ii)
-
-!! same pre-existing gap as readreal above -- a missing section jumps    !!
-!! straight to the default, bypassing the ilog=0 "required" stop         !!
-      if(ii.eq.0) goto 40
+      if(ii.eq.0) return
       ii=0
       do while(ii.eq.0)
-        read(16,"(a80)") linea
-        ipos=index(linea,keyword)
-        if(ipos.ne.0) then
-          ipos=ipos+1+len(keyword)
-          read(linea(ipos:),*,end=40) intv
-          ii=1
+        read(16,"(a80)",end=40) linea
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
+          if(linea(ipos:).ne.' ') then
+            read(linea(ipos:),*,iostat=ios) ival
+            if(ios.ne.0) call bad_value(section,keyword,linea)
+            ii=1
+          end if
         end if
         if(index(linea,"#").ne.0) ii=2
       end do
-      if(ilog.eq.0.and.ii.ne.1) then
-        write(*,'(2x,a,1x,a)') trim(keyword),'is required.'
-        stop
-      else if(ii.eq.2) then
-40      intv=intdef
+      if(ii.eq.1) intv=ival
+40    return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: keyword_value                                             !!
+!! purpose: finds keyword in an .inp line as a word ending there         !!
+!!   (followed by a blank, "=" or the end of the line) and returns where !!
+!!   its value starts, after blanks and one optional "=".                !!
+!! arguments:                                                            !!
+!!   linea   (in)  -- the .inp line                                      !!
+!!   keyword (in)  -- keyword text to search for                         !!
+!!   ipos    (out) -- start of the value (beyond the line if none), or   !!
+!!                    0 if the keyword is not there                      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine keyword_value(linea,keyword,ipos)
+      character linea*(*), keyword*(*)
+      integer ipos,i,n
+
+      n=len(linea)
+      ipos=0
+      i=index(linea,keyword)
+      if(i.eq.0) return
+      i=i+len(keyword)
+      if(i.le.n) then
+        if(linea(i:i).ne.' '.and.linea(i:i).ne.'=') return
       end if
-      return
+      do while(i.le.n)
+        if(linea(i:i).ne.' ') exit
+        i=i+1
+      end do
+      if(i.le.n) then
+        if(linea(i:i).eq.'=') i=i+1
+      end if
+      do while(i.le.n)
+        if(linea(i:i).ne.' ') exit
+        i=i+1
+      end do
+      ipos=i
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: bad_value                                                 !!
+!! purpose: stops the run when a keyword's value cannot be read, showing !!
+!!   the block and the line.                                             !!
+!! arguments:                                                            !!
+!!   section, keyword, linea (in) -- block header, keyword, .inp line    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine bad_value(section,keyword,linea)
+      character section*(*), keyword*(*), linea*(*)
+
+      write(*,'(2x,a,a,a,a,a)') 'Cannot read the value of ',
+     +  trim(keyword),' in ',trim(section),':'
+      write(*,'(4x,a)') trim(linea)
+      stop ' Wrong keyword value in the input'
+
       end
 
 !! ***** !!

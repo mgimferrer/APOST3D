@@ -39,6 +39,13 @@
       character*80 namedm
       character*80 namefchk1,namefchk2
 
+!! every input needs # METHOD !!
+      call locate(16,"# METHOD",ii)
+      if(ii.eq.0) then
+        write(*,'(2x,a)') 'The input has no # METHOD block'
+        stop ' # METHOD block not found'
+      end if
+
 !! choose density from fchk file !!
       call readint("# METHOD","DENS",ndens0,1,1)
       iopt(9) = ndens0
@@ -179,6 +186,11 @@
 !! energy decomposition options !!
       call readchar("# METHOD","ENPART",ienpart )
       if(ienpart.eq.1) then
+        call locate(16,"# ENPART",ii)
+        if(ii.eq.0) then
+          write(*,'(2x,a)') 'ENPART needs a # ENPART block'
+          stop ' # ENPART block not found'
+        end if
         xmix=ZERO
         id_xcfunc=0
         id_xfunc=0
@@ -500,17 +512,28 @@
 
         call locate(16,"# DM",ii)
         read(16,'(a80)') namedm
+        namedm=adjustl(namedm)
         if(iorca.eq.1.or.ipyscf.eq.1) then
-          open(11,file=namedm)
+          open(11,file=namedm,status='OLD',iostat=ios)
         else
-          open(11,file=namedm,FORM='UNFORMATTED',status='OLD')
+          open(11,file=namedm,FORM='UNFORMATTED',status='OLD',iostat=ios)
+        end if
+        if(ios.ne.0) then
+          write(*,'(2x,a,a,a)') '# DM: file ',trim(namedm),' not found'
+          stop ' # DM file not found'
         end if
         if(icorr.eq.2) then
           read(16,'(a80)') namedm
+          namedm=adjustl(namedm)
           if(iorca.eq.1.or.ipyscf.eq.1) then
-            open(12,file=namedm)
+            open(12,file=namedm,status='OLD',iostat=ios)
           else
-            open(12,file=namedm,FORM='UNFORMATTED',status='OLD')
+            open(12,file=namedm,FORM='UNFORMATTED',status='OLD',
+     +        iostat=ios)
+          end if
+          if(ios.ne.0) then
+            write(*,'(2x,a,a,a)') '# DM: file ',trim(namedm),' not found'
+            stop ' # DM file not found'
           end if
         end if
       end if
@@ -520,6 +543,11 @@
       ioslo=0
       call readchar("# METHOD","OSLO",ioslo)
       if(ioslo.eq.1) then
+        call locate(16,"# OSLO",ii)
+        if(ii.eq.0) then
+          write(*,'(2x,a)') 'OSLO needs a # OSLO block (it may be empty)'
+          stop ' # OSLO block not found'
+        end if
 
 !! MG: by default requires the TFVC AIM in # METHOD (numerical           !!
 !! integration), but one can ask for OSLOs using Hilbert-space AIMs      !!

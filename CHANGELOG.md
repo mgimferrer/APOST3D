@@ -128,6 +128,13 @@ program, not a full development history — see `git log` for that.
   Davidson-Löwdin and NAO EOS now go to `<jobname>-EOS-EFOs.fchk` like any
   other scheme (Mulliken included); plain `EFFAO` with `LOWDIN` no longer
   leaves stray `fort.44`/`fort.45` files.
+- **Input reading** — a misspelled job name, a missing `.fchk` or `# DM`
+  file, a job name given with its extension, or a missing `# METHOD`,
+  `# ENPART` or `# OSLO` block now stop with a message naming the file or
+  block (a typo used to create empty files and end in a Fortran error).
+  `KEY = value` with spaces is read, a value that can't be read stops the
+  run showing the line (real keywords used to fall back silently to their
+  default), and the last block may end without its closing `#`.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid (in `# GRID` or on the command line), or a radial one
   outside 1–500, now stops the run. In `# GRID` it used to give wrong
