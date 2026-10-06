@@ -95,6 +95,23 @@
       call readchar("# METHOD","QTAIM",iqtaim)
       call readchar("# METHOD","READINT",ireadint)
       if(ireadint.eq.1) iqtaim=2
+!! plain Becke atoms (fixed empirical radii) only on request; "BECKE"   !!
+!! is also inside "BECKE-RHO", which selects its own scheme             !!
+      call readchar("# METHOD","BECKE",ibecke)
+      if(ibcp.eq.1) ibecke=0
+
+!! no atomic definition at all: the TFVC flags, with a warning (itfvcdef) !!
+      itfvcdef=0
+      if(imulli.eq.0.and.ihirsh.eq.0.and.ibcp.eq.0.and.inewbec.eq.0
+     +   .and.itfvc.eq.0.and.iqtaim.eq.0.and.ibecke.eq.0) then
+        itfvc=1
+        ibcp=1
+        inewbec=1
+        itfvcdef=1
+        write(*,'(2x,a)') 'WARNING: no atomic definition in # METHOD, '//
+     +    'TFVC used; add TFVC or the scheme you want'
+      end if
+
       if(iqtaim.eq.1) then
         call readint("# QTAIM","STEP",istep,300,1)
         call readint("# QTAIM","NNA",inna,0,1)

@@ -843,6 +843,7 @@
 
 !! atoms in molecules (Hilbert-space + real-space AIM selection) !!
    integer :: imulli,ihirsh,inewbec,istiff,iradmat,itfvc
+   integer :: ibecke,itfvcdef
 
 !! QTAIM !!
    integer :: iqtaim,istep,inna,imaxdist,iscreening,ipath

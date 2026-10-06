@@ -6,6 +6,8 @@
      "description": "Topological Fuzzy Voronoi Cells real-space atomic partitioning",                          "priority": "high"},
     {"id": "BECKE-RHO",       "key": "BECKE-RHO",         "section": "# METHOD",   "category": "partitioning",
      "description": "Becke fuzzy-cell partitioning with rho correction",                                       "priority": "high"},
+    {"id": "BECKE",           "key": "BECKE",             "section": "# METHOD",   "category": "partitioning",
+     "description": "Becke fuzzy-cell partitioning with fixed empirical radii (plain Becke)",              "priority": "medium"},
     {"id": "HIRSH",           "key": "HIRSH",             "section": "# METHOD",   "category": "partitioning",
      "description": "Hirshfeld stockholder partitioning",                                                      "priority": "high"},
     {"id": "HIRSH-IT",        "key": "HIRSH-IT",          "section": "# METHOD",   "category": "partitioning",

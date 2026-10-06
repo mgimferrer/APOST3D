@@ -239,7 +239,10 @@
 !! is checked first and BECKE-RHO/NEWBEC are only reported when they !!
 !! are the reason those flags are set, not a TFVC side effect        !!
       cbuf=' '
-      if(itfvc.eq.1) cbuf=trim(cbuf)//' TFVC (Topological Fuzzy Voronoi Cells);'
+      if(itfvc.eq.1.and.itfvcdef.eq.0)
+     +  cbuf=trim(cbuf)//' TFVC (Topological Fuzzy Voronoi Cells);'
+      if(itfvcdef.eq.1) cbuf=trim(cbuf)//' TFVC (none given in # METHOD);'
+      if(ibecke.eq.1) cbuf=trim(cbuf)//' BECKE (fixed empirical radii);'
       if(ibcp.eq.1.and.itfvc.ne.1)
      +  cbuf=trim(cbuf)//' BECKE-RHO;'
       if(inewbec.eq.1.and.itfvc.ne.1)

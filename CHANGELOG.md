@@ -73,6 +73,10 @@ program, not a full development history — see `git log` for that.
   `DOFRAGS` and a `# FRAGMENTS` block instead of giving every atom its own
   oxidation state by default. For one oxidation state per atom, define
   every atom as a fragment of its own.
+- **Atomic definition** — always write one in `# METHOD`. An input
+  without any now runs with `TFVC` and a warning (it used plain Becke
+  atoms with fixed radii); those are selected with the new `BECKE`
+  keyword.
 
 ### Code optimization / parallelization
 

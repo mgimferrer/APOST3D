@@ -5,8 +5,7 @@ more analyses and the general options.
 
 ## Atomic definition
 
-Give one. Without any, Becke-type fuzzy atoms with fixed radii are used; `TFVC` is
-recommended instead. How to choose is explained in
+Always give one; `TFVC` is recommended. How to choose is explained in
 [Atoms in molecules](../guide/aim.md).
 
 | Keyword | Scheme | Type |
@@ -15,6 +14,7 @@ recommended instead. How to choose is explained in
 | `HIRSH` | Hirshfeld (needs a `densoutput` file) | real space |
 | `HIRSH-IT` | Iterative Hirshfeld (needs a `densoutput` file) | real space |
 | `BECKE-RHO` | Becke atoms with radii from the density (superseded by `TFVC`) | real space |
+| `BECKE` | Becke atoms with fixed empirical radii | real space |
 | `MULLIKEN` | Mulliken | Hilbert space |
 | `LOWDIN` | Löwdin | Hilbert space |
 | `LOWDIN-DAVIDSON` | Löwdin-Davidson | Hilbert space |
