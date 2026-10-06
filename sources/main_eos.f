@@ -201,7 +201,7 @@ c      if(idummy.eq.1) ieffao=3
       call readint("# METHOD","EFF_THRESH",ieffthr,1,1)
       call readchar("# METHOD","CUBE",icube)
       if(icube.eq.1) then
-       call locate(16,"# CUBE",ii)
+       call locate_block(16,"# CUBE",ii)
        if(ii.eq.0) stop'Required section # CUBE not found in input file'
        call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
        call readint("# CUBE","MIN_OCC",kcubthr,0,1)
@@ -224,7 +224,7 @@ C Do for restricted number of atoms
       idoat=0
       call readchar("# METHOD","DOATOMS",idoat)
       if(idoat.eq.1) then
-        call locate(16,"# ATOMS",ii)
+        call locate_block(16,"# ATOMS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
         read(16,*) icuat
         read(16,*) (iatlist(i),i=1,icuat)
@@ -239,7 +239,7 @@ c Do for fragments
       idofr=0
       call readchar("# METHOD","DOFRAGS",idofr)
       if(idofr.eq.1) then
-        call locate(16,"# FRAGMENTS",ii)
+        call locate_block(16,"# FRAGMENTS",ii)
         if(ii.eq.0) stop 'Required section not found in input file'
         read(16,*) icufr
         do i=1,icufr
@@ -301,13 +301,13 @@ c for compatibility
 
 C READING DM1 and DM2  
       if(icorr.ne.0) then 
-        call locate(16,"# DM",ii)
+        call locate_block(16,"# DM",ii)
         if(ii.eq.0) stop " # DM section not found in input file "
         call readchar("# DM","pySCF",ipyscf)
         call readchar("# DM","ORCA",iorca)
         call readchar("# DM","DMRG",idmrg)
 
-        call locate(16,"# DM",ii)
+        call locate_block(16,"# DM",ii)
         read(16,'(a80)') namedm
         if(iorca.eq.1.or.ipyscf.eq.1) then
           open(11,file=namedm)

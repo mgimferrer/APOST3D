@@ -54,8 +54,9 @@ analyses.
 - **No comments inside a block.** Any line that contains a `#` ends the
   block, so a `## comment` line hides every keyword after it. Keywords
   written after the closing `#` of a block are ignored without warning.
-- Keywords are recognized anywhere in a line, also inside longer words, so
-  don't add free text to keyword lines.
+- **Keywords are whole words**, made of letters, digits, `-` and `_`
+  (`FOLI_TOLERANCE`, `LOWDIN-DAVIDSON`): `EOS` is not read inside
+  `EOS_THRESH`. A block header is alone on its line (`# OSLO`).
 - Check the `INPUT SUMMARY` at the top of the output: it lists the
   analyses and options as the program understood them. An analysis
   missing from it was not read.

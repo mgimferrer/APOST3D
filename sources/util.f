@@ -213,7 +213,7 @@ C trasnform to the AO basis
       dimension sat(nbasis,nbasis,natoms)
 
 c loop over atoms
-       call locate(16,"# INTFILES",ii)
+       call locate_block(16,"# INTFILES",ii)
        if(ii.eq.0)  stop 'Required section not found in input file'
         do ia=1,nat
          read(16,'(a80)') linia   

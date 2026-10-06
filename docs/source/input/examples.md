@@ -99,8 +99,8 @@ DOFRAGS
 #
 # OSLO
 LOWDIN
-FOLI TOLERANCE 3
-PRINT NON-ORTHO
+FOLI_TOLERANCE 3
+PRINT_NONORTHO
 #
 # FRAGMENTS
 3
@@ -115,7 +115,7 @@ PRINT NON-ORTHO
 Oxidation states from localized orbitals, with three fragments: atom 1,
 atoms 2 and 3, and the remaining atoms. The orbitals are localized on the
 `TFVC` grid, while the fragment populations that enter the FOLI use
-Löwdin atoms (`LOWDIN` in `# OSLO`). `PRINT NON-ORTHO` also writes the
+Löwdin atoms (`LOWDIN` in `# OSLO`). `PRINT_NONORTHO` also writes the
 OSLOs before orthogonalization to a second `.fchk` file. See
 [OSLO](../methods/oslo.md).
 

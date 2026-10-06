@@ -12,7 +12,7 @@ program, not a full development history — see `git log` for that.
   oxidation-state analysis (`# METHOD GEOS`), built from paired/unpaired
   densities separately (Takatsuka's definition) rather than the total
   density alone, complementing the existing EOS method.
-- **DFT-DM1** (in development, not documented yet) — a new analysis method (`# METHOD DFT-DM1`) for
+- **DFT-DM1** (in development, not documented yet) — a new analysis method (`DFTDM1` in `# METHOD`) for
   UHF/UKS-DFT wavefunctions: builds an approximate one-particle density
   matrix from the local exchange-energy density and prints per-atom-pair
   exchange energies and bond orders, with an optional natural-orbital
@@ -77,6 +77,14 @@ program, not a full development history — see `git log` for that.
   without any now runs with `TFVC` and a warning (it used plain Becke
   atoms with fixed radii); those are selected with the new `BECKE`
   keyword.
+
+- **Keywords are whole words** — a keyword is no longer recognized inside a
+  longer word (e.g. `EOS_THRESH` switched on `EOS`), a block header must be
+  alone on its line, and the file names in `# DM` are never read as
+  keywords. `FOLI TOLERANCE`, `BRANCH ITERATION` and `PRINT NON-ORTHO`
+  (`# OSLO`) are now written `FOLI_TOLERANCE`, `BRANCH_ITERATION` and
+  `PRINT_NONORTHO`; the old spellings stop with a message. `MULLIKEN` and
+  `MULLI` both select Mulliken atoms.
 
 ### Code optimization / parallelization
 

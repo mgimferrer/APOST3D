@@ -1,14 +1,14 @@
 !! ********************************************************************* !!
 !! subroutine: dft_dm1                                                   !!
-!! purpose: DFT-DM1 (`# METHOD`/`DFT-DM1`, formerly referred to           !!
+!! purpose: DFT-DM1 (`# METHOD`/`DFTDM1`, formerly referred to            !!
 !!   internally as HIRAO) -- builds a Hirao-style approximate one-       !!
 !!   particle RDM1 for UHF/UKS-DFT from the local exchange-energy        !!
 !!   density, then reports: the RDM1's exchange energy and bond-order    !!
 !!   (delocalization-index) matrices, the exact HF-type exchange from    !!
-!!   the real KS orbitals for comparison, and (opt-in, `# DFT-DM1`'s     !!
+!!   the real KS orbitals for comparison, and (opt-in, `# DFTDM1`'s      !!
 !!   `NATORB`) the RDM1 projected onto the AO basis and diagonalized for !!
 !!   natural-orbital occupations. Builds its own rotated second grid      !!
-!!   internally (see `# DFT-DM1`'s `MOD-GRIDTWOEL`/`# GRID`); the first   !!
+!!   internally (see `# DFTDM1`'s `MOD-GRIDTWOEL`/`# GRID`); the first    !!
 !!   grid (`wp`/`omp2`/`pcoord`/`chp`) is the caller's (`main.f`).        !!
 !! arguments:                                                            !!
 !!   itotps (in) -- total grid points on the first grid                  !!
@@ -324,7 +324,7 @@
 
 !! RDM1 -> AO BASIS -> DIAGONALIZE -> NATURAL ORBITAL OCCUPATIONS !!
 
-!! opt-in (# DFT-DM1's NATORB) -- redoes the main loop's per-pair work,  !!
+!! opt-in (# DFTDM1's NATORB) -- redoes the main loop's per-pair work,   !!
 !! then additionally accumulates an igr x igr matrix element per         !!
 !! surviving pair, so it's costly even parallelized; kept separate and   !!
 !! opt-in rather than folded into the main loop above.                   !!
