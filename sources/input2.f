@@ -699,8 +699,9 @@
 !! integration-error checks compare against, from custom fields appended  !!
 !! to the .fchk by the project's own post-processing scripts (Gaussian:   !!
 !! utils/get_energy(_g16); ORCA: orca2fchk) -- not a stock Gaussian/ORCA  !!
-!! field. Also detects and reads an ECP matrix if present, returning      !!
-!! per-atom (Mulliken-type) ECP energies.                                 !!
+!! field; pySCF: utils/apost3d.py. Also reads an ECP matrix if present,   !!
+!! returning per-atom (Mulliken-type) ECP energies; the reference E-N     !!
+!! then includes the ECP energy (ENPART adds eecp to the E-N terms).      !!
 !! arguments:                                                             !!
 !!   iecp (out) -- 1 if an ECP matrix was found in the .fchk, 0 otherwise !!
 !!   eecp (out) -- per-atom ECP energy (only filled if iecp=1)            !!
@@ -751,30 +752,29 @@
       end if
 893   continue
 
-!! pseudopotential (ECP) matrix, if present. !!
+!! pseudopotential (ECP) matrix, if present: header "ECP Matrix ... N=" !!
+!! then the lower triangle of the AO matrix, as written by the utilities.  !!
       iecp=0
       rewind(15)
 998   read(15,'(a80)',end=897) line
-      if(index(line,"ECP Mat").ne.0) then
-        iecp=1
-        write(*,'(2x,a)') 'Pseudopotential matrix found in .fchk file'
-      else
-        go to 998
-      end if
+      if(index(line,"ECP Mat").eq.0) go to 998
+      iecp=1
 897   continue
 
       if(iecp.eq.1) then
-
-!! matched string is "ECP-Mat", not "ECP Mat" (no hyphen) as above --   !!
-!! a leading blank there previously broke the match.                    !!
-999     read(15,'(a80)',end=1000) line
-        if(index(line,"ECP-Mat").ne.0) then
-          read(line(51:66),'(i17)') nn
-          ALLOCATE(xecpv(nn))
-          read(15,*) (xecpv(i),i=1,nn)
-        else
-          go to 999
+        write(*,'(2x,a)') 'Pseudopotential matrix found in .fchk file'
+        ntri=igr*(igr+1)/2
+        nn=-1
+        i=index(line,"N=")
+        if(i.gt.0) read(line(i+2:),*,iostat=ios) nn
+        if(nn.ne.ntri) then
+          write(*,'(2x,a,i0,a,i0,a)') 'ECP Matrix: ',nn,
+     +      ' values announced, ',ntri,' expected (lower triangle)'
+          stop ' Wrong ECP Matrix size in the .fchk file'
         end if
+        ALLOCATE(xecpv(ntri))
+        read(15,*,iostat=ios) (xecpv(i),i=1,ntri)
+        if(ios.ne.0) stop ' ECP Matrix in the .fchk file is incomplete'
 
 !! lower-triangular packed -> full symmetric matrix. !!
         ALLOCATE(xecpm(igr,igr))
@@ -801,12 +801,11 @@
           xecp=xecp+xxx
         end do
         DEALLOCATE(xecpm)
-        write(*,'(a27,es27.15)') ' Pseudopotential Energy :',xecp
-        write(*,'(5ES16.5)') (eecp(i),i=1,nat)
+        write(*,'(2x,a,1x,f16.8)') 'Pseudopotential energy (au)      :',
+     +    xecp
       end if
 
       return
-1000  stop ' ECP Matrix not found'
       end
 
 !! ***** !!

@@ -25,7 +25,7 @@ appended to the `.fchk` file:
 ```bash
 formchk mol.chk mol.fchk
 $APOST3D_PATH/utils/get_energy_g16 mol.log >> mol.fchk    # Gaussian 16
-$APOST3D_PATH/utils/get_energy mol.log >> mol.fchk        # Gaussian 09
+$APOST3D_PATH/utils/get_energy mol.log >> mol.fchk        # Gaussian 09 (to be removed)
 ```
 
 The appended lines look like
@@ -35,6 +35,15 @@ Kinetic Energy                             R      7.588542606845000E+01
 Electron-Nuclei Energy                     R     -1.989264523541000E+02
 Electron-Electron Energy                   R      3.787105778929102E+01
 ```
+
+With pseudopotentials, the ECP integral matrix printed in the output file
+is appended too (`ECP Matrix`), for ENPART to split the ECP energy among
+the atoms.
+
+If the output file is incomplete (the calculation did not end normally)
+or lacks one of the lines they need, the programs print an error message,
+add nothing to the `.fchk` file and exit with code 1. `get_energy`
+(Gaussian 09) will be removed in a future version.
 
 ## gen_hirsh
 

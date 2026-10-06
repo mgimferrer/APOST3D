@@ -90,6 +90,13 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
         exch_hf=-0.5*numpy.trace(numpy.matmul(dm[0],mf.get_k()[0]))
         exch_hf+=-0.5*numpy.trace(numpy.matmul(dm[1],mf.get_k()[1]))
       ss=mf.spin_square()
+# pseudopotentials: the reference E-N includes the ECP energy, and the ECP
+# matrix is written for APOST-3D's per-atom split (ENPART)
+    vecp=None
+    if mol.has_ecp():
+      vecp=mol.intor_symmetric('ECPscalar')
+      dmt=dm if numpy.ndim(dm)==2 else dm[0]+dm[1]
+      elnuc+=numpy.trace(numpy.matmul(vecp,dmt))
     vee=energy -repul - kin - elnuc
     if ksdft:
       xmix=dft.libxc.hybrid_coeff(mf.xc)
@@ -235,16 +242,18 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
     nameHandle = open(titol+'.fchk', 'w')
 
     nameHandle.write('Automatically generated file for job '+titol + '\n')
+# basis name for the header line (Gen for a per-element basis, as Gaussian)
+    basis_name=mol.basis if isinstance(mol.basis,str) else 'Gen'
     if cas==1:
-      nameHandle.write('SP        CASSCF '   + mol.basis+ '\n')
+      nameHandle.write('SP        CASSCF '   + basis_name+ '\n')
     elif unrest==1:
-      nameHandle.write('SP        Unrestricted'+ mol.basis+ '\n')
+      nameHandle.write('SP        Unrestricted'+ basis_name+ '\n')
     elif rohf==1 :
-      nameHandle.write('SP        RO calculation  '   + mol.basis+ '\n')
+      nameHandle.write('SP        RO calculation  '   + basis_name+ '\n')
     elif ccsd==1 :
-      nameHandle.write('SP        CCSD   '   + mol.basis+ '\n')
+      nameHandle.write('SP        CCSD   '   + basis_name+ '\n')
     else:
-      nameHandle.write('SP        Restricted  '   + mol.basis+ '\n')
+      nameHandle.write('SP        Restricted  '   + basis_name+ '\n')
 
     print('Number of atoms'.ljust(43)+'I     ',"%11i"% (natoms),file=nameHandle)
 
@@ -480,6 +489,15 @@ def write_fchk(mol, mf, titol,matriu_overlap,unrest=None,myhf=None):
       print('DFT-exchange Energy'.ljust(43)+'R    ',"%22.15E"% (exch_dft),file=nameHandle)
       print('Total Exchange Energy'.ljust(43)+'R    ',"%22.15E"% (vhf.exc),file=nameHandle)
       if xmix != 0 : print('% of Exact-exchange'.ljust(43)+'R    ',"%22.15E"% (xmix),file=nameHandle)
+    if vecp is not None:
+      val=[]
+      for j in range(indep_bf):
+        for i in range(j+1):
+          overlap=numpy.sqrt(matriu_overlap[imap[i]][imap[i]])*numpy.sqrt(matriu_overlap[imap[j]][imap[j]])
+          val.append(vecp[imap[i]][imap[j]]/overlap)
+      print('ECP Matrix'.ljust(43)+'R   N=',"%11i"%(n2),file=nameHandle)
+      nums=["{:16.8E}".format(i) for i in (val)]
+      print('\n'.join(''.join(nums[i:i+5]) for i in range(0, len(nums), 5)),file=nameHandle)
 
 ####################
 ## end write_fchk ##

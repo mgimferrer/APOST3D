@@ -89,8 +89,7 @@
 !! pseudopotential atomic energies (if present), added to the E-N terms !!
       call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
-        write(*,*) "Adding ECP atomic energies to E-N terms"
-        write(*,*) " "
+        write(*,'(2x,a)') 'ECP atomic energies added to the E-N terms'
         do ii=1,nat
           epa(ii,ii)=eecp(ii)
         end do
@@ -1083,8 +1082,7 @@
 !! pseudopotential atomic energies (if present), added to the E-N terms !!
       call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
-        write(*,*) "Adding ECP atomic energies to E-N terms"
-        write(*,*) " "
+        write(*,'(2x,a)') 'ECP atomic energies added to the E-N terms'
         do i=1,nat
           epa(i,i)=eecp(i)
         end do
