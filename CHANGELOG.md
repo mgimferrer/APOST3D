@@ -147,6 +147,10 @@ program, not a full development history — see `git log` for that.
   wrong densities.
 - **`DM 1`/`DM 2` with a single-determinant `.fchk`** — now stops with a
   message instead of failing in the diagonalization of an empty matrix.
+- **`DENS n`** — densities are now counted the same way in Gaussian,
+  Q-Chem and pySCF files (with Q-Chem files `DENS 2` read the third
+  density), the output lists them, and an unrestricted or ROHF
+  wavefunction stops instead of silently using the SCF density.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid (in `# GRID` or on the command line), or a radial one
   outside 1–500, now stops the run. In `# GRID` it used to give wrong

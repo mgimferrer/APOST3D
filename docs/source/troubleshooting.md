@@ -110,9 +110,13 @@ printed), the radial points between 1 and 500. See [# GRID](input/grid.md).
 **`# DM section not found in input file`**
 `DM 1` or `DM 2` is set but there is no `# DM` block.
 
-**`Density number <n> not found in the fchk file`**
-`DENS` asks for a density that the `.fchk` file doesn't contain; see
+**`STOP DENS: density not found`**
+`DENS` asks for a density that the `.fchk` file doesn't contain (the
+output lists the ones it has); see
 [Preparing the wavefunction](guide/wavefunctions.md#gaussian).
+
+**`STOP DENS: unrestricted wavefunction`**
+`DENS` above 1 works only with restricted wavefunctions.
 
 ## Atomic definitions
 
