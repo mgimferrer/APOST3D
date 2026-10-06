@@ -160,8 +160,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.05 s
-  TIMING WALL :: atomic definition                                 0.05 s
+  TIMING CPU  :: atomic definition                                 0.07 s
+  TIMING WALL :: atomic definition                                 0.01 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -345,15 +345,17 @@
   Gross occupation for fragment    1    9.72191
   OCCUP.   2.0000   1.9971   1.9555   1.9555   1.6233   0.0760   0.0760   0.0377
   OCCUP.   0.0008
+  Left out by the cutoff (net / gross):    0.00000    0.00000
   
   ** FRAGMENT   2 **
   
-  Net occupation for fragment      2    8.14972
+  Net occupation for fragment      2    8.14971
   Net occupation using >    0.00010
   OCCUP.   1.9986   1.9526   1.9037   1.9026   0.3193   0.0357   0.0356   0.0016
   
   Gross occupation for fragment    2    8.27858
   OCCUP.   1.9992   1.9625   1.9245   1.9239   0.3767   0.0444   0.0444   0.0030
+  Left out by the cutoff (net / gross):    0.00001    0.00001
 
   ------------------------------------
     EFFAOs FROM THE UNPAIRED DENSITY
@@ -361,12 +363,13 @@
 
   ** FRAGMENT   1 **
   
-  Net occupation for fragment      1   -0.00000
+  Net occupation for fragment      1    0.00000
   Net occupation using >    0.00010
   OCCUP.
   
   Gross occupation for fragment    1    0.00000
   OCCUP.
+  Left out by the cutoff (net / gross):   -0.00000   -0.00000
   
   ** FRAGMENT   2 **
   
@@ -376,10 +379,11 @@
   
   Gross occupation for fragment    2    0.00000
   OCCUP.
+  Left out by the cutoff (net / gross):    0.00000    0.00000
   
 
-  TIMING CPU  :: EFFAO computation                                 0.05 s
-  TIMING WALL :: EFFAO computation                                 0.05 s
+  TIMING CPU  :: EFFAO computation                                 0.06 s
+  TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

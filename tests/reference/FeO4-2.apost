@@ -158,7 +158,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.73 s
+  TIMING CPU  :: atomic definition                                 0.72 s
   TIMING WALL :: atomic definition                                 0.11 s
 
   -----------------------------
@@ -1637,7 +1637,7 @@
   --------------------- 
   Number of OSLOs for LinDep evaluation:   6
   
-  Lowest eigenvalue obtained (LinDep):    0.00000
+  Lowest eigenvalue obtained (LinDep):   -0.00000
   
   *********************************** 
    WARNING : LINEAR DEPENDENCY FOUND  
@@ -1762,7 +1762,7 @@
      5         -2.00
   ------------------------ 
   
-  TIMING CPU  :: OSLO analysis                                     1.48 s
-  TIMING WALL :: OSLO analysis                                     1.32 s
+  TIMING CPU  :: OSLO analysis                                     1.47 s
+  TIMING WALL :: OSLO analysis                                     1.31 s
 
   ...Normal Termination of APOST-3D...

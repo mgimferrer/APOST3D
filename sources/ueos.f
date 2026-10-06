@@ -207,9 +207,27 @@
             end do
           end if
 
+!! net occupation of the kept EFOs (xmaxo) and of all of them         !!
+!! (xnetall, negative paired EFOs included); Tr(D S^F) of this channel's !!
+!! density (xgroall): the differences are what the cutoff leaves out    !!
           xmaxo=ZERO
-          do ii=1,igr
+          do ii=1,imaxo
             xmaxo=xmaxo+pp0(ii,ii)
+          end do
+          xnetall=ZERO
+          do ii=1,igr
+            xnetall=xnetall+pp0(ii,ii)
+          end do
+          xgroall=ZERO
+          do icenter=1,nfrlist(iicenter)
+            jcenter=ifrlist(icenter,iicenter)
+            do jj=1,igr
+              do kk=1,igr
+                if(icase.eq.1) xx=Pno(kk,jj)-Uno(kk,jj)
+                if(icase.eq.2) xx=Uno(kk,jj)
+                xgroall=xgroall+xx*sat(jj,kk,jcenter)
+              end do
+            end do
           end do
 
           write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
@@ -290,6 +308,7 @@
      +        c0,1,imaxo,cprojfrag,xfitfrag)
             write(*,61) (100.0d0*(1.0d0-xfitfrag(mu)),mu=1,imaxo)
           end if
+          write(*,62) xnetall-xmaxo,xgroall-xx0
 
 !! just for printing purposes... style of the output !!
           if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
@@ -409,6 +428,7 @@
 
 60    FORMAT("  OCCUP.",8f9.4)
 61    FORMAT("  FIT % ",8f9.2)
+62    FORMAT("  Left out by the cutoff (net / gross):",2f11.5)
 
       end
 

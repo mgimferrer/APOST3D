@@ -108,7 +108,7 @@ fragment gets one entry per density:
 ```text
   ** FRAGMENT   1 **
 
-  Net occupation for fragment      1   12.11696
+  Net occupation for fragment      1   12.11689
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
   OCCUP.   0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
@@ -118,16 +118,22 @@ fragment gets one entry per density:
   OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
   OCCUP.   0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
   OCCUP.   0.0124   0.0117   0.0034
+
   FIT %     99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
-  ...
+  FIT %     94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
+  FIT %     70.62    70.47    58.34
+  Left out by the cutoff (net / gross):    0.00007    0.00024
 ```
 
-- `Net occupation for fragment` is the net (alpha) population of the
-  fragment; the first `OCCUP.` rows list the net occupations of its EFOs,
+- The first `OCCUP.` rows list the net occupations of the fragment's EFOs,
   in decreasing order, 8 per line. Only EFOs with net occupation above
-  0.001 are listed.
+  0.001 are listed, and `Net occupation for fragment` is their sum.
 - `Gross occupation for fragment` and the second `OCCUP.` rows are the
   same for the gross occupations, in the same order.
+- `Left out by the cutoff` is what the listed EFOs miss of the fragment's
+  net and gross (alpha) population: the occupations of the EFOs below
+  0.001. Small values mean the listed EFOs describe the fragment's density
+  well. With Mulliken, Löwdin or NAO atoms only the net value is printed.
 - `FIT %` (real-space schemes) measures how well each EFO can be
   written in terms of the basis functions, which is how `EOS` and `GEOS`
   write them to a `.fchk` file (see

@@ -111,6 +111,14 @@ program, not a full development history — see `git log` for that.
   fewer orbitals than electrons now stops instead of assigning electrons
   wrongly, very low or negative values no longer crash, and the overall
   reliability index R(%) is defined for systems without beta electrons.
+- **EFFAO/EOS/GEOS fragment sums** — `Net occupation for fragment` is now
+  the sum over the listed orbitals (above the cutoff) in every scheme, like
+  the gross one (in real space it summed all orbitals, negative GEOS ones
+  included), and a new `Left out by the cutoff` line gives what the listed
+  orbitals miss of the fragment's population. It replaces the `Deviation
+  from net/gross population` lines, which were not computed correctly.
+  With Mulliken or Löwdin atoms, a fragment with a single basis function
+  no longer loses its only orbital.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid (in `# GRID` or on the command line), or a radial one
   outside 1–500, now stops the run. In `# GRID` it used to give wrong
