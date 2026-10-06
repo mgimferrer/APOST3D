@@ -5,6 +5,10 @@ Messages are quoted as the program prints them. A message starting with
 
 ## Building
 
+**`ERROR: make not found on PATH.`**
+Install `make` (see [Installation](installation.md)), then rerun the
+script.
+
 **`gfortran >= 10 is required`**
 Install a newer compiler (`sudo apt install gfortran-12`, `brew install
 gcc`, or `module load` a newer GCC on a cluster), then run
@@ -19,6 +23,21 @@ Install it (see [Installation](installation.md)), or point at it:
 **`ERROR: cmake not found (>= 3.21 required).`**, or **`ERROR: cmake <version> found, but libxc 7.1.2 needs >= 3.21.`**
 The automatic libxc build needs CMake 3.21 or newer. `pip install --user
 cmake` installs one without administrator rights.
+
+**`ERROR: curl not found, needed to download libxc`**
+Install `curl`. On a machine without internet access, download the file
+named in the message on another machine and copy it to the place the
+message gives; the script then uses it.
+
+**`ERROR: the libxc in LIBXC_DIR (...) cannot be used: <reason>`**
+The libxc that `LIBXC_DIR` points to has no Fortran interface, its Fortran
+modules were written by another gfortran version, or it is older than
+7.0. Point `LIBXC_DIR` at a libxc 7 (or newer) built with the same
+gfortran, or unset it (`unset LIBXC_DIR`) to let the script build its own.
+
+**`libxc: the one found by pkg-config (<version>) cannot be used: ... Using the bundled copy instead.`**
+Information only: a libxc installed on the system is not suitable (same
+reasons as above), so the script builds and uses its own copy.
 
 **`cannot find -lxcf03` or `-lxc`**
 libxc was not built. Run `bash make_compile.sh`, which builds it; when

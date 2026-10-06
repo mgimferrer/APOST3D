@@ -200,7 +200,10 @@ program, not a full development history — see `git log` for that.
   change to any computed energy or property, verified bit-for-bit against
   reference outputs. Fetched and built automatically on first compile if
   no suitable existing install is found, rather than shipped as a bundled
-  copy.
+  copy. An installed libxc is used only if it is version 7.0 or newer
+  (newer releases need no change) and its Fortran interface works with the
+  gfortran in use; `make_compile.sh` checks this, and every other
+  prerequisite, before it starts compiling.
 - **New documentation website** — a full documentation site is now
   available at [apost3d.readthedocs.io](https://apost3d.readthedocs.io).
 - **More consistent program output** — formatting of the printed output
