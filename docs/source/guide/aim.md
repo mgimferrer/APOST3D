@@ -30,7 +30,7 @@ are possible.
 | `HIRSH` | **Hirshfeld.** Each atom gets the share of the density that its free, spherical atom would have in the promolecule. Needs the free-atom densities in a `densoutput` file. |
 | `HIRSH-IT` | **Iterative Hirshfeld (Hirshfeld-I).** Like Hirshfeld, but the free-atom densities are iterated to the charges of the atoms in the molecule. Needs `densoutput`, with several charge states per element. |
 | `BECKE-RHO` | Becke atoms with radii from the density minima, without the TFVC correction. Superseded by `TFVC`. |
-| *(none)* | Becke-type fuzzy atoms with fixed empirical atomic radii. |
+| `BECKE` | Becke-type fuzzy atoms with fixed empirical atomic radii, the original scheme of the program. |
 
 The `densoutput` file for the Hirshfeld schemes is built with
 [`gen_hirsh`](../tools/utilities.md), which runs Gaussian on the free

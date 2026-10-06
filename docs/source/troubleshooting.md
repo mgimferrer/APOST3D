@@ -150,6 +150,11 @@ with `EFF_THRESH` (in thousandths, default 1) and leaves too few orbitals
 to place every electron, or more than the program can pool. Remove the
 keyword or bring it back towards the default.
 
+**`WARNING: no atomic definition in # METHOD, TFVC used`**
+`# METHOD` names no atomic definition. The run goes on with `TFVC`, but
+write it (or the scheme you want) in the input; see
+[Atoms in molecules](guide/aim.md).
+
 **`STOP DM needs a correlated-wavefunction .fchk`**
 `DM 1`/`DM 2` are set with an HF or KS-DFT `.fchk`. The RDM files go with
 the `.fchk` of the correlated calculation (CASSCF, FCI, CI) they come from.
