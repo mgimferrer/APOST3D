@@ -148,7 +148,7 @@ c      -------------------------------------------------------------------------
       common /iops/iopt(200)
 !! for enpart !!
       dimension eto(maxat,maxat)
-      character*60 name,name2,namepat,name3,name0
+      character*60 name,name2,namepat,name3,name0,cgridarg
       character*80 line
 !! for testing !!
       dimension xhess(3,3)
@@ -189,6 +189,14 @@ c      -------------------------------------------------------------------------
 
 !! print version info !!
       call kiir()
+
+!! the grid is set in # GRID, no longer on the command line !!
+      CALL GETARG(2,cgridarg)
+      if(cgridarg.ne."") then
+        write(*,'(2x,a)') 'The integration grid is no longer given on '//
+     +    'the command line: use RADIAL and ANGULAR in # GRID'
+        call apost_stop(' Grid on the command line')
+      end if
 
 !! the job name is given without extension; both files must exist (an   !!
 !! open without status='old' would create them empty)                   !!
@@ -352,7 +360,7 @@ c      iopt(33) =
       iopt(42) = kcubthr
       iopt(43) = iorca
       iopt(44) = ithrebod
-      iopt(45) = ifinegrid
+!      iopt(45) = ifinegrid
       iopt(46) = ipolar
       iopt(47) = ifield
       iopt(48) = iradmat
@@ -577,7 +585,7 @@ c      iopt(200) =
       else
 
 !! Prepare for numerical integrations !!
-        call build_integration_grid(ienpart, ipolar,ifinegrid)
+        call build_integration_grid(ienpart, ipolar)
 
 !! kept to rebuild this grid after ENPART/DFT-DM1 replace it !!
         nradp=nrad
@@ -991,24 +999,24 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !! Two-electron integration defaults !!
         call print_box('SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION')
 
-!! Controlled by # GRID option (modgrid common) !!
-!! Default grid is now 150/590, can be changed to 40/146 but ensure to also modify pha and phb !!
+!! RADIAL_2E/ANGULAR_2E of # GRID (modgrid common, read_grid); default !!
+!! 150/590; the rotation angles follow the angular grid                  !!
         nrad=nrad22
         nang=nang22
         rr00=rr0022
 
 !! Analytical case -- only step up to the 70/434 default when the user   !!
-!! hasn't configured # GRID themselves (ienpart_gridtwoel.eq.0); this     !!
+!! hasn't configured # GRID themselves (igrid2e.eq.0); this               !!
 !! used to unconditionally overwrite nrad/nang, silently discarding an   !!
 !! explicit # GRID (and, since the plain default grew to 150/590, this   !!
 !! was a downgrade in that case, not the increase the message claims).   !!
-        if(ianalytical.eq.1.and.ienpart_gridtwoel.eq.0) then
+        if(ianalytical.eq.1.and.igrid2e.eq.0) then
           write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
           write(*,*) " "
           nrad=70
           nang=434
         else if(ianalytical.eq.1) then
-          write(*,*) " Analytical calculation has been requested: keeping the user-configured # GRID (MOD-GRIDTWOEL) "
+          write(*,*) " Analytical calculation has been requested: keeping the user-configured # GRID (RADIAL_2E/ANGULAR_2E) "
           write(*,*) " "
         end if
 
@@ -1078,7 +1086,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! DFT-DM1 approximate one-particle RDM1 (formerly HIRAO internally).    !!
 !! Runs standalone, own dedicated grid reusing the two-electron-type      !!
-!! MOD-GRIDTWOEL settings (read_input.f's read_gridtwoel); dft_dm1        !!
+!! RADIAL_2E/ANGULAR_2E of # GRID (read_input.f's read_grid); dft_dm1     !!
 !! builds its own rotated second grid internally.                        !!
       if(idftdm1.eq.1) then
         call print_box('DOING DFT-DM1 APPROXIMATE ONE-PARTICLE RDM1')

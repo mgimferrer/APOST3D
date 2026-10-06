@@ -118,13 +118,8 @@
   --------
   Functional              : HF
   Atom-pair skip threshold: THREBOD = 50
-  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
-
-  # GRID
-  ------
-  Radial points              : 40
-  Angular points             : 146
-  Rotation angles (phb1/phb2):  0.162 /  0.182
+  Two-electron grid       : 40 x 146 (# GRID)
+  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
   TIMING CPU  :: initialization                                    0.00 s
   TIMING WALL :: initialization                                    0.00 s
@@ -333,8 +328,8 @@
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -21.4887492
   
-  TIMING CPU  :: Exact-exchange energy                             2.47 s
-  TIMING WALL :: Exact-exchange energy                             2.49 s
+  TIMING CPU  :: Exact-exchange energy                             2.45 s
+  TIMING WALL :: Exact-exchange energy                             2.45 s
   
   Total two-electron part (coul+exch_hf):    229.0361861
   Integration error (kcal/mol):   -13.71
@@ -349,7 +344,7 @@
   Damping parameter       :      1.4600955
   
   TIMING CPU  :: Interpolated zero-error                           1.71 s
-  TIMING WALL :: Interpolated zero-error                           1.72 s
+  TIMING WALL :: Interpolated zero-error                           1.71 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -393,7 +388,7 @@
   Integration error (au):     -0.0000005
   Integration error (kcal/mol):    -0.00
   
-  TIMING CPU  :: enpart two-electron                               4.29 s
-  TIMING WALL :: enpart two-electron                               4.32 s
+  TIMING CPU  :: enpart two-electron                               4.27 s
+  TIMING WALL :: enpart two-electron                               4.27 s
 
   ...Normal Termination of APOST-3D...

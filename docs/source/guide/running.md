@@ -49,17 +49,21 @@ printed at the top of the output:
   Grid points    : 29200
 ```
 
-A different grid is given after the job name, radial points first:
+A different grid is set in the input, in the optional
+[`# GRID` block](../input/grid.md):
 
-```bash
-$APOST3D_PATH/apost3d jobname 70 434 > jobname.apost 2>&1
+```text
+# GRID
+RADIAL 70
+ANGULAR 434
+#
 ```
 
-Both numbers are needed. The angular number must be a Lebedev grid (6, 14,
-26, 38, 50, 74, 86, 110, 146, 170, 194, 230, 266, 302, 350, 434, 590, 770 or
-974) and the radial one between 1 and 500; otherwise the run stops. For
-ENPART this sets the one-electron grid; its two-electron grid is set in
-the [`# GRID` block](../input/grid.md).
+The angular number must be a Lebedev grid (6, 14, 26, 38, 50, 74, 86, 110,
+146, 170, 194, 230, 266, 302, 350, 434, 590, 770 or 974) and the radial
+one between 1 and 500; otherwise the run stops. For ENPART these set the
+one-electron grid; its two-electron grid has its own keywords in the same
+block.
 
 The default grid is accurate enough for populations, bond orders and
 effective orbitals with `TFVC`: the sum of the atomic populations, printed

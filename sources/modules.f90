@@ -553,6 +553,9 @@
    1202,1454,1730,2030,2354,2702,3074,3470,3890,4334,4802,5294,5810/
    DOUBLE PRECISION,dimension(1000):: th,ph,w  
    DOUBLE PRECISION,dimension(500):: wr,xr  
+!! one-electron grid given in # GRID (RADIAL/ANGULAR), 0 = default; set by !!
+!! read_input.f's read_grid, used by build_integration_grid               !!
+   INTEGER :: nrad_in=0, nang_in=0
 ! Nrad -> number of radial points in the atomic grid
 ! Nang -> number of angular points in the atomic grid
 ! pha -> rotated grid for zero-error (first roration)
@@ -568,36 +571,25 @@
 
 !! ********************************************************************* !!
 !! subroutine: build_integration_grid                                    !!
-!! purpose: picks the atom-centered grid size (radial/angular points,    !!
-!! rr00) -- from command-line overrides if given, else ENPART/POLAR/     !!
-!! EDAIQA high-accuracy defaults, else the plain one-electron defaults;  !!
-!! prints the choice, then builds the grid via quad().                   !!
+!! purpose: picks the atom-centered one-electron grid (radial/angular    !!
+!! points, rr00): the ENPART/POLAR/EDAIQA high-accuracy defaults or the  !!
+!! plain ones, each overridden by # GRID's RADIAL/ANGULAR (nrad_in,      !!
+!! nang_in); prints the choice, then builds the grid via quad().         !!
 !! arguments:                                                            !!
-!!   ienpart, ipolar, ifinegrid (in) -- select the high-accuracy         !!
-!!     defaults when any is set. The EDAIQA branch also tests iedaiqa,   !!
+!!   ienpart, ipolar (in) -- select the high-accuracy defaults when any  !!
+!!     is set. The EDAIQA branch also tests iedaiqa,                     !!
 !!     which is never assigned anywhere (implicitly-typed local, not a   !!
 !!     dummy arg/COMMON/module var) -- undefined behavior, no test       !!
 !!     exercises # EDAIQA. Needs sign-off before fixing.                 !!
 !! author: MMO, MGimf                                                    !!
 !! ********************************************************************* !!
-   SUBROUTINE build_integration_grid(ienpart, ipolar,ifinegrid)
+   SUBROUTINE build_integration_grid(ienpart, ipolar)
    common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-   character*30 integ1,integ2
-
-!! command-line override (argv(2)/argv(3)), rarely used in practice !!
-   call getarg(2,integ1)
-   call getarg(3,integ2)
-   if(integ1.ne.' '.and.integ2.ne.' ') then
-     read(integ1,'(i4)') Nrad
-     read(integ2,'(i4)') Nang
-     call check_grid(Nrad,Nang,'command line')
-     rr00=0.500d0
 
 !! ENPART/POLAR/EDAIQA defaults for high-accuracy one-el integrations !!
-   else if(ienpart.eq.1.or.ipolar.eq.1.or.iedaiqa.eq.1) then
+   if(ienpart.eq.1.or.ipolar.eq.1.or.iedaiqa.eq.1) then
      nrad=150
      nang=590
-     if(ifinegrid.eq.1) nang=974
      rr00=0.500d0
 
 !! APOST legacy defaults for one-el integrations !!
@@ -606,6 +598,10 @@
      nang=146
      rr00=0.5d0
    end if
+
+!! # GRID's RADIAL/ANGULAR (already checked by read_grid) !!
+   if(nrad_in.gt.0) nrad=nrad_in
+   if(nang_in.gt.0) nang=nang_in
 
 !! Rotation angles... they are zero for one-el part, just to be consistent !!
 !! written as a literal, not the ZERO symbol -- this module-CONTAINS      !!
@@ -850,7 +846,7 @@
    integer :: iqtaim,istep,inna,imaxdist,iscreening,ipath
 
 !! miscellaneous / integration control !!
-   integer :: iopop,isha,idoint,ipca,ilaplacian,ifinegrid,ielcount, &
+   integer :: iopop,isha,idoint,ipca,ilaplacian,ielcount, &
               iatdens,inopop
    real*8  :: Rmax
 
@@ -866,14 +862,12 @@
 !! local spin and correlated-WF input !!
    integer :: ispin,icorr,idafh
 
-!! ENPART -- iigrid is EDAIQA's own MOD-GRIDTWOEL flag (read_input.f's    !!
-!! inline "# EDAIQA" readchar); ENPART's own MOD-GRIDTWOEL request goes    !!
-!! through read_gridtwoel("# ENPART", ienpart_gridtwoel) instead, its own !!
-!! dedicated flag -- the two used to alias the same variable (whichever   !!
-!! section parsed last in read_input.f won), a real bug fixed 2026-08-30. !!
+!! ENPART -- igrid2e: 1 if # GRID gives RADIAL_2E or ANGULAR_2E; irot2e:  !!
+!! where the two-electron rotation angles come from (0 calibrated table,  !!
+!! 1 ROTATION_2E, 2 not calibrated for ANGULAR_2E). Set by read_grid.      !!
    integer :: ienpart,ihf,id_xcfunc,id_xfunc,id_cfunc,iecorr, &
               ithrebod,iexact,ihomo,idek,iionic,ianalytical,itop,ietop, &
-              ipairs,iigrid,ienpart_gridtwoel
+              ipairs,igrid2e,irot2e
 
 !! DFT-DM1 (approximate one-particle RDM1, formerly HIRAO internally) !!
    integer :: idftdm1,id_func_dm1,inatorb_dm1

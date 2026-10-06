@@ -118,13 +118,8 @@
   --------
   Functional              : custom libxc ids 0 106 131
   Atom-pair skip threshold: THREBOD = 50
-  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
-
-  # GRID
-  ------
-  Radial points              : 40
-  Angular points             : 146
-  Rotation angles (phb1/phb2):  0.162 /  0.182
+  Two-electron grid       : 40 x 146 (# GRID)
+  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
   TIMING CPU  :: initialization                                    0.00 s
   TIMING WALL :: initialization                                    0.00 s
@@ -158,8 +153,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.90 s
-  TIMING WALL :: atomic definition                                 0.28 s
+  TIMING CPU  :: atomic definition                                 1.30 s
+  TIMING WALL :: atomic definition                                 1.30 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -338,8 +333,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     36.6642284
   
-  TIMING CPU  :: enpart one-electron                               0.79 s
-  TIMING WALL :: enpart one-electron                               0.11 s
+  TIMING CPU  :: enpart one-electron                               0.59 s
+  TIMING WALL :: enpart one-electron                               0.60 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -423,8 +418,8 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:    -18.6913761
   
-  TIMING CPU  :: enpart dft                                        4.12 s
-  TIMING WALL :: enpart dft                                        0.66 s
+  TIMING CPU  :: enpart dft                                        2.93 s
+  TIMING WALL :: enpart dft                                        2.93 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -439,7 +434,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -457,8 +452,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    112.1860788
   
-  TIMING CPU  :: Coulomb energy                                    0.96 s
-  TIMING WALL :: Coulomb energy                                    0.16 s
+  TIMING CPU  :: Coulomb energy                                    0.62 s
+  TIMING WALL :: Coulomb energy                                    0.62 s
   
   KS-DFT electron-electron energy (au):     93.4947027
   Integration error (kcal/mol):     5.25
@@ -471,8 +466,8 @@
   New error after rotation:    -9.25
   Damping parameter       :      0.6381144
   
-  TIMING CPU  :: Interpolated zero-error                           0.34 s
-  TIMING WALL :: Interpolated zero-error                           0.06 s
+  TIMING CPU  :: Interpolated zero-error                           0.25 s
+  TIMING WALL :: Interpolated zero-error                           0.25 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -491,7 +486,7 @@
   Coulomb energy:    112.1777147
   
   KS-DFT electron-electron energy:     93.4863386
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
 
   ----------------------------------------
     FUZZY ATOMS KS-DFT ENERGY COMPONENTS
@@ -512,7 +507,7 @@
   Integration error (au):     -0.0000091
   Integration error (kcal/mol):    -0.01
   
-  TIMING CPU  :: enpart two-electron                               1.50 s
-  TIMING WALL :: enpart two-electron                               0.25 s
+  TIMING CPU  :: enpart two-electron                               1.01 s
+  TIMING WALL :: enpart two-electron                               1.01 s
 
   ...Normal Termination of APOST-3D...

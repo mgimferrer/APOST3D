@@ -143,7 +143,6 @@
       call readchar("# METHOD","DOINT",idoint)
       call readchar("# METHOD","PCA",ipca)
       call readchar("# METHOD","LAPLACIAN",ilaplacian)
-      call readchar("# METHOD","FINEGRID",ifinegrid)
       call readchar("# METHOD","ELCOUNT",ielcount) !MMO- NCTAIM
       call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)
       call readreal("# METHOD","RHO_CALC_RAD",Rmax,0.0d0,1) ! fixed: was 0 (integer), must be REAL*8
@@ -282,9 +281,6 @@
         call readreal("# ENPART","TWOELTOLER",twoeltoler,0.25d0,1)
         call readchar("# ENPART","ANALYTIC",ianalytical)
 
-!! adding grid tuning for two-el integration !!
-        call read_gridtwoel("# ENPART",ienpart_gridtwoel)
-
 !! for topology calculation !!
 !! MG: needs to be properly checked, done a long time ago                !!
 !! MG: an extended version for 2D/3D and more 1D topology exists in       !!
@@ -322,8 +318,7 @@
 
 !! DFT-DM1 approximate one-particle RDM1 for UHF/UKS-DFT (formerly       !!
 !! referred to internally as HIRAO). Runs standalone (no ENPART          !!
-!! required), reusing ENPART's own two-electron grid/defaults if ENPART  !!
-!! is also active, else reading its own MOD-GRIDTWOEL under # DFTDM1.    !!
+!! required), on the two-electron grid of # GRID (read_grid).            !!
       idftdm1=0
       id_func_dm1=0
       call readchar("# METHOD","DFTDM1",idftdm1)
@@ -348,10 +343,6 @@
 !! top of every surviving grid-point pair (dft_dm1.f's own separate,      !!
 !! unoptimized block, run only if requested)                              !!
         call readchar("# DFTDM1","NATORB",inatorb_dm1)
-
-!! idftdm1grid is a throwaway local -- nothing outside this call needs   !!
-!! DFT-DM1's own MOD-GRIDTWOEL flag today, unlike ENPART's (see above).  !!
-        if(ienpart.ne.1) call read_gridtwoel("# DFTDM1",idftdm1grid)
       end if
 
 !! EDAIQA options !!
@@ -372,16 +363,6 @@
           call readreal("# EDAIQA","eN_pySCF",xen,0.0d0,1)
           call readreal("# EDAIQA","Coul_pySCF",xcoul,0.0d0,1)
           call readreal("# EDAIQA","NN_pySCF",xnn,0.0d0,1)
-
-!! adding grid tuning for two-el integration -- MG: repetitive with the  !!
-!! # ENPART block above, could be consolidated into one                 !!
-          call readchar("# EDAIQA","MOD-GRIDTWOEL",iigrid)
-          call readint("# GRID","RADIAL",nrad22,40,1)
-          call readint("# GRID","ANGULAR",nang22,146,1)
-          call readreal("# GRID","rr00",rr0022,0.5d0,1)
-          call readreal("# GRID","phb1",phb12,0.162d0,1)
-          call readreal("# GRID","phb2",phb22,0.182d0,1)
-          call check_grid(nrad22,nang22,"# GRID")
 
 !! options to make 2D plots of electrostatic potentials !!
           i2deda=0
@@ -407,6 +388,9 @@
 
 !! end of EDAIQA !!
       end if
+
+!! integration grids (# GRID, optional), once the analyses are known !!
+      call read_grid(ienpart,idftdm1,iedaiqa)
 
 !! nonlinear optical properties (POLAR) !!
       call readchar("# METHOD","POLAR",ipolar )
@@ -672,74 +656,160 @@
 !! ***** !!
 
 !! ********************************************************************* !!
-!! subroutine: read_gridtwoel                                            !!
-!! purpose: reads the MOD-GRIDTWOEL/# GRID override shared by ENPART's   !!
-!!   own two-electron integration grid and DFT-DM1's grid (both default  !!
-!!   to 150/590 either way) -- extracted out of read_input()'s ENPART    !!
-!!   block so DFT-DM1 can reuse the exact same mechanism/defaults        !!
-!!   without requiring ENPART to also be active in the same run.         !!
+!! subroutine: read_grid                                                 !!
+!! purpose: reads the optional # GRID block: RADIAL/ANGULAR for the      !!
+!!   one-electron grid of every real-space analysis (into nrad_in/       !!
+!!   nang_in, 0 = the default of build_integration_grid), RADIAL_2E/     !!
+!!   ANGULAR_2E for the two-electron grid of ENPART, DFT-DM1 and EDAIQA  !!
+!!   (/modgrid/). The two-electron rotation angles come from a table of  !!
+!!   calibrated angular grids, or from the expert ROTATION_2E. Old       !!
+!!   spellings (MOD-GRIDTWOEL, FINEGRID, phb1/phb2, rr00, THRESH2) stop. !!
 !! arguments:                                                            !!
-!!   section     (in)  -- .inp section to scan MOD-GRIDTWOEL/# GRID      !!
-!!     under (e.g. "# ENPART" or "# DFTDM1")                            !!
-!!   igridtwoel  (out) -- 1 if MOD-GRIDTWOEL was set for this section,   !!
-!!     0 otherwise. Callers that need to know whether the returned       !!
-!!     nrad22/nang22 came from the user's own # GRID (vs. the plain      !!
-!!     defaults) must use this, not input_options_mod's iigrid -- that   !!
-!!     one is EDAIQA's own separate flag, not shared with this call.     !!
+!!   ienpart, idftdm1, iedaiqa (in) -- analyses using the two-electron   !!
+!!     grid (EDAIQA alone: default 40 x 146, else 150 x 590)             !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      subroutine read_gridtwoel(section,igridtwoel)
-      use integration_grid, only: check_grid
+      subroutine read_grid(ienpart,idftdm1,iedaiqa)
+      use integration_grid, only: check_grid, nrad_in, nang_in
+      use input_options_mod, only: igrid2e, irot2e
       implicit real*8(a-h,o-z)
-      character section*(*)
-      character*80 linia
-      integer, intent(out) :: igridtwoel
+      integer, intent(in) :: ienpart, idftdm1, iedaiqa
+      character linea*80
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
       common /modgrid2/thr3
 
-      call readchar(section,"MOD-GRIDTWOEL",igridtwoel)
-      if(igridtwoel.eq.1) then
-        call readint("# GRID","RADIAL",nrad22,150,1)
-        call readint("# GRID","ANGULAR",nang22,590,1)
-        call readreal("# GRID","rr00",rr0022,0.5d0,1)
-        call readreal("# GRID","phb1",phb12,0.169d0,1)
-        call readreal("# GRID","phb2",phb22,0.170d0,1)
-        call readreal("# GRID","THRESH2",thr3,1.0d-12,1)
-        call check_grid(nrad22,nang22,"# GRID")
+!! old spellings: the grid lived in the command line and in a # GRID     !!
+!! block switched on by MOD-GRIDTWOEL, whose RADIAL/ANGULAR were the     !!
+!! two-electron grid                                                     !!
+      call removed_keyword("# ENPART","MOD-GRIDTWOEL",
+     +  '# GRID is always read; RADIAL_2E/ANGULAR_2E set this grid')
+      call removed_keyword("# DFTDM1","MOD-GRIDTWOEL",
+     +  '# GRID is always read; RADIAL_2E/ANGULAR_2E set this grid')
+      call removed_keyword("# EDAIQA","MOD-GRIDTWOEL",
+     +  '# GRID is always read; RADIAL_2E/ANGULAR_2E set this grid')
+      call removed_keyword("# METHOD","FINEGRID",
+     +  'set ANGULAR 974 in # GRID')
+      call removed_keyword("# GRID","phb1",
+     +  'the angles are chosen with ANGULAR_2E (or ROTATION_2E a b)')
+      call removed_keyword("# GRID","phb2",
+     +  'the angles are chosen with ANGULAR_2E (or ROTATION_2E a b)')
+      call renamed_keyword("# GRID","rr00","R0_2E")
+      call renamed_keyword("# GRID","THRESH2","THRESH_2E")
 
-!! defaults, modified for safe integration setup !!
-      else
-        nrad22=150
-        nang22=590
-        rr0022=0.5
-        phb12=0.169d0
-        phb22=0.170d0
-        thr3=1.0d-12
+!! the block is optional: look for it silently (the readers below print !!
+!! "section not found" when it is missing)                               !!
+      call find_block(16,"# GRID",igridblk)
 
-!! Warn if a # GRID block exists in the input but is being ignored        !!
-!! because MOD-GRIDTWOEL wasn't set. Scan the file directly here rather   !!
-!! than via "locate", which always prints a "section not found" message  !!
-!! on a miss                                                              !!
-        igridpresent=0
-        rewind(16)
-        iiscan=0
-        do while(iiscan.eq.0)
-          read(16,"(a80)",end=234) linia
-          if(index(linia,"# GRID").ne.0) then
-            igridpresent=1
-            iiscan=1
+!! one-electron grid !!
+      nrad_in=0
+      nang_in=0
+      if(igridblk.eq.1) then
+        call readint("# GRID","RADIAL",nrad_in,0,1)
+        call readint("# GRID","ANGULAR",nang_in,0,1)
+      end if
+      if(nrad_in.ne.0.or.nang_in.ne.0) then
+        nr=nrad_in
+        na=nang_in
+        if(nr.eq.0) nr=40
+        if(na.eq.0) na=146
+        call check_grid(nr,na,"# GRID")
+      end if
+
+!! two-electron grid !!
+      ndefr=150
+      ndefa=590
+      if(iedaiqa.eq.1.and.ienpart.eq.0.and.idftdm1.eq.0) then
+        ndefr=40
+        ndefa=146
+      end if
+      nrad22=0
+      nang22=0
+      rr0022=0.5d0
+      thr3=1.0d-12
+      if(igridblk.eq.1) then
+        call readint("# GRID","RADIAL_2E",nrad22,0,1)
+        call readint("# GRID","ANGULAR_2E",nang22,0,1)
+        call readreal("# GRID","R0_2E",rr0022,0.5d0,1)
+        call readreal("# GRID","THRESH_2E",thr3,1.0d-12,1)
+      end if
+      igrid2e=0
+      if(nrad22.ne.0.or.nang22.ne.0) igrid2e=1
+      if(nrad22.eq.0) nrad22=ndefr
+      if(nang22.eq.0) nang22=ndefa
+      if(igrid2e.eq.1) call check_grid(nrad22,nang22,"# GRID (_2E)")
+
+!! rotation angles of the zero-error strategy: calibrated per angular   !!
+!! grid; ROTATION_2E <phb1> <phb2> (expert) overrides them               !!
+      irot2e=-1
+      ii=0
+      if(igridblk.eq.1) call find_block(16,"# GRID",ii)
+      if(ii.eq.1) then
+        do while(ii.eq.1)
+          read(16,"(a80)",end=10) linea
+          if(index(linea,"#").ne.0) exit
+          call keyword_value(linea,"ROTATION_2E",ipos)
+          if(ipos.gt.0) then
+            read(linea(ipos:),*,iostat=ios) phb12,phb22
+            if(ios.ne.0) call bad_value("# GRID","ROTATION_2E",linea)
+            irot2e=1
           end if
         end do
-234     continue
-        if(igridpresent.eq.1) then
-          write(*,*) " "
-          write(*,*) "WARNING: a # GRID block was found in the input, but MOD-GRIDTWOEL"
-          write(*,*) "was not set in ",trim(section),". Using the default integration setup instead"
-          write(*,*) "Add MOD-GRIDTWOEL to ",trim(section)," to apply your # GRID settings"
-          write(*,*) " "
+      end if
+10    continue
+      if(irot2e.eq.-1) then
+        irot2e=0
+        if(nang22.eq.146) then
+          phb12=0.162d0
+          phb22=0.182d0
+        else if(nang22.eq.590) then
+          phb12=0.169d0
+          phb22=0.170d0
+        else
+!! no calibrated pair: the 590 one, as before; ENPART/EDAIQA warn !!
+          irot2e=2
+          phb12=0.169d0
+          phb22=0.170d0
+          if(ienpart.eq.1.or.iedaiqa.eq.1) then
+            write(*,'(2x,a,i0,a)') 'WARNING: no calibrated rotation '//
+     +        'angles for ANGULAR_2E ',nang22,
+     +        '; using 0.169/0.170 (calibrated for 590)'
+            write(*,'(2x,a)') 'Use ANGULAR_2E 146 or 590, or give '//
+     +        'ROTATION_2E <angle1> <angle2> in # GRID'
+          end if
         end if
       end if
 
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: removed_keyword                                           !!
+!! purpose: stops the run when an .inp block uses a keyword that no      !!
+!!   longer exists, saying what replaces it.                             !!
+!! arguments:                                                            !!
+!!   section, old, hint (in) -- block header, keyword, replacement       !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine removed_keyword(section,old,hint)
+      character section*(*), old*(*), hint*(*)
+      character linea*80
+      integer ii,ipos
+
+      call find_block(16,section,ii)
+      if(ii.eq.0) return
+      ii=0
+      do while(ii.eq.0)
+        read(16,"(a80)",end=10) linea
+        call keyword_value(linea,old,ipos)
+        if(ipos.gt.0) then
+          write(*,'(2x,a,a,a,a,a)') trim(section),': ',old,
+     +      ' is no longer used: ',hint
+          call apost_stop(' Removed keyword in the input')
+        end if
+        if(index(linea,"#").ne.0) ii=1
+      end do
+10    return
       end
 
 !! ***** !!

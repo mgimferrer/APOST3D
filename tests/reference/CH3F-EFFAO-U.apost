@@ -114,6 +114,7 @@
   Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
   Effective atomic orbitals            : EFFAO-U (paired/unpaired only)
   Fragment analysis                    : 2 fragments (see below)
+  One-electron grid (# GRID)           : RADIAL 40, ANGULAR 146
 
   # FRAGMENTS  (2 fragments)
   --------------------------
@@ -160,8 +161,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.07 s
-  TIMING WALL :: atomic definition                                 0.01 s
+  TIMING CPU  :: atomic definition                                 0.05 s
+  TIMING WALL :: atomic definition                                 0.05 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -382,8 +383,8 @@
   Left out by the cutoff (net / gross):    0.00000    0.00000
   
 
-  TIMING CPU  :: EFFAO computation                                 0.06 s
-  TIMING WALL :: EFFAO computation                                 0.01 s
+  TIMING CPU  :: EFFAO computation                                 0.05 s
+  TIMING WALL :: EFFAO computation                                 0.05 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

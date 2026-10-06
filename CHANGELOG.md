@@ -78,6 +78,15 @@ program, not a full development history — see `git log` for that.
   atoms with fixed radii); those are selected with the new `BECKE`
   keyword.
 
+- **Integration grids in the input** — the optional `# GRID` block now
+  sets every grid and is always read: `RADIAL`/`ANGULAR` for the
+  one-electron grid of every analysis (before only on the command line,
+  `apost3d job 70 434`, which now stops with a message), `RADIAL_2E`/
+  `ANGULAR_2E` for ENPART's two-electron grid. `MOD-GRIDTWOEL` and
+  `FINEGRID` are gone (`ANGULAR 974` replaces the latter), the rotation
+  angles `phb1`/`phb2` are chosen by the program for the angular grid
+  (expert override: `ROTATION_2E`), and `rr00` is now `R0_2E`; the old
+  spellings stop with a message. Defaults unchanged.
 - **Keywords are whole words** — a keyword is no longer recognized inside a
   longer word (e.g. `EOS_THRESH` switched on `EOS`), a block header must be
   alone on its line, and the file names in `# DM` are never read as
@@ -164,10 +173,9 @@ program, not a full development history — see `git log` for that.
   density), the output lists them, and an unrestricted or ROHF
   wavefunction stops instead of silently using the SCF density.
 - **Integration grids are checked** — an angular number of points that is
-  not a Lebedev grid (in `# GRID` or on the command line), or a radial one
-  outside 1–500, now stops the run. In `# GRID` it used to give wrong
-  ENPART numbers, hidden by the zero-error interpolation; on the command
-  line it was silently rounded down.
+  not a Lebedev grid, or a radial one outside 1–500, now stops the run. In
+  `# GRID` it used to give wrong ENPART numbers, hidden by the zero-error
+  interpolation; on the command line it was silently rounded down.
 - **ENPART with pseudopotentials** — no longer stops with `ECP Matrix not
   found`. `.fchk` files written from pySCF with `utils/apost3d.py` now
   carry the ECP matrix, and their reference electron-nuclear energy

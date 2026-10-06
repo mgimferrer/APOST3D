@@ -114,7 +114,7 @@ and then one against several threads.
 | `H2-T-OSLO` | H2 triplet, UKS B3LYP from pySCF: fragment OSLO with no beta electrons and more linear-dependency candidates than electrons | `dft oslo tfvc uks fragments openshell pyscf` |
 | `FeCO2-PBEPBE` | FeCO2 complex (charge +2), RKS PBE: TFVC, fragment EOS with per-EFO occupations | `dft eos effao tfvc rks fragments` |
 | `FeO4-2` | Ferrate(VI), RKS, Q-Chem `.fchk`: TFVC, fragment OSLO | `dft oslo tfvc rks fragments qchem` |
-| `C2H6-B3LYP` | Ethane, RKS B3LYP: full ENPART with `THREBOD` and `MOD-GRIDTWOEL`, the largest ENPART case | `dft enpart tfvc rks threbod` |
+| `C2H6-B3LYP` | Ethane, RKS B3LYP: full ENPART with `THREBOD` and a 40 × 146 two-electron grid, the largest ENPART case | `dft enpart tfvc rks threbod` |
 | `H2O-Dimer-RHF` | Water dimer, RHF: ENPART (HF), `THREBOD 10` (6 pairs by the multipolar expansion), fragments | `hf enpart tfvc rhf threbod multipolar fragments` |
 | `HI-ECP-pySCF` | Hydrogen iodide, RHF/def2-SVP from pySCF with the def2 pseudopotential on I: ENPART (HF), ECP matrix from the `.fchk` added to the E-N terms | `hf enpart tfvc rhf pyscf ecp` |
 | `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition) | `hf enpart oslo tfvc rhf fragments` |
