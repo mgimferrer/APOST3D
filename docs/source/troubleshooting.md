@@ -72,8 +72,8 @@ The run stopped early. The reason is in the last lines of the output
 
 **A keyword has no effect**
 Check the `INPUT SUMMARY` of the output: an analysis or option that is
-not listed there was not read (`DM`, `DENS` and `TWOELTOLER` are never
-listed). Usually it is typed in lower case (keywords are
+not listed there was not read (`DENS` 1, the default, is not listed, and
+`TWOELTOLER` is shown in the ENPART part of the output). Usually it is typed in lower case (keywords are
 case-sensitive), placed after the closing `#` of its block, or placed
 after a line containing `#` (such as a comment), which ends the block.
 See the [input rules](input/index.md#rules).

@@ -271,6 +271,8 @@
         write(*,'(2x,a,1x,a)')
      +    'Atomic partitioning (Hilbert-space)  :',trim(cval)
       end if
+      if(ndens0.gt.1) write(*,'(2x,a,1x,i0,a)')
+     +  'Density used                         :',ndens0,' (DENS)'
 
       if(iopop.eq.1) write(*,'(2x,a,1x,a)')
      +  'Overlap population analysis          :','OPOP'
@@ -589,9 +591,11 @@
         else if(iorca.eq.1) then
           cval='ORCA'
         else
-          cval='DMRG'
+          cval='DMn program (binary)'
         end if
         write(*,'(2x,a,1x,a)') 'Source  :',trim(cval)
+        write(*,'(2x,a,1x,a)') '1-RDM   :',trim(dmfile1)
+        if(icorr.eq.2) write(*,'(2x,a,1x,a)') '2-RDM   :',trim(dmfile2)
       end if
 
       END SUBROUTINE print_input_summary

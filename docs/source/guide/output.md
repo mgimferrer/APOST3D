@@ -12,8 +12,8 @@ All results are printed to the standard output, normally saved with
    and electrons, energy);
 3. `INPUT SUMMARY`: the options of the input file, as the program
    understood them. **Check it first when a result looks unexpected**: an
-   analysis or option missing there was not read (a few settings, such as
-   `DM`, `DENS` and `TWOELTOLER`, are not listed);
+   analysis or option missing there was not read (`TWOELTOLER` is shown
+   in the ENPART part instead);
 4. the integration grid and the atomic definition (real-space schemes);
 5. the [population analysis](../methods/population.md);
 6. the requested analyses, each with its own page in *Analysis methods*;

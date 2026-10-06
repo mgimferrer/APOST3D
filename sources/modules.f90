@@ -840,6 +840,7 @@
 
 !! wavefunction source / density choice !!
    integer :: iwfn,iallpo,ndens0
+   character(len=80) :: dmfile1,dmfile2   !! # DM file names, for INPUT SUMMARY
 
 !! atoms in molecules (Hilbert-space + real-space AIM selection) !!
    integer :: imulli,ihirsh,inewbec,istiff,iradmat,itfvc
