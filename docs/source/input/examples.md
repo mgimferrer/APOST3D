@@ -46,7 +46,6 @@ LIBRARY
 EX_FUNCTIONAL 106
 EC_FUNCTIONAL 132
 THREBOD -1
-MOD-GRIDTWOEL
 #
 # FRAGMENTS
 2
@@ -55,19 +54,16 @@ MOD-GRIDTWOEL
 -1
 #
 # GRID
-RADIAL 150
-ANGULAR 590
-rr00 0.5
-phb1 0.169
-phb2 0.170
+RADIAL_2E 150
+ANGULAR_2E 590
 #
 ```
 
 Energy partitioning of a KS-DFT wavefunction. The libxc ids 106 (B88
 exchange) and 132 (P86 correlation) make up BP86, so the `BP86` keyword
 gives the same result. `THREBOD -1` computes the exchange-correlation term
-of every atom pair. The `# GRID` block, read because of `MOD-GRIDTWOEL`,
-here repeats the default two-electron grid. See [ENPART](../methods/enpart.md).
+of every atom pair. The optional `# GRID` block here
+repeats the default two-electron grid. See [ENPART](../methods/enpart.md).
 
 ## Example 3 - Local spin of a correlated wavefunction from pySCF
 

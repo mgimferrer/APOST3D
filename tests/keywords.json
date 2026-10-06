@@ -119,8 +119,6 @@
      "description": "Analytic (non-numerical) two-electron integrals in ENPART",                             "priority": "low"},
     {"id": "ENPART/THREBOD",  "key": "THREBOD",           "section": "# ENPART",   "category": "energy",
      "description": "Threshold for skipping small atom-pair two-electron integrals",                         "priority": "medium"},
-    {"id": "ENPART/MOD-GRIDTWOEL","key": "MOD-GRIDTWOEL", "section": "# ENPART",   "category": "energy",
-     "description": "Use a separate (coarser) grid for the two-electron ENPART integrals",                   "priority": "medium"},
     {"id": "ENPART/EXC_FUNCTIONAL","key": "EXC_FUNCTIONAL","section": "# ENPART",  "category": "energy",
      "description": "Custom XC functional ID (libxc integer code)",                                           "priority": "low"},
     {"id": "ENPART/EX_FUNCTIONAL", "key": "EX_FUNCTIONAL", "section": "# ENPART",  "category": "energy",
@@ -134,8 +132,6 @@
 
     {"id": "EDAIQA/FLIPSPIN",       "key": "FLIPSPIN",       "section": "# EDAIQA",  "category": "energy",
      "description": "Flip alpha/beta spin labels in EDA-IQA",                                                  "priority": "low"},
-    {"id": "EDAIQA/MOD-GRIDTWOEL",  "key": "MOD-GRIDTWOEL",  "section": "# EDAIQA",  "category": "energy",
-     "description": "Separate two-electron grid for EDA-IQA",                                                  "priority": "low"},
 
     {"id": "OSLO/MULLIKEN",         "key": "MULLIKEN",        "section": "# OSLO",    "category": "orbital",
      "description": "Use Mulliken overlap matrix for OSLO orbital localisation",                               "priority": "medium"},
@@ -199,15 +195,17 @@
      "description": "Enhanced output precision (more decimal places)",                                        "priority": "low"},
     {"id": "NOPOPU",          "key": "NOPOPU",            "section": "# METHOD",   "category": "output",
      "description": "Suppress population analysis output",                                                     "priority": "low"},
-    {"id": "FINEGRID",        "key": "FINEGRID",          "section": "# METHOD",   "category": "grid",
-     "description": "Use fine angular grid (974 points instead of 590) for one-electron integrals",          "priority": "medium"},
     {"id": "GRID/RADIAL",     "key": "RADIAL",            "section": "# GRID",     "category": "grid",
-     "description": "Number of radial grid points (default: 40 for pop, 150 for ENPART)",                    "priority": "medium"},
+     "description": "One-electron grid: radial points (default 40; 150 with ENPART)",                          "priority": "medium"},
     {"id": "GRID/ANGULAR",    "key": "ANGULAR",           "section": "# GRID",     "category": "grid",
-     "description": "Number of angular Lebedev grid points (default: 146 for pop, 590 for ENPART)",          "priority": "medium"},
-    {"id": "GRID/PHB1",       "key": "phb1",              "section": "# GRID",     "category": "grid",
-     "description": "First grid rotation angle (radians) to avoid systematic errors",                        "priority": "low"},
-    {"id": "GRID/PHB2",       "key": "phb2",              "section": "# GRID",     "category": "grid",
-     "description": "Second grid rotation angle (radians)",                                                    "priority": "low"}
+     "description": "One-electron grid: Lebedev angular points (default 146; 590 with ENPART)",                "priority": "medium"},
+    {"id": "GRID/RADIAL_2E",  "key": "RADIAL_2E",         "section": "# GRID",     "category": "grid",
+     "description": "Two-electron grid (ENPART, DFT-DM1): radial points (default 150)",                      "priority": "medium"},
+    {"id": "GRID/ANGULAR_2E", "key": "ANGULAR_2E",        "section": "# GRID",     "category": "grid",
+     "description": "Two-electron grid: Lebedev angular points (default 590); sets the rotation angles",      "priority": "medium"},
+    {"id": "GRID/ROTATION_2E","key": "ROTATION_2E",       "section": "# GRID",     "category": "grid",
+     "description": "Expert: the two rotation angles of the two-electron grid (default: calibrated table)",   "priority": "low"},
+    {"id": "GRID/R0_2E",      "key": "R0_2E",             "section": "# GRID",     "category": "grid",
+     "description": "Expert: radial scaling of the two-electron grid (default 0.5 bohr)",                     "priority": "low"}
   ]
 }

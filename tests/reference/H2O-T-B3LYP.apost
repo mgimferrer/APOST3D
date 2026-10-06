@@ -119,13 +119,8 @@
   --------
   Functional              : B3LYP (hybrid)
   Atom-pair skip threshold: THREBOD = 2000
-  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
-
-  # GRID
-  ------
-  Radial points              : 40
-  Angular points             : 146
-  Rotation angles (phb1/phb2):  0.162 /  0.182
+  Two-electron grid       : 40 x 146 (# GRID)
+  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
   --------------------
     NATURAL ORBITALS
@@ -137,8 +132,8 @@
 
   Checking NO overlap matrix
 
-  TIMING CPU  :: initialization                                    0.01 s
-  TIMING WALL :: initialization                                    0.01 s
+  TIMING CPU  :: initialization                                    0.00 s
+  TIMING WALL :: initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -162,8 +157,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.01 s
-  TIMING WALL :: atomic definition                                 0.16 s
+  TIMING CPU  :: atomic definition                                 0.71 s
+  TIMING WALL :: atomic definition                                 0.71 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -360,8 +355,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      7.2850801
   
-  TIMING CPU  :: enpart one-electron                               0.46 s
-  TIMING WALL :: enpart one-electron                               0.07 s
+  TIMING CPU  :: enpart one-electron                               0.32 s
+  TIMING WALL :: enpart one-electron                               0.33 s
 
   --------------------------------
     UKS-DFT ENERGY DECOMPOSITION
@@ -428,8 +423,8 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
   
-  TIMING CPU  :: enpart dft                                        1.88 s
-  TIMING WALL :: enpart dft                                        0.42 s
+  TIMING CPU  :: enpart dft                                        1.30 s
+  TIMING WALL :: enpart dft                                        1.30 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -444,7 +439,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -459,8 +454,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     44.3183281
   
-  TIMING CPU  :: Coulomb energy                                    0.28 s
-  TIMING WALL :: Coulomb energy                                    0.04 s
+  TIMING CPU  :: Coulomb energy                                    0.18 s
+  TIMING WALL :: Coulomb energy                                    0.18 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -468,7 +463,7 @@
 
   Two-el integrations for     42 MO pairs
   Threshold for atom pair calculation:   0.200000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
   Skipping numerical integration for     1 atom pairs
 
   -------------------------------------------
@@ -568,7 +563,7 @@
   Integration error (au):     -0.0000008
   Integration error (kcal/mol):    -0.00
   
-  TIMING CPU  :: enpart two-electron                               7.07 s
-  TIMING WALL :: enpart two-electron                               1.11 s
+  TIMING CPU  :: enpart two-electron                               5.75 s
+  TIMING WALL :: enpart two-electron                               5.77 s
 
   ...Normal Termination of APOST-3D...

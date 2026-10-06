@@ -34,7 +34,7 @@ only by the keywords that use them:
 | `# METHOD` | always | [# METHOD](method.md) |
 | `# FRAGMENTS` | `DOFRAGS` | [# FRAGMENTS](fragments.md) |
 | `# ENPART` | `ENPART` | [# ENPART](enpart.md) |
-| `# GRID` | `MOD-GRIDTWOEL` in `# ENPART` | [# GRID](grid.md) |
+| `# GRID` | optional: to change the integration grids | [# GRID](grid.md) |
 | `# OSLO` | `OSLO` | [# OSLO](oslo.md) |
 | `# CUBE` | `CUBE` | [# CUBE](cube.md) |
 | `# DM` | `DM 1` or `DM 2` | [# DM](dm.md) |
@@ -45,7 +45,7 @@ analyses.
 ## Rules
 
 - **Keywords and block names are case-sensitive**: write them exactly as
-  in this reference (`TFVC`, `# METHOD`, `rr00`, `pySCF`). The only
+  in this reference (`TFVC`, `# METHOD`, `RADIAL_2E`, `pySCF`). The only
   exception are the functional names in `# ENPART` (`B3LYP`, `b3lyp`, ...).
 - **Values** follow the keyword after a space or an `=`: `DM 2`, `DM=2`
   and `DM = 2` are the same. A keyword without its value takes the

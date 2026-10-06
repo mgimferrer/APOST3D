@@ -118,13 +118,8 @@
   --------
   Functional              : HF
   Atom-pair skip threshold: THREBOD = 10
-  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
-
-  # GRID
-  ------
-  Radial points              : 40
-  Angular points             : 146
-  Rotation angles (phb1/phb2):  0.162 /  0.182
+  Two-electron grid       : 40 x 146 (# GRID)
+  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
   # FRAGMENTS  (2 fragments)
   --------------------------
@@ -163,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.89 s
-  TIMING WALL :: atomic definition                                 0.31 s
+  TIMING CPU  :: atomic definition                                 1.30 s
+  TIMING WALL :: atomic definition                                 1.30 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -427,8 +422,8 @@
   --------------------------------------------------------------------------------                    
      Total:   36.664228
   
-  TIMING CPU  :: enpart one-electron                               0.80 s
-  TIMING WALL :: enpart one-electron                               0.11 s
+  TIMING CPU  :: enpart one-electron                               0.59 s
+  TIMING WALL :: enpart one-electron                               0.59 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -443,7 +438,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -473,8 +468,8 @@
   --------------------------------------------------------------------------------                    
      Total:  112.092900
   
-  TIMING CPU  :: Coulomb energy                                    0.95 s
-  TIMING WALL :: Coulomb energy                                    0.15 s
+  TIMING CPU  :: Coulomb energy                                    0.63 s
+  TIMING WALL :: Coulomb energy                                    0.63 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -482,7 +477,7 @@
 
   Two-el integrations for    110 MO pairs
   Threshold for atom pair calculation:   0.001000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
   Skipping numerical integration for     6 atom pairs
 
   -------------------------------------------
@@ -501,8 +496,8 @@
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -17.9493649
   
-  TIMING CPU  :: Exact-exchange energy                            12.64 s
-  TIMING WALL :: Exact-exchange energy                             1.73 s
+  TIMING CPU  :: Exact-exchange energy                             9.47 s
+  TIMING WALL :: Exact-exchange energy                             9.49 s
   
   Total two-electron part (coul+exch_hf):     94.1435352
   Integration error (kcal/mol):     0.86
@@ -515,8 +510,8 @@
   New error after rotation:    -6.40
   Damping parameter       :      0.8815752
   
-  TIMING CPU  :: Interpolated zero-error                           5.31 s
-  TIMING WALL :: Interpolated zero-error                           0.72 s
+  TIMING CPU  :: Interpolated zero-error                           4.04 s
+  TIMING WALL :: Interpolated zero-error                           4.04 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -596,7 +591,7 @@
   --------------------------------------------------------------------------------                    
      Total: -152.062383
   
-  TIMING CPU  :: enpart two-electron                              19.08 s
-  TIMING WALL :: enpart two-electron                               2.64 s
+  TIMING CPU  :: enpart two-electron                              14.29 s
+  TIMING WALL :: enpart two-electron                              14.31 s
 
   ...Normal Termination of APOST-3D...

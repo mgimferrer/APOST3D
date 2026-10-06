@@ -71,7 +71,6 @@ The functional must be the one used to compute the wavefunction.
 | ------- | ----- | ------- | ----------- |
 | `THREBOD` | integer *n* | 50 | Bond-order threshold for the two-center terms, *n*/10000 (default 0.005). For pairs of atoms with a smaller bond order, the exchange-correlation integration (6-D exchange, or BODEN for KS-DFT) is skipped and the pair's whole exchange-correlation term is estimated by a multipolar expansion (see [ENPART](../methods/enpart.md)). Any *n* below 1 (e.g. `THREBOD -1`) computes every pair. |
 | `TWOELTOLER` | real | 0.25 | Two-electron integration error (kcal/mol) above which the zero-error strategy is applied; `0.00` always applies it. Needs the reference energies in the `.fchk` file. |
-| `MOD-GRIDTWOEL` | | off | Read the two-electron grid from a [`# GRID`](grid.md) block (default 150 × 590). |
 | `CORRELATION` | | off | Correlated wavefunctions only: decompose exchange and correlation separately (by default they are decomposed together). |
 | `ANALYTIC` | | off | Semianalytical integration of the one-center two-electron terms (under development, slow). |
 

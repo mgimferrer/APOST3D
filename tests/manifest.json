@@ -22,11 +22,8 @@
         "ENPART",
         "ENPART/B3LYP",
         "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
       ],
       "checks": [
         {
@@ -158,7 +155,7 @@
     },
     {
       "name": "C2H6-B3LYP",
-      "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT) with THREBOD 5 and MOD-GRIDTWOEL; the largest ENPART case (8 atoms, 160 basis functions).",
+      "description": "Ethane, RKS B3LYP — TFVC populations, full ENPART (DFT) with THREBOD 5 and a 40 × 146 two-electron grid; the largest ENPART case (8 atoms, 160 basis functions).",
       "tags": [
         "dft",
         "enpart",
@@ -173,11 +170,8 @@
         "ENPART",
         "ENPART/B3LYP",
         "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
       ],
       "checks": [
         {
@@ -697,7 +691,7 @@
     },
     {
       "name": "H2O-Dimer-RHF",
-      "description": "Water dimer, RHF — ENPART (HF) with THREBOD 10 and MOD-GRIDTWOEL, DOFRAGS; 6 atom pairs below the threshold take their exchange from the multipolar expansion.",
+      "description": "Water dimer, RHF — ENPART (HF) with THREBOD 10 and a 40 × 146 two-electron grid, DOFRAGS; 6 atom pairs below the threshold take their exchange from the multipolar expansion.",
       "tags": [
         "hf",
         "enpart",
@@ -714,11 +708,8 @@
         "ENPART",
         "ENPART/HF",
         "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E",
         "DOFRAGS"
       ],
       "checks": [
@@ -805,7 +796,6 @@
         "ENPART",
         "ENPART/HF",
         "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
         "OSLO",
         "DOFRAGS"
       ],
@@ -1253,7 +1243,6 @@
         "ENPART/CASSCF",
         "ENPART/THREBOD",
         "ENPART/TWOELTOLER",
-        "ENPART/MOD-GRIDTWOEL",
         "DM/PYSCF",
         "SPIN"
       ],
@@ -1760,7 +1749,9 @@
       "keywords": [
         "TFVC",
         "EFFAO-U",
-        "DOFRAGS"
+        "DOFRAGS",
+        "GRID/RADIAL",
+        "GRID/ANGULAR"
       ],
       "checks": [
         {
@@ -1856,11 +1847,8 @@
         "ENPART/EX_FUNCTIONAL",
         "ENPART/EC_FUNCTIONAL",
         "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
       ],
       "checks": [
         {
@@ -1972,11 +1960,9 @@
         "ENPART",
         "ENPART/SVWN",
         "ENPART/THREBOD",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E",
+        "GRID/ROTATION_2E"
       ],
       "checks": [
         {
@@ -2048,11 +2034,8 @@
         "TFVC",
         "ENPART",
         "ENPART/BLYP",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
       ],
       "checks": [
         {
@@ -2151,11 +2134,8 @@
         "TFVC",
         "ENPART",
         "ENPART/B3LYP",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
       ],
       "checks": [
         {
@@ -2238,7 +2218,7 @@
     },
     {
       "name": "HI-ECP-pySCF",
-      "description": "HI, pySCF RHF/def2-SVP with the def2 ECP on I (utils/apost3d.py) — ENPART (HF) with MOD-GRIDTWOEL: ECP matrix read from the .fchk and its per-atom energies added to the E-N terms.",
+      "description": "HI, pySCF RHF/def2-SVP with the def2 ECP on I (utils/apost3d.py) — ENPART (HF) with a 40 × 146 two-electron grid: ECP matrix read from the .fchk and its per-atom energies added to the E-N terms.",
       "tags": [
         "hf",
         "enpart",
@@ -2253,11 +2233,8 @@
         "TFVC",
         "ENPART",
         "ENPART/HF",
-        "ENPART/MOD-GRIDTWOEL",
-        "GRID/RADIAL",
-        "GRID/ANGULAR",
-        "GRID/PHB1",
-        "GRID/PHB2"
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
       ],
       "checks": [
         {

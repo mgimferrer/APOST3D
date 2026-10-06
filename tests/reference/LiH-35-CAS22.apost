@@ -122,13 +122,8 @@
   --------
   Functional              : CASSCF
   Atom-pair skip threshold: THREBOD = 0
-  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
-
-  # GRID
-  ------
-  Radial points              : 40
-  Angular points             : 146
-  Rotation angles (phb1/phb2):  0.162 /  0.182
+  Two-electron grid       : 40 x 146 (# GRID)
+  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
   # DM
   ----
@@ -170,7 +165,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.06 s
+  TIMING CPU  :: atomic definition                                 0.07 s
   TIMING WALL :: atomic definition                                 0.07 s
 
   ---------------------------------
@@ -442,8 +437,8 @@
   --------------------------------------------------------------------------------                    
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
   
-  TIMING CPU  :: PHF Exc energy                                    0.49 s
-  TIMING WALL :: PHF Exc energy                                    0.49 s
+  TIMING CPU  :: PHF Exc energy                                    0.52 s
+  TIMING WALL :: PHF Exc energy                                    0.52 s
   
   Total two-electron part (coul+exc):      2.7365314
   Integration error (kcal/mol):    -0.09
@@ -500,7 +495,7 @@
   Total energy in Fchk file:     -7.9411448
   Integration error (au):     -0.0000000
   Integration error (kcal/mol):    -0.00
-  TIMING CPU  :: enpart two-electron                               0.98 s
-  TIMING WALL :: enpart two-electron                               0.98 s
+  TIMING CPU  :: enpart two-electron                               1.02 s
+  TIMING WALL :: enpart two-electron                               1.02 s
 
   ...Normal Termination of APOST-3D...

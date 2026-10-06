@@ -123,9 +123,25 @@ atom numbers in `# FRAGMENTS`, or end with `-1` for the remaining atoms
 (see [# FRAGMENTS](input/fragments.md)).
 
 **`STOP Invalid angular grid`**, **`STOP Invalid radial grid`**
-The line above names the value and where it was given (`# GRID` or the
-command line): the angular points must be a Lebedev grid (the list is
-printed), the radial points between 1 and 500. See [# GRID](input/grid.md).
+The line above names the value: the angular points must be a Lebedev grid
+(the list is printed), the radial points between 1 and 500. See
+[# GRID](input/grid.md).
+
+**`STOP Grid on the command line`**
+The grid is no longer given after the job name: set `RADIAL` and
+`ANGULAR` in the [`# GRID` block](input/grid.md).
+
+**`STOP Removed keyword in the input`**, **`STOP Renamed keyword in the input`**
+The line above names the keyword and what replaces it. Inputs written for
+earlier versions: `MOD-GRIDTWOEL` is gone (`# GRID` is always read, its
+two-electron grid is now `RADIAL_2E`/`ANGULAR_2E`), `phb1`/`phb2` are
+chosen by the program (or `ROTATION_2E`), `rr00` is `R0_2E`, and
+`FINEGRID` is `ANGULAR 974` in `# GRID`.
+
+**`WARNING: no calibrated rotation angles for ANGULAR_2E ...`**
+ENPART's two-electron grid uses an angular grid without calibrated
+rotation angles (only 146 and 590 have them). Use one of those, or set
+`ROTATION_2E` (see [# GRID](input/grid.md#advanced-rotation-angles-and-radial-scaling)).
 
 **`# DM section not found in input file`**
 `DM 1` or `DM 2` is set but there is no `# DM` block.

@@ -118,13 +118,8 @@
   --------
   Functional              : custom libxc ids 0 106 131
   Atom-pair skip threshold: THREBOD = -1
-  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
-
-  # GRID
-  ------
-  Radial points              : 40
-  Angular points             : 146
-  Rotation angles (phb1/phb2):  0.162 /  0.182
+  Two-electron grid       : 40 x 146 (# GRID)
+  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
   --------------------
     NATURAL ORBITALS
@@ -163,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.22 s
-  TIMING WALL :: atomic definition                                 0.04 s
+  TIMING CPU  :: atomic definition                                 0.17 s
+  TIMING WALL :: atomic definition                                 0.17 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -328,8 +323,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      9.1193799
   
-  TIMING CPU  :: enpart one-electron                               0.20 s
-  TIMING WALL :: enpart one-electron                               0.03 s
+  TIMING CPU  :: enpart one-electron                               0.14 s
+  TIMING WALL :: enpart one-electron                               0.14 s
 
   --------------------------------
     UKS-DFT ENERGY DECOMPOSITION
@@ -390,8 +385,8 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:     -9.2197241
   
-  TIMING CPU  :: enpart dft                                        0.88 s
-  TIMING WALL :: enpart dft                                        0.21 s
+  TIMING CPU  :: enpart dft                                        0.66 s
+  TIMING WALL :: enpart dft                                        0.66 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -406,7 +401,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -421,8 +416,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     45.2445114
   
-  TIMING CPU  :: Coulomb energy                                    0.26 s
-  TIMING WALL :: Coulomb energy                                    0.04 s
+  TIMING CPU  :: Coulomb energy                                    0.18 s
+  TIMING WALL :: Coulomb energy                                    0.18 s
   
   KS-DFT electron-electron energy (au):     36.0247872
   Integration error (kcal/mol):    -2.10
@@ -468,7 +463,7 @@
   Integration error (au):      0.0000906
   Integration error (kcal/mol):     0.06
   
-  TIMING CPU  :: enpart two-electron                               0.39 s
-  TIMING WALL :: enpart two-electron                               0.08 s
+  TIMING CPU  :: enpart two-electron                               0.29 s
+  TIMING WALL :: enpart two-electron                               0.29 s
 
   ...Normal Termination of APOST-3D...

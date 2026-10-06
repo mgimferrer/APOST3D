@@ -118,16 +118,11 @@
   --------
   Functional              : custom libxc ids 0 202 231
   Atom-pair skip threshold: THREBOD = -1
-  Two-electron grid       : MOD-GRIDTWOEL (user-selected integration grid)
-
-  # GRID
-  ------
-  Radial points              : 40
-  Angular points             : 146
-  Rotation angles (phb1/phb2):  0.162 /  0.182
+  Two-electron grid       : 40 x 146 (# GRID)
+  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
   TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -153,8 +148,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.18 s
-  TIMING WALL :: atomic definition                                 0.18 s
+  TIMING CPU  :: atomic definition                                 0.17 s
+  TIMING WALL :: atomic definition                                 0.17 s
 
   -----------------------------
     DOING POPULATION ANALYSIS

@@ -236,6 +236,7 @@
 !! ********************************************************************* !!
       SUBROUTINE print_input_summary()
       use input_options_mod
+      use integration_grid, only: nrad_in,nang_in
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
@@ -388,9 +389,17 @@
      +  'Output precision                     :','FULLPRECISION'
       if(inopop.eq.1) write(*,'(2x,a,1x,a)')
      +  'Population output                    :','NOPOPU (suppressed)'
-      if(ifinegrid.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Fine angular grid                    :',
-     +  'FINEGRID (974 points, one-electron integrals)'
+      if(nrad_in.gt.0.or.nang_in.gt.0) then
+        cval='RADIAL default'
+        if(nrad_in.gt.0) write(cval,'(a,i0)') 'RADIAL ',nrad_in
+        if(nang_in.gt.0) then
+          write(cbuf,'(a,a,i0)') trim(cval),', ANGULAR ',nang_in
+        else
+          cbuf=trim(cval)//', ANGULAR default'
+        end if
+        write(*,'(2x,a,1x,a)')
+     +    'One-electron grid (# GRID)           :',trim(cbuf)
+      end if
 
 !! ----------------------------------------------------------------- !!
 !! # ENPART -- only if ENPART itself is active                       !!
@@ -425,9 +434,8 @@
         write(*,'(2x,a,1x,a)')
      +    'Atom-pair skip threshold:',trim(cval)
 
-        if(ienpart_gridtwoel.eq.1) write(*,'(2x,a,1x,a)')
-     +    'Two-electron grid       :',
-     +    'MOD-GRIDTWOEL (user-selected integration grid)'
+        call grid2e_summary('Two-electron grid       :',
+     +    'Rotation angles (2E)    :')
 
         cbuf=' '
         if(iexact.eq.1) cbuf=trim(cbuf)//' EXACT;'
@@ -446,23 +454,6 @@
         if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
      +    'Extra options           :',trim(cbuf)
 
-!! MOD-GRIDTWOEL's own # GRID settings -- ienpart_gridtwoel is ENPART's  !!
-!! own flag, distinct from iigrid below (EDAIQA's own, separate check).  !!
-        if(ienpart_gridtwoel.eq.1) then
-          write(*,*)
-          chdr='# GRID'
-          write(*,'(2x,a)') trim(chdr)
-          write(*,'(2x,a)') repeat('-',len_trim(chdr))
-          write(cval,'(i0)') nrad22
-          write(*,'(2x,a,1x,a)') 'Radial points              :',
-     +      trim(cval)
-          write(cval,'(i0)') nang22
-          write(*,'(2x,a,1x,a)') 'Angular points             :',
-     +      trim(cval)
-          write(cval,'(f6.3,a,f6.3)') phb12,' / ',phb22
-          write(*,'(2x,a,1x,a)') 'Rotation angles (phb1/phb2):',
-     +      trim(cval)
-        end if
       end if
 
 !! ----------------------------------------------------------------- !!
@@ -475,9 +466,8 @@
         write(*,'(2x,a)') repeat('-',len_trim(chdr))
         if(iflip.eq.1) write(*,'(2x,a,1x,a)')
      +    'Flip alpha/beta spins:','FLIPSPIN'
-        if(iigrid.eq.1) write(*,'(2x,a,1x,a)')
-     +    'Two-electron grid    :',
-     +    'MOD-GRIDTWOEL (user-selected integration grid)'
+        call grid2e_summary('Two-electron grid    :',
+     +    'Rotation angles (2E) :')
       end if
 
 !! ----------------------------------------------------------------- !!
@@ -626,6 +616,41 @@
       end if
 
       END SUBROUTINE print_input_summary
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: grid2e_summary                                            !!
+!! purpose: INPUT SUMMARY lines of the two-electron grid (# GRID's       !!
+!!   RADIAL_2E/ANGULAR_2E or the default) and of its rotation angles,    !!
+!!   with where they come from; shared by the ENPART and EDAIQA parts.   !!
+!! arguments:                                                            !!
+!!   lgrid, lrot (in) -- the two labels, padded to the caller's width    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine grid2e_summary(lgrid,lrot)
+      use input_options_mod, only: igrid2e,irot2e
+      implicit real*8(a-h,o-z)
+      character lgrid*(*), lrot*(*)
+      character*60 cval
+      common /modgrid/nrad22,nang22,rr0022,phb12,phb22
+
+      if(igrid2e.eq.1) then
+        write(cval,'(i0,a,i0,a)') nrad22,' x ',nang22,' (# GRID)'
+      else
+        write(cval,'(i0,a,i0,a)') nrad22,' x ',nang22,' (default)'
+      end if
+      write(*,'(2x,a,1x,a)') lgrid,trim(cval)
+      if(irot2e.eq.1) then
+        write(cval,'(f5.3,a,f5.3,a)') phb12,' / ',phb22,' (ROTATION_2E)'
+      else if(irot2e.eq.2) then
+        write(cval,'(f5.3,a,f5.3,a)') phb12,' / ',phb22,
+     +    ' (not calibrated for this grid)'
+      else
+        write(cval,'(f5.3,a,f5.3,a)') phb12,' / ',phb22,' (calibrated)'
+      end if
+      write(*,'(2x,a,1x,a)') lrot,trim(cval)
+      end
 
 !! ***** !!
 

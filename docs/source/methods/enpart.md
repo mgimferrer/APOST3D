@@ -31,8 +31,8 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    main (one-electron) grid.
 2. **Coulomb term.** The classical electron-electron repulsion is a 6-D
    integral, computed numerically. For the one-center terms the second
-   electron's coordinates use a copy of the grid rotated by `phb1`, so
-   that the two electrons never sit on the same points.
+   electron's coordinates use a copy of the grid rotated by a small
+   angle, so that the two electrons never sit on the same points.
 3. **Exchange-correlation term**, depending on the wavefunction:
    - **Hartree-Fock**: the exact exchange, integrated like the Coulomb
      term.
@@ -69,7 +69,7 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    contains the reference electron-electron energy (see below), the
    two-electron energy is compared with it. If the error exceeds
    `TWOELTOLER` (0.25 kcal/mol by default), the one-center two-electron
-   terms are recomputed with a second rotation (`phb2`), and the two
+   terms are recomputed with a second rotation of the grid, and the two
    results are interpolated so that the error vanishes. Interatomic terms
    are not modified.
 
@@ -255,14 +255,15 @@ matrix. With `DOFRAGS`, every matrix is also condensed to fragments
 
 - **One-electron grid** (also used for the DFT exchange-correlation):
   150 radial × 590 angular points per atom by default for ENPART.
-- **Two-electron grid**: set in the `# GRID` block, which is only read
-  if `MOD-GRIDTWOEL` is given in `# ENPART` (see
-  [Block section # GRID](../input/grid.md)). Defaults: 150/590
-  with `phb1 0.169`, `phb2 0.170`. The rotation angles are calibrated for
-  the grid: for 40/146 use `phb1 0.162`, `phb2 0.182`.
+- **Two-electron grid**: 150 × 590 by default, set with `RADIAL_2E` and
+  `ANGULAR_2E` in the optional `# GRID` block (see
+  [Block section # GRID](../input/grid.md)); the rotation angles of the
+  grid are chosen by the program for the angular grid.
 - The 6-D two-electron integrations dominate the cost, which grows with
-  the square of the number of points per atom: 40/146 is much cheaper
-  than 150/590 and, with the zero-error strategy, often enough.
+  the square of the number of points per atom: 40 × 146 is much cheaper
+  than 150 × 590 and, with the zero-error strategy, useful for tests and
+  larger systems; for publication-quality ENPART numbers keep the
+  default.
   `THREBOD` saves time by skipping weakly bonded pairs.
 - The DFT part stores the orbital gradients on the one-electron grid:
   about 2 MB per occupied orbital and atom (twice that for unrestricted
