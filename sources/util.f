@@ -213,7 +213,7 @@ C trasnform to the AO basis
 
 c loop over atoms
        call locate_block(16,"# INTFILES",ii)
-       if(ii.eq.0)  stop 'Required section not found in input file'
+       if(ii.eq.0)  call apost_stop('Required section not found in input file')
         do ia=1,nat
          read(16,'(a80)') linia   
 c         k=1
@@ -233,7 +233,7 @@ C ONLY FOR RESTRICTED
          end do 
          read(22,'(a80)') linia   
          read(22,'(a80)') linia   
-         if(index(linia,"Restricted").eq.0) stop 'only resctricted'
+         if(index(linia,"Restricted").eq.0) call apost_stop('only resctricted')
          do i=1,nocc
            read(22,*) (sat(i,j,ia),j=1,i)
            do j=1,i
@@ -581,7 +581,7 @@ c X(N,M)
       deallocate(work,iwork)
       allocate(work(max(1,lwork)),iwork(max(1,liwork)))
       call dsyevd('V','U',N,acopy,N,w,work,lwork,iwork,liwork,info)
-      if(info.ne.0) stop 'dsyevd failed to converge in diagonalize'
+      if(info.ne.0) call apost_stop('dsyevd failed to converge in diagonalize')
 
 !! dsyevd returns ascending order; every caller expects descending      !!
 !! (old_diagonalize/SDIAG2's convention) -- reverse both eigenvalues    !!
@@ -1384,7 +1384,7 @@ c     print *,' Reading orbitals:'
 c     write (*,60) ii,(c(i,j),j=1,kmax)
 
   60  format(i4,17x,5f10.5)
-      if(i.ne.ii) stop 111
+      if(i.ne.ii) call apost_stop(' inc: row index mismatch (111)')
       enddo
        print *,' '
   1   if(kmax.ge.n) return
@@ -1399,7 +1399,7 @@ c     write (*,60) ii,(c(i,j),j=1,kmax)
 c     write (*,60) ii,(c(i,j),j=k1,kmax)
 
 c 62  format(1x,i4,5f9.5)
-      if(i.ne.ii) stop 112
+      if(i.ne.ii) call apost_stop(' inc: row index mismatch (112)')
       enddo
 c      print *,' '
       goto 1

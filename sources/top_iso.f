@@ -96,7 +96,7 @@
             if((ii.le.0.or.jj.le.0.or.kk.le.0.or.ll.le.0)) then
               write(*,*) " WARNING: IGNORED DM2 ELEMENT ",ii,kk,jj,ll,vvv
               write(*,*) " PROBLEM WITH THE CODE "
-              stop
+              call apost_stop('')
             else
               ilog=.true.
               if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.

@@ -402,9 +402,12 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
 
         n_fail = sum(1 for r in check_results if r["status"] in ("fail", "error"))
 
-        if rc != 0:
+        # an expected-stop test declares the exit code of its stop
+        # (apost_stop exits with 1); every other test must exit with 0
+        expected_rc = test.get("expected_rc", 0)
+        if rc != expected_rc:
             overall_status = "fail"
-            reason = f"exit code {rc}"
+            reason = f"exit code {rc} (expected {expected_rc})"
         elif n_fail:
             overall_status = "fail"
             reason = f"{n_fail} check(s) failed"

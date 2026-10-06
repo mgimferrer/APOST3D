@@ -184,7 +184,7 @@ c      -------------------------------------------------------------------------
         name3=name0(1:l)//".inp"
         namepat=name0(1:l)
       else
-        stop 'The required input filename is missing'
+        call apost_stop('The required input filename is missing')
       end if
 
 !! print version info !!
@@ -196,17 +196,17 @@ c      -------------------------------------------------------------------------
      +   index(name0(1:l),'.fchk',back=.true.).eq.l-4.and.l.ge.5) then
         write(*,'(2x,a,a,a)') 'Give the job name without extension: ',
      +    'apost3d <jobname> reads <jobname>.inp and <jobname>.fchk'
-        stop ' Job name given with its extension'
+        call apost_stop(' Job name given with its extension')
       end if
       open(16,file=name3,status='old',iostat=ios)
       if(ios.ne.0) then
         write(*,'(2x,a,a,a)') 'Input file ',trim(name3),' not found'
-        stop ' Input file not found'
+        call apost_stop(' Input file not found')
       end if
       open(15,file=name,status='old',iostat=ios)
       if(ios.ne.0) then
         write(*,'(2x,a,a,a)') 'Wavefunction file ',trim(name),' not found'
-        stop ' Wavefunction file not found'
+        call apost_stop(' Wavefunction file not found')
       end if
 
       call read_input()
@@ -229,8 +229,8 @@ c      -------------------------------------------------------------------------
       if(iposthf.eq.1.or.kop.eq.1.or.ieffao.eq.3) idono=1
 
       if(iposthf.eq.1) then
-        if(ispin.eq.1.and.icorr.lt.2) stop ' Local Spin needs dm1 and dm2 for correlated WFs'
-        if(ienpart.eq.1.and.icorr.lt.2) stop ' Enpart needs dm1 and dm2 for correlated WFs'
+        if(ispin.eq.1.and.icorr.lt.2) call apost_stop(' Local Spin needs dm1 and dm2 for correlated WFs')
+        if(ienpart.eq.1.and.icorr.lt.2) call apost_stop(' Enpart needs dm1 and dm2 for correlated WFs')
 !! OSLO's iterative localize/assign/deflate algorithm assumes integer-  !!
 !! occupied canonical-type orbitals -- it has no defined behavior for a !!
 !! multireference wavefunction's fractionally-occupied natural orbitals !!
@@ -239,7 +239,7 @@ c      -------------------------------------------------------------------------
         if(ioslo.eq.1) then
           write(*,'(2x,a)')
      +      'OSLO cannot be performed for multireference (CASSCF/CISD/FCI) wavefunctions'
-          stop ' OSLO cannot be performed for multireference wavefunctions'
+          call apost_stop(' OSLO cannot be performed for multireference wavefunctions')
         end if
       end if
 !! the RDMs are sized by the CASSCF/CI data of the .fchk: with a single  !!
@@ -247,13 +247,13 @@ c      -------------------------------------------------------------------------
       if(icorr.ne.0.and.iposthf.eq.0) then
         write(*,'(2x,a)') 'DM 1 / DM 2 read the RDMs of a correlated '//
      +    'wavefunction: the .fchk must be a CASSCF, FCI or CI one'
-        stop ' DM needs a correlated-wavefunction .fchk'
+        call apost_stop(' DM needs a correlated-wavefunction .fchk')
       end if
-      if(iqtaim.eq.1) stop'This version can not do QTAIM'
+      if(iqtaim.eq.1) call apost_stop('This version can not do QTAIM')
 
       if (ipca.eq.1.and.iqtaim.ne.1) iopop=1
       if(imulli.gt.1.or.iqtaim.eq.1) iopop=0
-      if(ihirsh.ne.0.and.idoat.eq.1) stop'Cant do HIRSH with DOATOMS'
+      if(ihirsh.ne.0.and.idoat.eq.1) call apost_stop('Cant do HIRSH with DOATOMS')
 !! gated on the real restricted-SD condition directly, not on idono --  !!
 !! idono can now also be forced on by GEOS (see above) on a genuinely   !!
 !! restricted wavefunction, where Local Spin still doesn't make sense   !!
@@ -264,20 +264,20 @@ c      -------------------------------------------------------------------------
       end if
 !! ENPART is real-space only: these used to skip it silently and carry on !!
       if(imulli.ne.0.and.ienpart.ne.0)
-     +  stop 'ENPART needs a real-space AIM (e.g. TFVC)'
-      if(iqtaim.ne.0.and.ienpart.ne.0) stop 'Cant do ENPART with QTAIM'
-      if(ieos.eq.1.and.idoat.eq.1) stop 'Cant do EOS with DOATOMS'
+     +  call apost_stop('ENPART needs a real-space AIM (e.g. TFVC)')
+      if(iqtaim.ne.0.and.ienpart.ne.0) call apost_stop('Cant do ENPART with QTAIM')
+      if(ieos.eq.1.and.idoat.eq.1) call apost_stop('Cant do EOS with DOATOMS')
 !! GEOS/EFFAO-U (ieffao=3) only exist on the real-space fragment path    !!
 !! (effao3d_u): Hilbert-space runs used to skip them silently, and       !!
 !! DOATOMS ran the alpha/beta UEFFAO analysis in their place             !!
       if(ieffao.eq.3.and.imulli.ne.0)
-     +  stop 'GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)'
-      if(ieffao.eq.3.and.idoat.eq.1) stop 'Cant do GEOS/EFFAO-U with DOATOMS'
+     +  call apost_stop('GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)')
+      if(ieffao.eq.3.and.idoat.eq.1) call apost_stop('Cant do GEOS/EFFAO-U with DOATOMS')
 !! weighted Lowdin (LOWDIN-W) has no EFO construction of its own        !!
       if(ieffao.ne.0.and.imulli.eq.5) then
         write(*,'(2x,a)') 'EFFAO, UEFFAO and EOS are not available with '//
      +    'LOWDIN-W'
-        stop ' EFFAO/EOS not available with LOWDIN-W'
+        call apost_stop(' EFFAO/EOS not available with LOWDIN-W')
       end if
 !! OSLO integrates its spread matrix on the # METHOD grid; the atoms that !!
 !! assign OSLOs to fragments can still be Hilbert-space, set in # OSLO    !!
@@ -286,7 +286,7 @@ c      -------------------------------------------------------------------------
      +    '(e.g. TFVC), used for the numerical integration'
         write(*,'(2x,a)') 'MULLIKEN, LOWDIN, LOWDIN-DAVIDSON or '//
      +    'NAO-BASIS go in # OSLO, for the fragment populations'
-        stop ' OSLO needs a real-space AIM (e.g. TFVC)'
+        call apost_stop(' OSLO needs a real-space AIM (e.g. TFVC)')
       end if
 
       if(idoint.eq.1) then
@@ -540,7 +540,12 @@ c      iopt(200) =
 
 !! density at the iatdens atom !!
       if(iatdens.ne.0) call atdens_int(Rmax,iatdens)
-      if(inopop.eq.1) stop 'Normal termination of APOST3D'
+!! NOPOPU ends the run here (normal end, exit 0); flush so the stop !!
+!! message (stderr) comes after the buffered output                 !!
+      if(inopop.eq.1) then
+        flush(6)
+        stop 'Normal termination of APOST3D'
+      end if
 
 !! set atomic radii just in case needed !!
       call prepar()
@@ -607,6 +612,8 @@ c      iopt(200) =
         if(ieoscent.eq.1) then
           write(*,*) 'Doing OS from centroids of localized orbitals...'
           call eos_centroid(itotps,chp,wp,omp,pcoord)
+!! normal end of this path: flush so stdout keeps its order, exit 0 !!
+          flush(6)
           stop
         end if
 
@@ -883,7 +890,7 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 !! Hilbert-space !!
         if(imulli.gt.0) then
           write(*,*) " LOBA NOT IMPLEMENTED FOR HILBERT-SPACE "
-          stop
+          call apost_stop('')
         end if
 
 !! Real-space !!

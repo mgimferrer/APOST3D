@@ -88,7 +88,7 @@
           iifut=iifut+1
         end do
 
-        if(iifut-1.ne.iatps) stop 'scattering_factors: vector dimension mismatch (iifut =/ iatps)'
+        if(iifut-1.ne.iatps) call apost_stop('scattering_factors: vector dimension mismatch (iifut =/ iatps)')
 
 !! spherize rho^A: average over the angular grid at each radial shell    !!
 !! (angular weights sum to 1), then integrate the spherized density as a !!

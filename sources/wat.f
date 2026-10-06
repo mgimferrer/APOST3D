@@ -179,7 +179,7 @@
       if(iradmat.eq.2) then 
         open(unit=45,file='radmat.inp')
         read(45,*) nat0
-        if(nat0.ne.nat) stop 'inconsistency reading radmat.inp'
+        if(nat0.ne.nat) call apost_stop('inconsistency reading radmat.inp')
         read(45,*)((achi(i,j),j=i+1,nat),i=1,nat) 
         do i=1,nat
           achi(i,i)=0.0d0
@@ -233,7 +233,7 @@
 
           ndiv=50
 
-          if(ndiv.gt.80)stop 160
+          if(ndiv.gt.80)call apost_stop(' khi: too many subdivisions (160)')
           step=1.d0/(dfloat(ndiv))
       
           do k=1,ndiv+1
@@ -348,7 +348,7 @@
             achi(jatom,iatom)=1.0d0
             go to 100
           else
-            stop  'No extremum of density found'
+            call apost_stop('No extremum of density found')
           end if
 
   17  continue
@@ -451,7 +451,7 @@
       endif
 
       h=xa(khi)-xa(klo)
-      if (h.eq.0.) stop 'bad xa input in splint'
+      if (h.eq.0.) call apost_stop('bad xa input in splint')
       a=(xa(khi)-x)/h
       b=(x-xa(klo))/h
       y=a*ya(ipos,istate,klo)+b*ya(ipos,istate,khi)+((a**3-a)*
@@ -1269,7 +1269,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
           error(ii)=abs(znpop(ii)-pop(ii))
           znpop(ii)=pop(ii)
           IF (error(ii)<0.0005d0) isumcheck=isumcheck+1
-          if(error(ii).eq.0.0d0) STOP 'Absolute convergence unlikely.'
+          if(error(ii).eq.0.0d0) call apost_stop('Absolute convergence unlikely.')
           if(error(ii).gt.xmaxerr) xmaxerr=error(ii)
         END DO
         write(*,*) 'Iteration :',nconv,' Max err: ',xmaxerr
@@ -1323,7 +1323,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       if(iradmat.eq.2.and.iiter.eq.1) then
         open(unit=45,file='hirshit.pop')
         read(45,*) nat0
-        if(nat0.ne.nat) stop 'inconsistency reading hirshit.pop'
+        if(nat0.ne.nat) call apost_stop('inconsistency reading hirshit.pop')
         read(45,*) (pop(i),i=1,nat)
         write(*,*)'Hirshfeld-Iterative atomic populations read from hirshit.pop'
         close(45)
@@ -1473,7 +1473,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
         write(*,'(2x,a)') 'HIRSH and HIRSH-IT need the free-atom '//
      +    'densities in a file named densoutput in the working folder'
         write(*,'(2x,a)') 'Make it with utils/gen_hirsh'
-        stop ' densoutput not found'
+        call apost_stop(' densoutput not found')
       end if
       OPEN (UNIT=51, FILE="densoutput", STATUS='OLD')
       read(51,'(a80)',end=90,err=90) line
@@ -1481,7 +1481,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       if(nrad0.gt.size(xr2).or.nat0.gt.size(radial,1)) then
         write(*,'(2x,a,i0,a,i0,a)') 'densoutput: at most ',
      +    size(radial,1),' elements and ',size(xr2),' radial points'
-        stop ' densoutput too large'
+        call apost_stop(' densoutput too large')
       end if
       READ (51,*,end=90,err=90) (xr2(ii),ii=1,nrad0)
 
@@ -1492,7 +1492,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
         if(nch.gt.size(radial,2)) then
           write(*,'(2x,a,a,a,i0,a)') 'densoutput: ',atname,' has more '//
      +      'than ',size(radial,2),' charge states'
-          stop ' densoutput too large'
+          call apost_stop(' densoutput too large')
         end if
         do j=1,92
           write(atname2,'(a4)') mend(j)
@@ -1521,14 +1521,14 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
 
 90    write(*,'(2x,a)') 'densoutput is incomplete or not in the '//
      +  'expected format (see utils/gen_hirsh)'
-      stop ' densoutput cannot be read'
+      call apost_stop(' densoutput cannot be read')
 100   continue
 
       do i=1,nat
         if(ieq(i).eq.0) then
           write(*,'(2x,a,a4,a)') 'ERROR: atom ', mend(iznuc(i)),
      1      ' is missing in densoutput'
-          stop
+          call apost_stop('')
         endif
       end do
 

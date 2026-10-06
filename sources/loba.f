@@ -23,7 +23,7 @@
       idofr=iopt(40)
       if(idofr.eq.0) then
         write(*,*) " FRAGMENT DEFINITION REQUIRED FOR LOBA, CHECK .inp FILE "
-        stop
+        call apost_stop('')
       end if
 
       !! FRAGMENT CHARGE EXTRACTED FROM zn (AVOIDS PROBLEMS WHEN PSEUDOPOTENTIALS ARE USED) !!
@@ -165,7 +165,7 @@
       !! FOR THE MOMENT ONLY CLOSED-SHELL !!
       else
         write(*,*) " LOBA IMPLEMENTED ONLY FOR CLOSED-SHELL "
-        stop
+        call apost_stop('')
       end if
 
       !! PRINTING FORMATS !!

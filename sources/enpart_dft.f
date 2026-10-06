@@ -181,7 +181,7 @@
 !! meta-GGA already stops in func_info_print; kept here because the BODEN !!
 !! loop below has no tau analog yet (unlike sigma, it doesn't follow from  !!
 !! the bond-order-density kernel -- see grdboden).                         !!
-      if(itype.eq.3) stop ' META-GGA atom-pair (BODEN) XC decomposition not yet implemented '
+      if(itype.eq.3) call apost_stop(' META-GGA atom-pair (BODEN) XC decomposition not yet implemented ')
 
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
       ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps),scr_tau(itotps))
@@ -240,7 +240,7 @@
           end do
           if(abs(x).gt.1.0d-3) then
             write(*,*) ii,jj,x
-            stop " PROBLEM WITH MOs OVERLAPS "
+            call apost_stop(" PROBLEM WITH MOs OVERLAPS ")
           end if
         end do
       end do
@@ -895,7 +895,7 @@
 !! meta-GGA already stops in func_info_print; kept here because the BODEN !!
 !! loop below has no tau analog yet (unlike sigma, it doesn't follow from  !!
 !! the bond-order-density kernel -- see grdboden_uks).                     !!
-      if(itype.eq.3) stop ' META-GGA atom-pair (BODEN) XC decomposition not yet implemented '
+      if(itype.eq.3) call apost_stop(' META-GGA atom-pair (BODEN) XC decomposition not yet implemented ')
 
       if(ithrebod.lt.1) then
         threbod=ZERO
@@ -970,7 +970,7 @@
           end do
           if(abs(xa).gt.1.0d-3) then
             write(*,*) ii,jj,xa
-            stop " PROBLEM WITH ALPHA MOs OVERLAPS "
+            call apost_stop(" PROBLEM WITH ALPHA MOs OVERLAPS ")
           end if
         end do
       end do
@@ -983,7 +983,7 @@
           end do
           if(abs(xb).gt.1.0d-3) then
             write(*,*) ii,jj,xb
-            stop " PROBLEM WITH BETA MOs OVERLAPS "
+            call apost_stop(" PROBLEM WITH BETA MOs OVERLAPS ")
           end if
         end do
       end do
@@ -1333,7 +1333,7 @@
         write(*,'(2x,a,1x,i0,1x,a)') 'ERROR: functional id',id_func,
      +    'is not a valid libxc functional id.'
         write(*,'(2x,a)') 'See https://libxc.gitlab.io/functionals/ for the list of ids.'
-        stop 'INVALID LIBXC FUNCTIONAL ID. REVISE inp'
+        call apost_stop('INVALID LIBXC FUNCTIONAL ID. REVISE inp')
       end if
       xc_info = xc_f03_func_get_info(xc_func)
       xmix = xc_f03_hyb_exx_coef(xc_func)
@@ -1407,18 +1407,18 @@
         write(*,*) " "
         write(*,'(2x,a)') 'Meta-GGA functionals are not supported yet (implementation'
         write(*,'(2x,a)') 'in progress). Use an LDA, GGA or global-hybrid GGA functional.'
-        stop 'META-GGA FUNCTIONALS NOT YET SUPPORTED'
+        call apost_stop('META-GGA FUNCTIONALS NOT YET SUPPORTED')
       end if
       if(itype.lt.0) then
         write(*,*) " "
         write(*,'(2x,a)') 'Only LDA, GGA and global-hybrid GGA functionals are supported.'
-        stop 'UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp'
+        call apost_stop('UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp')
       end if
       if(ikind.eq.XC_KINETIC) then
         write(*,*) " "
         write(*,'(2x,a)') 'This is a kinetic-energy functional, not an exchange or'
         write(*,'(2x,a)') 'correlation one.'
-        stop 'KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp'
+        call apost_stop('KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp')
       end if
 !! range-separated hybrids: hyb_exx_coef is only the long-range/full-     !!
 !! range fraction, the short-range exact exchange is never integrated;    !!
@@ -1427,12 +1427,12 @@
         write(*,*) " "
         write(*,'(2x,a)') 'Range-separated hybrids (CAM-B3LYP, wB97X, HSE, LC-...) are'
         write(*,'(2x,a)') 'not supported: only global hybrids are.'
-        stop 'RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp'
+        call apost_stop('RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp')
       end if
       if(iand(iflags,XC_FLAGS_VV10).ne.0) then
         write(*,*) " "
         write(*,'(2x,a)') 'Functionals with VV10 nonlocal correlation are not supported.'
-        stop 'VV10 FUNCTIONAL NOT SUPPORTED. REVISE inp'
+        call apost_stop('VV10 FUNCTIONAL NOT SUPPORTED. REVISE inp')
       end if
 
       end

@@ -318,7 +318,7 @@
       if(iorb.gt.nmax) then
         write(*,'(2x,a,i0,a,i0,a)') 'EOS: ',iorb,' EFOs above the '//
      +    'EFF_THRESH cutoff, at most ',nmax,': raise EFF_THRESH'
-        stop ' EOS: too many EFOs (EFF_THRESH)'
+        call apost_stop(' EOS: too many EFOs (EFF_THRESH)')
       end if
 
       iorb=0
@@ -386,7 +386,7 @@
      +      ' EFOs above the EFF_THRESH cutoff for ',nnn,
      +      ' alpha electrons: lower EFF_THRESH'
         end if
-        stop ' EOS: fewer EFOs than electrons (EFF_THRESH)'
+        call apost_stop(' EOS: fewer EFOs than electrons (EFF_THRESH)')
       end if
 333   k=k+1
       if(nnn+k.le.iorb) then

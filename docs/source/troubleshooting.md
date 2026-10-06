@@ -1,7 +1,9 @@
 # Troubleshooting
 
 Messages are quoted as the program prints them. A message starting with
-`STOP` ends the run; look for it in the last lines of the output.
+`STOP` ends the run: it is the last line of the output, and the program
+exits with code 1. Some errors print a line or two of explanation just
+before it.
 
 ## Building
 

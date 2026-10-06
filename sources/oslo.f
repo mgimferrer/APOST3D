@@ -377,7 +377,7 @@
 
 !! MG: to do !!
           write(*,*) " Branching code has to be done "
-          stop
+          call apost_stop('')
         else
           write(*,*) "  Orb.   Frag.   FOLI  "
           write(*,*) " --------------------- "

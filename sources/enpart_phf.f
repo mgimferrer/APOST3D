@@ -45,7 +45,7 @@
       do ii=1,igr
         if(occ_no(ii,ii).gt.1.0d-8) imaxorb=imaxorb+1
       end do 
-      if(2*imaxorb.ne.nspinorb) stop 'Inconsistency in orbital space'
+      if(2*imaxorb.ne.nspinorb) call apost_stop('Inconsistency in orbital space')
 
       ALLOCATE(chp2(itotps,norb),scr(itotps))
 

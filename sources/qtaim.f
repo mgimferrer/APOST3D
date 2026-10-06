@@ -226,7 +226,7 @@ c ERC only if necessary
             write(*,*)'NONNUCLEARATRACTOR',nna,'position: ',x0(1),x0(2),x0(3)
             write(*,*)'hessian eigenvalues',h0(1,1),h0(2,2),h0(3,3)
 c            call nonsphere(x0(1),x0(2),x0(3),nrad,nang)
-            STOP
+            call apost_stop('')
            end if 
           end if
            end if 
@@ -1209,7 +1209,7 @@ c NONNUCLEAR ATRACTORS
            write(*,*)'NONNUCLEARATRACTOR',nna,' position: ',x0(1),x0(2)
      $                                                           ,x0(3)
            write(*,*)'hessian eigenvalues',h0(1,1),h0(2,2),h0(3,3)
-           STOP
+           call apost_stop('')
           end if 
          end if
 c step         

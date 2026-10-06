@@ -48,7 +48,7 @@
          CLOSE(iunit)
        else if(iradmat.eq.0) then
          write(*,*) 'Incompatible options ELCOUNT=1,RADMAT=0. Stopping.'
-         STOP 'Incompatible options. Problem in ELCOUNT user input.'
+         call apost_stop('Incompatible options. Problem in ELCOUNT user input.')
        end if
       END SUBROUTINE
 
@@ -231,7 +231,7 @@ C STEP 8: Store current value of Q.
 
          if(ielcount_iteration.ge.50) then
            write(*,*) 'Convergence problem, maximum number of iterations reached.'
-           STOP 'Convergence problem'
+           call apost_stop('Convergence problem')
          end if
        end do !cycle main algorithm until convergence achieved
       END SUBROUTINE
@@ -685,7 +685,7 @@ c exchange
 !! path (separately scoped, unrelated to the numerical-integration DFT    !!
 !! path -- see numint_dft) -- guard stops here, before any energy is       !!
 !! computed. !!
-      if(itype.eq.3) stop ' META-GGA not implemented for the ANALYTIC (ianalytical) two-electron path '
+      if(itype.eq.3) call apost_stop(' META-GGA not implemented for the ANALYTIC (ianalytical) two-electron path ')
 
       ALLOCATE(chp2(itotps,nocc),scr(itotps),rho(itotps))
       ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps),scr_tau(itotps))
@@ -754,7 +754,7 @@ c exchange
 !         if(abs(x).gt.1.0d-2) then
           if(abs(x).gt.1.0d-3) then
             write(*,*) ii,jj,x
-            stop " Problem with MOs overlaps "
+            call apost_stop(" Problem with MOs overlaps ")
           end if
         end do
       end do
