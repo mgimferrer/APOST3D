@@ -69,7 +69,7 @@ All sections are required, in any order:
 
 | Section | Content |
 |---|---|
-| `$Gaussian` | The route section (and any further Gaussian input lines) for the atomic calculations, up to a line `$end`. Use the same method and basis set as the molecule, and **Cartesian functions (`6D 10F`)**: `gen_hirsh` only reads Cartesian basis sets. |
+| `$Gaussian` | The route section (and any further Gaussian input lines) for the atomic calculations, up to a line `$end`. Use the same method and basis set as the molecule, and **Cartesian functions (`6D 10F`)**: `gen_hirsh` only reads Cartesian basis sets without g functions, and stops otherwise. |
 | `$Atoms` | The number of elements, then one line per element: its symbol and five charge/multiplicity pairs, **in this order: neutral, −1, +1, −2, +2**. All five pairs are required (the H cations are skipped automatically). |
 | `$Title` | One line, written at the top of `densoutput`. |
 | `$Grid` | Radial (at most 100) and angular (a Lebedev number, e.g. 590) points for the spherical averaging. |

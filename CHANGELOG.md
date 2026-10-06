@@ -135,6 +135,12 @@ program, not a full development history — see `git log` for that.
   `KEY = value` with spaces is read, a value that can't be read stops the
   run showing the line (real keywords used to fall back silently to their
   default), and the last block may end without its closing `#`.
+- **Hirshfeld atomic densities** — `HIRSH`/`HIRSH-IT` without a
+  `densoutput` file, or with an incomplete one, stop with a message (a
+  missing file used to be created empty and end in a Fortran error);
+  samarium can now be matched in it. `gen_hirsh` stops on a spherical or
+  g-function basis, or one larger than it can hold, instead of writing
+  wrong densities.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid (in `# GRID` or on the command line), or a radial one
   outside 1–500, now stops the run. In `# GRID` it used to give wrong

@@ -1448,7 +1448,8 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       character*2 atname
       character*4 atname2
-      character*80 line    
+      character*80 line
+      logical lexist
 
       Dimension mend(92)
       data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O , 
@@ -1457,7 +1458,7 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
      $  4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
      $  4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
      $  4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
-     $  4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sn ,
+     $  4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sm ,
      $  4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu , 
      $  4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
      $  4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
@@ -1465,17 +1466,34 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
     
       write(*,'(2x,a)') 'Reading atomic densities from densoutput'
 
-      OPEN (UNIT=51, FILE="densoutput")
-      read(51,'(a80)') line
-      read(51,*) nat0,nrad0
-      if(real(size(xr2)).lt.nrad0) STOP 'Array xr2 is too small to read
-     +  densoutput.'
-      READ (51,*) (xr2(ii),ii=1,nrad0)
+!! the file must exist (an OPEN without status='old' would create it   !!
+!! empty), and its sizes must fit the /hirsh/ arrays                   !!
+      inquire(file="densoutput",exist=lexist)
+      if(.not.lexist) then
+        write(*,'(2x,a)') 'HIRSH and HIRSH-IT need the free-atom '//
+     +    'densities in a file named densoutput in the working folder'
+        write(*,'(2x,a)') 'Make it with utils/gen_hirsh'
+        stop ' densoutput not found'
+      end if
+      OPEN (UNIT=51, FILE="densoutput", STATUS='OLD')
+      read(51,'(a80)',end=90,err=90) line
+      read(51,*,end=90,err=90) nat0,nrad0
+      if(nrad0.gt.size(xr2).or.nat0.gt.size(radial,1)) then
+        write(*,'(2x,a,i0,a,i0,a)') 'densoutput: at most ',
+     +    size(radial,1),' elements and ',size(xr2),' radial points'
+        stop ' densoutput too large'
+      end if
+      READ (51,*,end=90,err=90) (xr2(ii),ii=1,nrad0)
 
       DO iat=1, nat0, 1
-        read(51,'(a2)')atname
+        read(51,'(a2)',end=90,err=90) atname
         atname=adjustl(atname)
-        read(51,*) nch 
+        read(51,*,end=90,err=90) nch
+        if(nch.gt.size(radial,2)) then
+          write(*,'(2x,a,a,a,i0,a)') 'densoutput: ',atname,' has more '//
+     +      'than ',size(radial,2),' charge states'
+          stop ' densoutput too large'
+        end if
         do j=1,92
           write(atname2,'(a4)') mend(j)
           if(index(atname2,atname).ne.0) then
@@ -1492,13 +1510,19 @@ c            write(*,*) 'Using ',icenter,ipollas(iuint),ipollas(ilint)
 10      continue
 
         DO ich=1, nch, 1
-          READ (51,*)  icharge,imult
-          READ (51,*) (radial(iat, ich, io),io=1,nrad0) 
+          READ (51,*,end=90,err=90)  icharge,imult
+          READ (51,*,end=90,err=90) (radial(iat, ich, io),io=1,nrad0)
           CALL spline(iat,ich,nrad0,-10.0d0,0.0d0)
         END DO
       END DO
 
       CLOSE(51)
+      go to 100
+
+90    write(*,'(2x,a)') 'densoutput is incomplete or not in the '//
+     +  'expected format (see utils/gen_hirsh)'
+      stop ' densoutput cannot be read'
+100   continue
 
       do i=1,nat
         if(ieq(i).eq.0) then

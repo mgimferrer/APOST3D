@@ -116,10 +116,12 @@ printed), the radial points between 1 and 500. See [# GRID](input/grid.md).
 
 ## Atomic definitions
 
-**`ERROR: atom <El> is missing in densoutput`**, or an end-of-file error with `HIRSH`/`HIRSH-IT`
-The Hirshfeld schemes need a `densoutput` file with every element of the
-molecule in the working directory; build it with
-[`gen_hirsh`](tools/utilities.md).
+**`STOP densoutput not found`**, **`STOP densoutput cannot be read`**,
+**`ERROR: atom <El> is missing in densoutput`**
+The Hirshfeld schemes need a complete `densoutput` file with every element
+of the molecule in the working directory; build it with
+[`gen_hirsh`](tools/utilities.md). A `gen_hirsh` run that stopped leaves
+an incomplete one.
 
 **A runtime error opening `jobname.nao`**
 `NAO-BASIS` needs the NAO transformation file; see
