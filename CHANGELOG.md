@@ -141,6 +141,8 @@ program, not a full development history — see `git log` for that.
   samarium can now be matched in it. `gen_hirsh` stops on a spherical or
   g-function basis, or one larger than it can hold, instead of writing
   wrong densities.
+- **`DM 1`/`DM 2` with a single-determinant `.fchk`** — now stops with a
+  message instead of failing in the diagonalization of an empty matrix.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid (in `# GRID` or on the command line), or a radial one
   outside 1–500, now stops the run. In `# GRID` it used to give wrong

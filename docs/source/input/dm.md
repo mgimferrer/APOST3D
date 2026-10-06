@@ -25,7 +25,8 @@ pySCF
 ```
 
 - The RDMs must belong to the wavefunction of the `.fchk` file, in its
-  molecular-orbital basis. With pySCF, `utils/apost3d.py` writes the three
+  molecular-orbital basis, and that wavefunction must be a correlated one
+  (CASSCF, FCI, CI): with a single-determinant `.fchk` the run stops. With pySCF, `utils/apost3d.py` writes the three
   files together (see [Preparing the wavefunction](../guide/wavefunctions.md)).
 - The 1-RDM replaces the density of the `.fchk` file in every analysis.
 - `DM 2` also switches on the [local spin analysis](../methods/spin.md).
