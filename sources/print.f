@@ -31,8 +31,8 @@
 !! AIMPAC/PROAIMV interface (opt-in, # METHOD / DOINT):                    !!
 !!   print_int              -- writes one .int file per atom (plus a        !!
 !!                             .files index) holding its MO/NO-basis        !!
-!!                             overlap matrix, for the external FCALC       !!
-!!                             program                                     !!
+!!                             overlap matrix, for external programs       !!
+!!                             (ESI-3D, FCALC)                             !!
 !! Cube-file generation (opt-in, # CUBE):                                  !!
 !!   cubegen_new            -- writes one Gaussian-style .cube file per      !!
 !!                             requested EFO of a fragment/atom, adaptive   !!
@@ -326,7 +326,8 @@
       if(ipca.eq.1) write(*,'(2x,a,1x,a)')
      +  'Principal component analysis         :','PCA'
       if(idoint.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Integration diagnostics              :','DOINT'
+     +  'Atomic overlaps for ESI-3D, FCALC    :',
+     +  'DOINT (one .int file per atom)'
       if(ielcount.eq.1) write(*,'(2x,a,1x,a)')
      +  'Electron counting (NCTAIM)           :','ELCOUNT'
 
@@ -1070,7 +1071,7 @@
 !! subroutine: print_int                                                 !!
 !! purpose: writes one AIMPAC/PROAIMV-format ".int" file per atom (plus  !!
 !!   a ".files" index) holding that atom's overlap matrix in the MO/NO   !!
-!!   basis -- consumed by the external FCALC program to compute atomic   !!
+!!   basis -- read by external programs (ESI-3D, FCALC) to compute       !!
 !!   properties from APOST-3D's atomic partition. Opt-in via # METHOD /  !!
 !!   DOINT. Also runs a final MO-orthogonality sanity check (sum of all  !!
 !!   atomic overlap matrices vs. the identity) once every atom is done.  !!
@@ -1107,7 +1108,7 @@
      $ 'Th','Pa',' U'  /
 
       character nameaim*55,charnu*2,charnu2*2,charnu1
-      character charnu3*3,ext*4
+      character charnu3*3,ext*4,namefiles*55
       character*80 line
 
       allocatable c3(:,:),c2(:,:),csave(:,:),scr(:,:)
@@ -1183,6 +1184,7 @@
         nameaim=name(1:l)//"ihi.files"
         ext="ihi_"
       end if
+      namefiles=nameaim
       open(file=nameaim,unit=naim3,status="unknown")
       rewind(naim3)
       do jjat=1,icuat
@@ -1218,9 +1220,9 @@
         open(file=nameaim,unit=naim,status="unknown")
         rewind(naim)
 
-!! the following .int-file content is read by the external FCALC       !!
-!! program -- format is AIMPAC/PROAIMV-compatible, do not restyle. AE   !!
-!! and BK are placeholders (see header) kept only for format            !!
+!! the following .int-file content is read by external programs         !!
+!! (ESI-3D, FCALC) -- format is AIMPAC/PROAIMV-compatible, do not       !!
+!! restyle. AE and BK are placeholders (see header) kept only for format !!
 !! compatibility, not computed from the real SCF energy.                !!
         BK=1.0d0
         AE=-1.0d0
@@ -1397,6 +1399,8 @@
         close(naim)
       end do
       close(naim3)
+      write(*,'(2x,a,a)') 'Atomic overlap matrices (DOINT) written: '//
+     +  'one .int file per atom, listed in ',trim(namefiles)
 
 
       if(icuat.eq.nat) then

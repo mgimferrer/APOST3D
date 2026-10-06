@@ -290,7 +290,6 @@ c      -------------------------------------------------------------------------
       end if
 
       if(idoint.eq.1) then
-        write(*,*) ' Will do atomic overlaps for FCALC'
         if(iwfn.eq.1) then
           write(*,*) ' Will use orbitals from wfn file'
           write(*,*) ' Assuming orbitals are on fort.92'
@@ -546,8 +545,8 @@ c      iopt(200) =
 !! set atomic radii just in case needed !!
       call prepar()
 
-!! Mulliken-type analysis, either int files for FCALC or effao/readint !!
-!! files                                                                !!
+!! Mulliken-type analysis, either int files (ESI-3D, FCALC) or          !!
+!! effao/readint files                                                  !!
       ndim=igr
       if(imulli.ge.1) then
         allocate (sat(ndim,ndim,nat))
