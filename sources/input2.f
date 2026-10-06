@@ -171,7 +171,7 @@
         if(igr0.ne.igr) then
           do i=igr0+1,igr
             do j=1,igr
-              c(j,i)=0.0d0
+              cb(j,i)=0.0d0
             end do
           end do
         end if
