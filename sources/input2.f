@@ -184,39 +184,35 @@
 !! reading P-matrix from fchk !!
       ntriang=int_locate(15,"otal SCF D",ilog)
       read(15,*)(clin(i),i=1,ntriang)
-      ndens=1     
 
+!! DENS n: the n-th density of the .fchk, counting the blocks whose      !!
+!! header starts with "Total" and names a "Density" (the same rule for   !!
+!! Gaussian, Q-Chem and pySCF files)                                    !!
       if(ndens0.gt.1) then
-        ndens=-1
+        ndens=0
         rewind 15
- 200   read(15,'(a80)',end=211)line
-        if(index(line,"Total").ne.0) ndens=ndens+1
-        goto 200
- 211   continue                 
-
-        if(ndens.ne.1) then
-          write(*,'(2x,i0,a)') ndens,' densities found in the fchk file'
-        else
-          write(*,'(2x,a)')
-     +      'Only one P-matrix found in the fchk file -- using it'
+ 200    read(15,'(a80)',end=211) line
+        if(line(1:5).eq.'Total'.and.index(line,'Density').ne.0) then
+          ndens=ndens+1
+          write(*,'(2x,a,i0,a,a)') 'Density ',ndens,' in the .fchk: ',
+     +      trim(line(1:40))
         end if
-        if(ndens0.le.ndens)then
-          ndens=ndens0
-          write(*,'(2x,a,i0,a)') 'Using density number ',ndens,
-     +      ' from the fchk file'
-        else
-          write(*,'(2x,a,i0,a)') 'Density number ',ndens0,
-     +      ' not found in the fchk file'
-          stop
-        endif
-
-!! getting the n-th density matrix in fchk instead !!
-        ncou=-1
+        goto 200
+ 211    continue
+        if(ndens0.gt.ndens) then
+          write(*,'(2x,a,i0,a,i0,a)') 'DENS ',ndens0,
+     +      ' asked for, the number of densities in the .fchk is ',ndens
+          stop ' DENS: density not found'
+        end if
+        ncou=0
         rewind 15
-        do while (ncou.lt.ndens)
-          read(15,'(a80)')line
-          if(index(line,"Total").ne.0) ncou=ncou+1   
+        do while(ncou.lt.ndens0)
+          read(15,'(a80)') line
+          if(line(1:5).eq.'Total'.and.index(line,'Density').ne.0)
+     +      ncou=ncou+1
         end do
+        write(*,'(2x,a,i0,a,a)') 'Using density ',ndens0,': ',
+     +    trim(line(1:40))
         read(15,*)(clin(i),i=1,ntriang)
       end if
 
@@ -239,6 +235,14 @@
             cb(i,j)=c(i,j)
           enddo
         enddo
+      end if
+
+!! the density of an unrestricted or ROHF wavefunction is rebuilt from  !!
+!! its SCF orbitals below, so another one cannot be used                !!
+      if(ndens0.gt.1.and.kop.eq.1) then
+        write(*,'(2x,a)') 'DENS above 1 is only available for '//
+     +    'restricted wavefunctions'
+        stop ' DENS: unrestricted wavefunction'
       end if
 
       if(kop.eq.1) then
