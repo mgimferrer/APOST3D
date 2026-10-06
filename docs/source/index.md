@@ -98,7 +98,6 @@ input/examples
 :hidden:
 :caption: Tools
 
-tools/apost3d-eos
 tools/utilities
 ```
 

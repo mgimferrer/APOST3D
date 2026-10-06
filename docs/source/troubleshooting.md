@@ -32,7 +32,6 @@ or was rebuilt with `make`:
 ```bash
 xattr -cr $APOST3D_PATH
 codesign --force --sign - $APOST3D_PATH/apost3d
-codesign --force --sign - $APOST3D_PATH/apost3d-eos
 ```
 
 **`Illegal instruction`**

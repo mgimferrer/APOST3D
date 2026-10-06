@@ -10,7 +10,7 @@ programs into `$APOST3D_PATH/utils/`, which also holds the Python module
 | `gen_hirsh` | Build the free-atom densities file `densoutput` needed by `HIRSH` and `HIRSH-IT` |
 | `apost3d.py` | Write `.fchk` and RDM files from pySCF |
 | `eos_aom` | EOS from atomic overlap matrices computed by AIMAll or Multiwfn |
-| `wfn2fchk`, `group_frag`, `eos_alt` | Older helpers, see the end of this page |
+| `wfn2fchk` | Older helper, see the end of this page |
 
 ## get_energy_g16 and get_energy
 
@@ -115,7 +115,3 @@ against the current output and input formats.
   file per atom from AIMAll (e.g. `C1.int`), or `name.aom` from Multiwfn.
 - **`wfn2fchk`** builds a `.fchk` file (named `FCHK`) from a file named
   `WFN` and the output of a PNOF or NWChem calculation.
-- **`group_frag`** sums the atom-pair ENPART energies of an output into
-  fragment terms.
-- **`eos_alt`** explores alternative electron distributions from an EOS
-  output.

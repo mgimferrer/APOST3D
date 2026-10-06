@@ -5,8 +5,8 @@
 # No Profile-Guided Optimisation, no Intel-specific flags.   #
 # Built with -fopenmp; OMP_NUM_THREADS controls runtime      #
 # parallelism (see `make test NTHREADS=n` / `make help`).    #
-# Build products: objects/ (every .o/.mod), apost3d and      #
-# apost3d-eos in the repo root, utilities in utils/.         #
+# Build products: objects/ (every .o/.mod), apost3d in the   #
+# repo root, utilities in utils/.                           #
 ###############################################################
 
 ## --------------------------------------------------------- ##
@@ -127,27 +127,14 @@ endif
 MOD_OBJ   = $(OBJDIR)/modules.o
 QUAD_OBJ  = $(OBJDIR)/Lebedev-Laikov.o
 
-## SOURCE LIST: the .f files of sources/ except main_eos.f (main program of
-## apost3d-eos). filter keeps the match case-sensitive, so Lebedev-Laikov.F
-## (own rule below) stays out even on case-insensitive file systems.
-SRC_LIST  := $(filter-out $(SRCDIR)/main_eos.f,$(filter %.f,$(wildcard $(SRCDIR)/*.f)))
+## SOURCE LIST: the .f files of sources/. filter keeps the match
+## case-sensitive, so Lebedev-Laikov.F (own rule below) stays out even on
+## case-insensitive file systems.
+SRC_LIST  := $(filter %.f,$(wildcard $(SRCDIR)/*.f))
 OBJ_LIST  := $(MOD_OBJ) \
              $(addprefix $(OBJDIR)/,$(notdir $(SRC_LIST:.f=.o)))
 # Everything but the main program, for utilities that call program routines
 OBJ_LIST_NOMAIN := $(filter-out $(OBJDIR)/main.o,$(OBJ_LIST))
-
-## EOS-only object list (standalone apost3d-eos executable)
-OBJ_LIST_EOS := $(MOD_OBJ) \
-                $(OBJDIR)/effao.o \
-                $(OBJDIR)/util.o \
-                $(OBJDIR)/print.o \
-                $(OBJDIR)/numint.o \
-                $(OBJDIR)/wat.o \
-                $(OBJDIR)/input2.o \
-                $(OBJDIR)/mulliken.o \
-                $(OBJDIR)/pop.o \
-                $(OBJDIR)/corr.o \
-                $(OBJDIR)/quad.o
 
 ## --------------------------------------------------------- ##
 ## BUILD TARGETS                                             ##
@@ -155,7 +142,7 @@ OBJ_LIST_EOS := $(MOD_OBJ) \
 
 .PHONY: all utils clean test test-strict update-ref coverage help
 
-all: apost3d apost3d-eos
+all: apost3d
 
 ## UTILITIES (make utils), built into utils/:
 #   get_energy, get_energy_g16 : append the reference energies of a Gaussian
@@ -164,11 +151,9 @@ all: apost3d apost3d-eos
 #   gen_hirsh                  : atomic densities file (densoutput) for
 #                                Hirshfeld / Hirshfeld-I
 #   wfn2fchk                   : .wfn (and PNOF/NWChem output) to .fchk
-#   group_frag                 : group ENPART energy terms by fragment
 #   eos_aom                    : EOS from AOMs of Multiwfn / AIMAll
-#   eos_alt                    : EOS variants from an APOST-3D output
 SIMPLE_UTILS := $(addprefix $(UTILDIR)/,get_energy get_energy_g16 wfn2fchk \
-                group_frag eos_aom eos_alt)
+                eos_aom)
 UTIL_BINS    := $(SIMPLE_UTILS) $(UTILDIR)/gen_hirsh
 
 utils: $(UTIL_BINS)
@@ -229,13 +214,6 @@ $(UTILOBJDIR)/%.o: $(UTILDIR)/%.f $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDI
 
 $(UTILOBJDIR)/%.o: $(UTILDIR)/%.f90 $(SRCDIR)/parameter.h $(MOD_OBJ) | $(UTILOBJDIR)
 	$(FC) -c $(UTIL_FFLAGS) -I$(SRCDIR) -I$(OBJDIR) -J$(UTILOBJDIR) $< -o $@
-
-## STANDALONE EOS EXECUTABLE (main program: sources/main_eos.f)
-apost3d-eos: $(OBJDIR)/main_eos.o $(OBJ_LIST_EOS) $(QUAD_OBJ)
-	$(FC) $(FFLAGS) \
-	  $(QUAD_OBJ) $(OBJ_LIST_EOS) $(OBJDIR)/main_eos.o \
-	  $(OPENBLAS_LIB) \
-	  -o $(APOST3D_PATH)/apost3d-eos
 
 ## TEST SUITE
 # Build (if needed, NTHREADS parallel jobs) and run the ENTIRE regression
@@ -309,12 +287,14 @@ coverage:
 	  $(_COV_CATEGORY) $(_COV_PRIORITY) $(_COV_UNCOV) $(_COV_FORMAT)
 
 ## CLEAN
-# The last line removes leftovers of the old layout (objects in sources/,
-# lebedev/ and utils/, eos_aom in the repo root).
+# The last two lines remove leftovers of older versions (objects in
+# sources/, lebedev/ and utils/, eos_aom in the repo root, the removed
+# apost3d-eos, group_frag and eos_alt).
 clean:
 	rm -rf $(OBJDIR)
-	rm -f $(APOST3D_PATH)/apost3d $(APOST3D_PATH)/apost3d-eos $(UTIL_BINS)
+	rm -f $(APOST3D_PATH)/apost3d $(UTIL_BINS)
 	rm -f $(SRCDIR)/*.o $(APOST3D_PATH)/lebedev/*.o $(UTILDIR)/*.o $(APOST3D_PATH)/eos_aom
+	rm -f $(APOST3D_PATH)/apost3d-eos $(UTILDIR)/group_frag $(UTILDIR)/eos_alt
 
 ## HELP
 # `make` itself intercepts any --flag before a Makefile ever sees it, so
@@ -324,15 +304,14 @@ clean:
 help:
 	@echo "APOST-3D — available make targets and flags"
 	@echo ""
-	@echo "  make all [ARCH=cpu]         Build apost3d and apost3d-eos. By"
+	@echo "  make all [ARCH=cpu]         Build apost3d. By"
 	@echo "                              default for any CPU of this"
 	@echo "                              architecture; ARCH=native for this"
 	@echo "                              machine's CPU only (make -j8 for a"
 	@echo "                              parallel build)."
 	@echo "  make utils                  Build the utilities into utils/:"
 	@echo "                              get_energy, get_energy_g16,"
-	@echo "                              gen_hirsh, wfn2fchk, group_frag,"
-	@echo "                              eos_aom, eos_alt."
+	@echo "                              gen_hirsh, wfn2fchk, eos_aom."
 	@echo "  make clean                  Remove all build objects and binaries"
 	@echo "  make test [NTHREADS=n]      Build (if needed) and run the full"
 	@echo "                              regression test suite. NTHREADS sets"
