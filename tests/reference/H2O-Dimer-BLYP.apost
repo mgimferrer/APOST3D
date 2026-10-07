@@ -26,10 +26,9 @@
                                                                                 
       Real space:                                                               
         Becke, J. Chem. Phys. 88 2547 1988                                      
-        Hirshfeld, Theor. Chim. Acta 44  129 1977                               
-        Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
-        Topological fuzzy Voronoi cells (TFVC), J Chem Phys 139 071103 2013     
-        QTAIM, J. Comput. Chem 30 1082 2009                                     
+        Hirshfeld, Theor. Chim. Acta 44 129 1977                                
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007                     
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013  
                                                                                 
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
                                                                                 
@@ -40,38 +39,39 @@
            I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
                                                                                 
         B) Hartree-Fock molecular energy decomposition                          
-           P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
                                                                                 
         C) KS-DFT molecular energy decomposition                                
-           P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007                
-           M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023            
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007             
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023         
                                                                                 
-        D) Molecular energy decomposition for CAS/DMRG wavefunctions            
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions         
                                                                                 
-        E) Effective atomic orbitals:                                           
+        E) Effective atomic orbitals                                            
            I. Mayer, J. Phys. Chem. 100 6249 1996                               
            I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
            E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026                  
                                                                                 
         F) Local spin analysis                                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
            E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
                                                                                 
-        G) Effective Oxidation states analysis                                  
+        G) Effective oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
            M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
                                                                                 
         H) Oxidation states from localized orbitals                             
-           M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020      
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020   
            M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
-           M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022         
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022         
                                                                                 
         I) Decomposition of EDA quantities into one- and two-center IQA terms   
            M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
                                                                                 
         J) Origin-independent decomposition of static polarizabilities          
-           M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021      
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021        
                                                                                 
   ------------------------------------------------------------------------------
                                                                                 
@@ -121,7 +121,7 @@
   Two-electron grid       : 40 x 146 (# GRID)
   Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
 
-  TIMING CPU  :: initialization                                    0.00 s
+  TIMING CPU  :: initialization                                    0.01 s
   TIMING WALL :: initialization                                    0.00 s
 
   ----------------------------------------
@@ -153,8 +153,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.30 s
-  TIMING WALL :: atomic definition                                 1.30 s
+  TIMING CPU  :: atomic definition                                 1.92 s
+  TIMING WALL :: atomic definition                                 0.28 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -333,8 +333,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     36.6642284
   
-  TIMING CPU  :: enpart one-electron                               0.59 s
-  TIMING WALL :: enpart one-electron                               0.60 s
+  TIMING CPU  :: enpart one-electron                               0.87 s
+  TIMING WALL :: enpart one-electron                               0.13 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -418,8 +418,8 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:    -18.6913761
   
-  TIMING CPU  :: enpart dft                                        2.93 s
-  TIMING WALL :: enpart dft                                        2.93 s
+  TIMING CPU  :: enpart dft                                        4.04 s
+  TIMING WALL :: enpart dft                                        0.64 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -434,7 +434,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -452,8 +452,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    112.1860788
   
-  TIMING CPU  :: Coulomb energy                                    0.62 s
-  TIMING WALL :: Coulomb energy                                    0.62 s
+  TIMING CPU  :: Coulomb energy                                    0.92 s
+  TIMING WALL :: Coulomb energy                                    0.14 s
   
   KS-DFT electron-electron energy (au):     93.4947027
   Integration error (kcal/mol):     5.25
@@ -466,8 +466,8 @@
   New error after rotation:    -9.25
   Damping parameter       :      0.6381144
   
-  TIMING CPU  :: Interpolated zero-error                           0.25 s
-  TIMING WALL :: Interpolated zero-error                           0.25 s
+  TIMING CPU  :: Interpolated zero-error                           0.34 s
+  TIMING WALL :: Interpolated zero-error                           0.06 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -486,7 +486,7 @@
   Coulomb energy:    112.1777147
   
   KS-DFT electron-electron energy:     93.4863386
-  Integration error (kcal/mol):     0.00
+  Integration error (kcal/mol):    -0.00
 
   ----------------------------------------
     FUZZY ATOMS KS-DFT ENERGY COMPONENTS
@@ -507,7 +507,7 @@
   Integration error (au):     -0.0000091
   Integration error (kcal/mol):    -0.01
   
-  TIMING CPU  :: enpart two-electron                               1.01 s
-  TIMING WALL :: enpart two-electron                               1.01 s
+  TIMING CPU  :: enpart two-electron                               1.46 s
+  TIMING WALL :: enpart two-electron                               0.23 s
 
   ...Normal Termination of APOST-3D...

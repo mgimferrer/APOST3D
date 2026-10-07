@@ -63,9 +63,6 @@ program, not a full development history — see `git log` for that.
   say that the HF-type exchange share is added in the two-electron part,
   and point to the complete tables. The zero-error strategy says when it
   is applied, and warns when it extrapolates instead of interpolating.
-- `utils/get_energy` and `utils/get_energy_g16`, which append the
-  reference energies to a Gaussian `.fchk`, now handle up to 3000 basis
-  functions.
 
 ### Other changes that affect inputs
 
@@ -77,7 +74,6 @@ program, not a full development history — see `git log` for that.
   without any now runs with `TFVC` and a warning (it used plain Becke
   atoms with fixed radii); those are selected with the new `BECKE`
   keyword.
-
 - **Integration grids in the input** — the optional `# GRID` block now
   sets every grid and is always read: `RADIAL`/`ANGULAR` for the
   one-electron grid of every analysis (before only on the command line,
@@ -137,6 +133,13 @@ program, not a full development history — see `git log` for that.
   fewer orbitals than electrons now stops instead of assigning electrons
   wrongly, very low or negative values no longer crash, and the overall
   reliability index R(%) is defined for systems without beta electrons.
+- **EOS/GEOS reliability index R(%)** — the frontier orbitals behind it
+  ("Last occ."/"First unocc.") are now taken in the same order as the
+  electron assignment (gross occupation); one of them could be read from
+  an empty slot. In pseudo-degenerate cases R(%) changes in the last
+  digits; the R(%) formulas are unchanged.
+- **`EFFAO-U` alone** — no longer crashes at the end of the run, and on a
+  restricted single determinant its occupations are no longer empty.
 - **EFFAO/EOS/GEOS fragment sums** — `Net occupation for fragment` is now
   the sum over the listed orbitals (above the cutoff) in every scheme, like
   the gross one (in real space it summed all orbitals, negative GEOS ones
@@ -159,7 +162,9 @@ program, not a full development history — see `git log` for that.
   block (a typo used to create empty files and end in a Fortran error).
   `KEY = value` with spaces is read, a value that can't be read stops the
   run showing the line (real keywords used to fall back silently to their
-  default), and the last block may end without its closing `#`.
+  default), and the last block may end without its closing `#`. The
+  "MO formalism" line of pySCF CASSCF, FCI and CCSD files no longer
+  prints unreadable characters.
 - **Hirshfeld atomic densities** — `HIRSH`/`HIRSH-IT` without a
   `densoutput` file, or with an incomplete one, stop with a message (a
   missing file used to be created empty and end in a Fortran error);
@@ -184,8 +189,9 @@ program, not a full development history — see `git log` for that.
 - **`get_energy_g16`/`get_energy`** — an incomplete Gaussian output file
   (calculation not ended normally) or one without the lines they need now
   gives an error message and adds nothing to the `.fchk` file; they used
-  to crash or append wrong energies. `get_energy` (Gaussian 09) will be
-  removed in a future version.
+  to crash or append wrong energies. They no longer have a limit of 3000
+  basis functions. `get_energy` (Gaussian 09) will be removed in a future
+  version.
 
 ### Others
 

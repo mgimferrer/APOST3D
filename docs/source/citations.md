@@ -76,7 +76,6 @@ relevant references at the top.
 - KS-DFT and zero-error strategy: M. Gimferrer and P. Salvador, *J. Chem.
   Phys.*, **2023**, 158, 234105.
   DOI: [10.1063/5.0142778](https://doi.org/10.1063/5.0142778)
-- CASSCF/CISD: *reference to be added*.
 
 **Decomposition of EDA terms into IQA terms** (`EDAIQA`)
 
