@@ -111,6 +111,7 @@ and then one against several threads.
 | `H2O-T-B3LYP` | Water, triplet UKS B3LYP: TFVC, ENPART, local spin; `THREBOD 2000` treats the H–H pair with the multipolar expansion | `dft enpart spin tfvc uks openshell hybrid threbod multipolar` |
 | `CH3F` | Fluoromethane, RKS: TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `CH3F-pySCF` | Fluoromethane, RKS B3LYP from pySCF (`utils/apost3d.py`): TFVC, fragment OSLO and its `.fchk` export | `dft oslo tfvc rks fragments pyscf` |
+| `HF-G-pySCF` | Hydrogen fluoride, RHF from pySCF with cc-pVQZ (g shells) on F: TFVC; the Mulliken charges equal pySCF's, which checks the order and normalization of every shell type | `hf tfvc rhf pyscf g-functions` |
 | `H2-T-OSLO` | H2 triplet, UKS B3LYP from pySCF: fragment OSLO with no beta electrons and more linear-dependency candidates than electrons | `dft oslo tfvc uks fragments openshell pyscf` |
 | `FeCO2-PBEPBE` | FeCO2 complex (charge +2), RKS PBE: TFVC, fragment EOS with per-EFO occupations | `dft eos effao tfvc rks fragments` |
 | `FeO4-2` | Ferrate(VI), RKS, Q-Chem `.fchk`: TFVC, fragment OSLO | `dft oslo tfvc rks fragments qchem` |

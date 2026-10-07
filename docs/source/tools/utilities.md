@@ -93,18 +93,17 @@ files. Copy `densoutput` into the folder of every calculation that uses
 
 ## apost3d.py
 
-It works with pySCF up to version 2.7 (`pip install "pyscf<2.8"`); newer
-versions are not supported yet. A Python module with two functions for [pySCF](https://pyscf.org)
-calculations, described with examples in
+A Python module with two functions for [pySCF](https://pyscf.org)
+calculations (pySCF 2.7 and newer), described with examples and the
+wavefunctions it takes in
 [Preparing the wavefunction](../guide/wavefunctions.md#pyscf):
 
-- `write_fchk(mol, obj, name, overlap, myhf=None)` writes `name.fchk`
-  from a pySCF mean-field (HF, KS-DFT, restricted, unrestricted or
-  restricted open-shell), CASSCF or FCI object, `overlap` being
-  `mf.get_ovlp()`; for FCI, pass the underlying mean-field object as
-  `myhf`. It includes the reference energies needed by ENPART.
-- `write_dm12(mol, mycas, name)` writes the 1- and 2-RDMs of a CASSCF
-  calculation to `name.dm1` and `name.dm2`.
+- `write_fchk(mol, obj, name, overlap=None, myhf=None)` writes
+  `name.fchk` from a pySCF SCF, CASSCF/CASCI, FCI or CCSD object, with the
+  reference energies needed by ENPART; for FCI, pass the underlying
+  mean-field object as `myhf`.
+- `write_dm12(mol, mycas, name)` writes the 1- and 2-RDMs of a
+  CASSCF/CASCI or FCI calculation to `name.dm1` and `name.dm2`.
 
 ## Other programs
 

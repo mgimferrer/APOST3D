@@ -59,10 +59,9 @@ Ask Q-Chem for the formatted checkpoint file with `GUI = 2` in the
 ## pySCF
 
 `utils/apost3d.py` writes the `.fchk` file from a pySCF calculation,
-including the reference energies needed by ENPART, and for CASSCF also the
-1- and 2-RDM files. It works with pySCF up to version 2.7
-(`pip install "pyscf<2.8"`); newer versions are not supported yet.
-Pseudopotentials (`ecp=` in `gto.M`) are supported. Make it importable:
+including the reference energies needed by ENPART, and for CASSCF and FCI
+also the 1- and 2-RDM files. It works with pySCF 2.7 and newer (checked up
+to 2.14). Make it importable:
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:$APOST3D_PATH/utils
@@ -119,11 +118,15 @@ from pyscf import fci
 cisolver = fci.FCI(mf)
 cisolver.kernel()
 apost.write_fchk(mol, cisolver, 'HF-FCI', mf.get_ovlp(), myhf=mf)
+apost.write_dm12(mol, cisolver, 'HF-FCI')               # HF-FCI.dm1, .dm2
 ```
 
-The `.fchk` file of a CASSCF or FCI wavefunction is enough for the
-population analysis, EFFAO, EOS and GEOS. For SPIN and ENPART, give the
-RDM files in the APOST-3D input:
+The last argument of `write_fchk`, the overlap matrix, can be left out.
+
+The `.fchk` file of a closed-shell CASSCF or FCI wavefunction is enough for
+the population analysis, EFFAO, EOS and GEOS. For SPIN and ENPART, and for
+an open-shell wavefunction in any analysis (its alpha and beta densities
+come from the RDMs), give the RDM files in the APOST-3D input:
 
 ```text
 # METHOD
@@ -138,4 +141,24 @@ pySCF
 #
 ```
 
-`apost3d.py` does not support basis sets with g functions.
+**What `apost3d.py` takes:**
+
+- **SCF**: RHF, UHF, ROHF, RKS, UKS and ROKS, also with density fitting.
+- **CASSCF/CASCI and FCI** on RHF or ROHF orbitals, with `write_dm12` for
+  the RDMs.
+- **CCSD** for closed shells (`cc.CCSD` on RHF): its unrelaxed 1-RDM.
+  `write_dm12` writes only the `.dm1` file: there is no CCSD 2-RDM, so no
+  SPIN or ENPART.
+- **Basis sets**: spherical or Cartesian, up to g functions, with
+  pseudopotentials, and with linearly dependent functions removed by pySCF.
+- **Dispersion corrections** (D3, D4): their energy is removed from the
+  reference electron-electron energy (APOST-3D decomposes the electronic
+  energy only), with a note printed.
+
+Correlated wavefunctions built on UHF orbitals (UHF-based CASSCF or FCI,
+UCCSD) are refused with a message: APOST-3D takes the alpha and beta
+densities of a correlated wavefunction from the RDMs, written in one set
+of orbitals, so their spin-resolved analyses would be wrong. Use an RHF-
+or ROHF-based CASSCF or FCI for open shells. Any other problem (an object
+whose calculation has not been run, h functions) also stops with a
+message, and no file is written.

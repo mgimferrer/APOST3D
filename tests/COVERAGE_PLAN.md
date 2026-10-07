@@ -6,8 +6,8 @@ compatibility notes below come from the keyword dispatch in
 not only from what is documented on the
 [hosted docs site](https://apost3d.readthedocs.io).
 
-**Status: 2026-10-06.** 23 tests, 38/98 keywords covered (`make coverage`,
-38%). Typical calculations for each method are being supplied and their
+**Status: 2026-10-07.** 24 tests, 38/97 keywords covered (`make coverage`,
+39%). Typical calculations for each method are being supplied and their
 code cleaned, so expect this to move quickly; update the matrix below as
 each test lands.
 

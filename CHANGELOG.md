@@ -189,6 +189,15 @@ program, not a full development history — see `git log` for that.
 
 ### Others
 
+- **`utils/apost3d.py` rewritten** — works with current pySCF (2.7 to 2.14
+  checked; before, only up to 2.7) and writes basis sets with g functions,
+  single atoms, linearly dependent bases, CASCI, the RDMs of FCI and
+  closed-shell CCSD. An empirical dispersion energy (D3/D4) is removed
+  from the reference energies for ENPART. Correlated wavefunctions on UHF
+  orbitals, which APOST-3D cannot analyse correctly, are refused with a
+  message, as is any other unsupported case, without leaving a partial
+  file; the `.fchk` no longer contains bare header lines that strict
+  readers reject. Existing scripts work unchanged.
 - **Errors end with exit code 1** — a run that stops on an error now
   exits with code 1 (0 after a normal end), so job scripts and workflow
   tools can detect it, and its `STOP` message is the last line of the
