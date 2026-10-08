@@ -181,6 +181,18 @@
         kop=1
       end if
 
+!! checking for RO case -- wrong P provided in FChk in some Gaussian    !!
+!! versions, building P and PS from MOs just in case                    !!
+      irohf=int_locate(15,"IROHF",ilog)
+      if(irohf.eq.1) then
+        kop=1
+        do i=1,igr
+          do j=1,igr
+            cb(i,j)=c(i,j)
+          enddo
+        enddo
+      end if
+
 !! reading P-matrix from fchk !!
       ntriang=int_locate(15,"otal SCF D",ilog)
       read(15,*)(clin(i),i=1,ntriang)
@@ -199,6 +211,13 @@
         end if
         goto 200
  211    continue
+!! the density of an unrestricted or ROHF wavefunction is rebuilt from  !!
+!! its SCF orbitals below, so another one cannot be used                !!
+        if(kop.eq.1) then
+          write(*,'(2x,a)') 'DENS above 1 is only available for '//
+     +      'restricted wavefunctions'
+          call apost_stop(' DENS: unrestricted wavefunction')
+        end if
         if(ndens0.gt.ndens) then
           write(*,'(2x,a,i0,a,i0,a)') 'DENS ',ndens0,
      +      ' asked for, the number of densities in the .fchk is ',ndens
@@ -224,26 +243,6 @@
           ncou=ncou+1
         enddo
       enddo
-
-!! checking for RO case -- wrong P provided in FChk in some Gaussian    !!
-!! versions, building P and PS from MOs just in case                    !!
-      irohf=int_locate(15,"IROHF",ilog)
-      if(irohf.eq.1) then
-        kop=1
-        do i=1,igr
-          do j=1,igr
-            cb(i,j)=c(i,j)
-          enddo
-        enddo
-      end if
-
-!! the density of an unrestricted or ROHF wavefunction is rebuilt from  !!
-!! its SCF orbitals below, so another one cannot be used                !!
-      if(ndens0.gt.1.and.kop.eq.1) then
-        write(*,'(2x,a)') 'DENS above 1 is only available for '//
-     +    'restricted wavefunctions'
-        call apost_stop(' DENS: unrestricted wavefunction')
-      end if
 
       if(kop.eq.1) then
         do i=1,igr

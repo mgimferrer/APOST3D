@@ -2330,6 +2330,54 @@
           "tol_abs": 2e-05
         }
       ]
+    },
+    {
+      "name": "H2O-MP2-DENS2",
+      "description": "Water, RMP2/cc-pVDZ from Gaussian 16 with density=current: DENS 2 lists the SCF and MP2 densities and analyses the MP2 one (TFVC); the Mulliken charges equal Gaussian's own for the MP2 density.",
+      "tags": [
+        "h2o",
+        "tfvc",
+        "rmp2",
+        "dens",
+        "gaussian"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "DENS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Densities listed (SCF, MP2)",
+          "type": "present",
+          "pattern": "Density 2 in the \\.fchk: Total MP2 Density"
+        },
+        {
+          "label": "MP2 density used",
+          "type": "present",
+          "pattern": "Using density 2: Total MP2 Density"
+        },
+        {
+          "label": "O Mulliken charge (Gaussian, MP2 density: -0.283945)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+-?\\d+\\.\\d+\\s+(-?\\d+\\.\\d+)",
+          "ref": -0.283945,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+(-?\\d+\\.\\d+)",
+          "ref": -1.161431,
+          "tol_abs": 2e-05
+        }
+      ]
     }
   ]
 }

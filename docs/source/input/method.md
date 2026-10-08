@@ -46,6 +46,6 @@ number of the following can be added:
 | `DOFRAGS` | | off | Group atoms into fragments, defined in a [`# FRAGMENTS`](fragments.md) block. Without it, every atom is a fragment. |
 | `CUBE` | | off | Write cube files of effective orbitals, selected in a [`# CUBE`](cube.md) block. |
 | `DM` | 1 or 2 | 0 | Read the 1-RDM (`DM 1`) or the 1- and 2-RDMs (`DM 2`) of a correlated wavefunction from the files of a [`# DM`](dm.md) block. `DM 2` also switches on `SPIN`. |
-| `DENS` | integer *n* | 1 | Use the *n*-th density of the `.fchk` file (1 is the SCF density; e.g. 2 for an MP2 or CI density written after it). The output lists the densities found. Restricted wavefunctions only: with an unrestricted or ROHF one the run stops. |
+| `DENS` | integer *n* | 1 | Use the *n*-th density of the `.fchk` file (1 is the SCF density; e.g. 2 for an MP2 or CI density that Gaussian writes after it with `density=current`). The output lists the densities found. Restricted wavefunctions only: with an unrestricted or ROHF one the run stops. Q-Chem files work differently, see [Q-Chem](../guide/wavefunctions.md#q-chem). |
 | `QCHEM` | | off | The `.fchk` file comes from Q-Chem. Needed for the `.fchk` files that the program writes (OSLO, EOS, GEOS orbitals), which follow the layout of the input file. |
 | `DOINT` | | off | Write the atomic overlap matrices in the MO basis, one `.int` file per atom (AIMPAC format), for external programs such as ESI-3D. See [Output files](../guide/output.md). |
