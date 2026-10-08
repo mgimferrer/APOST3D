@@ -90,7 +90,9 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
   electron-nuclear energy then includes the ECP energy, and the ECP
   matrix appended to the `.fchk` file (by the same utilities) is split
   among the atoms, Mulliken-like, and added to the one-atom
-  electron-nuclear terms.
+  electron-nuclear terms. With Gaussian the matrix carries a small
+  rounding error, see
+  [get_energy_g16](../tools/utilities.md#get_energy_g16-and-get_energy).
 - Only the **electronic energy** is decomposed: wavefunctions from
   calculations with an empirical dispersion correction (e.g. Grimme's
   GD3) cannot be decomposed directly.

@@ -19,7 +19,7 @@ program get_energy
   character(len=:), allocatable :: logname
   character(len=256) :: line
   character(len=43) :: title
-  integer :: iu,ios,lname,nbas,ntri,i,j
+  integer :: iu,ios,lname,nbas,ntri,i,j,imat
   logical :: normal,have_scf,have_ke,have_ecp,ecp_used,ok
   real(dp) :: ekin,epe,eee
   real(dp), allocatable :: xecp(:)
@@ -60,6 +60,16 @@ program get_energy
     else if(index(line,'Pseudopotential Parameters').gt.0) then
       ecp_used=.true.
     else if(index(line,'ECP Int').gt.0) then
+!! the ECP matrix is the block with IMat=1; IMat=2-4 are the x, y, z     !!
+!! spin-orbit components, which do not enter the energy                  !!
+      i=index(line,'IMat=')
+      if(i.gt.0) then
+        j=index(line(i:),':')
+        if(j.gt.0) line(i+j-1:i+j-1)=' '
+        read(line(i+5:),*,iostat=ios) imat
+        if(ios.ne.0) call fail('unreadable ECP integral header: '//trim(line))
+        if(imat.ne.1) cycle
+      end if
       if(nbas.eq.0) call fail('ECP integrals found before NBasis')
       ntri=nbas*(nbas+1)/2
       if(.not.allocated(xecp)) allocate(xecp(ntri))
