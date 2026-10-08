@@ -119,7 +119,7 @@
   ------
   Overlap matrix          : TFVC/real-space (default)
   FOLI tolerance          : 3
-  Branch iteration        : 0
+  Branching               : none
   Print non-orthogonalized: no
 
   # FRAGMENTS  (2 fragments)
@@ -376,8 +376,8 @@
      2     2.23941      0.64094      1.70020
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   1   1.70020
-  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.70020
+  Lowest FOLI value (frg.)      :   1   1.70020
+  Next FOLI value (frg.)        :   1   2.27173
 
   ---------------------
     SELECTED ORBITALS
@@ -398,24 +398,16 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-     1      1   2.27173
-     2      1   1.70020
-     1      2   2.27173
-     2      2   1.70020
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   4
+  Next OSLOs: FOLI 2.27173, delta-FOLI 0.57153
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+     1      1    2.27173           1.00000
+     1      2    2.27173           1.00000
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   1.00000
   
-  Lowest eigenvalue obtained (LinDep):    0.00000
-  
-  *********************************** 
-   WARNING : LINEAR DEPENDENCY FOUND  
-  *********************************** 
-  
-  FOLI values and delta-FOLI:   1.70020   2.27173   0.57153
-  Selecting largest to proceed 
-  RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT 
+  Sum of the FOLI values        :   3.40040
   
   -------------
     BETA PART

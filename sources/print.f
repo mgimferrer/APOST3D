@@ -555,8 +555,14 @@
         write(*,'(2x,a,1x,a)') 'Overlap matrix          :',trim(cval)
         write(cval,'(i0)') ifolitol
         write(*,'(2x,a,1x,a)') 'FOLI tolerance          :',trim(cval)
-        write(cval,'(i0)') ibranch
-        write(*,'(2x,a,1x,a)') 'Branch iteration        :',trim(cval)
+        if(nbranch(1)+nbranch(2)+nbranch(3).eq.0)
+     +    write(*,'(2x,a,1x,a)') 'Branching               :','none'
+        if(nbranch(1).gt.0) write(*,'(2x,a,20(1x,i0))')
+     +    'Branching iterations    :',(ibranchit(k,1),k=1,nbranch(1))
+        if(nbranch(2).gt.0) write(*,'(2x,a,20(1x,i0))')
+     +    'Branching (alpha)       :',(ibranchit(k,2),k=1,nbranch(2))
+        if(nbranch(3).gt.0) write(*,'(2x,a,20(1x,i0))')
+     +    'Branching (beta)        :',(ibranchit(k,3),k=1,nbranch(3))
         if(ioslofchk.eq.2) then
           cval='yes'
         else

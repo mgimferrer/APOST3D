@@ -576,6 +576,7 @@
 !! OSLO options !!
 
       ioslo=0
+      nbranch=0
       call readchar("# METHOD","OSLO",ioslo)
       if(ioslo.eq.1) then
         call locate_block(16,"# OSLO",ii)
@@ -601,7 +602,25 @@
 !! extra options !!
 
         call readint("# OSLO","FOLI_TOLERANCE",ifolitol,3,1) !! FOLI value tolerance, for selection !!
-        call readint("# OSLO","BRANCH_ITERATION",ibranch,0,1) !! iteration to invoke branching at !!
+
+!! branching: the iterations at which the next FOLI value is selected   !!
+!! instead of the lowest one; a lone 0 means none                      !!
+        call readintlist("# OSLO","BRANCH_ITERATION",maxbranch,
+     +    nbranch(1),ibranchit(1,1))
+        call readintlist("# OSLO","BRANCH_ALPHA",maxbranch,nbranch(2),
+     +    ibranchit(1,2))
+        call readintlist("# OSLO","BRANCH_BETA",maxbranch,nbranch(3),
+     +    ibranchit(1,3))
+        do k=1,3
+          if(nbranch(k).eq.1.and.ibranchit(1,k).eq.0) nbranch(k)=0
+          do i=1,nbranch(k)
+            if(ibranchit(i,k).lt.1) then
+              write(*,'(2x,a)') 'Branching iterations are numbered '//
+     +          'from 1, as in the output'
+              call apost_stop(' Wrong branching iteration in # OSLO')
+            end if
+          end do
+        end do
         ioslofchk=1
         call readchar("# OSLO","PRINT_NONORTHO",ii) !! prints non-ortho OSLOs to an extra .fchk file !!
         if(ii.eq.1) ioslofchk=2
