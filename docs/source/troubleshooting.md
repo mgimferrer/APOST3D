@@ -149,7 +149,9 @@ rotation angles (only 146 and 590 have them). Use one of those, or set
 **`STOP DENS: density not found`**
 `DENS` asks for a density that the `.fchk` file doesn't contain (the
 output lists the ones it has); see
-[Preparing the wavefunction](guide/wavefunctions.md#gaussian).
+[Preparing the wavefunction](guide/wavefunctions.md#gaussian). Q-Chem
+files have a single density, see
+[Q-Chem](guide/wavefunctions.md#q-chem).
 
 **`STOP DENS: unrestricted wavefunction`**
 `DENS` above 1 works only with restricted wavefunctions.

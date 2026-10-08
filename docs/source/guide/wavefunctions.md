@@ -56,6 +56,13 @@ Ask Q-Chem for the formatted checkpoint file with `GUI = 2` in the
 `QCHEM` to `# METHOD` when the analysis writes `.fchk` files of orbitals
 (OSLO, EOS, GEOS).
 
+**Correlated densities**: in a gradient job (`JOBTYPE force` or `opt`)
+with a correlated method such as MP2, Q-Chem writes the relaxed
+correlated density in place of the SCF one, so the default `DENS 1`
+analyses that density, while the orbitals in the file are still the SCF
+ones. The other density blocks Q-Chem writes are not read, so `DENS 2`
+does not apply to Q-Chem files.
+
 ## pySCF
 
 `utils/apost3d.py` writes the `.fchk` file from a pySCF calculation,

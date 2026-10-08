@@ -178,6 +178,8 @@
      "description": "Read wavefunction from an ORCA formatted checkpoint file",                               "priority": "high"},
     {"id": "WFN",             "key": "WFN",               "section": "# METHOD",   "category": "interface",
      "description": "Read wavefunction from a .wfn (AIM) formatted file",                                    "priority": "medium"},
+    {"id": "DENS",            "key": "DENS",              "section": "# METHOD",   "category": "interface",
+     "description": "Use the n-th density of the .fchk (e.g. a Gaussian post-HF density written with density=current)", "priority": "medium"},
 
     {"id": "CUBE",            "key": "CUBE",              "section": "# METHOD",   "category": "output",
      "description": "Write cube files of the effective atomic/fragment orbitals (needs a # CUBE section)",    "priority": "medium"},
