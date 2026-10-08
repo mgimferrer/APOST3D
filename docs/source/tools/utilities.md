@@ -38,7 +38,9 @@ Electron-Electron Energy                   R      3.787105778929102E+01
 
 With pseudopotentials, the ECP integral matrix printed in the output file
 is appended too (`ECP Matrix`), for ENPART to split the ECP energy among
-the atoms.
+the atoms. Gaussian prints it with 6 significant digits, which leaves a
+small error in the ECP energy, about 0.1 kcal/mol for an iodine atom; it
+shows up in the electron-nuclear integration error of ENPART.
 
 If the output file is incomplete (the calculation did not end normally)
 or lacks one of the lines they need, the programs print an error message,

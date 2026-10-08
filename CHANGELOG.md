@@ -186,6 +186,8 @@ program, not a full development history — see `git log` for that.
   carry the ECP matrix, and their reference electron-nuclear energy
   includes the ECP energy: it used to be counted in the electron-electron
   energy, which made the zero-error strategy distort the ENPART terms.
+  `get_energy_g16`/`get_energy` append the ECP matrix for Gaussian
+  `.fchk` files.
 - **`get_energy_g16`/`get_energy`** — an incomplete Gaussian output file
   (calculation not ended normally) or one without the lines they need now
   gives an error message and adds nothing to the `.fchk` file; they used

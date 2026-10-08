@@ -2289,6 +2289,78 @@
       ]
     },
     {
+      "name": "HI-ECP-G16",
+      "description": "HI, Gaussian 16 RHF/def2-SVP with the def2 ECP on I, reference energies and ECP matrix appended by utils/get_energy_g16 — ENPART (HF) with a 40 × 146 two-electron grid; Gaussian prints the ECP matrix with 6 significant digits, which leaves -0.08 kcal/mol in the E-N reference.",
+      "tags": [
+        "hf",
+        "enpart",
+        "tfvc",
+        "rhf",
+        "gaussian",
+        "ecp"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/HF",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Pseudopotential energy (au)",
+          "pattern": "Pseudopotential energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 50.47772554,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Electron-nuclei energy incl. ECP (au)",
+          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -648.7484967,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "E-N integration error (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\):\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 1,
+          "ref": -0.08,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "Kinetic energy (au)",
+          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 114.2366681,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -297.2316525,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.0001208,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "I TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+I\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.352377,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
       "name": "HF-G-pySCF",
       "description": "Hydrogen fluoride, RHF from pySCF (utils/apost3d.py) with cc-pVQZ on F (pure g shells) and cc-pVDZ on H: TFVC populations; the Mulliken charges equal pySCF's own, which checks the order and normalization of every shell type.",
       "tags": [
