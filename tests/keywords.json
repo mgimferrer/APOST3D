@@ -144,7 +144,11 @@
     {"id": "OSLO/FOLI-TOLERANCE",   "key": "FOLI_TOLERANCE",  "section": "# OSLO",    "category": "orbital",
      "description": "FOLI value tolerance for OSLO orbital selection",                                        "priority": "medium"},
     {"id": "OSLO/BRANCH-ITERATION", "key": "BRANCH_ITERATION","section": "# OSLO",    "category": "orbital",
-     "description": "Iteration at which OSLO branching is invoked",                                           "priority": "medium"},
+     "description": "Iterations at which OSLO selects the next FOLI value (every channel)",                    "priority": "medium"},
+    {"id": "OSLO/BRANCH-ALPHA",    "key": "BRANCH_ALPHA",    "section": "# OSLO",    "category": "orbital",
+     "description": "Iterations at which the alpha channel selects the next FOLI value (unrestricted)",       "priority": "medium"},
+    {"id": "OSLO/BRANCH-BETA",     "key": "BRANCH_BETA",     "section": "# OSLO",    "category": "orbital",
+     "description": "Iterations at which the beta channel selects the next FOLI value (unrestricted)",        "priority": "medium"},
     {"id": "OSLO/PRINT-NON-ORTHO",  "key": "PRINT_NONORTHO",  "section": "# OSLO",    "category": "orbital",
      "description": "Write non-orthogonalised OSLOs to an extra .fchk file",                                  "priority": "medium"},
 

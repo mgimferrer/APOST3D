@@ -102,8 +102,8 @@
   Number of basis functions        : 10
   Primitive gaussians              : 14
   Spin density (FChk)              : found
-  Occupied MOs (nocc/alpha/beta)   : 1 / 2 / 0
-  SCF/DFT energy (au)              :        -0.7777035451
+  Occupied MOs (nocc/alpha/beta)   : 1 / 1 / 1
+  SCF/DFT energy (au)              :        -1.1734967936
 
   -----------------
     INPUT SUMMARY
@@ -119,7 +119,8 @@
   ------
   Overlap matrix          : TFVC/real-space (default)
   FOLI tolerance          : 3
-  Branching               : none
+  Branching (alpha)       : 1
+  Branching (beta)        : 2
   Print non-orthogonalized: no
 
   # FRAGMENTS  (2 fragments)
@@ -132,7 +133,7 @@
   --------------------
 
   Occupation numbers (>1.0e-6):
-     1.00000   1.00000
+     2.00000
 
   Checking NO overlap matrix
 
@@ -155,6 +156,7 @@
   Using stiffness k: 4
   Using density along atom pairs to set atomic radii
 
+  Atom pair   1 -   2 : 2 max / 1 min extrema; using central minimum as dividing point
   Atom pair   1 -   2 : subdivision 21, ratio  1.00000
 
   Checking sum of AOs overlap matrices
@@ -177,10 +179,10 @@
 
     Atom     apost3d    Mulliken
   ------------------------------
-   1  H     0.999983    1.000000
-   2  H     0.999983    1.000000
+   1  H     1.000002    1.000000
+   2  H     1.000002    1.000000
   ------------------------------
-     Sum    1.999965    2.000000
+     Sum    2.000004    2.000000
 
   --------------------------------------------
     FRAGMENT ANALYSIS : Electron populations
@@ -188,10 +190,10 @@
 
    Fragment    3D-space    Mulliken
   ---------------------------------
-    1          0.999983    1.000000
-    2          0.999983    1.000000
+    1          1.000002    1.000000
+    2          1.000002    1.000000
   ---------------------------------
-     Total:    1.999965    2.000000
+     Total:    2.000004    2.000000
 
   ------------------------
     TOTAL ATOMIC CHARGES
@@ -199,10 +201,10 @@
 
     Atom     apost3d    Mulliken
   ------------------------------
-   1  H     0.000017    0.000000
-   2  H     0.000017    0.000000
+   1  H    -0.000002   -0.000000
+   2  H    -0.000002   -0.000000
   ------------------------------
-     Sum    0.000035    0.000000
+     Sum   -0.000004   -0.000000
 
   --------------------------------------
     FRAGMENT ANALYSIS : Atomic Charges
@@ -210,10 +212,10 @@
 
    Fragment    3D-space    Mulliken
   ---------------------------------
-    1          0.000017    0.000000
-    2          0.000017    0.000000
+    1         -0.000002   -0.000000
+    2         -0.000002   -0.000000
   ---------------------------------
-     Total:    0.000035    0.000000
+     Total:   -0.000004   -0.000000
 
   --------------------
     SPIN POPULATIONS
@@ -221,10 +223,10 @@
 
     Atom     apost3d    Mulliken
   ------------------------------
-   1  H     0.999983    1.000000
-   2  H     0.999983    1.000000
+   1  H    -0.000000   -0.000000
+   2  H    -0.000000    0.000000
   ------------------------------
-     Sum    1.999965    2.000000
+     Sum   -0.000000    0.000000
 
   ----------------------------------------
     FRAGMENT ANALYSIS : Spin Populations
@@ -232,10 +234,10 @@
 
    Fragment    3D-space    Mulliken
   ---------------------------------
-    1          0.999983    1.000000
-    2          0.999983    1.000000
+    1         -0.000000   -0.000000
+    2         -0.000000    0.000000
   ---------------------------------
-     Total:    1.999965    2.000000
+     Total:   -0.000000    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX
@@ -244,8 +246,8 @@
   --------------------------------------------------------------------------------                    
               1  H        2  H 
   --------------------------------------------------------------------------------                    
-    1  H     0.733977    0.531977
-    2  H     0.531977    0.733977
+    1  H     0.500002    1.000004
+    2  H     1.000004    0.500002
   --------------------------------------------------------------------------------                    
 
   ------------------
@@ -254,8 +256,8 @@
 
     Atom         V_A
   ------------------
-   1  H     1.265988
-   2  H     1.265988
+   1  H     1.000000
+   2  H     1.000000
   ------------------
 
   -------------------------------------
@@ -264,10 +266,10 @@
 
    Fragment    3D-space
   ---------------------
-    1          1.265988
-    2          1.265988
+    1          1.000000
+    2          1.000000
   ---------------------
-     Total:    2.531977
+     Total:    2.000000
 
   --------------------------
     VALENCES USED IN BONDS
@@ -277,8 +279,8 @@
 
     Atom        VB_A
   ------------------
-   1  H     0.531977
-   2  H     0.531977
+   1  H     1.000004
+   2  H     1.000004
   ------------------
 
   ---------------------------------------------
@@ -287,10 +289,10 @@
 
    Fragment    3D-space
   ---------------------
-    1          0.531977
-    2          0.531977
+    1          1.000004
+    2          1.000004
   ---------------------
-     Total:    1.063953
+     Total:    2.000008
 
   -----------------
     FREE VALENCES
@@ -298,8 +300,8 @@
 
     Atom         F_A
   ------------------
-   1  H     0.734012
-   2  H     0.734012
+   1  H    -0.000004
+   2  H    -0.000004
   ------------------
 
   ------------------------------------
@@ -308,10 +310,10 @@
 
    Fragment    3D-space
   ---------------------
-    1          0.734012
-    2          0.734012
+    1         -0.000004
+    2         -0.000004
   ---------------------
-     Total:    1.468023
+     Total:   -0.000008
 
   ----------------------------------------
     FRAGMENT ANALYSIS : Fuzzy Bond Order
@@ -320,10 +322,10 @@
   --------------------------------------------------------------------------------                    
                       1           2
   --------------------------------------------------------------------------------                    
-    1          0.733977    0.531977
-    2          0.531977    0.733977
+    1          0.500002    1.000004
+    2          1.000004    0.500002
   --------------------------------------------------------------------------------                    
-     Total:    1.999931
+     Total:    2.000008
 
   TIMING CPU  :: population analyses                               0.00 s
   TIMING WALL :: population analyses                               0.00 s
@@ -362,8 +364,7 @@
 
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
-     1     8.17243      0.35904      2.27173
-     2     2.23941      0.64094      1.70020
+     1     3.01351      0.50000      1.99999
   ------------------------------------------ 
   
   ----------------------------------------
@@ -372,12 +373,12 @@
 
    Orb.    Spread      Frg. Pop.      FOLI   
   ------------------------------------------ 
-     1     8.17243      0.35904      2.27173
-     2     2.23941      0.64094      1.70020
+     1     3.01351      0.50000      1.99999
   ------------------------------------------ 
   
-  Lowest FOLI value (frg.)      :   1   1.70020
-  Next FOLI value (frg.)        :   1   2.27173
+  Lowest FOLI value (frg.)      :   1   1.99999
+  Next FOLI value               : none
+  Branching asked at this iteration, but there is no other candidate: not applied
 
   ---------------------
     SELECTED ORBITALS
@@ -385,35 +386,92 @@
 
    Orb.   Frag.   FOLI  
   --------------------- 
-     2      1   1.70020
-     2      2   1.70020
+     1      1   1.99999
+     1      2   1.99999
   --------------------- 
   
   Number of OSLOs selected:   2
-  delta-FOLI value:    0.57153
+  delta-FOLI value: none (no other candidate)
   
+  SHARED ORBITAL: the 2 selected OSLOs span 1 orbital
+ 
+   Frag.      Share
+  -----------------
+     1      0.50000
+     2      0.50000
+  -----------------
+ 
   Orbitals left to assign:   0
   
   --------------------------------
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-  Next OSLOs: FOLI 2.27173, delta-FOLI 0.57153
- 
-   Orb.   Frag.     FOLI    Overlap with selected
-  -------------------------------------------------
-     1      1    2.27173           1.00000
-     1      2    2.27173           1.00000
-  -------------------------------------------------
-  Largest overlap with the selected OSLOs:   1.00000
+  Not evaluated with one orbital left (every candidate is that orbital)
   
-  Sum of the FOLI values        :   3.40040
+  Sum of the FOLI values        :   1.99999
   
   -------------
     BETA PART
   -------------
 
-  No electrons in this channel: nothing to localize
+  ------------------------
+    ITERATION NUMBER   1
+  ------------------------
+
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   1
+  ----------------------------------------
+
+   Orb.    Spread      Frg. Pop.      FOLI   
+  ------------------------------------------ 
+     1     3.01351      0.50000      1.99999
+  ------------------------------------------ 
+  
+  ----------------------------------------
+    ORBITAL INFORMATION FOR FRAGMENT   2
+  ----------------------------------------
+
+   Orb.    Spread      Frg. Pop.      FOLI   
+  ------------------------------------------ 
+     1     3.01351      0.50000      1.99999
+  ------------------------------------------ 
+  
+  Lowest FOLI value (frg.)      :   1   1.99999
+  Next FOLI value               : none
+
+  ---------------------
+    SELECTED ORBITALS
+  ---------------------
+
+   Orb.   Frag.   FOLI  
+  --------------------- 
+     1      1   1.99999
+     1      2   1.99999
+  --------------------- 
+  
+  Number of OSLOs selected:   2
+  delta-FOLI value: none (no other candidate)
+  
+  SHARED ORBITAL: the 2 selected OSLOs span 1 orbital
+ 
+   Frag.      Share
+  -----------------
+     1      0.50000
+     2      0.50000
+  -----------------
+ 
+  Orbitals left to assign:   0
+  
+  --------------------------------
+    CHECKING LINEAR DEPENDENCIES
+  --------------------------------
+
+  Not evaluated with one orbital left (every candidate is that orbital)
+  
+  Sum of the FOLI values        :   1.99999
+  Branching at iteration 2: not reached, not applied
+  
   ------------------------------------
     PRINTING FINAL OSLOs INFORMATION
   ------------------------------------
@@ -422,27 +480,36 @@
     Summary of the selected alpha OSLOs (pre-ortho)
   ---------------------------------------------------
 
-  OSLO Number :      1         2
-  FOLI Value  :   1.70020   1.70020
-  Frg. Pop.  1:   0.64094   0.35906
-  Frg. Pop.  2:   0.35906   0.64094
+  OSLO Number :      1
+  FOLI Value  :   1.99999
+  Frg. Pop.  1:   0.50000
+  Frg. Pop.  2:   0.50000
   
   -----------------------------------------------
     Summary of the selected alpha OSLOs (final)
   -----------------------------------------------
 
-  OSLO Number :      1         2
-  Frg. Pop.  1:   0.84204   0.15794
-  Frg. Pop.  2:   0.15794   0.84204
+  OSLO Number :      1
+  Frg. Pop.  1:   0.50000
+  Frg. Pop.  2:   0.50000
   
   --------------------------------------------------
     Summary of the selected beta OSLOs (pre-ortho)
   --------------------------------------------------
 
+  OSLO Number :      1
+  FOLI Value  :   1.99999
+  Frg. Pop.  1:   0.50000
+  Frg. Pop.  2:   0.50000
+  
   ----------------------------------------------
     Summary of the selected beta OSLOs (final)
   ----------------------------------------------
 
+  OSLO Number :      1
+  Frg. Pop.  1:   0.50000
+  Frg. Pop.  2:   0.50000
+  
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
@@ -452,6 +519,7 @@
      1          0.00
      2          0.00
   ------------------------ 
+  Fractional values: orbitals shared between fragments (see the iterations)
   
   TIMING CPU  :: OSLO analysis                                     0.00 s
   TIMING WALL :: OSLO analysis                                     0.00 s

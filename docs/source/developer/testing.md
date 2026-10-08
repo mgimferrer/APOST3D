@@ -114,6 +114,10 @@ and then one against several threads.
 | `HF-G-pySCF` | Hydrogen fluoride, RHF from pySCF with cc-pVQZ (g shells) on F: TFVC; the Mulliken charges equal pySCF's, which checks the order and normalization of every shell type | `hf tfvc rhf pyscf g-functions` |
 | `H2O-MP2-DENS2` | Water, RMP2 from Gaussian 16 with `density=current`: `DENS 2` analyses the MP2 density (TFVC); the Mulliken charges equal Gaussian's own | `h2o tfvc rmp2 dens gaussian` |
 | `H2-T-OSLO` | H2 triplet, UKS B3LYP from pySCF: fragment OSLO with no beta electrons and more linear-dependency candidates than electrons | `dft oslo tfvc uks fragments openshell pyscf` |
+| `C2H6-OSLO-2CH3` | Ethane, RKS B3LYP, two CH₃ fragments: the C–C bond, found from both, is shared half and half (oxidation states 0/0) | `dft oslo tfvc rks fragments shared` |
+| `H2-S-OSLO` | H2 singlet, UKS B3LYP from pySCF: the orbital of each spin channel shared between the two atoms; `BRANCH_ALPHA`/`BRANCH_BETA` reported as not applicable | `dft oslo tfvc uks fragments pyscf shared branching` |
+| `H2-T-OSLO-CLOSE` | H2 triplet at 0.60 Å, UKS B3LYP from pySCF: the next OSLOs overlap fully with the selected ones with a Δ-FOLI of 0.30, so the close-alternative warning suggests `BRANCH_ALPHA 1` | `dft oslo tfvc uks fragments openshell pyscf branching` |
+| `CH3F-OSLO-BRANCH` | Fluoromethane, RKS: `BRANCH_ITERATION 6` gives the C–F bond to CH₃ (+1/−1), with a higher sum of FOLI values | `dft oslo tfvc rks fragments branching` |
 | `FeCO2-PBEPBE` | FeCO2 complex (charge +2), RKS PBE: TFVC, fragment EOS with per-EFO occupations | `dft eos effao tfvc rks fragments` |
 | `FeO4-2` | Ferrate(VI), RKS, Q-Chem `.fchk`: TFVC, fragment OSLO | `dft oslo tfvc rks fragments qchem` |
 | `C2H6-B3LYP` | Ethane, RKS B3LYP: full ENPART with `THREBOD` and a 40 × 146 two-electron grid, the largest ENPART case | `dft enpart tfvc rks threbod` |

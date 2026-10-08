@@ -20,6 +20,12 @@ program, not a full development history — see `git log` for that.
 - **OSLO extended to open-shell systems** — OSLO orbital analysis now
   fully supports unrestricted (UHF/UKS) wavefunctions, not just
   restricted ones.
+- **OSLO branching** — `BRANCH_ITERATION` (and `BRANCH_ALPHA`/`BRANCH_BETA`
+  for open shells) in `# OSLO` selects the next FOLI value at the given
+  iterations, to follow an alternative assignment; it used to stop the
+  run. A warning now names the iteration when the next candidates are
+  nearly the selected orbitals with a Δ-FOLI below 0.5, and each run
+  prints the sum of its FOLI values to compare the alternatives.
 - **Orbitals exportable to `.fchk`** — OSLO orbitals, and now also the
   effective fragment orbitals (EFOs) from EOS (with any population
   scheme) and GEOS, are written out to a standard `.fchk` file, so they
@@ -129,6 +135,12 @@ program, not a full development history — see `git log` for that.
   electrons in a spin channel (few electrons per channel), it wrote past
   its arrays: the run could crash, or print a false linear-dependency
   warning or garbage oxidation states.
+- **OSLO with an orbital found from several fragments** — when the
+  selected orbitals are the same orbital (e.g. the bond between two
+  equivalent fragments), it is now assigned once and shared among those
+  fragments, as in the OSLO paper. It used to be given whole to each of
+  them (ethane as two CH₃ fragments: −1/−1 instead of 0/0), writing past
+  the end of its arrays.
 - **EOS with a changed orbital cutoff** — an `EFF_THRESH` that leaves
   fewer orbitals than electrons now stops instead of assigning electrons
   wrongly, very low or negative values no longer crash, and the overall

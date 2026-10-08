@@ -120,7 +120,7 @@
   ------
   Overlap matrix          : TFVC/real-space (default)
   FOLI tolerance          : 3
-  Branch iteration        : 0
+  Branching               : none
   Print non-orthogonalized: no
 
   # FRAGMENTS  (5 fragments)
@@ -131,8 +131,8 @@
   Fragment  4 :   4
   Fragment  5 :   5
 
-  TIMING CPU  :: initialization                                    0.04 s
-  TIMING WALL :: initialization                                    0.04 s
+  TIMING CPU  :: initialization                                    0.07 s
+  TIMING WALL :: initialization                                    0.08 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.73 s
-  TIMING WALL :: atomic definition                                 0.11 s
+  TIMING CPU  :: atomic definition                                 1.17 s
+  TIMING WALL :: atomic definition                                 1.17 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -557,8 +557,8 @@
     30     0.05248      0.99998      1.00003
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   1   1.00000
-  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.00000
+  Lowest FOLI value (frg.)      :   1   1.00000
+  Next FOLI value (frg.)        :   1   1.01302
 
   ---------------------
     SELECTED ORBITALS
@@ -586,22 +586,13 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-    25      1   1.01302
-    26      1   1.00010
-    27      1   1.00010
-    28      1   1.00010
-    29      1   1.00010
-    30      1   1.00000
-    30      2   1.00003
-    30      3   1.00003
-    30      4   1.00003
-    30      5   1.00003
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:  10
-  
-  Lowest eigenvalue obtained (LinDep):    0.99906
+  Next OSLOs: FOLI 1.01302, delta-FOLI 0.01302
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+    25      1    1.01302           0.00000
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   0.00000
   
   ------------------------
     ITERATION NUMBER   2
@@ -752,8 +743,8 @@
     21     1.77614      0.97183      1.04342
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   1   1.01302
-  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.01302
+  Lowest FOLI value (frg.)      :   1   1.01302
+  Next FOLI value (frg.)        :   1   1.02144
 
   ---------------------
     SELECTED ORBITALS
@@ -773,16 +764,15 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-    18      1   1.02166
-    19      1   1.02144
-    20      1   1.02144
-    21      1   1.01302
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   4
-  
-  Lowest eigenvalue obtained (LinDep):    1.00000
+  Next OSLOs: FOLI 1.02144, delta-FOLI 0.00842
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+    18      1    1.02166           0.00000
+    19      1    1.02144           0.00000
+    20      1    1.02144           0.00000
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   0.00000
   
   ------------------------
     ITERATION NUMBER   3
@@ -928,8 +918,8 @@
     20     1.77627      0.97205      1.04306
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   1   1.02144
-  Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.02144
+  Lowest FOLI value (frg.)      :   1   1.02144
+  Next FOLI value (frg.)        :   2   1.04306
 
   ---------------------
     SELECTED ORBITALS
@@ -951,19 +941,16 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-    18      1   1.02166
-    19      1   1.02144
-    20      1   1.02144
-    20      2   1.04306
-    20      3   1.04306
-    20      4   1.04306
-    20      5   1.04306
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   7
-  
-  Lowest eigenvalue obtained (LinDep):    0.97791
+  Next OSLOs: FOLI 1.04306, delta-FOLI 0.02162
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+    20      2    1.04306           0.00034
+    20      3    1.04306           0.00034
+    20      4    1.04306           0.00034
+    20      5    1.04306           0.00034
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   0.00034
   
   ------------------------
     ITERATION NUMBER   4
@@ -1094,8 +1081,8 @@
     17     1.77893      0.97374      1.04040
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   2   1.04040
-  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.04040
+  Lowest FOLI value (frg.)      :   2   1.04040
+  Next FOLI value (frg.)        :   1   1.10765
 
   ---------------------
     SELECTED ORBITALS
@@ -1118,17 +1105,13 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-    17      1   1.10765
-    17      2   1.04040
-    17      3   1.04040
-    17      4   1.04040
-    17      5   1.04040
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   5
-  
-  Lowest eigenvalue obtained (LinDep):    0.99864
+  Next OSLOs: FOLI 1.10765, delta-FOLI 0.06725
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+    17      1    1.10765           0.00000
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   0.00000
   
   ------------------------
     ITERATION NUMBER   5
@@ -1239,8 +1222,8 @@
     13     3.14006      0.90177      1.16334
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   1   1.10765
-  Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.10765
+  Lowest FOLI value (frg.)      :   1   1.10765
+  Next FOLI value (frg.)        :   2   1.16334
 
   ---------------------
     SELECTED ORBITALS
@@ -1260,17 +1243,16 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-    13      1   1.10765
-    13      2   1.16334
-    13      3   1.16334
-    13      4   1.16334
-    13      5   1.16334
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   5
-  
-  Lowest eigenvalue obtained (LinDep):    0.86923
+  Next OSLOs: FOLI 1.16334, delta-FOLI 0.05569
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+    13      2    1.16334           0.00363
+    13      3    1.16334           0.00363
+    13      4    1.16334           0.00363
+    13      5    1.16334           0.00363
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   0.00363
   
   ------------------------
     ITERATION NUMBER   6
@@ -1376,8 +1358,8 @@
     12     3.16877      0.90179      1.16331
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   2   1.16331
-  Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.16331
+  Lowest FOLI value (frg.)      :   2   1.16331
+  Next FOLI value (frg.)        :   2   1.45111
 
   ---------------------
     SELECTED ORBITALS
@@ -1400,20 +1382,16 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-    11      2   1.45111
-    12      2   1.16331
-    11      3   1.45111
-    12      3   1.16331
-    11      4   1.45111
-    12      4   1.16331
-    11      5   1.45111
-    12      5   1.16331
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   8
-  
-  Lowest eigenvalue obtained (LinDep):    0.89071
+  Next OSLOs: FOLI 1.45111, delta-FOLI 0.28780
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+    11      2    1.45111           0.00105
+    11      3    1.45111           0.00105
+    11      4    1.45111           0.00105
+    11      5    1.45111           0.00105
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   0.00105
   
   ------------------------
     ITERATION NUMBER   7
@@ -1499,8 +1477,8 @@
      8     4.36177      0.75848      1.45707
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   2   1.45707
-  Frg. and Lowest FOLI value including tolerance (cutoff):   2   1.45707
+  Lowest FOLI value (frg.)      :   2   1.45707
+  Next FOLI value (frg.)        :   2   1.62373
 
   ---------------------
     SELECTED ORBITALS
@@ -1523,20 +1501,16 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-     7      2   1.62373
-     8      2   1.45707
-     7      3   1.62373
-     8      3   1.45707
-     7      4   1.62373
-     8      4   1.45707
-     7      5   1.62373
-     8      5   1.45707
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   8
-  
-  Lowest eigenvalue obtained (LinDep):    0.86047
+  Next OSLOs: FOLI 1.62373, delta-FOLI 0.16665
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+     7      2    1.62373           0.00199
+     7      3    1.62373           0.00199
+     7      4    1.62373           0.00199
+     7      5    1.62373           0.00199
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   0.00199
   
   ------------------------
     ITERATION NUMBER   8
@@ -1602,8 +1576,8 @@
      4     4.55812      0.68643      1.61866
   ------------------------------------------ 
   
-  Frg. and Lowest FOLI value:   2   1.61866
-  Frg. and Lowest FOLI value including tolerance (cutoff):   1   1.61866
+  Lowest FOLI value (frg.)      :   2   1.61866
+  Next FOLI value (frg.)        :   1   3.43455
 
   ---------------------
     SELECTED ORBITALS
@@ -1626,26 +1600,16 @@
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
-     3      1   3.43455
-     4      1   3.43455
-     4      2   1.61866
-     4      3   1.61866
-     4      4   1.61866
-     4      5   1.61866
-  --------------------- 
-  Number of OSLOs for LinDep evaluation:   6
+  Next OSLOs: FOLI 3.43455, delta-FOLI 1.81589
+ 
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+     3      1    3.43455           1.00000
+     4      1    3.43455           1.00000
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   1.00000
   
-  Lowest eigenvalue obtained (LinDep):   -0.00000
-  
-  *********************************** 
-   WARNING : LINEAR DEPENDENCY FOUND  
-  *********************************** 
-  
-  FOLI values and delta-FOLI:   1.61866   3.43455   1.81589
-  Selecting largest to proceed 
-  RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT 
+  Sum of the FOLI values        :  35.30348
   
   ------------------------------------
     PRINTING FINAL OSLOs INFORMATION
@@ -1762,7 +1726,7 @@
      5         -2.00
   ------------------------ 
   
-  TIMING CPU  :: OSLO analysis                                     1.50 s
-  TIMING WALL :: OSLO analysis                                     1.35 s
+  TIMING CPU  :: OSLO analysis                                     2.44 s
+  TIMING WALL :: OSLO analysis                                     2.46 s
 
   ...Normal Termination of APOST-3D...

@@ -151,46 +151,39 @@
 
 !! ********************************************************************* !!
 !! subroutine: oslo_channel_iterate                                      !!
-!! purpose: iterative greedy OSLO assignment for a single spin channel   !!
-!! -- the closed-shell "only channel", or one of UHF's alpha/beta        !!
-!! channels. Each iteration diagonalizes every fragment's position-      !!
-!! weighted density against the current remaining density (pnocore),    !!
-!! scores every candidate orbital by its Pipek-Mezey-style               !!
-!! delocalization index (FOLI), assigns the most-localized one (or a     !!
-!! tolerance-based pack) to its fragment, Lowdin-orthogonalizes the      !!
-!! newly-assigned orbitals, and deflates pnocore by their contribution   !!
-!! before the next iteration. Terminates once nel orbitals are assigned. !!
-!! Shared by rwf_iterative_oslo (nel=nocc, one call) and                 !!
-!! uwf_iterative_oslo (nel=nalf then nel=nb, one call per channel) --    !!
-!! extracted 2026-08-20 from what were three near-identical copies of    !!
-!! this logic (RHF, UHF-alpha, UHF-beta); one had drifted and picked up  !!
-!! a real print bug (pre-refactor state: git tag                        !!
-!! oslo-pre-refactor-2026-08-20).                                        !!
+!! purpose: iterative OSLO assignment for one spin channel (the only     !!
+!! channel of a restricted wavefunction, or alpha/beta of an             !!
+!! unrestricted one). Each iteration localizes the remaining density     !!
+!! around every fragment, scores the candidates by their FOLI, selects   !!
+!! the lowest one together with every candidate within the tolerance,    !!
+!! orthogonalizes the selection and removes it from the remaining        !!
+!! density, until nel orbitals are assigned. A selection that spans      !!
+!! fewer orbitals than it holds (the same orbital found from several     !!
+!! fragments) gives those orbitals to its fragments in shares.           !!
 !! arguments:                                                             !!
 !!   nel      (in)    -- number of orbitals to assign in this channel     !!
-!!                       (nocc for RHF, nalf or nb for UHF)               !!
-!!   sat      (in)    -- (igr,igr,nat) per-atom AO overlap, for           !!
-!!                       rwf_uwf_frg_pop's fragment population calls      !!
-!!   Smat     (in)    -- (icufr,igr,igr) fragment position-operator       !!
-!!                       matrices, built once by the caller, shared      !!
-!!                       across channels                                 !!
-!!   pnocore  (inout) -- (igr,igr) remaining density in this channel;     !!
-!!                       caller initializes it (P for RHF, Pa/Pb for      !!
-!!                       UHF), deflated in place as orbitals are assigned !!
-!!   folitol  (in)    -- FOLI tolerance for orbital selection             !!
-!!   ibranch  (in)    -- iteration at which to invoke branching (0 =      !!
-!!                       disabled; branching itself is not implemented)  !!
-!!   coslo    (out)   -- (igr,igr) pre-orthogonalization OSLO coeffs,     !!
-!!                       columns 1..nel populated, rest zero (matches     !!
-!!                       the .fchk writers' expected shape)               !!
-!!   cosloorth(out)   -- (igr,igr) orthogonalized OSLO coeffs, same       !!
-!!                       column convention as coslo                       !!
-!!   delocoslo(out)   -- (nel) FOLI value of each OSLO, assignment order  !!
-!!   ifrgel   (out)   -- (icufr) number of orbitals assigned per fragment !!
+!!   sat      (in)    -- (igr,igr,nat) per-atom AO overlap               !!
+!!   Smat     (in)    -- (icufr,igr,igr) fragment position-operator      !!
+!!                       matrices (oslo_build_Smat)                      !!
+!!   pnocore  (inout) -- (igr,igr) remaining density of the channel      !!
+!!                       (P/2 restricted, Pa or Pb unrestricted),        !!
+!!                       deflated in place                               !!
+!!   folitol  (in)    -- FOLI tolerance for the selection                !!
+!!   nbr      (in)    -- number of branching iterations                  !!
+!!   ibr      (in)    -- (nbr) iterations at which the next FOLI value   !!
+!!                       is selected instead of the lowest one           !!
+!!   chkey    (in)    -- input keyword that branches this channel, for   !!
+!!                       the messages                                    !!
+!!   coslo    (out)   -- (igr,igr) OSLOs before orthogonalization,       !!
+!!                       columns 1..nel                                  !!
+!!   cosloorth(out)   -- (igr,igr) orthonormal OSLOs, columns 1..nel     !!
+!!   delocoslo(out)   -- (nel) FOLI value of each OSLO                   !!
+!!   frgel    (out)   -- (icufr) orbitals assigned to each fragment      !!
+!!                       (fractional when orbitals are shared)           !!
 !! author: MGimf                                                          !!
 !! ********************************************************************* !!
-      subroutine oslo_channel_iterate(nel,sat,Smat,pnocore,folitol,ibranch,
-     &  coslo,cosloorth,delocoslo,ifrgel)
+      subroutine oslo_channel_iterate(nel,sat,Smat,pnocore,folitol,nbr,
+     &  ibr,chkey,coslo,cosloorth,delocoslo,frgel)
 
       use basis_set
       use ao_matrices
@@ -200,32 +193,43 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
-      integer,intent(in) :: ibranch
+      integer,intent(in) :: nbr,ibr(*)
       real*8,intent(in) :: folitol
+      character*(*),intent(in) :: chkey
+
+!! a next OSLO whose overlap with the selected ones is above 1-xlindep  !!
+!! is nearly one of them; with a delta-FOLI below dfoliwarn it is a      !!
+!! close alternative selection                                           !!
+      real*8,parameter :: xlindep=0.1d0,dfoliwarn=0.5d0
 
       character*40 line
+      logical lbranch
 
       dimension sat(igr,igr,nat)
       dimension Smat(icufr,igr,igr),pnocore(igr,igr)
       dimension coslo(igr,igr),cosloorth(igr,igr)
-      dimension delocoslo(nel),ifrgel(icufr)
+      dimension delocoslo(nel),frgel(icufr)
 
       allocatable :: S0(:,:),Sm(:,:),Splus(:,:),smh(:,:),eigv(:,:)
       allocatable :: c0(:,:),pp0(:,:),cmat(:,:),cfrgoslo(:,:,:)
-      allocatable :: orbpop(:),orbpopat(:,:),deloc(:,:),clindep(:,:)
-      allocatable :: infopop(:,:),scr(:)
-      allocatable :: SSS(:,:),EEE(:,:)
+      allocatable :: orbpop(:),orbpopat(:,:),deloc(:,:),foli(:,:)
+      allocatable :: infopop(:,:),sfoli(:),share(:),st(:)
       allocatable :: ccore(:,:),ccoreorth(:,:),pcore(:,:)
-      allocatable :: frgpop(:,:),frgspr(:,:)
+      allocatable :: frgpop(:,:),frgspr(:,:),ibrused(:)
+
+      frgel=ZERO
+      coslo=ZERO
+      cosloorth=ZERO
 
 !! a channel with no electrons (e.g. beta of a high-spin H2 triplet) has  !!
 !! nothing to localize                                                   !!
       if(nel.eq.0) then
-        ifrgel=0
-        coslo=ZERO
-        cosloorth=ZERO
         write(*,'(2x,a)') 'No electrons in this channel: nothing to '//
      +    'localize'
+        do k=1,nbr
+          write(*,'(2x,a,i0,a)') 'Branching at iteration ',ibr(k),
+     +      ': not applied (no electrons in this channel)'
+        end do
         return
       end if
 
@@ -233,30 +237,23 @@
 
       ALLOCATE(Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(c0(igr,igr),pp0(igr,igr))
-      ALLOCATE(ccore(igr,igr),pcore(igr,igr),ccoreorth(igr,igr))
-      ALLOCATE(scr(nel))
+      ALLOCATE(pcore(igr,igr),st(igr))
       ALLOCATE(cmat(igr,igr),cfrgoslo(icufr,igr,igr))
       ALLOCATE(frgpop(icufr,nel),frgspr(icufr,nel))
+      ALLOCATE(ibrused(max(1,nbr)))
+      ibrused=0
 
-      ifrgel=0
-      coslo=ZERO
-      cosloorth=ZERO
-
-      iaddoslo=0
-      iaddoslo2=0
+      nnelect=0
+      iadd=0
       do iiter=1,niter
         write(line,'(a,i3)') "ITERATION NUMBER ",iiter
         call print_subbox(trim(adjustl(line)))
 
-!! Zeroing the involved matrices !!
         pcore=ZERO
-        ccore=ZERO
-        ccoreorth=ZERO
-        ALLOCATE(deloc(icufr,nel))
+        ALLOCATE(deloc(icufr,nel),foli(icufr,nel))
         deloc=ZERO
 
 !! 1) Obtaining OSLOs for all frgs !!
-        iaddcore=0
         ALLOCATE(S0(igr,igr))
         do ifrg=1,icufr
           do ii=1,igr
@@ -299,13 +296,14 @@
           end do
           DEALLOCATE(orbpop,orbpopat)
 
-!! Now doing 1/deloc() !!
+!! Now doing 1/deloc(), then the FOLI of each candidate !!
           do ii=1,nel
             if(deloc(ifrg,ii).gt.1.0d-6) then
               deloc(ifrg,ii)=ONE/deloc(ifrg,ii)
             else
               deloc(ifrg,ii)=100.0d0 !! Absurt value, avoids problems !!
             end if
+            foli(ifrg,ii)=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
           end do
 
 !! Printing valuable information !!
@@ -315,222 +313,126 @@
           write(*,*) " ------------------------------------------ "
           do ii=1,nel
             xx=frgpop(ifrg,ii)
-            if(xx.gt.1.0d-5) write(*,111) ii,frgspr(ifrg,ii),xx,dsqrt(deloc(ifrg,ii)/xx)
+            if(xx.gt.1.0d-5) write(*,111) ii,frgspr(ifrg,ii),xx,foli(ifrg,ii)
           end do
           write(*,*) " ------------------------------------------ "
           write(*,*) " "
         end do
         DEALLOCATE(S0)
 
-!! 2) Cutoff evaluation !!
-        xcutoff=100.0d0 !! Set high for first step !!
-        iifrg=0
-        iiorb=0
-        do ifrg=1,icufr
-          do ii=1,nel
-
-!! Applying conditions to remove orbitals !!
+!! 2) Lowest FOLI value, and the next one beyond the tolerance !!
 !! 1.0d-10: FOLIs equal up to rounding (symmetry-equivalent fragments) !!
 !! keep the first one found, so the choice is the same on any machine  !!
-            xx=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
-            if(xx.lt.xcutoff-1.0d-10) then
-              iiorb=ii
+        xcutoff=100.0d0
+        iifrg=0
+        do ifrg=1,icufr
+          do ii=1,nel
+            if(foli(ifrg,ii).lt.xcutoff-1.0d-10) then
               iifrg=ifrg
-              xcutoff=xx !! New lowest FOLI !!
+              xcutoff=foli(ifrg,ii)
             end if
           end do
         end do
-
-!! Now frontier (selection by packs using tolerance) !!
-        xfront=100.0d0 !! Set high for first step !!
+        if(iifrg.eq.0) then
+          write(*,'(2x,a)') 'No candidate orbital with a FOLI value '//
+     +      'below 100 in this iteration'
+          call apost_stop(' OSLO: no candidate orbital')
+        end if
+        xfront=100.0d0
         jjfrg=0
-        jjorb=0
         do ifrg=1,icufr
           do ii=1,nel
-            xx=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
-!! 1.0d-10: same tie-break as for the cutoff above !!
+            xx=foli(ifrg,ii)
             if(xcutoff+folitol.lt.xx.and.xx.lt.xfront-1.0d-10) then
-              jjorb=ii
               jjfrg=ifrg
               xfront=xx
             end if
           end do
         end do
 
-!! Printing !!
-        write(*,'(2x,a27,x,i3,f10.5)') "Frg. and Lowest FOLI value:",iifrg,xcutoff
-        write(*,'(2x,a56,x,i3,f10.5)') "Frg. and Lowest FOLI value including tolerance (cutoff):",jjfrg,xcutoff
-        call print_box('SELECTED ORBITALS')
-
-!! 3) Evaluating degeneracies !!
-!! Infopop(i,j): saving the fragment in i = 1 and orbital number in i = 2 !!
-!! J allocated as nel (for practicity) but maximum will be inewcore !!
-        ALLOCATE(infopop(2,nel))
-        inewcore=0
-
-!! Branching (controlled from .inp, default = 0) !!
-        if(iiter.eq.ibranch) then
-          write(*,*) " ********************************************** "
-          write(*,*) "  WARNING: BRANCHING INVOKED IN THIS ITERATION  "
-          write(*,*) " ********************************************** "
-          write(*,*) " "
-
-!! MG: to do !!
-          write(*,*) " Branching code has to be done "
-          call apost_stop('')
+        write(*,10) "Lowest FOLI value (frg.)",iifrg,xcutoff
+        if(jjfrg.gt.0) then
+          write(*,10) "Next FOLI value (frg.)",jjfrg,xfront
         else
-          write(*,*) "  Orb.   Frag.   FOLI  "
-          write(*,*) " --------------------- "
-          do ifrg=1,icufr
-            do iorb=1,nel
-              xx=xcutoff-dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-              if(ABS(xx).le.folitol) then
-
-!! Applying conditions to remove orbitals !!
-                inewcore=inewcore+1
-                infopop(1,inewcore)=ifrg
-                infopop(2,inewcore)=iorb
-                scr(inewcore)=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-                write(*,112) infopop(2,inewcore),infopop(1,inewcore),scr(inewcore)
-              end if
-            end do
-          end do
-          write(*,*) " --------------------- "
-          write(*,*) " "
-        end if
-        write(*,'(2x,a25,x,i3)') "Number of OSLOs selected:",inewcore
-        write(*,'(2x,a17,x,f10.5)') "delta-FOLI value:",xfront-xcutoff
-        write(*,*) " "
-
-!! Saving the frag OSLOs (considered core) in ccore !!
-        do iorb=1,inewcore
-          iifrg=infopop(1,iorb)
-          iiorb=infopop(2,iorb)
-          ifrgel(iifrg)=ifrgel(iifrg)+1 !! Adding them here !!
-          iaddcore=iaddcore+1
-          iaddoslo=iaddoslo+1
-          delocoslo(iaddoslo)=scr(iorb)
-          do mu=1,igr
-            ccore(mu,iaddcore)=cfrgoslo(iifrg,mu,iiorb)
-            coslo(mu,iaddoslo)=cfrgoslo(iifrg,mu,iiorb)
-          end do
-        end do
-
-!! Evaluating overassignment !!
-        nnelect=0
-        do ifrg=1,icufr
-          nnelect=nnelect+ifrgel(ifrg)
-        end do
-        write(*,'(2x,a24,x,i3)') "Orbitals left to assign:",nel-nnelect
-        write(*,*) " "
-
-        if(nel-nnelect.lt.0) then
-          write(*,*) " *************************************** "
-          write(*,'(3x,a34,x,i3)') "WARNING: OVERASSIGNING BY (pairs):",-(nel-nnelect)
-          write(*,*) " *************************************** "
-          write(*,*) " "
-
-!! Dirty trick !!
-          write(*,*) " Continues by tricking the code (overassigned electrons removed) "
-          write(*,*) " Check the final OSs, overassigned electrons have to be afterwards " !! To do !!
-          write(*,*) " "
-          inewcore=inewcore+(nel-nnelect)
-          iaddoslo=iaddoslo+(nel-nnelect)
-          nnelect=nnelect+(nel-nnelect)
+          write(*,11) "Next FOLI value","none"
         end if
 
-!! Selecting the first out for evaluating LINDEP. Counted first: the   !!
-!! candidates can outnumber the electrons and the basis functions      !!
-        iselected=0
+!! Branching: the group at the next FOLI value is selected instead !!
+        lbranch=.false.
+        do k=1,nbr
+          if(ibr(k).eq.iiter) then
+            if(jjfrg.gt.0) then
+              lbranch=.true.
+              ibrused(k)=1
+            else
+              ibrused(k)=2
+            end if
+          end if
+        end do
+        xsel=xcutoff
+        if(lbranch) then
+          xsel=xfront
+          write(*,*) " "
+          write(*,*) " ********************************************* "
+          write(*,*) "  BRANCHING: THE NEXT FOLI VALUE IS SELECTED  "
+          write(*,*) " ********************************************* "
+          write(*,'(2x,a,f10.5,a,f10.5,a)') "FOLI value",xfront,
+     +      " selected instead of",xcutoff," (branching)"
+        else if(nbr.gt.0) then
+          do k=1,nbr
+            if(ibr(k).eq.iiter) write(*,'(2x,a)') 'Branching asked '//
+     +        'at this iteration, but there is no other candidate: '//
+     +        'not applied'
+          end do
+        end if
+
+!! 3) Selection: the lowest group (every candidate within the tolerance !!
+!! of the lowest FOLI value), or with branching the next group (beyond   !!
+!! the lowest one, up to the next FOLI value plus the tolerance)         !!
+        call print_box('SELECTED ORBITALS')
+        mm=0
         do ifrg=1,icufr
           do iorb=1,nel
-            xx=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))-xfront
-            if(xx.lt.folitol) iselected=iselected+1
+            if(ingroup(foli(ifrg,iorb),lbranch)) mm=mm+1
           end do
         end do
-        ALLOCATE(clindep(igr,max(1,iselected)))
-        clindep=ZERO
-        call print_subbox('CHECKING LINEAR DEPENDENCIES')
+        ALLOCATE(infopop(2,mm),sfoli(mm))
         write(*,*) "  Orb.   Frag.   FOLI  "
         write(*,*) " --------------------- "
-        iselected=0
+        mm=0
         do ifrg=1,icufr
           do iorb=1,nel
-            xx=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))-xfront
-
-!! CRITERIA FOR SELECTION: sqrt(deloc/Q_A) <= frontier + folitol !!
-            if(xx.lt.folitol) then
-              iselected=iselected+1
-              xx2=dsqrt(deloc(ifrg,iorb)/frgpop(ifrg,iorb))
-              write(*,112) iorb,ifrg,xx2
-              do mu=1,igr
-                clindep(mu,iselected)=cfrgoslo(ifrg,mu,iorb)
-              end do
+            if(ingroup(foli(ifrg,iorb),lbranch)) then
+              mm=mm+1
+              infopop(1,mm)=ifrg
+              infopop(2,mm)=iorb
+              sfoli(mm)=foli(ifrg,iorb)
+              write(*,112) iorb,ifrg,sfoli(mm)
             end if
           end do
         end do
         write(*,*) " --------------------- "
-        write(*,'(2x,a38,x,i3)') "Number of OSLOs for LinDep evaluation:",iselected
+        write(*,*) " "
+        write(*,'(2x,a25,x,i3)') "Number of OSLOs selected:",mm
+        if(jjfrg.gt.0) then
+          write(*,'(2x,a17,x,f10.5)') "delta-FOLI value:",xfront-xcutoff
+        else
+          write(*,'(2x,a)') "delta-FOLI value: none (no other candidate)"
+        end if
         write(*,*) " "
 
-!! Last iteration no LINDEP evaluation !!
-        iilindep=0
-        if(nel-nnelect.eq.0.and.inewcore.eq.1) then
-          write(*,*) " LinDep not evaluated in last iteration if only 1 orbital is selected "
-          write(*,*) " "
-          iilindep=1
-        end if
-
-!! Some deallocates... !!
-        DEALLOCATE(deloc)
-        DEALLOCATE(infopop)
-
-!! Evaluate LINDEP !!
-        ilindep=0
-        if(iilindep.eq.0) then !! If only 1 there is nothing to evaluate !!
-          xx=10.0d0 !! Absurt value, kept if there is nothing to evaluate !!
-          if(iselected.gt.0) then
-            ALLOCATE(SSS(iselected,iselected),EEE(iselected,iselected))
-            do ii=1,iselected
-              do jj=1,iselected
-                xx2=ZERO
-                do mu=1,igr
-                  do nu=1,igr
-                    xx2=xx2+clindep(mu,ii)*clindep(nu,jj)*s(mu,nu)
-                  end do
-                end do
-                SSS(ii,jj)=xx2
-              end do
-            end do
-
-!! Overlap of the candidates; its smallest eigenvalue measures LINDEP !!
-            call diagonalize(iselected,iselected,SSS,EEE,0)
-            do ii=1,iselected
-              if(SSS(ii,ii).lt.xx) xx=SSS(ii,ii)
-            end do
-            DEALLOCATE(SSS,EEE)
-          end if
-          if(xx.lt.1.0d-4) ilindep=1 !! Threshold for liniar dependency !!
-          write(*,'(2x,a36,x,f10.5)') "Lowest eigenvalue obtained (LinDep):",xx
-          write(*,*) " "
-        end if
-        if(ilindep.eq.1) then
-          write(*,*) " *********************************** "
-          write(*,*) "  WARNING : LINEAR DEPENDENCY FOUND  "
-          write(*,*) " *********************************** "
-          write(*,*) " "
-          write(*,'(2x,a27,3f10.5)') "FOLI values and delta-FOLI:",xcutoff,xfront,xfront-xcutoff
-          write(*,*) " Selecting largest to proceed "
-          write(*,*) " RECOMMENDED TO BRANCH (.inp) AND CHECK ALTERNATIVE ASSIGNMENT "
-          write(*,*) " "
-        end if
-        DEALLOCATE(clindep)
-
-!! Removing orbitals from P matrix, only if not all are assigned !!
-!! Orthogonalizing fragment CORE/SEMICORE orbitals !!
-        ALLOCATE(S0(inewcore,inewcore),eigv(inewcore,inewcore))
-        do ii=1,inewcore
-          do jj=1,inewcore
+!! 4) Orthogonalizing the selection: Lowdin, from the eigenvalues of its !!
+!! overlap above thresh (10^-8, parameter.h). nr of them = the number   !!
+!! of orbitals the selection spans                                      !!
+        ALLOCATE(ccore(igr,mm),ccoreorth(igr,mm))
+        do iorb=1,mm
+          do mu=1,igr
+            ccore(mu,iorb)=cfrgoslo(infopop(1,iorb),mu,infopop(2,iorb))
+          end do
+        end do
+        ALLOCATE(S0(mm,mm),eigv(mm,mm))
+        do ii=1,mm
+          do jj=1,mm
             xx=ZERO
             do mu=1,igr
               do nu=1,igr
@@ -540,49 +442,198 @@
             S0(ii,jj)=xx
           end do
         end do
+        call diagonalize(mm,mm,S0,eigv,0)
+        nr=0
+        do kk=1,mm
+          if(S0(kk,kk).gt.thresh) nr=nr+1
+        end do
+        nleft=nel-nnelect
+        if(nr.gt.nleft) then
+          write(*,'(2x,a,i0,a,i0,a)') 'The selected OSLOs span ',nr,
+     +      ' orbitals, but only ',nleft,' are left to assign'
+          call apost_stop(' OSLO: more orbitals selected than left')
+        end if
 
-        call diagonalize(inewcore,inewcore,S0,eigv,0)
+        if(nr.eq.mm) then
 
-        ALLOCATE(smh(inewcore,inewcore))
-        do ii=1,inewcore
-          do jj=ii,inewcore
-            smh(jj,ii)=ZERO
-            do kk=1,inewcore
-              if(S0(kk,kk).gt.thresh) then !! thresh = 10^-8 (see parameter.h) !!
-                xx=eigv(ii,kk)*eigv(jj,kk)
-                ssqrt=dsqrt(S0(kk,kk))
-                smh(jj,ii)=smh(jj,ii)+xx/ssqrt
+!! independent selection: each OSLO goes to its own fragment !!
+          ALLOCATE(smh(mm,mm))
+          do ii=1,mm
+            do jj=ii,mm
+              smh(jj,ii)=ZERO
+              do kk=1,mm
+                if(S0(kk,kk).gt.thresh) then
+                  xx=eigv(ii,kk)*eigv(jj,kk)
+                  ssqrt=dsqrt(S0(kk,kk))
+                  smh(jj,ii)=smh(jj,ii)+xx/ssqrt
+                end if
+              end do
+              smh(ii,jj)=smh(jj,ii)
+            end do
+          end do
+          do ii=1,igr
+            do jj=1,mm
+              xx=ZERO
+              do kk=1,mm
+                xx=xx+smh(jj,kk)*ccore(ii,kk)
+              end do
+              ccoreorth(ii,jj)=xx
+            end do
+          end do
+          DEALLOCATE(smh)
+          do iorb=1,mm
+            ifrg=infopop(1,iorb)
+            frgel(ifrg)=frgel(ifrg)+ONE
+            iadd=iadd+1
+            delocoslo(iadd)=sfoli(iorb)
+            do mu=1,igr
+              coslo(mu,iadd)=ccore(mu,iorb)
+              cosloorth(mu,iadd)=ccoreorth(mu,iorb)
+            end do
+          end do
+        else
+
+!! dependent selection (the same orbital found from several fragments): !!
+!! it assigns nr orbitals, one per independent direction. Each selected !!
+!! OSLO's share is its squared norm after the Lowdin orthogonalization  !!
+!! (the shares add up to nr); the orbitals kept are the canonical ones  !!
+!! of the selection, which span the same space                          !!
+          ALLOCATE(share(mm))
+          do iorb=1,mm
+            xx=ZERO
+            do kk=1,mm
+              if(S0(kk,kk).gt.thresh) xx=xx+eigv(iorb,kk)**2
+            end do
+            share(iorb)=xx
+            ifrg=infopop(1,iorb)
+            frgel(ifrg)=frgel(ifrg)+xx
+          end do
+          ir=0
+          do kk=1,mm
+            if(S0(kk,kk).gt.thresh) then
+              ir=ir+1
+              ssqrt=dsqrt(S0(kk,kk))
+              do mu=1,igr
+                xx=ZERO
+                do iorb=1,mm
+                  xx=xx+ccore(mu,iorb)*eigv(iorb,kk)
+                end do
+                ccoreorth(mu,ir)=xx/ssqrt
+              end do
+              iadd=iadd+1
+              delocoslo(iadd)=xsel
+              do mu=1,igr
+                coslo(mu,iadd)=ccoreorth(mu,ir)
+                cosloorth(mu,iadd)=ccoreorth(mu,ir)
+              end do
+            end if
+          end do
+          if(nr.eq.1) then
+            write(*,'(2x,a,i0,a)') 'SHARED ORBITAL: the ',mm,
+     +        ' selected OSLOs span 1 orbital'
+          else
+            write(*,'(2x,a,i0,a,i0,a)') 'SHARED ORBITALS: the ',mm,
+     +        ' selected OSLOs span ',nr,' orbitals'
+          end if
+          write(*,'(a)') ' '
+          write(*,'(a)') '   Frag.      Share'
+          write(*,'(2x,a)') repeat('-',17)
+          do ifrg=1,icufr
+            xx=ZERO
+            ii=0
+            do iorb=1,mm
+              if(infopop(1,iorb).eq.ifrg) then
+                xx=xx+share(iorb)
+                ii=1
               end if
             end do
-            smh(ii,jj)=smh(jj,ii)
+            if(ii.eq.1) write(*,'(i6,f13.5)') ifrg,xx
           end do
-        end do
-        DEALLOCATE(eigv,S0)
+          write(*,'(2x,a)') repeat('-',17)
+          write(*,'(a)') ' '
+          DEALLOCATE(share)
+        end if
+        nadd=nr
+        nnelect=nnelect+nr
+        write(*,'(2x,a24,x,i3)') "Orbitals left to assign:",nel-nnelect
+        write(*,*) " "
 
-        do ii=1,igr
-          do jj=1,inewcore
-            xx=ZERO
-            do kk=1,inewcore
-              xx=xx+smh(jj,kk)*ccore(ii,kk)
+!! 5) Close alternative: a next OSLO with an overlap of nearly 1 with   !!
+!! the selected ones (it is nearly one of them, found from another      !!
+!! fragment), with a small delta-FOLI. Not evaluated with one orbital   !!
+!! left (every candidate is then that orbital)                          !!
+        call print_subbox('CHECKING LINEAR DEPENDENCIES')
+        if(lbranch) then
+          write(*,'(2x,a)') 'Not evaluated in a branching iteration'
+        else if(nleft.eq.1) then
+          write(*,'(2x,a)') 'Not evaluated with one orbital left '//
+     +      '(every candidate is that orbital)'
+        else if(jjfrg.eq.0) then
+          write(*,'(2x,a)') 'Not evaluated: no other candidate'
+        else
+          write(*,'(2x,a,f8.5,a,f8.5)') 'Next OSLOs: FOLI',xfront,
+     +      ', delta-FOLI',xfront-xcutoff
+          write(*,'(a)') ' '
+          write(*,'(a)') '   Orb.   Frag.     FOLI    Overlap with selected'
+          write(*,'(2x,a)') repeat('-',49)
+          xmax=ZERO
+          do ifrg=1,icufr
+            do iorb=1,nel
+              if(ingroup(foli(ifrg,iorb),.true.)) then
+
+!! overlap of this next OSLO with the (orthonormal) selected ones: !!
+!! sum over them of |<selected|next>|^2, over <next|next>          !!
+                do mu=1,igr
+                  xx=ZERO
+                  do nu=1,igr
+                    xx=xx+s(mu,nu)*cfrgoslo(ifrg,nu,iorb)
+                  end do
+                  st(mu)=xx
+                end do
+                xnorm=ZERO
+                do mu=1,igr
+                  xnorm=xnorm+cfrgoslo(ifrg,mu,iorb)*st(mu)
+                end do
+                xproj=ZERO
+                do jj=1,nadd
+                  xx=ZERO
+                  do mu=1,igr
+                    xx=xx+ccoreorth(mu,jj)*st(mu)
+                  end do
+                  xproj=xproj+xx*xx
+                end do
+                xov=min(ONE,xproj/xnorm)
+                if(xov.gt.xmax) xmax=xov
+                write(*,'(i6,i7,f11.5,f18.5)') iorb,ifrg,foli(ifrg,iorb),
+     +            xov
+              end if
             end do
-            ccoreorth(ii,jj)=xx
           end do
-        end do
+          write(*,'(2x,a)') repeat('-',49)
+          write(*,'(2x,a,f10.5)') "Largest overlap with the selected "//
+     +      "OSLOs:",xmax
+          if(xmax.gt.ONE-xlindep.and.xfront-xcutoff.lt.dfoliwarn) then
+            write(*,*) " "
+            write(*,*) " ************************************** "
+            write(*,*) "  WARNING : CLOSE ALTERNATIVE SELECTION  "
+            write(*,*) " ************************************** "
+            write(*,'(2x,a)') 'The next OSLO is nearly one of the '//
+     +        'selected ones, and its FOLI value'
+            write(*,'(2x,a)') 'is within 0.5 of theirs: an alternative '//
+     +        'assignment is possible. To'
+            write(*,'(2x,a)') 'follow it, add to # OSLO'
+            write(*,'(4x,a,1x,i0)') trim(chkey),iiter
+            write(*,'(2x,a)') 'and compare the sums of FOLI values '//
+     +        'of both runs.'
+          end if
+        end if
+        write(*,*) " "
 
-!! Saving orthogonal orbitals here !!
-        do ii=1,inewcore
-          iaddoslo2=iaddoslo2+1
-          do mu=1,igr
-            cosloorth(mu,iaddoslo2)=ccoreorth(mu,ii)
-          end do
-        end do
-        DEALLOCATE(smh)
-
-!! Constructing pcore (and pnocore by substraction) !!
+!! 6) Removing the selected orbitals from the remaining density !!
         do ii=1,igr
           do jj=1,igr
             xx=ZERO
-            do ij=1,inewcore
+            do ij=1,nadd
               xx=xx+ccoreorth(ii,ij)*ccoreorth(jj,ij)
             end do
             pcore(ii,jj)=xx
@@ -594,6 +645,8 @@
           end do
         end do
 
+        DEALLOCATE(deloc,foli,infopop,sfoli,ccore,ccoreorth,S0,eigv)
+
 !! In case of all assigned !!
         if(nel-nnelect.eq.0) go to 666
 
@@ -601,11 +654,40 @@
       end do
 666   continue
 
-      DEALLOCATE(Sm,Splus,c0,pp0,ccore,pcore,ccoreorth,scr,cmat,cfrgoslo)
-      DEALLOCATE(frgpop,frgspr)
+      xx=ZERO
+      do ii=1,nel
+        xx=xx+delocoslo(ii)
+      end do
+      write(*,12) "Sum of the FOLI values",xx
+      do k=1,nbr
+        if(ibrused(k).eq.0) write(*,'(2x,a,i0,a)')
+     +    'Branching at iteration ',ibr(k),': not reached, not applied'
+      end do
+      write(*,*) " "
 
+      DEALLOCATE(Sm,Splus,c0,pp0,pcore,st,cmat,cfrgoslo)
+      DEALLOCATE(frgpop,frgspr,ibrused)
+
+10    FORMAT(2x,a,t33,':',i4,f10.5)
+11    FORMAT(2x,a,t33,': ',a)
+12    FORMAT(2x,a,t33,':',f10.5)
 111   FORMAT(3x,i3,2x,f10.5,3x,f10.5,3x,f10.5)
 112   FORMAT(3x,i3,4x,i3,x,f9.5)
+
+      contains
+
+!! ---- !!
+!! whether a FOLI value belongs to the lowest group (next=.false.) or to !!
+!! the next one (next=.true.), for the current xcutoff/xfront           !!
+      logical function ingroup(f,next)
+      real*8,intent(in) :: f
+      logical,intent(in) :: next
+      if(next) then
+        ingroup=f.gt.xcutoff+folitol.and.f.le.xfront+folitol
+      else
+        ingroup=ABS(xcutoff-f).le.folitol
+      end if
+      end function ingroup
 
       end
 
@@ -635,6 +717,7 @@
       use basis_set
       use ao_matrices
       use integration_grid
+      use input_options_mod, only: nbranch,ibranchit
       implicit double precision(a-h,o-z)
       include 'parameter.h'
 
@@ -653,18 +736,17 @@
 
       allocatable :: Smat(:,:,:),pnocore(:,:),poslo(:,:)
       allocatable :: coslo(:,:),cosloorth(:,:),delocoslo(:)
-      allocatable :: ifrgel(:),iznfrg(:)
+      allocatable :: frgel(:),iznfrg(:)
       allocatable :: orbpop(:),orbpop2(:),foslo(:,:),foslo2(:,:)
       allocatable :: orbpopat(:,:),orbpopat2(:,:)
 
 !! Loading iopts !!
       ifolitol = iopt(96)
-      ibranch  = iopt(97)
       ifchk    = iopt(98)
       folitol = 10.0d0**(-REAL(ifolitol)) !! Default = 10^-3, controlled in .inp !!
 
 !! Fragment charge extracted from zn (avoids problems when pseudopotentials are used) !!
-      ALLOCATE(ifrgel(icufr),iznfrg(icufr))
+      ALLOCATE(frgel(icufr),iznfrg(icufr))
       do ifrg=1,icufr
         izn=0
         do icenter=1,nfrlist(ifrg)
@@ -687,8 +769,9 @@
 
       ALLOCATE(coslo(igr,igr),cosloorth(igr,igr),delocoslo(nocc))
 
-      call oslo_channel_iterate(nocc,sat,Smat,pnocore,folitol,ibranch,
-     &  coslo,cosloorth,delocoslo,ifrgel)
+      call oslo_channel_iterate(nocc,sat,Smat,pnocore,folitol,
+     &  nbranch(1),ibranchit(1,1),'BRANCH_ITERATION',coslo,cosloorth,
+     &  delocoslo,frgel)
 
       DEALLOCATE(Smat,pnocore)
 
@@ -742,15 +825,21 @@
       call print_subbox('FRAGMENT OXIDATION STATES')
       write(*,*) "  Frag.  Oxidation State  "
       write(*,*) " ------------------------ "
+      ishared=0
       do ifrg=1,icufr
-        write(*,20) ifrg,REAL(iznfrg(ifrg)-2*ifrgel(ifrg))
+        xos=DBLE(iznfrg(ifrg))-TWO*frgel(ifrg)
+        if(ABS(xos).lt.5.0d-7) xos=ZERO
+        if(ABS(frgel(ifrg)-ANINT(frgel(ifrg))).gt.1.0d-6) ishared=1
+        write(*,20) ifrg,xos
       end do
       write(*,*) " ------------------------ "
+      if(ishared.eq.1) write(*,'(2x,a)') 'Fractional values: orbitals '//
+     +  'shared between fragments (see the iterations)'
       write(*,*) " "
 
       DEALLOCATE(orbpop,orbpop2)
       DEALLOCATE(foslo,foslo2)
-      DEALLOCATE(coslo,cosloorth,delocoslo,ifrgel,iznfrg)
+      DEALLOCATE(coslo,cosloorth,delocoslo,frgel,iznfrg)
 
 20    FORMAT(3x,i3,6x,f8.2)
 
@@ -1012,6 +1101,7 @@
       use basis_set
       use ao_matrices
       use integration_grid
+      use input_options_mod, only: maxbranch,nbranch,ibranchit
       implicit double precision(a-h,o-z)
       include 'parameter.h'
 
@@ -1031,19 +1121,34 @@
       allocatable :: Smat(:,:,:),pnocore(:,:)
       allocatable :: coslo_a(:,:),cosloorth_a(:,:),delocoslo_a(:)
       allocatable :: coslo_b(:,:),cosloorth_b(:,:),delocoslo_b(:)
-      allocatable :: ifrgel_a(:),ifrgel_b(:),iznfrg(:)
+      allocatable :: frgel_a(:),frgel_b(:),iznfrg(:)
+
+!! branching iterations of each channel: BRANCH_ITERATION plus its own !!
+      dimension ibra(2*maxbranch),ibrb(2*maxbranch)
       allocatable :: poslo_a(:,:),poslo_b(:,:)
       allocatable :: orbpop(:),orbpop2(:),foslo(:,:),foslo2(:,:)
       allocatable :: orbpopat(:,:),orbpopat2(:,:)
 
 !! Loading iopts !!
       ifolitol = iopt(96)
-      ibranch  = iopt(97)
       ifchk    = iopt(98)
       folitol = 10.0d0**(-REAL(ifolitol)) !! Default = 10^-3, controlled in .inp !!
 
+      nbra=nbranch(1)+nbranch(2)
+      nbrb=nbranch(1)+nbranch(3)
+      do k=1,nbranch(1)
+        ibra(k)=ibranchit(k,1)
+        ibrb(k)=ibranchit(k,1)
+      end do
+      do k=1,nbranch(2)
+        ibra(nbranch(1)+k)=ibranchit(k,2)
+      end do
+      do k=1,nbranch(3)
+        ibrb(nbranch(1)+k)=ibranchit(k,3)
+      end do
+
 !! Fragment charge extracted from zn (avoids problems when pseudopotentials are used) !!
-      ALLOCATE(ifrgel_a(icufr),ifrgel_b(icufr),iznfrg(icufr))
+      ALLOCATE(frgel_a(icufr),frgel_b(icufr),iznfrg(icufr))
       do ifrg=1,icufr
         izn=0
         do icenter=1,nfrlist(ifrg)
@@ -1066,8 +1171,8 @@
       ALLOCATE(pnocore(igr,igr))
       pnocore=pa
       ALLOCATE(coslo_a(igr,igr),cosloorth_a(igr,igr),delocoslo_a(nalf))
-      call oslo_channel_iterate(nalf,sat,Smat,pnocore,folitol,ibranch,
-     &  coslo_a,cosloorth_a,delocoslo_a,ifrgel_a)
+      call oslo_channel_iterate(nalf,sat,Smat,pnocore,folitol,nbra,
+     &  ibra,'BRANCH_ALPHA',coslo_a,cosloorth_a,delocoslo_a,frgel_a)
       DEALLOCATE(pnocore)
 
 !! Beta channel !!
@@ -1076,8 +1181,8 @@
       ALLOCATE(pnocore(igr,igr))
       pnocore=pb
       ALLOCATE(coslo_b(igr,igr),cosloorth_b(igr,igr),delocoslo_b(nb))
-      call oslo_channel_iterate(nb,sat,Smat,pnocore,folitol,ibranch,
-     &  coslo_b,cosloorth_b,delocoslo_b,ifrgel_b)
+      call oslo_channel_iterate(nb,sat,Smat,pnocore,folitol,nbrb,
+     &  ibrb,'BRANCH_BETA',coslo_b,cosloorth_b,delocoslo_b,frgel_b)
       DEALLOCATE(pnocore,Smat)
 
 !! Printing of the combined .fchk files with the OSLOs (alpha+beta together) !!
@@ -1163,14 +1268,21 @@
       call print_subbox('FRAGMENT OXIDATION STATES')
       write(*,*) "  Frag.  Oxidation State  "
       write(*,*) " ------------------------ "
+      ishared=0
       do ifrg=1,icufr
-        write(*,20) ifrg,REAL(iznfrg(ifrg)-(ifrgel_a(ifrg)+ifrgel_b(ifrg)))
+        xos=DBLE(iznfrg(ifrg))-(frgel_a(ifrg)+frgel_b(ifrg))
+        if(ABS(xos).lt.5.0d-7) xos=ZERO
+        if(ABS(frgel_a(ifrg)-ANINT(frgel_a(ifrg))).gt.1.0d-6.or.
+     +    ABS(frgel_b(ifrg)-ANINT(frgel_b(ifrg))).gt.1.0d-6) ishared=1
+        write(*,20) ifrg,xos
       end do
       write(*,*) " ------------------------ "
+      if(ishared.eq.1) write(*,'(2x,a)') 'Fractional values: orbitals '//
+     +  'shared between fragments (see the iterations)'
       write(*,*) " "
 
-      DEALLOCATE(coslo_a,cosloorth_a,delocoslo_a,ifrgel_a)
-      DEALLOCATE(coslo_b,cosloorth_b,delocoslo_b,ifrgel_b)
+      DEALLOCATE(coslo_a,cosloorth_a,delocoslo_a,frgel_a)
+      DEALLOCATE(coslo_b,cosloorth_b,delocoslo_b,frgel_b)
       DEALLOCATE(iznfrg)
 
 20    FORMAT(3x,i3,6x,f8.2)

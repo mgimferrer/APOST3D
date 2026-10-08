@@ -44,10 +44,17 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
    assigned. Core and lone-pair orbitals go first; the orbitals of the
    bonds between fragments, the ones that decide the oxidation states, come
    last, and are better localized for having the others removed first.
+   When the selected orbitals are the same orbital found from several
+   fragments (e.g. a bond between two equivalent fragments, with equal
+   FOLI on both sides), it is assigned once and **shared** among those
+   fragments: half and half for two equivalent fragments.
 4. **Oxidation states.** Each OSLO gives its electrons (two in a
    restricted calculation, one per spin orbital in an unrestricted one) to
-   the fragment it was localized on. The oxidation state of a fragment is
-   the sum of the nuclear charges of its atoms minus its electrons.
+   the fragment it was localized on; a shared orbital gives each fragment
+   its share. The oxidation state of a fragment is the sum of the nuclear
+   charges of its atoms minus its electrons, so a shared orbital gives
+   fractional oxidation states (a covalent, or homolytic, assignment of
+   that bond).
 
 For an unrestricted wavefunction the procedure is done separately for the
 alpha and the beta orbitals.
@@ -175,15 +182,72 @@ The last OSLO (number 9) is the C–F bond, 80% on fluorine: F(−1) and
 CH₃(+1). For an unrestricted wavefunction the iterations and summaries
 appear twice (`ALPHA PART`, `BETA PART`).
 
-**Linear dependencies.** After each selection, the program checks whether
-the selected orbitals and the next candidates are nearly linearly
-dependent, and prints `WARNING : LINEAR DEPENDENCY FOUND` if so. This is a
-diagnostic for borderline cases (two fragments competing for the same
-orbital); the program goes on with the lowest FOLI. In the last
-iteration, the warning with a `Lowest eigenvalue` of 0.00000 only means
-that more candidates were checked than orbitals were left, which is common.
-The alternative assignment that the warning suggests (branching) is not
-available in this version.
+**Shared orbitals.** With ethane split into two CH₃ fragments (test
+`C2H6-OSLO-2CH3`), the C–C bond comes last, found from both fragments with
+the same FOLI (2.00115). It is one orbital, shared:
+
+```text
+  SHARED ORBITAL: the 2 selected OSLOs span 1 orbital
+
+   Frag.      Share
+  -----------------
+     1      0.50000
+     2      0.50000
+  -----------------
+```
+
+Each CH₃ gets one electron of the C–C pair, and both oxidation states are
+0.00, followed by the line `Fractional values: orbitals shared between
+fragments (see the iterations)` when a value is fractional.
+
+## Close alternatives and branching
+
+The order in which the OSLOs are selected can decide the result in
+borderline cases. After each selection, the program looks at the next
+candidates, those at the next FOLI value beyond the tolerance. Under
+`CHECKING LINEAR DEPENDENCIES` it lists each of them with its overlap
+with the selected orbitals: 1 means it is one of them (or a combination
+of them) found from another fragment, 0 a different orbital. If an
+overlap is above 0.9 and the Δ-FOLI is below 0.5, two fragments
+compete for the same orbitals, and the program prints a warning with the
+input line that follows the alternative (H2 triplet at 0.60 Å, test
+`H2-T-OSLO-CLOSE`):
+
+```text
+  Next OSLOs: FOLI 2.14466, delta-FOLI 0.29926
+
+   Orb.   Frag.     FOLI    Overlap with selected
+  -------------------------------------------------
+     1      1    2.14466           1.00000
+     1      2    2.14466           1.00000
+  -------------------------------------------------
+  Largest overlap with the selected OSLOs:   1.00000
+
+  **************************************
+   WARNING : CLOSE ALTERNATIVE SELECTION
+  **************************************
+  ...
+    BRANCH_ALPHA 1
+```
+
+This is not checked when only one orbital is left: every candidate is
+then that orbital, and the Δ-FOLI already tells how clear its assignment
+is.
+
+**Branching.** `BRANCH_ITERATION n` in [`# OSLO`](../input/oslo.md)
+selects, at iteration n, the orbitals at the next FOLI value instead of
+the lowest one, and the procedure carries on from there. The output marks
+it with `BRANCHING: THE NEXT FOLI VALUE IS SELECTED`. To compare the two
+results, each run prints at the end of the iterations (per spin channel)
+
+```text
+  Sum of the FOLI values        :   9.60435
+```
+
+and a lower sum means OSLOs that are better localized overall. For an
+unrestricted wavefunction, `BRANCH_ITERATION` acts on both channels and
+`BRANCH_ALPHA`/`BRANCH_BETA` on one; the iteration numbers are those of
+the output of each channel.
 
 ## Files written
 
@@ -204,5 +268,8 @@ See [Visualizing orbitals](../guide/visualization.md).
 - **Several orbitals selected together** in a late iteration, in a molecule
   without symmetry, can change the result: rerun with a tighter tolerance
   (`FOLI_TOLERANCE 4`), so that orbitals are selected one by one.
+- **A close-alternative warning**: rerun with the branching line it
+  prints and compare, see
+  [Close alternatives and branching](#close-alternatives-and-branching).
 - **Compare population schemes** in borderline cases, e.g. the default
   real-space one against `NAO-BASIS` in `# OSLO`.

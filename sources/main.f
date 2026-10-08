@@ -296,6 +296,13 @@ c      -------------------------------------------------------------------------
      +    'NAO-BASIS go in # OSLO, for the fragment populations'
         call apost_stop(' OSLO needs a real-space AIM (e.g. TFVC)')
       end if
+!! a restricted wavefunction has a single OSLO channel !!
+      if(ioslo.eq.1.and.kop.eq.0.and.nbranch(2)+nbranch(3).gt.0) then
+        write(*,'(2x,a)') 'BRANCH_ALPHA and BRANCH_BETA need an '//
+     +    'unrestricted wavefunction; use BRANCH_ITERATION'
+        call apost_stop(' BRANCH_ALPHA/BRANCH_BETA need an unrestricted '//
+     +    'wavefunction')
+      end if
 
       if(idoint.eq.1) then
         if(iwfn.eq.1) then
@@ -417,7 +424,7 @@ c      iopt(89) =
 c      iopt(94) =
       iopt(95) = iqchem
       iopt(96) = ifolitol
-      iopt(97) = ibranch
+c      iopt(97) =
       iopt(98) = ioslofchk
       iopt(99) = iloba
 c      iopt(100) =

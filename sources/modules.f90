@@ -884,8 +884,11 @@
 !! correlated-WF DM1/DM2 input !!
    integer :: iorca,ipyscf
 
-!! OSLO !!
-   integer :: ioslo,ilow2,ifolitol,ibranch,ioslofchk
+!! OSLO; branching iterations per channel: 1 = every channel, 2 = alpha, !!
+!! 3 = beta (BRANCH_ITERATION, BRANCH_ALPHA, BRANCH_BETA)                 !!
+   integer :: ioslo,ilow2,ifolitol,ioslofchk
+   integer, parameter :: maxbranch=20
+   integer :: nbranch(3),ibranchit(maxbranch,3)
 
 !! external .fchk sources !!
    integer :: iqchem,imokit

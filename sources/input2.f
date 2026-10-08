@@ -954,6 +954,62 @@
 !! ***** !!
 
 !! ********************************************************************* !!
+!! subroutine: readintlist                                               !!
+!! purpose: like readint, for a keyword followed by one or more integers !!
+!!   on its line; nval=0 if the keyword is absent or has no value.       !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# OSLO"                 !!
+!!   keyword (in)  -- keyword text to search for                         !!
+!!   nmax    (in)  -- largest number of values accepted                  !!
+!!   nval    (out) -- number of values read                              !!
+!!   ivals   (out) -- (nmax) the values                                  !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine readintlist(section,keyword,nmax,nval,ivals)
+      character section*(*), keyword*(*)
+      character linea*80
+      integer nmax,nval,ivals(nmax),ipos,ii,i,j,ios
+
+      nval=0
+      call locate_block(16,section,ii)
+      if(ii.eq.0) return
+      ii=0
+      do while(ii.eq.0)
+        read(16,"(a80)",end=40) linea
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
+          i=ipos
+          do while(i.le.len(linea))
+            if(linea(i:i).eq.' ') then
+              i=i+1
+            else
+              j=index(linea(i:),' ')
+              if(j.eq.0) then
+                j=len(linea)
+              else
+                j=i+j-2
+              end if
+              if(nval.eq.nmax) then
+                write(*,'(2x,a,i0,a,a)') 'At most ',nmax,
+     +            ' values are accepted for ',trim(keyword)
+                call apost_stop(' Too many values for an input keyword')
+              end if
+              nval=nval+1
+              read(linea(i:j),*,iostat=ios) ivals(nval)
+              if(ios.ne.0) call bad_value(section,keyword,linea)
+              i=j+1
+            end if
+          end do
+          ii=1
+        end if
+        if(index(linea,"#").ne.0) ii=2
+      end do
+40    return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
 !! subroutine: keyword_value                                             !!
 !! purpose: finds keyword in an .inp line as a whole word -- at the      !!
 !!   start of the line or after a blank, and followed by a blank, "=" or !!

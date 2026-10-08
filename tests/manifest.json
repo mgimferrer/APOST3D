@@ -464,6 +464,263 @@
       ]
     },
     {
+      "name": "C2H6-OSLO-2CH3",
+      "description": "Ethane, RKS B3LYP, two CH3 fragments: OSLO selects the C-C bond from both fragments in the last iteration (the same orbital), which is shared half and half, so both fragments get oxidation state 0.",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "rks",
+        "fragments",
+        "shared"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "OSLO/FOLI-TOLERANCE",
+        "OSLO/PRINT-NON-ORTHO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Last selection spans one orbital",
+          "type": "present",
+          "pattern": "SHARED ORBITAL: the 2 selected OSLOs span 1 orbital"
+        },
+        {
+          "label": "Share of fragment 1",
+          "section": "SHARED ORBITAL",
+          "pattern": "1\\s+(\\d+\\.\\d+)",
+          "ref": 0.5,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Share of fragment 2",
+          "section": "SHARED ORBITAL",
+          "pattern": "2\\s+(\\d+\\.\\d+)",
+          "ref": 0.5,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "OSLO 9 (C-C bond) population on fragment 1",
+          "section": "Summary of the selected OSLOs \\(final\\)",
+          "pattern": "0\\.97695\\s+0\\.02269\\s+0\\.02269\\s+(\\d+\\.\\d+)",
+          "ref": 0.49981,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Sum of the FOLI values",
+          "pattern": "Sum of the FOLI values\\s+:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 10.21367,
+          "tol_abs": 0.001
+        },
+        {
+          "label": "Fragment 1 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Fragment 2 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        }
+      ]
+    },
+    {
+      "name": "H2-S-OSLO",
+      "description": "H2 singlet, UKS B3LYP from pySCF, one fragment per atom: in each spin channel the only orbital is found from both fragments and shared half and half (oxidation states 0); BRANCH_ALPHA at an iteration with no other candidate and BRANCH_BETA at one never reached are reported, not applied.",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "uks",
+        "fragments",
+        "pyscf",
+        "shared",
+        "branching"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "OSLO/BRANCH-ALPHA",
+        "OSLO/BRANCH-BETA",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Selection spans one orbital (alpha)",
+          "type": "present",
+          "pattern": "SHARED ORBITAL: the 2 selected OSLOs span 1 orbital"
+        },
+        {
+          "label": "BRANCH_ALPHA 1 with no other candidate",
+          "type": "present",
+          "pattern": "Branching asked at this iteration, but there is no other candidate: not applied"
+        },
+        {
+          "label": "BRANCH_BETA 2 never reached",
+          "type": "present",
+          "pattern": "Branching at iteration 2: not reached, not applied"
+        },
+        {
+          "label": "Fragment 1 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Fragment 2 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        }
+      ]
+    },
+    {
+      "name": "H2-T-OSLO-CLOSE",
+      "description": "H2 triplet at 0.60 Å, UKS B3LYP from pySCF, one fragment per atom: in the alpha channel the next OSLOs overlap fully with the selected ones and the delta-FOLI is 0.29926, so the close-alternative warning suggests BRANCH_ALPHA 1.",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "uks",
+        "fragments",
+        "openshell",
+        "pyscf",
+        "branching"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Largest overlap with the selected OSLOs (alpha)",
+          "pattern": "Largest overlap with the selected OSLOs:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "delta-FOLI (alpha)",
+          "pattern": "delta-FOLI value:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.29926,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Close-alternative warning",
+          "type": "present",
+          "pattern": "WARNING : CLOSE ALTERNATIVE SELECTION"
+        },
+        {
+          "label": "Suggested branching line",
+          "type": "present",
+          "pattern": "add to # OSLO\\s+BRANCH_ALPHA 1\\s"
+        },
+        {
+          "label": "Fragment 1 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Fragment 2 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        }
+      ]
+    },
+    {
+      "name": "CH3F-OSLO-BRANCH",
+      "description": "Fluoromethane, RKS DFT, fragment OSLO with BRANCH_ITERATION 6: the last iteration selects the next FOLI value, so the C-F bond goes to CH3 (F +1, CH3 -1) and the sum of FOLI values rises from 9.60435 to 10.96340.",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "rks",
+        "fragments",
+        "branching"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "OSLO/FOLI-TOLERANCE",
+        "OSLO/BRANCH-ITERATION",
+        "OSLO/PRINT-NON-ORTHO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Branching applied",
+          "type": "present",
+          "pattern": "BRANCHING: THE NEXT FOLI VALUE IS SELECTED"
+        },
+        {
+          "label": "FOLI value selected by branching",
+          "pattern": "FOLI value\\s+([-+]?\\d+\\.\\d+) selected instead of",
+          "ref": 2.71382,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Sum of the FOLI values",
+          "pattern": "Sum of the FOLI values\\s+:\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 10.9634,
+          "tol_abs": 0.001
+        },
+        {
+          "label": "Fragment 1 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Fragment 2 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        }
+      ]
+    },
+    {
       "name": "FeCO2-PBEPBE",
       "description": "FeCO2 complex (charge +2, singlet), RKS PBE — TFVC, fragment EOS with per-EFO net/gross occupations.",
       "tags": [
