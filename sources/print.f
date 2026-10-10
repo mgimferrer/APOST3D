@@ -1320,7 +1320,7 @@
       !write(naim2) mend(iznuc(jat)),jat
         write(naim,'(a27)') ' RESULTS OF THE INTEGRATION'
         write(naim,'(a17,e21.14,a14,e21.14)')'              N  ',
-     1   qat(jjat,1),'    NET CHARGE',-qat(jjat,1)+iznuc(jjat)
+     1   qat(jat,1),'    NET CHARGE',zn(jat)-qat(jat,1)
         !write(naim2) qat(jjat,1)
         write(naim,*)'             G'
         write(naim,'(a17,e21.14,a17,e21.14)')'              K  ',BK,
@@ -1354,7 +1354,7 @@
           do j=1,igr
             xx=0.0d0
             do k=1,igr
-              xx=xx+scr(k,i)*sat(k,j,jjat)
+              xx=xx+scr(k,i)*sat(k,j,jat)
             end do
             c2(i,j)=xx
           end do
@@ -1374,7 +1374,7 @@
             do j=1,igr
               xx=0.0d0
               do k=1,igr
-                xx=xx+cb(k,i)*sat(k,j,jjat)
+                xx=xx+cb(k,i)*sat(k,j,jat)
               end do
               c2(i,j)=xx
             end do
@@ -1431,8 +1431,8 @@
             end do
           end if
           write(naim,*) '  '
-          write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qat(jjat,1)/2.0d0
-          write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qat(jjat,1)/2.0d0
+          write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qat(jat,1)/2.0d0
+          write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qat(jat,1)/2.0d0
 !! correlated wave function !!
         else if(inato.eq.1) then
           if (imulli.ne.1) then
@@ -1445,8 +1445,8 @@
             end do
           end if
           write(naim,*) '  '
-          write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qat(jjat,1)/2.0d0
-          write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qat(jjat,1)/2.0d0
+          write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qat(jat,1)/2.0d0
+          write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qat(jat,1)/2.0d0
         end if
 
 
