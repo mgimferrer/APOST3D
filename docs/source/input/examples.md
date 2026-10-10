@@ -169,6 +169,7 @@ cube files written are those requested by `NEG_EFOS`: one per paired
 orbital with net occupation at or below −0.025 (the default), in a box
 large enough for the diffuse orbital on H. Here there is one:
 
+% source: tests/reference/LiH-32-FCI.apost
 ```text
   Found 1 EFO(s) with significant negative occupation in the paired channel
   (net occupation < -0.0250), excluded from oxidation-state assignment:

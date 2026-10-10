@@ -107,6 +107,7 @@ as fragment 1 and the two CO ligands as fragments 2 and 3 (test
 `FeCO2-PBEPBE`, which runs `EOS`; `UEFFAO` prints the same blocks). Each
 fragment gets one entry per density:
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
   ** FRAGMENT   1 **
 
