@@ -209,6 +209,8 @@ program, not a full development history — see `git log` for that.
 - **Cube file names** — the `.cube` files of `# CUBE` keep the whole job
   name (it was cut to 30 characters in the file name and to 8 in the
   title line inside the file).
+- **Samarium** — element 62 is printed as `Sm` (it was printed as `Sn`
+  in the output tables, the cube and `.int` files, and in `eos_aom`).
 
 ### Others
 
