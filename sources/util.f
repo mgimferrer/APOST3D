@@ -60,9 +60,14 @@
       call diagonalize(igr,igr,occ_no,c_no,0)
       call to_AO_basis(igr,igr,sm,c_no)
 
-      i=1
-      do while(abs(occ_no(i,i)).gt.1.0d-6)
-        i=i+1
+!! i-1 = number of natural orbitals with occupation above 1e-6 (all of !!
+!! them when none is below)                                           !!
+      i=igr+1
+      do ii=1,igr
+        if(abs(occ_no(ii,ii)).le.1.0d-6) then
+          i=ii
+          exit
+        end if
       end do
 
       call print_box('NATURAL ORBITALS')
