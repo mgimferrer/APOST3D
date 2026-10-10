@@ -285,7 +285,9 @@
         do jcenter=1,nat
           fex=ZERO
           fexb=ZERO
-!$OMP PARALLEL DO PRIVATE(jfut,x1,r12,i,pab,pabb)
+!! parallel over the grid points of icenter: every scalar written in the !!
+!! loop is private, and the four sums are reductions                     !!
+!$OMP PARALLEL DO PRIVATE(x0,jfut,x1,r12,i,pab,pabb)
 !$OMP&  REDUCTION(+:fex,fexb,xexact,xexactb)
           do ifut=iatps*(icenter-1)+1,iatps*icenter
             x0=wp(ifut)*omp2(ifut,icenter)
