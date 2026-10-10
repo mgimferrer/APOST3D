@@ -1535,11 +1535,11 @@
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /iops/iopt(200)
-      character*30 name
+      character*60 name
       common /filename/name
 
       character*30 name2
-      character nameaim*60, charnu*2,atnu*2,charnu1*3
+      character nameaim*256, charnu*2,atnu*2,charnu1*3
       character*2 mend(92)
       data mend/' H','He','Li','Be',' B',' C',' N',' O',
      $ ' F','Ne','Na','Mg','Al','Si',' P',' S','Cl',
@@ -1773,11 +1773,11 @@
         rewind(44)
         write(44,*)'Cube generated with APOST-3D code '
         if(idofr.eq.0) then
-          write(44,41) trim(name),name2,' EFFAO',ivec," for atom",
+          write(44,41) trim(name),trim(name2),' EFFAO',ivec," for atom",
      + mend(iznuc(ifrag)),"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
      + p0net(ivec,ifrag)
         else
-          write(44,44) trim(name),name2,' EFFAO',ivec," for frag",
+          write(44,44) trim(name),trim(name2),' EFFAO',ivec," for frag",
      + ifrag,"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
      + p0net(ivec,ifrag)
         end if
@@ -1797,8 +1797,8 @@
         end do
         close(44)
       end do
-41    format(a8,x,a8,a7,i3,a9,a2,a11,f8.4,a9,f8.4)
-44    format(a8,x,a8,a7,i3,a9,i2,a11,f8.4,a9,f8.4)
+41    format(a,1x,a,a7,i3,a9,a2,a11,f8.4,a9,f8.4)
+44    format(a,1x,a,a7,i3,a9,i2,a11,f8.4,a9,f8.4)
 42    format(i5,3f12.6)
 43    format(i5,4f12.6)
 40    format(6e13.5)
