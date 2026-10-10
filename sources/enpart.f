@@ -380,7 +380,6 @@
       common /efield/field(4),edipole
 !! rotated-grid angles/thresholds, read from the # GRID input section. !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
 
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
@@ -411,7 +410,6 @@
       ipolar      = Iopt(46)
       ianalytical = Iopt(91)
 
-      !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
       if(ithrebod.lt.1) then
         threbod=ZERO
       else
@@ -558,7 +556,7 @@
                   dy1=pcoordpha(jfut,2)
                   dz1=pcoordpha(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
+                  if(dist.gt.1.0d-12) then
                     do i=1,nocc-1
                       f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
                       f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
@@ -642,7 +640,7 @@
                   dy1=pcoord(jfut,2)
                   dz1=pcoord(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
+                  if(dist.gt.1.0d-12) then
                     chp2snjfut=chp2s(nocc,jfut)
                     do i=1,nocc-1
                       chp2sijfut=chp2s(i,jfut)
@@ -829,7 +827,7 @@
                   dy1=pcoordpha(jfut,2)
                   dz1=pcoordpha(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
+                if(dist.gt.1.0d-8) then !! 1e-8 here, 1e-12 in the other loops !!
                     do i=1,nocc-1
                       f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
                       f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
@@ -1348,7 +1346,6 @@
       common/efield/field(4),edipole !MMO- adding common
 !! rotated-grid angles/thresholds, read from the # GRID input section. !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
 
       dimension eto(maxat,maxat),Excmp(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
@@ -1551,7 +1548,7 @@
                   dy1=pcoordpha(jfut,2)
                   dz1=pcoordpha(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
+                  if(dist.gt.1.0d-12) then
                     do i=1,nalf-1
                       f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
                       f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
@@ -1646,7 +1643,7 @@
                   dy1=pcoord(jfut,2)
                   dz1=pcoord(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
+                  if(dist.gt.1.0d-12) then
                     do i=1,nalf-1
                       f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
                       f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
@@ -1808,7 +1805,7 @@
               dy1=pcoordpha(jfut,2)
               dz1=pcoordpha(jfut,3)
               dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-              if(dist.gt.1.0d-12) f3=f3+(rho(ifut)*rhopha(jfut))*x1*x0/dist !! MG: Could be controlled using the thr2 variable !!
+              if(dist.gt.1.0d-12) f3=f3+(rho(ifut)*rhopha(jfut))*x1*x0/dist
             end do
             coul0(icenter,3)=coul0(icenter,3)+f3/TWO
           end do
@@ -1853,7 +1850,7 @@
                   dy1=pcoordpha(jfut,2)
                   dz1=pcoordpha(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
+                  if(dist.gt.1.0d-8) then !! 1e-8 here, 1e-12 in the other loops !!
                     do i=1,nalf-1
                       f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
                       f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
@@ -2791,7 +2788,6 @@ c  energetics
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
-      common /modgrid2/thr3 !! We can make that the distance threshold is controlled using this !!
 
       dimension :: wp(itotps),wppha(itotps),pcoord(itotps,3),pcoordpha(itotps,3)
       dimension :: omp2(itotps,nat),omp2pha(itotps,nat),rho(itotps),rhopha(itotps)

@@ -319,7 +319,6 @@
       common/efield/field(4),edipole
 !! FROM # GRID SECTION !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
 
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3),rho(itotps)
       dimension  omp2(itotps,nat),eto(maxat,maxat),Excmp(maxat,maxat)
@@ -857,7 +856,6 @@
       iatps    = nrad*nang
       iterms   = 0
 
-      !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
       if(ithrebod.lt.1) then
         threbod=ZERO
       else

@@ -135,7 +135,6 @@ c      -------------------------------------------------------------------------
       common /erf/aerf,ierf
 !! MODGRID (diatXC) features !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
 !! EDAIQA features !!
       common /edaiqa/xen,xcoul,xnn
       common /edaiqa2/i2deda,iipoints,xptxyz(2,3)

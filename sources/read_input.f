@@ -25,7 +25,6 @@
       common /achi/achi(maxat,maxat),ibcp
       common /erf/aerf,ierf
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
       common /dm1opt/densthresh_dm1
       common /edaiqa/xen,xcoul,xnn
       common /edaiqa2/i2deda,iipoints,xptxyz(2,3)
@@ -682,7 +681,8 @@
 !!   ANGULAR_2E for the two-electron grid of ENPART, DFT-DM1 and EDAIQA  !!
 !!   (/modgrid/). The two-electron rotation angles come from a table of  !!
 !!   calibrated angular grids, or from the expert ROTATION_2E. Old       !!
-!!   spellings (MOD-GRIDTWOEL, FINEGRID, phb1/phb2, rr00, THRESH2) stop. !!
+!!   spellings (MOD-GRIDTWOEL, FINEGRID, phb1/phb2, rr00, THRESH2 and   !!
+!!   THRESH_2E) stop.                                                    !!
 !! arguments:                                                            !!
 !!   ienpart, idftdm1, iedaiqa (in) -- analyses using the two-electron   !!
 !!     grid (EDAIQA alone: default 40 x 146, else 150 x 590)             !!
@@ -695,7 +695,6 @@
       integer, intent(in) :: ienpart, idftdm1, iedaiqa
       character linea*80
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
 
 !! old spellings: the grid lived in the command line and in a # GRID     !!
 !! block switched on by MOD-GRIDTWOEL, whose RADIAL/ANGULAR were the     !!
@@ -713,7 +712,10 @@
       call removed_keyword("# GRID","phb2",
      +  'the angles are chosen with ANGULAR_2E (or ROTATION_2E a b)')
       call renamed_keyword("# GRID","rr00","R0_2E")
-      call renamed_keyword("# GRID","THRESH2","THRESH_2E")
+      call removed_keyword("# GRID","THRESH2",
+     +  'it had no effect')
+      call removed_keyword("# GRID","THRESH_2E",
+     +  'it had no effect')
 
 !! the block is optional: look for it silently (the readers below print !!
 !! "section not found" when it is missing)                               !!
@@ -744,12 +746,10 @@
       nrad22=0
       nang22=0
       rr0022=0.5d0
-      thr3=1.0d-12
       if(igridblk.eq.1) then
         call readint("# GRID","RADIAL_2E",nrad22,0,1)
         call readint("# GRID","ANGULAR_2E",nang22,0,1)
         call readreal("# GRID","R0_2E",rr0022,0.5d0,1)
-        call readreal("# GRID","THRESH_2E",thr3,1.0d-12,1)
       end if
       igrid2e=0
       if(nrad22.ne.0.or.nang22.ne.0) igrid2e=1
