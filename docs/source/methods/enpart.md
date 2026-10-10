@@ -160,6 +160,7 @@ ATTRACTION`, `KINETIC ENERGY`, `NUCLEAR-NUCLEAR REPULSION`). With
 reference energies in the `.fchk`, each total is followed by its
 integration error:
 
+% source: tests/reference/H2O-SVWN.apost
 ```text
   Electron-nuclei energy:   -198.9264417
   Integration error (kcal/mol):     0.01
@@ -170,6 +171,7 @@ for pairs below `THREBOD`, followed by a note on how they are treated),
 then the `DIATOMIC PURE KS-DFT XC TERMS (BODEN)`, the `PURE KS-DFT XC
 ONE-CENTER TERMS (EXACT)` and, after rearranging, the final matrix:
 
+% source: tests/reference/H2O-SVWN.apost
 ```text
     FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS
               1  O        2  H        3  H
@@ -188,6 +190,7 @@ there) and then the complete `HYBRID KS-DFT XC TERMS`.
 **Two-electron part.** The Coulomb matrix, the electron-electron energy
 and its integration error, followed by the zero-error strategy:
 
+% source: tests/reference/H2O-SVWN.apost
 ```text
   KS-DFT electron-electron energy (au):     37.8661299
   Integration error (kcal/mol):    -3.09
@@ -209,6 +212,7 @@ that the error is neither estimated nor corrected.
 
 **Final decomposition.**
 
+% source: tests/reference/H2O-SVWN.apost
 ```text
     FUZZY ATOMS KS-DFT ENERGY COMPONENTS
               1  O        2  H        3  H

@@ -25,6 +25,7 @@ without the last line did not finish: see
 
 The beginning of a run, for fluoromethane with `TFVC` and `OSLO`:
 
+% source: tests/reference/CH3F.apost
 ```text
   ------------------------
     WAVEFUNCTION SUMMARY

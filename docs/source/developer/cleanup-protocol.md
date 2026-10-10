@@ -82,6 +82,10 @@ one clear cause:
 
 - The reference outputs, the manifest patterns that relied on changed
   labels, and the docs pages that quote the output are updated in the
-  same commit as the code.
+  same commit as the code. `python3 tests/check_docs_excerpts.py` lists
+  every output excerpt in the docs that no longer matches its reference
+  (each excerpt is a `text` block preceded by a comment line
+  `% source: tests/reference/<test>.apost`); read the text around each
+  one too, since it may name the old labels.
 - The [CHANGELOG](../changelog.md) gets a line when users will notice
   (renamed labels, new or removed lines).

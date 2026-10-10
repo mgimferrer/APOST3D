@@ -22,6 +22,7 @@ $APOST3D_PATH/apost3d jobname > jobname.apost 2>&1
 
 A run is complete when the output ends with
 
+% source: tests/reference/CH3F.apost
 ```text
   ...Normal Termination of APOST-3D...
 ```
@@ -38,6 +39,7 @@ Real-space analyses integrate on an atomic grid of radial × angular points
 around each atom. The default is 40 × 146 (150 × 590 for ENPART),
 printed at the top of the output:
 
+% source: tests/reference/CH3F.apost
 ```text
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -102,6 +104,7 @@ expensive: its two-electron integrations grow with the square of the
 grid, see [ENPART](../methods/enpart.md#grids-and-cost). The cost of each
 step is printed after it:
 
+% source: tests/reference/FeCN5NO3--UBLYP.apost
 ```text
   TIMING CPU  :: population analyses                               0.05 s
   TIMING WALL :: population analyses                               0.05 s

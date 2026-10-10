@@ -39,6 +39,7 @@ atoms.
 For `TFVC` and `BECKE-RHO`, the output lists the size ratio found for each
 bonded pair of atoms:
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
   -----------------------------
     SETTING ATOMIC DEFINITION

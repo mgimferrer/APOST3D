@@ -104,6 +104,7 @@ with Fe as fragment 1 and the two CO ligands as fragments 2 and 3 (test
 `FeCO2-PBEPBE`, input above). The run first prints the EFOs of each
 fragment ([EFFAO](effao.md)), then the assignment for each spin:
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
   Total number of eff-AO-s for analysis:   41
 
@@ -134,6 +135,7 @@ fragment ([EFFAO](effao.md)), then the assignment for each spin:
 Since the wavefunction is closed-shell, the beta part is skipped
 (`SKIPPING EFFAOs FOR BETA ELECTRONS`) and the final table follows:
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
   -----------------------------
     FRAGMENT OXIDATION STATES

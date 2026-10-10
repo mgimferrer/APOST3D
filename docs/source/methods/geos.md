@@ -78,6 +78,7 @@ H as fragments 1 and 2 (the full input is
 **EFO blocks.** One block per density (`EFFAOs FROM THE PAIRED DENSITY`,
 then `... UNPAIRED DENSITY`), with one entry per fragment:
 
+% source: tests/reference/LiH-32-FCI.apost
 ```text
   ** FRAGMENT   2 **
 
@@ -106,6 +107,7 @@ densities, so unlike a normal density it can yield EFOs with a *negative*
 occupation. Those with net occupation below −0.025 are listed
 separately:
 
+% source: tests/reference/LiH-32-FCI.apost
 ```text
   Found 1 EFO(s) with significant negative occupation in the paired channel
   (net occupation < -0.0250), excluded from oxidation-state assignment:
@@ -118,6 +120,7 @@ They never take part in the electron assignment. They are written to the
 
 **Assignment and oxidation states.**
 
+% source: tests/reference/LiH-32-FCI.apost
 ```text
   Ideal assignment: 0 forced-unpaired electron(s), 2 electron pair(s)
   Initial RMSD: 0.53195
@@ -135,6 +138,7 @@ ELECTRONS` / `... UNPAIRED ELECTRONS`: electrons per fragment, last
 occupied and first unoccupied gross occupation, and R(%); paired
 occupations are halved when computing R(%)), followed by:
 
+% source: tests/reference/LiH-32-FCI.apost
 ```text
    Frag.  Oxidation State
   ------------------------

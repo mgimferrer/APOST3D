@@ -41,12 +41,14 @@ It takes a second. Open `feco2.apost`. After the program header come two
 summaries: what was read from the `.fchk` file, and how the input was
 understood. Check them first in every new calculation:
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
   MO formalism                     : Restricted
   Calculation type                 : KS-DFT
   ...
   Number of atoms                  : 5
   Number of basis functions        : 86
+  ...
   Occupied MOs (nocc/alpha/beta)   : 26 / 26 / 26
   ...
   # METHOD
@@ -57,6 +59,7 @@ understood. Check them first in every new calculation:
 Then the [population analysis](methods/population.md), which every run
 does. The atomic charges:
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
   ------------------------
     TOTAL ATOMIC CHARGES
@@ -79,6 +82,7 @@ up to the numerical integration error. Iron carries +1.44, not +2: atomic
 charges are not oxidation states, because bonding shares electrons
 between the atoms. The bond orders show it:
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
               1 Fe        2  C        3  C        4  O        5  O
     1 Fe    22.981403    1.110551    1.110551    0.465185    0.465185
@@ -89,6 +93,7 @@ between the atoms. The bond orders show it:
 Fe–C 1.11 and C–O 2.11: each CO is bound to the iron through a bond of
 order about one. The output ends with
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
   ...Normal Termination of APOST-3D...
 ```
@@ -123,6 +128,7 @@ the same command. The output now continues after the population analysis
 with the effective fragment orbitals of each fragment and the electron
 assignment, and ends with
 
+% source: tests/reference/FeCO2-PBEPBE.apost
 ```text
    Frag.  Oxidation State
   ------------------------

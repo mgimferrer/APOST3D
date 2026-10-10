@@ -49,6 +49,7 @@ The excerpts come from fluoromethane, RKS, TFVC (test `CH3F`). Each table
 shows the value in the chosen scheme (`apost3d`) and, for comparison, the
 Mulliken value:
 
+% source: tests/reference/CH3F.apost
 ```text
   ------------------------
     ELECTRON POPULATIONS
@@ -71,6 +72,7 @@ follows in the same layout, and `SPIN POPULATIONS` for open-shell
 wavefunctions. With `EOS` or `GEOS`, the overlap populations between
 atoms are also printed (`APOST3D OVERLAP POPULATION MATRIX`).
 
+% source: tests/reference/CH3F.apost
 ```text
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX

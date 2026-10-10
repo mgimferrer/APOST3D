@@ -109,6 +109,7 @@ The excerpts come from the input above (CH₃F, RKS, test `CH3F`).
 orbitals with their spread (bohr²), population on the fragment and FOLI,
 then the selected ones:
 
+% source: tests/reference/CH3F.apost
 ```text
   ------------------------
     ITERATION NUMBER   1
@@ -152,6 +153,7 @@ with a FOLI of 1.355 against 2.714 for the CH₃ candidate, a Δ-FOLI of
 their FOLI and fragment populations before (`pre-ortho`) and after
 orthogonalization (`final`), followed by the oxidation states:
 
+% source: tests/reference/CH3F.apost
 ```text
   ---------------------------------------------
     Summary of the selected OSLOs (pre-ortho)
@@ -186,6 +188,7 @@ appear twice (`ALPHA PART`, `BETA PART`).
 `C2H6-OSLO-2CH3`), the C–C bond comes last, found from both fragments with
 the same FOLI (2.00115). It is one orbital, shared:
 
+% source: tests/reference/C2H6-OSLO-2CH3.apost
 ```text
   SHARED ORBITAL: the 2 selected OSLOs span 1 orbital
 
@@ -213,6 +216,7 @@ compete for the same orbitals, and the program prints a warning with the
 input line that follows the alternative (H2 triplet at 0.60 Å, test
 `H2-T-OSLO-CLOSE`):
 
+% source: tests/reference/H2-T-OSLO-CLOSE.apost
 ```text
   Next OSLOs: FOLI 2.14466, delta-FOLI 0.29926
 
@@ -240,6 +244,7 @@ the lowest one, and the procedure carries on from there. The output marks
 it with `BRANCHING: THE NEXT FOLI VALUE IS SELECTED`. To compare the two
 results, each run prints at the end of the iterations (per spin channel)
 
+% source: tests/reference/CH3F.apost
 ```text
   Sum of the FOLI values        :   9.60435
 ```

@@ -113,6 +113,7 @@ UKS B3LYP, TFVC (test `H2O-T-B3LYP`). The spin populations are printed
 earlier, with the [population analysis](population.md). The local spin
 section starts with the effectively unpaired electrons of each atom:
 
+% source: tests/reference/H2O-T-B3LYP.apost
 ```text
   ----------------------------------
     EFFECTIVELY UNPAIRED ELECTRONS
@@ -131,6 +132,7 @@ followed by the decomposition. Diagonal elements are the local spins
 $\langle \hat S^2\rangle_A$, off-diagonal ones the coupling terms
 $\langle \hat S^2\rangle_{AB}$ (each pair appears twice, as AB and BA):
 
+% source: tests/reference/H2O-T-B3LYP.apost
 ```text
   -------------------------------------------
     "FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)
@@ -160,6 +162,7 @@ under revision: use the $a=3/4$ matrix above.
 `LiH-35-CAS22`), the section first prints bond order and
 localization/delocalization index matrices built from the 2-RDM, then:
 
+% source: tests/reference/LiH-35-CAS22.apost
 ```text
     Atom         u_A
   ------------------
