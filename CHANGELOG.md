@@ -206,6 +206,9 @@ program, not a full development history — see `git log` for that.
   to crash or append wrong energies. They no longer have a limit of 3000
   basis functions. `get_energy` (Gaussian 09) will be removed in a future
   version.
+- **Cube file names** — the `.cube` files of `# CUBE` keep the whole job
+  name (it was cut to 30 characters in the file name and to 8 in the
+  title line inside the file).
 
 ### Others
 
