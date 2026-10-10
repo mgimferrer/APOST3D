@@ -100,9 +100,10 @@ manifest values must change as well, review the change and run
 `python3 tests/run_tests.py --update-ref --update-manifest`, which writes
 them at full printed precision.
 
-For a change in an OpenMP parallel region, `tests/verify_omp_change.sh`
-compares the old and new code at one thread (results must be identical)
-and then one against several threads.
+To check that a code change leaves the results unchanged (a refactor,
+an OpenMP region, a new output layout), `tests/verify_change.sh` builds
+a base commit and the working tree and compares their outputs at one
+thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 
 ## Active test cases
 
