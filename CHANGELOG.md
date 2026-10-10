@@ -88,7 +88,8 @@ program, not a full development history — see `git log` for that.
   `FINEGRID` are gone (`ANGULAR 974` replaces the latter), the rotation
   angles `phb1`/`phb2` are chosen by the program for the angular grid
   (expert override: `ROTATION_2E`), and `rr00` is now `R0_2E`; the old
-  spellings stop with a message. Defaults unchanged.
+  spellings stop with a message. `THRESH2`, which had no effect, is gone
+  too. Defaults unchanged.
 - **Keywords are whole words** — a keyword is no longer recognized inside a
   longer word (e.g. `EOS_THRESH` switched on `EOS`), a block header must be
   alone on its line, and the file names in `# DM` are never read as
