@@ -569,22 +569,19 @@
 !! ********************************************************************* !!
 !! subroutine: build_integration_grid                                    !!
 !! purpose: picks the atom-centered one-electron grid (radial/angular    !!
-!! points, rr00): the ENPART/POLAR/EDAIQA high-accuracy defaults or the  !!
+!! points, rr00): the ENPART/POLAR high-accuracy defaults or the        !!
 !! plain ones, each overridden by # GRID's RADIAL/ANGULAR (nrad_in,      !!
 !! nang_in); prints the choice, then builds the grid via quad().         !!
 !! arguments:                                                            !!
 !!   ienpart, ipolar (in) -- select the high-accuracy defaults when any  !!
-!!     is set. The EDAIQA branch also tests iedaiqa,                     !!
-!!     which is never assigned anywhere (implicitly-typed local, not a   !!
-!!     dummy arg/COMMON/module var) -- undefined behavior, no test       !!
-!!     exercises # EDAIQA. Needs sign-off before fixing.                 !!
+!!     is set                                                            !!
 !! author: MMO, MGimf                                                    !!
 !! ********************************************************************* !!
    SUBROUTINE build_integration_grid(ienpart, ipolar)
    common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
 
-!! ENPART/POLAR/EDAIQA defaults for high-accuracy one-el integrations !!
-   if(ienpart.eq.1.or.ipolar.eq.1.or.iedaiqa.eq.1) then
+!! ENPART/POLAR defaults for high-accuracy one-el integrations !!
+   if(ienpart.eq.1.or.ipolar.eq.1) then
      nrad=150
      nang=590
      rr00=0.500d0
@@ -800,7 +797,7 @@
    IMPLICIT REAL*8(A-H,O-Z)
 
 !! wavefunction source / density choice !!
-   integer :: iwfn,iallpo,ndens0
+   integer :: iallpo,ndens0
    character(len=80) :: dmfile1,dmfile2   !! # DM file names, for INPUT SUMMARY
 
 !! atoms in molecules (Hilbert-space + real-space AIM selection) !!
@@ -811,7 +808,7 @@
    integer :: iqtaim,istep,inna,imaxdist,iscreening,ipath
 
 !! miscellaneous / integration control !!
-   integer :: iopop,isha,idoint,ipca,ilaplacian,ielcount, &
+   integer :: iopop,idoint,ipca,ilaplacian,ielcount, &
               iatdens,inopop
    real*8  :: Rmax
 
@@ -825,20 +822,17 @@
    integer :: inegefos,inegcubthr
 
 !! local spin and correlated-WF input !!
-   integer :: ispin,icorr,idafh
+   integer :: ispin,icorr
 
 !! ENPART -- igrid2e: 1 if # GRID gives RADIAL_2E or ANGULAR_2E; irot2e:  !!
 !! where the two-electron rotation angles come from (0 calibrated table,  !!
 !! 1 ROTATION_2E, 2 not calibrated for ANGULAR_2E). Set by read_grid.      !!
    integer :: ienpart,ihf,id_xcfunc,id_xfunc,id_cfunc,iecorr, &
-              ithrebod,iexact,ihomo,idek,iionic,ianalytical,itop,ietop, &
-              ipairs,igrid2e,irot2e
+              ithrebod,iexact,ihomo,idek,iionic,ianalytical, &
+              igrid2e,irot2e
 
 !! DFT-DM1 (approximate one-particle RDM1, formerly HIRAO internally) !!
    integer :: idftdm1,id_func_dm1,inatorb_dm1
-
-!! EDAIQA !!
-   integer :: iedaiqa,iflip
 
 !! NLOP / static field !!
    integer :: ipolar,ifield

@@ -90,6 +90,10 @@ program, not a full development history — see `git log` for that.
   (expert override: `ROTATION_2E`), and `rr00` is now `R0_2E`; the old
   spellings stop with a message. `THRESH2`, which had no effect, is gone
   too. Defaults unchanged.
+- **Analyses not available in this version** — `EDAIQA`, `TOPOLOGY`,
+  `DAFH`, `SHANNON`, `WFN` and `READINT` in `# METHOD`, and `DMRG` in
+  `# DM`, were read but nothing was computed (the input summary still
+  listed them); they now stop with a message saying so.
 - **Keywords are whole words** — a keyword is no longer recognized inside a
   longer word (e.g. `EOS_THRESH` switched on `EOS`), a block header must be
   alone on its line, and the file names in `# DM` are never read as

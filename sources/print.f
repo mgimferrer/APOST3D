@@ -327,26 +327,15 @@
       if(ienpart.eq.1) write(*,'(2x,a,1x,a)')
      +  'Energy decomposition                 :',
      +  'ENPART (one- and two-center IQA terms, see below)'
-      if(iedaiqa.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Energy decomposition                 :',
-     +  'EDAIQA (EDA interaction energies into IQA terms)'
 
       if(ispin.eq.1) write(*,'(2x,a,1x,a)')
      +  'Local spin analysis                  :','SPIN'
       if(ipolar.eq.1) write(*,'(2x,a,1x,a)')
      +  'Static polarizability                :','POLAR'
-      if(itop.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Topology analysis                    :',
-     +  'TOPOLOGY (see below)'
-      if(idafh.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Domain-averaged Fermi holes          :',
-     +  'DAFH (needs external files, see kiir banner)'
       if(iscattfact.eq.1) write(*,'(2x,a,1x,a)')
      +  'X-ray scattering factors             :','SCATT-FACT'
       if(ilaplacian.eq.1) write(*,'(2x,a,1x,a)')
      +  'Density Laplacian                    :','LAPLACIAN'
-      if(isha.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Shannon entropy decomposition        :','SHANNON'
       if(ipca.eq.1) write(*,'(2x,a,1x,a)')
      +  'Principal component analysis         :','PCA'
       if(idoint.eq.1) write(*,'(2x,a,1x,a)')
@@ -369,7 +358,6 @@
       cbuf=' '
       if(iqchem.eq.1) cbuf=trim(cbuf)//' QCHEM;'
       if(imokit.eq.1) cbuf=trim(cbuf)//' MOKIT;'
-      if(iwfn.eq.1) cbuf=trim(cbuf)//' WFN;'
       cbuf=adjustl(cbuf)
       nlen=len_trim(cbuf)
 !! nlen==0 is possible (native .fchk, no QCHEM/MOKIT/WFN) -- same           !!
@@ -451,41 +439,6 @@
         if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
      +    'Extra options           :',trim(cbuf)
 
-      end if
-
-!! ----------------------------------------------------------------- !!
-!! # EDAIQA -- only if EDAIQA is active                              !!
-!! ----------------------------------------------------------------- !!
-      if(iedaiqa.eq.1) then
-        write(*,*)
-        chdr='# EDAIQA'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
-        if(iflip.eq.1) write(*,'(2x,a,1x,a)')
-     +    'Flip alpha/beta spins:','FLIPSPIN'
-        call grid2e_summary('Two-electron grid    :',
-     +    'Rotation angles (2E) :')
-      end if
-
-!! ----------------------------------------------------------------- !!
-!! # TOPOLOGY -- only if TOPOLOGY is active                          !!
-!! ----------------------------------------------------------------- !!
-      if(itop.eq.1) then
-        write(*,*)
-        chdr='# TOPOLOGY'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
-        if(ietop.eq.1) cval='Exchange'
-        if(ietop.eq.2) cval='Correlation'
-        if(ietop.eq.3) cval='Exchange-Correlation'
-        if(ietop.eq.9) cval='Density'
-        write(*,'(2x,a,1x,a)') 'Energy component:',trim(cval)
-        if(ipairs.gt.0) then
-          write(cval,'(i0,a)') ipairs,' atom pairs'
-        else
-          cval='entire molecule'
-        end if
-        write(*,'(2x,a,1x,a)') 'Atom pairs      :',trim(cval)
       end if
 
 !! ----------------------------------------------------------------- !!

@@ -26,17 +26,13 @@
       common /erf/aerf,ierf
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
       common /dm1opt/densthresh_dm1
-      common /edaiqa/xen,xcoul,xnn
-      common /edaiqa2/i2deda,iipoints,xptxyz(2,3)
       common /twoel/twoeltoler
       common /efield/field(4),edipole
       common /printout/iaccur
       common /iops/iopt(200)
 
       dimension navect(maxat),missat(maxat)
-      dimension iatpairs(2,maxat)
       character*80 namedm,linedm
-      character*80 namefchk1,namefchk2
 
 !! every input needs # METHOD !!
       call locate_block(16,"# METHOD",ii)
@@ -68,10 +64,8 @@
       call input()
 
       idoint=0
-      iwfn=0
 
 !! look for options !!
-      call readchar("# METHOD","WFN",iwfn)
       call readchar("# METHOD","ALLPOINTS",iallpo)
       call readchar("# METHOD","FULLPRECISION",iaccur)
 
@@ -109,8 +103,6 @@
 
 !! ERC: QTAIM input module !!
       call readchar("# METHOD","QTAIM",iqtaim)
-      call readchar("# METHOD","READINT",ireadint)
-      if(ireadint.eq.1) iqtaim=2
 !! plain Becke atoms (fixed empirical radii) only on request; "BECKE"   !!
 !! is also inside "BECKE-RHO", which selects its own scheme             !!
       call readchar("# METHOD","BECKE",ibecke)
@@ -138,7 +130,6 @@
 
 !! miscellaneous options !!
       call readchar("# METHOD","OPOP",iopop)
-      call readchar("# METHOD","SHANNON",isha)
       call readchar("# METHOD","DOINT",idoint)
       call readchar("# METHOD","PCA",ipca)
       call readchar("# METHOD","LAPLACIAN",ilaplacian)
@@ -213,7 +204,6 @@
       call readchar("# METHOD","SPIN",ispin)
       call readint("# METHOD","DM",icorr,0,1)
       if(icorr.eq.2) ispin=1
-      call readchar("# METHOD","DAFH",idafh)
 
 !! energy decomposition options !!
       call readchar("# METHOD","ENPART",ienpart )
@@ -280,37 +270,6 @@
         call readreal("# ENPART","TWOELTOLER",twoeltoler,0.25d0,1)
         call readchar("# ENPART","ANALYTIC",ianalytical)
 
-!! for topology calculation !!
-!! MG: needs to be properly checked, done a long time ago                !!
-!! MG: an extended version for 2D/3D and more 1D topology exists in       !!
-!! apost3.1-devel -- worth checking if merging it in is worthwhile        !!
-        itop=0
-        ipairs=0
-        call readchar("# METHOD","TOPOLOGY",itop)
-        if(itop.eq.1) then
-          call locate_block(16,"# ATOM_PAIRS_DEFINITION",ii)
-          if(ii.eq.0) call apost_stop(" # ATOM_PAIRS_DEFINITION section missing")
-          read(16,*) ipairs
-          if(ipairs.gt.0) then
-            do ii=1,ipairs
-              read(16,*) (iatpairs(kk,ii),kk=1,2)
-              write(*,*) (iatpairs(kk,ii),kk=1,2)
-            end do
-          else
-            write(*,*) " DOING CUBE OF THE ENTIRE MOLECULAR SYSTEM "
-          end if
-!! for choosing the energy component to do the topology on !!
-          ietop=-1
-          call readchar("# TOPOLOGY","EXCHANGE",itop2)
-          if(itop2.eq.1) ietop=1
-          call readchar("# TOPOLOGY","CORRELATION",itop2)
-          if(itop2.eq.1) ietop=2
-          call readchar("# TOPOLOGY","EXCHANGE-CORRELATION",itop2)
-          if(itop2.eq.1) ietop=3
-          call readchar("# TOPOLOGY","DENSITY",itop2)
-          if(itop2.eq.1) ietop=9
-          if(ietop.eq.-1) call apost_stop(" FUNCTION FOR TOPOLOGY NOT INTRODUCED ")
-        end if
 
 !! end of ENPART options !!
       end if
@@ -344,52 +303,17 @@
         call readchar("# DFTDM1","NATORB",inatorb_dm1)
       end if
 
-!! EDAIQA options !!
-      iedaiqa=0
-      iflip=0
-      call readchar("# METHOD","EDAIQA",iedaiqa)
-      if(iedaiqa.eq.1) then
-        ii=0
-        call locate_block(16,"# EDAIQA",ii)
-        if(ii.eq.1) then
-          read(16,'(a80)') namefchk1
-          read(16,'(a80)') namefchk2
-          open(unit=55,file=namefchk1)
-          open(unit=52,file=namefchk2)
-          call readchar("# EDAIQA","FLIPSPIN",iflip) !! swaps alpha for beta !!
-
-!! adding pySCF reference values for the electrostatic calculation !!
-          call readreal("# EDAIQA","eN_pySCF",xen,0.0d0,1)
-          call readreal("# EDAIQA","Coul_pySCF",xcoul,0.0d0,1)
-          call readreal("# EDAIQA","NN_pySCF",xnn,0.0d0,1)
-
-!! options to make 2D plots of electrostatic potentials !!
-          i2deda=0
-          call locate_block(16,"# 2D_PLOTS",i2deda)
-          if(i2deda.eq.1) then
-            read(16,*) iipoints
-            read(16,*) (xptxyz(1,j),j=1,3)
-            read(16,*) (xptxyz(2,j),j=1,3)
-
-!! printing to confirm the values read in -- candidate for removal !!
-            write(*,*) " "
-            write(*,*) " SOME PRINTING FOR EDAIQA PURPOSES "
-            write(*,*) " "
-            write(*,*) " Number of points for 2D plots ",iipoints
-            write(*,*) " Coordinates of the two ghost atoms "
-            write(*,*) (xptxyz(1,j),j=1,3)
-            write(*,*) (xptxyz(2,j),j=1,3)
-            write(*,*) " "
-          end if
-        else
-          call apost_stop("EDAIQA SECTION MISSING. REVISE inp")
-        end if
-
-!! end of EDAIQA !!
-      end if
+!! analyses read by earlier versions but not available in this one: a  !!
+!! clear stop instead of an input summary that lists them as done        !!
+      call unavailable_keyword("# METHOD","EDAIQA")
+      call unavailable_keyword("# METHOD","TOPOLOGY")
+      call unavailable_keyword("# METHOD","DAFH")
+      call unavailable_keyword("# METHOD","SHANNON")
+      call unavailable_keyword("# METHOD","WFN")
+      call unavailable_keyword("# METHOD","READINT")
 
 !! integration grids (# GRID, optional), once the analyses are known !!
-      call read_grid(ienpart,idftdm1,iedaiqa)
+      call read_grid(ienpart,idftdm1)
 
 !! nonlinear optical properties (POLAR) !!
       call readchar("# METHOD","POLAR",ipolar )
@@ -509,16 +433,6 @@
         end do
       end if
 
-!! extra warnings for EDAIQA !!
-      if(iedaiqa.eq.1) then
-        if(idofr.eq.0) then
-          write(*,*) " FRAGMENT DEFINITION REQUIRED FOR EDAIQA "
-          write(*,*) " INFO : FRAGMENT ORDER MUST MATCH THE ISOLATED "
-          call apost_stop('')
-        end if
-        if(idofr.eq.1.and.icufr.ne.2) call apost_stop(" ONLY 2 FRAGMENTS ALLOWED FOR EDAIQA ")
-      end if
-
 !! reading DM1 and DM2 !!
       if(icorr.ne.0) then
         call locate_block(16,"# DM",ii)
@@ -535,7 +449,6 @@
         end if
         ipyscf=0
         iorca=0
-        idmrg=0
         ii=0
         do while(ii.eq.0)
           read(16,'(a80)',end=520) linedm
@@ -543,11 +456,10 @@
           if(ipos.gt.0) ipyscf=1
           call keyword_value(linedm,"ORCA",ipos)
           if(ipos.gt.0) iorca=1
-          call keyword_value(linedm,"DMRG",ipos)
-          if(ipos.gt.0) idmrg=1
           if(index(linedm,"#").ne.0) ii=1
         end do
  520    continue
+        call unavailable_keyword("# DM","DMRG")
 
         if(iorca.eq.1.or.ipyscf.eq.1) then
           open(11,file=dmfile1,status='OLD',iostat=ios)
@@ -678,21 +590,21 @@
 !! purpose: reads the optional # GRID block: RADIAL/ANGULAR for the      !!
 !!   one-electron grid of every real-space analysis (into nrad_in/       !!
 !!   nang_in, 0 = the default of build_integration_grid), RADIAL_2E/     !!
-!!   ANGULAR_2E for the two-electron grid of ENPART, DFT-DM1 and EDAIQA  !!
+!!   ANGULAR_2E for the two-electron grid of ENPART and DFT-DM1          !!
 !!   (/modgrid/). The two-electron rotation angles come from a table of  !!
 !!   calibrated angular grids, or from the expert ROTATION_2E. Old       !!
 !!   spellings (MOD-GRIDTWOEL, FINEGRID, phb1/phb2, rr00, THRESH2 and   !!
 !!   THRESH_2E) stop.                                                    !!
 !! arguments:                                                            !!
-!!   ienpart, idftdm1, iedaiqa (in) -- analyses using the two-electron   !!
-!!     grid (EDAIQA alone: default 40 x 146, else 150 x 590)             !!
+!!   ienpart, idftdm1 (in) -- analyses using the two-electron grid      !!
+!!     (default 150 x 590)                                               !!
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
-      subroutine read_grid(ienpart,idftdm1,iedaiqa)
+      subroutine read_grid(ienpart,idftdm1)
       use integration_grid, only: check_grid, nrad_in, nang_in
       use input_options_mod, only: igrid2e, irot2e
       implicit real*8(a-h,o-z)
-      integer, intent(in) :: ienpart, idftdm1, iedaiqa
+      integer, intent(in) :: ienpart, idftdm1
       character linea*80
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
 
@@ -739,10 +651,6 @@
 !! two-electron grid !!
       ndefr=150
       ndefa=590
-      if(iedaiqa.eq.1.and.ienpart.eq.0.and.idftdm1.eq.0) then
-        ndefr=40
-        ndefa=146
-      end if
       nrad22=0
       nang22=0
       rr0022=0.5d0
@@ -784,11 +692,11 @@
           phb12=0.169d0
           phb22=0.170d0
         else
-!! no calibrated pair: the 590 one, as before; ENPART/EDAIQA warn !!
+!! no calibrated pair: the 590 one; ENPART warns !!
           irot2e=2
           phb12=0.169d0
           phb22=0.170d0
-          if(ienpart.eq.1.or.iedaiqa.eq.1) then
+          if(ienpart.eq.1) then
             write(*,'(2x,a,i0,a)') 'WARNING: no calibrated rotation '//
      +        'angles for ANGULAR_2E ',nang22,
      +        '; using 0.169/0.170 (calibrated for 590)'
@@ -825,6 +733,37 @@
           write(*,'(2x,a,a,a,a,a)') trim(section),': ',old,
      +      ' is no longer used: ',hint
           call apost_stop(' Removed keyword in the input')
+        end if
+        if(index(linea,"#").ne.0) ii=1
+      end do
+10    return
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: unavailable_keyword
+!! Stops when the input asks for an analysis that earlier versions read
+!! but this version does not perform.
+!! arguments:
+!!   section (in)  block header to search
+!!   key     (in)  keyword
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine unavailable_keyword(section,key)
+      implicit none
+      character(len=*), intent(in) :: section, key
+      character linea*80
+      integer ii,ipos
+
+      call find_block(16,section,ii)
+      if(ii.eq.0) return
+      ii=0
+      do while(ii.eq.0)
+        read(16,"(a80)",end=10) linea
+        call keyword_value(linea,key,ipos)
+        if(ipos.gt.0) then
+          write(*,'(2x,a,a,a,a)') trim(section),': ',key,
+     +      ' is not available in this version'
+          call apost_stop(' Keyword not available in this version')
         end if
         if(index(linea,"#").ne.0) ii=1
       end do
