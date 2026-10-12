@@ -228,6 +228,8 @@
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      common /printout/iaccur
+      character*20 fmthdr
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /qat/ qat(maxat,2),qsat(maxat,2)
       common /localspin/ xlsa(maxat,maxat),ua(maxat)
@@ -276,10 +278,13 @@
       enddo
 
       call print_box('EFFECTIVELY UNPAIRED ELECTRONS')
-      write(*,'(1x,a7,a12)') 'Atom','u_A'
-      write(*,'(2x,a)') repeat('-',18)
+      iw=12
+      if(iaccur.ne.0) iw=20
+      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
+      write(*,fmthdr) 'Atom   ','u_A'
+      write(*,'(2x,a)') repeat('-',7+iw)
       call vprint(ua,nat,maxat,1)
-      write(*,'(2x,a)') repeat('-',18)
+      write(*,'(2x,a)') repeat('-',7+iw)
       write(*,'(2x,a,f10.5)') 'Sum check N_D = ',sum
 
 !! a=3/4 U decomposition (I. Mayer, P. Salvador local-spin formula) !!
@@ -517,21 +522,23 @@
       dimension arr(maxat,2)
       character*80 line
 
+!! atom label 7 characters wide, as in vprint; value columns 12 wide   !!
+!! (6 decimals), 20 wide (13) with FULLPRECISION                      !!
       call print_box(title)
       if(iaccur.eq.0) then
-        write(*,'(1x,a7,2a12)') 'Atom','apost3d','Mulliken'
-        write(*,'(2x,a)') repeat('-',30)
+        write(*,'(2x,a,2a12)') 'Atom   ','apost3d','Mulliken'
+        write(*,'(2x,a)') repeat('-',31)
       else
-        write(*,'(1x,a7,2a20)') 'Atom','apost3d','Mulliken'
-        write(*,'(2x,a)') repeat('-',46)
+        write(*,'(2x,a,2a20)') 'Atom   ','apost3d','Mulliken'
+        write(*,'(2x,a)') repeat('-',47)
       end if
       call vprint(arr,nat,maxat,2)
       if(iaccur.eq.0) then
-        write(*,'(2x,a)') repeat('-',30)
-        write(*,162) tc1,tc2
+        write(*,'(2x,a)') repeat('-',31)
+        write(*,'(2x,a,2f12.6)') 'Sum    ',tc1,tc2
       else
-        write(*,'(2x,a)') repeat('-',46)
-        write(*,172) tc1,tc2
+        write(*,'(2x,a)') repeat('-',47)
+        write(*,'(2x,a,2f20.13)') 'Sum    ',tc1,tc2
       end if
 
       if (idofr.eq.1) then
@@ -541,8 +548,6 @@
 
       return
 
- 162  format(1x,'    Sum',2f12.6)
- 172  format(1x,'    Sum',2f20.13)
 
       end
 
@@ -571,20 +576,27 @@
       use input_options_mod, only: idofr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      common /printout/iaccur
+      character*20 fmthdr
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       character*(*) title,subtitle,fraglabel,label
       dimension arr(maxat)
       character*80 line
 
+!! atom label 7 characters wide, as in vprint; value column 12 wide    !!
+!! (6 decimals), 20 wide (13) with FULLPRECISION                      !!
       call print_box(title)
       if(len_trim(subtitle).gt.0) then
-        write(*,'(1x,a)') trim(subtitle)
+        write(*,'(2x,a)') trim(subtitle)
         write(*,*)
       end if
-      write(*,'(1x,a7,a12)') 'Atom',label
-      write(*,'(2x,a)') repeat('-',18)
+      iw=12
+      if(iaccur.ne.0) iw=20
+      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
+      write(*,fmthdr) 'Atom   ',label
+      write(*,'(2x,a)') repeat('-',7+iw)
       call vprint(arr,nat,maxat,1)
-      write(*,'(2x,a)') repeat('-',18)
+      write(*,'(2x,a)') repeat('-',7+iw)
 
       if (idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: '//fraglabel

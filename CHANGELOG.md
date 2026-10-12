@@ -225,6 +225,14 @@ program, not a full development history — see `git log` for that.
 
 ### Others
 
+- **Tables and matrices** — every atom and fragment matrix has rules as
+  wide as the matrix and column headers over their numbers (the S^2
+  decomposition and the correlated local-spin matrices now have rules
+  too); population, valence and fragment tables line up with their
+  headers; the total of a fragment matrix says what it adds up
+  (diagonal and one triangle, or all elements). Blank lines are empty
+  lines, and a value that rounds to zero is printed as `0.00`, never
+  `-0.00`. No number changes.
 - **`utils/apost3d.py` rewritten** — works with current pySCF (2.7 to 2.14
   checked; before, only up to 2.7) and writes basis sets with g functions,
   single atoms, linearly dependent bases, CASCI, the RDMs of FCI and

@@ -610,18 +610,18 @@
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: VPRINT                                                    !!
-!! purpose: unbordered print of a per-atom vector (or 2-column matrix,   !!
-!!   via jdim) -- atom index, element symbol, then jdim value(s). No     !!
-!!   6-column chunking (jdim is always 1 or 2 at call sites).            !!
-!! arguments:                                                            !!
-!!   H    (in) -- data (ndim,jdim)                                       !!
-!!   N    (in) -- number of atoms actually printed                       !!
-!!   ndim (in) -- H's declared leading dimension                         !!
-!!   jdim (in) -- number of value columns (1 or 2)                       !!
-!! author:                                                               !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: VPRINT
+!! Rows of a per-atom table: atom number, element and jdim values, in the
+!! columns of the matrix printer (MPRINT2). 6 decimals, 13 with
+!! FULLPRECISION. The caller prints the header and the rules.
+!! arguments:
+!!   H    (in)  (ndim,jdim) values, one row per atom
+!!   N    (in)  number of atoms
+!!   ndim (in)  leading dimension of H
+!!   jdim (in)  number of value columns (at most 6)
+!! author:
+!! ----------------------------------------------------------------------
       SUBROUTINE VPRINT(H,N,ndim,jdim)
       use elements_mod
       IMPLICIT REAL*8 (A-H,O-Z)
@@ -631,17 +631,15 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,jdim)
 
-
-   62 FORMAT(1X,I3,A4,6F12.6)
-   63 FORMAT(1X,I3,A4,6F20.13)
-      DO 2 I=1,N
+      do i=1,N
         if(iaccur.eq.0) then
-          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=1,jdim)
+          write(*,'(2x,i3,a4,6f12.6)') i,element_label(iznuc(i)),
+     +      (H(i,j),j=1,jdim)
         else
-          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=1,jdim)
+          write(*,'(2x,i3,a4,6f20.13)') i,element_label(iznuc(i)),
+     +      (H(i,j),j=1,jdim)
         end if
-   2  CONTINUE
-      RETURN
+      end do
       END
 
 !! ***** !!
@@ -683,185 +681,117 @@
    63 FORMAT(1X,I3,A4,3F20.13)
       END
 
-!! ********************************************************************* !!
-!! subroutine: MPRINT                                                    !!
-!! purpose: unbordered N x N matrix print, chunked 6 columns at a time   !!
-!!   (loops back to label 1 for each further chunk of columns until      !!
-!!   NMIN exceeds N). No border -- see MPRINT2 for the bordered twin     !!
-!!   used throughout ENPART.                                             !!
-!! arguments:                                                            !!
-!!   H    (in) -- data matrix (ndim,ndim)                                !!
-!!   N    (in) -- number of atoms actually printed                       !!
-!!   ndim (in) -- H's declared leading dimension                         !!
-!! author:                                                               !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: MPRINT
+!! Atom x atom matrix, printed exactly as MPRINT2 (kept so that its
+!! callers need no change).
+!! arguments:
+!!   H    (in)  (ndim,ndim) matrix
+!!   N    (in)  number of atoms
+!!   ndim (in)  leading dimension of H
+!! author:
+!! ----------------------------------------------------------------------
       SUBROUTINE MPRINT(H,N,ndim)
-      use elements_mod
       IMPLICIT REAL*8 (A-H,O-Z)
-      include 'parameter.h'
       integer, intent(in) :: ndim
-      common /printout/iaccur
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,NDIM)
 
-
-      K=6
-      NMIN=1
-      NNMAX=MIN0(N,K)
-   62 FORMAT(1X,I3,A4,6F12.6)
-   63 FORMAT(1X,I3,A4,6F20.13)
-   1  if(iaccur.eq.0) then
-        PRINT 60, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
-      else
-        PRINT 61, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
-      end if
-   60 FORMAT(10X,6(2X,I3,A4,3X))
-   61 FORMAT(10X,6(6X,I3,A4,7X))
-      PRINT 64
-   64 FORMAT(1X)
-      DO 2 I=1,N
-        if(iaccur.eq.0) then
-          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-        else
-          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-        end if
-   2  CONTINUE
-      NMIN=NMIN+6
-      K=K+6
-      NNMAX=MIN0(N,K)
-      IF(NNMAX.GE.NMIN) GOTO 71
-      RETURN
-   71 PRINT 66
-   66 FORMAT(1X///)
-      GO TO 1
+      call MPRINT2(H,N,ndim)
       END
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: MPRINT2                                                   !!
-!! purpose: bordered N x N matrix print, chunked 6 columns at a time --  !!
-!!   same chunk/loop-back structure as MPRINT, plus an 80-column rule    !!
-!!   before/after the header and each row block. The style used         !!
-!!   throughout ENPART for atom-pair matrices.                           !!
-!! arguments:                                                            !!
-!!   H    (in) -- data matrix (ndim,ndim)                                !!
-!!   N    (in) -- number of atoms actually printed                       !!
-!!   ndim (in) -- H's declared leading dimension                         !!
-!! author:                                                               !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: MPRINT2
+!! Atom x atom matrix in blocks of 6 columns: a rule, the column header
+!! (atom number and element, ending over the last digit of its column),
+!! a rule, one row per atom, a rule; rules as wide as the block. 6
+!! decimals in 12-character columns, 13 in 20-character columns with
+!! FULLPRECISION.
+!! arguments:
+!!   H    (in)  (ndim,ndim) matrix
+!!   N    (in)  number of atoms
+!!   ndim (in)  leading dimension of H
+!! author:
+!! ----------------------------------------------------------------------
       SUBROUTINE MPRINT2(H,N,ndim)
       use elements_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
       integer, intent(in) :: ndim
-      character*100 line
       common /printout/iaccur
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,NDIM)
+      character*40 fmthdr,fmtrow
+      integer iw,j0,j1,ncol
 
-
-      line="--------------------------------------------------------------------------------"
-
-      K=6
-      NMIN=1
-      NNMAX=MIN0(N,K)
-   62 FORMAT(2X,I3,A4,6F12.6)
-   63 FORMAT(2X,I3,A4,6F20.13)
-   1  if(iaccur.eq.0) then
-        PRINT 666,line
-        PRINT 60, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
+!! row label "  1  O " (7 characters after the 2-blank margin) !!
+      if(iaccur.eq.0) then
+        iw=12
+        fmtrow='(2x,i3,a4,6f12.6)'
       else
-        PRINT 666,line
-        PRINT 61, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
+        iw=20
+        fmtrow='(2x,i3,a4,6f20.13)'
       end if
-   60 FORMAT(10X,6(2X,I3,A4,3X))
-   61 FORMAT(10X,6(6X,I3,A4,7X))
-      PRINT 666,line
-      DO 2 I=1,N
-        if(iaccur.eq.0) then
-          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-        else
-          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-        end if
-   2  CONTINUE
-      PRINT 666,line
-      NMIN=NMIN+6
-      K=K+6
-      NNMAX=MIN0(N,K)
-      IF(NNMAX.GE.NMIN) GOTO 71
-      RETURN
-   71 PRINT 66
-   66 FORMAT(1X)
-      GO TO 1
 
-!! format for the border lines !!
-  666 FORMAT(2x,a100)
+      do j0=1,N,6
+        j1=min(N,j0+5)
+        ncol=j1-j0+1
+        if(j0.gt.1) write(*,*)
+        write(fmthdr,'(a,i0,a,i0,a)') '(9x,',ncol,'(',iw-6,
+     +    'x,i3,1x,a2))'
+        write(*,'(2x,a)') repeat('-',7+iw*ncol)
+        write(*,fmthdr) (j,element_symbol(iznuc(j)),j=j0,j1)
+        write(*,'(2x,a)') repeat('-',7+iw*ncol)
+        do i=1,N
+          write(*,fmtrow) i,element_label(iznuc(i)),(H(i,j),j=j0,j1)
+        end do
+        write(*,'(2x,a)') repeat('-',7+iw*ncol)
+      end do
       END
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: mprintnoat                                                !!
-!! purpose: bordered, chunked (6 columns per block) numeric matrix       !!
-!! print for a fragment x fragment matrix -- same visual style as        !!
-!! MPRINT2, minus the atom-symbol column (fragments don't have one).     !!
-!! The column header is just the fragment number, no "Frag" label, so a  !!
-!! block of numbers copy-pastes cleanly. Used only by group_by_frag_mat  !!
-!! arguments:                                                            !!
-!! H (in) -- data matrix, M rows x N columns                             !!
-!! M,N (in) -- rows/columns actually used                                !!
-!! mdim,ndim (in) -- H's declared dimensions                             !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: MPRINTNOAT
+!! Fragment x fragment matrix, laid out as MPRINT2 with the fragment
+!! number as the only label. Used by group_by_frag_mat.
+!! arguments:
+!!   H         (in)  (mdim,ndim) matrix
+!!   M, N      (in)  rows and columns printed
+!!   mdim,ndim (in)  dimensions of H
+!! author: MGimf
+!! ----------------------------------------------------------------------
       SUBROUTINE MPRINTNOAT(H,M,N,mdim,ndim)
       IMPLICIT REAL*8 (A-H,O-Z)
-      include 'parameter.h'
       integer, intent(in) :: ndim,mdim
       DIMENSION H(MDIM,NDIM)
       common /printout/iaccur
-      character*100 line
-      character*40 hdrfmt
+      character*40 fmthdr,fmtrow
+      integer iw,j0,j1,ncol
 
-      line="--------------------------------------------------------------------------------"
-
-      K=6
-      NMIN=1
-      NNMAX=MIN0(N,K)
-   62 FORMAT(2X,I3,6X,6F12.6)
-   63 FORMAT(2X,I3,6X,6F20.13)
-    1 continue
-      write(*,666) line
-!! repeat count built at runtime from the actual chunk size (NNMAX-NMIN+1,  !!
-!! <=6), not a literal '6(...)', to stay correct however many columns the   !!
-!! last chunk actually has. Each fragment number is right-justified in a    !!
-!! field exactly as wide as its F12.6/F20.13 data column (I12/I20), so it   !!
-!! lands flush with that column's last digit instead of drifting left.      !!
+!! row label: the fragment number in 3 characters and 6 blanks !!
       if(iaccur.eq.0) then
-        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'I12)'
+        iw=12
+        fmtrow='(2x,i3,6x,6f12.6)'
       else
-        write(hdrfmt,'(a,i0,a)') '(11X,',NNMAX-NMIN+1,'I20)'
+        iw=20
+        fmtrow='(2x,i3,6x,6f20.13)'
       end if
-      write(*,hdrfmt) (I,I=NMIN,NNMAX)
-      write(*,666) line
-      DO 2 I=1,M
-      if(iaccur.eq.0) then
-      PRINT 62,I,(H(I,J),J=NMIN,NNMAX)
-      else
-      PRINT 63,I,(H(I,J),J=NMIN,NNMAX)
-      end if
-   2  CONTINUE
-      write(*,666) line
-      NMIN=NMIN+6
-      K=K+6
-      NNMAX=MIN0(N,K)
-      IF(NNMAX.GE.NMIN) GOTO 71
-      RETURN
-   71 write(*,*)
-      GO TO 1
 
-!! FORMAT FOR THE BORDER LINE !!
-  666 FORMAT(2x,a100)
+      do j0=1,N,6
+        j1=min(N,j0+5)
+        ncol=j1-j0+1
+        if(j0.gt.1) write(*,*)
+        write(fmthdr,'(a,i0,a,i0,a)') '(11x,',ncol,'i',iw,')'
+        write(*,'(2x,a)') repeat('-',9+iw*ncol)
+        write(*,fmthdr) (j,j=j0,j1)
+        write(*,'(2x,a)') repeat('-',9+iw*ncol)
+        do i=1,M
+          write(*,fmtrow) i,(H(i,j),j=j0,j1)
+        end do
+        write(*,'(2x,a)') repeat('-',9+iw*ncol)
+      end do
       END
 
 !! ***** !!
@@ -880,6 +810,7 @@
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine group_by_frag_mat(ilog,line,A)
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -924,16 +855,15 @@
 
       call print_box(trim(adjustl(line)))
       call mprintnoat(B,icufr,icufr,maxat,maxat)
-      if(iaccur.eq.0) then
-        write(*,163) x
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+      if(ilog.eq.1) then
+        call print_value('Total (diagonal and one triangle)',x,ndec)
       else
-        write(*,164) x
+        call print_value('Total (all elements)',x,ndec)
       end if
 
       return
-
-  163 format(2x,'   Total:',f12.6)
-  164 format(2x,'   Total:',f20.13)
 
       end
 
@@ -965,6 +895,7 @@
       dimension A(maxat,ndim),B(maxat,ndim)
       dimension x(ndim)
       integer colw,totw
+      character*20 fmtrow,fmttot,fmthdr
 
       do i=1,nat
        do j=1,ndim
@@ -985,48 +916,35 @@
        end do
       end do
 
-!! 11-column fragment-index margin (2X+I3+6X), matching mprintnoat's own !!
-!! -- total width = margin + one value column (12/20-wide) per ndim      !!
+!! fragment number in 3 characters and 6 blanks, as in mprintnoat; value !!
+!! columns 12 wide (6 decimals), 20 wide (13) with FULLPRECISION         !!
       if(iaccur.eq.0) then
         colw=12
+        fmtrow='(2x,i3,6x,2f12.6)'
+        fmttot='(2x,a,2f12.6)'
+        fmthdr='(2x,a,2a12)'
       else
         colw=20
+        fmtrow='(2x,i3,6x,2f20.13)'
+        fmttot='(2x,a,2f20.13)'
+        fmthdr='(2x,a,2a20)'
       end if
-      totw=11+colw*ndim
+      totw=9+colw*ndim
 
       call print_box(trim(adjustl(line)))
-      if(iaccur.eq.0) then
-        if(ndim.eq.2) then
-          write(*,'(a11,2a12)') 'Fragment','3D-space','Mulliken'
-        else
-          write(*,'(a11,a12)') 'Fragment','3D-space'
-        end if
+      if(ndim.eq.2) then
+        write(*,fmthdr) 'Fragment ','3D-space','Mulliken'
       else
-        if(ndim.eq.2) then
-          write(*,'(a11,2a20)') 'Fragment','3D-space','Mulliken'
-        else
-          write(*,'(a11,a20)') 'Fragment','3D-space'
-        end if
+        write(*,fmthdr) 'Fragment ','3D-space'
       end if
-      write(*,'(2x,a)') repeat('-',totw-2)
+      write(*,'(2x,a)') repeat('-',totw)
       do i=1,icufr
-        if(iaccur.eq.0) then
-          write(*,'(2x,i3,6x,2f12.6)') i,(B(i,j),j=1,ndim)
-        else
-          write(*,'(2x,i3,6x,2f20.13)') i,(B(i,j),j=1,ndim)
-        end if
+        write(*,fmtrow) i,(B(i,j),j=1,ndim)
       end do
-      write(*,'(2x,a)') repeat('-',totw-2)
-      if(iaccur.eq.0) then
-        write(*,63) (x(j),j=1,ndim)
-      else
-        write(*,64) (x(j),j=1,ndim)
-      end if
+      write(*,'(2x,a)') repeat('-',totw)
+      write(*,fmttot) 'Total    ',(x(j),j=1,ndim)
 
       return
-
-   63 format(2x,'   Total:',2f12.6)
-   64 format(2x,'   Total:',2f20.13)
 
       end
 

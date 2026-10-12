@@ -17,6 +17,7 @@
 !!                         legacy common /nao/                            !!
 !!                         CONTAINS allocate_nao                          !!
 !!   elements_mod      -- element symbols for atom labels                 !!
+!!   output_mod        -- print_value: 'label (unit) : value' lines       !!
 !!   timing_mod        -- CPU+wall-clock timers                           !!
 !!                         CONTAINS get_wall_time, print_timer            !!
 !!   input_options_mod -- ~70 .inp keyword flags parsed by read_input()   !!
@@ -769,6 +770,71 @@
    end function element_label
 
    END MODULE elements_mod
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! module: output_mod
+!! Helpers for the output style guide (docs/source/developer/
+!! output-style.md). print_value prints one "label (unit) : value" line,
+!! with the label padded to label_width so that the colons of neighbouring
+!! lines line up; the unit is optional.
+!!   call print_value('Kinetic energy', x, 7, 'au')  -- real, 7 decimals
+!!   call print_value('Number of atoms', n)           -- integer
+!!   call print_value('Functional', 'B3LYP')          -- text
+!! author: MGimf
+!! ----------------------------------------------------------------------
+   MODULE output_mod
+   implicit none
+   integer, parameter :: label_width=40
+   private
+   public :: print_value, label_width
+
+   interface print_value
+     module procedure print_value_real, print_value_int, print_value_text
+   end interface
+
+   CONTAINS
+
+!! ---- !!
+   function padded_label(label,units) result(lab)
+   character(len=*), intent(in) :: label
+   character(len=*), intent(in), optional :: units
+   character(len=:), allocatable :: lab
+   lab=trim(label)
+   if(present(units)) then
+     if(len_trim(units).gt.0) lab=lab//' ('//trim(units)//')'
+   end if
+   if(len(lab).lt.label_width) lab=lab//repeat(' ',label_width-len(lab))
+   end function padded_label
+
+!! ---- !!
+   subroutine print_value_real(label,x,ndec,units)
+   character(len=*), intent(in) :: label
+   real*8, intent(in) :: x
+   integer, intent(in) :: ndec
+   character(len=*), intent(in), optional :: units
+   character(len=32) :: fmt
+   write(fmt,'(a,i0,a,i0,a)') '(2x,a,'':'',f',max(15,ndec+9),'.',ndec,')'
+   write(*,fmt) padded_label(label,units),x
+   end subroutine print_value_real
+
+!! ---- !!
+   subroutine print_value_int(label,n,units)
+   character(len=*), intent(in) :: label
+   integer, intent(in) :: n
+   character(len=*), intent(in), optional :: units
+   write(*,'(2x,a,'':'',i15)') padded_label(label,units),n
+   end subroutine print_value_int
+
+!! ---- !!
+   subroutine print_value_text(label,text,units)
+   character(len=*), intent(in) :: label,text
+   character(len=*), intent(in), optional :: units
+   write(*,'(2x,a,'': '',a)') padded_label(label,units),trim(text)
+   end subroutine print_value_text
+
+   END MODULE output_mod
 
 !! ***** !!
 
