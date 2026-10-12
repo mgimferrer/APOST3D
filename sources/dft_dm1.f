@@ -136,7 +136,7 @@
                 Rx=(pcoord(ifut,1)+pcoordpha(jfut,1))/TWO
                 Ry=(pcoord(ifut,2)+pcoordpha(jfut,2))/TWO
                 Rz=(pcoord(ifut,3)+pcoordpha(jfut,3))/TWO
-!! gpoints (qtaim.f) already evaluates AOs via basis_set's coefpb, which  !!
+!! gpoints (ao_functions.f) evaluates AOs via basis_set's coefpb, which !!
 !! bakes the pure-d/f transform into the contraction coefficients -- no  !!
 !! separate 5d/6d reorder step needed (see sigma_uks's own AO-gradient   !!
 !! loop for the same pattern), so the old gordermat call is dropped.     !!
@@ -666,7 +666,7 @@
 !! function: drho_xyz                                                    !!
 !! purpose: AO gradient (ixyz component) at an arbitrary point, for one  !!
 !!   basis function (iact, via common/actual_bf/ -- same convention      !!
-!!   qtaim.f's gpoints/gxfunct use). Same primitive-loop math as         !!
+!!   ao_functions.f's gpoints/gxfunct use). Same primitive-loop math as  !!
 !!   enpart_dft.f's sigma_uks, for a single point instead of a grid.     !!
 !! arguments:                                                            !!
 !!   xabs, yabs, zabs (in) -- point to evaluate at                       !!
