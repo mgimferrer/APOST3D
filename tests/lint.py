@@ -206,7 +206,11 @@ def report(findings_by_file, summary_only):
         rows.append((path, counts))
         if not summary_only:
             for line, cat, text in sorted(findings):
-                print(f"{path.relative_to(ROOT) if path.is_absolute() else path}:{line}: [{cat}] {text}")
+                try:
+                    shown = path.relative_to(ROOT)
+                except ValueError:
+                    shown = path
+                print(f"{shown}:{line}: [{cat}] {text}")
     cats = sorted(total)
     if not cats:
         print("No findings.")
