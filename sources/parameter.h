@@ -1,20 +1,5 @@
 
-c main limits
-c nmax was 8000 through the ifort/PGO era. On gfortran/macOS (Apple Silicon,
-c confirmed on macOS 26.5.1) the resulting ~2.6GB of static BSS from the
-c nmax*nmax COMMON arrays in effao.f/mulliken.f/qtaim.f (/effao/, /nao/,
-c /stv/) makes apost3d fail to even launch: dyld cannot map its
-c shared cache alongside such a large fixed data segment ("dyld cache '(null)'
-c not loaded: syscall to map cache into shared region failed"). Confirmed by
-c bisection: nmax=8000 fails to launch, nmax=2000 launches fine.
-c
-c Lowered to 3000 as an interim default (still ~9x more basis functions than
-c any current test case needs) until those COMMON blocks are converted to
-c ALLOCATABLE -- the proper fix, which removes this compile-time cap
-c entirely rather than just picking a smaller magic number. Until then, a
-c system requiring more than nmax basis functions will silently overrun
-c these fixed-size arrays (undefined behavior, not a clean bounds-checked
-c error) rather than failing loudly.
+c nmax: largest number of basis functions; maxat: largest number of atoms
       parameter (nmax=3000)
       parameter (maxat=350) 
 c other limits and equivalences 

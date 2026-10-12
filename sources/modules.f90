@@ -16,9 +16,6 @@
 !!   nao_mod           -- natural-AO matrices (unao/ssnao), replaces      !!
 !!                         legacy common /nao/                            !!
 !!                         CONTAINS allocate_nao                          !!
-!!   stv_mod           -- QTAIM overlap/kinetic matrices (sp/tt),         !!
-!!                         replaces legacy common /stv/                   !!
-!!                         CONTAINS allocate_stv                          !!
 !!   timing_mod        -- CPU+wall-clock timers                           !!
 !!                         CONTAINS get_wall_time, print_timer            !!
 !!   input_options_mod -- ~70 .inp keyword flags parsed by read_input()   !!
@@ -527,7 +524,7 @@
 !! purpose: allocates the ao_matrices module's MO-coefficient/density-   !!
 !! matrix arrays (c/p/cb/ps/pa/pb/c_no/occ_no) to the actual basis size. !!
 !! called from input2.f's input(), right after igr becomes known --      !!
-!! same pattern effao_mod/nao_mod/stv_mod's own allocate_* subroutines   !!
+!! same pattern effao_mod/nao_mod's own allocate_* subroutines          !!
 !! follow, just predating that naming convention.                        !!
 !! arguments: igr (in) -- number of basis functions                      !!
 !! author: MMO                                                           !!
@@ -729,38 +726,6 @@
    END SUBROUTINE allocate_nao
 
    END MODULE nao_mod
-
-!! ***** !!
-
-!! ********************************************************************* !!
-!! module: stv_mod                                                       !!
-!! purpose: replaces the legacy 'common /stv/' block (same nmax x nmax   !!
-!!   cap as effao_mod above). holds the QTAIM overlap/kinetic-energy-    !!
-!!   related matrices used by qtaim.f.                                   !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-   MODULE stv_mod
-   real*8, allocatable :: sp(:,:) !! sp(igr,igr) -- QTAIM overlap-related matrix
-   real*8, allocatable :: tt(:,:) !! tt(igr,igr) -- QTAIM kinetic-energy-related matrix
-
-   CONTAINS
-
-!! ********************************************************************* !!
-!! subroutine: allocate_stv                                              !!
-!! purpose: allocate the stv_mod arrays to the real system size. call    !!
-!!   once, right after igr becomes known -- see allocate_effao above.    !!
-!! arguments:                                                            !!
-!!   igr (in) -- number of basis functions                               !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-   SUBROUTINE allocate_stv(igr)
-   integer, intent(in) :: igr
-
-   allocate(sp(igr,igr),tt(igr,igr))
-
-   END SUBROUTINE allocate_stv
-
-   END MODULE stv_mod
 
 !! ***** !!
 
