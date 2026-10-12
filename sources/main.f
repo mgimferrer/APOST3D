@@ -102,10 +102,6 @@ c      -------------------------------------------------------------------------
 !! (population_density/population_print_charges/                    !!
 !! population_print_overlap/bond_order_analysis/pca_analysis) --    !!
 !! this is the final shape of the main.f/pop.f/read_input.f split.  !!
-!! several sections are commented out, kept pending evaluation      !!
-!! (DAFH, EDAIQA state-construction dispatch, DFT-DM1/HIRAO         !!
-!! approximations, legacy topology/effao calls) -- catalogued, not  !!
-!! deleted.                                                         !!
 !! **************************************************************** !!
 
       use basis_set
@@ -564,8 +560,7 @@ c      iopt(200) =
 !! set atomic radii just in case needed !!
       call prepar()
 
-!! Mulliken-type analysis, either int files (ESI-3D, FCALC) or          !!
-!! effao/readint files                                                  !!
+!! Hilbert-space atomic overlap matrices (Mulliken, Lowdin, NAO, ...)   !!
       ndim=igr
       if(imulli.ge.1) then
         allocate (sat(ndim,ndim,nat))
@@ -583,11 +578,6 @@ c      iopt(200) =
           call tolow2(sat)
         end if
 
-!      else if(iqtaim.eq.2) then
-!       ndim=nocc
-!       allocate (sat(ndim,ndim,nat))
-!       call readintfiles(sat)
-       
       else
 
 !! Prepare for numerical integrations !!
@@ -730,24 +720,8 @@ c      iopt(200) =
 !! Nonlinear optical properties (POLAR) !!
       if(ipolar.ne.0) call polar(itotps,nat,wp,omp,omp2,pcoord,rho)
 
-!! Entropies and correlation indicators -- unfinished, see numint_sha !!
-c      if(isha.ne.0) call numint_sha(ndim,itotps,nat,wp,chp,omp,omp2,ibaspoint)
-
 !! PCA analysis -- needs DI already populated (bond_order_analysis above) !!
       if(ipca.eq.1) call pca_analysis()
-
-!! DAFH part -- needed files produced by external code (R. Ponec), not !!
-!! available in this version                                           !!
-c          if(idafh.eq.1) then
-c           ncactiv=nspinorb
-c           if(icorr.ne.0) then
-c            call dafh_input(ncactiv,nbasis,nat,sat)
-c           else if (kop.eq.1) then
-c            call dafh_input_uhf(nbasis,nat,sat)
-c           else
-c            call dafh_input_rhf(nbasis,nat,sat)
-c           end if
-c          end if
 
 !! EFFAO part                                                          !!
 !! ieffao: 0 nothing, 1 eff-AOs, 2 spin-resolved eff-AOs (a must for   !!
@@ -846,12 +820,6 @@ c          end if
 !! EFFAO/UEFFAO/EFFAO-U for fragments/all atoms !!
             if(ieffao.eq.1) then
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
-!! disabled call sites for effao.f's uefomo (dead, see that file's   !!
-!! top-of-file note) and devel.f's mhg/mhg2 (dead, part of that      !!
-!! file's own confirmed-dead subroutines, no note there yet).        !!
-c             call  uefomo(itotps,ndim,omp,chp,sat,wp,omp2,0)
-c             call mhg(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,pa,0)
-c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
             else if(ieffao.eq.2) then
               idobeta=0
               write(*,*) '  '
@@ -1041,7 +1009,6 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! CASSCF and CI WFs !!
         if(iposthf.eq.1) then
-!        if(itop.eq.1) call top_3d(norb,2,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
           call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
           call cpu_time(time2)
           call get_wall_time(wtime2)
@@ -1058,7 +1025,6 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
 !! Restricted case !!
           else
-!          if(itop.eq.1) call top_3d(nocc,1,0,iatpairs) !! MG: TOPOLOGY ROUTINES NEEDS A CHECK !!
             call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
           end if
           write(*,*) " "
@@ -1076,19 +1042,6 @@ c             call mhg2(itotps,ndim,omp,chp,sat,wp,omp2,pcoord,p,0)
 
       end if
 !! end of energy decomposition !!
-
-!! more topology stuff can be found in version 3.1-devel !!
-
-!! EDAIQA -- to do, creating the E(<A^0 B^0>)^AB state !!
-!     if(iedaiqa.eq.1) then
-!       write(*,*) " "
-!       write(*,*) " Entering EDAIQA Section "
-!       write(*,*) " "
-!       if(kop.eq.0) call rwf_edatoiqafchk()
-!       if(kop.eq.1) call uwf_edatoiqafchk()
-!       close(51)
-!       close(52)
-!     end if
 
 !! DFT-DM1 approximate one-particle RDM1 (formerly HIRAO internally).    !!
 !! Runs standalone, own dedicated grid reusing the two-electron-type      !!
