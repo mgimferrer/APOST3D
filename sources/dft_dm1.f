@@ -542,38 +542,6 @@
 
 ! *****
 
-!! calc_rhf_dens/calc_uhf_dens/calc_phf_dens: density at a point from    !!
-!! its AO values. Only calc_uhf_dens is called today (dft_dm1 is UHF-    !!
-!! only); the other two are kept for a possible restricted/CASSCF variant.!!
-
-!! ********************************************************************* !!
-!! subroutine: calc_rhf_dens                                             !!
-!! purpose: RHF density at a point, from its AO values.                  !!
-!! arguments: eval_ao (in), rho (out)                                    !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-      subroutine calc_rhf_dens(eval_ao,rho)
-      use ao_matrices
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-
-      dimension :: eval_ao(igr)
-
-      xx0=ZERO
-      do imo=1,nocc
-        xx=ZERO
-        do ibf=1,igr
-          xx=xx+c(ibf,imo)*eval_ao(ibf)
-        end do
-        xx0=xx0+xx*xx
-      end do
-      rho=TWO*xx0
-
-      end
-
-! *****
-
 !! ********************************************************************* !!
 !! subroutine: calc_uhf_dens                                             !!
 !! purpose: UHF alpha/beta density at a point, from its AO values.       !!
@@ -602,36 +570,6 @@
       end do
       rhoa=xx0
       rhob=xx0b
-
-      end
-
-! *****
-
-!! ********************************************************************* !!
-!! subroutine: calc_phf_dens                                             !!
-!! purpose: post-HF density at a point (natural orbitals/occupations),   !!
-!!   from its AO values.                                                 !!
-!! arguments: eval_ao (in), rho (out)                                    !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-      subroutine calc_phf_dens(eval_ao,rho)
-      use ao_matrices
-      IMPLICIT REAL*8(A-H,O-Z)
-      include 'parameter.h'
-      common /nat/  nat,igr,ifg,nocc,nalf,nb,kop
-      common /cas/  icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
-
-      dimension :: eval_ao(igr)
-
-      xx=ZERO
-      do ino=1,norb
-        xx1=ZERO
-        do ibf=1,igr
-          xx1=xx1+c_no(ibf,ino)*eval_ao(ibf)
-        end do
-        xx=xx+xx1*xx1*occ_no(ino,ino)
-      end do
-      rho=xx
 
       end
 
