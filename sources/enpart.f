@@ -487,7 +487,7 @@
 !! loops reordered for parallelization purposes -- implementation !!
 !! performed thanks to Dr. R. Oswald.                             !!
           call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
-          write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
+          write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1)/2,"MO pairs"
           write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! same-center terms first; determine the core count for thread splitting. !!
@@ -1481,7 +1481,8 @@
 !! loops reordered for parallelization purposes, mimicking numint_two's !!
 !! strategy (see there for the full explanation). !!
           call print_box('EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS')
-          write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nalf*(nalf+1),"MO pairs"
+          write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",
+     +    nalf*(nalf+1)/2+nb*(nb+1)/2,"MO pairs"
           write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! same-center terms first; determine the core count for thread splitting. !!

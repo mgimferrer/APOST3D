@@ -146,8 +146,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.24 s
-  TIMING WALL :: atomic definition                                 0.04 s
+  TIMING CPU  :: atomic definition                                 0.35 s
+  TIMING WALL :: atomic definition                                 0.06 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -274,8 +274,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      8.2221444
   
-  TIMING CPU  :: enpart one-electron                               0.24 s
-  TIMING WALL :: enpart one-electron                               0.04 s
+  TIMING CPU  :: enpart one-electron                               0.35 s
+  TIMING WALL :: enpart one-electron                               0.05 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -304,14 +304,14 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    250.5249353
   
-  TIMING CPU  :: Coulomb energy                                    0.15 s
-  TIMING WALL :: Coulomb energy                                    0.02 s
+  TIMING CPU  :: Coulomb energy                                    0.20 s
+  TIMING WALL :: Coulomb energy                                    0.03 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
   ---------------------------------------------------
 
-  Two-el integrations for    182 MO pairs
+  Two-el integrations for     91 MO pairs
   Threshold for atom pair calculation:   0.005000
   Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   Skipping numerical integration for     0 atom pairs
@@ -328,8 +328,8 @@
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -21.4887492
   
-  TIMING CPU  :: Exact-exchange energy                             3.41 s
-  TIMING WALL :: Exact-exchange energy                             0.46 s
+  TIMING CPU  :: Exact-exchange energy                             5.09 s
+  TIMING WALL :: Exact-exchange energy                             0.67 s
   
   Total two-electron part (coul+exch_hf):    229.0361861
   Integration error (kcal/mol):   -13.71
@@ -343,8 +343,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.4600955
   
-  TIMING CPU  :: Interpolated zero-error                           2.33 s
-  TIMING WALL :: Interpolated zero-error                           0.33 s
+  TIMING CPU  :: Interpolated zero-error                           3.57 s
+  TIMING WALL :: Interpolated zero-error                           0.53 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -388,7 +388,7 @@
   Integration error (au):     -0.0000005
   Integration error (kcal/mol):    -0.00
   
-  TIMING CPU  :: enpart two-electron                               5.91 s
-  TIMING WALL :: enpart two-electron                               0.82 s
+  TIMING CPU  :: enpart two-electron                               8.90 s
+  TIMING WALL :: enpart two-electron                               1.24 s
 
   ...Normal Termination of APOST-3D...
