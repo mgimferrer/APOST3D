@@ -39,9 +39,6 @@
 !!   cubegen_new            -- writes one Gaussian-style .cube file per      !!
 !!                             requested EFO of a fragment/atom, adaptive   !!
 !!                             grid sized from SPACING/RADIUS_SCALE          !!
-!! .fchk-style file writers, kept for future OSLO .fchk-printing work,      !!
-!! currently unreachable (see their own header at the end of this file):   !!
-!!   rmat, rarr, ival                                                       !!
 !! *********************************************************************** !!
 
 !! ***** !!
@@ -1805,52 +1802,6 @@
      
       deallocate(c0,xyz)
       end
-
-!! ***** !!
-
-!! ********************************************************************* !!
-!! .fchk-STYLE FILE WRITERS -- kept for future use, not currently called !!
-!! rmat/rarr/ival write a matrix/array/scalar in .fchk's own labeled     !!
-!! block format ("key R   N=..." / "key I ..." + Gaussian-style data    !!
-!! rows). Their only current callers are confirmed-dead legacy          !!
-!! subroutines (effao.f's ueffaomull2/ueffaolow2, devel.f's             !!
-!! effao_minbas), so nothing reaches them today -- kept rather than     !!
-!! deleted because they'll be needed for properly printing .fchk files  !!
-!! from the OSLO section.                                               !!
-!! ********************************************************************* !!
-
-       subroutine rmat(iunit,key,ival,jval,ndim,rmatrix)
-       implicit double precision (a-h,o-z)
-       include 'parameter.h'
-       dimension rmatrix(ndim,ndim) 
-       character(len=*) ::  key
-       integer ival,jval
-       character(len=43) ::  title
-       title=adjustl(key)
-       write(iunit,'(A43,A6,I12)') title,"R   N=",ival*jval
-       write(iunit,'(5ES16.8)') ((rmatrix(i,j),i=1,jval),j=1,ival)
-       end
-
-       subroutine rarr(iunit,key,ival,ndim,rarray)
-       implicit double precision (a-h,o-z)
-       include 'parameter.h'
-       character(len=*) ::  key
-       integer ival
-       dimension rarray(ndim)
-       character(len=43) ::  title
-       title=adjustl(key)
-       write(iunit,'(A43,A6,I12)') title,"R   N=",ival
-       write(iunit,'(5ES16.8)') (rarray(i),i=1,ival)
-       end
-
-       subroutine ival(iunit,key,ivalue)
-       implicit double precision (a-h,o-z)
-       character(len=*) ::  key
-       integer ivalue
-       character(len=43) ::  title
-       title=adjustl(key)
-       write(iunit,'(A43,A,I17)') title,"I",ivalue
-       end
 
 !! ***** !!
 
