@@ -18,7 +18,7 @@ saves the output of each test in `tests/report/outputs/` and a summary in
 
 ## What is checked
 
-Each test is checked in two ways:
+Each test is checked in three ways:
 
 - **Manifest checks**: selected quantities (energies, charges, oxidation
   states, ...) listed in `tests/manifest.json`, each with its tolerance.
@@ -27,6 +27,11 @@ Each test is checked in two ways:
   by at most 5 units of their last printed digit, which allows a rounding
   change on another machine or compiler but not a real change. Timings,
   the thread count and the date are ignored.
+- **Results file**: `<name>.apost.json` must exist, be valid JSON and
+  say how the run ended, and match `tests/reference/<name>.apost.json`
+  (`tests/compare_json.py`: same structure, text and integers, reals
+  within a relative 1e-9; the thread count is ignored). See
+  [Results file (JSON)](json-output.md).
 
 The full-output comparison has two levels:
 

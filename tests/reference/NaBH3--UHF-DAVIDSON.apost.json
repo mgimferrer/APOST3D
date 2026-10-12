@@ -1,0 +1,58 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "unrestricted",
+    "method": "Hartree-Fock",
+    "n_basis_functions": 47,
+    "n_electrons": 20,
+    "n_alpha": 10,
+    "n_beta": 10,
+    "energy_au": -1.8824847559800841E+002
+  },
+  "input": {
+    "text": "# METHOD\nLOWDIN-DAVIDSON\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
+    "atomic_definition": {
+      "keyword": "LOWDIN-DAVIDSON",
+      "name": "Lowdin-Davidson",
+      "space": "hilbert",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [11, 5, 1, 1, 1],
+    "symbols": ["Na", "B", "H", "H", "H"],
+    "nuclear_charges": [1.1000000000000000E+001, 5.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-1.1029073900000001E-023, -5.2613953699999997E-008, 2.1909991600000001E+000],
+      [-1.1029073900000001E-023, -5.2613953699999997E-008, -2.9467672100000000E+000],
+      [9.1396010599999997E-007, 2.2792701599999998E+000, -3.1223852299999999E+000],
+      [1.9739054500000000E+000, -1.1396359500000000E+000, -3.1223852299999999E+000],
+      [-1.9739063699999999E+000, -1.1396343700000000E+000, -3.1223852299999999E+000]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [1]
+    },
+    {
+      "id": 2,
+      "atoms": [2, 3, 4, 5]
+    }
+  ],
+  "analyses": {},
+  "run": {
+    "job_name": "NaBH3--UHF-DAVIDSON",
+    "input_file": "NaBH3--UHF-DAVIDSON.inp",
+    "wavefunction_file": "NaBH3--UHF-DAVIDSON.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

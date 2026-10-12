@@ -1,0 +1,46 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 31,
+    "n_electrons": 26,
+    "n_alpha": 13,
+    "n_beta": 13,
+    "energy_au": -2.9723153166335931E+002
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nHF\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 2,
+    "atomic_numbers": [1, 53],
+    "symbols": ["H", "I"],
+    "nuclear_charges": [1.0000000000000000E+000, 2.5000000000000000E+001],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 3.0405693299999998E+000]
+    ]
+  },
+  "fragments": [],
+  "analyses": {},
+  "run": {
+    "job_name": "HI-ECP-pySCF",
+    "input_file": "HI-ECP-pySCF.inp",
+    "wavefunction_file": "HI-ECP-pySCF.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

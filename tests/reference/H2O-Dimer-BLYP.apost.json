@@ -1,0 +1,50 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 48,
+    "n_electrons": 20,
+    "n_alpha": 10,
+    "n_beta": 10,
+    "energy_au": -1.5280942535477601E+002
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nBLYP\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 6,
+    "atomic_numbers": [8, 1, 1, 8, 1, 1],
+    "symbols": ["O", "H", "H", "O", "H", "H"],
+    "nuclear_charges": [8.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 8.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-2.6201562900000002E+000, -9.3919388400000000E-004, 2.1352771400000001E-001],
+      [-3.2523263700000000E+000, 1.4433388000000000E+000, -6.8377094199999999E-001],
+      [-3.2552856900000000E+000, -1.4363260300000000E+000, -6.9585763000000000E-001],
+      [2.8519142000000000E+000, 1.0110034799999999E-003, -2.2826379799999999E-001],
+      [3.6013795800000001E+000, -6.3532592299999999E-003, 1.4196473000000001E+000],
+      [1.0521787199999999E+000, -1.2321014300000000E-003, 7.7868054699999995E-002]
+    ]
+  },
+  "fragments": [],
+  "analyses": {},
+  "run": {
+    "job_name": "H2O-Dimer-BLYP",
+    "input_file": "H2O-Dimer-BLYP.inp",
+    "wavefunction_file": "H2O-Dimer-BLYP.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

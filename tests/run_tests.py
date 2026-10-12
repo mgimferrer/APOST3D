@@ -82,6 +82,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_outputs import compare_files, format_diffs, summary  # noqa: E402
+import compare_json  # noqa: E402
 
 # ── ANSI colour helpers ───────────────────────────────────────────────────────
 
@@ -312,6 +313,63 @@ def full_output_check(ref_file: Path, out_file: Path, ulps: float,
     return result
 
 
+def results_file_check(json_file: Path, expected_rc: int) -> dict:
+    """
+    The results file <name>.apost.json exists, is valid JSON, and says how
+    the run ended: "normal", or "stopped" for an expected-stop test.
+    """
+    result = {"label": "Results file (.apost.json)", "type": "json"}
+    if not json_file.exists():
+        result["status"] = "fail"
+        result["message"] = f"{json_file.name} was not written"
+        return result
+    try:
+        data = compare_json.load(json_file)
+    except ValueError as exc:
+        result["status"] = "fail"
+        result["message"] = str(exc)
+        return result
+    want = "normal" if expected_rc == 0 else "stopped"
+    got = data.get("run", {}).get("status")
+    if got != want:
+        result["status"] = "fail"
+        result["message"] = f"run status {got!r}, expected {want!r}"
+    else:
+        result["status"] = "pass"
+        result["message"] = f"valid, run status {got!r}"
+    return result
+
+
+def json_reference_check(ref_file: Path, json_file: Path) -> dict:
+    """
+    Compare the results file with tests/reference/<name>.apost.json: same
+    structure, text and integers, reals within compare_json.RTOL.
+    """
+    result = {"label": "Results file vs reference", "type": "json"}
+    if not ref_file.exists():
+        result["status"] = "error"
+        result["message"] = f"no reference file {ref_file.name}"
+        return result
+    if not json_file.exists():
+        result["status"] = "fail"
+        result["message"] = "no results file to compare"
+        return result
+    try:
+        diffs = compare_json.compare_files(ref_file, json_file)
+    except ValueError as exc:
+        result["status"] = "fail"
+        result["message"] = str(exc)
+        return result
+    if diffs:
+        result["status"] = "fail"
+        result["message"] = f"{len(diffs)} difference(s)"
+        result["details"] = diffs
+    else:
+        result["status"] = "pass"
+        result["message"] = "same values"
+    return result
+
+
 # ── Test execution ────────────────────────────────────────────────────────────
 
 
@@ -393,12 +451,21 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
 
         output_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy(outfile, output_dir / f"{name}.apost")
+        json_file = rundir / f"{name}.apost.json"
+        json_text = None
+        if json_file.exists():
+            json_text = json_file.read_text(errors="replace")
+            shutil.copy(json_file, output_dir / f"{name}.apost.json")
 
         # Evaluate all checks
         check_results = [evaluate_check(output, c) for c in test.get("checks", [])]
+        check_results.append(results_file_check(json_file,
+                                                test.get("expected_rc", 0)))
         if ref_dir is not None:
             check_results.append(full_output_check(ref_dir / f"{name}.apost",
                                                    outfile, ulps, strict))
+            check_results.append(json_reference_check(
+                ref_dir / f"{name}.apost.json", json_file))
 
         n_fail = sum(1 for r in check_results if r["status"] in ("fail", "error"))
 
@@ -423,6 +490,7 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
             "elapsed": elapsed,
             "checks":  check_results,
             "output":  output,
+            "json_text": json_text,
         }
 
 
@@ -628,6 +696,9 @@ def update_references(tests: list, results: list, ref_dir: Path,
         ref_file = ref_dir / f"{name}.apost"
         ref_file.write_text(output, encoding="utf-8")
         print(f"  {SYM_PASS}  {name}: wrote {ref_file.name}")
+        if r.get("json_text") is not None:
+            (ref_dir / f"{name}.apost.json").write_text(r["json_text"],
+                                                        encoding="utf-8")
 
         if not update_manifest:
             continue
