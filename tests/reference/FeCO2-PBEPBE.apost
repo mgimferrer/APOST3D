@@ -1,94 +1,94 @@
   ------------------------------------------------------------------------------
-                                                                                
+
                      ___    ____  ____  ___________   _____ ____                
                     /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
                    / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
                   / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
                  /_/  |_/_/    \____//____//_/     /____/_____/                 
-                                                                                
+
                         Version 5   --   22 September 2026                      
                          --------------------------------                       
-                                                                                
+
       Real-space and Hilbert-space tools for wave function analysis             
-                                                                                
+
       Documentation: https://apost3d.readthedocs.io                             
       Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
-                                                                                
+
       Cite this program as:                                                     
       ---------------------                                                     
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
-                                                                                
+
     e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
-                                                                                
+
       Available atomic definitions:                                             
       ----------------------------                                              
-                                                                                
+
       Real space:                                                               
         Becke, J. Chem. Phys. 88 2547 1988                                      
         Hirshfeld, Theor. Chim. Acta 44 129 1977                                
         Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007                     
         Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013  
-                                                                                
+
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
-                                                                                
+
       Calculating:                                                              
       ------------                                                              
-                                                                                
+
         A) Atomic and overlap populations, bond orders and valences             
            I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
-                                                                                
+
         B) Hartree-Fock molecular energy decomposition                          
            P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
-                                                                                
+
         C) KS-DFT molecular energy decomposition                                
            P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007             
            M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023         
-                                                                                
+
         D) Molecular energy decomposition for CASSCF/CISD wavefunctions         
-                                                                                
+
         E) Effective atomic orbitals                                            
            I. Mayer, J. Phys. Chem. 100 6249 1996                               
            I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
            E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
            Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026                  
-                                                                                
+
         F) Local spin analysis                                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
            E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
-                                                                                
+
         G) Effective oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
            M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
-                                                                                
+
         H) Oxidation states from localized orbitals                             
            M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020   
            M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
            M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022         
-                                                                                
+
         I) Decomposition of EDA quantities into one- and two-center IQA terms   
            M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
-                                                                                
+
         J) Origin-independent decomposition of static polarizabilities          
            M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021        
-                                                                                
+
   ------------------------------------------------------------------------------
-                                                                                
+
     The program has been written by using parts of the program APOST by         
     I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
-                                                                                
+
     The numerical integration utilizes the subroutines for Lebedev              
     quadrature downloaded from CCL. The appropriate reference is:               
     V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
     131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
-                                                                                
+
     The program makes use of libxc library when necessary, using the F90        
     interfaces provided by the authors.                                         
                    (see https://libxc.gitlab.io/)                               
-                                                                                
+
     We are extremely grateful for the possibility of using these routines!      
-                                                                                
+
   ------------------------------------------------------------------------------
 
   ------------------------
@@ -149,7 +149,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.32 s
+  TIMING CPU  :: atomic definition                                 0.31 s
   TIMING WALL :: atomic definition                                 0.05 s
 
   -----------------------------
@@ -345,9 +345,9 @@
 
   TIMING CPU  :: population analyses                               0.00 s
   TIMING WALL :: population analyses                               0.00 s
-   
+
   UEFFAO: alpha and beta treated separately
-   
+
 
   --------------------------------------
     DOING EFFAO-3D GENERAL FORMULATION
@@ -358,47 +358,47 @@
   ---------------------------------
 
   ** FRAGMENT   1 **
-  
+
   Net occupation for fragment      1   12.11689
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
   OCCUP.   0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
   OCCUP.   0.0086   0.0081   0.0018
-  
+
   Gross occupation for fragment    1   12.27814
   OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
   OCCUP.   0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
   OCCUP.   0.0124   0.0117   0.0034
-  
+
   FIT %     99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
   FIT %     94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
   FIT %     70.62    70.47    58.34
   Left out by the cutoff (net / gross):    0.00007    0.00024
   ** FRAGMENT   2 **
-  
+
   Net occupation for fragment      2    6.77837
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
   OCCUP.   0.0708   0.0060   0.0019
-  
+
   Gross occupation for fragment    2    6.85638
   OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
   OCCUP.   0.0822   0.0112   0.0047
-  
+
   FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
   FIT %     76.77    53.13     8.70
   Left out by the cutoff (net / gross):    0.00154    0.00450
   ** FRAGMENT   3 **
-  
+
   Net occupation for fragment      3    6.77837
   Net occupation using >    0.00100
   OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
   OCCUP.   0.0708   0.0060   0.0019
-  
+
   Gross occupation for fragment    3    6.85638
   OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
   OCCUP.   0.0822   0.0112   0.0047
-  
+
   FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
   FIT %     76.77    53.13     8.70
   Left out by the cutoff (net / gross):    0.00154    0.00450
@@ -436,7 +436,7 @@
      3          0.00
   ------------------------ 
    Total oxidation state:    2.0
-  
+
   OVERALL RELIABILITY INDEX R(%) =  96.598
 
   TIMING CPU  :: EFFAO computation                                 0.53 s

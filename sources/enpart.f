@@ -136,7 +136,7 @@
         end do
         xxdip=xtot
         write(*,'(2x,a37,x,f14.7)') "Electronic dipole moment energy term:",xxdip
-        write(*,*) " "
+        write(*,*)
       end if
 
 !! electron-nuclei attraction integrals; parallel over the (icenter,jcenter) !!
@@ -268,7 +268,7 @@
         line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
         call group_by_frag_mat(1,line,enuc)
       end if
-      write(*,*) " "
+      write(*,*)
 
       if(ifield.eq.1) then
         xxx=ZERO
@@ -282,7 +282,7 @@
         write(*,'(2x,a50,x,f14.7)') "Nuclear dipole moment energy term                :",xtot
         edipole=xtot+xxdip
         write(*,'(2x,a50,x,f14.7)') "Total dipole moment energy term                  :",edipole
-        write(*,*) " "
+        write(*,*)
 
         call print_box('INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)')
         call MPRINT2(edip,nat,maxat)
@@ -291,7 +291,7 @@
           xtot=xtot+edip(i,i)
         end do
         write(*,'(2x,a28,x,f14.7)') "Total Intrinsic dipole term:",xtot
-        write(*,*) " "
+        write(*,*)
 
         call print_box('CHARGE-TRANSFER ENERGY CONTRIBUTION (ORIGIN DEPENDENT)')
         call MPRINT2(ect,nat,maxat)
@@ -300,7 +300,7 @@
           xtot=xtot+ect(i,i)
         end do
         write(*,'(2x,a27,x,f14.7)') "Total Charge-Transfer term:",xtot
-        write(*,*) " "
+        write(*,*)
       end if
 
       etot=ekinen+eelnuc+erep
@@ -473,7 +473,7 @@
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
-      if(ianalytical.eq.1.or.idoex.eq.0) write(*,*) " "
+      if(ianalytical.eq.1.or.idoex.eq.0) write(*,*)
       xtime=xtime2
       wxtime=wxtime2
 
@@ -692,11 +692,11 @@
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
           if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
      +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
-          write(*,*) " "
+          write(*,*)
           call cpu_time(xtime2)
           call get_wall_time(wxtime2)
           call print_timer('Exact-exchange energy',xtime2-xtime,wxtime2-wxtime)
-          if(ihf.eq.1) write(*,*) " "
+          if(ihf.eq.1) write(*,*)
           xtime=xtime2
           wxtime=wxtime2
         end if
@@ -709,7 +709,7 @@
         if(evee0.ne.ZERO) then
           twoelerr=(evee-evee0)*tokcal
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-          write(*,*) " "
+          write(*,*)
         else
           evee0=evee
           call print_no_ref_energy()
@@ -731,7 +731,7 @@
           call print_box('HYBRID KS-DFT XC TERMS')
           call MPRINT2(exch,nat,maxat)
           write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-          write(*,*) " "
+          write(*,*)
         end if
         evee=coulen+exchen
         write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee
@@ -742,12 +742,12 @@
           evee0=evee
           call print_no_ref_energy()
         end if
-        write(*,*) " "
+        write(*,*)
       end if
 
       if(ianalytical.eq.1) twoeltoler=232000
       write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
-      write(*,*) " "
+      write(*,*)
 
       if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) then
         write(*,'(2x,a)')
@@ -875,7 +875,7 @@
           coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
           if(idoex.eq.1) exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
         end do
-        write(*,*) " "
+        write(*,*)
         call cpu_time(xtime2)
         call get_wall_time(wxtime2)
         call print_timer('Interpolated zero-error',xtime2-xtime,wxtime2-wxtime)
@@ -891,7 +891,7 @@
           end do
         end do
         write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-        if(idoex.eq.0) write(*,*) " "
+        if(idoex.eq.0) write(*,*)
         if(idofr.eq.1) then
           line=' FRAGMENT ANALYSIS: Coulomb energy '
           call group_by_frag_mat(1,line,coul)
@@ -909,7 +909,7 @@
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
           if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
      +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
-          if(ihf.eq.1) write(*,*) " "
+          if(ihf.eq.1) write(*,*)
 
           if(ihf.ne.1) then
             exchen=ZERO
@@ -928,7 +928,7 @@
               line=' FRAGMENT ANALYSIS: Final Exc Decomposition '
               call group_by_frag_mat(1,line,exch)
             end if
-            write(*,*) " "
+            write(*,*)
           end if
         else
           exchen=ZERO
@@ -1127,7 +1127,7 @@
         end do
         xxdip=xtot
         write(*,'(2x,a37,x,f14.7)') "Electronic dipole moment energy term:",xxdip
-        write(*,*) " "
+        write(*,*)
       end if
 
 !! electron-nuclei attraction integrals; parallel over the (icenter,jcenter) !!
@@ -1266,7 +1266,7 @@
         line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
         call group_by_frag_mat(1,line,enuc)
       end if
-      write(*,*) " "
+      write(*,*)
 
       if(ifield.eq.1) then
         xxx=ZERO
@@ -1280,7 +1280,7 @@
         write(*,'(2x,a50,x,f14.7)') "Nuclear dipole moment energy term                :",xtot
         edipole=xtot+xxdip
         write(*,'(2x,a50,x,f14.7)') "Total dipole moment energy term                  :",edipole
-        write(*,*) " "
+        write(*,*)
 
         call print_box('INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)')
         call MPRINT2(edip,nat,maxat)
@@ -1289,7 +1289,7 @@
           xtot=xtot+edip(i,i)
         end do
         write(*,'(2x,a28,x,f14.7)') "Total Intrinsic dipole term:",xtot
-        write(*,*) " "
+        write(*,*)
 
         call print_box('CHARGE-TRANSFER ENERGY CONTRIBUTION (ORIGIN DEPENDENT)')
         call MPRINT2(ect,nat,maxat)
@@ -1298,7 +1298,7 @@
           xtot=xtot+ect(i,i)
         end do
         write(*,'(2x,a27,x,f14.7)') "Total Charge-Transfer term:",xtot
-        write(*,*) " "
+        write(*,*)
       end if
 
       etot=ekinen+eelnuc+erep
@@ -1456,7 +1456,7 @@
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
-      if(ianalytical.eq.1.or.idoex.eq.0) write(*,*) " "
+      if(ianalytical.eq.1.or.idoex.eq.0) write(*,*)
       xtime=xtime2
       wxtime=wxtime2
 
@@ -1703,7 +1703,7 @@
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
           if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
      +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
-          if(ihf.eq.1) write(*,*) " "
+          if(ihf.eq.1) write(*,*)
         end if
       end if !MMO- non-analytical skip ends here
 
@@ -1714,7 +1714,7 @@
         if(evee0.ne.ZERO) then
           twoelerr=(evee-evee0)*tokcal
           write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-          write(*,*) " "
+          write(*,*)
         else
           evee0=evee
           call print_no_ref_energy()
@@ -1736,7 +1736,7 @@
           call print_box('HYBRID KS-DFT XC TERMS')
           call MPRINT2(exch,nat,maxat)
           write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-          write(*,*) " "
+          write(*,*)
         end if
         evee=coulen+exchen
         write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee           
@@ -1747,13 +1747,13 @@
           evee0=evee
           call print_no_ref_energy()
         end if
-        write(*,*) " "
+        write(*,*)
       end if
 
 !! zero-error strategy for the two-electron (Vee) part. !!
       if(ianalytical.eq.1) twoeltoler=232000
       write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
-      write(*,*) " "
+      write(*,*)
 
       if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) then
         write(*,'(2x,a)')
@@ -1927,7 +1927,7 @@
           end do
         end do
         write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-        if(idoex.eq.0) write(*,*) " "
+        if(idoex.eq.0) write(*,*)
         if(idofr.eq.1) then
           line='   FRAGMENT ANALYSIS: Coulomb energy '
           call group_by_frag_mat(1,line ,coul)
@@ -1945,7 +1945,7 @@
           write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
           if(ihf.ne.1) write(*,'(2x,a,f5.3,a)')
      +      'Note: full HF-type exchange, before scaling by ',xmix,'.'
-          if(ihf.eq.1) write(*,*) " "
+          if(ihf.eq.1) write(*,*)
 
           if(ihf.ne.1) then
             exchen=ZERO
@@ -1968,7 +1968,7 @@
               line='   FRAGMENT ANALYSIS: Final Exc Decomposition '
               call group_by_frag_mat(1,line ,exch)
             end if
-            write(*,*) " "
+            write(*,*)
           end if
         else    
           exchen=ZERO
@@ -2106,11 +2106,11 @@ c
       end do
 
 
-       print *,' '
+       write(*,*)
        print *,' --------------------------------------'
        print *,'       DIPOLE MOMENT DECOMPOSITION'
        print *,' --------------------------------------'
-       print *,' '
+       write(*,*)
        xtot=0.0d0
        do icenter=1,nat
         x=0.0d0
@@ -2136,10 +2136,10 @@ c
          dipct(j)=dipct(j)+(zn(icenter)-zztop)*coord(j,icenter)    
         end do
        enddo
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Origin-dependent atomic dipole moments'
        call mprint_nlop(dip,nat,maxat)
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Total dipole moment: '
        do j=1,3  
         diptot(j)=0.0d0
@@ -2149,12 +2149,12 @@ c
        end do
        write(*,*) '               X                   Y                      Z' 
        write(*,'(3f24.15)') (diptot(i),i=1,3)
-       write(*,*) ' '
+       write(*,*)
 C
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Intrinsic atomic dipole moments'
        call mprint_nlop(dipint,nat,maxat)
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Total intrinsic dipole moment: '
        do j=1,3  
         diptot(j)=0.0d0
@@ -2164,7 +2164,7 @@ C
        end do
        write(*,*) '               X                   Y                      Z' 
        write(*,'(3f24.15)') (diptot(i),i=1,3)
-       write(*,*) ' '
+       write(*,*)
 C
 C Generalized Keith algorithm to decompose the charge-transfer term
 C Code by MMontilla
@@ -2221,7 +2221,7 @@ C ;excess unknowns require additional equations)
        if(iexcess.ne.0) then 
          write(*,*) 'WARNING, CYCLIC CONNECTIVITY.'
          write(*,*) 'Will need ',iexcess,'additional equations.'
-         write(*,*) ' '
+         write(*,*)
 
          open(45,FILE="ichi.inp",status="old",iostat=ii)
          if(ii.ne.0) then
@@ -2368,10 +2368,10 @@ C Final calculations.
        end do
 
 C Echoing final Keith results.
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Charge-transfer atomic dipole moments (renormalized charges):'
        call mprint_nlop(ct,nat,maxat)
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Total CT dipole moment (renormalized charges):'
         do i=1,Nat
          do j=1,3
@@ -2379,17 +2379,17 @@ C Echoing final Keith results.
          end do
         end do
         write(*,'(3f24.15)') (scr(i),i=1,3)
-       write(*,*) '  ' 
+       write(*,*)
        write(*,*) 'Total CT dipole moment (unscaled charges):'
        write(*,*) '               X                   Y                      Z' 
        write(*,'(3f24.15)') (dipct(i),i=1,3)
 
 C PSS
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Total dipole moment:'
        write(*,*) '               X                   Y                      Z' 
        write(*,'(3f24.15)') (dipct(i)+diptot(i),i=1,3)
-       write(*,*) ' '
+       write(*,*)
 
 c  energetics 
        if(ifield.eq.1) then
@@ -2404,7 +2404,7 @@ c  energetics
        do i=1,nat
         write(*,'(a6,i4,f22.15)') 'Atom: ',i,eint(i)
        end do
-       write(*,*) ' '
+       write(*,*)
        write(*,*) 'Total Intrinsic dipole energy term :',dipen
 
        write(*,*) 'Total Charge-transfer  energy term :',cten
@@ -2969,7 +2969,7 @@ c  energetics
         line=' FRAGMENT ANALYSIS: Coulomb energy '
         call group_by_frag_mat(1,line,coul)
       end if
-      write(*,*) " "
+      write(*,*)
 
       end
 

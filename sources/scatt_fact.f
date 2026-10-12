@@ -58,12 +58,12 @@
       iatps = nrad*nang
       isval = 56
       write(*,'(2x,a,1x,i0,1x,a,1x,i0)') 'Radial points:',nrad,'Angular points:',nang
-      write(*,*) " "
+      write(*,*)
 
       nameout=trim(name0)//".xrsf"
       open(69,file=nameout,status="unknown")
       write(*,'(2x,a,1x,a)') 'Printing XRSF information in file',trim(nameout)
-      write(*,*) " "
+      write(*,*)
 
       ALLOCATE(rho_at(iatps))
       ALLOCATE(rho_sph(nrad))
@@ -109,7 +109,7 @@
         write(*,'(2x,a,1x,i0)') 'For atom:',icenter
         write(*,'(2x,a,1x,f11.6)') 'Integrated rho^(A)     =',xrhoA
         write(*,'(2x,a,1x,f11.6)') 'Integrated rho^(A,sph) =',xrhoA2
-        write(*,*) " "
+        write(*,*)
 
 !! Fourier-transform the spherized density at each scattering angle sval !!
 !! (converted from inverse Angstrom to inverse Bohr); the s=0 limit is   !!

@@ -376,7 +376,7 @@
       call print_box('PURE KS-DFT XC ONE-CENTER TERMS (EXACT)')
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
-      write(*,*) " "
+      write(*,*)
 
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
       do ii=1,nat
@@ -400,7 +400,7 @@
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       if(xmix.gt.ZERO) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
      +    ' x HF-type exchange is added in the'
         write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
@@ -409,7 +409,7 @@
         line='   FRAGMENT ANALYSIS: Exc Decomposition'
         call group_by_frag_mat(1,line,exch)
       end if
-      write(*,*) " "
+      write(*,*)
 
       xtot=ZERO
       do ii=1,nat
@@ -1141,7 +1141,7 @@
       call print_box('PURE KS-DFT XC ONE-CENTER TERMS (EXACT)')
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
-      write(*,*) " "
+      write(*,*)
 
       write(*,*) " REARRANGING ATOMIC COMPONENTS "
       do ii=1,nat
@@ -1165,7 +1165,7 @@
       call MPRINT2(exch,nat,maxat)
       write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       if(xmix.gt.ZERO) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
      +    ' x HF-type exchange is added in the'
         write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
@@ -1174,7 +1174,7 @@
         line='   FRAGMENT ANALYSIS: Exc Decomposition'
         call group_by_frag_mat(1,line,exch)
       end if
-      write(*,*) " "
+      write(*,*)
 
       xtot=ZERO
       do ii=1,nat
@@ -1329,7 +1329,7 @@
       if(kop.eq.1) call xc_f03_func_init(xc_func,id_func,XC_POLARIZED,ierr)
 !! an unknown id leaves xc_func without info -- querying it segfaults. !!
       if(ierr.ne.0) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a,1x,i0,1x,a)') 'ERROR: functional id',id_func,
      +    'is not a valid libxc functional id.'
         write(*,'(2x,a)') 'See https://libxc.gitlab.io/functionals/ for the list of ids.'
@@ -1404,18 +1404,18 @@
 !! meta-GGA: tau is wired into the one-center term and DFT-DM1, but the  !!
 !! BODEN atom-pair term still has no tau analog (under discussion).       !!
       if(itype.eq.3) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a)') 'Meta-GGA functionals are not supported yet (implementation'
         write(*,'(2x,a)') 'in progress). Use an LDA, GGA or global-hybrid GGA functional.'
         call apost_stop('META-GGA FUNCTIONALS NOT YET SUPPORTED')
       end if
       if(itype.lt.0) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a)') 'Only LDA, GGA and global-hybrid GGA functionals are supported.'
         call apost_stop('UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp')
       end if
       if(ikind.eq.XC_KINETIC) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a)') 'This is a kinetic-energy functional, not an exchange or'
         write(*,'(2x,a)') 'correlation one.'
         call apost_stop('KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp')
@@ -1424,13 +1424,13 @@
 !! range fraction, the short-range exact exchange is never integrated;    !!
 !! VV10: libxc's exc omits the nonlocal correlation part.                 !!
       if(irsh.ne.0) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a)') 'Range-separated hybrids (CAM-B3LYP, wB97X, HSE, LC-...) are'
         write(*,'(2x,a)') 'not supported: only global hybrids are.'
         call apost_stop('RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp')
       end if
       if(iand(iflags,XC_FLAGS_VV10).ne.0) then
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a)') 'Functionals with VV10 nonlocal correlation are not supported.'
         call apost_stop('VV10 FUNCTIONAL NOT SUPPORTED. REVISE inp')
       end if

@@ -72,18 +72,18 @@
         write(*,*) " ----------------------------------------- "
         write(*,*) "  Fragment population analysis of each LO  "
         write(*,*) " ----------------------------------------- "
-        write(*,*) " "
+        write(*,*)
         call rwf_uwf_print_LO_pop(nocc,flo)
 
         !! ASSIGNING ELECTRONS AND CI VALUES !!
         write(*,*) " -------------------------------- "
         write(*,*) "  Assigning electrons of each LO  "
         write(*,*) " -------------------------------- "
-        write(*,*) " "
+        write(*,*)
 
         !! EVALUATING CLARITY INDEX (CI) FOR EACH LOCALIZED ORBITAL !!
         write(*,*) " INFO: Considering Frg. 1 for OS assignment "
-        write(*,*) " "
+        write(*,*)
         write(*,*) "  Orbital     CI     Frg. 1 Pop    Assignment   "
         write(*,*) " ---------------------------------------------- "
 
@@ -145,19 +145,19 @@
 
         !! CLOSING THE TABLE !!
         write(*,*) " ---------------------------------------------- "
-        write(*,*) " "
+        write(*,*)
 
         !! FINAL PRINTING !!
         write(*,*) " --------------------------- "
         write(*,*) "  FRAGMENT OXIDATION STATES  "
         write(*,*) " --------------------------- "
-        write(*,*) " "
+        write(*,*)
         write(*,*) "  Frag.  Oxidation State  "
         write(*,*) " ------------------------ "
         write(*,'(3x,a3,6x,f8.2)') "  1",REAL(iznfrg1-iel1)
         write(*,'(3x,a5,4x,f8.2)') " Rest",REAL(iznrest-ielrest) 
         write(*,*) " ------------------------ "
-        write(*,*) " "
+        write(*,*)
 
         !! DEALLOCATING MATRICES !!
         DEALLOCATE(orbpop,flo)
@@ -203,7 +203,7 @@
           do jfrg=1,icufr
             write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,norb)
           end do
-          write(*,*) " "
+          write(*,*)
 
 !! FOR PACKS OF 5 COLUMNS !!
         else
@@ -211,7 +211,7 @@
           do jfrg=1,icufr
             write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,dd+4)
           end do
-          write(*,*) " "
+          write(*,*)
           dd=dd+5
         end if
       end do

@@ -34,11 +34,11 @@
       ifield = iopt(47)
       iatps  = nang*nrad
 
-      write(*,*) " "
+      write(*,*)
       write(*,*) " ------------------------------------- "
       write(*,*) "  POST-HARTREE-FOCK ONE-ELECTRON PART  "
       write(*,*) " ------------------------------------- "
-      write(*,*) " "
+      write(*,*)
 
 !! CALCULATING NUMBER OF CORE+ACTIVE ORBITALS !!
       imaxorb=0
@@ -119,7 +119,7 @@
         end do
         xxdip=xtot
         write(*,'(2x,a37,x,f14.7)') "Electronic dipole moment energy term:",xxdip
-        write(*,*) " "
+        write(*,*)
       else
         xxdip=ZERO
       end if
@@ -160,7 +160,7 @@
       write(*,*) " ----------------------------- "
       write(*,*) "  ELECTRON-NUCLEAR ATTRACTION  "
       write(*,*) " ----------------------------- "
-      write(*,*) " "
+      write(*,*)
       call MPRINT2(epa,nat,maxat)
       write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
 
@@ -170,7 +170,7 @@
       else
         eelnuc0=eelnuc
       end if
-      write(*,*) " "
+      write(*,*)
       if(idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Electron-nuclei attraction ' 
         call group_by_frag_mat(1,line,epa)
@@ -207,7 +207,7 @@
       write(*,*) " ---------------- "
       write(*,*) "  KINETIC ENERGY  "
       write(*,*) " ---------------- "
-      write(*,*) " "
+      write(*,*)
       call MPRINT2(ekin,nat,maxat)
       write(*,'(2x,a15,x,f14.7)') "Kinetic energy:",ekinen
 
@@ -217,7 +217,7 @@
       else
         ekin0=ekinen  
       end if
-      write(*,*) " "
+      write(*,*)
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Kinetic energy ' 
         call group_by_frag_mat(1,line,ekin)
@@ -245,10 +245,10 @@
       write(*,*) " --------------------------- "
       write(*,*) "  NUCLEAR-NUCLEAR REPULSION  "
       write(*,*) " --------------------------- "
-      write(*,*) " "
+      write(*,*)
       call MPRINT2(enuc,nat,maxat)
       write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
-      write(*,*) " "
+      write(*,*)
 
 !! IN CASE OF HAVING AN ELECTRIC FIELD !!
       if(ifield.eq.1) then
@@ -263,29 +263,29 @@
         write(*,'(2x,a34,x,f14.7)') "Nuclear dipole moment energy term:",xtot
         edipole=xtot+xxdip
         write(*,'(2x,a32,x,f14.7)') "Total dipole moment energy term:",edipole
-        write(*,*) " "
+        write(*,*)
         write(*,*) " ----------------------------------------------------------- "
         write(*,*) "  INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)  "
         write(*,*) " ----------------------------------------------------------- "
-        write(*,*) " "
+        write(*,*)
         call MPRINT2(edip,nat,maxat)
         xtot=ZERO
         do i=1,nat
           xtot=xtot+edip(i,i)
         end do
         write(*,'(2x,a28,x,f14.7)') "Total Intrinsic dipole term:",xtot
-        write(*,*) " "
+        write(*,*)
         write(*,*) " -------------------------------------------------------- "
         write(*,*) "  CHARGE-TRANSFER ENERGY CONTRIBUTION (ORIGIN DEPENDENT)  "
         write(*,*) " -------------------------------------------------------- "
-        write(*,*) " "
+        write(*,*)
         call MPRINT2(ect,nat,maxat)
         xtot=ZERO
         do i=1,nat
           xtot=xtot+ect(i,i)
         end do
         write(*,'(2x,a27,x,f14.7)') "Total Charge-Transfer term:",xtot
-        write(*,*) " "
+        write(*,*)
       end if
 
 !! TOTAL ENERGY UP TO HERE !!
@@ -364,11 +364,11 @@
       coul0=ZERO
 
 !! DOING ENERGY PARTITION !!  
-      write(*,*) " "
+      write(*,*)
       write(*,*) " ------------------------------------- "
       write(*,*) "  POST-HARTREE-FOCK TWO-ELECTRON PART  "
       write(*,*) " ------------------------------------- "
-      write(*,*) " "
+      write(*,*)
 
 !! ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
 !! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
@@ -420,7 +420,7 @@
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)
-      write(*,*) " "
+      write(*,*)
       xtime=xtime2
       wxtime=wxtime2
 
@@ -428,7 +428,7 @@
       write(*,*) " ------------------------------------------------------------------ "
       write(*,*) "  EVALUATING POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION INTEGRALS  "
       write(*,*) " ------------------------------------------------------------------ "
-      write(*,*) " "
+      write(*,*)
 
 !! MONADIC DIAGONALIZATION !!
       norb2=norb*(norb+1)/2
@@ -454,14 +454,14 @@
       write(*,*) " ---------------------------------------------------------- "
       write(*,*) "  POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS  "
       write(*,*) " ---------------------------------------------------------- "
-      write(*,*) " "
+      write(*,*)
       call MPRINT2(Exc,nat,maxat)
       write(*,'(2x,a46,x,f14.7)') "Post-Hartree-Fock exchange-correlation energy:",exch_corr
-      write(*,*) " "
+      write(*,*)
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('PHF Exc energy',xtime2-xtime,wxtime2-wxtime)
-      write(*,*) " "
+      write(*,*)
       xtime=xtime2
       wxtime=wxtime2
       DEALLOCATE(cumulab,ffa1,ffb2)
@@ -472,7 +472,7 @@
         write(*,*) " --------------------------------------------------------- "
         write(*,*) "  EVALUATING POST-HARTREE-FOCK-TYPE CORRELATION INTEGRALS  "
         write(*,*) " --------------------------------------------------------- "
-        write(*,*) " "
+        write(*,*)
         ALLOCATE(cumulab(norb2,norb2),ffa1(itotps,norb2),ffb2(itotps,norb2))
         call monadic_diag(1,itotps,chp3,chp3pha,dm1,dm2,cumulab,ffa1,ffb2)
         call numint_two_pmon(itotps,norb2,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,cumulab,ffa1,ffb2,Ex)
@@ -500,25 +500,25 @@
         write(*,*) " ---------------------------------------------- "
         write(*,*) "  POST-HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
         write(*,*) " ---------------------------------------------- "
-        write(*,*) " "
+        write(*,*)
         call MPRINT2(Ex,nat,maxat)
         write(*,'(2x,a34,x,f14.7)') "Post-Hartree-Fock exchange energy:",xx
-        write(*,*) " "
+        write(*,*)
 
 !! NOW CORRELATION !!
         write(*,*) " ------------------------------------------------- "
         write(*,*) "  POST-HARTREE-FOCK-TYPE CORRELATION ENERGY TERMS  "
         write(*,*) " ------------------------------------------------- "
-        write(*,*) " "
+        write(*,*)
         call MPRINT2(Ec,nat,maxat)
         write(*,'(2x,a37,x,f14.7)') "Post-Hartree-Fock correlation energy:",xxc
-        write(*,*) " "
+        write(*,*)
 
 !! TIMINGS... !!
         call cpu_time(xtime2)
         call get_wall_time(wxtime2)
         call print_timer('PHF Ex & Ec energy',xtime2-xtime,wxtime2-wxtime)
-        write(*,*) " "
+        write(*,*)
         xtime=xtime2
         wxtime=wxtime2
         DEALLOCATE(cumulab,ffa1,ffb2)
@@ -537,14 +537,14 @@
       if(evee0.ne.ZERO) then
         twoelerr=(evee-evee0)*tokcal
         write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-        write(*,*) " "
+        write(*,*)
       else
         evee0=evee    
       end if
 
 !! ZERO ERROR STRATEGY FOR VEE PART !!
       write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
-      write(*,*) " "
+      write(*,*)
 
       if(abs(twoelerr).gt.twoeltoler) then
         write(*,'(2x,a)')
@@ -636,15 +636,15 @@
         coul(ii,ii)=coul0(ii,1)*phabest+(ONE-phabest)*coul0(ii,3)
         Exc(ii,ii)=coul0(ii,2)*phabest+(ONE-phabest)*coul0(ii,4)
       end do
-      write(*,*) " "
+      write(*,*)
 
 !! PRINTING !!
 !! FIRST COULOMB !!
-      write(*,*) " "
+      write(*,*)
       write(*,*) " ------------------------------------------------------- "
       write(*,*) "  INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
       write(*,*) " ------------------------------------------------------- "
-      write(*,*) " "
+      write(*,*)
       call MPRINT2(coul,nat,maxat)
       coulen=ZERO
       do ii=1,nat
@@ -653,7 +653,7 @@
         end do
       end do
       write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-      write(*,*) " "
+      write(*,*)
       if (idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: Coulomb energy ' 
         call group_by_frag_mat(1,line,coul)
@@ -663,7 +663,7 @@
       write(*,*) " ----------------------------------------------------------------------- "
       write(*,*) "  INTERPOLATED POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS  "
       write(*,*) " ----------------------------------------------------------------------- "
-      write(*,*) " "
+      write(*,*)
       call MPRINT2(Exc,nat,maxat)
       exch_corr=ZERO
       do ii=1,nat
@@ -672,7 +672,7 @@
         end do
       end do
       write(*,'(2x,a46,x,f14.7)') "Post-Hartree-Fock exchange-correlation energy:",exch_corr
-      write(*,*) " "
+      write(*,*)
       if(idofr.eq.1) then
         line=' FRAGMENT ANALYSIS: Final Exchange-Correlation Decomposition ' 
         call group_by_frag_mat(1,line,Exc)
@@ -702,7 +702,7 @@
       write(*,*) " ------------------------------------------------- "
       write(*,*) "  FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS  "
       write(*,*) " ------------------------------------------------- "
-      write(*,*) " "
+      write(*,*)
       call MPRINT2(eto,nat,maxat)
       write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
       write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf  
@@ -921,7 +921,7 @@
         end do
       end do
       write(*,*) " Skipping diatomic exchange integrals for ",iterms
-      write(*,*) " "
+      write(*,*)
 
       end 
 

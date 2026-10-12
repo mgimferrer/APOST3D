@@ -533,7 +533,7 @@ c exchange
          end do
        end do !end of main loop
 
-       write(*,*) " "
+       write(*,*)
        write(*,*) " *** ANALYTICAL COULOMB *** "
  
        coulen=ZERO
@@ -542,11 +542,11 @@ c exchange
        end do
  
        write(*,*) " Ecoul TERMS "
-       write(*,*) " "
+       write(*,*)
        CALL Mprint(coul,nat,maxat)
        write(*,*) " Coulomb energy : ",coulen
  
-       write(*,*) " "
+       write(*,*)
        write(*,*) " *** ANALYTICAL EXCHANGE *** "
  
        exchen_hf=ZERO
@@ -559,10 +559,10 @@ c exchange
        else
          write(*,*) " UHF Ex TERMS  "
        end if
-       write(*,*) " "
+       write(*,*)
        CALL Mprint(exch_hf,nat,maxat)
        write(*,*) " Hartree-Fock exchange energy : ",exchen_hf
-       write(*,*) " "
+       write(*,*)
 
       END SUBROUTINE
 
@@ -716,7 +716,7 @@ c exchange
 !! EXCHANGE AND CORRELATION FOR DFT !!
 
       write(*,*) " *** DFT MOLECULAR ENERGY DECOMPOSITION *** "
-      write(*,*) " "
+      write(*,*)
 
       do iatom=1,nat
         do nu=1,igr
@@ -758,7 +758,7 @@ c exchange
           end if
         end do
       end do
-      write(*,*) " "
+      write(*,*)
 
 !! chp2 : MOs, chpd : MO DERIVATIVES !!
 
@@ -784,10 +784,10 @@ c exchange
         xtot=xtot+x
       end do
       write(*,*) " PURE DFT ONE-CENTER CONTRIBUTIONS (EXACT) "
-      write(*,*) " "
+      write(*,*)
       CALL Mprint(exch,NAT,maxat)
       write(*,*) " Exact one-center decomposition for DFT xc energy : ",xtot
-      write(*,*) " "
+      write(*,*)
 
 !! PRINTING !!
 
@@ -800,15 +800,15 @@ c exchange
       end do
       etot=xtot
       write(*,*) " FINAL KS-DFT XC ENERGY COMPONENTS "
-      write(*,*) " "
+      write(*,*)
       call Mprint(exch,nat,maxat)
       write(*,*) " Sum of (exact) DFT xc energy components : ",exchen
-      write(*,*) " "
+      write(*,*)
       if(xmix.gt.ZERO) then
         write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
      +    ' x HF-type exchange is added in the'
         write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
-        write(*,*) " "
+        write(*,*)
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Exc Decomposition' 
@@ -894,9 +894,9 @@ CCCCCCCCCCCCCCC
        aux_qat(i,1)=qat(i,1)
        aux_qat(i,2)=qat(i,2)
       enddo
-      print *,'  '
+      write(*,*)
       print *,'    ELECTRON POPULATIONS'
-      print *,'  '
+      write(*,*)
       print *,'  Atom   apost3d      Mulliken'
       print *,' -----------------------------'
       call vprint(qat,nat,maxat,2)

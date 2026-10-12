@@ -231,12 +231,12 @@
           end do
 
           write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
-          write(*,*) " "
+          write(*,*)
           lbl30="Net occupation for fragment"
           write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xmaxo
           write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
           write(*,60) (pp0(mu,mu),mu=1,imaxo)
-          write(*,*) " "
+          write(*,*)
 
 !! gross occupation of each EFO via sat, scaled by its net occupation.  !!
 !! parallel over ii: independent per EFO, writes only s0all(ii); xx0 is !!
@@ -311,7 +311,7 @@
           write(*,62) xnetall-xmaxo,xgroall-xx0
 
 !! just for printing purposes... style of the output !!
-          if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*) " "
+          if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*)
           do kk=1,imaxo
             do mu=1,igr
               p0(mu,kk)=c0(mu,kk)
@@ -865,7 +865,7 @@
       end do
       write(*,*) " ------------------------ "
       write(*,'(3x,a4,x,f4.1)') "Sum:",zztot
-      write(*,*) " "
+      write(*,*)
 
       confi2=dmin1(confi,confi0)
       write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
