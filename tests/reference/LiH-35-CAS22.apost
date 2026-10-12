@@ -142,7 +142,7 @@
   Checking NO overlap matrix
 
   TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING WALL :: initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -165,8 +165,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.09 s
-  TIMING WALL :: atomic definition                                 0.02 s
+  TIMING CPU  :: atomic definition                                 0.15 s
+  TIMING WALL :: atomic definition                                 0.03 s
 
   ---------------------------------
     POST-HARTREE-FOCK CALCULATION
@@ -384,8 +384,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      0.4535805
   
-  TIMING CPU  :: enpart one-electron                               0.07 s
-  TIMING WALL :: enpart one-electron                               0.01 s
+  TIMING CPU  :: enpart one-electron                               0.11 s
+  TIMING WALL :: enpart one-electron                               0.02 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -414,15 +414,15 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:      4.8192880
   
-  TIMING CPU  :: Coulomb energy                                    0.14 s
-  TIMING WALL :: Coulomb energy                                    0.02 s
+  TIMING CPU  :: Coulomb energy                                    0.20 s
+  TIMING WALL :: Coulomb energy                                    0.03 s
   
   ------------------------------------------------------------------ 
    EVALUATING POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION INTEGRALS  
   ------------------------------------------------------------------ 
   
   Two-el integrations for      6 MO pairs
-  Threshold for atom pair calculation    0.000000
+  Threshold for atom pair calculation:   0.000000
   Skipping diatomic exchange integrals for            0
   
   ---------------------------------------------------------- 
@@ -437,8 +437,8 @@
   --------------------------------------------------------------------------------                    
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
   
-  TIMING CPU  :: PHF Exc energy                                    0.53 s
-  TIMING WALL :: PHF Exc energy                                    0.53 s
+  TIMING CPU  :: PHF Exc energy                                    1.01 s
+  TIMING WALL :: PHF Exc energy                                    1.02 s
   
   Total two-electron part (coul+exc):      2.7365314
   Integration error (kcal/mol):    -0.09
@@ -495,7 +495,7 @@
   Total energy in Fchk file:     -7.9411448
   Integration error (au):     -0.0000000
   Integration error (kcal/mol):    -0.00
-  TIMING CPU  :: enpart two-electron                               1.09 s
-  TIMING WALL :: enpart two-electron                               0.96 s
+  TIMING CPU  :: enpart two-electron                               2.02 s
+  TIMING WALL :: enpart two-electron                               1.96 s
 
   ...Normal Termination of APOST-3D...
