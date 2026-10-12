@@ -340,7 +340,6 @@
       ithrebod = iopt(44)
       ifield   = iopt(47)
       ipolar   = iopt(46)
-      itop     = iopt(58)
       iecorr   = iopt(59)
       iorca    = iopt(43)
       ipyscf   = iopt(87)

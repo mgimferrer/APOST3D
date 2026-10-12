@@ -131,9 +131,6 @@ c      -------------------------------------------------------------------------
       common /erf/aerf,ierf
 !! MODGRID (diatXC) features !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-!! EDAIQA features !!
-      common /edaiqa/xen,xcoul,xnn
-      common /edaiqa2/i2deda,iipoints,xptxyz(2,3)
 !! NLOP features !!
       common /twoel/twoeltoler
       common /efield/field(4),edipole
@@ -299,14 +296,6 @@ c      -------------------------------------------------------------------------
      +    'wavefunction')
       end if
 
-      if(idoint.eq.1) then
-        if(iwfn.eq.1) then
-          write(*,*) ' Will use orbitals from wfn file'
-          write(*,*) ' Assuming orbitals are on fort.92'
-c possible call system here...
-        end if
-      end if
-      
       if(kop.eq.0.and.ispin.eq.1) then
         write(*,*) 'Warning, closed-shell Local Spin calculation ' 
       end if
@@ -316,7 +305,7 @@ c possible call system here...
 !!unused slots.                                                    !!
       iopt(1) = idoint
 c      iopt(2) =
-      iopt(3) = iwfn
+c      iopt(3) =
       iopt(4) = idono
       iopt(5) = imulli
       iopt(6) = ihirsh
@@ -342,10 +331,10 @@ c      iopt(19) =
       iopt(24) = ieffthr
       iopt(25) = istiff
       iopt(26) = icorr
-      iopt(27) = isha
+c      iopt(27) =
       iopt(28) = ipca
 c      iopt(29) =
-      iopt(30) = idafh
+c      iopt(30) =
 
       iopt(31) = inewbec
 c      iopt(32) =
@@ -376,7 +365,7 @@ c      iopt(54) =
 c      iopt(55) =   !! itype/jtype, set below in ENPART dispatch (dynamic) !!
       iopt(56) = idftdm1
       iopt(57) = id_func_dm1 !! dft_dm1.f's own functional-ID read (ifunc=Iopt(57)) !!
-      iopt(58) = itop
+c      iopt(58) =
       iopt(59) = iecorr
       iopt(60) = id_xcfunc
 
@@ -406,16 +395,16 @@ c      iopt(81) =
 c      iopt(82) =
 c      iopt(83) =
 c      iopt(84) =
-      iopt(85) = ipairs
-      iopt(86) = ietop
+c      iopt(85) =
+c      iopt(86) =
       iopt(87) = ipyscf
       iopt(88) = inopop
 c      iopt(89) =
       iopt(90) = ieoscent
 
       iopt(91) = ianalytical
-      iopt(92) = iedaiqa
-      iopt(93) = iflip
+c      iopt(92) =
+c      iopt(93) =
 c      iopt(94) =
       iopt(95) = iqchem
       iopt(96) = ifolitol
