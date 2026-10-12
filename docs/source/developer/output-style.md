@@ -49,7 +49,12 @@ up:
   quantities (electrons, bond orders, oxidation states) have none.
 - A value printed in the input summary and again later in the run is
   printed the same way both times (same units, same decimals).
-- Zero is printed as `0.00`, never `-0.00`.
+- Zero is printed as `0.00`, never `-0.00` (the `Makefile` compiles with
+  `-fno-sign-zero`).
+- In code, such a line is printed with `print_value` (module
+  `output_mod`, `modules.f90`): `call print_value('Kinetic energy', x, 7,
+  'au')` for a real with 7 decimals, `call print_value('Number of atoms',
+  n)` for an integer, `call print_value('Functional', 'B3LYP')` for text.
 
 ## Decimals
 
@@ -88,8 +93,13 @@ The same kind of quantity always has the same number of decimals:
 - A `Total` row says what it adds up when it is not the plain sum of the
   column (for example, a matrix total over the upper triangle including
   the diagonal).
-- Matrices (atom × atom, fragment × fragment) use the shared matrix
-  printer, which splits wide matrices into blocks of six columns.
+- Matrices use the shared printers: `MPRINT2` (atom × atom) and
+  `group_by_frag_mat` (fragment × fragment, with its total), which split
+  wide matrices into blocks of six columns; `VPRINT` prints the rows of a
+  per-atom table. All of them print 13 decimals instead of 6 with
+  `FULLPRECISION`.
+- Element symbols come from `elements_mod` (`element_symbol`,
+  `element_label`).
 
 ## Messages
 

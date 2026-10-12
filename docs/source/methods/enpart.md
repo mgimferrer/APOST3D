@@ -174,7 +174,7 @@ ONE-CENTER TERMS (EXACT)` and, after rearranging, the final matrix:
 % source: tests/reference/H2O-SVWN.apost
 ```text
     FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS
-              1  O        2  H        3  H
+                 1  O        2  H        3  H
     1  O    -8.498405   -0.181686   -0.181686
     2  H    -0.181686   -0.059858   -0.000594
     3  H    -0.181686   -0.000594   -0.059858
@@ -215,7 +215,7 @@ that the error is neither estimated nor corrected.
 % source: tests/reference/H2O-SVWN.apost
 ```text
     FUZZY ATOMS KS-DFT ENERGY COMPONENTS
-              1  O        2  H        3  H
+                 1  O        2  H        3  H
     1  O   -74.525615   -0.529236   -0.529236
     2  H    -0.529236   -0.302629    0.138786
     3  H    -0.529236    0.138786   -0.302629

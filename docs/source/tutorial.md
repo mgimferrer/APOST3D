@@ -65,15 +65,15 @@ does. The atomic charges:
     TOTAL ATOMIC CHARGES
   ------------------------
 
-    Atom     apost3d    Mulliken
-  ------------------------------
-   1 Fe     1.443242    0.880964
-   2  C     0.412799    0.412495
-   3  C     0.412799    0.412495
-   4  O    -0.134560    0.147023
-   5  O    -0.134560    0.147023
-  ------------------------------
-     Sum    1.999719    2.000000
+  Atom        apost3d    Mulliken
+  -------------------------------
+    1 Fe     1.443242    0.880964
+    2  C     0.412799    0.412495
+    3  C     0.412799    0.412495
+    4  O    -0.134560    0.147023
+    5  O    -0.134560    0.147023
+  -------------------------------
+  Sum        1.999719    2.000000
 ```
 
 The `apost3d` column holds the TFVC values, the `Mulliken` column the
@@ -84,7 +84,7 @@ between the atoms. The bond orders show it:
 
 % source: tests/reference/FeCO2-PBEPBE.apost
 ```text
-              1 Fe        2  C        3  C        4  O        5  O
+                 1 Fe        2  C        3  C        4  O        5  O
     1 Fe    22.981403    1.110551    1.110551    0.465185    0.465185
     2  C     1.110551    3.920762    0.052987    2.113519    0.055775
   ...

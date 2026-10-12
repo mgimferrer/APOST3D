@@ -18,6 +18,8 @@
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      common /printout/iaccur
+      character*20 fmthdr
       parameter (TOL=1.0d-10)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
@@ -244,10 +246,13 @@
       end if
 
       call print_box('EFFECTIVELY UNPAIRED ELECTRONS')
-      write(*,'(1x,a7,a12)') 'Atom','u_A'
-      write(*,'(2x,a)') repeat('-',18)
+      iw=12
+      if(iaccur.ne.0) iw=20
+      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
+      write(*,fmthdr) 'Atom   ','u_A'
+      write(*,'(2x,a)') repeat('-',7+iw)
       call vprint(ua,nat,maxat,1)
-      write(*,'(2x,a)') repeat('-',18)
+      write(*,'(2x,a)') repeat('-',7+iw)
       write(*,'(2x,a,f10.5)') 'Sum check N_D = ',xnd
       if (idofr.eq.1) then
         line ='   FRAGMENT ANALYSIS : Num. eff. unpaired elec.'
