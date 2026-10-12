@@ -157,8 +157,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.94 s
-  TIMING WALL :: atomic definition                                 0.15 s
+  TIMING CPU  :: atomic definition                                 1.37 s
+  TIMING WALL :: atomic definition                                 0.22 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -355,8 +355,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      7.2850801
   
-  TIMING CPU  :: enpart one-electron                               0.45 s
-  TIMING WALL :: enpart one-electron                               0.07 s
+  TIMING CPU  :: enpart one-electron                               0.63 s
+  TIMING WALL :: enpart one-electron                               0.09 s
 
   --------------------------------
     UKS-DFT ENERGY DECOMPOSITION
@@ -423,8 +423,8 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
   
-  TIMING CPU  :: enpart dft                                        1.76 s
-  TIMING WALL :: enpart dft                                        0.39 s
+  TIMING CPU  :: enpart dft                                        2.72 s
+  TIMING WALL :: enpart dft                                        0.56 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -454,14 +454,14 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     44.3183281
   
-  TIMING CPU  :: Coulomb energy                                    0.25 s
-  TIMING WALL :: Coulomb energy                                    0.04 s
+  TIMING CPU  :: Coulomb energy                                    0.40 s
+  TIMING WALL :: Coulomb energy                                    0.06 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
   ---------------------------------------------------
 
-  Two-el integrations for     42 MO pairs
+  Two-el integrations for     31 MO pairs
   Threshold for atom pair calculation:   0.200000
   Two-el integration will be distributed over   8 threads out of  10 available hardware cores
   Skipping numerical integration for     1 atom pairs
@@ -563,7 +563,7 @@
   Integration error (au):     -0.0000008
   Integration error (kcal/mol):    -0.00
   
-  TIMING CPU  :: enpart two-electron                               6.82 s
-  TIMING WALL :: enpart two-electron                               0.92 s
+  TIMING CPU  :: enpart two-electron                              10.02 s
+  TIMING WALL :: enpart two-electron                               1.38 s
 
   ...Normal Termination of APOST-3D...
