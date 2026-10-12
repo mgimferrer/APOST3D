@@ -41,6 +41,7 @@
       use ao_matrices
       use effao_mod, only: allocate_effao
       use nao_mod, only: allocate_nao
+      use json_mod
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -51,7 +52,7 @@
       dimension clin(nmax**2)
       character*80 line,line2
       character*20 cform,ctype
-      logical ilog
+      logical ilog,lescf
 
       ndens0=iopt(9)
 
@@ -145,6 +146,7 @@
       read(15,*)(coord0(1,i),coord0(2,i),coord0(3,i),i=1,nat)
 
       escf=real_locate(15,"SCF Energ",ilog)
+      lescf=ilog
       ss2=real_locate(15,"S**2    ",ilog)
 
       dummy=int_locate(15,"Alpha MO co",ilog)
@@ -320,6 +322,24 @@
       write(*,'(2x,a,1x,f20.10)') 'SCF/DFT energy (au)              :',
      +  escf
 
+!! the same summary in the results file; no energy in the .fchk -> null !!
+      call json_begin_object('wavefunction')
+      if(kop.eq.0) then
+        call json_value('formalism','restricted')
+      else
+        call json_value('formalism','unrestricted')
+      end if
+      call json_value('method',trim(ctype))
+      call json_value('n_basis_functions',igr)
+      call json_value('n_electrons',nalf+nb)
+      call json_value('n_alpha',nalf)
+      call json_value('n_beta',nb)
+      if(lescf) then
+        call json_value('energy_au',escf)
+      else
+        call json_null('energy_au')
+      end if
+      call json_end()
       end
 
 !! ***** !!

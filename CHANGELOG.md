@@ -8,6 +8,12 @@ program, not a full development history — see `git log` for that.
 
 ### New implementations
 
+- **Results file `<job>.apost.json`** — every run also writes its
+  results in a machine-readable file, for the APOST3Dview visualizer and
+  scripts: the wavefunction summary, the input, the molecule and the
+  fragments, with the results of the analyses to be added. A run that
+  stops on an error still writes a complete file that says so. See
+  "Results file (JSON)" in the developer guide.
 - **GEOS (Generalized Effective Oxidation States)** — a new open-shell
   oxidation-state analysis (`# METHOD GEOS`), built from paired/unpaired
   densities separately (Takatsuka's definition) rather than the total
