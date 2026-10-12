@@ -153,8 +153,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 3.06 s
-  TIMING WALL :: atomic definition                                 0.50 s
+  TIMING CPU  :: atomic definition                                 2.87 s
+  TIMING WALL :: atomic definition                                 0.42 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -192,7 +192,7 @@
    5  H     0.565094    0.119654
    6  H     0.607351    0.107653
   ------------------------------
-     Sum   -0.000000   -0.000000
+     Sum    0.000000    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX
@@ -246,11 +246,11 @@
     Atom         F_A
   ------------------
    1  O    -0.000001
-   2  H    -0.000000
-   3  H    -0.000000
+   2  H     0.000000
+   3  H     0.000000
    4  O     0.000000
    5  H     0.000000
-   6  H    -0.000000
+   6  H     0.000000
   ------------------
 
   TIMING CPU  :: population analyses                               0.00 s
@@ -289,7 +289,7 @@
     6  H    -3.411322   -0.173743   -0.173674   -6.363003   -0.258359   -0.642794
   --------------------------------------------------------------------------------                    
   Electron-nuclei energy:   -435.0913605
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
 
   ------------------
     KINETIC ENERGY
@@ -306,7 +306,7 @@
     6  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.322031
   --------------------------------------------------------------------------------                    
   Kinetic energy:    152.0939470
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
 
   -----------------------------
     NUCLEAR-NUCLEAR REPULSION
@@ -324,8 +324,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     36.6642284
   
-  TIMING CPU  :: enpart one-electron                               1.35 s
-  TIMING WALL :: enpart one-electron                               0.21 s
+  TIMING CPU  :: enpart one-electron                               1.26 s
+  TIMING WALL :: enpart one-electron                               0.17 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -413,8 +413,8 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
   
-  TIMING CPU  :: enpart dft                                        6.85 s
-  TIMING WALL :: enpart dft                                        1.18 s
+  TIMING CPU  :: enpart dft                                        6.49 s
+  TIMING WALL :: enpart dft                                        1.27 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -447,8 +447,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    112.2264252
   
-  TIMING CPU  :: Coulomb energy                                    1.73 s
-  TIMING WALL :: Coulomb energy                                    0.27 s
+  TIMING CPU  :: Coulomb energy                                    1.74 s
+  TIMING WALL :: Coulomb energy                                    0.26 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -476,8 +476,8 @@
   Hartree-Fock exchange energy:    -17.9413951
   Note: full HF-type exchange, before scaling by 0.200.
   
-  TIMING CPU  :: Exact-exchange energy                            17.62 s
-  TIMING WALL :: Exact-exchange energy                             2.29 s
+  TIMING CPU  :: Exact-exchange energy                            17.82 s
+  TIMING WALL :: Exact-exchange energy                             2.38 s
 
   --------------------------
     HYBRID KS-DFT XC TERMS
@@ -506,8 +506,8 @@
   New error after rotation:    -9.24
   Damping parameter       :      0.7065478
   
-  TIMING CPU  :: Interpolated zero-error                           7.65 s
-  TIMING WALL :: Interpolated zero-error                           0.99 s
+  TIMING CPU  :: Interpolated zero-error                           7.83 s
+  TIMING WALL :: Interpolated zero-error                           1.02 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -580,7 +580,7 @@
   Integration error (au):     -0.0000105
   Integration error (kcal/mol):    -0.01
   
-  TIMING CPU  :: enpart two-electron                              27.31 s
-  TIMING WALL :: enpart two-electron                               3.60 s
+  TIMING CPU  :: enpart two-electron                              27.69 s
+  TIMING WALL :: enpart two-electron                               3.71 s
 
   ...Normal Termination of APOST-3D...

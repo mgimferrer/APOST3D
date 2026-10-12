@@ -112,8 +112,8 @@
   --------
   Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
 
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -137,7 +137,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.04 s
+  TIMING CPU  :: atomic definition                                 0.07 s
   TIMING WALL :: atomic definition                                 0.01 s
 
   -----------------------------

@@ -145,7 +145,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.35 s
+  TIMING CPU  :: atomic definition                                 0.34 s
   TIMING WALL :: atomic definition                                 0.06 s
 
   -----------------------------
@@ -176,7 +176,7 @@
    1  H    -0.352377    0.066456
    2  I     0.352377   -0.066456
   ------------------------------
-     Sum   -0.000000   -0.000000
+     Sum    0.000000    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX
@@ -217,8 +217,8 @@
 
     Atom         F_A
   ------------------
-   1  H    -0.000000
-   2  I    -0.000000
+   1  H     0.000000
+   2  I     0.000000
   ------------------
 
   TIMING CPU  :: population analyses                               0.00 s
@@ -273,7 +273,7 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      8.2221444
   
-  TIMING CPU  :: enpart one-electron                               0.35 s
+  TIMING CPU  :: enpart one-electron                               0.36 s
   TIMING WALL :: enpart one-electron                               0.05 s
 
   -------------------------------------------------------
@@ -303,7 +303,7 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    250.5249355
   
-  TIMING CPU  :: Coulomb energy                                    0.20 s
+  TIMING CPU  :: Coulomb energy                                    0.19 s
   TIMING WALL :: Coulomb energy                                    0.03 s
 
   ---------------------------------------------------
@@ -327,7 +327,7 @@
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -21.4887492
   
-  TIMING CPU  :: Exact-exchange energy                             5.16 s
+  TIMING CPU  :: Exact-exchange energy                             5.18 s
   TIMING WALL :: Exact-exchange energy                             0.69 s
   
   Total two-electron part (coul+exch_hf):    229.0361863
@@ -342,8 +342,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.4600929
   
-  TIMING CPU  :: Interpolated zero-error                           3.47 s
-  TIMING WALL :: Interpolated zero-error                           0.48 s
+  TIMING CPU  :: Interpolated zero-error                           3.41 s
+  TIMING WALL :: Interpolated zero-error                           0.47 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -370,7 +370,7 @@
   Hartree-Fock exchange energy:    -21.5109493
   
   Total two-electron part (coul+exch_hf):    229.0580318
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
 
   ----------------------------------------------
     FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS
@@ -387,7 +387,7 @@
   Integration error (au):     -0.0001208
   Integration error (kcal/mol):    -0.08
   
-  TIMING CPU  :: enpart two-electron                               8.87 s
-  TIMING WALL :: enpart two-electron                               1.21 s
+  TIMING CPU  :: enpart two-electron                               8.83 s
+  TIMING WALL :: enpart two-electron                               1.20 s
 
   ...Normal Termination of APOST-3D...

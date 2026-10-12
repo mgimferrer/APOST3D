@@ -144,8 +144,8 @@
 
   Checking NO overlap matrix
 
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -168,8 +168,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.03 s
-  TIMING WALL :: atomic definition                                 0.00 s
+  TIMING CPU  :: atomic definition                                 0.04 s
+  TIMING WALL :: atomic definition                                 0.01 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -210,7 +210,7 @@
    1 Li     0.612155    0.191121
    2  H    -0.612448   -0.191121
   ------------------------------
-     Sum   -0.000293   -0.000000
+     Sum   -0.000293    0.000000
 
   --------------------------------------
     FRAGMENT ANALYSIS : Atomic Charges
@@ -221,7 +221,7 @@
     1          0.612155    0.191121
     2         -0.612448   -0.191121
   ---------------------------------
-     Total:   -0.000293   -0.000000
+     Total:   -0.000293    0.000000
 
   -------------------------------------
     APOST3D OVERLAP POPULATION MATRIX
@@ -468,8 +468,8 @@
   OVERALL RELIABILITY INDEX R(%) =  96.638
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.532
 
-  TIMING CPU  :: EFFAO computation                                 0.05 s
-  TIMING WALL :: EFFAO computation                                 0.01 s
+  TIMING CPU  :: EFFAO computation                                 0.08 s
+  TIMING WALL :: EFFAO computation                                 0.02 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

@@ -35,7 +35,8 @@ the `gcc` of the same version when there is one (`gcc-16`, ...).
 ## Compiler flags
 
 The `Makefile` compiles with `-O3 -ffast-math -fopenmp -fbacktrace
--ffixed-line-length-132 -fallow-argument-mismatch`, plus `-march=$(ARCH)`
+-ffixed-line-length-132 -fallow-argument-mismatch -fno-sign-zero` (the last
+one prints a value that rounds to zero as `0.00`, never `-0.00`), plus `-march=$(ARCH)`
 when `ARCH` is set. `input2.f` (input parsing) is compiled at `-O1`. The
 utilities are compiled without `-fopenmp`: with it, gfortran places their
 large local arrays on the stack, which overflows it.

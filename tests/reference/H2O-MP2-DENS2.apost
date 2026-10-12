@@ -116,8 +116,8 @@
   Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
   Density used                         : 2 (DENS)
 
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -143,8 +143,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.01 s
-  TIMING WALL :: atomic definition                                 0.01 s
+  TIMING CPU  :: atomic definition                                 0.02 s
+  TIMING WALL :: atomic definition                                 0.00 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -176,7 +176,7 @@
    2  H     0.580754    0.141972
    3  H     0.580754    0.141972
   ------------------------------
-     Sum    0.000077   -0.000000
+     Sum    0.000077    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX

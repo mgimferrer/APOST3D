@@ -65,7 +65,9 @@ OPTFLAGS  = -O3 -ffast-math $(if $(ARCH),-march=$(ARCH))
 DBGFLAGS  = -fbacktrace
 OMPFLAGS  = -fopenmp
 # Note: -mcmodel=medium is x86-only and not needed on aarch64/modern systems
-SFLAGS    = -ffixed-line-length-132 -fallow-argument-mismatch
+# -fno-sign-zero: a zero, or a value that rounds to zero, is printed
+# without a minus sign (0.00, never -0.00)
+SFLAGS    = -ffixed-line-length-132 -fallow-argument-mismatch -fno-sign-zero
 
 ## FULL FLAG SET
 FFLAGS    = $(OPTFLAGS) $(DBGFLAGS) $(OMPFLAGS) $(SFLAGS)

@@ -177,7 +177,7 @@
    1  H    -0.352377    0.066456
    2  I     0.352377   -0.066456
   ------------------------------
-     Sum   -0.000000   -0.000000
+     Sum    0.000000    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX
@@ -218,8 +218,8 @@
 
     Atom         F_A
   ------------------
-   1  H    -0.000000
-   2  I    -0.000000
+   1  H     0.000000
+   2  I     0.000000
   ------------------
 
   TIMING CPU  :: population analyses                               0.00 s
@@ -247,7 +247,7 @@
     2  I   -19.030822 -628.376148
   --------------------------------------------------------------------------------                    
   Electron-nuclei energy:   -648.7483763
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
 
   ------------------
     KINETIC ENERGY
@@ -274,8 +274,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      8.2221444
   
-  TIMING CPU  :: enpart one-electron                               0.35 s
-  TIMING WALL :: enpart one-electron                               0.05 s
+  TIMING CPU  :: enpart one-electron                               0.36 s
+  TIMING WALL :: enpart one-electron                               0.06 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -304,7 +304,7 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:    250.5249353
   
-  TIMING CPU  :: Coulomb energy                                    0.20 s
+  TIMING CPU  :: Coulomb energy                                    0.21 s
   TIMING WALL :: Coulomb energy                                    0.03 s
 
   ---------------------------------------------------
@@ -328,8 +328,8 @@
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -21.4887492
   
-  TIMING CPU  :: Exact-exchange energy                             5.09 s
-  TIMING WALL :: Exact-exchange energy                             0.67 s
+  TIMING CPU  :: Exact-exchange energy                             5.18 s
+  TIMING WALL :: Exact-exchange energy                             0.70 s
   
   Total two-electron part (coul+exch_hf):    229.0361861
   Integration error (kcal/mol):   -13.71
@@ -343,8 +343,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.4600955
   
-  TIMING CPU  :: Interpolated zero-error                           3.57 s
-  TIMING WALL :: Interpolated zero-error                           0.53 s
+  TIMING CPU  :: Interpolated zero-error                           3.48 s
+  TIMING WALL :: Interpolated zero-error                           0.49 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -386,9 +386,9 @@
   Total integrated energy  :   -297.2315321
   Total energy in Fchk file:   -297.2315317
   Integration error (au):     -0.0000005
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
   
   TIMING CPU  :: enpart two-electron                               8.90 s
-  TIMING WALL :: enpart two-electron                               1.24 s
+  TIMING WALL :: enpart two-electron                               1.23 s
 
   ...Normal Termination of APOST-3D...
