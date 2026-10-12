@@ -1,0 +1,55 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "CASSCF",
+    "n_basis_functions": 44,
+    "n_electrons": 4,
+    "n_alpha": 2,
+    "n_beta": 2,
+    "energy_au": -7.9669918407160516E+000
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nGEOS\nDOFRAGS\nCUBE\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n# CUBE\nMAX_OCC 0\nMIN_OCC 0\nNEG_EFOS\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 2,
+    "atomic_numbers": [3, 1],
+    "symbols": ["Li", "H"],
+    "nuclear_charges": [3.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 6.0471235999999999E+000]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [1]
+    },
+    {
+      "id": 2,
+      "atoms": [2]
+    }
+  ],
+  "analyses": {},
+  "run": {
+    "job_name": "LiH-32-FCI",
+    "input_file": "LiH-32-FCI.inp",
+    "wavefunction_file": "LiH-32-FCI.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

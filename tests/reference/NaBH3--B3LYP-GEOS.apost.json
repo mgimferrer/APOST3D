@@ -1,0 +1,58 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "unrestricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 165,
+    "n_electrons": 20,
+    "n_alpha": 10,
+    "n_beta": 10,
+    "energy_au": -1.8914702821202579E+002
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nGEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n5\n-1\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [5, 1, 1, 1, 11],
+    "symbols": ["B", "H", "H", "H", "Na"],
+    "nuclear_charges": [5.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.1000000000000000E+001],
+    "coordinates_bohr": [
+      [4.4116297799999999E-023, 0.0000000000000000E+000, -3.1450215500000001E+000],
+      [3.9344785000000000E-007, 2.2792703900000002E+000, -3.3206396900000001E+000],
+      [1.9739058599999999E+000, -1.1396355400000000E+000, -3.3206396900000001E+000],
+      [-1.9739062599999999E+000, -1.1396348500000000E+000, -3.3206396900000001E+000],
+      [-3.5293039100000001E-023, 0.0000000000000000E+000, 2.3351842100000000E+000]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [5]
+    },
+    {
+      "id": 2,
+      "atoms": [1, 2, 3, 4]
+    }
+  ],
+  "analyses": {},
+  "run": {
+    "job_name": "NaBH3--B3LYP-GEOS",
+    "input_file": "NaBH3--B3LYP-GEOS.inp",
+    "wavefunction_file": "NaBH3--B3LYP-GEOS.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

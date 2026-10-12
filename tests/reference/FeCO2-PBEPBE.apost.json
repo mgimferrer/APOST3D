@@ -1,0 +1,62 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 86,
+    "n_electrons": 52,
+    "n_alpha": 26,
+    "n_beta": 26,
+    "energy_au": -1.4882914233300880E+003
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nDOFRAGS\nEOS\n#\n# FRAGMENTS\n3\n1\n1\n2\n2 4\n-1\n#\n\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [26, 6, 6, 8, 8],
+    "symbols": ["Fe", "C", "C", "O", "O"],
+    "nuclear_charges": [2.6000000000000000E+001, 6.0000000000000000E+000, 6.0000000000000000E+000, 8.0000000000000000E+000, 8.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-4.3368086899999998E-019, 4.9568368100000000E-018, 8.1135197299999993E-003],
+      [-8.1792211899999998E-016, 3.5941410800000000E+000, -2.4747871900000001E-003],
+      [1.5118115099999999E-015, -3.5941410800000000E+000, -2.4747871900000001E-003],
+      [-1.1848161300000001E-015, 6.5994429900000000E+000, -1.1328379200000000E-002],
+      [2.7699197099999999E-015, -6.5994429900000000E+000, -1.1328379200000000E-002]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [1]
+    },
+    {
+      "id": 2,
+      "atoms": [2, 4]
+    },
+    {
+      "id": 3,
+      "atoms": [3, 5]
+    }
+  ],
+  "analyses": {},
+  "run": {
+    "job_name": "FeCO2-PBEPBE",
+    "input_file": "FeCO2-PBEPBE.inp",
+    "wavefunction_file": "FeCO2-PBEPBE.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

@@ -17,6 +17,9 @@
 #                 and a change in the numbers fails. Without it, the
 #                 outputs must be identical line by line (refactors,
 #                 parallel regions), timings and thread counts aside.
+#                 The results files (<test>.apost.json) are compared as
+#                 well: identical values, or within compare_json.py's
+#                 tolerance with --format.
 #   --threads N   also run the working-tree build on N threads and show
 #                 its differences from the one-thread run (summing in
 #                 another order may change the last printed digit).
@@ -127,6 +130,24 @@ else
     --new-dir "$WORKDIR/new" | grep -v '^  same numbers' || true
   python3 "$REPO/tests/compare_numbers.py" --old-dir "$WORKDIR/base" \
     --new-dir "$WORKDIR/new" > /dev/null || FAIL=1
+fi
+
+## results files (<test>.apost.json), when the base wrote them too
+if ls "$WORKDIR"/base/*.apost.json >/dev/null 2>&1; then
+  echo
+  if [ "$FORMAT" -eq 0 ]; then
+    echo "Results files (.apost.json): values must be identical"
+    python3 "$REPO/tests/compare_json.py" --ref-dir "$WORKDIR/base" \
+      --out-dir "$WORKDIR/new" --rtol 0 | grep -v '^  same' || true
+    python3 "$REPO/tests/compare_json.py" --ref-dir "$WORKDIR/base" \
+      --out-dir "$WORKDIR/new" --rtol 0 > /dev/null || FAIL=1
+  else
+    echo "Results files (.apost.json): values within compare_json's tolerance"
+    python3 "$REPO/tests/compare_json.py" --ref-dir "$WORKDIR/base" \
+      --out-dir "$WORKDIR/new" | grep -v '^  same' || true
+    python3 "$REPO/tests/compare_json.py" --ref-dir "$WORKDIR/base" \
+      --out-dir "$WORKDIR/new" > /dev/null || FAIL=1
+  fi
 fi
 
 if [ -n "$THREADS" ]; then

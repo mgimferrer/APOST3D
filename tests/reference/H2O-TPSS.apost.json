@@ -1,0 +1,47 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 24,
+    "n_electrons": 10,
+    "n_alpha": 5,
+    "n_beta": 5,
+    "energy_au": -7.6423556169387368E+001
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nLIBRARY\nEX_FUNCTIONAL 202\nEC_FUNCTIONAL 231\nTHREBOD -1\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 3,
+    "atomic_numbers": [8, 1, 1],
+    "symbols": ["O", "H", "H"],
+    "nuclear_charges": [8.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-1.3793907500000000E-017, 6.1629758200000000E-033, 2.2527160600000001E-001],
+      [-5.1080815399999999E-017, 1.4349389699999999E+000, -9.0108642299999997E-001],
+      [-1.7163483200000000E-016, -1.4349389699999999E+000, -9.0108642299999997E-001]
+    ]
+  },
+  "fragments": [],
+  "analyses": {},
+  "run": {
+    "job_name": "H2O-TPSS",
+    "input_file": "H2O-TPSS.inp",
+    "wavefunction_file": "H2O-TPSS.fchk",
+    "threads": 8,
+    "status": "stopped",
+    "stop_message": "META-GGA FUNCTIONALS NOT YET SUPPORTED"
+  }
+}

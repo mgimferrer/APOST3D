@@ -1,0 +1,47 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 24,
+    "n_electrons": 10,
+    "n_alpha": 5,
+    "n_beta": 5,
+    "energy_au": -7.6050588586699121E+001
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nSVWN\nTHREBOD -1\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\nROTATION_2E 0.162 0.182\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 3,
+    "atomic_numbers": [8, 1, 1],
+    "symbols": ["O", "H", "H"],
+    "nuclear_charges": [8.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [1.3793907500000000E-017, 1.3793907500000000E-017, 2.2527160600000001E-001],
+      [2.0841838200000000E-016, 1.4349389699999999E+000, -9.0108642299999997E-001],
+      [-4.9449898299999999E-016, -1.4349389699999999E+000, -9.0108642299999997E-001]
+    ]
+  },
+  "fragments": [],
+  "analyses": {},
+  "run": {
+    "job_name": "H2O-SVWN",
+    "input_file": "H2O-SVWN.inp",
+    "wavefunction_file": "H2O-SVWN.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

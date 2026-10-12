@@ -1,0 +1,55 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "unrestricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 10,
+    "n_electrons": 2,
+    "n_alpha": 2,
+    "n_beta": 0,
+    "energy_au": -6.7577297282009230E-001
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nOSLO\nDOFRAGS\n#\n# OSLO\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 2,
+    "atomic_numbers": [1, 1],
+    "symbols": ["H", "H"],
+    "nuclear_charges": [1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 1.1338356700000001E+000]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [1]
+    },
+    {
+      "id": 2,
+      "atoms": [2]
+    }
+  ],
+  "analyses": {},
+  "run": {
+    "job_name": "H2-T-OSLO-CLOSE",
+    "input_file": "H2-T-OSLO-CLOSE.inp",
+    "wavefunction_file": "H2-T-OSLO-CLOSE.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

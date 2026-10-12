@@ -1,0 +1,70 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 169,
+    "n_electrons": 60,
+    "n_alpha": 30,
+    "n_beta": 30,
+    "energy_au": null
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nDOFRAGS\nOSLO\nQCHEM\n#\n# OSLO\nFOLI_TOLERANCE 3\nBRANCH_ITERATION 0\n#\n# FRAGMENTS\n5\n1\n1\n1\n2\n1\n3\n1\n4\n-1\n#\n\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [26, 8, 8, 8, 8],
+    "symbols": ["Fe", "O", "O", "O", "O"],
+    "nuclear_charges": [2.6000000000000000E+001, 8.0000000000000000E+000, 8.0000000000000000E+000, 8.0000000000000000E+000, 8.0000000000000000E+000],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+      [1.7847795399999999E+000, 1.7847795399999999E+000, 1.7847795399999999E+000],
+      [-1.7847795399999999E+000, -1.7847795399999999E+000, 1.7847795399999999E+000],
+      [-1.7847795399999999E+000, 1.7847795399999999E+000, -1.7847795399999999E+000],
+      [1.7847795399999999E+000, -1.7847795399999999E+000, -1.7847795399999999E+000]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [1]
+    },
+    {
+      "id": 2,
+      "atoms": [2]
+    },
+    {
+      "id": 3,
+      "atoms": [3]
+    },
+    {
+      "id": 4,
+      "atoms": [4]
+    },
+    {
+      "id": 5,
+      "atoms": [5]
+    }
+  ],
+  "analyses": {},
+  "run": {
+    "job_name": "FeO4-2",
+    "input_file": "FeO4-2.inp",
+    "wavefunction_file": "FeO4-2.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

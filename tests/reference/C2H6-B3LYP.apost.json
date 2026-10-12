@@ -1,0 +1,52 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 160,
+    "n_electrons": 18,
+    "n_alpha": 9,
+    "n_beta": 9,
+    "energy_au": -7.9865613377734434E+001
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nB3LYP\nTHREBOD 5\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 8,
+    "atomic_numbers": [6, 6, 1, 1, 1, 1, 1, 1],
+    "symbols": ["C", "C", "H", "H", "H", "H", "H", "H"],
+    "nuclear_charges": [6.0000000000000000E+000, 6.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 1.4427600700000001E+000, -1.5777218100000000E-030],
+      [-1.7669107300000001E-016, -1.4427600700000001E+000, 0.0000000000000000E+000],
+      [1.9199750799999999E+000, 2.1938499700000000E+000, -4.3597975600000000E-026],
+      [-9.6008215799999996E-001, 2.1937129299999998E+000, 1.6627569200000001E+000],
+      [-9.6008215799999996E-001, 2.1937129299999998E+000, -1.6627569200000001E+000],
+      [-1.9199750799999999E+000, -2.1938499700000000E+000, 4.3598764499999999E-026],
+      [9.6008215799999996E-001, -2.1937129299999998E+000, -1.6627569200000001E+000],
+      [9.6008215799999996E-001, -2.1937129299999998E+000, 1.6627569200000001E+000]
+    ]
+  },
+  "fragments": [],
+  "analyses": {},
+  "run": {
+    "job_name": "C2H6-B3LYP",
+    "input_file": "C2H6-B3LYP.inp",
+    "wavefunction_file": "C2H6-B3LYP.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

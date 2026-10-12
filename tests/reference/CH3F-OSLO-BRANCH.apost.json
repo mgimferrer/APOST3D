@@ -1,0 +1,58 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 43,
+    "n_electrons": 18,
+    "n_alpha": 9,
+    "n_beta": 9,
+    "energy_au": -1.3962818858985679E+002
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nOSLO\nDOFRAGS\n#\n# OSLO\nFOLI_TOLERANCE 3\nBRANCH_ITERATION 6\nPRINT_NONORTHO\n#\n# FRAGMENTS\n2\n1\n2\n-1\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [6, 9, 1, 1, 1],
+    "symbols": ["C", "F", "H", "H", "H"],
+    "nuclear_charges": [6.0000000000000000E+000, 9.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-1.1837361900000001E+000, -1.7044639400000001E-004, -4.6170580499999998E-005],
+      [1.4254071699999999E+000, 1.2564259800000000E-004, -1.4572721099999999E-005],
+      [-1.9095055700000001E+000, 1.1177286200000001E+000, -1.6271658400000000E+000],
+      [-1.9089952600000000E+000, 8.5088944000000000E-001, 1.7814404699999999E+000],
+      [-1.9077465400000000E+000, -1.9687261700000001E+000, -1.5386645500000001E-001]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [2]
+    },
+    {
+      "id": 2,
+      "atoms": [1, 3, 4, 5]
+    }
+  ],
+  "analyses": {},
+  "run": {
+    "job_name": "CH3F-OSLO-BRANCH",
+    "input_file": "CH3F-OSLO-BRANCH.inp",
+    "wavefunction_file": "CH3F-OSLO-BRANCH.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

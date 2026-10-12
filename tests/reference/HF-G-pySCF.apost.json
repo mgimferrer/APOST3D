@@ -1,0 +1,46 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.1",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "Hartree-Fock",
+    "n_basis_functions": 60,
+    "n_electrons": 10,
+    "n_alpha": 5,
+    "n_beta": 5,
+    "energy_au": -1.0006333060360350E+002
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 2,
+    "atomic_numbers": [1, 9],
+    "symbols": ["H", "F"],
+    "nuclear_charges": [1.0000000000000000E+000, 9.0000000000000000E+000],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 1.7325009099999999E+000]
+    ]
+  },
+  "fragments": [],
+  "analyses": {},
+  "run": {
+    "job_name": "HF-G-pySCF",
+    "input_file": "HF-G-pySCF.inp",
+    "wavefunction_file": "HF-G-pySCF.fchk",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}
