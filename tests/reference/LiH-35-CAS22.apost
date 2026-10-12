@@ -142,7 +142,7 @@
   Checking NO overlap matrix
 
   TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -226,7 +226,7 @@
    1 Li     0.240132    0.088675
    2  H    -0.240132   -0.088675
   ------------------------------
-     Sum   -0.000000   -0.000000
+     Sum    0.000000    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX
@@ -333,7 +333,7 @@
    1 Li     0.452573   -0.452573
    2  H    -0.452573    0.452573
 
-  Sum check <S^2> =   -0.00000
+  Sum check <S^2> =    0.00000
   TIMING CPU  :: local spin analysis                               0.00 s
   TIMING WALL :: local spin analysis                               0.00 s
 
@@ -357,7 +357,7 @@
     2  H    -0.999468   -1.085061
   --------------------------------------------------------------------------------                    
   Electron-nuclei energy:    -19.0204933
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
   
   ---------------- 
    KINETIC ENERGY  
@@ -384,7 +384,7 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      0.4535805
   
-  TIMING CPU  :: enpart one-electron                               0.11 s
+  TIMING CPU  :: enpart one-electron                               0.10 s
   TIMING WALL :: enpart one-electron                               0.02 s
 
   -------------------------------------------------------
@@ -437,7 +437,7 @@
   --------------------------------------------------------------------------------                    
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
   
-  TIMING CPU  :: PHF Exc energy                                    1.01 s
+  TIMING CPU  :: PHF Exc energy                                    1.02 s
   TIMING WALL :: PHF Exc energy                                    1.02 s
   
   Total two-electron part (coul+exc):      2.7365314
@@ -480,7 +480,7 @@
   Post-Hartree-Fock exchange-correlation energy:     -2.0829236
   
   Total two-electron part (coul+exc):      2.7366697
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
   ------------------------------------------------- 
    FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS  
   ------------------------------------------------- 
@@ -493,9 +493,9 @@
   --------------------------------------------------------------------------------                    
   Total integrated energy  :     -7.9411448
   Total energy in Fchk file:     -7.9411448
-  Integration error (au):     -0.0000000
-  Integration error (kcal/mol):    -0.00
-  TIMING CPU  :: enpart two-electron                               2.02 s
-  TIMING WALL :: enpart two-electron                               1.96 s
+  Integration error (au):      0.0000000
+  Integration error (kcal/mol):     0.00
+  TIMING CPU  :: enpart two-electron                               2.03 s
+  TIMING WALL :: enpart two-electron                               1.85 s
 
   ...Normal Termination of APOST-3D...

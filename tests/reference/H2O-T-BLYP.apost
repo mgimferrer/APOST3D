@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.23 s
-  TIMING WALL :: atomic definition                                 0.04 s
+  TIMING CPU  :: atomic definition                                 0.38 s
+  TIMING WALL :: atomic definition                                 0.12 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -191,7 +191,7 @@
    2  H     0.486457   -0.234932
    3  H     0.486457   -0.234932
   ------------------------------
-     Sum    0.000003   -0.000000
+     Sum    0.000003    0.000000
 
   --------------------
     SPIN POPULATIONS
@@ -323,8 +323,8 @@
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      9.1193799
   
-  TIMING CPU  :: enpart one-electron                               0.19 s
-  TIMING WALL :: enpart one-electron                               0.03 s
+  TIMING CPU  :: enpart one-electron                               0.30 s
+  TIMING WALL :: enpart one-electron                               0.05 s
 
   --------------------------------
     UKS-DFT ENERGY DECOMPOSITION
@@ -385,8 +385,8 @@
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:     -9.2197241
   
-  TIMING CPU  :: enpart dft                                        0.93 s
-  TIMING WALL :: enpart dft                                        0.22 s
+  TIMING CPU  :: enpart dft                                        1.41 s
+  TIMING WALL :: enpart dft                                        0.34 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -416,8 +416,8 @@
   --------------------------------------------------------------------------------                    
   Coulomb energy:     45.2445114
   
-  TIMING CPU  :: Coulomb energy                                    0.25 s
-  TIMING WALL :: Coulomb energy                                    0.04 s
+  TIMING CPU  :: Coulomb energy                                    0.40 s
+  TIMING WALL :: Coulomb energy                                    0.06 s
   
   KS-DFT electron-electron energy (au):     36.0247872
   Integration error (kcal/mol):    -2.10
@@ -445,7 +445,7 @@
   Coulomb energy:     45.2478528
   
   KS-DFT electron-electron energy:     36.0281287
-  Integration error (kcal/mol):    -0.00
+  Integration error (kcal/mol):     0.00
 
   ----------------------------------------
     FUZZY ATOMS KS-DFT ENERGY COMPONENTS
@@ -463,7 +463,7 @@
   Integration error (au):      0.0000906
   Integration error (kcal/mol):     0.06
   
-  TIMING CPU  :: enpart two-electron                               0.39 s
-  TIMING WALL :: enpart two-electron                               0.08 s
+  TIMING CPU  :: enpart two-electron                               0.63 s
+  TIMING WALL :: enpart two-electron                               0.12 s
 
   ...Normal Termination of APOST-3D...

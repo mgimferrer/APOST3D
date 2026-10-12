@@ -131,8 +131,8 @@
 
   Checking NO overlap matrix
 
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -161,8 +161,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.07 s
-  TIMING WALL :: atomic definition                                 0.01 s
+  TIMING CPU  :: atomic definition                                 0.11 s
+  TIMING WALL :: atomic definition                                 0.02 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -370,7 +370,7 @@
   
   Gross occupation for fragment    1    0.00000
   OCCUP.
-  Left out by the cutoff (net / gross):   -0.00000   -0.00000
+  Left out by the cutoff (net / gross):    0.00000    0.00000
   
   ** FRAGMENT   2 **
   
@@ -383,8 +383,8 @@
   Left out by the cutoff (net / gross):    0.00000    0.00000
   
 
-  TIMING CPU  :: EFFAO computation                                 0.06 s
-  TIMING WALL :: EFFAO computation                                 0.01 s
+  TIMING CPU  :: EFFAO computation                                 0.10 s
+  TIMING WALL :: EFFAO computation                                 0.02 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

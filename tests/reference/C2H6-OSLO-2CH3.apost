@@ -127,8 +127,8 @@
   Fragment  1 :   1   3   4   5
   Fragment  2 :   2   6   7   8
 
-  TIMING CPU  :: initialization                                    0.02 s
-  TIMING WALL :: initialization                                    0.02 s
+  TIMING CPU  :: initialization                                    0.04 s
+  TIMING WALL :: initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -163,8 +163,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.88 s
-  TIMING WALL :: atomic definition                                 0.89 s
+  TIMING CPU  :: atomic definition                                 1.75 s
+  TIMING WALL :: atomic definition                                 0.24 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -217,7 +217,7 @@
    7  H    -0.095684    0.060155
    8  H    -0.095684    0.060155
   ------------------------------
-     Sum    0.001729   -0.000000
+     Sum    0.001729    0.000000
 
   --------------------------------------
     FRAGMENT ANALYSIS : Atomic Charges
@@ -225,10 +225,10 @@
 
    Fragment    3D-space    Mulliken
   ---------------------------------
-    1          0.000864   -0.000000
-    2          0.000864   -0.000000
+    1          0.000864    0.000000
+    2          0.000864    0.000000
   ---------------------------------
-     Total:    0.001729   -0.000000
+     Total:    0.001729    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX
@@ -355,8 +355,8 @@
   --------------------------------------------------------------------------------                    
      Total:   17.996544
 
-  TIMING CPU  :: population analyses                               0.01 s
-  TIMING WALL :: population analyses                               0.01 s
+  TIMING CPU  :: population analyses                               0.02 s
+  TIMING WALL :: population analyses                               0.02 s
 
   ---------------------------------------------------------
     DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
@@ -674,7 +674,7 @@
   ------------------------ 
   Fractional values: orbitals shared between fragments (see the iterations)
   
-  TIMING CPU  :: OSLO analysis                                     0.63 s
-  TIMING WALL :: OSLO analysis                                     0.63 s
+  TIMING CPU  :: OSLO analysis                                     1.32 s
+  TIMING WALL :: OSLO analysis                                     1.27 s
 
   ...Normal Termination of APOST-3D...

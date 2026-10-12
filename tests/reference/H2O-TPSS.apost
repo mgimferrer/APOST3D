@@ -148,8 +148,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.24 s
-  TIMING WALL :: atomic definition                                 0.04 s
+  TIMING CPU  :: atomic definition                                 0.36 s
+  TIMING WALL :: atomic definition                                 0.06 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -181,7 +181,7 @@
    2  H     0.560263    0.131176
    3  H     0.560263    0.131176
   ------------------------------
-     Sum    0.000001   -0.000000
+     Sum    0.000001    0.000000
 
   -----------------------------------
     "FUZZY ATOMS" BOND ORDER MATRIX

@@ -131,8 +131,8 @@
 
   Checking NO overlap matrix
 
-  TIMING CPU  :: initialization                                    0.04 s
-  TIMING WALL :: initialization                                    0.04 s
+  TIMING CPU  :: initialization                                    0.08 s
+  TIMING WALL :: initialization                                    0.08 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -158,8 +158,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.69 s
-  TIMING WALL :: atomic definition                                 0.10 s
+  TIMING CPU  :: atomic definition                                 0.98 s
+  TIMING WALL :: atomic definition                                 0.16 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -231,7 +231,7 @@
    4  H     0.092510   -0.012746
    5 Na    -0.504483   -0.569206
   ------------------------------
-     Sum   -0.000315   -0.000000
+     Sum   -0.000315    0.000000
 
   ----------------------------------------
     FRAGMENT ANALYSIS : Spin Populations
@@ -242,7 +242,7 @@
     1         -0.504483   -0.569206
     2          0.504169    0.569206
   ---------------------------------
-     Total:   -0.000315   -0.000000
+     Total:   -0.000315    0.000000
 
   -------------------------------------
     APOST3D OVERLAP POPULATION MATRIX
@@ -370,8 +370,8 @@
   --------------------------------------------------------------------------------                    
      Total:   19.999813
 
-  TIMING CPU  :: population analyses                               0.01 s
-  TIMING WALL :: population analyses                               0.01 s
+  TIMING CPU  :: population analyses                               0.02 s
+  TIMING WALL :: population analyses                               0.02 s
 
   ----------------------------------
     DOING EFFAO-3D FROM U FUNCTION
@@ -492,8 +492,8 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 1.19 s
-  TIMING WALL :: EFFAO computation                                 0.27 s
+  TIMING CPU  :: EFFAO computation                                 1.85 s
+  TIMING WALL :: EFFAO computation                                 0.48 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
