@@ -216,6 +216,9 @@ program, not a full development history — see `git log` for that.
   title line inside the file).
 - **Samarium** — element 62 is printed as `Sm` (it was printed as `Sn`
   in the output tables, the cube and `.int` files, and in `eos_aom`).
+- **Elements beyond uranium** — atom labels in the output, cube and
+  `.int` files now cover every element up to oganesson (Z = 118); the
+  tables stopped at uranium.
 - **`.int` files of atoms with an ECP** — the `NET CHARGE` written by
   `DOINT` uses the nuclear charge left by the pseudopotential (it counted
   the core electrons the ECP replaces as a positive charge).

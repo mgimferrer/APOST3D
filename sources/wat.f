@@ -908,6 +908,7 @@
 !! author:                                                                !!
 !! ********************************************************************** !!
       subroutine makeatdens
+      use elements_mod
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /hirsh/y2(50,5,150),radial(50,5,150),xr2(150),ieq(maxat),nrad0,nat0,pop(maxat)
@@ -918,18 +919,6 @@
       character*80 line
       logical lexist
 
-      Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O , 
-     $  4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
-     $  4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
-     $  4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
-     $  4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
-     $  4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
-     $  4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sm ,
-     $  4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu , 
-     $  4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
-     $  4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
-     $  4H Th ,4H Pa ,4H  U   /
     
       write(*,'(2x,a)') 'Reading atomic densities from densoutput'
 
@@ -962,7 +951,7 @@
           call apost_stop(' densoutput too large')
         end if
         do j=1,92
-          write(atname2,'(a4)') mend(j)
+          write(atname2,'(a4)') element_label(j)
           if(index(atname2,atname).ne.0) then
             write(*,'(2x,a,1x,a2,a)') 'Matched element',atname,' in densoutput'
             ipos=j
@@ -993,7 +982,7 @@
 
       do i=1,nat
         if(ieq(i).eq.0) then
-          write(*,'(2x,a,a4,a)') 'ERROR: atom ', mend(iznuc(i)),
+          write(*,'(2x,a,a4,a)') 'ERROR: atom ', element_label(iznuc(i)),
      1      ' is missing in densoutput'
           call apost_stop('')
         endif
