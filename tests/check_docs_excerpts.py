@@ -15,7 +15,8 @@ The lines of the block must appear, in order and contiguously, in the
 reference. Trailing blanks, empty lines and rule lines (only dashes) are
 ignored on both sides, so an excerpt may leave them out. A line
 containing only "..." marks other lines left out: the parts before and
-after it must each appear contiguously, in that order.
+after it must each appear contiguously, in that order. On TIMING lines
+the numbers are not compared (they change from run to run).
 
 Usage (from anywhere in the repo):
   python3 tests/check_docs_excerpts.py          check every marked excerpt
@@ -39,6 +40,15 @@ REFS = ROOT / "tests" / "reference"
 SOURCE_RE = re.compile(r"^%\s*source:\s*(\S+)\s*$")
 ELLIPSIS_RE = re.compile(r"^\s*\.\.\.\s*$")
 FILLER_RE = re.compile(r"^[\s=-]*$")          # empty or rule-only line
+TIMING_RE = re.compile(r"TIMING (CPU|WALL)")
+
+
+def norm(line):
+    """Line as compared: no trailing blanks; timings without numbers."""
+    line = line.rstrip()
+    if TIMING_RE.search(line):
+        line = re.sub(r"\d+\.\d+", "#", line)
+    return line
 
 
 def text_blocks(path):
@@ -72,7 +82,7 @@ def segments(block):
             parts.append(cur)
             cur = []
         elif not FILLER_RE.match(line):
-            cur.append(line.rstrip())
+            cur.append(norm(line))
     parts.append(cur)
     return [p for p in parts if p]
 
@@ -112,7 +122,7 @@ def load(ref_path):
     text, number = [], []
     for i, l in enumerate(ref_path.read_text(errors="replace").splitlines(), 1):
         if not FILLER_RE.match(l):
-            text.append(l.rstrip())
+            text.append(norm(l))
             number.append(i)
     return text, number
 
