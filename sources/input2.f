@@ -413,9 +413,9 @@
           difi=dmax1(difi,dabs(x-dm1(i,j)))
         end do
       end do
-      write(*,*) " "
+      write(*,*)
       write(*,'(2x,a,1x,f12.8)') 'Max. deviation from idempotency:',difi
-      write(*,*) " "
+      write(*,*)
 
       do i=1,norb
         do k=1,norb
@@ -591,9 +591,9 @@
         end do
       end do
       nelect=nalf+nb
-      write(*,*) " "
+      write(*,*)
       write(*,'(2x,a,1x,f14.8,a,1x,i0)') 'Trace of the DM2, normalized to N(N-1):',xx2,' / ',nelect*(nelect-1)
-      write(*,*) " "
+      write(*,*)
       end
 
 !! ***** !!
@@ -675,7 +675,7 @@
         end do
       end do
       write(*,'(2x,a,1x,f14.8)') 'Trace of the DM2, normalized to N(N-1):',xx2
-      write(*,*) " "
+      write(*,*)
       end
 
 !! ***** !!

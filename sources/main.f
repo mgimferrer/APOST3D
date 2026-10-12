@@ -811,9 +811,9 @@ c      iopt(200) =
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
             else if(ieffao.eq.2) then
               idobeta=0
-              write(*,*) '  '
+              write(*,*)
               write(*,*) ' UEFFAO: alpha and beta treated separately'
-              write(*,*) '  '
+              write(*,*)
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
               if(ieos.eq.1) then
                 call cpu_time(xeos1)
@@ -903,7 +903,7 @@ c      iopt(200) =
             end if
             if(itype.ge.jtype) iopt(55) = itype
             if(jtype.gt.itype) iopt(55) = jtype
-            write(*,*) " "
+            write(*,*)
           end if
 
 !! Restricted case !!
@@ -975,12 +975,12 @@ c      iopt(200) =
 !! was a downgrade in that case, not the increase the message claims).   !!
         if(ianalytical.eq.1.and.igrid2e.eq.0) then
           write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
-          write(*,*) " "
+          write(*,*)
           nrad=70
           nang=434
         else if(ianalytical.eq.1) then
           write(*,*) " Analytical calculation has been requested: keeping the user-configured # GRID (RADIAL_2E/ANGULAR_2E) "
-          write(*,*) " "
+          write(*,*)
         end if
 
 !! Printing info !!
@@ -1016,7 +1016,7 @@ c      iopt(200) =
           else
             call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
           end if
-          write(*,*) " "
+          write(*,*)
           call cpu_time(time2)
           call get_wall_time(wtime2)
           call print_timer('enpart two-electron',time2-time,wtime2-wtime)

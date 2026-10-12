@@ -162,12 +162,12 @@
           end do
         end do
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
-        write(*,*) " "
+        write(*,*)
         lbl30="Net occupation for fragment"
         write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
-        write(*,*) " "
+        write(*,*)
 
 !! gross occupation of each EFO via sat (all atoms), scaled by its net   !!
 !! occupation -- this is what eos_analysis now sorts/selects on.         !!
@@ -195,7 +195,7 @@
         lbl30="Gross occupation for fragment"
         write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
         write(*,60) (s0all(mu),mu=1,imaxo)
-        write(*,*) " "
+        write(*,*)
 
 !! store this fragment's EFOs/occupations into effao_mod (see header):   !!
 !! p0 keeps the raw c0 (cubegen_new applies the fragment weight itself), !!
@@ -505,7 +505,7 @@
         end do
         write(*,*) " ------------------------ "
         write(*,'(3x,a22,x,f6.1)') "Total oxidation state:",zztot
-        write(*,*) " "
+        write(*,*)
 
         confi2=dmin1(confi,confi0)
         write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
@@ -681,14 +681,14 @@ c actual number of effaos
         end do
 
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a27,3x,i4,f11.5)') "Net occupation for fragment",
      +    ifrag,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,'(2x,a,f11.5)') 'Left out by the cutoff (net):',
      +    xnetall-xmaxo
-        write(*,*) " "
+        write(*,*)
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
 !! shared effao_mod arrays; the coefficients are already in the AO      !!
@@ -826,14 +826,14 @@ c actual number of effaos
         end do
 
         write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a27,3x,i4,f11.5)') "Net occupation for fragment",
      +    ifrag,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
         write(*,'(2x,a,f11.5)') 'Left out by the cutoff (net):',
      +    xnetall-xmaxo
-        write(*,*) " "
+        write(*,*)
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
 !! shared effao_mod arrays; the coefficients are already in the AO      !!
@@ -991,12 +991,12 @@ c actual number of effaos
         end do
 
         write(*,'(2x,a7,x,i3,x,a2)') "** ATOM",icenter,"**"
-        write(*,*) " "
+        write(*,*)
         lbl30="Net occupation for atom"
         write(*,'(2x,a30,i4,f11.5)') lbl30,icenter,xmaxo
         write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xmaxocc
         write(*,60) (pp0(mu,mu),mu=1,imaxo)
-        write(*,*) " "
+        write(*,*)
 
 !! gross occupation of each EFAO via sat, scaled by its net occupation. !!
 !! parallel over i: independent per EFAO, writes only s0all(i); xx0 is  !!
@@ -1020,7 +1020,7 @@ c actual number of effaos
         write(*,60) (s0all(mu),mu=1,imaxo)
         write(*,'(2x,a,2f11.5)') 'Left out by the cutoff '//
      +    '(net / gross):',xnetall-xmaxo,xgroall-xx0
-        write(*,*) " "
+        write(*,*)
 
 !! store this atom's EFAOs/occupations into effao_mod (see header). !!
         do k=1,imaxo

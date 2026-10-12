@@ -1,94 +1,94 @@
   ------------------------------------------------------------------------------
-                                                                                
+
                      ___    ____  ____  ___________   _____ ____                
                     /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
                    / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
                   / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
                  /_/  |_/_/    \____//____//_/     /____/_____/                 
-                                                                                
+
                         Version 5   --   22 September 2026                      
                          --------------------------------                       
-                                                                                
+
       Real-space and Hilbert-space tools for wave function analysis             
-                                                                                
+
       Documentation: https://apost3d.readthedocs.io                             
       Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
-                                                                                
+
       Cite this program as:                                                     
       ---------------------                                                     
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
-                                                                                
+
     e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
-                                                                                
+
       Available atomic definitions:                                             
       ----------------------------                                              
-                                                                                
+
       Real space:                                                               
         Becke, J. Chem. Phys. 88 2547 1988                                      
         Hirshfeld, Theor. Chim. Acta 44 129 1977                                
         Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007                     
         Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013  
-                                                                                
+
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
-                                                                                
+
       Calculating:                                                              
       ------------                                                              
-                                                                                
+
         A) Atomic and overlap populations, bond orders and valences             
            I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
-                                                                                
+
         B) Hartree-Fock molecular energy decomposition                          
            P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
-                                                                                
+
         C) KS-DFT molecular energy decomposition                                
            P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007             
            M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023         
-                                                                                
+
         D) Molecular energy decomposition for CASSCF/CISD wavefunctions         
-                                                                                
+
         E) Effective atomic orbitals                                            
            I. Mayer, J. Phys. Chem. 100 6249 1996                               
            I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
            E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
            Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026                  
-                                                                                
+
         F) Local spin analysis                                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
            E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
-                                                                                
+
         G) Effective oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
            M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
-                                                                                
+
         H) Oxidation states from localized orbitals                             
            M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020   
            M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
            M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022         
-                                                                                
+
         I) Decomposition of EDA quantities into one- and two-center IQA terms   
            M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
-                                                                                
+
         J) Origin-independent decomposition of static polarizabilities          
            M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021        
-                                                                                
+
   ------------------------------------------------------------------------------
-                                                                                
+
     The program has been written by using parts of the program APOST by         
     I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
-                                                                                
+
     The numerical integration utilizes the subroutines for Lebedev              
     quadrature downloaded from CCL. The appropriate reference is:               
     V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
     131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
-                                                                                
+
     The program makes use of libxc library when necessary, using the F90        
     interfaces provided by the authors.                                         
                    (see https://libxc.gitlab.io/)                               
-                                                                                
+
     We are extremely grateful for the possibility of using these routines!      
-                                                                                
+
   ------------------------------------------------------------------------------
 
   ------------------------
@@ -340,7 +340,7 @@
   -------------------------------------
 
   Tolerance (in delta-FOLI) used for OSLO selection:   0.00100
-  
+
   ------------------------
     ITERATION NUMBER   1
   ------------------------
@@ -361,7 +361,7 @@
      8     1.27930      0.99746      1.00381
      9     0.04119      0.99999      1.00002
   ------------------------------------------ 
-  
+
   ----------------------------------------
     ORBITAL INFORMATION FOR FRAGMENT   2
   ----------------------------------------
@@ -378,7 +378,7 @@
      8     3.46336      0.95775      1.06586
      9     0.15635      0.99956      1.00067
   ------------------------------------------ 
-  
+
   Lowest FOLI value (frg.)      :   1   1.00002
   Next FOLI value (frg.)        :   1   1.00381
 
@@ -391,24 +391,24 @@
      9      1   1.00002
      9      2   1.00067
   --------------------- 
-  
+
   Number of OSLOs selected:   2
   delta-FOLI value:    0.00380
-  
+
   Orbitals left to assign:   7
-  
+
   --------------------------------
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
   Next OSLOs: FOLI 1.00381, delta-FOLI 0.00380
- 
+
    Orb.   Frag.     FOLI    Overlap with selected
   -------------------------------------------------
      8      1    1.00381           0.00000
   -------------------------------------------------
   Largest overlap with the selected OSLOs:   0.00000
-  
+
   ------------------------
     ITERATION NUMBER   2
   ------------------------
@@ -427,7 +427,7 @@
      6     1.70826      0.97595      1.03688
      7     1.27930      0.99746      1.00381
   ------------------------------------------ 
-  
+
   ----------------------------------------
     ORBITAL INFORMATION FOR FRAGMENT   2
   ----------------------------------------
@@ -442,7 +442,7 @@
      6     4.52040      0.95585      1.06894
      7     3.46338      0.95780      1.06578
   ------------------------------------------ 
-  
+
   Lowest FOLI value (frg.)      :   1   1.00381
   Next FOLI value (frg.)        :   1   1.03688
 
@@ -454,25 +454,25 @@
   --------------------- 
      7      1   1.00381
   --------------------- 
-  
+
   Number of OSLOs selected:   1
   delta-FOLI value:    0.03307
-  
+
   Orbitals left to assign:   6
-  
+
   --------------------------------
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
   Next OSLOs: FOLI 1.03688, delta-FOLI 0.03307
- 
+
    Orb.   Frag.     FOLI    Overlap with selected
   -------------------------------------------------
      5      1    1.03691           0.00000
      6      1    1.03688           0.00000
   -------------------------------------------------
   Largest overlap with the selected OSLOs:   0.00000
-  
+
   ------------------------
     ITERATION NUMBER   3
   ------------------------
@@ -490,7 +490,7 @@
      5     1.70884      0.97593      1.03691
      6     1.70826      0.97595      1.03688
   ------------------------------------------ 
-  
+
   ----------------------------------------
     ORBITAL INFORMATION FOR FRAGMENT   2
   ----------------------------------------
@@ -504,7 +504,7 @@
      5     4.52040      0.95586      1.06893
      6     3.47242      0.96906      1.04773
   ------------------------------------------ 
-  
+
   Lowest FOLI value (frg.)      :   1   1.03688
   Next FOLI value (frg.)        :   2   1.04773
 
@@ -517,24 +517,24 @@
      5      1   1.03691
      6      1   1.03688
   --------------------- 
-  
+
   Number of OSLOs selected:   2
   delta-FOLI value:    0.01085
-  
+
   Orbitals left to assign:   4
-  
+
   --------------------------------
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
   Next OSLOs: FOLI 1.04773, delta-FOLI 0.01085
- 
+
    Orb.   Frag.     FOLI    Overlap with selected
   -------------------------------------------------
      6      2    1.04773           0.00000
   -------------------------------------------------
   Largest overlap with the selected OSLOs:   0.00000
-  
+
   ------------------------
     ITERATION NUMBER   4
   ------------------------
@@ -550,7 +550,7 @@
      3    13.52473      0.03982      5.21473
      4     2.43050      0.80507      1.34548
   ------------------------------------------ 
-  
+
   ----------------------------------------
     ORBITAL INFORMATION FOR FRAGMENT   2
   ----------------------------------------
@@ -562,7 +562,7 @@
      3     4.59852      0.96012      1.06204
      4     3.47242      0.96906      1.04773
   ------------------------------------------ 
-  
+
   Lowest FOLI value (frg.)      :   2   1.04773
   Next FOLI value (frg.)        :   2   1.06153
 
@@ -574,25 +574,25 @@
   --------------------- 
      4      2   1.04773
   --------------------- 
-  
+
   Number of OSLOs selected:   1
   delta-FOLI value:    0.01380
-  
+
   Orbitals left to assign:   3
-  
+
   --------------------------------
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
   Next OSLOs: FOLI 1.06153, delta-FOLI 0.01380
- 
+
    Orb.   Frag.     FOLI    Overlap with selected
   -------------------------------------------------
      2      2    1.06153           0.00000
      3      2    1.06204           0.00000
   -------------------------------------------------
   Largest overlap with the selected OSLOs:   0.00000
-  
+
   ------------------------
     ITERATION NUMBER   5
   ------------------------
@@ -607,7 +607,7 @@
      2    13.52474      0.03982      5.21468
      3     3.00991      0.80051      1.35476
   ------------------------------------------ 
-  
+
   ----------------------------------------
     ORBITAL INFORMATION FOR FRAGMENT   2
   ----------------------------------------
@@ -618,7 +618,7 @@
      2     4.60214      0.96042      1.06153
      3     4.59852      0.96012      1.06204
   ------------------------------------------ 
-  
+
   Lowest FOLI value (frg.)      :   2   1.06153
   Next FOLI value (frg.)        :   1   1.35476
 
@@ -631,24 +631,24 @@
      2      2   1.06153
      3      2   1.06204
   --------------------- 
-  
+
   Number of OSLOs selected:   2
   delta-FOLI value:    0.29323
-  
+
   Orbitals left to assign:   1
-  
+
   --------------------------------
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
   Next OSLOs: FOLI 1.35476, delta-FOLI 0.29323
- 
+
    Orb.   Frag.     FOLI    Overlap with selected
   -------------------------------------------------
      3      1    1.35476           0.00000
   -------------------------------------------------
   Largest overlap with the selected OSLOs:   0.00000
-  
+
   ------------------------
     ITERATION NUMBER   6
   ------------------------
@@ -661,7 +661,7 @@
   ------------------------------------------ 
      1     3.00991      0.80051      1.35476
   ------------------------------------------ 
-  
+
   ----------------------------------------
     ORBITAL INFORMATION FOR FRAGMENT   2
   ----------------------------------------
@@ -670,10 +670,10 @@
   ------------------------------------------ 
      1     6.53643      0.19950      2.71382
   ------------------------------------------ 
-  
+
   Lowest FOLI value (frg.)      :   1   1.35476
   Next FOLI value (frg.)        :   2   2.71382
-  
+
   ********************************************* 
    BRANCHING: THE NEXT FOLI VALUE IS SELECTED  
   ********************************************* 
@@ -687,20 +687,20 @@
   --------------------- 
      1      2   2.71382
   --------------------- 
-  
+
   Number of OSLOs selected:   1
   delta-FOLI value:    1.35905
-  
+
   Orbitals left to assign:   0
-  
+
   --------------------------------
     CHECKING LINEAR DEPENDENCIES
   --------------------------------
 
   Not evaluated in a branching iteration
-  
+
   Sum of the FOLI values        :  10.96340
-  
+
   ------------------------------------
     PRINTING FINAL OSLOs INFORMATION
   ------------------------------------
@@ -713,12 +713,12 @@
   FOLI Value  :   1.00002   1.00067   1.00381   1.03691   1.03688
   Frg. Pop.  1:   0.99999   0.00043   0.99746   0.97593   0.97595
   Frg. Pop.  2:   0.00001   0.99956   0.00253   0.02408   0.02401
-  
+
   OSLO Number :      6         7         8         9
   FOLI Value  :   1.04773   1.06153   1.06204   2.71382
   Frg. Pop.  1:   0.03102   0.03984   0.03982   0.80051
   Frg. Pop.  2:   0.96906   0.96042   0.96012   0.19950
-  
+
   -----------------------------------------
     Summary of the selected OSLOs (final)
   -----------------------------------------
@@ -726,11 +726,11 @@
   OSLO Number :      1         2         3         4         5
   Frg. Pop.  1:   0.99999   0.00043   0.99746   0.97593   0.97595
   Frg. Pop.  2:   0.00001   0.99956   0.00253   0.02408   0.02401
-  
+
   OSLO Number :      6         7         8         9
   Frg. Pop.  1:   0.03102   0.03984   0.03982   0.80051
   Frg. Pop.  2:   0.96906   0.96042   0.96012   0.19950
-  
+
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
@@ -740,7 +740,7 @@
      1          1.00
      2         -1.00
   ------------------------ 
-  
+
   TIMING CPU  :: OSLO analysis                                     0.07 s
   TIMING WALL :: OSLO analysis                                     0.06 s
 

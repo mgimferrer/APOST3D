@@ -1,94 +1,94 @@
   ------------------------------------------------------------------------------
-                                                                                
+
                      ___    ____  ____  ___________   _____ ____                
                     /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
                    / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
                   / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
                  /_/  |_/_/    \____//____//_/     /____/_____/                 
-                                                                                
+
                         Version 5   --   22 September 2026                      
                          --------------------------------                       
-                                                                                
+
       Real-space and Hilbert-space tools for wave function analysis             
-                                                                                
+
       Documentation: https://apost3d.readthedocs.io                             
       Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
-                                                                                
+
       Cite this program as:                                                     
       ---------------------                                                     
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
-                                                                                
+
     e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
-                                                                                
+
       Available atomic definitions:                                             
       ----------------------------                                              
-                                                                                
+
       Real space:                                                               
         Becke, J. Chem. Phys. 88 2547 1988                                      
         Hirshfeld, Theor. Chim. Acta 44 129 1977                                
         Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007                     
         Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013  
-                                                                                
+
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
-                                                                                
+
       Calculating:                                                              
       ------------                                                              
-                                                                                
+
         A) Atomic and overlap populations, bond orders and valences             
            I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
-                                                                                
+
         B) Hartree-Fock molecular energy decomposition                          
            P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
-                                                                                
+
         C) KS-DFT molecular energy decomposition                                
            P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007             
            M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023         
-                                                                                
+
         D) Molecular energy decomposition for CASSCF/CISD wavefunctions         
-                                                                                
+
         E) Effective atomic orbitals                                            
            I. Mayer, J. Phys. Chem. 100 6249 1996                               
            I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
            E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
            Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026                  
-                                                                                
+
         F) Local spin analysis                                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
            E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
-                                                                                
+
         G) Effective oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
            M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
-                                                                                
+
         H) Oxidation states from localized orbitals                             
            M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020   
            M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
            M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022         
-                                                                                
+
         I) Decomposition of EDA quantities into one- and two-center IQA terms   
            M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
-                                                                                
+
         J) Origin-independent decomposition of static polarizabilities          
            M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021        
-                                                                                
+
   ------------------------------------------------------------------------------
-                                                                                
+
     The program has been written by using parts of the program APOST by         
     I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
-                                                                                
+
     The numerical integration utilizes the subroutines for Lebedev              
     quadrature downloaded from CCL. The appropriate reference is:               
     V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
     131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
-                                                                                
+
     The program makes use of libxc library when necessary, using the F90        
     interfaces provided by the authors.                                         
                    (see https://libxc.gitlab.io/)                               
-                                                                                
+
     We are extremely grateful for the possibility of using these routines!      
-                                                                                
+
   ------------------------------------------------------------------------------
 
   ------------------------
@@ -145,7 +145,7 @@
   Checking NO overlap matrix
 
   TIMING CPU  :: initialization                                    0.01 s
-  TIMING WALL :: initialization                                    0.01 s
+  TIMING WALL :: initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -349,71 +349,71 @@
   ----------------------------------
 
   ** FRAGMENT   1 **
-  
+
   Net occupation for fragment      1    2.11883
   Net occupation using >    0.00010
   OCCUP.   1.9880   0.1308
-  
+
   Gross occupation for fragment    1    2.14224
   OCCUP.   1.9889   0.1533
   FIT %     99.41    84.59
   Left out by the cutoff (net / gross):   -0.00394   -0.00456
-  
+
    No eff-AOs in the occupation range
-  
+
   ** FRAGMENT   2 **
-  
+
   Net occupation for fragment      2    1.05137
   Net occupation using >    0.00010
   OCCUP.   1.0512   0.0002
-  
+
   Gross occupation for fragment    2    1.08681
   OCCUP.   1.0861   0.0007
   FIT %     93.01    33.07
   Left out by the cutoff (net / gross):   -0.09431   -0.10682
    No eff-AOs in the occupation range
-  
+
   Generating cube files for eff-AOs  1 to  1 of atom/fragment   2
   Size of cube (x,y,z):  10  10  10
   Normalization from cube:  0.2922
-  
+
 
   ------------------------------------
     EFFAOs FROM THE UNPAIRED DENSITY
   ------------------------------------
 
   ** FRAGMENT   1 **
-  
+
   Net occupation for fragment      1    0.22178
   Net occupation using >    0.00010
   OCCUP.   0.2076   0.0067   0.0055   0.0007   0.0004   0.0004   0.0002   0.0001
   OCCUP.   0.0001
-  
+
   Gross occupation for fragment    1    0.24999
   OCCUP.   0.2352   0.0067   0.0056   0.0010   0.0005   0.0005   0.0002   0.0002
   OCCUP.   0.0002
   FIT %     85.12    99.28    91.55    46.07    64.90    64.90    43.77    37.27
   FIT %     37.26
   Left out by the cutoff (net / gross):    0.00009    0.00017
-  
+
    No eff-AOs in the occupation range
-  
+
   ** FRAGMENT   2 **
-  
+
   Net occupation for fragment      2    0.60346
   Net occupation using >    0.00010
   OCCUP.   0.4270   0.1592   0.0069   0.0047   0.0047   0.0006   0.0001   0.0001
   OCCUP.   0.0001
-  
+
   Gross occupation for fragment    2    0.63216
   OCCUP.   0.4272   0.1872   0.0071   0.0048   0.0048   0.0007   0.0002   0.0002
   OCCUP.   0.0001
   FIT %     99.37    82.90    83.53    86.77    86.77    83.67    73.56    73.57
   FIT %     64.56
   Left out by the cutoff (net / gross):    0.00025    0.00030
-  
+
    No eff-AOs in the occupation range
-  
+
   Total number of eff-AO-s for analysis:   22
 
   Found 1 EFO(s) with significant negative occupation in the paired channel
@@ -464,7 +464,7 @@
      2         -1.00
   ------------------------ 
    Sum:  0.0
-  
+
   OVERALL RELIABILITY INDEX R(%) =  96.638
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.532
 

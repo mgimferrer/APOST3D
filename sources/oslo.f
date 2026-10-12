@@ -316,7 +316,7 @@
             if(xx.gt.1.0d-5) write(*,111) ii,frgspr(ifrg,ii),xx,foli(ifrg,ii)
           end do
           write(*,*) " ------------------------------------------ "
-          write(*,*) " "
+          write(*,*)
         end do
         DEALLOCATE(S0)
 
@@ -372,7 +372,7 @@
         xsel=xcutoff
         if(lbranch) then
           xsel=xfront
-          write(*,*) " "
+          write(*,*)
           write(*,*) " ********************************************* "
           write(*,*) "  BRANCHING: THE NEXT FOLI VALUE IS SELECTED  "
           write(*,*) " ********************************************* "
@@ -412,14 +412,14 @@
           end do
         end do
         write(*,*) " --------------------- "
-        write(*,*) " "
+        write(*,*)
         write(*,'(2x,a25,x,i3)') "Number of OSLOs selected:",mm
         if(jjfrg.gt.0) then
           write(*,'(2x,a17,x,f10.5)') "delta-FOLI value:",xfront-xcutoff
         else
           write(*,'(2x,a)') "delta-FOLI value: none (no other candidate)"
         end if
-        write(*,*) " "
+        write(*,*)
 
 !! 4) Orthogonalizing the selection: Lowdin, from the eigenvalues of its !!
 !! overlap above thresh (10^-8, parameter.h). nr of them = the number   !!
@@ -535,7 +535,7 @@
             write(*,'(2x,a,i0,a,i0,a)') 'SHARED ORBITALS: the ',mm,
      +        ' selected OSLOs span ',nr,' orbitals'
           end if
-          write(*,'(a)') ' '
+          write(*,*)
           write(*,'(a)') '   Frag.      Share'
           write(*,'(2x,a)') repeat('-',17)
           do ifrg=1,icufr
@@ -550,13 +550,13 @@
             if(ii.eq.1) write(*,'(i6,f13.5)') ifrg,xx
           end do
           write(*,'(2x,a)') repeat('-',17)
-          write(*,'(a)') ' '
+          write(*,*)
           DEALLOCATE(share)
         end if
         nadd=nr
         nnelect=nnelect+nr
         write(*,'(2x,a24,x,i3)') "Orbitals left to assign:",nel-nnelect
-        write(*,*) " "
+        write(*,*)
 
 !! 5) Close alternative: a next OSLO with an overlap of nearly 1 with   !!
 !! the selected ones (it is nearly one of them, found from another      !!
@@ -573,7 +573,7 @@
         else
           write(*,'(2x,a,f8.5,a,f8.5)') 'Next OSLOs: FOLI',xfront,
      +      ', delta-FOLI',xfront-xcutoff
-          write(*,'(a)') ' '
+          write(*,*)
           write(*,'(a)') '   Orb.   Frag.     FOLI    Overlap with selected'
           write(*,'(2x,a)') repeat('-',49)
           xmax=ZERO
@@ -613,7 +613,7 @@
           write(*,'(2x,a,f10.5)') "Largest overlap with the selected "//
      +      "OSLOs:",xmax
           if(xmax.gt.ONE-xlindep.and.xfront-xcutoff.lt.dfoliwarn) then
-            write(*,*) " "
+            write(*,*)
             write(*,*) " ************************************** "
             write(*,*) "  WARNING : CLOSE ALTERNATIVE SELECTION  "
             write(*,*) " ************************************** "
@@ -627,7 +627,7 @@
      +        'of both runs.'
           end if
         end if
-        write(*,*) " "
+        write(*,*)
 
 !! 6) Removing the selected orbitals from the remaining density !!
         do ii=1,igr
@@ -663,7 +663,7 @@
         if(ibrused(k).eq.0) write(*,'(2x,a,i0,a)')
      +    'Branching at iteration ',ibr(k),': not reached, not applied'
       end do
-      write(*,*) " "
+      write(*,*)
 
       DEALLOCATE(Sm,Splus,c0,pp0,pcore,st,cmat,cfrgoslo)
       DEALLOCATE(frgpop,frgspr,ibrused)
@@ -762,7 +762,7 @@
 !! Initial printing !!
       call print_box('STARTING ITERATIVE OSLO ALGORITHM')
       write(*,'(2x,a50,f10.5)') "Tolerance (in delta-FOLI) used for OSLO selection:",folitol
-      write(*,*) " "
+      write(*,*)
 
       ALLOCATE(pnocore(igr,igr))
       pnocore=pa !! SAVING pa IN pnocore !!
@@ -835,7 +835,7 @@
       write(*,*) " ------------------------ "
       if(ishared.eq.1) write(*,'(2x,a)') 'Fractional values: orbitals '//
      +  'shared between fragments (see the iterations)'
-      write(*,*) " "
+      write(*,*)
 
       DEALLOCATE(orbpop,orbpop2)
       DEALLOCATE(foslo,foslo2)
@@ -1057,7 +1057,7 @@
           do jfrg=1,icufr
             write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,noslo)
           end do
-          write(*,*) " "
+          write(*,*)
 
 !! full 5-column packs. !!
         else
@@ -1066,7 +1066,7 @@
           do jfrg=1,icufr
             write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,dd+4)
           end do
-          write(*,*) " "
+          write(*,*)
           dd=dd+5
         end if
       end do
@@ -1279,7 +1279,7 @@
       write(*,*) " ------------------------ "
       if(ishared.eq.1) write(*,'(2x,a)') 'Fractional values: orbitals '//
      +  'shared between fragments (see the iterations)'
-      write(*,*) " "
+      write(*,*)
 
       DEALLOCATE(coslo_a,cosloorth_a,delocoslo_a,frgel_a)
       DEALLOCATE(coslo_b,cosloorth_b,delocoslo_b,frgel_b)

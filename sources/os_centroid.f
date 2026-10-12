@@ -196,9 +196,9 @@ c End loop over localized mo's
       itot2=0
       print *,'   OXIDATION STATES FROM    '
       print *,' CENTROIDS OF LOCALIZED MOs '
-      print *,'  '
+      write(*,*)
       print *,'        ALPHA PART'
-      print *,'  '
+      write(*,*)
       print *,'  Frag  Na(geom)  Na(QTAIM) '
       print *,' ---------------------------'
       do i=1,icufr
@@ -208,7 +208,7 @@ c End loop over localized mo's
       end do
       print *,' ---------------------------'
       write(*,'(a6,2i9)') '  Sum ', itot1,itot2
-      print *,'  ' 
+      write(*,*)
 
 c run over beta localized mo's
       do iorb=1,nb   
@@ -335,12 +335,12 @@ c End loop over localized mo's
 
       itot1=0
       itot2=0
-      print *,'  '
+      write(*,*)
       print *,'   OXIDATION STATES FROM    '
       print *,' CENTROIDS OF LOCALIZED MOs '
-      print *,'  '
+      write(*,*)
       print *,'         BETA PART'
-      print *,'  '
+      write(*,*)
       print *,'  Frag  Nb(geom)  Nb(QTAIM) '
       print *,' ---------------------------'
       do i=1,icufr
@@ -352,7 +352,7 @@ c End loop over localized mo's
       end do
       print *,' ---------------------------'
       write(*,'(a6,2i9)') '  Sum ', itot1,itot2
-      print *,'  ' 
+      write(*,*)
 
       end if
 
@@ -364,10 +364,10 @@ c OS
 
       itot1=0
       itot2=0
-      print *,'  '
+      write(*,*)
       print *,'   OXIDATION STATES FROM    '
       print *,' CENTROIDS OF LOCALIZED MOs '
-      print *,'  '
+      write(*,*)
       print *,'  Frag  OS(geom)  OS(QTAIM) '
       print *,' ---------------------------'
       do i=1,icufr
@@ -377,7 +377,7 @@ c OS
       end do
       print *,' ---------------------------'
       write(*,'(a6,2i9)') '  Sum ', itot1,itot2
-      print *,'  ' 
+      write(*,*)
 
       end
 

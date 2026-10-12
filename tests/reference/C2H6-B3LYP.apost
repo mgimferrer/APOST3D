@@ -1,94 +1,94 @@
   ------------------------------------------------------------------------------
-                                                                                
+
                      ___    ____  ____  ___________   _____ ____                
                     /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
                    / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
                   / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
                  /_/  |_/_/    \____//____//_/     /____/_____/                 
-                                                                                
+
                         Version 5   --   22 September 2026                      
                          --------------------------------                       
-                                                                                
+
       Real-space and Hilbert-space tools for wave function analysis             
-                                                                                
+
       Documentation: https://apost3d.readthedocs.io                             
       Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
-                                                                                
+
       Cite this program as:                                                     
       ---------------------                                                     
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
-                                                                                
+
     e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
-                                                                                
+
       Available atomic definitions:                                             
       ----------------------------                                              
-                                                                                
+
       Real space:                                                               
         Becke, J. Chem. Phys. 88 2547 1988                                      
         Hirshfeld, Theor. Chim. Acta 44 129 1977                                
         Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007                     
         Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013  
-                                                                                
+
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
-                                                                                
+
       Calculating:                                                              
       ------------                                                              
-                                                                                
+
         A) Atomic and overlap populations, bond orders and valences             
            I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
-                                                                                
+
         B) Hartree-Fock molecular energy decomposition                          
            P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
-                                                                                
+
         C) KS-DFT molecular energy decomposition                                
            P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007             
            M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023         
-                                                                                
+
         D) Molecular energy decomposition for CASSCF/CISD wavefunctions         
-                                                                                
+
         E) Effective atomic orbitals                                            
            I. Mayer, J. Phys. Chem. 100 6249 1996                               
            I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
            E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
            Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026                  
-                                                                                
+
         F) Local spin analysis                                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
            E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
-                                                                                
+
         G) Effective oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
            M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
-                                                                                
+
         H) Oxidation states from localized orbitals                             
            M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020   
            M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
            M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022         
-                                                                                
+
         I) Decomposition of EDA quantities into one- and two-center IQA terms   
            M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
-                                                                                
+
         J) Origin-independent decomposition of static polarizabilities          
            M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021        
-                                                                                
+
   ------------------------------------------------------------------------------
-                                                                                
+
     The program has been written by using parts of the program APOST by         
     I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
-                                                                                
+
     The numerical integration utilizes the subroutines for Lebedev              
     quadrature downloaded from CCL. The appropriate reference is:               
     V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
     131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
-                                                                                
+
     The program makes use of libxc library when necessary, using the F90        
     interfaces provided by the authors.                                         
                    (see https://libxc.gitlab.io/)                               
-                                                                                
+
     We are extremely grateful for the possibility of using these routines!      
-                                                                                
+
   ------------------------------------------------------------------------------
 
   ------------------------
@@ -157,8 +157,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                32.84 s
-  TIMING WALL :: atomic definition                                 4.22 s
+  TIMING CPU  :: atomic definition                                34.04 s
+  TIMING WALL :: atomic definition                                 4.71 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -298,7 +298,7 @@
   Functional type --> exchange-correlation
   HYBRID-GGA functional selected
   HF-type exchange coeff --> 0.200
-  
+
   -----------------------------
     GENERAL ONE-ELECTRON PART
   -----------------------------
@@ -397,9 +397,9 @@
     8  H     0.300705    0.000000
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:     42.2635815
-  
-  TIMING CPU  :: enpart one-electron                               4.63 s
-  TIMING WALL :: enpart one-electron                               0.68 s
+
+  TIMING CPU  :: enpart one-electron                               4.55 s
+  TIMING WALL :: enpart one-electron                               0.63 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -505,7 +505,7 @@
     8  H     0.000000   -0.329154
   --------------------------------------------------------------------------------                    
   KS-DFT exchange-correlation energy:    -10.6093159
-  
+
   REARRANGING ATOMIC COMPONENTS 
 
   ------------------------------------------------------------
@@ -538,12 +538,12 @@
     8  H    -0.005596   -0.214771
   --------------------------------------------------------------------------------                    
   Sum of pure KS-DFT exchange-correlation energy:    -10.6093159
-  
+
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
-  
-  TIMING CPU  :: enpart dft                                       21.90 s
-  TIMING WALL :: enpart dft                                        3.52 s
+
+  TIMING CPU  :: enpart dft                                       21.71 s
+  TIMING WALL :: enpart dft                                        3.56 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -590,8 +590,8 @@
     8  H     0.338589    0.478527
   --------------------------------------------------------------------------------                    
   Coulomb energy:     80.3392145
-  
-  TIMING CPU  :: Coulomb energy                                    2.59 s
+
+  TIMING CPU  :: Coulomb energy                                    2.53 s
   TIMING WALL :: Coulomb energy                                    0.36 s
 
   ---------------------------------------------------
@@ -634,9 +634,9 @@
   --------------------------------------------------------------------------------                    
   Hartree-Fock exchange energy:    -12.4871105
   Note: full HF-type exchange, before scaling by 0.200.
-  
-  TIMING CPU  :: Exact-exchange energy                            38.86 s
-  TIMING WALL :: Exact-exchange energy                             5.94 s
+
+  TIMING CPU  :: Exact-exchange energy                            38.82 s
+  TIMING WALL :: Exact-exchange energy                             5.08 s
 
   --------------------------
     HYBRID KS-DFT XC TERMS
@@ -668,21 +668,21 @@
     8  H    -0.007575   -0.257917
   --------------------------------------------------------------------------------                    
   Total exchange-correlation energy:    -13.1067380
-  
+
   KS-DFT electron-electron energy (au):     67.2324765
   Integration error (kcal/mol):    -2.45
-  
+
   Max error accepted on the two-electron part (kcal/mol):     0.25
-  
+
   Zero-error strategy applied: the INTERPOLATED tables below replace
   the ones above (only their one-center terms change).
   Rotating for angles:   0.000000   0.182000
   New error after rotation:    -8.89
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.3799748
-  
+
   TIMING CPU  :: Interpolated zero-error                          10.38 s
-  TIMING WALL :: Interpolated zero-error                           1.35 s
+  TIMING WALL :: Interpolated zero-error                           1.37 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -777,7 +777,7 @@
     8  H    -0.007575   -0.257923
   --------------------------------------------------------------------------------                    
   Total exchange-correlation energy:    -13.1071581
-  
+
   KS-DFT electron-electron energy:     67.2363766
   Integration error (kcal/mol):     0.00
 
@@ -814,8 +814,8 @@
   Total energy in Fchk file:    -79.8656134
   Integration error (au):      0.0000520
   Integration error (kcal/mol):     0.03
-  
-  TIMING CPU  :: enpart two-electron                              54.45 s
-  TIMING WALL :: enpart two-electron                               8.01 s
+
+  TIMING CPU  :: enpart two-electron                              54.34 s
+  TIMING WALL :: enpart two-electron                               7.16 s
 
   ...Normal Termination of APOST-3D...

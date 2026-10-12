@@ -1,94 +1,94 @@
   ------------------------------------------------------------------------------
-                                                                                
+
                      ___    ____  ____  ___________   _____ ____                
                     /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               
                    / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               
                   / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                
                  /_/  |_/_/    \____//____//_/     /____/_____/                 
-                                                                                
+
                         Version 5   --   22 September 2026                      
                          --------------------------------                       
-                                                                                
+
       Real-space and Hilbert-space tools for wave function analysis             
-                                                                                
+
       Documentation: https://apost3d.readthedocs.io                             
       Source code & issue tracker: https://github.com/mgimferrer/APOST3D        
-                                                                                
+
       Cite this program as:                                                     
       ---------------------                                                     
         P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   
         J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                
-                                                                                
+
     e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      
-                                                                                
+
       Available atomic definitions:                                             
       ----------------------------                                              
-                                                                                
+
       Real space:                                                               
         Becke, J. Chem. Phys. 88 2547 1988                                      
         Hirshfeld, Theor. Chim. Acta 44 129 1977                                
         Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007                     
         Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013  
-                                                                                
+
       Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
-                                                                                
+
       Calculating:                                                              
       ------------                                                              
-                                                                                
+
         A) Atomic and overlap populations, bond orders and valences             
            I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         
-                                                                                
+
         B) Hartree-Fock molecular energy decomposition                          
            P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
            P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
-                                                                                
+
         C) KS-DFT molecular energy decomposition                                
            P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007             
            M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023         
-                                                                                
+
         D) Molecular energy decomposition for CASSCF/CISD wavefunctions         
-                                                                                
+
         E) Effective atomic orbitals                                            
            I. Mayer, J. Phys. Chem. 100 6249 1996                               
            I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
            E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
            Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026                  
-                                                                                
+
         F) Local spin analysis                                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    
            E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
-                                                                                
+
         G) Effective oxidation states analysis                                  
            E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
            M. Gimferrer and P. Salvador, manuscript in preparation, 2026        
-                                                                                
+
         H) Oxidation states from localized orbitals                             
            M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020   
            M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                
            M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022         
-                                                                                
+
         I) Decomposition of EDA quantities into one- and two-center IQA terms   
            M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       
-                                                                                
+
         J) Origin-independent decomposition of static polarizabilities          
            M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021        
-                                                                                
+
   ------------------------------------------------------------------------------
-                                                                                
+
     The program has been written by using parts of the program APOST by         
     I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
-                                                                                
+
     The numerical integration utilizes the subroutines for Lebedev              
     quadrature downloaded from CCL. The appropriate reference is:               
     V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
     131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
-                                                                                
+
     The program makes use of libxc library when necessary, using the F90        
     interfaces provided by the authors.                                         
                    (see https://libxc.gitlab.io/)                               
-                                                                                
+
     We are extremely grateful for the possibility of using these routines!      
-                                                                                
+
   ------------------------------------------------------------------------------
 
   ------------------------
@@ -165,7 +165,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.15 s
+  TIMING CPU  :: atomic definition                                 0.14 s
   TIMING WALL :: atomic definition                                 0.03 s
 
   ---------------------------------
@@ -181,9 +181,9 @@
   Generating dm1 for inactive spin-orbitals: 2
  Assuming diagonal dm1
  End DM1 reading 
-  
+
   Max. deviation from idempotency:   0.17522984
-  
+
  Reconstructing P and Ps matrices from dm1 file
  P (and Ps) in fchk overridden
   Max. deviation, P from dm1 vs. from .fchk:   0.00000000
@@ -194,9 +194,9 @@
   rdm2 elements read: 4
   Trace of inactive orbitals:     2.00000000
   Trace of active orbitals:     2.00000000
-  
+
   Trace of the DM2, normalized to N(N-1):    12.00000000 /  12
-  
+
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -341,15 +341,15 @@
     DOING MOLECULAR ENERGY DECOMPOSITION
   ----------------------------------------
 
-  
+
   ------------------------------------- 
    POST-HARTREE-FOCK ONE-ELECTRON PART  
   ------------------------------------- 
-  
+
   ----------------------------- 
    ELECTRON-NUCLEAR ATTRACTION  
   ----------------------------- 
-  
+
   --------------------------------------------------------------------------------                    
               1 Li        2  H 
   --------------------------------------------------------------------------------                    
@@ -358,11 +358,11 @@
   --------------------------------------------------------------------------------                    
   Electron-nuclei energy:    -19.0204933
   Integration error (kcal/mol):     0.00
-  
+
   ---------------- 
    KINETIC ENERGY  
   ---------------- 
-  
+
   --------------------------------------------------------------------------------                    
               1 Li        2  H 
   --------------------------------------------------------------------------------                    
@@ -371,11 +371,11 @@
   --------------------------------------------------------------------------------                    
   Kinetic energy:      7.8890984
   Integration error (kcal/mol):     0.00
-  
+
   --------------------------- 
    NUCLEAR-NUCLEAR REPULSION  
   --------------------------- 
-  
+
   --------------------------------------------------------------------------------                    
               1 Li        2  H 
   --------------------------------------------------------------------------------                    
@@ -383,7 +383,7 @@
     2  H     0.453580    0.000000
   --------------------------------------------------------------------------------                    
   Nuclear repulsion energy:      0.4535805
-  
+
   TIMING CPU  :: enpart one-electron                               0.10 s
   TIMING WALL :: enpart one-electron                               0.02 s
 
@@ -394,11 +394,11 @@
   Radial points:   40
   Angular points:  146
   Grid points:     11680
-  
+
   ------------------------------------- 
    POST-HARTREE-FOCK TWO-ELECTRON PART  
   ------------------------------------- 
-  
+
   Rotating for angles:   0.000000   0.162000
   Two-el integration will be distributed over   8 threads out of  10 available hardware cores
 
@@ -413,22 +413,22 @@
     2  H     0.534610    0.401302
   --------------------------------------------------------------------------------                    
   Coulomb energy:      4.8192880
-  
-  TIMING CPU  :: Coulomb energy                                    0.20 s
+
+  TIMING CPU  :: Coulomb energy                                    0.19 s
   TIMING WALL :: Coulomb energy                                    0.03 s
-  
+
   ------------------------------------------------------------------ 
    EVALUATING POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION INTEGRALS  
   ------------------------------------------------------------------ 
-  
+
   Two-el integrations for      6 MO pairs
   Threshold for atom pair calculation:   0.000000
   Skipping diatomic exchange integrals for            0
-  
+
   ---------------------------------------------------------- 
    POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS  
   ---------------------------------------------------------- 
-  
+
   --------------------------------------------------------------------------------                    
               1 Li        2  H 
   --------------------------------------------------------------------------------                    
@@ -436,29 +436,29 @@
     2  H    -0.034137   -0.316184
   --------------------------------------------------------------------------------                    
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
-  
+
   TIMING CPU  :: PHF Exc energy                                    1.02 s
-  TIMING WALL :: PHF Exc energy                                    1.02 s
-  
+  TIMING WALL :: PHF Exc energy                                    1.01 s
+
   Total two-electron part (coul+exc):      2.7365314
   Integration error (kcal/mol):    -0.09
-  
+
   Max error accepted on the two-electron part (kcal/mol):     0.00
-  
+
   Zero-error strategy applied: the INTERPOLATED tables below replace
   the ones above (only their one-center terms change).
   Rotating for angles:   0.000000   0.182000
   Skipping diatomic exchange integrals for         5840
-  
+
   New error after rotation:    -0.43
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter:      1.2493961
-  
-  
+
+
   ------------------------------------------------------- 
    INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
   ------------------------------------------------------- 
-  
+
   --------------------------------------------------------------------------------                    
               1 Li        2  H 
   --------------------------------------------------------------------------------                    
@@ -466,11 +466,11 @@
     2  H     0.534610    0.401339
   --------------------------------------------------------------------------------                    
   Coulomb energy:      4.8195933
-  
+
   ----------------------------------------------------------------------- 
    INTERPOLATED POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS  
   ----------------------------------------------------------------------- 
-  
+
   --------------------------------------------------------------------------------                    
               1 Li        2  H 
   --------------------------------------------------------------------------------                    
@@ -478,13 +478,13 @@
     2  H    -0.034137   -0.316213
   --------------------------------------------------------------------------------                    
   Post-Hartree-Fock exchange-correlation energy:     -2.0829236
-  
+
   Total two-electron part (coul+exc):      2.7366697
   Integration error (kcal/mol):     0.00
   ------------------------------------------------- 
    FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS  
   ------------------------------------------------- 
-  
+
   --------------------------------------------------------------------------------                    
               1 Li        2  H 
   --------------------------------------------------------------------------------                    
@@ -495,7 +495,7 @@
   Total energy in Fchk file:     -7.9411448
   Integration error (au):      0.0000000
   Integration error (kcal/mol):     0.00
-  TIMING CPU  :: enpart two-electron                               2.03 s
-  TIMING WALL :: enpart two-electron                               1.85 s
+  TIMING CPU  :: enpart two-electron                               2.02 s
+  TIMING WALL :: enpart two-electron                               1.84 s
 
   ...Normal Termination of APOST-3D...
