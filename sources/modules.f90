@@ -18,6 +18,7 @@
 !!                         CONTAINS allocate_nao                          !!
 !!   elements_mod      -- element symbols for atom labels                 !!
 !!   output_mod        -- print_value: 'label (unit) : value' lines       !!
+!!   json_mod          -- the results file <job>.apost.json               !!
 !!   timing_mod        -- CPU+wall-clock timers                           !!
 !!                         CONTAINS get_wall_time, print_timer            !!
 !!   input_options_mod -- ~70 .inp keyword flags parsed by read_input()   !!
@@ -835,6 +836,314 @@
    end subroutine print_value_text
 
    END MODULE output_mod
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! module: json_mod
+!! Writes the machine-readable results file <job>.apost.json while the
+!! run proceeds (schema: docs/source/developer/json-output.md). The file
+!! is written as <job>.apost.json.tmp and renamed when it is closed, at
+!! the normal end of the run or by apost_stop, so the final name only
+!! ever holds a complete file. Reals are written with 17 significant
+!! digits (they read back as the same double), NaN or infinity as null.
+!!   json_open(job,inp,fchk)       start the file (header written)
+!!   json_begin_object(key)        open an object ('' inside an array)
+!!   json_begin_array(key)         open an array
+!!   json_end                      close the innermost object or array
+!!   json_value(key,value)         real*8, integer, logical or text
+!!   json_null(key)                a null value
+!!   json_vector(key,v,n)          real*8, integer or text array
+!!   json_matrix(key,a,n,m,lda)    real*8 n x m matrix, as a list of rows
+!!   json_close(status,message)    "normal" or "stopped"; closes everything
+!! author: MGimf
+!! ----------------------------------------------------------------------
+   MODULE json_mod
+   use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+   implicit none
+   private
+   public :: json_open, json_close, json_begin_object, json_begin_array, &
+             json_end, json_value, json_null, json_vector, json_matrix, &
+             json_is_open
+
+   integer, parameter :: maxdepth=32
+   integer :: iu=-1, depth=0
+   logical :: is_open=.false.
+   logical :: first(0:maxdepth)=.true.
+   character(len=1) :: closer(0:maxdepth)=' '
+   character(len=:), allocatable :: final_name, temp_name
+   character(len=:), allocatable :: job_name, inp_name, fchk_name
+
+   interface json_value
+     module procedure value_real, value_int, value_logical, value_text
+   end interface
+   interface json_vector
+     module procedure vector_real, vector_int, vector_text
+   end interface
+
+   CONTAINS
+
+!! ---- !!
+   logical function json_is_open()
+   json_is_open=is_open
+   end function json_is_open
+
+!! ---- !!
+!! start the file: remove any results file of an earlier run, then write !!
+!! the header into the temporary file                                     !!
+   subroutine json_open(job,inp,fchk)
+   character(len=*), intent(in) :: job,inp,fchk
+   integer :: ios,iold
+   job_name=trim(job)
+   inp_name=trim(inp)
+   fchk_name=trim(fchk)
+   final_name=job_name//'.apost.json'
+   temp_name=final_name//'.tmp'
+   open(newunit=iold,file=final_name,status='old',iostat=ios)
+   if(ios.eq.0) close(iold,status='delete')
+   open(newunit=iu,file=temp_name,status='replace',action='write', &
+        iostat=ios)
+   if(ios.ne.0) return
+   is_open=.true.
+   depth=0
+   write(iu,'(a)',advance='no') '{'
+   depth=1
+   first(1)=.true.
+   closer(1)='}'
+   call json_value('schema','apost3d-results')
+   call json_value('schema_version','0.1')
+   call json_begin_object('program')
+   call json_value('name','APOST-3D')
+   call json_value('version','5.0')
+   call json_end()
+   end subroutine json_open
+
+!! ---- !!
+!! close every open container, write the run block, rename the file    !!
+   subroutine json_close(status,message)
+   use omp_lib, only: omp_get_max_threads
+   character(len=*), intent(in) :: status,message
+   if(.not.is_open) return
+   do while(depth.gt.1)
+     call json_end()
+   end do
+   call json_begin_object('run')
+   call json_value('job_name',job_name)
+   call json_value('input_file',inp_name)
+   call json_value('wavefunction_file',fchk_name)
+   call json_value('threads',omp_get_max_threads())
+   call json_value('status',trim(status))
+   if(len_trim(message).gt.0) then
+     call json_value('stop_message',trim(adjustl(message)))
+   else
+     call json_null('stop_message')
+   end if
+   call json_end()
+   write(iu,'(a)') ''
+   write(iu,'(a)') '}'
+   close(iu)
+   is_open=.false.
+   call rename(temp_name,final_name)
+   end subroutine json_close
+
+!! ---- !!
+!! comma, line break and indentation before a new item; the key if the  !!
+!! current container is an object                                     !!
+   subroutine item(key)
+   character(len=*), intent(in) :: key
+   if(.not.first(depth)) write(iu,'(a)',advance='no') ','
+   first(depth)=.false.
+   write(iu,'(a)',advance='no') new_line('a')//repeat('  ',depth)
+   if(closer(depth).eq.'}') write(iu,'(a)',advance='no') quoted(key)//': '
+   end subroutine item
+
+!! ---- !!
+   subroutine json_begin_object(key)
+   character(len=*), intent(in) :: key
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') '{'
+   depth=depth+1
+   first(depth)=.true.
+   closer(depth)='}'
+   end subroutine json_begin_object
+
+!! ---- !!
+   subroutine json_begin_array(key)
+   character(len=*), intent(in) :: key
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') '['
+   depth=depth+1
+   first(depth)=.true.
+   closer(depth)=']'
+   end subroutine json_begin_array
+
+!! ---- !!
+   subroutine json_end()
+   if(.not.is_open.or.depth.le.1) return
+   if(.not.first(depth)) write(iu,'(a)',advance='no') &
+     new_line('a')//repeat('  ',depth-1)
+   write(iu,'(a)',advance='no') closer(depth)
+   depth=depth-1
+   end subroutine json_end
+
+!! ---- !!
+   subroutine value_real(key,x)
+   character(len=*), intent(in) :: key
+   real*8, intent(in) :: x
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') real_text(x)
+   end subroutine value_real
+
+!! ---- !!
+   subroutine value_int(key,n)
+   character(len=*), intent(in) :: key
+   integer, intent(in) :: n
+   character(len=24) :: buf
+   if(.not.is_open) return
+   call item(key)
+   write(buf,'(i0)') n
+   write(iu,'(a)',advance='no') trim(buf)
+   end subroutine value_int
+
+!! ---- !!
+   subroutine value_logical(key,l)
+   character(len=*), intent(in) :: key
+   logical, intent(in) :: l
+   if(.not.is_open) return
+   call item(key)
+   if(l) then
+     write(iu,'(a)',advance='no') 'true'
+   else
+     write(iu,'(a)',advance='no') 'false'
+   end if
+   end subroutine value_logical
+
+!! ---- !!
+   subroutine value_text(key,text)
+   character(len=*), intent(in) :: key,text
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') quoted(text)
+   end subroutine value_text
+
+!! ---- !!
+   subroutine json_null(key)
+   character(len=*), intent(in) :: key
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') 'null'
+   end subroutine json_null
+
+!! ---- !!
+   subroutine vector_real(key,v,n)
+   character(len=*), intent(in) :: key
+   integer, intent(in) :: n
+   real*8, intent(in) :: v(n)
+   integer :: i
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') '['
+   do i=1,n
+     if(i.gt.1) write(iu,'(a)',advance='no') ', '
+     write(iu,'(a)',advance='no') real_text(v(i))
+   end do
+   write(iu,'(a)',advance='no') ']'
+   end subroutine vector_real
+
+!! ---- !!
+   subroutine vector_int(key,v,n)
+   character(len=*), intent(in) :: key
+   integer, intent(in) :: n
+   integer, intent(in) :: v(n)
+   integer :: i
+   character(len=24) :: buf
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') '['
+   do i=1,n
+     if(i.gt.1) write(iu,'(a)',advance='no') ', '
+     write(buf,'(i0)') v(i)
+     write(iu,'(a)',advance='no') trim(buf)
+   end do
+   write(iu,'(a)',advance='no') ']'
+   end subroutine vector_int
+
+!! ---- !!
+   subroutine vector_text(key,v,n)
+   character(len=*), intent(in) :: key
+   integer, intent(in) :: n
+   character(len=*), intent(in) :: v(n)
+   integer :: i
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') '['
+   do i=1,n
+     if(i.gt.1) write(iu,'(a)',advance='no') ', '
+     write(iu,'(a)',advance='no') quoted(trim(adjustl(v(i))))
+   end do
+   write(iu,'(a)',advance='no') ']'
+   end subroutine vector_text
+
+!! ---- !!
+!! rows 1..n, columns 1..m of a(lda,*)                                   !!
+   subroutine json_matrix(key,a,n,m,lda)
+   character(len=*), intent(in) :: key
+   integer, intent(in) :: n,m,lda
+   real*8, intent(in) :: a(lda,*)
+   integer :: i
+   if(.not.is_open) return
+   call json_begin_array(key)
+   do i=1,n
+     call vector_real('',a(i,1:m),m)
+   end do
+   call json_end()
+   end subroutine json_matrix
+
+!! ---- !!
+   function real_text(x) result(t)
+   real*8, intent(in) :: x
+   character(len=:), allocatable :: t
+   character(len=32) :: buf
+   if(.not.ieee_is_finite(x)) then
+     t='null'
+   else
+     write(buf,'(es24.16e3)') x
+     t=trim(adjustl(buf))
+   end if
+   end function real_text
+
+!! ---- !!
+!! a JSON string: quotes, backslashes and control characters escaped    !!
+   function quoted(s) result(q)
+   character(len=*), intent(in) :: s
+   character(len=:), allocatable :: q
+   integer :: i,ic
+   character(len=6) :: hex
+   q='"'
+   do i=1,len(s)
+     ic=iachar(s(i:i))
+     if(s(i:i).eq.'"') then
+       q=q//'\"'
+     else if(s(i:i).eq.'\') then
+       q=q//'\\'
+     else if(ic.eq.10) then
+       q=q//'\n'
+     else if(ic.eq.9) then
+       q=q//'\t'
+     else if(ic.lt.32) then
+       write(hex,'(a,z4.4)') '\u',ic
+       q=q//hex
+     else
+       q=q//s(i:i)
+     end if
+   end do
+   q=q//'"'
+   end function quoted
+
+   END MODULE json_mod
 
 !! ***** !!
 

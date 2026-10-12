@@ -63,6 +63,7 @@ Written into the working directory, depending on the keywords:
 
 | File | Written by | Contents |
 |---|---|---|
+| `<jobname>.apost.json` | every run | Machine-readable results, for programs such as the APOST3Dview visualizer ([Results file](../developer/json-output.md)) |
 | `<jobname>-OSLOs.fchk`, `<jobname>-OSLOs-preortho.fchk` | `OSLO` | OSLOs as orbitals ([Visualizing orbitals](visualization.md)) |
 | `<jobname>-EOS-EFOs.fchk` | `EOS` | Effective fragment orbitals as orbitals |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired and unpaired effective fragment orbitals |

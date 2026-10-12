@@ -105,8 +105,10 @@
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine apost_stop(msg)
+      use json_mod, only: json_close
       character(len=*) msg
 
+      call json_close('stopped',msg)
       if(len_trim(msg).gt.0) write(*,'(a,a)') 'STOP ',msg
       flush(6)
       call exit(1)
@@ -572,6 +574,128 @@
       end if
 
       END SUBROUTINE print_input_summary
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_skeleton
+!! Writes the input, molecule and fragments blocks of the results file
+!! (json_mod) and opens its analyses object, which each analysis then
+!! fills. Called from main.f once read_input has set every flag.
+!! arguments: none (input_options_mod, COMMONs, the .inp file on unit 16)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      SUBROUTINE json_skeleton()
+      use input_options_mod
+      use json_mod
+      use elements_mod
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      common /achi/achi(maxat,maxat),ibcp
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
+      character(len=1024) :: line
+      character(len=:), allocatable :: text
+      character(len=2) :: sym(maxat)
+      character(len=20) :: ckey
+      character(len=60) :: cname
+      character(len=8) :: cspace
+      integer :: ios,i,ifr
+
+!! the input file as written !!
+      rewind(16)
+      text=''
+      do
+        read(16,'(a)',iostat=ios) line
+        if(ios.ne.0) exit
+        text=text//trim(line)//new_line('a')
+      end do
+      rewind(16)
+      call json_begin_object('input')
+      call json_value('text',text)
+
+!! the atomic definition, chosen as in print_input_summary !!
+      cspace='real'
+      ckey=' '
+      cname=' '
+      if(imulli.ge.1) then
+        cspace='hilbert'
+        if(imulli.eq.1) then
+          ckey='MULLIKEN'
+          cname='Mulliken'
+        else if(imulli.eq.2) then
+          ckey='LOWDIN'
+          cname='Lowdin'
+        else if(imulli.eq.3) then
+          ckey='LOWDIN-DAVIDSON'
+          cname='Lowdin-Davidson'
+        else if(imulli.eq.4) then
+          ckey='NAO-BASIS'
+          cname='Natural atomic orbitals'
+        else if(imulli.eq.5) then
+          ckey='LOWDIN-W'
+          cname='Weighted Lowdin'
+        end if
+      else if(itfvc.eq.1) then
+        ckey='TFVC'
+        cname='Topological fuzzy Voronoi cells'
+      else if(ibcp.eq.1) then
+        ckey='BECKE-RHO'
+        cname='Becke, radii from the density'
+      else if(inewbec.eq.1) then
+        ckey='NEWBEC'
+        cname='Becke, NEWBEC radii'
+      else if(ibecke.eq.1) then
+        ckey='BECKE'
+        cname='Becke, fixed empirical radii'
+      else if(ihirsh.eq.1) then
+        ckey='HIRSH'
+        cname='Hirshfeld'
+      else if(ihirsh.eq.2) then
+        ckey='HIRSH-IT'
+        cname='Iterative Hirshfeld'
+      end if
+      call json_begin_object('atomic_definition')
+      call json_value('keyword',trim(ckey))
+      call json_value('name',trim(cname))
+      call json_value('space',trim(cspace))
+      call json_value('default',itfvcdef.eq.1)
+      call json_end()
+      call json_end()
+
+!! geometry (bohr) and nuclear charges (reduced by an ECP) !!
+      call json_begin_object('molecule')
+      call json_value('n_atoms',nat)
+      call json_vector('atomic_numbers',iznuc,nat)
+      do i=1,nat
+        sym(i)=adjustl(element_symbol(iznuc(i)))
+      end do
+      call json_vector('symbols',sym,nat)
+      call json_vector('nuclear_charges',zn,nat)
+      call json_begin_array('coordinates_bohr')
+      do i=1,nat
+        call json_vector('',coord(1:3,i),3)
+      end do
+      call json_end()
+      call json_end()
+
+!! fragments as given in # FRAGMENTS (empty without DOFRAGS) !!
+      call json_begin_array('fragments')
+      if(idofr.eq.1) then
+        do ifr=1,icufr
+          call json_begin_object('')
+          call json_value('id',ifr)
+          call json_vector('atoms',ifrlist(1:nfrlist(ifr),ifr),
+     +      nfrlist(ifr))
+          call json_end()
+        end do
+      end if
+      call json_end()
+
+      call json_begin_object('analyses')
+      END SUBROUTINE json_skeleton
 
 !! ***** !!
 

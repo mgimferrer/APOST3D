@@ -109,6 +109,7 @@ c      -------------------------------------------------------------------------
       use integration_grid
       use timing_mod
       use input_options_mod
+      use json_mod, only: json_open, json_close
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 !! general parameters !!
@@ -209,7 +210,12 @@ c      -------------------------------------------------------------------------
         call apost_stop(' Wavefunction file not found')
       end if
 
+!! the results file <job>.apost.json: started here, closed at every end !!
+!! of the run (normal or apost_stop)                                     !!
+      call json_open(namepat,name3,name)
+
       call read_input()
+      call json_skeleton()
 
 !! kop=1 -> unrestricted calculation; iposthf -> correlated             !!
 !! calculation; icorr=0 -> no external dm1/2 provided; icas=1 ->        !!
@@ -542,6 +548,7 @@ c      iopt(200) =
 !! NOPOPU ends the run here (normal end, exit 0); flush so the stop !!
 !! message (stderr) comes after the buffered output                 !!
       if(inopop.eq.1) then
+        call json_close('normal','')
         flush(6)
         stop 'Normal termination of APOST3D'
       end if
@@ -606,6 +613,7 @@ c      iopt(200) =
           write(*,*) 'Doing OS from centroids of localized orbitals...'
           call eos_centroid(itotps,chp,wp,omp,pcoord)
 !! normal end of this path: flush so stdout keeps its order, exit 0 !!
+          call json_close('normal','')
           flush(6)
           stop
         end if
@@ -1126,6 +1134,7 @@ c      iopt(200) =
       end if
 
 !! End printing... !!
+      call json_close('normal','')
       write(*,*)
       write(*,'(2x,a)') '...Normal Termination of APOST-3D...'
 

@@ -120,6 +120,7 @@ developer/testing
 developer/conventions
 developer/cleanup-protocol
 developer/output-style
+developer/json-output
 ```
 
 ## Acknowledgements
