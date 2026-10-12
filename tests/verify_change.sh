@@ -11,8 +11,10 @@
 #                 in a separate git worktree; the working tree is not
 #                 touched apart from its usual incremental build.
 #   --format      output-format change: only the numbers must be
-#                 identical (compare_outputs.py with --ulps 0); changed
-#                 layout or labels are listed as notes. Without it, the
+#                 identical (compare_outputs.py with --ulps 0, and
+#                 compare_numbers.py: every number of each output, in
+#                 order); changed layout or labels are listed as notes,
+#                 and a change in the numbers fails. Without it, the
 #                 outputs must be identical line by line (refactors,
 #                 parallel regions), timings and thread counts aside.
 #   --threads N   also run the working-tree build on N threads and show
@@ -119,6 +121,12 @@ else
   echo "Base vs working tree, one thread: every number must be identical"
   python3 "$REPO/tests/compare_outputs.py" --ref-dir "$WORKDIR/base" \
     --out-dir "$WORKDIR/new" --ulps 0 || FAIL=1
+  echo
+  echo "Every number of each output, in order (any layout):"
+  python3 "$REPO/tests/compare_numbers.py" --old-dir "$WORKDIR/base" \
+    --new-dir "$WORKDIR/new" | grep -v '^  same numbers' || true
+  python3 "$REPO/tests/compare_numbers.py" --old-dir "$WORKDIR/base" \
+    --new-dir "$WORKDIR/new" > /dev/null || FAIL=1
 fi
 
 if [ -n "$THREADS" ]; then

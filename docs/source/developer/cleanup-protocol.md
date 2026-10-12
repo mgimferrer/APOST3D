@@ -66,9 +66,10 @@ one clear cause:
   - default: they must be identical except for timings (refactors,
     parallel regions);
   - `--format`: only the numbers must be identical (output-format
-    changes). Numbers are compared on lines whose text matches; a
-    number on a reworded line is listed as a layout note, so read the
-    notes;
+    changes): line by line where the text matches, and as the full
+    sequence of numbers of each output, in order
+    (`tests/compare_numbers.py`), so a number on a reworded line is
+    checked too;
   - `--threads N`: also runs the new build with N threads and shows the
     differences against one thread (a parallel region may change the last
     printed digit by summing in another order).
