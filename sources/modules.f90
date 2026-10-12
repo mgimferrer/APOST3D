@@ -16,6 +16,7 @@
 !!   nao_mod           -- natural-AO matrices (unao/ssnao), replaces      !!
 !!                         legacy common /nao/                            !!
 !!                         CONTAINS allocate_nao                          !!
+!!   elements_mod      -- element symbols for atom labels                 !!
 !!   timing_mod        -- CPU+wall-clock timers                           !!
 !!                         CONTAINS get_wall_time, print_timer            !!
 !!   input_options_mod -- ~70 .inp keyword flags parsed by read_input()   !!
@@ -723,6 +724,51 @@
    END SUBROUTINE allocate_nao
 
    END MODULE nao_mod
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! module: elements_mod
+!! Element symbols for the atom labels of the output, right-justified in
+!! two characters (' H', 'He'): element_symbol(z), and element_label(z)
+!! with a blank on each side ('  H ', ' He '), the four-character form of
+!! the matrix and table rows. Atomic numbers outside 1-118 give '??'.
+!! author: MGimf
+!! ----------------------------------------------------------------------
+   MODULE elements_mod
+   implicit none
+   character(len=2), parameter :: symbols(118) = (/ &
+      ' H','He','Li','Be',' B',' C',' N',' O',' F','Ne', &
+      'Na','Mg','Al','Si',' P',' S','Cl','Ar',' K','Ca', &
+      'Sc','Ti',' V','Cr','Mn','Fe','Co','Ni','Cu','Zn', &
+      'Ga','Ge','As','Se','Br','Kr','Rb','Sr',' Y','Zr', &
+      'Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn', &
+      'Sb','Te',' I','Xe','Cs','Ba','La','Ce','Pr','Nd', &
+      'Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb', &
+      'Lu','Hf','Ta',' W','Re','Os','Ir','Pt','Au','Hg', &
+      'Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac','Th', &
+      'Pa',' U','Np','Pu','Am','Cm','Bk','Cf','Es','Fm', &
+      'Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt','Ds', &
+      'Rg','Cn','Nh','Fl','Mc','Lv','Ts','Og' /)
+
+   CONTAINS
+
+!! ---- !!
+   function element_symbol(iz) result(sym)
+   integer, intent(in) :: iz
+   character(len=2) :: sym
+   sym='??'
+   if(iz.ge.1.and.iz.le.118) sym=symbols(iz)
+   end function element_symbol
+
+!! ---- !!
+   function element_label(iz) result(lab)
+   integer, intent(in) :: iz
+   character(len=4) :: lab
+   lab=' '//element_symbol(iz)//' '
+   end function element_label
+
+   END MODULE elements_mod
 
 !! ***** !!
 

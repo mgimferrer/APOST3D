@@ -623,6 +623,7 @@
 !! author:                                                               !!
 !! ********************************************************************* !!
       SUBROUTINE VPRINT(H,N,ndim,jdim)
+      use elements_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
       integer, intent(in) :: ndim,jdim
@@ -630,26 +631,14 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,jdim)
 
-      Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
-     $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
-     $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
-     $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
-     $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
-     $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
-     $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sm ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
-     $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
-     $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
-     $4H Th ,4H Pa ,4H  U   /
 
    62 FORMAT(1X,I3,A4,6F12.6)
    63 FORMAT(1X,I3,A4,6F20.13)
       DO 2 I=1,N
         if(iaccur.eq.0) then
-          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=1,jdim)
+          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=1,jdim)
         else
-          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=1,jdim)
+          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=1,jdim)
         end if
    2  CONTINUE
       RETURN
@@ -669,6 +658,7 @@
 !! author:                                                               !!
 !! ********************************************************************* !!
       SUBROUTINE MPRINT_NLOP(H,N,ndim)
+      use elements_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
       integer, intent(in) :: ndim
@@ -676,18 +666,6 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,3)
 
-      Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
-     $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
-     $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
-     $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
-     $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
-     $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
-     $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sm ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
-     $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
-     $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
-     $4H Th ,4H Pa ,4H  U   /
 
       NMIN=1
       NNMAX=3
@@ -695,9 +673,9 @@
       PRINT *,' '
       DO I=1,N
         if(iaccur.eq.0) then
-          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
         else
-          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
         end if
       end do
       RETURN
@@ -718,6 +696,7 @@
 !! author:                                                               !!
 !! ********************************************************************* !!
       SUBROUTINE MPRINT(H,N,ndim)
+      use elements_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
       integer, intent(in) :: ndim
@@ -725,18 +704,6 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,NDIM)
 
-      Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
-     $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
-     $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
-     $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
-     $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
-     $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
-     $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sm ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
-     $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
-     $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
-     $4H Th ,4H Pa ,4H  U   /
 
       K=6
       NMIN=1
@@ -744,9 +711,9 @@
    62 FORMAT(1X,I3,A4,6F12.6)
    63 FORMAT(1X,I3,A4,6F20.13)
    1  if(iaccur.eq.0) then
-        PRINT 60, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 60, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
       else
-        PRINT 61, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 61, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
       end if
    60 FORMAT(10X,6(2X,I3,A4,3X))
    61 FORMAT(10X,6(6X,I3,A4,7X))
@@ -754,9 +721,9 @@
    64 FORMAT(1X)
       DO 2 I=1,N
         if(iaccur.eq.0) then
-          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
         else
-          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
         end if
    2  CONTINUE
       NMIN=NMIN+6
@@ -784,6 +751,7 @@
 !! author:                                                               !!
 !! ********************************************************************* !!
       SUBROUTINE MPRINT2(H,N,ndim)
+      use elements_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       include 'parameter.h'
       integer, intent(in) :: ndim
@@ -792,18 +760,6 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       DIMENSION H(NDIM,NDIM)
 
-      Dimension mend(92)
-      data mend/4H  H ,4H He ,4H Li ,4H Be ,4H  B ,4H  C ,4H  N ,4H  O ,
-     $ 4H  F ,4H Ne ,4H Na ,4H Mg ,4H Al ,4H Si ,4H  P ,4H  S ,4H Cl ,
-     $4H Ar ,4H  K ,4H Ca ,4H Sc ,4H Ti ,4H  V ,4H Cr ,4H Mn ,4H Fe ,
-     $4H Co ,4H Ni ,4H Cu ,4H Zn ,4H Ga ,4H Ge ,4H As ,4H Se ,4H Br ,
-     $4H Kr ,4H Rb ,4H Sr ,4H  Y ,4H Zr ,4H Nb ,4H Mo ,4H Tc ,4H Ru ,
-     $4H Rh ,4H Pd ,4H Ag ,4H Cd ,4H In ,4H Sn ,4H Sb ,4H Te ,4H  I ,
-     $4H Xe ,4H Cs ,4H Ba ,4H La ,4H Ce ,4H Pr ,4H Nd ,4H Pm ,4H Sm ,
-     $4H Eu ,4H Gd ,4H Tb ,4H Dy ,4H Ho ,4H Er ,4H Tm ,4H Yb ,4H Lu ,
-     $4H Hf ,4H Ta ,4H  W ,4H Re ,4H Os ,4H Ir ,4H Pt ,4H Au ,4H Hg ,
-     $4H Tl ,4H Pb ,4H Bi ,4H Po ,4H At ,4H Rn ,4H Fr ,4H Ra ,4H Ac ,
-     $4H Th ,4H Pa ,4H  U   /
 
       line="--------------------------------------------------------------------------------"
 
@@ -814,19 +770,19 @@
    63 FORMAT(2X,I3,A4,6F20.13)
    1  if(iaccur.eq.0) then
         PRINT 666,line
-        PRINT 60, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 60, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
       else
         PRINT 666,line
-        PRINT 61, (I, mend(iznuc(i)),I=NMIN,NNMAX)
+        PRINT 61, (I, element_label(iznuc(i)),I=NMIN,NNMAX)
       end if
    60 FORMAT(10X,6(2X,I3,A4,3X))
    61 FORMAT(10X,6(6X,I3,A4,7X))
       PRINT 666,line
       DO 2 I=1,N
         if(iaccur.eq.0) then
-          PRINT 62,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
         else
-          PRINT 63,I,mend(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
+          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
         end if
    2  CONTINUE
       PRINT 666,line
@@ -1089,6 +1045,7 @@
 !! author:                                                               !!
 !! ********************************************************************* !!
       subroutine print_int(nbas,nat0,sat,name)
+      use elements_mod
       use basis_set
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -1101,18 +1058,6 @@
       common /coord/ coord0(3,maxat),zn(maxat),iznuc(maxat)
       dimension sat(nbas,nbas,nat0)
       character name*60
-      character*2 mend(92)
-      data mend/' H','He','Li','Be',' B',' C',' N',' O',
-     $ ' F','Ne','Na','Mg','Al','Si',' P',' S','Cl',
-     $ 'Ar',' K','Ca','Sc','Ti',' V','Cr','Mn','Fe',
-     $ 'Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br',
-     $ 'Kr','Rb','Sr',' Y','Zr','Nb','Mo','Tc','Ru',
-     $ 'Rh','Pd','Ag','Cd','In','Sn','Sb','Te',' I',
-     $ 'Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sm',
-     $ 'Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',
-     $ 'Hf','Ta',' W','Re','Os','Ir','Pt','Au','Hg',
-     $ 'Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac',
-     $ 'Th','Pa',' U'  /
 
       character nameaim*55,charnu*2,charnu2*2,charnu1
       character charnu3*3,ext*4,namefiles*55
@@ -1200,7 +1145,7 @@
         else
           jat=jjat
         end if
-        read(mend(iznuc(jat)),'(A2)')charnu
+        charnu=element_symbol(iznuc(jat))
         charnu=adjustl(charnu)
         l1=len_trim(name)
 !! atom index formatted 1/2/3 digits wide -- assumes up to 999 atoms !!
@@ -1265,9 +1210,9 @@
 
         write(naim,'(a30,F20.11)')' MOLECULAR SCF ENERGY (AU)  = ',AE
         write(naim,*)''
-        write(naim,'(A25,A4,i5)')' INTEGRATION IS OVER ATOM',mend(iznuc(jat)),
+        write(naim,'(A25,A4,i5)')' INTEGRATION IS OVER ATOM',element_symbol(iznuc(jat)),
      1  jat
-      !write(naim2) mend(iznuc(jat)),jat
+      !write(naim2) element_symbol(iznuc(jat)),jat
         write(naim,'(a27)') ' RESULTS OF THE INTEGRATION'
         write(naim,'(a17,e21.14,a14,e21.14)')'              N  ',
      1   qat(jat,1),'    NET CHARGE',zn(jat)-qat(jat,1)
@@ -1473,6 +1418,7 @@
 !! author: PSalse, MGimf                                                  !!
 !! ********************************************************************** !!
       subroutine cubegen_new(ifrag,icase)
+      use elements_mod
       use ao_matrices
       use integration_grid
       use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
@@ -1490,18 +1436,6 @@
 
       character*30 name2
       character nameaim*256, charnu*2,atnu*2,charnu1*3
-      character*2 mend(92)
-      data mend/' H','He','Li','Be',' B',' C',' N',' O',
-     $ ' F','Ne','Na','Mg','Al','Si',' P',' S','Cl',
-     $ 'Ar',' K','Ca','Sc','Ti',' V','Cr','Mn','Fe',
-     $ 'Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br',
-     $ 'Kr','Rb','Sr',' Y','Zr','Nb','Mo','Tc','Ru',
-     $ 'Rh','Pd','Ag','Cd','In','Sn','Sb','Te',' I',
-     $ 'Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sm',
-     $ 'Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',
-     $ 'Hf','Ta',' W','Re','Os','Ir','Pt','Au','Hg',
-     $ 'Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac',
-     $ 'Th','Pa',' U'  /
 
       dimension pgrid(maxgrid,3),igrid(3),xgrid(3,3)
       dimension pop(maxat)
@@ -1684,7 +1618,7 @@
 !! output !!
 
         if(idofr.eq.0) then
-          read(mend(iznuc(ifrag)),'(A2)')charnu
+          charnu=element_symbol(iznuc(ifrag))
           charnu=adjustl(charnu)
         else
           charnu="FR"
@@ -1724,7 +1658,7 @@
         write(44,*)'Cube generated with APOST-3D code '
         if(idofr.eq.0) then
           write(44,41) trim(name),trim(name2),' EFFAO',ivec," for atom",
-     + mend(iznuc(ifrag)),"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
+     + element_symbol(iznuc(ifrag)),"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
      + p0net(ivec,ifrag)
         else
           write(44,44) trim(name),trim(name2),' EFFAO',ivec," for frag",
