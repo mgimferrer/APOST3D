@@ -231,6 +231,16 @@ program, not a full development history — see `git log` for that.
 
 ### Others
 
+- **Start of the output** — the wavefunction and input summaries and the
+  setup blocks (grids, atomic definition, density matrices of correlated
+  wavefunctions) use one aligned `label (unit) : value` layout. The
+  input summary shows values in the units used later in the run, with
+  the keyword value next to them (e.g. `0.2000 (THREBOD 2000)`), and
+  names every predefined functional. `SCF/DFT energy` reads `SCF energy`
+  (and `not in the .fchk` instead of zero when the file has none); a
+  method name the program does not recognise is shown next to the
+  assumed KS-DFT. Real-space runs print how accurately the grid
+  integrates the atomic overlaps.
 - **Tables and matrices** — every atom and fragment matrix has rules as
   wide as the matrix and column headers over their numbers (the S^2
   decomposition and the correlated local-spin matrices now have rules

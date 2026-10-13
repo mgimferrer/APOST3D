@@ -110,6 +110,7 @@ c      -------------------------------------------------------------------------
       use timing_mod
       use input_options_mod
       use json_mod, only: json_open, json_close
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 !! general parameters !!
@@ -142,6 +143,7 @@ c      -------------------------------------------------------------------------
 !! for enpart !!
       dimension eto(maxat,maxat)
       character*60 name,name2,namepat,name3,name0,cgridarg
+      character*40 cbuf
       character*80 line
 !! for testing !!
       dimension xhess(3,3)
@@ -265,7 +267,9 @@ c      -------------------------------------------------------------------------
 !! restricted wavefunction, where Local Spin still doesn't make sense   !!
 !! (confirmed: produces nonsense u_A/N_D values, not a trivial zero).   !!
       if(ispin.eq.1.and.kop.eq.0.and.iposthf.eq.0)  then
-        write(*,*) 'No Local Spin Analysis needed for Restricted SD WFs'
+        write(*,*)
+        write(*,'(2x,a)') 'Note: SPIN skipped: a closed-shell single '//
+     +    'determinant has no local spins'
         ispin=0
       end if
 !! ENPART is real-space only: these used to skip it silently and carry on !!
@@ -303,7 +307,9 @@ c      -------------------------------------------------------------------------
       end if
 
       if(kop.eq.0.and.ispin.eq.1) then
-        write(*,*) 'Warning, closed-shell Local Spin calculation ' 
+        write(*,*)
+        write(*,'(2x,a)') 'Note: closed-shell correlated wavefunction: '//
+     +    'its local spins come from electron correlation'
       end if
 
 !! Start of iopt listing. Full 1-200 listing so unused slots are   !!
@@ -539,7 +545,7 @@ c      iopt(200) =
       write(*,*)
       call cpu_time(time2)
       call get_wall_time(wtime2)
-      call print_timer('initialization',time2-time,wtime2-wtime)
+      call print_timer('Initialization',time2-time,wtime2-wtime)
       time=time2
       wtime=wtime2
 
@@ -560,17 +566,21 @@ c      iopt(200) =
       ndim=igr
       if(imulli.ge.1) then
         allocate (sat(ndim,ndim,nat))
+        call print_box('SETTING ATOMIC DEFINITION')
         if(imulli.eq.1) then
+          call print_value('Hilbert-space atoms','Mulliken')
           call tomull(sat)
         else if(imulli.eq.2.or.imulli.eq.3) then
-          write(*,*) ' Doing Hilbert-space analysis in Lowdin basis'
+          if(imulli.eq.2) call print_value('Hilbert-space atoms',
+     +      'Lowdin basis')
+          if(imulli.eq.3) call print_value('Hilbert-space atoms',
+     +      'Lowdin-Davidson basis')
           call tolow(sat)
         else if(imulli.eq.4) then
-          write(*,*) ' Doing Hilbert-space analysis in NAO basis'
+          call print_value('Hilbert-space atoms','NAO basis')
           call tonao(sat)
         else if(imulli.eq.5) then
-          write(*,*) ' Doing Hilbert-space analysis in weighted Lowdin ba
-     +      sis'
+          call print_value('Hilbert-space atoms','weighted Lowdin basis')
           call tolow2(sat)
         end if
 
@@ -596,11 +606,16 @@ c      iopt(200) =
         end do
 
 !! prepare for Becke-type atomic weighting !!
+!! the stiffness of the cell functions does not apply to Hirshfeld !!
         call print_box('SETTING ATOMIC DEFINITION')
-        if(ierf.ne.1) then
-          write(*,'(2x,a,1x,i0)') 'Using stiffness k:',istiff
-        else
-          write(*,'(2x,a,1x,f8.4)') 'Using adjustable profile with A =',aerf
+        if(ihirsh.eq.0) then
+          if(ierf.ne.1) then
+            call print_value('Cell stiffness k',istiff)
+          else
+            write(cbuf,'(f8.4)') aerf
+            call print_value('Adjustable cell profile A',
+     +        trim(adjustl(cbuf)))
+          end if
         end if
         if(ibcp.eq.1) call khi()
         if(ihirsh.eq.1.or.ihirsh.eq.2.or.ielcount.eq.1) call makeatdens
@@ -630,7 +645,7 @@ c      iopt(200) =
       write(*,*)
       call cpu_time(time2)
       call get_wall_time(wtime2)
-      call print_timer('atomic definition',time2-time,wtime2-wtime)
+      call print_timer('Atomic definition',time2-time,wtime2-wtime)
       time=time2
       wtime=wtime2
 
@@ -641,17 +656,12 @@ c      iopt(200) =
         call print_box('POST-HARTREE-FOCK CALCULATION')
 
         if(icisd.eq.1) nspinorb=nbasis*2
+!! a CASSCF 1-RDM covers the active space: dm1input reports the counts !!
+        if(icas.ne.1) call print_value('Spin-orbitals',nspinorb)
 
-        write(*,*) 'Number of core + active spin-orbitals : ',nspinorb
-        write(*,*) 'Number of electrons : ',nelec
-        write(*,*) 'Number of basis functions :',nbasis
-        write(*,*)
-
-        write(*,*) 'DM1 input starts'
         ALLOCATE(dm1(nspinorb,nspinorb))
         call dm1input(dm1)
         if(icorr.eq.2) then
-          write(*,*) 'DM2 input starts'
           norb=nspinorb/2
           ALLOCATE(dm2(norb,norb,norb,norb))
           if(iorca.eq.1.or.ipyscf.eq.1) then
@@ -992,9 +1002,9 @@ c      iopt(200) =
         end if
 
 !! Printing info !!
-        write(*,'(2x,a14,x,i4)') "Radial points:",nrad
-        write(*,'(2x,a15,x,i4)') "Angular points:",nang
-        write(*,'(2x,a12,x,i9)') "Grid points:",nrad*nang*nat
+        call print_value('Radial points',nrad)
+        call print_value('Angular points',nang)
+        call print_value('Grid points',nrad*nang*nat)
 
 !! Generating grid for two-electron numerical integrations !!
         iatps=nang*nrad

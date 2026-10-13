@@ -125,23 +125,23 @@
   Fragment  1 :   1   3   4   5
   Fragment  2 :   2   6   7   8
 
-  TIMING CPU  :: initialization                                    0.04 s
-  TIMING WALL :: initialization                                    0.03 s
+  TIMING CPU  :: Initialization                                    0.04 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 40
-  Angular points : 146
-  r0 (radial)    :   0.500
-  Grid points    : 46720
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 46720
 
   -----------------------------
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : subdivision 21, ratio  1.00000
@@ -158,11 +158,10 @@
   Atom pair   2 -   8 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
   Atom pair   2 -   8 : subdivision 28, ratio  1.68097
 
-  Checking sum of AOs overlap matrices
-  (deviations may not affect overall accuracy of MOs)
+  Sum of atomic overlaps, largest error   : 2.63E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: atomic definition                                 1.72 s
-  TIMING WALL :: atomic definition                                 0.23 s
+  TIMING CPU  :: Atomic definition                                 1.75 s
+  TIMING WALL :: Atomic definition                                 0.26 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -672,7 +671,7 @@
   ------------------------ 
   Fractional values: orbitals shared between fragments (see the iterations)
 
-  TIMING CPU  :: OSLO analysis                                     1.30 s
-  TIMING WALL :: OSLO analysis                                     1.25 s
+  TIMING CPU  :: OSLO analysis                                     1.33 s
+  TIMING WALL :: OSLO analysis                                     1.30 s
 
   ...Normal Termination of APOST-3D...

@@ -133,35 +133,32 @@
   Occupation numbers (>1.0e-6):
      2.00000
 
-  Checking NO overlap matrix
-
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 40
-  Angular points : 146
-  r0 (radial)    :   0.500
-  Grid points    : 11680
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 11680
 
   -----------------------------
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : 2 max / 1 min extrema; using central minimum as dividing point
   Atom pair   1 -   2 : subdivision 21, ratio  1.00000
 
-  Checking sum of AOs overlap matrices
-  (deviations may not affect overall accuracy of MOs)
+  Sum of atomic overlaps, largest error   : 4.06E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: atomic definition                                 0.01 s
-  TIMING WALL :: atomic definition                                 0.00 s
+  TIMING CPU  :: Atomic definition                                 0.01 s
+  TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
     DOING POPULATION ANALYSIS

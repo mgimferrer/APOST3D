@@ -45,10 +45,10 @@ printed at the top of the output:
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 40
-  Angular points : 146
-  r0 (radial)    :   0.500
-  Grid points    : 29200
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 29200
 ```
 
 A different grid is set in the input, in the optional

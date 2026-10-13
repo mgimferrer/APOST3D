@@ -427,11 +427,13 @@
 !! author: PSalse                                                        !!
 !! ********************************************************************* !!
       subroutine numint_sat(ndim,itotps,nat0,wp,omp,omp2,chp,ibaspoint,sat)
+      use output_mod, only: print_value
       use basis_set, only :s
       use ao_matrices
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
+      character*12 cdev
       integer, intent(in):: ndim,itotps,nat0
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(200)
@@ -524,21 +526,25 @@
         end do
       end do
 
-!! sanity check: sum of atomic overlap matrices vs. total overlap S !!
-      write(*,*)
-      write(*,'(2x,a)') 'Checking sum of AOs overlap matrices'
-      write(*,'(2x,a)') '(deviations may not affect overall accuracy of MOs)'
+!! the atomic weights add up to 1 at every point, so the atomic overlap !!
+!! matrices must add up to the analytic overlap S: the largest          !!
+!! difference measures how accurately the grid integrates               !!
+      dmax=0.0d0
       do i=1,igr
         do j=i,igr
           x=0.0d0
           do iatom=1,nat
             x=x+sat(i,j,iatom)
           end do
-          if(abs(s(i,j)-x).gt.1.0d-1) then
-            write(*,'(2x,a,2(1x,i0),2(1x,f14.8))') 'Large deviation for element ',i,j,x,s(i,j)
-          end if
+          dmax=max(dmax,abs(s(i,j)-x))
         end do
       end do
+      write(cdev,'(es9.2)') dmax
+      write(*,*)
+      call print_value('Sum of atomic overlaps, largest error',
+     +  trim(adjustl(cdev))//' (from the analytic overlap S)')
+      if(dmax.gt.1.0d-1) write(*,'(2x,a)') 'WARNING: the grid integrates '//
+     +  'the atomic overlaps poorly; a larger # GRID may be needed'
 
       return 
       end

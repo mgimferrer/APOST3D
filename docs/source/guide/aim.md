@@ -45,13 +45,20 @@ bonded pair of atoms:
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : subdivision 11, ratio  0.96078
   Atom pair   1 -   3 : subdivision 11, ratio  0.96078
   ...
+  Sum of atomic overlaps, largest error   : 6.16E-04 (from the analytic overlap S)
 ```
+
+The last line checks the grid for every real-space definition: the
+atomic overlap matrices must add up to the overlap matrix of the basis
+set, and the largest difference shows how accurately the grid
+integrates (the smaller, the better; above 0.1 the output adds a
+warning and a larger [`# GRID`](../input/grid.md) is advisable).
 
 The integration grid is described in
 [Running a calculation](running.md#integration-grid).

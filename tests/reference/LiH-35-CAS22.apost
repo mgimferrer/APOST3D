@@ -108,7 +108,8 @@
   CAS spin-orbitals                       : 6
   Alpha / beta electrons                  : 2 / 2
   SCF energy (au)                         :      -7.9411447876
- Warning, closed-shell Local Spin calculation 
+
+  Note: closed-shell correlated wavefunction: its local spins come from electron correlation
 
   -----------------
     INPUT SUMMARY
@@ -138,64 +139,48 @@
   Occupation numbers (>1.0e-6):
      2.00000   1.54688   0.45312
 
-  Checking NO overlap matrix
-
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 150
-  Angular points : 590
-  r0 (radial)    :   0.500
-  Grid points    : 177000
+  Radial points                           : 150
+  Angular points                          : 590
+  r0 (bohr)                               : 0.500
+  Grid points                             : 177000
 
   -----------------------------
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : subdivision 20, ratio  0.99601
 
-  Checking sum of AOs overlap matrices
-  (deviations may not affect overall accuracy of MOs)
+  Sum of atomic overlaps, largest error   : 6.76E-10 (from the analytic overlap S)
 
-  TIMING CPU  :: atomic definition                                 0.14 s
-  TIMING WALL :: atomic definition                                 0.03 s
+  TIMING CPU  :: Atomic definition                                 0.14 s
+  TIMING WALL :: Atomic definition                                 0.03 s
 
   ---------------------------------
     POST-HARTREE-FOCK CALCULATION
   ---------------------------------
 
- Number of core + active spin-orbitals :            6
- Number of electrons :            4
- Number of basis functions :          20
-
- DM1 input starts
-  Spin-orbitals (total/active/core): 6 / 2 / 2
-  Generating dm1 for inactive spin-orbitals: 2
- Assuming diagonal dm1
- End DM1 reading 
-
-  Max. deviation from idempotency:   0.17522984
-
- Reconstructing P and Ps matrices from dm1 file
- P (and Ps) in fchk overridden
-  Max. deviation, P from dm1 vs. from .fchk:   0.00000000
- DM2 input starts
-  Reconstructing rdm2 for inactive orbitals: 1
-  Active orbitals: 2
-  Total spinless rdm2 dimension: 3
-  rdm2 elements read: 4
-  Trace of inactive orbitals:     2.00000000
-  Trace of active orbitals:     2.00000000
-
-  Trace of the DM2, normalized to N(N-1):    12.00000000 /  12
-
+  Spin-orbitals (total / active / core)   : 6 / 2 / 2
+  Core spin-orbitals (occupation 1)       : 2
+  1-RDM, largest idempotency error        : 0.17522984
+  Density matrices P and Ps               : built from the 1-RDM
+  P, largest difference from the .fchk    : 0.00000000
+  2-RDM, core orbitals added              : 1
+  2-RDM, active orbitals                  : 2
+  2-RDM, orbitals in total                : 3
+  2-RDM, elements read                    : 4
+  2-RDM trace, core orbitals              : 2.00000000
+  2-RDM trace, active orbitals            : 2.00000000
+  2-RDM trace / N(N-1)                    : 12.00000000 / 12
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -391,16 +376,16 @@
   -------------------------------
   Nuclear repulsion energy:      0.4535805
 
-  TIMING CPU  :: enpart one-electron                               0.11 s
+  TIMING CPU  :: enpart one-electron                               0.10 s
   TIMING WALL :: enpart one-electron                               0.02 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
   -------------------------------------------------------
 
-  Radial points:   40
-  Angular points:  146
-  Grid points:     11680
+  Radial points                           : 40
+  Angular points                          : 146
+  Grid points                             : 11680
 
   ------------------------------------- 
    POST-HARTREE-FOCK TWO-ELECTRON PART  
@@ -421,7 +406,7 @@
   -------------------------------
   Coulomb energy:      4.8192880
 
-  TIMING CPU  :: Coulomb energy                                    0.20 s
+  TIMING CPU  :: Coulomb energy                                    0.19 s
   TIMING WALL :: Coulomb energy                                    0.03 s
 
   ------------------------------------------------------------------ 

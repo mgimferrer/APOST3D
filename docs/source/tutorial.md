@@ -43,17 +43,16 @@ understood. Check them first in every new calculation:
 
 % source: tests/reference/FeCO2-PBEPBE.apost
 ```text
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RPBEPBE)
+  Number of atoms                         : 5
+  Number of basis functions               : 86
   ...
-  Number of atoms                  : 5
-  Number of basis functions        : 86
-  ...
-  Occupied MOs (nocc/alpha/beta)   : 26 / 26 / 26
+  Doubly occupied MOs                     : 26
+  SCF energy (au)                         :   -1488.2914233301
   ...
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
 ```
 
 Then the [population analysis](methods/population.md), which every run

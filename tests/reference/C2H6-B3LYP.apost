@@ -120,23 +120,23 @@
   Two-electron grid                       : 40 x 146 (# GRID)
   Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
-  TIMING CPU  :: initialization                                    0.04 s
-  TIMING WALL :: initialization                                    0.03 s
+  TIMING CPU  :: Initialization                                    0.04 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 150
-  Angular points : 590
-  r0 (radial)    :   0.500
-  Grid points    : 708000
+  Radial points                           : 150
+  Angular points                          : 590
+  r0 (bohr)                               : 0.500
+  Grid points                             : 708000
 
   -----------------------------
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : subdivision 21, ratio  1.00000
@@ -153,11 +153,10 @@
   Atom pair   2 -   8 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
   Atom pair   2 -   8 : subdivision 28, ratio  1.68097
 
-  Checking sum of AOs overlap matrices
-  (deviations may not affect overall accuracy of MOs)
+  Sum of atomic overlaps, largest error   : 1.76E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: atomic definition                                32.32 s
-  TIMING WALL :: atomic definition                                 4.43 s
+  TIMING CPU  :: Atomic definition                                32.80 s
+  TIMING WALL :: Atomic definition                                 4.35 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -397,8 +396,8 @@
   -------------------------------
   Nuclear repulsion energy:     42.2635815
 
-  TIMING CPU  :: enpart one-electron                               4.48 s
-  TIMING WALL :: enpart one-electron                               0.66 s
+  TIMING CPU  :: enpart one-electron                               4.56 s
+  TIMING WALL :: enpart one-electron                               0.62 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -541,16 +540,16 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
 
-  TIMING CPU  :: enpart dft                                       22.54 s
-  TIMING WALL :: enpart dft                                        3.71 s
+  TIMING CPU  :: enpart dft                                       22.41 s
+  TIMING WALL :: enpart dft                                        3.61 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
   -------------------------------------------------------
 
-  Radial points:   40
-  Angular points:  146
-  Grid points:     46720
+  Radial points                           : 40
+  Angular points                          : 146
+  Grid points                             : 46720
 
   -----------------------------
     GENERAL TWO-ELECTRON PART
@@ -590,7 +589,7 @@
   -------------------------------
   Coulomb energy:     80.3392145
 
-  TIMING CPU  :: Coulomb energy                                    2.78 s
+  TIMING CPU  :: Coulomb energy                                    2.80 s
   TIMING WALL :: Coulomb energy                                    0.41 s
 
   ---------------------------------------------------
@@ -634,8 +633,8 @@
   Hartree-Fock exchange energy:    -12.4871105
   Note: full HF-type exchange, before scaling by 0.200.
 
-  TIMING CPU  :: Exact-exchange energy                            39.56 s
-  TIMING WALL :: Exact-exchange energy                             5.34 s
+  TIMING CPU  :: Exact-exchange energy                            39.41 s
+  TIMING WALL :: Exact-exchange energy                             5.10 s
 
   --------------------------
     HYBRID KS-DFT XC TERMS
@@ -680,8 +679,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.3799748
 
-  TIMING CPU  :: Interpolated zero-error                          10.57 s
-  TIMING WALL :: Interpolated zero-error                           1.48 s
+  TIMING CPU  :: Interpolated zero-error                          10.36 s
+  TIMING WALL :: Interpolated zero-error                           1.36 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -814,7 +813,7 @@
   Integration error (au):      0.0000520
   Integration error (kcal/mol):     0.03
 
-  TIMING CPU  :: enpart two-electron                              55.56 s
-  TIMING WALL :: enpart two-electron                               7.59 s
+  TIMING CPU  :: enpart two-electron                              55.22 s
+  TIMING WALL :: enpart two-electron                               7.22 s
 
   ...Normal Termination of APOST-3D...
