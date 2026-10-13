@@ -46,7 +46,7 @@ This page is the reference for its content.
 |---|---|
 | `schema` | always `"apost3d-results"` |
 | `schema_version` | `"major.minor"`, see [Versions](#versions) |
-| `program` | `name`, `version` |
+| `program` | `name`, `version` (`"5.0"`), `version_date` (release date of that version, ISO 8601: `"2026-09-22"`) |
 | `wavefunction` | as read from the `.fchk` file (below) |
 | `input` | the input as written, and the atomic definition used (below) |
 | `molecule` | atoms and geometry (below) |
@@ -62,7 +62,7 @@ This page is the reference for its content.
 | `method` | as in the output: `"Hartree-Fock"`, `"KS-DFT"`, `"CASSCF"`, ... |
 | `n_basis_functions` | number of basis functions |
 | `n_electrons`, `n_alpha`, `n_beta` | electron counts (valence electrons only with an ECP) |
-| `energy_au` | the energy in the `.fchk` file, or `null` when it has none |
+| `energy_au` | the `SCF Energy` field of the `.fchk` file (for a correlated wavefunction, the energy of its reference SCF, not the correlated total energy), or `null` when the file has none. Any change of this definition will be announced in the release notes. |
 
 ### `input`
 
@@ -83,14 +83,20 @@ This page is the reference for its content.
 
 ### `fragments`
 
-A list with one object per fragment, `{"id": 1, "atoms": [1, 2, 3]}`;
-empty when the input defines no fragments.
+A list with one object per fragment, `{"id": 1, "atoms": [1, 2, 3]}`, in
+the order of `# FRAGMENTS`; empty when the input defines no fragments.
+Fragments never share an atom (the run stops). An atom can belong to no
+fragment only when no fragment analysis needs every atom (EOS, GEOS,
+OSLO and ENPART stop; the others warn in the output); `-1` on the last
+fragment of the input means "all remaining atoms", so it is written out
+as their list.
 
 ### `run`
 
 | Key | Content |
 |---|---|
-| `job_name`, `input_file`, `wavefunction_file` | the names used by the run |
+| `job_name`, `input_file`, `wavefunction_file` | file names without folders (`"water"`, `"water.inp"`, `"water.fchk"`); the input, wavefunction and results files are always in the same folder |
+| `date` | when the run started, ISO 8601 with time zone (`"2026-10-13T14:05:31+02:00"`) |
 | `threads` | number of threads |
 | `status` | `"normal"` or `"stopped"` |
 | `stop_message` | the `STOP` message, or `null` |

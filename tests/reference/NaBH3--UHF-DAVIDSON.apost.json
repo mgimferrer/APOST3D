@@ -1,9 +1,10 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "program": {
     "name": "APOST-3D",
-    "version": "5.0"
+    "version": "5.0",
+    "version_date": "2026-09-22"
   },
   "wavefunction": {
     "formalism": "unrestricted",
@@ -51,6 +52,7 @@
     "job_name": "NaBH3--UHF-DAVIDSON",
     "input_file": "NaBH3--UHF-DAVIDSON.inp",
     "wavefunction_file": "NaBH3--UHF-DAVIDSON.fchk",
+    "date": "2026-10-13T17:01:14+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null
