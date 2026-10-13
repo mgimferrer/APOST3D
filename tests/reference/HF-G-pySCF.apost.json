@@ -1,9 +1,10 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "program": {
     "name": "APOST-3D",
-    "version": "5.0"
+    "version": "5.0",
+    "version_date": "2026-09-22"
   },
   "wavefunction": {
     "formalism": "restricted",
@@ -39,6 +40,7 @@
     "job_name": "HF-G-pySCF",
     "input_file": "HF-G-pySCF.inp",
     "wavefunction_file": "HF-G-pySCF.fchk",
+    "date": "2026-10-13T17:01:45+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

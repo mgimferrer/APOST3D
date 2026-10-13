@@ -1,9 +1,10 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "program": {
     "name": "APOST-3D",
-    "version": "5.0"
+    "version": "5.0",
+    "version_date": "2026-09-22"
   },
   "wavefunction": {
     "formalism": "restricted",
@@ -51,6 +52,7 @@
     "job_name": "CH3F-OSLO-BRANCH",
     "input_file": "CH3F-OSLO-BRANCH.inp",
     "wavefunction_file": "CH3F-OSLO-BRANCH.fchk",
+    "date": "2026-10-13T17:01:00+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

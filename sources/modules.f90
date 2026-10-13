@@ -16,6 +16,7 @@
 !!   nao_mod           -- natural-AO matrices (unao/ssnao), replaces      !!
 !!                         legacy common /nao/                            !!
 !!                         CONTAINS allocate_nao                          !!
+!!   version_mod       -- version number and date (banner, results file)  !!
 !!   elements_mod      -- element symbols for atom labels                 !!
 !!   output_mod        -- print_value: 'label (unit) : value' lines       !!
 !!   json_mod          -- the results file <job>.apost.json               !!
@@ -730,6 +731,23 @@
 !! ***** !!
 
 !! ----------------------------------------------------------------------
+!! module: version_mod
+!! The release identity, in one place: printed in the banner (kiir) and
+!! written in the results file (json_mod). Set version_date (and its ISO
+!! form) to the release date when a version is released.
+!! author: MGimf
+!! ----------------------------------------------------------------------
+   MODULE version_mod
+   implicit none
+   character(len=*), parameter :: version_number='5'
+   character(len=*), parameter :: version_full='5.0'
+   character(len=*), parameter :: version_date='22 September 2026'
+   character(len=*), parameter :: version_date_iso='2026-09-22'
+   END MODULE version_mod
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
 !! module: elements_mod
 !! Element symbols for the atom labels of the output, right-justified in
 !! two characters (' H', 'He'): element_symbol(z), and element_label(z)
@@ -873,6 +891,7 @@
    character(len=1) :: closer(0:maxdepth)=' '
    character(len=:), allocatable :: final_name, temp_name
    character(len=:), allocatable :: job_name, inp_name, fchk_name
+   character(len=25) :: run_date
 
    interface json_value
      module procedure value_real, value_int, value_logical, value_text
@@ -892,13 +911,22 @@
 !! start the file: remove any results file of an earlier run, then write !!
 !! the header into the temporary file                                     !!
    subroutine json_open(job,inp,fchk)
+   use version_mod, only: version_full, version_date_iso
    character(len=*), intent(in) :: job,inp,fchk
    integer :: ios,iold
-   job_name=trim(job)
-   inp_name=trim(inp)
-   fchk_name=trim(fchk)
-   final_name=job_name//'.apost.json'
+   character(len=8) :: d
+   character(len=10) :: t
+   character(len=5) :: z
+!! the file goes next to the .fchk (the job name may include a folder); !!
+!! the names recorded in it are bare file names                         !!
+   final_name=trim(job)//'.apost.json'
    temp_name=final_name//'.tmp'
+   job_name=bare(job)
+   inp_name=bare(inp)
+   fchk_name=bare(fchk)
+   call date_and_time(d,t,z)
+   run_date=d(1:4)//'-'//d(5:6)//'-'//d(7:8)//'T'//t(1:2)//':'//t(3:4)// &
+            ':'//t(5:6)//z(1:3)//':'//z(4:5)
    open(newunit=iold,file=final_name,status='old',iostat=ios)
    if(ios.eq.0) close(iold,status='delete')
    open(newunit=iu,file=temp_name,status='replace',action='write', &
@@ -911,10 +939,11 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.1')
+   call json_value('schema_version','0.2')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
-   call json_value('version','5.0')
+   call json_value('version',version_full)
+   call json_value('version_date',version_date_iso)
    call json_end()
    end subroutine json_open
 
@@ -931,6 +960,7 @@
    call json_value('job_name',job_name)
    call json_value('input_file',inp_name)
    call json_value('wavefunction_file',fchk_name)
+   call json_value('date',trim(run_date))
    call json_value('threads',omp_get_max_threads())
    call json_value('status',trim(status))
    if(len_trim(message).gt.0) then
@@ -1101,6 +1131,15 @@
    end do
    call json_end()
    end subroutine json_matrix
+
+!! ---- !!
+!! a path without its folders                                           !!
+   function bare(path) result(b)
+   character(len=*), intent(in) :: path
+   character(len=:), allocatable :: b
+   b=trim(path)
+   b=b(index(b,'/',back=.true.)+1:)
+   end function bare
 
 !! ---- !!
    function real_text(x) result(t)

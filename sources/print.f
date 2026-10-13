@@ -125,7 +125,9 @@
 !! author:                                                               !!
 !! ********************************************************************* !!
       SUBROUTINE kiir
+      use version_mod, only: version_number, version_date
       IMPLICIT NONE
+      character(len=80) :: vline
       write(*,'(a80)') '------------------------------------------------------------------------------'
       write(*,*)
       write(*,'(a80)') '                   ___    ____  ____  ___________   _____ ____                '
@@ -134,7 +136,9 @@
       write(*,'(a80)') '                / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                '
       write(*,'(a80)') '               /_/  |_/_/    \____//____//_/     /____/_____/                 '
       write(*,*)
-      write(*,'(a80)') '                      Version 5   --   22 September 2026                      '
+      vline=repeat(' ',24)//'Version '//version_number//'   --   '//
+     +  version_date
+      write(*,'(a80)') vline
       write(*,'(a80)') '                       --------------------------------                       '
       write(*,*)
       write(*,'(a80)') '    Real-space and Hilbert-space tools for wave function analysis             '

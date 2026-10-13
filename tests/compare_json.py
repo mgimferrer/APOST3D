@@ -5,7 +5,7 @@ compare_json.py -- compare two APOST-3D results files (<job>.apost.json).
 The two files must have the same structure (keys, list lengths), the
 same text, integers and booleans, and reals equal within a relative
 tolerance (default 1e-9; --rtol 0 asks for identical values). run.threads
-is not compared: it is the number of threads of the run.
+and run.date are not compared: they describe the run, not its results.
 
 Usage:
   python3 tests/compare_json.py REF.apost.json NEW.apost.json [--rtol R]
@@ -20,7 +20,7 @@ import math
 import sys
 from pathlib import Path
 
-IGNORED = {("run", "threads")}
+IGNORED = {("run", "threads"), ("run", "date")}
 RTOL = 1e-9
 ATOL = 1e-12       # for values that should be zero
 
