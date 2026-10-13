@@ -42,6 +42,7 @@
       use effao_mod, only: allocate_effao
       use nao_mod, only: allocate_nao
       use json_mod
+      use output_mod, only: print_value
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -52,6 +53,8 @@
       dimension clin(nmax**2)
       character*80 line,line2
       character*20 cform,ctype
+      character*200 cdens
+      character*20 cnum
       logical ilog,lescf
 
       ndens0=iopt(9)
@@ -91,8 +94,7 @@
         read(15,'(a80)') line2
         read(15,'(a80)') line2
       end if
-      write(*,'(2x,a,1x,a)') 'MO formalism                     :',
-     +  trim(cform)
+      call print_value('MO formalism',trim(cform))
 
       if(index(line(11:25),"CASSCF").ne.0) then
         icas=1
@@ -110,12 +112,19 @@
       else
         ctype='KS-DFT'
       end if
-      write(*,'(2x,a,1x,a)') 'Calculation type                 :',
-     +  trim(ctype)
-      if(ctype.eq.'KS-DFT') write(*,'(4x,a)')
-     +  '(single det. built from the Kohn-Sham orbitals)'
+!! a method name not recognised above is taken as a functional: the   !!
+!! method field of the .fchk is shown with it                         !!
+      if(ctype.eq.'KS-DFT') then
+        call print_value('Calculation type','KS-DFT, Kohn-Sham '//
+     +    'determinant (.fchk method: '//trim(adjustl(line(11:25)))//')')
+      else
+        call print_value('Calculation type',trim(ctype))
+      end if
 
       call build_basis()
+      call print_value('Number of atoms',natoms)
+      call print_value('Number of basis functions',nbasis)
+      call print_value('Primitive gaussians',numprim)
 
       igr=nbasis
       nat=natoms
@@ -196,15 +205,19 @@
 !! Gaussian, Q-Chem and pySCF files)                                    !!
       if(ndens0.gt.1) then
         ndens=0
+        cdens=' '
         rewind 15
  200    read(15,'(a80)',end=211) line
         if(line(1:5).eq.'Total'.and.index(line,'Density').ne.0) then
           ndens=ndens+1
-          write(*,'(2x,a,i0,a,a)') 'Density ',ndens,' in the .fchk: ',
-     +      trim(line(1:40))
+          write(cnum,'(i0)') ndens
+          if(ndens.gt.1) cdens=trim(cdens)//';'
+          cdens=trim(cdens)//' '//trim(cnum)//' '//
+     +      trim(adjustl(line(1:40)))
         end if
         goto 200
  211    continue
+        call print_value('Densities in the .fchk',trim(adjustl(cdens)))
 !! the density of an unrestricted or ROHF wavefunction is rebuilt from  !!
 !! its SCF orbitals below, so another one cannot be used                !!
         if(kop.eq.1) then
@@ -224,8 +237,9 @@
           if(line(1:5).eq.'Total'.and.index(line,'Density').ne.0)
      +      ncou=ncou+1
         end do
-        write(*,'(2x,a,i0,a,a)') 'Using density ',ndens0,': ',
-     +    trim(line(1:40))
+        write(cnum,'(i0)') ndens0
+        call print_value('Density used',trim(cnum)//' ('//
+     +    trim(adjustl(line(1:40)))//')')
         read(15,*)(clin(i),i=1,ntriang)
       end if
 
@@ -274,11 +288,9 @@
             ncou=ncou+1
           enddo
         enddo
-        write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
-     +    'found'
+        call print_value('Spin density','read from the .fchk')
       else if(icas.ne.1.and.icisd.ne.1) then
-        write(*,'(2x,a,1x,a)') 'Spin density (FChk)              :',
-     +    'not found, reconstructed from MOs'
+        call print_value('Spin density','built from the MOs')
       end if
 
 !! in case CASSCF !!
@@ -286,10 +298,8 @@
       if(ilog) then
         icas=1
         ncasorb=int_locate(15,"Number of CAS Or",ilog)
-        write(*,'(2x,a,1x,i0)') 'CAS active electrons             :',
-     +    ncasel
-        write(*,'(2x,a,1x,i0)') 'CAS active orbitals              :',
-     +    ncasorb
+        call print_value('CAS active electrons',ncasel)
+        call print_value('CAS active orbitals',ncasorb)
       endif
 
       nocc=nelectr/2
@@ -298,29 +308,29 @@
         norb=ncore+ncasorb
         nspinorb=norb*2
 
-        write(*,'(2x,a,1x,i0)') 'CAS spin-orbitals                :',
-     +    nspinorb
+        call print_value('CAS spin-orbitals',nspinorb)
         icass=0
         if(abs(ss2).gt.1.0d-2) then
-          write(*,'(2x,a,1x,a)') 'CAS spin state                   :',
-     +      'non-singlet'
+          call print_value('CAS spin state','non-singlet')
           icass=1
         end if
       else if(icisd.eq.1) then
         nspinorb=igr0*2
-        write(*,'(2x,a,1x,i0)') 'CI spin-orbitals                 :',
-     +    nspinorb
+        call print_value('CI spin-orbitals',nspinorb)
       endif
 
-      if(icas.eq.0)then
-        write(*,'(2x,a,1x,i0,a,i0,a,i0)')
-     +    'Occupied MOs (nocc/alpha/beta)   :',nocc,' / ',nalf,' / ',nb
+      if(icas.eq.0.and.kop.eq.0) then
+        call print_value('Doubly occupied MOs',nocc)
       else
-        write(*,'(2x,a,1x,i0,a,i0)')
-     +    'Occupied MOs (alpha/beta)        :',nalf,' / ',nb
-      endif
-      write(*,'(2x,a,1x,f20.10)') 'SCF/DFT energy (au)              :',
-     +  escf
+        write(cnum,'(i0,a,i0)') nalf,' / ',nb
+        call print_value('Alpha / beta electrons',trim(cnum))
+      end if
+!! the energy keeps the 10 decimals of the .fchk listing !!
+      if(lescf) then
+        call print_value('SCF energy',escf,10,'au')
+      else
+        call print_value('SCF energy','not in the .fchk','au')
+      end if
 
 !! the same summary in the results file; no energy in the .fchk -> null !!
       call json_begin_object('wavefunction')

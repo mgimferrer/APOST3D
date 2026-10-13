@@ -131,12 +131,6 @@
      end if
      nbasis=nbasis+mult(mssh(i))
    end do
-   write(*,'(2x,a,1x,i0)') 'Number of atoms                  :', &
-     natoms
-   write(*,'(2x,a,1x,i0)') 'Number of basis functions        :', &
-     nbasis
-   write(*,'(2x,a,1x,i0)') 'Primitive gaussians              :', &
-     numprim
 
    allocate(ihold(nbasis),llim(natoms),iulim(natoms))
 !! basis to atom map !!
@@ -843,7 +837,7 @@
    character(len=*), intent(in) :: label
    integer, intent(in) :: n
    character(len=*), intent(in), optional :: units
-   write(*,'(2x,a,'':'',i15)') padded_label(label,units),n
+   write(*,'(2x,a,'': '',i0)') padded_label(label,units),n
    end subroutine print_value_int
 
 !! ---- !!

@@ -97,17 +97,16 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : Moller-Plesset PT
-  Number of atoms                  : 3
-  Number of basis functions        : 24
-  Primitive gaussians              : 47
-  Density 1 in the .fchk: Total SCF Density
-  Density 2 in the .fchk: Total MP2 Density
-  Using density 2: Total MP2 Density
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 5 / 5 / 5
-  SCF/DFT energy (au)              :       -76.0267720534
+  MO formalism                            : Restricted
+  Calculation type                        : Moller-Plesset PT
+  Number of atoms                         : 3
+  Number of basis functions               : 24
+  Primitive gaussians                     : 47
+  Densities in the .fchk                  : 1 Total SCF Density; 2 Total MP2 Density
+  Density used                            : 2 (Total MP2 Density)
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 5
+  SCF energy (au)                         :     -76.0267720534
 
   -----------------
     INPUT SUMMARY
@@ -145,7 +144,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.03 s
+  TIMING CPU  :: atomic definition                                 0.02 s
   TIMING WALL :: atomic definition                                 0.00 s
 
   -----------------------------

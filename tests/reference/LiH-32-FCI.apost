@@ -97,17 +97,17 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : CASSCF
-  Number of atoms                  : 2
-  Number of basis functions        : 44
-  Primitive gaussians              : 74
-  Spin density (FChk)              : found
-  CAS active electrons             : 4
-  CAS active orbitals              : 44
-  CAS spin-orbitals                : 88
-  Occupied MOs (alpha/beta)        : 2 / 2
-  SCF/DFT energy (au)              :        -7.9669918407
+  MO formalism                            : Restricted
+  Calculation type                        : CASSCF
+  Number of atoms                         : 2
+  Number of basis functions               : 44
+  Primitive gaussians                     : 74
+  Spin density                            : read from the .fchk
+  CAS active electrons                    : 4
+  CAS active orbitals                     : 44
+  CAS spin-orbitals                       : 88
+  Alpha / beta electrons                  : 2 / 2
+  SCF energy (au)                         :      -7.9669918407
 
   -----------------
     INPUT SUMMARY

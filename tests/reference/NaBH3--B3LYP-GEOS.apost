@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Unrestricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 5
-  Number of basis functions        : 165
-  Primitive gaussians              : 276
-  Spin density (FChk)              : found
-  Occupied MOs (nocc/alpha/beta)   : 10 / 10 / 10
-  SCF/DFT energy (au)              :      -189.1470282120
+  MO formalism                            : Unrestricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: UB3LYP)
+  Number of atoms                         : 5
+  Number of basis functions               : 165
+  Primitive gaussians                     : 276
+  Spin density                            : read from the .fchk
+  Alpha / beta electrons                  : 10 / 10
+  SCF energy (au)                         :    -189.1470282120
 
   -----------------
     INPUT SUMMARY
@@ -134,7 +133,7 @@
   Checking NO overlap matrix
 
   TIMING CPU  :: initialization                                    0.08 s
-  TIMING WALL :: initialization                                    0.08 s
+  TIMING WALL :: initialization                                    0.07 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -160,7 +159,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.99 s
+  TIMING CPU  :: atomic definition                                 1.01 s
   TIMING WALL :: atomic definition                                 0.15 s
 
   -----------------------------
@@ -494,7 +493,7 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 1.82 s
+  TIMING CPU  :: EFFAO computation                                 1.81 s
   TIMING WALL :: EFFAO computation                                 0.45 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

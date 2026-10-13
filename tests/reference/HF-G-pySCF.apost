@@ -97,14 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : Hartree-Fock
-  Number of atoms                  : 2
-  Number of basis functions        : 60
-  Primitive gaussians              : 99
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 5 / 5 / 5
-  SCF/DFT energy (au)              :      -100.0633306036
+  MO formalism                            : Restricted
+  Calculation type                        : Hartree-Fock
+  Number of atoms                         : 2
+  Number of basis functions               : 60
+  Primitive gaussians                     : 99
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 5
+  SCF energy (au)                         :    -100.0633306036
 
   -----------------
     INPUT SUMMARY

@@ -8,7 +8,7 @@
   },
   "wavefunction": {
     "formalism": "restricted",
-    "method": "KS-DFT",
+    "method": "Hartree-Fock",
     "n_basis_functions": 31,
     "n_electrons": 26,
     "n_alpha": 13,
@@ -40,7 +40,7 @@
     "job_name": "HI-ECP-pySCF",
     "input_file": "HI-ECP-pySCF.inp",
     "wavefunction_file": "HI-ECP-pySCF.fchk",
-    "date": "2026-10-13T17:01:42+02:00",
+    "date": "2026-10-13T20:05:12+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 5
-  Number of basis functions        : 86
-  Primitive gaussians              : 171
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 26 / 26 / 26
-  SCF/DFT energy (au)              :     -1488.2914233301
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RPBEPBE)
+  Number of atoms                         : 5
+  Number of basis functions               : 86
+  Primitive gaussians                     : 171
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 26
+  SCF energy (au)                         :   -1488.2914233301
 
   -----------------
     INPUT SUMMARY
@@ -151,7 +150,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.31 s
+  TIMING CPU  :: atomic definition                                 0.32 s
   TIMING WALL :: atomic definition                                 0.05 s
 
   -----------------------------
@@ -442,7 +441,7 @@
   OVERALL RELIABILITY INDEX R(%) =  96.598
 
   TIMING CPU  :: EFFAO computation                                 0.53 s
-  TIMING WALL :: EFFAO computation                                 0.10 s
+  TIMING WALL :: EFFAO computation                                 0.11 s
   TIMING CPU  :: EOS analysis                                      0.01 s
   TIMING WALL :: EOS analysis                                      0.01 s
 

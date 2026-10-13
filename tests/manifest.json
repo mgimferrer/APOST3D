@@ -377,7 +377,7 @@
         },
         {
           "label": "SCF/DFT energy",
-          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "SCF energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -139.6309588681,
           "tol_abs": 2e-06
         },
@@ -438,7 +438,7 @@
         },
         {
           "label": "SCF/DFT energy",
-          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "SCF energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -0.7777035451,
           "tol_abs": 2e-06
         },
@@ -1427,7 +1427,7 @@
         },
         {
           "label": "SCF/DFT energy (au)",
-          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "SCF energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -1857.1187471128,
           "tol_abs": 2e-06
         },
@@ -1511,7 +1511,7 @@
         },
         {
           "label": "SCF/DFT energy (au)",
-          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "SCF energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -7.9411447876,
           "tol_abs": 2e-06
         },
@@ -1632,7 +1632,7 @@
         },
         {
           "label": "SCF/DFT energy",
-          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "SCF energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -189.147028212,
           "tol_abs": 2e-06
         },
@@ -1812,7 +1812,7 @@
         },
         {
           "label": "FCI energy (from .fchk)",
-          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "SCF energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -7.9669918407,
           "tol_abs": 2e-06
         },
@@ -2023,7 +2023,7 @@
         },
         {
           "label": "SCF/DFT energy",
-          "pattern": "SCF/DFT energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "SCF energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -139.6281885899,
           "tol_abs": 2e-06
         },
@@ -2685,12 +2685,12 @@
         {
           "label": "Densities listed (SCF, MP2)",
           "type": "present",
-          "pattern": "Density 2 in the \\.fchk: Total MP2 Density"
+          "pattern": "Densities in the \\.fchk\\s*: 1 Total SCF Density; 2 Total MP2 Density"
         },
         {
           "label": "MP2 density used",
           "type": "present",
-          "pattern": "Using density 2: Total MP2 Density"
+          "pattern": "Density used\\s*: 2 \\(Total MP2 Density\\)"
         },
         {
           "label": "O Mulliken charge (Gaussian, MP2 density: -0.283945)",
