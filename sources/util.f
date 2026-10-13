@@ -70,12 +70,11 @@
       call print_box('NATURAL ORBITALS')
       write(*,'(2x,a)') 'Occupation numbers (>1.0e-6):'
       write(*,'(2x,8f10.5)') (occ_no(ii,ii),ii=1,i-1)
-      write(*,*)
 
-!! checking NO overlap matrix -- reusing s0. O(igr^3) but a one-time      !!
-!! setup cost (gennatural runs once per job), not worth OMP unless it     !!
-!! ever shows up as hot for a much larger system                         !!
-      write(*,'(2x,a)') 'Checking NO overlap matrix'
+!! the natural orbitals must be orthonormal: C^T S C = 1 (reusing s0).   !!
+!! The largest deviation is round-off (about 1e-14); a warning is        !!
+!! printed only above 1e-5. O(igr^3) but run once per job.               !!
+      dmax=0.0d0
       do i=1,igr
         do j=1,igr
           xx=0.0d0
@@ -91,10 +90,12 @@
           do k=1,igr
             xx=xx+s0(i,k)*c_no(k,j)
           end do
-          if(i.eq.j.and.abs(xx-1.0d0).gt.1.0d-5) write(*,*) i,j,xx
-          if(i.ne.j.and.abs(xx).gt.1.0d-5) write(*,*) i,j,xx
+          if(i.eq.j) xx=xx-1.0d0
+          dmax=max(dmax,abs(xx))
         end do
       end do
+      if(dmax.gt.1.0d-5) write(*,'(2x,a,es9.2)') 'WARNING: natural '//
+     +  'orbitals not orthonormal, largest deviation:',dmax
 
       deallocate(s0,sm,splus)
       return

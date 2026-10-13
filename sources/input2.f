@@ -369,9 +369,11 @@
 !! author:                                                                !!
 !! ********************************************************************** !!
       subroutine dm1input(dm1)
+      use output_mod, only: print_value
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      character*40 cdm
       character*80 line
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(200)
@@ -410,9 +412,11 @@
 !! assumed doubly occupied/diagonal, active-orbital indices offset by    !!
 !! ncore to land in the full spin-orbital space.                        !!
         ncore=(nspinorb-ncasorb*2)
-        write(*,'(2x,a,1x,i0,a,i0,a,i0)') 'Spin-orbitals (total/active/core):',nspinorb,' / ',ncasorb,' / ',ncore
-        write(*,'(2x,a,1x,i0)') 'Generating dm1 for inactive spin-orbitals:',ncore
-        write(*,*) 'Assuming diagonal dm1'
+!! (the 1-RDM file covers the active space only)                         !!
+        write(cdm,'(i0,a,i0,a,i0)') nspinorb,' / ',ncasorb,' / ',ncore
+        call print_value('Spin-orbitals (total / active / core)',
+     +    trim(cdm))
+        call print_value('Core spin-orbitals (occupation 1)',ncore)
 
         do ii=1,ncore
           dm1(ii,ii)=ONE
@@ -429,7 +433,7 @@
           end if
         end do
       end if
-99    write(*,*) "End DM1 reading "
+99    continue
 
 !! sanity check: dm1 should be idempotent (dm1^2 = dm1) for a single- !!
 !! determinant-equivalent density; reported, not enforced. !!
@@ -443,9 +447,9 @@
           difi=dmax1(difi,dabs(x-dm1(i,j)))
         end do
       end do
-      write(*,*)
-      write(*,'(2x,a,1x,f12.8)') 'Max. deviation from idempotency:',difi
-      write(*,*)
+      write(cdm,'(f12.8)') difi
+      call print_value('1-RDM, largest idempotency error',
+     +  trim(adjustl(cdm)))
 
       do i=1,norb
         do k=1,norb
@@ -466,7 +470,7 @@
       end do
 
 !! building Pa and Pb from dm1. !!
-      write(*,*) 'Reconstructing P and Ps matrices from dm1 file'
+      call print_value('Density matrices P and Ps','built from the 1-RDM')
       do nu=1,igr
         do mu=1,igr
           x=0.d0
@@ -508,8 +512,9 @@
           p(i,j)=pa(i,j)+pb(i,j)
         end do
       end do
-      write(*,*) 'P (and Ps) in fchk overridden'
-      write(*,'(2x,a,1x,f12.8)') 'Max. deviation, P from dm1 vs. from .fchk:',dif
+      write(cdm,'(f12.8)') dif
+      call print_value('P, largest difference from the .fchk',
+     +  trim(adjustl(cdm)))
 
       deallocate(scr)
       end
@@ -529,9 +534,11 @@
 !! author:                                                                 !!
 !! ********************************************************************* !!
       subroutine dm2input_pyscf(dm1,dm2)
+      use output_mod, only: print_value
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      character*40 cdm
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
@@ -547,9 +554,9 @@
       ncore=ninact/2
       iorb=ncore+ncasorb
       if(iorb.ne.norb) call apost_stop('inconsistency in norb')
-      write(*,'(2x,a,1x,i0)') 'Reconstructing rdm2 for inactive orbitals:',ncore
-      write(*,'(2x,a,1x,i0)') 'Active orbitals:',ncasorb
-      write(*,'(2x,a,1x,i0)') 'Total spinless rdm2 dimension:',norb
+      call print_value('2-RDM, core orbitals added',ncore)
+      call print_value('2-RDM, active orbitals',ncasorb)
+      call print_value('2-RDM, orbitals in total',norb)
 
 !! active space, from *.dm2. !!
       rewind(12)
@@ -561,7 +568,7 @@
         icount=icount+1
       end do
 999   continue
-      write(*,'(2x,a,1x,i0)') 'rdm2 elements read:',icount
+      call print_value('2-RDM, elements read',icount)
 
 !! core and core-active blocks, reconstructed from the spin-resolved dm1. !!
 
@@ -606,14 +613,16 @@
           xx2=xx2+dm2(ii,ii,jj,jj)
         end do
       end do
-      write(*,'(2x,a,1x,f14.8)') 'Trace of inactive orbitals:',xx2
+      write(cdm,'(f14.8)') xx2
+      call print_value('2-RDM trace, core orbitals',trim(adjustl(cdm)))
       xx2=ZERO
       do ii=ncore+1,norb
         do jj=ncore+1,norb
           xx2=xx2+dm2(ii,ii,jj,jj)
         end do
       end do
-      write(*,'(2x,a,1x,f14.8)') 'Trace of active orbitals:',xx2
+      write(cdm,'(f14.8)') xx2
+      call print_value('2-RDM trace, active orbitals',trim(adjustl(cdm)))
       xx2=ZERO
       do ii=1,norb
         do jj=1,norb
@@ -621,9 +630,8 @@
         end do
       end do
       nelect=nalf+nb
-      write(*,*)
-      write(*,'(2x,a,1x,f14.8,a,1x,i0)') 'Trace of the DM2, normalized to N(N-1):',xx2,' / ',nelect*(nelect-1)
-      write(*,*)
+      write(cdm,'(f14.8,a,i0)') xx2,' / ',nelect*(nelect-1)
+      call print_value('2-RDM trace / N(N-1)',trim(adjustl(cdm)))
       end
 
 !! ***** !!
@@ -641,9 +649,11 @@
 !! author:                                                               !!
 !! ********************************************************************* !!
       subroutine dm2input_dmn(dm1,dm2)
+      use output_mod, only: print_value
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      character*40 cdm
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
@@ -704,8 +714,8 @@
           xx2=xx2+dm2(ii,ii,jj,jj)
         end do
       end do
-      write(*,'(2x,a,1x,f14.8)') 'Trace of the DM2, normalized to N(N-1):',xx2
-      write(*,*)
+      write(cdm,'(f14.8)') xx2
+      call print_value('2-RDM trace',trim(adjustl(cdm)))
       end
 
 !! ***** !!

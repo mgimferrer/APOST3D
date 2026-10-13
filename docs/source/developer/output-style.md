@@ -75,6 +75,9 @@ The same kind of quantity always has the same number of decimals:
 | OSLO FOLI values | 5 |
 | Fit and recovery percentages | 2 |
 
+Values read from the input files are printed as precisely as the files
+give them (the SCF energy of the `.fchk` keeps its 10 decimals).
+
 ## Tables
 
 ```text

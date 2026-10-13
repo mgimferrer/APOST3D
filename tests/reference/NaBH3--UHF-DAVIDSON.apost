@@ -128,14 +128,17 @@
      1.99722   1.36193   0.63807   0.00278   0.00040   0.00040   0.00000   0.00000
      0.00000
 
-  Checking NO overlap matrix
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
-  TIMING CPU  :: initialization                                    0.01 s
-  TIMING WALL :: initialization                                    0.01 s
-  Doing Hilbert-space analysis in Lowdin basis
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
 
-  TIMING CPU  :: atomic definition                                 0.00 s
-  TIMING WALL :: atomic definition                                 0.00 s
+  Hilbert-space atoms                     : Lowdin-Davidson basis
+
+  TIMING CPU  :: Atomic definition                                 0.00 s
+  TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
     DOING POPULATION ANALYSIS

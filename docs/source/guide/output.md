@@ -31,28 +31,31 @@ The beginning of a run, for fluoromethane with `TFVC` and `OSLO`:
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 5
-  Number of basis functions        : 43
-  Primitive gaussians              : 71
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 9 / 9 / 9
-  SCF/DFT energy (au)              :      -139.6281885899
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RBP86)
+  Number of atoms                         : 5
+  Number of basis functions               : 43
+  Primitive gaussians                     : 71
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 9
+  SCF energy (au)                         :    -139.6281885899
 
   -----------------
     INPUT SUMMARY
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Oxidation states analysis            : OSLO (oxidation states localized orbitals)
-  Fragment analysis                    : 2 fragments (see below)
-  ...
-  # FRAGMENTS  (2 fragments)
-  --------------------------
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Oxidation states                        : OSLO (oxidation states from localized orbitals)
+  Fragments                               : 2 (see # FRAGMENTS)
+
+  # OSLO
+  Overlap matrix                          : real space (as in # METHOD)
+  FOLI tolerance                          : 0.001 (FOLI_TOLERANCE 3)
+  Branching                               : none
+  Non-orthogonalized OSLOs (.fchk)        : yes
+
+  # FRAGMENTS (2 fragments)
   Fragment  1 :   2
   Fragment  2 :   1   3   4   5
 ```

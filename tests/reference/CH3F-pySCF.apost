@@ -125,23 +125,23 @@
   Fragment  1 :   2
   Fragment  2 :   1   3   4   5
 
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 40
-  Angular points : 146
-  r0 (radial)    :   0.500
-  Grid points    : 29200
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 29200
 
   -----------------------------
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : subdivision 20, ratio  0.51286
@@ -152,11 +152,10 @@
   Atom pair   1 -   5 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
   Atom pair   1 -   5 : subdivision 18, ratio  1.75482
 
-  Checking sum of AOs overlap matrices
-  (deviations may not affect overall accuracy of MOs)
+  Sum of atomic overlaps, largest error   : 1.17E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: atomic definition                                 0.11 s
-  TIMING WALL :: atomic definition                                 0.02 s
+  TIMING CPU  :: Atomic definition                                 0.11 s
+  TIMING WALL :: Atomic definition                                 0.02 s
 
   -----------------------------
     DOING POPULATION ANALYSIS

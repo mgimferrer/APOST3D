@@ -120,33 +120,32 @@
   Two-electron grid                       : 40 x 146 (# GRID)
   Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
-  TIMING CPU  :: initialization                                    0.00 s
-  TIMING WALL :: initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 150
-  Angular points : 590
-  r0 (radial)    :   0.500
-  Grid points    : 177000
+  Radial points                           : 150
+  Angular points                          : 590
+  r0 (bohr)                               : 0.500
+  Grid points                             : 177000
 
   -----------------------------
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : 2 max / 2 min extrema; pseudopotential present; inconsistent extrema, selecting minimum closest to midpoint
   Atom pair   1 -   2 : subdivision 19, ratio  0.60772
 
-  Checking sum of AOs overlap matrices
-  (deviations may not affect overall accuracy of MOs)
+  Sum of atomic overlaps, largest error   : 6.81E-09 (from the analytic overlap S)
 
-  TIMING CPU  :: atomic definition                                 0.35 s
-  TIMING WALL :: atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.35 s
+  TIMING WALL :: Atomic definition                                 0.06 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -280,9 +279,9 @@
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
   -------------------------------------------------------
 
-  Radial points:   40
-  Angular points:  146
-  Grid points:     11680
+  Radial points                           : 40
+  Angular points                          : 146
+  Grid points                             : 11680
 
   -----------------------------
     GENERAL TWO-ELECTRON PART
@@ -303,7 +302,7 @@
   -------------------------------
   Coulomb energy:    250.5249353
 
-  TIMING CPU  :: Coulomb energy                                    0.20 s
+  TIMING CPU  :: Coulomb energy                                    0.19 s
   TIMING WALL :: Coulomb energy                                    0.03 s
 
   ---------------------------------------------------
@@ -327,8 +326,8 @@
   -------------------------------
   Hartree-Fock exchange energy:    -21.4887492
 
-  TIMING CPU  :: Exact-exchange energy                             5.26 s
-  TIMING WALL :: Exact-exchange energy                             0.79 s
+  TIMING CPU  :: Exact-exchange energy                             5.20 s
+  TIMING WALL :: Exact-exchange energy                             0.69 s
 
   Total two-electron part (coul+exch_hf):    229.0361861
   Integration error (kcal/mol):   -13.71
@@ -342,8 +341,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.4600955
 
-  TIMING CPU  :: Interpolated zero-error                           3.76 s
-  TIMING WALL :: Interpolated zero-error                           0.55 s
+  TIMING CPU  :: Interpolated zero-error                           3.53 s
+  TIMING WALL :: Interpolated zero-error                           0.50 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -387,7 +386,7 @@
   Integration error (au):     -0.0000005
   Integration error (kcal/mol):     0.00
 
-  TIMING CPU  :: enpart two-electron                               9.26 s
-  TIMING WALL :: enpart two-electron                               1.38 s
+  TIMING CPU  :: enpart two-electron                               8.97 s
+  TIMING WALL :: enpart two-electron                               1.22 s
 
   ...Normal Termination of APOST-3D...

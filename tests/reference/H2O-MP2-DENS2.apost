@@ -116,23 +116,23 @@
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
   Density (DENS)                          : 2
 
-  TIMING CPU  :: initialization                                    0.01 s
-  TIMING WALL :: initialization                                    0.01 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
   ----------------------------------------
 
-  Radial points  : 40
-  Angular points : 146
-  r0 (radial)    :   0.500
-  Grid points    : 17520
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 17520
 
   -----------------------------
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Using stiffness k: 4
+  Cell stiffness k                        : 4
   Using density along atom pairs to set atomic radii
 
   Atom pair   1 -   2 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
@@ -140,11 +140,10 @@
   Atom pair   1 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
   Atom pair   1 -   3 : subdivision 28, ratio  4.18135
 
-  Checking sum of AOs overlap matrices
-  (deviations may not affect overall accuracy of MOs)
+  Sum of atomic overlaps, largest error   : 2.18E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: atomic definition                                 0.02 s
-  TIMING WALL :: atomic definition                                 0.00 s
+  TIMING CPU  :: Atomic definition                                 0.02 s
+  TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
