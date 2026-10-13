@@ -97,17 +97,17 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : CASSCF
-  Number of atoms                  : 2
-  Number of basis functions        : 20
-  Primitive gaussians              : 28
-  Spin density (FChk)              : found
-  CAS active electrons             : 2
-  CAS active orbitals              : 2
-  CAS spin-orbitals                : 6
-  Occupied MOs (alpha/beta)        : 2 / 2
-  SCF/DFT energy (au)              :        -7.9411447876
+  MO formalism                            : Restricted
+  Calculation type                        : CASSCF
+  Number of atoms                         : 2
+  Number of basis functions               : 20
+  Primitive gaussians                     : 28
+  Spin density                            : read from the .fchk
+  CAS active electrons                    : 2
+  CAS active orbitals                     : 2
+  CAS spin-orbitals                       : 6
+  Alpha / beta electrons                  : 2 / 2
+  SCF energy (au)                         :      -7.9411447876
  Warning, closed-shell Local Spin calculation 
 
   -----------------
@@ -448,7 +448,7 @@
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
 
   TIMING CPU  :: PHF Exc energy                                    1.02 s
-  TIMING WALL :: PHF Exc energy                                    1.02 s
+  TIMING WALL :: PHF Exc energy                                    1.01 s
 
   Total two-electron part (coul+exc):      2.7365314
   Integration error (kcal/mol):    -0.09

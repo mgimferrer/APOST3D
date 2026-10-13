@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 5
-  Number of basis functions        : 169
-  Primitive gaussians              : 306
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 30 / 30 / 30
-  SCF/DFT energy (au)              :         0.0000000000
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: R)
+  Number of atoms                         : 5
+  Number of basis functions               : 169
+  Primitive gaussians                     : 306
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 30
+  SCF energy (au)                         : not in the .fchk
 
   -----------------
     INPUT SUMMARY
@@ -160,8 +159,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.04 s
-  TIMING WALL :: atomic definition                                 0.19 s
+  TIMING CPU  :: atomic definition                                 1.05 s
+  TIMING WALL :: atomic definition                                 0.16 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -1728,7 +1727,7 @@
      5         -2.00
   ------------------------ 
 
-  TIMING CPU  :: OSLO analysis                                     2.77 s
+  TIMING CPU  :: OSLO analysis                                     2.74 s
   TIMING WALL :: OSLO analysis                                     2.49 s
 
   ...Normal Termination of APOST-3D...

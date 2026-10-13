@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 8
-  Number of basis functions        : 160
-  Primitive gaussians              : 206
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 9 / 9 / 9
-  SCF/DFT energy (au)              :       -79.8656133777
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RB3LYP)
+  Number of atoms                         : 8
+  Number of basis functions               : 160
+  Primitive gaussians                     : 206
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 9
+  SCF energy (au)                         :     -79.8656133777
 
   -----------------
     INPUT SUMMARY
@@ -165,8 +164,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.74 s
-  TIMING WALL :: atomic definition                                 0.24 s
+  TIMING CPU  :: atomic definition                                 1.78 s
+  TIMING WALL :: atomic definition                                 0.25 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -357,7 +356,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      17.996544
 
-  TIMING CPU  :: population analyses                               0.02 s
+  TIMING CPU  :: population analyses                               0.03 s
   TIMING WALL :: population analyses                               0.02 s
 
   ---------------------------------------------------------
@@ -677,6 +676,6 @@
   Fractional values: orbitals shared between fragments (see the iterations)
 
   TIMING CPU  :: OSLO analysis                                     1.30 s
-  TIMING WALL :: OSLO analysis                                     1.26 s
+  TIMING WALL :: OSLO analysis                                     1.25 s
 
   ...Normal Termination of APOST-3D...

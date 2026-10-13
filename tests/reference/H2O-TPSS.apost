@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 3
-  Number of basis functions        : 24
-  Primitive gaussians              : 47
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 5 / 5 / 5
-  SCF/DFT energy (au)              :       -76.4235561694
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RTPSSTPSS)
+  Number of atoms                         : 3
+  Number of basis functions               : 24
+  Primitive gaussians                     : 47
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 5
+  SCF energy (au)                         :     -76.4235561694
 
   -----------------
     INPUT SUMMARY

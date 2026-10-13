@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Unrestricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 3
-  Number of basis functions        : 24
-  Primitive gaussians              : 47
-  Spin density (FChk)              : found
-  Occupied MOs (nocc/alpha/beta)   : 5 / 6 / 4
-  SCF/DFT energy (au)              :       -76.1310699377
+  MO formalism                            : Unrestricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: UBLYP)
+  Number of atoms                         : 3
+  Number of basis functions               : 24
+  Primitive gaussians                     : 47
+  Spin density                            : read from the .fchk
+  Alpha / beta electrons                  : 6 / 4
+  SCF energy (au)                         :     -76.1310699377
 
   -----------------
     INPUT SUMMARY
@@ -160,7 +159,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.36 s
+  TIMING CPU  :: atomic definition                                 0.35 s
   TIMING WALL :: atomic definition                                 0.06 s
 
   -----------------------------
@@ -387,7 +386,7 @@
   -------------------------------------------
   Sum of pure KS-DFT exchange-correlation energy:     -9.2197241
 
-  TIMING CPU  :: enpart dft                                        1.35 s
+  TIMING CPU  :: enpart dft                                        1.34 s
   TIMING WALL :: enpart dft                                        0.32 s
 
   -------------------------------------------------------

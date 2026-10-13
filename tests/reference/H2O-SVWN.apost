@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 3
-  Number of basis functions        : 24
-  Primitive gaussians              : 47
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 5 / 5 / 5
-  SCF/DFT energy (au)              :       -76.0505885867
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RSVWN)
+  Number of atoms                         : 3
+  Number of basis functions               : 24
+  Primitive gaussians                     : 47
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 5
+  SCF energy (au)                         :     -76.0505885867
 
   -----------------
     INPUT SUMMARY
@@ -303,7 +302,7 @@
   -------------------------------------------
   Nuclear repulsion energy:      9.1193799
 
-  TIMING CPU  :: enpart one-electron                               0.28 s
+  TIMING CPU  :: enpart one-electron                               0.27 s
   TIMING WALL :: enpart one-electron                               0.04 s
 
   --------------------------------
@@ -397,7 +396,7 @@
   Coulomb energy:     46.8482175
 
   TIMING CPU  :: Coulomb energy                                    0.39 s
-  TIMING WALL :: Coulomb energy                                    0.06 s
+  TIMING WALL :: Coulomb energy                                    0.05 s
 
   KS-DFT electron-electron energy (au):     37.8661299
   Integration error (kcal/mol):    -3.09
@@ -447,6 +446,6 @@
   Integration error (kcal/mol):     0.02
 
   TIMING CPU  :: enpart two-electron                               0.62 s
-  TIMING WALL :: enpart two-electron                               0.13 s
+  TIMING WALL :: enpart two-electron                               0.12 s
 
   ...Normal Termination of APOST-3D...

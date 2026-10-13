@@ -97,15 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : KS-DFT
-    (single det. built from the Kohn-Sham orbitals)
-  Number of atoms                  : 6
-  Number of basis functions        : 48
-  Primitive gaussians              : 94
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 10 / 10 / 10
-  SCF/DFT energy (au)              :      -152.8094253548
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RBLYP)
+  Number of atoms                         : 6
+  Number of basis functions               : 48
+  Primitive gaussians                     : 94
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 10
+  SCF energy (au)                         :    -152.8094253548
 
   -----------------
     INPUT SUMMARY
@@ -156,7 +155,7 @@
   (deviations may not affect overall accuracy of MOs)
 
   TIMING CPU  :: atomic definition                                 2.94 s
-  TIMING WALL :: atomic definition                                 0.44 s
+  TIMING WALL :: atomic definition                                 0.42 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -335,8 +334,8 @@
   -------------------------------------------------------------------------------
   Nuclear repulsion energy:     36.6642284
 
-  TIMING CPU  :: enpart one-electron                               1.22 s
-  TIMING WALL :: enpart one-electron                               0.17 s
+  TIMING CPU  :: enpart one-electron                               1.21 s
+  TIMING WALL :: enpart one-electron                               0.16 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -420,8 +419,8 @@
   -------------------------------------------------------------------------------
   Sum of pure KS-DFT exchange-correlation energy:    -18.6913761
 
-  TIMING CPU  :: enpart dft                                        6.38 s
-  TIMING WALL :: enpart dft                                        0.95 s
+  TIMING CPU  :: enpart dft                                        6.39 s
+  TIMING WALL :: enpart dft                                        0.94 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -454,8 +453,8 @@
   -------------------------------------------------------------------------------
   Coulomb energy:    112.1860788
 
-  TIMING CPU  :: Coulomb energy                                    1.70 s
-  TIMING WALL :: Coulomb energy                                    0.24 s
+  TIMING CPU  :: Coulomb energy                                    1.66 s
+  TIMING WALL :: Coulomb energy                                    0.23 s
 
   KS-DFT electron-electron energy (au):     93.4947027
   Integration error (kcal/mol):     5.25
@@ -468,8 +467,8 @@
   New error after rotation:    -9.25
   Damping parameter       :      0.6381144
 
-  TIMING CPU  :: Interpolated zero-error                           0.54 s
-  TIMING WALL :: Interpolated zero-error                           0.09 s
+  TIMING CPU  :: Interpolated zero-error                           0.55 s
+  TIMING WALL :: Interpolated zero-error                           0.10 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -509,7 +508,7 @@
   Integration error (au):     -0.0000091
   Integration error (kcal/mol):    -0.01
 
-  TIMING CPU  :: enpart two-electron                               2.54 s
-  TIMING WALL :: enpart two-electron                               0.38 s
+  TIMING CPU  :: enpart two-electron                               2.50 s
+  TIMING WALL :: enpart two-electron                               0.37 s
 
   ...Normal Termination of APOST-3D...

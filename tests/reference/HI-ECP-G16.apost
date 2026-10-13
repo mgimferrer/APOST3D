@@ -97,14 +97,14 @@
     WAVEFUNCTION SUMMARY
   ------------------------
 
-  MO formalism                     : Restricted
-  Calculation type                 : Hartree-Fock
-  Number of atoms                  : 2
-  Number of basis functions        : 31
-  Primitive gaussians              : 74
-  Spin density (FChk)              : not found, reconstructed from MOs
-  Occupied MOs (nocc/alpha/beta)   : 13 / 13 / 13
-  SCF/DFT energy (au)              :      -297.2315316507
+  MO formalism                            : Restricted
+  Calculation type                        : Hartree-Fock
+  Number of atoms                         : 2
+  Number of basis functions               : 31
+  Primitive gaussians                     : 74
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 13
+  SCF energy (au)                         :    -297.2315316507
 
   -----------------
     INPUT SUMMARY
@@ -329,8 +329,8 @@
   -------------------------------
   Hartree-Fock exchange energy:    -21.4887492
 
-  TIMING CPU  :: Exact-exchange energy                             5.15 s
-  TIMING WALL :: Exact-exchange energy                             0.67 s
+  TIMING CPU  :: Exact-exchange energy                             5.07 s
+  TIMING WALL :: Exact-exchange energy                             0.66 s
 
   Total two-electron part (coul+exch_hf):    229.0361863
   Integration error (kcal/mol):   -13.71
@@ -344,7 +344,7 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.4600929
 
-  TIMING CPU  :: Interpolated zero-error                           3.48 s
+  TIMING CPU  :: Interpolated zero-error                           3.49 s
   TIMING WALL :: Interpolated zero-error                           0.49 s
 
   ---------------------------------------------------------
@@ -389,7 +389,7 @@
   Integration error (au):     -0.0001208
   Integration error (kcal/mol):    -0.08
 
-  TIMING CPU  :: enpart two-electron                               8.87 s
+  TIMING CPU  :: enpart two-electron                               8.79 s
   TIMING WALL :: enpart two-electron                               1.19 s
 
   ...Normal Termination of APOST-3D...
