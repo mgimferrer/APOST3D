@@ -128,100 +128,103 @@
       use version_mod, only: version_number, version_date
       IMPLICIT NONE
       character(len=80) :: vline
-      write(*,'(a80)') '------------------------------------------------------------------------------'
+
+      write(*,'(a)') '  ------------------------------------------------------------------------------'
       write(*,*)
-      write(*,'(a80)') '                   ___    ____  ____  ___________   _____ ____                '
-      write(*,'(a80)') '                  /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \               '
-      write(*,'(a80)') '                 / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /               '
-      write(*,'(a80)') '                / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /                '
-      write(*,'(a80)') '               /_/  |_/_/    \____//____//_/     /____/_____/                 '
+      write(*,'(a)') '                     ___    ____  ____  ___________   _____ ____'
+      write(*,'(a)') '                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \'
+      write(*,'(a)') '                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /'
+      write(*,'(a)') '                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /'
+      write(*,'(a)') '                 /_/  |_/_/    \____//____//_/     /____/_____/'
       write(*,*)
       vline=repeat(' ',24)//'Version '//version_number//'   --   '//
      +  version_date
-      write(*,'(a80)') vline
-      write(*,'(a80)') '                       --------------------------------                       '
+      write(*,'(a)') trim(vline)
+      write(*,'(a)') '                         --------------------------------'
       write(*,*)
-      write(*,'(a80)') '    Real-space and Hilbert-space tools for wave function analysis             '
+      write(*,'(a)') '      Real-space and Hilbert-space tools for wave function analysis'
       write(*,*)
-      write(*,'(a80)') '    Documentation: https://apost3d.readthedocs.io                             '
-      write(*,'(a80)') '    Source code & issue tracker: https://github.com/mgimferrer/APOST3D        '
+      write(*,'(a)') '      Documentation: https://apost3d.readthedocs.io'
+      write(*,'(a)') '      Source code & issue tracker: https://github.com/mgimferrer/APOST3D'
       write(*,*)
-      write(*,'(a80)') '    Cite this program as:                                                     '
-      write(*,'(a80)') '    ---------------------                                                     '
-      write(*,'(a80)') '      P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer   '
-      write(*,'(a80)') '      J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                '
+      write(*,'(a)') '      Cite this program as:'
+      write(*,'(a)') '      ---------------------'
+      write(*,'(a)') '        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer'
+      write(*,'(a)') '        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187'
       write(*,*)
-      write(*,'(a80)') '  e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com                      '
+      write(*,'(a)') '      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com'
       write(*,*)
-      write(*,'(a80)') '    Available atomic definitions:                                             '
-      write(*,'(a80)') '    ----------------------------                                              '
+      write(*,'(a)') '      Available atomic definitions:'
+      write(*,'(a)') '      ----------------------------'
       write(*,*)
-      write(*,'(a80)') '    Real space:                                                               '
-      write(*,'(a80)') '      Becke, J. Chem. Phys. 88 2547 1988                                      '
-      write(*,'(a80)') '      Hirshfeld, Theor. Chim. Acta 44 129 1977                                '
-      write(*,'(a80)') '      Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007                     '
-      write(*,'(a80)') '      Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013  '
+      write(*,'(a)') '      Real space:'
+      write(*,'(a)') '        Becke, J. Chem. Phys. 88 2547 1988'
+      write(*,'(a)') '        Hirshfeld, Theor. Chim. Acta 44 129 1977'
+      write(*,'(a)') '        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007'
+      write(*,'(a)') '        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013'
       write(*,*)
-      write(*,'(a80)') '    Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         '
+      write(*,'(a)') '      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic'
+      write(*,'(a)') '        orbitals (NAO)'
       write(*,*)
-      write(*,'(a80)') '    Calculating:                                                              '
-      write(*,'(a80)') '    ------------                                                              '
+      write(*,'(a)') '      Analyses and their references:'
+      write(*,'(a)') '      ------------------------------'
       write(*,*)
-      write(*,'(a80)') '      A) Atomic and overlap populations, bond orders and valences             '
-      write(*,'(a80)') '         I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004         '
+      write(*,'(a)') '        A) Atomic and overlap populations, bond orders and valences'
+      write(*,'(a)') '           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004'
       write(*,*)
-      write(*,'(a80)') '      B) Hartree-Fock molecular energy decomposition                          '
-      write(*,'(a80)') '         P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001'
-      write(*,'(a80)') '         P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          '
+      write(*,'(a)') '        B) Hartree-Fock molecular energy decomposition'
+      write(*,'(a)') '           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001'
+      write(*,'(a)') '           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004'
       write(*,*)
-      write(*,'(a80)') '      C) KS-DFT molecular energy decomposition                                '
-      write(*,'(a80)') '         P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007             '
-      write(*,'(a80)') '         M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023         '
+      write(*,'(a)') '        C) KS-DFT molecular energy decomposition'
+      write(*,'(a)') '           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007'
+      write(*,'(a)') '           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023'
       write(*,*)
-      write(*,'(a80)') '      D) Molecular energy decomposition for CASSCF/CISD wavefunctions         '
+      write(*,'(a)') '        D) Molecular energy decomposition for CASSCF/CISD wavefunctions'
       write(*,*)
-      write(*,'(a80)') '      E) Effective atomic orbitals                                            '
-      write(*,'(a80)') '         I. Mayer, J. Phys. Chem. 100 6249 1996                               '
-      write(*,'(a80)') '         I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             '
-      write(*,'(a80)') '         E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              '
-      write(*,'(a80)') '         Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026                  '
+      write(*,'(a)') '        E) Effective atomic orbitals'
+      write(*,'(a)') '           I. Mayer, J. Phys. Chem. 100 6249 1996'
+      write(*,'(a)') '           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009'
+      write(*,'(a)') '           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013'
+      write(*,'(a)') '           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026'
       write(*,*)
-      write(*,'(a80)') '      F) Local spin analysis                                                  '
-      write(*,'(a80)') '         E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012    '
-      write(*,'(a80)') '         E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 '
+      write(*,'(a)') '        F) Local spin analysis'
+      write(*,'(a)') '           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012'
+      write(*,'(a)') '           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012'
       write(*,*)
-      write(*,'(a80)') '      G) Effective oxidation states analysis                                  '
-      write(*,'(a80)') '         E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   '
-      write(*,'(a80)') '         M. Gimferrer and P. Salvador, manuscript in preparation, 2026        '
+      write(*,'(a)') '        G) Effective oxidation states analysis'
+      write(*,'(a)') '           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015'
+      write(*,'(a)') '           M. Gimferrer and P. Salvador, manuscript in preparation, 2026'
       write(*,*)
-      write(*,'(a80)') '      H) Oxidation states from localized orbitals                             '
-      write(*,'(a80)') '         M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020   '
-      write(*,'(a80)') '         M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020                '
-      write(*,'(a80)') '         M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022         '
+      write(*,'(a)') '        H) Oxidation states from localized orbitals'
+      write(*,'(a)') '           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020'
+      write(*,'(a)') '           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020'
+      write(*,'(a)') '           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022'
       write(*,*)
-      write(*,'(a80)') '      I) Decomposition of EDA quantities into one- and two-center IQA terms   '
-      write(*,'(a80)') '         M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023       '
+      write(*,'(a)') '        I) Decomposition of EDA quantities into one- and two-center IQA terms'
+      write(*,'(a)') '           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023'
+      write(*,'(a)') '           (under reimplementation in version 5)'
       write(*,*)
-      write(*,'(a80)') '      J) Origin-independent decomposition of static polarizabilities          '
-      write(*,'(a80)') '         M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021        '
+      write(*,'(a)') '        J) Origin-independent decomposition of static polarizabilities'
+      write(*,'(a)') '           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021'
       write(*,*)
-      write(*,'(a80)') '------------------------------------------------------------------------------'
+      write(*,'(a)') '  ------------------------------------------------------------------------------'
       write(*,*)
-      write(*,'(a80)') '  The program has been written by using parts of the program APOST by         '
-      write(*,'(a80)') '  I. Mayer and A. Hamza, Budapest, 2000-2003.                                 '
+      write(*,'(a)') '      The program has been written by using parts of the program APOST by'
+      write(*,'(a)') '      I. Mayer and A. Hamza, Budapest, 2000-2003.'
       write(*,*)
-      write(*,'(a80)') '  The numerical integration utilizes the subroutines for Lebedev              '
-      write(*,'(a80)') '  quadrature downloaded from CCL. The appropriate reference is:               '
-      write(*,'(a80)') '  V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   '
-      write(*,'(a80)') '  131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    '
+      write(*,'(a)') '      The numerical integration utilizes the subroutines for Lebedev'
+      write(*,'(a)') '      quadrature downloaded from CCL. The appropriate reference is:'
+      write(*,'(a)') '      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of'
+      write(*,'(a)') '      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481'
+      write(*,'(a)') '      1999.'
       write(*,*)
-      write(*,'(a80)') '  The program makes use of libxc library when necessary, using the F90        '
-      write(*,'(a80)') '  interfaces provided by the authors.                                         '
-      write(*,'(a80)') '                 (see https://libxc.gitlab.io/)                               '
+      write(*,'(a)') '      The program uses the libxc library when necessary, through the'
+      write(*,'(a)') '      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).'
       write(*,*)
-      write(*,'(a80)') '  We are extremely grateful for the possibility of using these routines!      '
+      write(*,'(a)') '      We are extremely grateful for the possibility of using these routines!'
       write(*,*)
-      write(*,'(a80)') '------------------------------------------------------------------------------'
+      write(*,'(a)') '  ------------------------------------------------------------------------------'
       END SUBROUTINE kiir
 
 !! ***** !!
