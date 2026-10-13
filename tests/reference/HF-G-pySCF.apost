@@ -111,8 +111,7 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
 
   TIMING CPU  :: initialization                                    0.01 s
   TIMING WALL :: initialization                                    0.01 s

@@ -1942,7 +1942,7 @@
         {
           "label": "NEG_EFOS echoed in input summary",
           "type": "present",
-          "pattern": "Negative-occ\\. EFO cubes : net occ\\. <= -0\\.025 \\(GEOS paired only\\)"
+          "pattern": "Negative-occupation EFO cubes\\s*: net occupation <= -0\\.025 \\(NEG_EFOS 25, GEOS paired only\\)"
         },
         {
           "label": "Negative-EFO cube generated (paired channel, frag 2 only)",

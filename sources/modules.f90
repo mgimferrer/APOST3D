@@ -1281,6 +1281,9 @@
 !! ENPART -- igrid2e: 1 if # GRID gives RADIAL_2E or ANGULAR_2E; irot2e:  !!
 !! where the two-electron rotation angles come from (0 calibrated table,  !!
 !! 1 ROTATION_2E, 2 not calibrated for ANGULAR_2E). Set by read_grid.      !!
+!! cfuncname: the predefined functional keyword of # ENPART (SVWN,      !!
+!! B3LYP, ...), blank when the libxc ids were given with LIBRARY       !!
+   character(len=12) :: cfuncname=' '
    integer :: ienpart,ihf,id_xcfunc,id_xfunc,id_cfunc,iecorr, &
               ithrebod,iexact,ihomo,idek,iionic,ianalytical, &
               igrid2e,irot2e

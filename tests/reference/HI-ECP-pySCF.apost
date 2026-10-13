@@ -111,16 +111,14 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Energy decomposition                 : ENPART (one- and two-center IQA terms, see below)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
 
   # ENPART
-  --------
-  Functional              : HF
-  Atom-pair skip threshold: THREBOD = 50
-  Two-electron grid       : 40 x 146 (# GRID)
-  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
+  Functional                              : HF
+  Atom-pair threshold (bond order)        : 0.0050 (THREBOD 50)
+  Two-electron grid                       : 40 x 146 (# GRID)
+  Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
   TIMING CPU  :: initialization                                    0.00 s
   TIMING WALL :: initialization                                    0.00 s
@@ -305,7 +303,7 @@
   -------------------------------
   Coulomb energy:    250.5249353
 
-  TIMING CPU  :: Coulomb energy                                    0.19 s
+  TIMING CPU  :: Coulomb energy                                    0.20 s
   TIMING WALL :: Coulomb energy                                    0.03 s
 
   ---------------------------------------------------
@@ -329,8 +327,8 @@
   -------------------------------
   Hartree-Fock exchange energy:    -21.4887492
 
-  TIMING CPU  :: Exact-exchange energy                             4.99 s
-  TIMING WALL :: Exact-exchange energy                             0.70 s
+  TIMING CPU  :: Exact-exchange energy                             5.26 s
+  TIMING WALL :: Exact-exchange energy                             0.79 s
 
   Total two-electron part (coul+exch_hf):    229.0361861
   Integration error (kcal/mol):   -13.71
@@ -344,8 +342,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.4600955
 
-  TIMING CPU  :: Interpolated zero-error                           3.60 s
-  TIMING WALL :: Interpolated zero-error                           0.51 s
+  TIMING CPU  :: Interpolated zero-error                           3.76 s
+  TIMING WALL :: Interpolated zero-error                           0.55 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -389,7 +387,7 @@
   Integration error (au):     -0.0000005
   Integration error (kcal/mol):     0.00
 
-  TIMING CPU  :: enpart two-electron                               8.82 s
-  TIMING WALL :: enpart two-electron                               1.24 s
+  TIMING CPU  :: enpart two-electron                               9.26 s
+  TIMING WALL :: enpart two-electron                               1.38 s
 
   ...Normal Termination of APOST-3D...

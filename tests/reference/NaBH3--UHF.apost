@@ -111,15 +111,13 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (Hilbert-space)  : Mulliken
-  Overlap population analysis          : OPOP
-  Oxidation states analysis            : EOS (Effective Oxidation States, fragment-based)
-  Principal component analysis         : PCA
-  Fragment analysis                    : 2 fragments (see below)
+  Atomic definition                       : MULLIKEN (Hilbert space)
+  Overlap populations                     : OPOP
+  Oxidation states                        : EOS (effective oxidation states)
+  Principal component analysis            : PCA
+  Fragments                               : 2 (see # FRAGMENTS)
 
-  # FRAGMENTS  (2 fragments)
-  --------------------------
+  # FRAGMENTS (2 fragments)
   Fragment  1 :   1
   Fragment  2 :   2   3   4   5
 

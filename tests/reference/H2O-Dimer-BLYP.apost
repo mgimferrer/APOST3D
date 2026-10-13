@@ -111,16 +111,14 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Energy decomposition                 : ENPART (one- and two-center IQA terms, see below)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
 
   # ENPART
-  --------
-  Functional              : custom libxc ids 0 106 131
-  Atom-pair skip threshold: THREBOD = 50
-  Two-electron grid       : 40 x 146 (# GRID)
-  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
+  Functional                              : BLYP (libxc exchange 106, correlation 131)
+  Atom-pair threshold (bond order)        : 0.0050 (THREBOD 50)
+  Two-electron grid                       : 40 x 146 (# GRID)
+  Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
   TIMING CPU  :: initialization                                    0.01 s
   TIMING WALL :: initialization                                    0.01 s
@@ -154,7 +152,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 2.94 s
+  TIMING CPU  :: atomic definition                                 2.81 s
   TIMING WALL :: atomic definition                                 0.42 s
 
   -----------------------------
@@ -334,8 +332,8 @@
   -------------------------------------------------------------------------------
   Nuclear repulsion energy:     36.6642284
 
-  TIMING CPU  :: enpart one-electron                               1.21 s
-  TIMING WALL :: enpart one-electron                               0.16 s
+  TIMING CPU  :: enpart one-electron                               1.25 s
+  TIMING WALL :: enpart one-electron                               0.17 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -419,8 +417,8 @@
   -------------------------------------------------------------------------------
   Sum of pure KS-DFT exchange-correlation energy:    -18.6913761
 
-  TIMING CPU  :: enpart dft                                        6.39 s
-  TIMING WALL :: enpart dft                                        0.94 s
+  TIMING CPU  :: enpart dft                                        6.49 s
+  TIMING WALL :: enpart dft                                        0.97 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -454,7 +452,7 @@
   Coulomb energy:    112.1860788
 
   TIMING CPU  :: Coulomb energy                                    1.66 s
-  TIMING WALL :: Coulomb energy                                    0.23 s
+  TIMING WALL :: Coulomb energy                                    0.26 s
 
   KS-DFT electron-electron energy (au):     93.4947027
   Integration error (kcal/mol):     5.25
@@ -467,7 +465,7 @@
   New error after rotation:    -9.25
   Damping parameter       :      0.6381144
 
-  TIMING CPU  :: Interpolated zero-error                           0.55 s
+  TIMING CPU  :: Interpolated zero-error                           0.56 s
   TIMING WALL :: Interpolated zero-error                           0.10 s
 
   ---------------------------------------------------------
@@ -508,7 +506,7 @@
   Integration error (au):     -0.0000091
   Integration error (kcal/mol):    -0.01
 
-  TIMING CPU  :: enpart two-electron                               2.50 s
-  TIMING WALL :: enpart two-electron                               0.37 s
+  TIMING CPU  :: enpart two-electron                               2.52 s
+  TIMING WALL :: enpart two-electron                               0.40 s
 
   ...Normal Termination of APOST-3D...

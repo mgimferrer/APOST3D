@@ -114,23 +114,20 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Overlap population analysis          : OPOP
-  Oxidation states analysis            : GEOS (open-shell, unpaired-density-based)
-  Fragment analysis                    : 2 fragments (see below)
-  Cube files                           : CUBE (see below)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Overlap populations                     : OPOP
+  Oxidation states                        : GEOS (generalized effective oxidation states)
+  Fragments                               : 2 (see # FRAGMENTS)
+  Cube files                              : CUBE (see # CUBE)
 
   # CUBE
-  ------
-  Max occupation threshold: 0
-  Min occupation threshold: 0
-  Grid spacing (bohr)     : 0.250
-  Radius scale            : 2.000
-  Negative-occ. EFO cubes : net occ. <= -0.025 (GEOS paired only)
+  Largest net occupation                  : 0.000 (MAX_OCC 0)
+  Smallest net occupation                 : 0.000 (MIN_OCC 0)
+  Grid spacing (bohr)                     : 0.250
+  Radius scale                            : 2.000
+  Negative-occupation EFO cubes           : net occupation <= -0.025 (NEG_EFOS 25, GEOS paired only)
 
-  # FRAGMENTS  (2 fragments)
-  --------------------------
+  # FRAGMENTS (2 fragments)
   Fragment  1 :   1
   Fragment  2 :   2
 

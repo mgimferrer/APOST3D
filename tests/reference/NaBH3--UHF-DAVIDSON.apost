@@ -111,13 +111,11 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (Hilbert-space)  : Lowdin-Davidson
-  Oxidation states analysis            : EOS (Effective Oxidation States, fragment-based)
-  Fragment analysis                    : 2 fragments (see below)
+  Atomic definition                       : LOWDIN-DAVIDSON (Hilbert space)
+  Oxidation states                        : EOS (effective oxidation states)
+  Fragments                               : 2 (see # FRAGMENTS)
 
-  # FRAGMENTS  (2 fragments)
-  --------------------------
+  # FRAGMENTS (2 fragments)
   Fragment  1 :   1
   Fragment  2 :   2   3   4   5
 

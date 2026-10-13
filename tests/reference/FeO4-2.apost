@@ -111,21 +111,18 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Oxidation states analysis            : OSLO (oxidation states localized orbitals)
-  Fragment analysis                    : 5 fragments (see below)
-  Wavefunction source                  : QCHEM
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Oxidation states                        : OSLO (oxidation states from localized orbitals)
+  Fragments                               : 5 (see # FRAGMENTS)
+  Wavefunction source                     : QCHEM
 
   # OSLO
-  ------
-  Overlap matrix          : TFVC/real-space (default)
-  FOLI tolerance          : 3
-  Branching               : none
-  Print non-orthogonalized: no
+  Overlap matrix                          : real space (as in # METHOD)
+  FOLI tolerance                          : 0.001 (FOLI_TOLERANCE 3)
+  Branching                               : none
+  Non-orthogonalized OSLOs (.fchk)        : no
 
-  # FRAGMENTS  (5 fragments)
-  --------------------------
+  # FRAGMENTS (5 fragments)
   Fragment  1 :   1
   Fragment  2 :   2
   Fragment  3 :   3
@@ -159,8 +156,8 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.05 s
-  TIMING WALL :: atomic definition                                 0.16 s
+  TIMING CPU  :: atomic definition                                 1.04 s
+  TIMING WALL :: atomic definition                                 0.19 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -1727,7 +1724,7 @@
      5         -2.00
   ------------------------ 
 
-  TIMING CPU  :: OSLO analysis                                     2.74 s
-  TIMING WALL :: OSLO analysis                                     2.49 s
+  TIMING CPU  :: OSLO analysis                                     2.80 s
+  TIMING WALL :: OSLO analysis                                     2.54 s
 
   ...Normal Termination of APOST-3D...
