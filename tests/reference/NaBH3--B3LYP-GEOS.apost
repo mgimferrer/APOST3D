@@ -111,14 +111,12 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Overlap population analysis          : OPOP
-  Oxidation states analysis            : GEOS (open-shell, unpaired-density-based)
-  Fragment analysis                    : 2 fragments (see below)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Overlap populations                     : OPOP
+  Oxidation states                        : GEOS (generalized effective oxidation states)
+  Fragments                               : 2 (see # FRAGMENTS)
 
-  # FRAGMENTS  (2 fragments)
-  --------------------------
+  # FRAGMENTS (2 fragments)
   Fragment  1 :   5
   Fragment  2 :   1   2   3   4
 
@@ -133,7 +131,7 @@
   Checking NO overlap matrix
 
   TIMING CPU  :: initialization                                    0.08 s
-  TIMING WALL :: initialization                                    0.07 s
+  TIMING WALL :: initialization                                    0.08 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -159,7 +157,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 1.01 s
+  TIMING CPU  :: atomic definition                                 0.99 s
   TIMING WALL :: atomic definition                                 0.15 s
 
   -----------------------------
@@ -493,7 +491,7 @@
   OVERALL RELIABILITY INDEX R(%) =  80.734
   ELECTRONIC ASSIGNMENT RMSD VALUE =   0.274
 
-  TIMING CPU  :: EFFAO computation                                 1.81 s
+  TIMING CPU  :: EFFAO computation                                 1.80 s
   TIMING WALL :: EFFAO computation                                 0.45 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

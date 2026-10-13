@@ -786,6 +786,7 @@
 !! author: MGimf                                                         !!
 !! ********************************************************************* !!
       subroutine enpart_functional_keyword(kfound,idxc,idx,idc)
+      use input_options_mod, only: cfuncname
       implicit none
       integer, intent(out) :: kfound,idxc,idx,idc
       integer, parameter :: nkw=13
@@ -831,6 +832,7 @@
               call apost_stop('LDA KEYWORD REMOVED. REVISE inp')
             end if
             kfound=1
+            cfuncname=kwname(k)
             idxc=kwxc(k)
             idx=kwx(k)
             idc=kwc(k)

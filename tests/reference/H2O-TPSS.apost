@@ -111,16 +111,14 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Energy decomposition                 : ENPART (one- and two-center IQA terms, see below)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
 
   # ENPART
-  --------
-  Functional              : custom libxc ids 0 202 231
-  Atom-pair skip threshold: THREBOD = -1
-  Two-electron grid       : 40 x 146 (# GRID)
-  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
+  Functional                              : libxc exchange 202, correlation 231
+  Atom-pair threshold (bond order)        : 0 (THREBOD -1: every atom pair)
+  Two-electron grid                       : 40 x 146 (# GRID)
+  Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
   TIMING CPU  :: initialization                                    0.00 s
   TIMING WALL :: initialization                                    0.01 s
@@ -149,7 +147,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.36 s
+  TIMING CPU  :: atomic definition                                 0.35 s
   TIMING WALL :: atomic definition                                 0.06 s
 
   -----------------------------

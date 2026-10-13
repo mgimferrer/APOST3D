@@ -113,9 +113,8 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Density used                         : 2 (DENS)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Density (DENS)                          : 2
 
   TIMING CPU  :: initialization                                    0.01 s
   TIMING WALL :: initialization                                    0.01 s

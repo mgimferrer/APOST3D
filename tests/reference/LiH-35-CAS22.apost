@@ -115,24 +115,21 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Energy decomposition                 : ENPART (one- and two-center IQA terms, see below)
-  Local spin analysis                  : SPIN
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
+  Local spin                              : SPIN
 
   # ENPART
-  --------
-  Functional              : CASSCF
-  Atom-pair skip threshold: THREBOD = 0
-  Two-electron grid       : 40 x 146 (# GRID)
-  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
+  Functional                              : CASSCF
+  Atom-pair threshold (bond order)        : 0 (THREBOD 0: every atom pair)
+  Two-electron grid                       : 40 x 146 (# GRID)
+  Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
   # DM
-  ----
-  DM level: 2-RDM
-  Source  : pySCF
-  1-RDM   : LiH-35-CAS22.dm1
-  2-RDM   : LiH-35-CAS22.dm2
+  Density matrices                        : 2-RDM
+  Source                                  : pySCF
+  1-RDM file                              : LiH-35-CAS22.dm1
+  2-RDM file                              : LiH-35-CAS22.dm2
 
   --------------------
     NATURAL ORBITALS
@@ -394,7 +391,7 @@
   -------------------------------
   Nuclear repulsion energy:      0.4535805
 
-  TIMING CPU  :: enpart one-electron                               0.10 s
+  TIMING CPU  :: enpart one-electron                               0.11 s
   TIMING WALL :: enpart one-electron                               0.02 s
 
   -------------------------------------------------------
@@ -447,7 +444,7 @@
   -------------------------------
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
 
-  TIMING CPU  :: PHF Exc energy                                    1.02 s
+  TIMING CPU  :: PHF Exc energy                                    1.01 s
   TIMING WALL :: PHF Exc energy                                    1.01 s
 
   Total two-electron part (coul+exc):      2.7365314
@@ -505,7 +502,7 @@
   Total energy in Fchk file:     -7.9411448
   Integration error (au):      0.0000000
   Integration error (kcal/mol):     0.00
-  TIMING CPU  :: enpart two-electron                               2.03 s
+  TIMING CPU  :: enpart two-electron                               2.02 s
   TIMING WALL :: enpart two-electron                               1.84 s
 
   ...Normal Termination of APOST-3D...

@@ -242,6 +242,7 @@
 !! ********************************************************************* !!
       SUBROUTINE print_input_summary()
       use input_options_mod
+      use output_mod, only: print_value
       use integration_grid, only: nrad_in,nang_in
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
@@ -254,145 +255,98 @@
      +  jfrlist(maxat)
       common /printout/iaccur
       character*200 cbuf
-      character*40 cval
-      character*40 chdr
+      character*60 cval
+      character*20 cnum,cfmt
 
       call print_box('INPUT SUMMARY')
 
 !! ----------------------------------------------------------------- !!
-!! # METHOD -- one line per active category, "label : value(s)"      !!
+!! # METHOD -- one line per active category                          !!
 !! ----------------------------------------------------------------- !!
-      chdr='# METHOD'
-      write(*,'(2x,a)') trim(chdr)
-      write(*,'(2x,a)') repeat('-',len_trim(chdr))
+      write(*,'(2x,a)') '# METHOD'
 
-!! real-space AIM schemes -- several can be active at once, joined   !!
-!! into one line; itfvc/ibcp/inewbec aren't mutually exclusive since !!
-!! TFVC sets ibcp/inewbec as a side effect (read_input.f), so TFVC   !!
-!! is checked first and BECKE-RHO/NEWBEC are only reported when they !!
-!! are the reason those flags are set, not a TFVC side effect        !!
+!! real-space atomic definitions: TFVC also sets the BECKE-RHO/NEWBEC !!
+!! flags (read_input.f), so those two are named only without TFVC     !!
       cbuf=' '
-      if(itfvc.eq.1.and.itfvcdef.eq.0)
-     +  cbuf=trim(cbuf)//' TFVC (Topological Fuzzy Voronoi Cells);'
-      if(itfvcdef.eq.1) cbuf=trim(cbuf)//' TFVC (none given in # METHOD);'
-      if(ibecke.eq.1) cbuf=trim(cbuf)//' BECKE (fixed empirical radii);'
-      if(ibcp.eq.1.and.itfvc.ne.1)
-     +  cbuf=trim(cbuf)//' BECKE-RHO;'
-      if(inewbec.eq.1.and.itfvc.ne.1)
-     +  cbuf=trim(cbuf)//' NEWBEC;'
-      if(ihirsh.eq.1) cbuf=trim(cbuf)//' HIRSH (Hirshfeld);'
-      if(ihirsh.eq.2) cbuf=trim(cbuf)//' HIRSH-IT (Hirshfeld-Iterative);'
-      if(iqtaim.eq.1) cbuf=trim(cbuf)//' QTAIM;'
-      if(iqtaim.eq.2) cbuf=trim(cbuf)//' QTAIM (READINT, reusing prior results);'
-      cbuf=adjustl(cbuf)
-      nlen=len_trim(cbuf)
-!! nlen==0 is possible (no real-space AIM scheme active) -- split into two   !!
-!! ifs rather than one .and., since Fortran doesn't guarantee short-circuit !!
-!! evaluation and cbuf(0:0) trips -fbounds-check.                           !!
-      if(nlen.gt.0) then
-        if(cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
-      end if
-      if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
-     +  'Atomic partitioning (real-space)     :',trim(cbuf)
-
+      if(itfvc.eq.1.and.itfvcdef.eq.0) cbuf=trim(cbuf)//
+     +  '; TFVC (topological fuzzy Voronoi cells)'
+      if(itfvcdef.eq.1) cbuf=trim(cbuf)//
+     +  '; TFVC (topological fuzzy Voronoi cells, none given: default)'
+      if(ibecke.eq.1) cbuf=trim(cbuf)//'; BECKE (fixed empirical radii)'
+      if(ibcp.eq.1.and.itfvc.ne.1) cbuf=trim(cbuf)//
+     +  '; BECKE-RHO (radii from the density)'
+      if(inewbec.eq.1.and.itfvc.ne.1) cbuf=trim(cbuf)//'; NEWBEC'
+      if(ihirsh.eq.1) cbuf=trim(cbuf)//'; HIRSH (Hirshfeld)'
+      if(ihirsh.eq.2) cbuf=trim(cbuf)//'; HIRSH-IT (iterative Hirshfeld)'
+      if(iqtaim.eq.1) cbuf=trim(cbuf)//'; QTAIM'
+      if(len_trim(cbuf).gt.0) call print_value('Atomic definition',
+     +  trim(adjustl(cbuf(3:))))
       if(imulli.ge.1) then
-        if(imulli.eq.1) cval='Mulliken'
-        if(imulli.eq.2) cval='Lowdin'
-        if(imulli.eq.3) cval='Lowdin-Davidson'
-        if(imulli.eq.4) cval='NAO-basis'
-        if(imulli.eq.5) cval='Lowdin-W'
-        write(*,'(2x,a,1x,a)')
-     +    'Atomic partitioning (Hilbert-space)  :',trim(cval)
+        if(imulli.eq.1) cval='MULLIKEN (Hilbert space)'
+        if(imulli.eq.2) cval='LOWDIN (Hilbert space)'
+        if(imulli.eq.3) cval='LOWDIN-DAVIDSON (Hilbert space)'
+        if(imulli.eq.4) cval='NAO-BASIS (Hilbert space)'
+        if(imulli.eq.5) cval='LOWDIN-W (Hilbert space)'
+        call print_value('Atomic definition',trim(cval))
       end if
-      if(ndens0.gt.1) write(*,'(2x,a,1x,i0,a)')
-     +  'Density used                         :',ndens0,' (DENS)'
-
-      if(iopop.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Overlap population analysis          :','OPOP'
+      if(ndens0.gt.1) call print_value('Density (DENS)',ndens0)
+      if(iopop.eq.1) call print_value('Overlap populations','OPOP')
 
       if(ieffao.ge.1.and.ieos.ne.1.and.iueos.ne.1) then
         if(ieffao.eq.1) cval='EFFAO'
         if(ieffao.eq.2) cval='UEFFAO'
-        if(ieffao.eq.3) cval='EFFAO-U (paired/unpaired only)'
-        write(*,'(2x,a,1x,a)')
-     +    'Effective atomic orbitals            :',trim(cval)
+        if(ieffao.eq.3) cval='EFFAO-U (paired/unpaired densities)'
+        call print_value('Effective atomic orbitals',trim(cval))
       end if
-
-      if(ieos.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Oxidation states analysis            :',
-     +  'EOS (Effective Oxidation States, fragment-based)'
-      if(iueos.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Oxidation states analysis            :',
-     +  'GEOS (open-shell, unpaired-density-based)'
-      if(ieoscent.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Oxidation states analysis            :','OS-CENTROID'
-      if(ioslo.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Oxidation states analysis            :',
-     +  'OSLO (oxidation states localized orbitals)'
-      if(iloba.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Oxidation states analysis            :',
-     +  'LOBA (Localized Orbital Bonding Analysis)'
-
-      if(ienpart.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Energy decomposition                 :',
-     +  'ENPART (one- and two-center IQA terms, see below)'
-
-      if(ispin.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Local spin analysis                  :','SPIN'
-      if(ipolar.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Static polarizability                :','POLAR'
-      if(iscattfact.eq.1) write(*,'(2x,a,1x,a)')
-     +  'X-ray scattering factors             :','SCATT-FACT'
-      if(ilaplacian.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Density Laplacian                    :','LAPLACIAN'
-      if(ipca.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Principal component analysis         :','PCA'
-      if(idoint.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Atomic overlaps for ESI-3D, FCALC    :',
-     +  'DOINT (one .int file per atom)'
-      if(ielcount.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Electron counting (NCTAIM)           :','ELCOUNT'
-
+      if(ieos.eq.1) call print_value('Oxidation states',
+     +  'EOS (effective oxidation states)')
+      if(iueos.eq.1) call print_value('Oxidation states',
+     +  'GEOS (generalized effective oxidation states)')
+      if(ieoscent.eq.1) call print_value('Oxidation states',
+     +  'OS-CENTROID')
+      if(ioslo.eq.1) call print_value('Oxidation states',
+     +  'OSLO (oxidation states from localized orbitals)')
+      if(iloba.eq.1) call print_value('Oxidation states',
+     +  'LOBA (localized orbital bonding analysis)')
+      if(ienpart.eq.1) call print_value('Energy decomposition',
+     +  'ENPART (IQA terms, see # ENPART)')
+      if(ispin.eq.1) call print_value('Local spin','SPIN')
+      if(ipolar.eq.1) call print_value('Static polarizability','POLAR')
+      if(iscattfact.eq.1) call print_value('X-ray scattering factors',
+     +  'SCATT-FACT')
+      if(ilaplacian.eq.1) call print_value('Density Laplacian',
+     +  'LAPLACIAN')
+      if(ipca.eq.1) call print_value('Principal component analysis',
+     +  'PCA')
+      if(idoint.eq.1) call print_value('Atomic overlaps (ESI-3D, FCALC)',
+     +  'DOINT (one .int file per atom)')
+      if(ielcount.eq.1) call print_value('Electron counting (NCTAIM)',
+     +  'ELCOUNT')
       if(idofr.eq.1) then
-        write(cval,'(i0,a)') icufr,' fragments (see below)'
-        write(*,'(2x,a,1x,a)')
-     +    'Fragment analysis                    :',trim(cval)
+        write(cval,'(i0,a)') icufr,' (see # FRAGMENTS)'
+        call print_value('Fragments',trim(cval))
       end if
       if(idoat.eq.1) then
-        write(cval,'(i0,a)') icuat,' atoms selected'
-        write(*,'(2x,a,1x,a)')
-     +    'Atom selection                       :',trim(cval)
+        write(cval,'(i0,a)') icuat,' (see # ATOMS)'
+        call print_value('Selected atoms',trim(cval))
       end if
-
-      cbuf=' '
-      if(iqchem.eq.1) cbuf=trim(cbuf)//' QCHEM;'
-      if(imokit.eq.1) cbuf=trim(cbuf)//' MOKIT;'
-      cbuf=adjustl(cbuf)
-      nlen=len_trim(cbuf)
-!! nlen==0 is possible (native .fchk, no QCHEM/MOKIT/WFN) -- same           !!
-!! short-circuit concern as above.                                         !!
-      if(nlen.gt.0) then
-        if(cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
-      end if
-      if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
-     +  'Wavefunction source                  :',trim(cbuf)
-
-      if(icube.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Cube files                           :','CUBE (see below)'
-      if(iaccur.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Output precision                     :','FULLPRECISION'
-      if(inopop.eq.1) write(*,'(2x,a,1x,a)')
-     +  'Population output                    :','NOPOPU (suppressed)'
+      if(iqchem.eq.1) call print_value('Wavefunction source','QCHEM')
+      if(imokit.eq.1) call print_value('Wavefunction source','MOKIT')
+      if(icube.eq.1) call print_value('Cube files','CUBE (see # CUBE)')
+      if(iaccur.eq.1) call print_value('Output precision',
+     +  'FULLPRECISION (13 decimals)')
+      if(inopop.eq.1) call print_value('Population output',
+     +  'NOPOPU (suppressed)')
       if(nrad_in.gt.0.or.nang_in.gt.0) then
-        cval='RADIAL default'
-        if(nrad_in.gt.0) write(cval,'(a,i0)') 'RADIAL ',nrad_in
+        cval='default'
+        if(nrad_in.gt.0) write(cval,'(i0)') nrad_in
         if(nang_in.gt.0) then
-          write(cbuf,'(a,a,i0)') trim(cval),', ANGULAR ',nang_in
+          write(cnum,'(i0)') nang_in
         else
-          cbuf=trim(cval)//', ANGULAR default'
+          cnum='default'
         end if
-        write(*,'(2x,a,1x,a)')
-     +    'One-electron grid (# GRID)           :',trim(cbuf)
+        call print_value('One-electron grid (# GRID)',
+     +    trim(cval)//' x '//trim(cnum))
       end if
 
 !! ----------------------------------------------------------------- !!
@@ -400,54 +354,53 @@
 !! ----------------------------------------------------------------- !!
       if(ienpart.eq.1) then
         write(*,*)
-        chdr='# ENPART'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
-
+        write(*,'(2x,a)') '# ENPART'
         if(ihf.eq.1) then
           cval='HF'
         else if(icas.eq.1) then
           cval='CASSCF'
         else if(icisd.eq.1) then
           cval='CISD'
-        else if(id_xcfunc.eq.402) then
-          cval='B3LYP (hybrid)'
-        else if(id_xfunc.eq.106.and.id_cfunc.eq.132) then
-          cval='BP86 (GGA)'
-        else if(id_xfunc.eq.1.and.id_cfunc.eq.0) then
-          cval='LDA'
-        else if(id_xcfunc.ne.0.or.id_xfunc.ne.0.or.id_cfunc.ne.0) then
-          write(cval,'(a,3(1x,i0))') 'custom libxc ids',
-     +      id_xcfunc,id_xfunc,id_cfunc
         else
-          cval='unspecified'
+          cval=' '
+          if(id_xcfunc.ne.0) then
+            write(cbuf,'(a,i0)') 'libxc ',id_xcfunc
+          else
+            write(cbuf,'(a,i0,a,i0)') 'libxc exchange ',id_xfunc,
+     +        ', correlation ',id_cfunc
+            if(id_cfunc.eq.0) write(cbuf,'(a,i0)') 'libxc exchange ',
+     +        id_xfunc
+          end if
+          if(len_trim(cfuncname).gt.0) then
+            cval=trim(cfuncname)//' ('//trim(cbuf)//')'
+          else
+            cval=trim(cbuf)
+          end if
         end if
-        write(*,'(2x,a,1x,a)') 'Functional              :',trim(cval)
+        call print_value('Functional',trim(cval))
 
-        write(cval,'(a,i0)') 'THREBOD = ',ithrebod
-        write(*,'(2x,a,1x,a)')
-     +    'Atom-pair skip threshold:',trim(cval)
-
-        call grid2e_summary('Two-electron grid       :',
-     +    'Rotation angles (2E)    :')
+!! THREBOD is given in units of 1e-4 of a bond order; below 1, every !!
+!! atom pair is integrated                                          !!
+        write(cnum,'(i0)') ithrebod
+        if(ithrebod.lt.1) then
+          cval='0 (THREBOD '//trim(cnum)//': every atom pair)'
+        else
+          write(cval,'(f6.4)') real(ithrebod)/10000.0d0
+          cval=trim(adjustl(cval))//' (THREBOD '//trim(cnum)//')'
+        end if
+        call print_value('Atom-pair threshold (bond order)',
+     +    trim(cval))
+        call grid2e_summary()
 
         cbuf=' '
-        if(iexact.eq.1) cbuf=trim(cbuf)//' EXACT;'
-        if(ihomo.eq.1) cbuf=trim(cbuf)//' HOMO;'
-        if(idek.eq.1) cbuf=trim(cbuf)//' DEKIN;'
-        if(iionic.eq.1) cbuf=trim(cbuf)//' IONIC;'
-        if(ianalytical.eq.1) cbuf=trim(cbuf)//' ANALYTIC;'
-        if(iecorr.eq.1) cbuf=trim(cbuf)//' CORRELATION;'
-        cbuf=adjustl(cbuf)
-        nlen=len_trim(cbuf)
-!! nlen==0 is possible (no extra ENPART option active) -- same             !!
-!! short-circuit concern as above.                                        !!
-        if(nlen.gt.0) then
-          if(cbuf(nlen:nlen).eq.';') cbuf(nlen:nlen)=' '
-        end if
-        if(len_trim(cbuf).gt.0) write(*,'(2x,a,1x,a)')
-     +    'Extra options           :',trim(cbuf)
-
+        if(iexact.eq.1) cbuf=trim(cbuf)//' EXACT'
+        if(ihomo.eq.1) cbuf=trim(cbuf)//' HOMO'
+        if(idek.eq.1) cbuf=trim(cbuf)//' DEKIN'
+        if(iionic.eq.1) cbuf=trim(cbuf)//' IONIC'
+        if(ianalytical.eq.1) cbuf=trim(cbuf)//' ANALYTIC'
+        if(iecorr.eq.1) cbuf=trim(cbuf)//' CORRELATION'
+        if(len_trim(cbuf).gt.0) call print_value('Other options',
+     +    trim(adjustl(cbuf)))
       end if
 
 !! ----------------------------------------------------------------- !!
@@ -455,92 +408,89 @@
 !! ----------------------------------------------------------------- !!
       if(iqtaim.ge.1) then
         write(*,*)
-        chdr='# QTAIM'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
-        write(cval,'(i0)') istep
-        write(*,'(2x,a,1x,a)') 'Convergence step            :',
-     +    trim(cval)
-        write(cval,'(i0)') inna
-        write(*,'(2x,a,1x,a)') 'NNA (non-nuclear attractors):',
-     +    trim(cval)
-        write(cval,'(i0)') imaxdist
-        write(*,'(2x,a,1x,a)') 'Max basin distance          :',
-     +    trim(cval)
-        write(cval,'(i0)') iscreening
-        write(*,'(2x,a,1x,a)') 'Screening                   :',
-     +    trim(cval)
-        write(cval,'(i0)') ipath
-        write(*,'(2x,a,1x,a)') 'Gradient path               :',
-     +    trim(cval)
+        write(*,'(2x,a)') '# QTAIM'
+        call print_value('Convergence step',istep)
+        call print_value('Non-nuclear attractors',inna)
+        call print_value('Max basin distance',imaxdist)
+        call print_value('Screening',iscreening)
+        call print_value('Gradient path',ipath)
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # CUBE -- only if CUBE is active                                  !!
+!! # CUBE -- only if CUBE is active; thresholds are net occupations   !!
+!! times 1000 in the input                                           !!
 !! ----------------------------------------------------------------- !!
       if(icube.eq.1) then
         write(*,*)
-        chdr='# CUBE'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
-        write(cval,'(i0)') jcubthr
-        write(*,'(2x,a,1x,a)') 'Max occupation threshold:',trim(cval)
-        write(cval,'(i0)') kcubthr
-        write(*,'(2x,a,1x,a)') 'Min occupation threshold:',trim(cval)
-        write(cval,'(f6.3)') cubespacing
-        write(*,'(2x,a,1x,a)') 'Grid spacing (bohr)     :',trim(adjustl(cval))
-        write(cval,'(f6.3)') cuberadscale
-        write(*,'(2x,a,1x,a)') 'Radius scale            :',trim(adjustl(cval))
+        write(*,'(2x,a)') '# CUBE'
+        write(cnum,'(i0)') jcubthr
+        write(cval,'(f6.3)') real(jcubthr)/1000.0d0
+        call print_value('Largest net occupation',
+     +    trim(adjustl(cval))//' (MAX_OCC '//trim(cnum)//')')
+        write(cnum,'(i0)') kcubthr
+        write(cval,'(f6.3)') real(kcubthr)/1000.0d0
+        call print_value('Smallest net occupation',
+     +    trim(adjustl(cval))//' (MIN_OCC '//trim(cnum)//')')
+        write(cval,'(f8.3)') cubespacing
+        call print_value('Grid spacing',trim(adjustl(cval)),'bohr')
+        write(cval,'(f8.3)') cuberadscale
+        call print_value('Radius scale',trim(adjustl(cval)))
         if(inegefos.eq.1) then
-          write(cval,'(f7.3)') -REAL(inegcubthr)/1000.0d0
-          write(*,'(2x,a,1x,a,a)') 'Negative-occ. EFO cubes :',
-     +      'net occ. <= ',trim(adjustl(cval))//' (GEOS paired only)'
+          write(cnum,'(i0)') inegcubthr
+          write(cval,'(f7.3)') -real(inegcubthr)/1000.0d0
+          call print_value('Negative-occupation EFO cubes',
+     +      'net occupation <= '//trim(adjustl(cval))//' (NEG_EFOS '//
+     +      trim(cnum)//', GEOS paired only)')
         end if
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # OSLO -- only if OSLO is active                                  !!
+!! # OSLO -- only if OSLO is active; FOLI_TOLERANCE n means 10**(-n)  !!
 !! ----------------------------------------------------------------- !!
       if(ioslo.eq.1) then
         write(*,*)
-        chdr='# OSLO'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
-        if(ilow2.eq.1) cval='Mulliken'
-        if(ilow2.eq.2) cval='Lowdin'
-        if(ilow2.eq.3) cval='Lowdin-Davidson'
-        if(ilow2.eq.6) cval='NAO-basis'
-        if(ilow2.eq.0) cval='TFVC/real-space (default)'
-        write(*,'(2x,a,1x,a)') 'Overlap matrix          :',trim(cval)
-        write(cval,'(i0)') ifolitol
-        write(*,'(2x,a,1x,a)') 'FOLI tolerance          :',trim(cval)
+        write(*,'(2x,a)') '# OSLO'
+        if(ilow2.eq.1) cval='MULLIKEN (Hilbert space)'
+        if(ilow2.eq.2) cval='LOWDIN (Hilbert space)'
+        if(ilow2.eq.3) cval='LOWDIN-DAVIDSON (Hilbert space)'
+        if(ilow2.eq.6) cval='NAO-BASIS (Hilbert space)'
+        if(ilow2.eq.0) cval='real space (as in # METHOD)'
+        call print_value('Overlap matrix',trim(cval))
+        write(cnum,'(i0)') ifolitol
+        write(cfmt,'(a,i0,a,i0,a)') '(f',ifolitol+3,'.',ifolitol,')'
+        write(cval,cfmt) 10.0d0**(-ifolitol)
+        call print_value('FOLI tolerance',trim(adjustl(cval))//
+     +    ' (FOLI_TOLERANCE '//trim(cnum)//')')
         if(nbranch(1)+nbranch(2)+nbranch(3).eq.0)
-     +    write(*,'(2x,a,1x,a)') 'Branching               :','none'
-        if(nbranch(1).gt.0) write(*,'(2x,a,20(1x,i0))')
-     +    'Branching iterations    :',(ibranchit(k,1),k=1,nbranch(1))
-        if(nbranch(2).gt.0) write(*,'(2x,a,20(1x,i0))')
-     +    'Branching (alpha)       :',(ibranchit(k,2),k=1,nbranch(2))
-        if(nbranch(3).gt.0) write(*,'(2x,a,20(1x,i0))')
-     +    'Branching (beta)        :',(ibranchit(k,3),k=1,nbranch(3))
+     +    call print_value('Branching','none')
+        if(nbranch(1).gt.0) then
+          write(cbuf,'(20(i0,1x))') (ibranchit(k,1),k=1,nbranch(1))
+          call print_value('Branching at iteration',trim(cbuf))
+        end if
+        if(nbranch(2).gt.0) then
+          write(cbuf,'(20(i0,1x))') (ibranchit(k,2),k=1,nbranch(2))
+          call print_value('Branching at iteration (alpha)',trim(cbuf))
+        end if
+        if(nbranch(3).gt.0) then
+          write(cbuf,'(20(i0,1x))') (ibranchit(k,3),k=1,nbranch(3))
+          call print_value('Branching at iteration (beta)',trim(cbuf))
+        end if
         if(ioslofchk.eq.2) then
           cval='yes'
         else
           cval='no'
         end if
-        write(*,'(2x,a,1x,a)') 'Print non-orthogonalized:',trim(cval)
+        call print_value('Non-orthogonalized OSLOs (.fchk)',trim(cval))
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # FRAGMENTS -- only if DOFRAGS is active; replaces the raw        !!
-!! 'Fragment: N' + bare atom-index dump read_input.f used to print   !!
+!! # FRAGMENTS -- only if DOFRAGS is active; more than 20 atoms wrap  !!
+!! onto aligned continuation lines                                   !!
 !! ----------------------------------------------------------------- !!
       if(idofr.eq.1) then
         write(*,*)
-        write(chdr,'(a,i0,a)') '# FRAGMENTS  (',icufr,' fragments)'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
-!! Format reversion restarts at (15x,20i4), so >20 atoms wrap onto !!
-!! aligned continuation lines instead of reusing the leading a/i3   !!
+        write(cval,'(a,i0,a)') '# FRAGMENTS (',icufr,' fragments)'
+        write(*,'(2x,a)') trim(cval)
         do i=1,icufr
           write(*,'(2x,a,i3,a,20i4:/(15x,20i4))') 'Fragment',i,' :',
      +      (ifrlist(k,i),k=1,nfrlist(i))
@@ -552,22 +502,19 @@
 !! ----------------------------------------------------------------- !!
       if(idoat.eq.1) then
         write(*,*)
-        write(chdr,'(a,i0,a)') '# ATOMS  (',icuat,' selected)'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
+        write(cval,'(a,i0,a)') '# ATOMS (',icuat,' selected)'
+        write(*,'(2x,a)') trim(cval)
         write(*,'(2x,20i4)') (iatlist(i),i=1,icuat)
       end if
 
 !! ----------------------------------------------------------------- !!
-!! # DM -- only if correlated-WF density input is active             !!
+!! # DM -- only if correlated-wavefunction density matrices are read  !!
 !! ----------------------------------------------------------------- !!
       if(icorr.ne.0) then
         write(*,*)
-        chdr='# DM'
-        write(*,'(2x,a)') trim(chdr)
-        write(*,'(2x,a)') repeat('-',len_trim(chdr))
+        write(*,'(2x,a)') '# DM'
         write(cval,'(i0,a)') icorr,'-RDM'
-        write(*,'(2x,a,1x,a)') 'DM level:',trim(cval)
+        call print_value('Density matrices',trim(cval))
         if(ipyscf.eq.1) then
           cval='pySCF'
         else if(iorca.eq.1) then
@@ -575,9 +522,9 @@
         else
           cval='DMn program (binary)'
         end if
-        write(*,'(2x,a,1x,a)') 'Source  :',trim(cval)
-        write(*,'(2x,a,1x,a)') '1-RDM   :',trim(dmfile1)
-        if(icorr.eq.2) write(*,'(2x,a,1x,a)') '2-RDM   :',trim(dmfile2)
+        call print_value('Source',trim(cval))
+        call print_value('1-RDM file',trim(dmfile1))
+        if(icorr.eq.2) call print_value('2-RDM file',trim(dmfile2))
       end if
 
       END SUBROUTINE print_input_summary
@@ -706,19 +653,18 @@
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: grid2e_summary                                            !!
-!! purpose: INPUT SUMMARY lines of the two-electron grid (# GRID's       !!
-!!   RADIAL_2E/ANGULAR_2E or the default) and of its rotation angles,    !!
-!!   with where they come from; shared by the ENPART and EDAIQA parts.   !!
-!! arguments:                                                            !!
-!!   lgrid, lrot (in) -- the two labels, padded to the caller's width    !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-      subroutine grid2e_summary(lgrid,lrot)
+!! ----------------------------------------------------------------------
+!! subroutine: grid2e_summary
+!! INPUT SUMMARY lines of the two-electron grid (# GRID's RADIAL_2E/
+!! ANGULAR_2E or the default) and of its rotation angles, with where
+!! they come from.
+!! arguments: none (/modgrid/, input_options_mod)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine grid2e_summary()
       use input_options_mod, only: igrid2e,irot2e
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
-      character lgrid*(*), lrot*(*)
       character*60 cval
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
 
@@ -727,7 +673,7 @@
       else
         write(cval,'(i0,a,i0,a)') nrad22,' x ',nang22,' (default)'
       end if
-      write(*,'(2x,a,1x,a)') lgrid,trim(cval)
+      call print_value('Two-electron grid',trim(cval))
       if(irot2e.eq.1) then
         write(cval,'(f5.3,a,f5.3,a)') phb12,' / ',phb22,' (ROTATION_2E)'
       else if(irot2e.eq.2) then
@@ -736,7 +682,7 @@
       else
         write(cval,'(f5.3,a,f5.3,a)') phb12,' / ',phb22,' (calibrated)'
       end if
-      write(*,'(2x,a,1x,a)') lrot,trim(cval)
+      call print_value('Rotation angles (two-electron grid)',trim(cval))
       end
 
 !! ***** !!

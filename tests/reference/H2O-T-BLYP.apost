@@ -111,16 +111,14 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Energy decomposition                 : ENPART (one- and two-center IQA terms, see below)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
 
   # ENPART
-  --------
-  Functional              : custom libxc ids 0 106 131
-  Atom-pair skip threshold: THREBOD = -1
-  Two-electron grid       : 40 x 146 (# GRID)
-  Rotation angles (2E)    : 0.162 / 0.182 (calibrated)
+  Functional                              : libxc exchange 106, correlation 131
+  Atom-pair threshold (bond order)        : 0 (THREBOD -1: every atom pair)
+  Two-electron grid                       : 40 x 146 (# GRID)
+  Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
   --------------------
     NATURAL ORBITALS
@@ -386,7 +384,7 @@
   -------------------------------------------
   Sum of pure KS-DFT exchange-correlation energy:     -9.2197241
 
-  TIMING CPU  :: enpart dft                                        1.34 s
+  TIMING CPU  :: enpart dft                                        1.37 s
   TIMING WALL :: enpart dft                                        0.32 s
 
   -------------------------------------------------------
@@ -418,7 +416,7 @@
   Coulomb energy:     45.2445114
 
   TIMING CPU  :: Coulomb energy                                    0.39 s
-  TIMING WALL :: Coulomb energy                                    0.06 s
+  TIMING WALL :: Coulomb energy                                    0.05 s
 
   KS-DFT electron-electron energy (au):     36.0247872
   Integration error (kcal/mol):    -2.10
@@ -464,7 +462,7 @@
   Integration error (au):      0.0000906
   Integration error (kcal/mol):     0.06
 
-  TIMING CPU  :: enpart two-electron                               0.63 s
-  TIMING WALL :: enpart two-electron                               0.13 s
+  TIMING CPU  :: enpart two-electron                               0.62 s
+  TIMING WALL :: enpart two-electron                               0.12 s
 
   ...Normal Termination of APOST-3D...

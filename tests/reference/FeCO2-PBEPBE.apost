@@ -111,14 +111,12 @@
   -----------------
 
   # METHOD
-  --------
-  Atomic partitioning (real-space)     : TFVC (Topological Fuzzy Voronoi Cells)
-  Overlap population analysis          : OPOP
-  Oxidation states analysis            : EOS (Effective Oxidation States, fragment-based)
-  Fragment analysis                    : 3 fragments (see below)
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Overlap populations                     : OPOP
+  Oxidation states                        : EOS (effective oxidation states)
+  Fragments                               : 3 (see # FRAGMENTS)
 
-  # FRAGMENTS  (3 fragments)
-  --------------------------
+  # FRAGMENTS (3 fragments)
   Fragment  1 :   1
   Fragment  2 :   2   4
   Fragment  3 :   3   5
@@ -150,7 +148,7 @@
   Checking sum of AOs overlap matrices
   (deviations may not affect overall accuracy of MOs)
 
-  TIMING CPU  :: atomic definition                                 0.32 s
+  TIMING CPU  :: atomic definition                                 0.31 s
   TIMING WALL :: atomic definition                                 0.05 s
 
   -----------------------------
