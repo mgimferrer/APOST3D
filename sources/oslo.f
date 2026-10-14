@@ -1,53 +1,36 @@
 
-!! ********************************************************************** !!
-!! OSLO calculation subroutines                                           !!
-!! shared helpers (spin-agnostic, used by both drivers below):            !!
-!!   oslo_build_Smat        -- fragment charge centers + position-        !!
-!!                             operator matrices, computed once           !!
-!!   oslo_density_from_coeffs -- P = factor*C*C^T from a set of OSLO      !!
-!!                             coefficients                               !!
-!!   oslo_channel_iterate   -- the iterative localize/assign/deflate      !!
-!!                             scheme for one spin channel (RHF's only    !!
-!!                             channel, or one of UHF's alpha/beta)       !!
-!! restricted driver (prints in this order: .fchk output, per-OSLO       !!
-!! summary tables, fragment oxidation states last):                      !!
-!!   rwf_iterative_oslo     -- one oslo_channel_iterate call (nocc)       !!
-!!   rwf_uwf_orbpop_atom    -- per-atom orbital population, the expensive !!
-!!                             part of a fragment-population evaluation   !!
-!!                             (shared with the unrestricted driver and   !!
-!!                             LOBA too)                                  !!
-!!   rwf_uwf_frg_pop        -- cheap per-fragment sum of the above        !!
-!!                             (shared with the unrestricted driver too)  !!
-!!   rwf_orbprint           -- restricted OSLO .fchk writer               !!
-!!   rwf_uwf_print_OSLO_final -- per-OSLO summary table (shared with      !!
-!!                             the unrestricted driver too)               !!
-!! unrestricted driver (same print order as above, alpha then beta):      !!
-!!   uwf_iterative_oslo     -- two oslo_channel_iterate calls (nalf, nb)  !!
-!!   uwf_orbprint           -- unrestricted OSLO .fchk writer -- one      !!
-!!                             file per stage with proper Alpha/Beta MO   !!
-!!                             + Total/Spin SCF Density fields            !!
-!! ********************************************************************** !!
+!! ----------------------------------------------------------------------
+!! OSLO: oxidation states from localized orbitals.
+!!   oslo_build_Smat         -- fragment charge centres and spread matrices
+!!   oslo_density_from_coeffs -- P = factor*C*C^T of a set of OSLOs
+!!   oslo_channel_iterate    -- the iterative selection for one channel
+!!   rwf_iterative_oslo, uwf_iterative_oslo -- restricted / unrestricted
+!!                              drivers
+!!   oslo_header, oslo_summary, oslo_oxidation_states -- printing shared
+!!                              by both drivers
+!!   oslo_fchk_write         -- the OSLO .fchk files (FOLI as orbital
+!!                              energies)
+!!   rwf_uwf_orbpop_atom, rwf_uwf_frg_pop -- orbital populations per atom
+!!                              and per fragment (also used by LOBA)
+!! ----------------------------------------------------------------------
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: oslo_build_Smat                                           !!
-!! purpose: fragment-localization setup, shared by the restricted and    !!
-!! unrestricted OSLO drivers -- for each fragment, computes its charge-  !!
-!! center R_F (nuclear-charge-weighted average position of its own       !!
-!! atoms) and the grid-integrated position-operator matrix               !!
-!! sum_r w(r)*chi_mu(r)*chi_nu(r)*omega_A(r)*|r-R_F|^2 used by           !!
-!! oslo_channel_iterate's per-fragment diagonalization. Independent of   !!
-!! spin/occupation, so computed once and reused for every channel.       !!
-!! arguments:                                                             !!
-!!   itotps (in)  -- total number of grid points                         !!
-!!   wp     (in)  -- integration weight of each grid point                !!
-!!   omp2   (in)  -- atomic weight of each grid point, per atom           !!
-!!   chp    (in)  -- basis-function values at each grid point             !!
-!!   pcoord (in)  -- xyz coordinates of each grid point                   !!
-!!   Smat   (out) -- (icufr,igr,igr) fragment position-operator matrices  !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_build_Smat
+!! Charge centre R_F of each fragment (its atoms' positions weighted by
+!! atomic number), printed in Angstrom, and its spread matrix, the grid
+!! integral of chi_mu chi_nu |r-R_F|^2 weighted by the atomic weights,
+!! used by every iteration of every channel.
+!! arguments:
+!!   itotps (in)   number of grid points
+!!   wp     (in)   (itotps) integration weights
+!!   omp2   (in)   (itotps,nat) atomic weights of each point
+!!   chp    (in)   (itotps,igr) basis functions at the points
+!!   pcoord (in)   (itotps,3) coordinates of the points
+!!   Smat   (out)  (icufr,igr,igr) spread matrix of each fragment
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine oslo_build_Smat(itotps,wp,omp2,chp,pcoord,Smat)
 
       use basis_set
@@ -68,9 +51,10 @@
 
       iatps = nrad*nang
 
-      call print_subbox('CHARGE CENTER (R_F) FOR EACH FRAGMENT')
-      write(*,*) "  Frag.        Charge center (xyz)     "
-      write(*,*) " ------------------------------------- "
+      write(*,'(a)') ''
+      write(*,'(2x,a)') 'Charge centre R_F of each fragment (Angstrom)'
+      write(*,'(2x,a)') 'Frag.         x         y         z'
+      write(*,'(2x,a)') repeat('-',35)
       do ifrg=1,icufr
         xcenter=ZERO
         ycenter=ZERO
@@ -107,29 +91,26 @@
           end do
         end do
       end do
-      write(*,*) " ------------------------------------- "
+      write(*,'(2x,a)') repeat('-',35)
 
-110   FORMAT(3x,i3,3x,3f10.5)
+110   FORMAT(2x,i5,3f10.5)
 
       end
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: oslo_density_from_coeffs                                  !!
-!! purpose: builds a density matrix from a set of OSLO coefficients,     !!
-!! P = factor * C * C^T -- factor=2 for a doubly-occupied (restricted)   !!
-!! channel, factor=1 for a singly-occupied (unrestricted alpha/beta)     !!
-!! channel.                                                               !!
-!! arguments:                                                             !!
-!!   igr    (in)  -- number of basis functions                           !!
-!!   norb   (in)  -- number of columns of cmat to include                !!
-!!   cmat   (in)  -- (igr,igr) OSLO coefficients (only the first norb    !!
-!!                   columns are read)                                   !!
-!!   factor (in)  -- occupation factor (2 restricted, 1 unrestricted)     !!
-!!   pmat   (out) -- (igr,igr) resulting density matrix                   !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_density_from_coeffs
+!! Density P = factor * C C^T of the first norb columns of a set of
+!! OSLOs (factor 2 for a restricted channel, 1 for alpha or beta).
+!! arguments:
+!!   igr    (in)   number of basis functions
+!!   norb   (in)   number of OSLOs
+!!   cmat   (in)   (igr,igr) their coefficients
+!!   factor (in)   electrons per orbital
+!!   pmat   (out)  (igr,igr) density
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine oslo_density_from_coeffs(igr,norb,cmat,factor,pmat)
       implicit double precision(a-h,o-z)
       include 'parameter.h'
@@ -149,44 +130,40 @@
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: oslo_channel_iterate                                      !!
-!! purpose: iterative OSLO assignment for one spin channel (the only     !!
-!! channel of a restricted wavefunction, or alpha/beta of an             !!
-!! unrestricted one). Each iteration localizes the remaining density     !!
-!! around every fragment, scores the candidates by their FOLI, selects   !!
-!! the lowest one together with every candidate within the tolerance,    !!
-!! orthogonalizes the selection and removes it from the remaining        !!
-!! density, until nel orbitals are assigned. A selection that spans      !!
-!! fewer orbitals than it holds (the same orbital found from several     !!
-!! fragments) gives those orbitals to its fragments in shares.           !!
-!! arguments:                                                             !!
-!!   nel      (in)    -- number of orbitals to assign in this channel     !!
-!!   sat      (in)    -- (igr,igr,nat) per-atom AO overlap               !!
-!!   Smat     (in)    -- (icufr,igr,igr) fragment position-operator      !!
-!!                       matrices (oslo_build_Smat)                      !!
-!!   pnocore  (inout) -- (igr,igr) remaining density of the channel      !!
-!!                       (P/2 restricted, Pa or Pb unrestricted),        !!
-!!                       deflated in place                               !!
-!!   folitol  (in)    -- FOLI tolerance for the selection                !!
-!!   nbr      (in)    -- number of branching iterations                  !!
-!!   ibr      (in)    -- (nbr) iterations at which the next FOLI value   !!
-!!                       is selected instead of the lowest one           !!
-!!   chkey    (in)    -- input keyword that branches this channel, for   !!
-!!                       the messages                                    !!
-!!   coslo    (out)   -- (igr,igr) OSLOs before orthogonalization,       !!
-!!                       columns 1..nel                                  !!
-!!   cosloorth(out)   -- (igr,igr) orthonormal OSLOs, columns 1..nel     !!
-!!   delocoslo(out)   -- (nel) FOLI value of each OSLO                   !!
-!!   frgel    (out)   -- (icufr) orbitals assigned to each fragment      !!
-!!                       (fractional when orbitals are shared)           !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_channel_iterate
+!! Iterative OSLO assignment of one channel (the doubly occupied
+!! orbitals of a restricted wavefunction, or alpha or beta). Each
+!! iteration localizes the remaining density around every fragment,
+!! scores the candidates by their FOLI, selects the lowest one with
+!! every candidate within the tolerance (or the next group, when
+!! branching), orthogonalizes the selection and removes it from the
+!! remaining density, until nel orbitals are assigned. A selection that
+!! spans fewer orbitals than it holds (the same orbital found from
+!! several fragments) gives them to its fragments in shares.
+!! arguments:
+!!   nel       (in)     number of orbitals to assign
+!!   sat       (in)     (igr,igr,nat) atomic overlap matrices
+!!   Smat      (in)     (icufr,igr,igr) spread matrices (oslo_build_Smat)
+!!   pnocore   (inout)  (igr,igr) remaining density, deflated in place
+!!   folitol   (in)     FOLI tolerance of a selection
+!!   nbr       (in)     number of branching iterations
+!!   ibr       (in)     (nbr) iterations that select the next FOLI group
+!!   chkey     (in)     input keyword that branches this channel
+!!   coslo     (out)    (igr,igr) OSLOs before orthogonalization
+!!   cosloorth (out)    (igr,igr) orthonormal OSLOs (the .fchk orbitals)
+!!   delocoslo (out)    (nel) FOLI value of each OSLO
+!!   frgel     (out)    (icufr) orbitals assigned to each fragment
+!!   iterosl   (out)    (nel) iteration that selected each OSLO
+!!   shrosl    (out)    (icufr,nel) share of each fragment in each OSLO
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine oslo_channel_iterate(nel,sat,Smat,pnocore,folitol,nbr,
-     &  ibr,chkey,coslo,cosloorth,delocoslo,frgel)
+     &  ibr,chkey,coslo,cosloorth,delocoslo,frgel,iterosl,shrosl)
 
       use basis_set
       use ao_matrices
+      use output_mod, only: print_value
       implicit double precision(a-h,o-z)
       include 'parameter.h'
 
@@ -194,6 +171,8 @@
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
       integer,intent(in) :: nbr,ibr(*)
+      integer,intent(out) :: iterosl(nel)
+      real*8,intent(out) :: shrosl(icufr,nel)
       real*8,intent(in) :: folitol
       character*(*),intent(in) :: chkey
 
@@ -220,6 +199,8 @@
       frgel=ZERO
       coslo=ZERO
       cosloorth=ZERO
+      iterosl=0
+      shrosl=ZERO
 
 !! a channel with no electrons (e.g. beta of a high-spin H2 triplet) has  !!
 !! nothing to localize                                                   !!
@@ -246,8 +227,8 @@
       nnelect=0
       iadd=0
       do iiter=1,niter
-        write(line,'(a,i3)') "ITERATION NUMBER ",iiter
-        call print_subbox(trim(adjustl(line)))
+        write(line,'(a,i0)') "ITERATION ",iiter
+        call print_box(trim(line))
 
         pcore=ZERO
         ALLOCATE(deloc(icufr,nel),foli(icufr,nel))
@@ -306,17 +287,16 @@
             foli(ifrg,ii)=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
           end do
 
-!! Printing valuable information !!
-          write(line,'(a,i3)') "ORBITAL INFORMATION FOR FRAGMENT ",ifrg
-          call print_subbox(trim(adjustl(line)))
-          write(*,*) "  Orb.    Spread      Frg. Pop.      FOLI   "
-          write(*,*) " ------------------------------------------ "
+!! candidate orbitals of this fragment !!
+          if(ifrg.gt.1) write(*,'(a)') ''
+          write(*,'(2x,a,i0,a)') 'Fragment ',ifrg,': candidate orbitals'
+          write(*,'(2x,a)') 'Orb.     Spread  Frag. pop.      FOLI'
+          write(*,'(2x,a)') repeat('-',37)
           do ii=1,nel
             xx=frgpop(ifrg,ii)
             if(xx.gt.1.0d-5) write(*,111) ii,frgspr(ifrg,ii),xx,foli(ifrg,ii)
           end do
-          write(*,*) " ------------------------------------------ "
-          write(*,*)
+          write(*,'(2x,a)') repeat('-',37)
         end do
         DEALLOCATE(S0)
 
@@ -350,11 +330,14 @@
           end do
         end do
 
-        write(*,10) "Lowest FOLI value (frg.)",iifrg,xcutoff
+        write(*,'(a)') ''
+        write(line,'(a,i0,a)') 'Lowest FOLI value (fragment ',iifrg,')'
+        call print_value(trim(line),xcutoff,5)
         if(jjfrg.gt.0) then
-          write(*,10) "Next FOLI value (frg.)",jjfrg,xfront
+          write(line,'(a,i0,a)') 'Next FOLI value (fragment ',jjfrg,')'
+          call print_value(trim(line),xfront,5)
         else
-          write(*,11) "Next FOLI value","none"
+          call print_value('Next FOLI value','none')
         end if
 
 !! Branching: the group at the next FOLI value is selected instead !!
@@ -372,12 +355,8 @@
         xsel=xcutoff
         if(lbranch) then
           xsel=xfront
-          write(*,*)
-          write(*,*) " ********************************************* "
-          write(*,*) "  BRANCHING: THE NEXT FOLI VALUE IS SELECTED  "
-          write(*,*) " ********************************************* "
-          write(*,'(2x,a,f10.5,a,f10.5,a)') "FOLI value",xfront,
-     +      " selected instead of",xcutoff," (branching)"
+          write(*,'(2x,a,f10.5,a,f10.5)') "Branching: FOLI value",
+     +      xfront," selected instead of",xcutoff
         else if(nbr.gt.0) then
           do k=1,nbr
             if(ibr(k).eq.iiter) write(*,'(2x,a)') 'Branching asked '//
@@ -389,7 +368,6 @@
 !! 3) Selection: the lowest group (every candidate within the tolerance !!
 !! of the lowest FOLI value), or with branching the next group (beyond   !!
 !! the lowest one, up to the next FOLI value plus the tolerance)         !!
-        call print_box('SELECTED ORBITALS')
         mm=0
         do ifrg=1,icufr
           do iorb=1,nel
@@ -397,8 +375,10 @@
           end do
         end do
         ALLOCATE(infopop(2,mm),sfoli(mm))
-        write(*,*) "  Orb.   Frag.   FOLI  "
-        write(*,*) " --------------------- "
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Selected orbitals'
+        write(*,'(2x,a)') 'Orb.  Frag.      FOLI'
+        write(*,'(2x,a)') repeat('-',21)
         mm=0
         do ifrg=1,icufr
           do iorb=1,nel
@@ -411,15 +391,13 @@
             end if
           end do
         end do
-        write(*,*) " --------------------- "
-        write(*,*)
-        write(*,'(2x,a25,x,i3)') "Number of OSLOs selected:",mm
+        write(*,'(2x,a)') repeat('-',21)
+        call print_value('OSLOs selected',mm)
         if(jjfrg.gt.0) then
-          write(*,'(2x,a17,x,f10.5)') "delta-FOLI value:",xfront-xcutoff
+          call print_value('Delta-FOLI',xfront-xcutoff,5)
         else
-          write(*,'(2x,a)') "delta-FOLI value: none (no other candidate)"
+          call print_value('Delta-FOLI','none (no other candidate)')
         end if
-        write(*,*)
 
 !! 4) Orthogonalizing the selection: Lowdin, from the eigenvalues of its !!
 !! overlap above thresh (10^-8, parameter.h). nr of them = the number   !!
@@ -485,6 +463,7 @@
             ifrg=infopop(1,iorb)
             frgel(ifrg)=frgel(ifrg)+ONE
             iadd=iadd+1
+            shrosl(ifrg,iadd)=ONE
             delocoslo(iadd)=sfoli(iorb)
             do mu=1,igr
               coslo(mu,iadd)=ccore(mu,iorb)
@@ -528,16 +507,16 @@
               end do
             end if
           end do
+          write(*,'(a)') ''
           if(nr.eq.1) then
-            write(*,'(2x,a,i0,a)') 'SHARED ORBITAL: the ',mm,
+            write(*,'(2x,a,i0,a)') 'Shared orbital: the ',mm,
      +        ' selected OSLOs span 1 orbital'
           else
-            write(*,'(2x,a,i0,a,i0,a)') 'SHARED ORBITALS: the ',mm,
+            write(*,'(2x,a,i0,a,i0,a)') 'Shared orbitals: the ',mm,
      +        ' selected OSLOs span ',nr,' orbitals'
           end if
-          write(*,*)
-          write(*,'(a)') '   Frag.      Share'
-          write(*,'(2x,a)') repeat('-',17)
+          write(*,'(2x,a)') 'Frag.     Share'
+          write(*,'(2x,a)') repeat('-',15)
           do ifrg=1,icufr
             xx=ZERO
             ii=0
@@ -547,35 +526,42 @@
                 ii=1
               end if
             end do
-            if(ii.eq.1) write(*,'(i6,f13.5)') ifrg,xx
+            if(ii.eq.1) write(*,'(2x,i5,f10.5)') ifrg,xx
+!! each of the nr orbitals of the selection carries 1/nr of the        !!
+!! fragment's share (the results file lists them per orbital)          !!
+            if(ii.eq.1) then
+              do ir=iadd-nr+1,iadd
+                shrosl(ifrg,ir)=xx/DBLE(nr)
+              end do
+            end if
           end do
-          write(*,'(2x,a)') repeat('-',17)
-          write(*,*)
+          write(*,'(2x,a)') repeat('-',15)
           DEALLOCATE(share)
         end if
         nadd=nr
         nnelect=nnelect+nr
-        write(*,'(2x,a24,x,i3)') "Orbitals left to assign:",nel-nnelect
-        write(*,*)
+        do ir=iadd-nr+1,iadd
+          iterosl(ir)=iiter
+        end do
+        call print_value('Orbitals left to assign',nel-nnelect)
 
 !! 5) Close alternative: a next OSLO with an overlap of nearly 1 with   !!
 !! the selected ones (it is nearly one of them, found from another      !!
 !! fragment), with a small delta-FOLI. Not evaluated with one orbital   !!
 !! left (every candidate is then that orbital)                          !!
-        call print_subbox('CHECKING LINEAR DEPENDENCIES')
+        write(*,'(a)') ''
         if(lbranch) then
-          write(*,'(2x,a)') 'Not evaluated in a branching iteration'
+          write(*,'(2x,a)') 'Close alternatives: not checked in a '//
+     +      'branching iteration'
         else if(nleft.eq.1) then
-          write(*,'(2x,a)') 'Not evaluated with one orbital left '//
-     +      '(every candidate is that orbital)'
+          write(*,'(2x,a)') 'Close alternatives: not checked, one '//
+     +      'orbital left'
         else if(jjfrg.eq.0) then
-          write(*,'(2x,a)') 'Not evaluated: no other candidate'
+          write(*,'(2x,a)') 'Close alternatives: no other candidate'
         else
-          write(*,'(2x,a,f8.5,a,f8.5)') 'Next OSLOs: FOLI',xfront,
-     +      ', delta-FOLI',xfront-xcutoff
-          write(*,*)
-          write(*,'(a)') '   Orb.   Frag.     FOLI    Overlap with selected'
-          write(*,'(2x,a)') repeat('-',49)
+          write(*,'(2x,a)') 'Next OSLOs against the selected ones'
+          write(*,'(2x,a)') 'Orb.  Frag.      FOLI    Overlap'
+          write(*,'(2x,a)') repeat('-',32)
           xmax=ZERO
           do ifrg=1,icufr
             do iorb=1,nel
@@ -604,30 +590,26 @@
                 end do
                 xov=min(ONE,xproj/xnorm)
                 if(xov.gt.xmax) xmax=xov
-                write(*,'(i6,i7,f11.5,f18.5)') iorb,ifrg,foli(ifrg,iorb),
-     +            xov
+                write(*,'(2x,i4,i7,f10.5,f11.5)') iorb,ifrg,
+     +            foli(ifrg,iorb),xov
               end if
             end do
           end do
-          write(*,'(2x,a)') repeat('-',49)
-          write(*,'(2x,a,f10.5)') "Largest overlap with the selected "//
-     +      "OSLOs:",xmax
+          write(*,'(2x,a)') repeat('-',32)
+          call print_value('Largest overlap with the selected OSLOs',
+     +      xmax,5)
           if(xmax.gt.ONE-xlindep.and.xfront-xcutoff.lt.dfoliwarn) then
-            write(*,*)
-            write(*,*) " ************************************** "
-            write(*,*) "  WARNING : CLOSE ALTERNATIVE SELECTION  "
-            write(*,*) " ************************************** "
-            write(*,'(2x,a)') 'The next OSLO is nearly one of the '//
-     +        'selected ones, and its FOLI value'
-            write(*,'(2x,a)') 'is within 0.5 of theirs: an alternative '//
-     +        'assignment is possible. To'
-            write(*,'(2x,a)') 'follow it, add to # OSLO'
+            write(*,'(2x,a)') 'WARNING: close alternative selection. '//
+     +        'The next OSLO is nearly one of the'
+            write(*,'(2x,a)') 'selected ones, and its FOLI value is '//
+     +        'within 0.5 of theirs: an alternative'
+            write(*,'(2x,a)') 'assignment is possible. To follow it, '//
+     +        'add to # OSLO'
             write(*,'(4x,a,1x,i0)') trim(chkey),iiter
             write(*,'(2x,a)') 'and compare the sums of FOLI values '//
      +        'of both runs.'
           end if
         end if
-        write(*,*)
 
 !! 6) Removing the selected orbitals from the remaining density !!
         do ii=1,igr
@@ -658,21 +640,18 @@
       do ii=1,nel
         xx=xx+delocoslo(ii)
       end do
-      write(*,12) "Sum of the FOLI values",xx
+      write(*,'(a)') ''
+      call print_value('Sum of the FOLI values',xx,5)
       do k=1,nbr
         if(ibrused(k).eq.0) write(*,'(2x,a,i0,a)')
      +    'Branching at iteration ',ibr(k),': not reached, not applied'
       end do
-      write(*,*)
 
       DEALLOCATE(Sm,Splus,c0,pp0,pcore,st,cmat,cfrgoslo)
       DEALLOCATE(frgpop,frgspr,ibrused)
 
-10    FORMAT(2x,a,t33,':',i4,f10.5)
-11    FORMAT(2x,a,t33,': ',a)
-12    FORMAT(2x,a,t33,':',f10.5)
-111   FORMAT(3x,i3,2x,f10.5,3x,f10.5,3x,f10.5)
-112   FORMAT(3x,i3,4x,i3,x,f9.5)
+111   FORMAT(2x,i4,f11.5,f12.5,f10.5)
+112   FORMAT(2x,i4,i7,f10.5)
 
       contains
 
@@ -693,25 +672,21 @@
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: rwf_iterative_oslo                                        !!
-!! purpose: OSLO oxidation-state assignment, restricted (closed-shell)   !!
-!! case -- builds the fragment position-operator matrices                !!
-!! (oslo_build_Smat), runs the iterative localize/assign/deflate scheme  !!
-!! once for the single (doubly-occupied) channel (oslo_channel_iterate), !!
-!! writes the pre-ortho/final OSLO .fchk files, prints the per-OSLO      !!
-!! summary tables, then the fragment oxidation states last.              !!
-!! MG: only the iterative procedure is implemented in this version; the  !!
-!! non-iterative one lives in the development version.                   !!
-!! arguments:                                                             !!
-!!   sat    (in) -- (igr,igr,nat) per-atom AO overlap                     !!
-!!   itotps (in) -- total number of grid points                          !!
-!!   wp     (in) -- integration weight of each grid point                 !!
-!!   omp2   (in) -- atomic weight of each grid point, per atom            !!
-!!   chp    (in) -- basis-function values at each grid point              !!
-!!   pcoord (in) -- xyz coordinates of each grid point                    !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: rwf_iterative_oslo
+!! OSLO oxidation states of a restricted (closed-shell) determinant: one
+!! channel of doubly occupied orbitals (oslo_channel_iterate), the OSLO
+!! .fchk files, the summary of the selected OSLOs and the oxidation
+!! states.
+!! arguments:
+!!   sat    (in)  (igr,igr,nat) atomic overlap matrices
+!!   itotps (in)  number of grid points
+!!   wp     (in)  (itotps) integration weights
+!!   omp2   (in)  (itotps,nat) atomic weights of each point
+!!   chp    (in)  (itotps,igr) basis functions at the points
+!!   pcoord (in)  (itotps,3) coordinates of the points
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine rwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
 
       use basis_set
@@ -724,7 +699,6 @@
       integer,intent(in) :: itotps
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
       common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
@@ -736,133 +710,456 @@
 
       allocatable :: Smat(:,:,:),pnocore(:,:),poslo(:,:)
       allocatable :: coslo(:,:),cosloorth(:,:),delocoslo(:)
-      allocatable :: frgel(:),iznfrg(:)
-      allocatable :: orbpop(:),orbpop2(:),foslo(:,:),foslo2(:,:)
-      allocatable :: orbpopat(:,:),orbpopat2(:,:)
+      allocatable :: frgel(:),oxi(:),shrosl(:,:)
+      integer, allocatable :: iterosl(:)
 
-!! Loading iopts !!
       ifolitol = iopt(96)
       ifchk    = iopt(98)
-      folitol = 10.0d0**(-REAL(ifolitol)) !! Default = 10^-3, controlled in .inp !!
+      folitol = 10.0d0**(-REAL(ifolitol))
 
-!! Fragment charge extracted from zn (avoids problems when pseudopotentials are used) !!
-      ALLOCATE(frgel(icufr),iznfrg(icufr))
-      do ifrg=1,icufr
-        izn=0
-        do icenter=1,nfrlist(ifrg)
-          iiat=ifrlist(icenter,ifrg)
-          izn=izn+INT(zn(iiat))
-        end do
-        iznfrg(ifrg)=izn
-      end do
-
+      call oslo_header(.false.,folitol)
       ALLOCATE(Smat(icufr,igr,igr))
       call oslo_build_Smat(itotps,wp,omp2,chp,pcoord,Smat)
 
-!! Initial printing !!
-      call print_box('STARTING ITERATIVE OSLO ALGORITHM')
-      write(*,'(2x,a50,f10.5)') "Tolerance (in delta-FOLI) used for OSLO selection:",folitol
-      write(*,*)
-
-      ALLOCATE(pnocore(igr,igr))
-      pnocore=pa !! SAVING pa IN pnocore !!
-
+      ALLOCATE(pnocore(igr,igr),frgel(icufr),oxi(icufr))
+      pnocore=pa
       ALLOCATE(coslo(igr,igr),cosloorth(igr,igr),delocoslo(nocc))
-
+      ALLOCATE(iterosl(nocc),shrosl(icufr,nocc))
       call oslo_channel_iterate(nocc,sat,Smat,pnocore,folitol,
      &  nbranch(1),ibranchit(1,1),'BRANCH_ITERATION',coslo,cosloorth,
-     &  delocoslo,frgel)
-
+     &  delocoslo,frgel,iterosl,shrosl)
       DEALLOCATE(Smat,pnocore)
 
-!! Printing of the .fchk files with the OSLOs... to visualize !!
-!! Preorthogonalization OSLOs can be visualized if desired (.inp) !!
-      ALLOCATE(poslo(igr,igr)) !! Required poslo for .fchk creation !!
+!! .fchk files of the OSLOs, FOLI values as orbital energies: before   !!
+!! orthogonalization on request, the final ones always                 !!
+      ALLOCATE(poslo(igr,igr))
       if(ifchk.eq.2) then
         call oslo_density_from_coeffs(igr,nocc,coslo,TWO,poslo)
         ctype="-OSLOs-preortho"
-        call rwf_orbprint(coslo,poslo,ctype)
+        call oslo_fchk_write(.false.,coslo,coslo,poslo,poslo,delocoslo,
+     +    nocc,delocoslo,0,ctype)
       end if
-
-!! Now the final (orthogonalized) ones !!
       call oslo_density_from_coeffs(igr,nocc,cosloorth,TWO,poslo)
       ctype="-OSLOs"
-      call rwf_orbprint(cosloorth,poslo,ctype)
+      call oslo_fchk_write(.false.,cosloorth,cosloorth,poslo,poslo,
+     +  delocoslo,nocc,delocoslo,0,ctype)
       DEALLOCATE(poslo)
 
-!! Evaluating final populations to compare !!
-      call print_subbox('PRINTING FINAL OSLOs INFORMATION')
-      call print_subbox('Summary of the selected OSLOs (pre-ortho)')
+      call print_box('SELECTED OSLOs')
+      call oslo_summary(sat,nocc,coslo,cosloorth,delocoslo,iterosl)
 
-!! Made A bit tricky... sorry !!
-!! coslo/cosloorth are fixed here, so their expensive per-atom         !!
-!! population matrices are each computed once, then just summed per   !!
-!! fragment below.                                                     !!
-      ALLOCATE(orbpop(nocc),orbpop2(nocc))
-      ALLOCATE(orbpopat(nocc,nat),orbpopat2(nocc,nat))
-      ALLOCATE(foslo(nocc,icufr),foslo2(nocc,icufr))
-      foslo=ZERO
-      foslo2=ZERO
-      call rwf_uwf_orbpop_atom(sat,nocc,coslo,orbpopat) !! For the non-orthogonal OSLOs (original) !!
-      call rwf_uwf_orbpop_atom(sat,nocc,cosloorth,orbpopat2) !! For the orthogonalized ones (printing later) !!
-      do jfrg=1,icufr
-        orbpop=ZERO
-        orbpop2=ZERO
-        call rwf_uwf_frg_pop(jfrg,nocc,orbpopat,orbpop)
-        call rwf_uwf_frg_pop(jfrg,nocc,orbpopat2,orbpop2)
-        do ii=1,nocc
-          foslo(ii,jfrg)=orbpop(ii)
-          foslo2(ii,jfrg)=orbpop2(ii)
-        end do
-      end do
-      DEALLOCATE(orbpopat,orbpopat2)
-      call rwf_uwf_print_OSLO_final(1,nocc,delocoslo,foslo)
-      call print_subbox('Summary of the selected OSLOs (final)')
-      call rwf_uwf_print_OSLO_final(0,nocc,delocoslo,foslo2) !! FOLI values given just for using the same routine !!
+!! each assigned orbital holds two electrons !!
+      call oslo_oxidation_states(frgel,TWO,frgel,ZERO,oxi)
 
-!! Final oxidation-state assignment, printed last -- each assigned      !!
-!! orbital is doubly occupied.                                          !!
-      call print_subbox('FRAGMENT OXIDATION STATES')
-      write(*,*) "  Frag.  Oxidation State  "
-      write(*,*) " ------------------------ "
-      ishared=0
-      do ifrg=1,icufr
-        xos=DBLE(iznfrg(ifrg))-TWO*frgel(ifrg)
-        if(ABS(xos).lt.5.0d-7) xos=ZERO
-        if(ABS(frgel(ifrg)-ANINT(frgel(ifrg))).gt.1.0d-6) ishared=1
-        write(*,20) ifrg,xos
-      end do
-      write(*,*) " ------------------------ "
-      if(ishared.eq.1) write(*,'(2x,a)') 'Fractional values: orbitals '//
-     +  'shared between fragments (see the iterations)'
-      write(*,*)
 
-      DEALLOCATE(orbpop,orbpop2)
-      DEALLOCATE(foslo,foslo2)
-      DEALLOCATE(coslo,cosloorth,delocoslo,frgel,iznfrg)
-
-20    FORMAT(3x,i3,6x,f8.2)
+      DEALLOCATE(coslo,cosloorth,delocoslo,frgel,oxi,iterosl,shrosl)
 
       end
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: rwf_uwf_orbpop_atom                                       !!
-!! purpose: per-atom, per-orbital population (Mulliken-type, via sat)    !!
-!! for a fixed set of orbital coefficients -- the expensive O(nat*norb*  !!
-!! igr^2) part of the old rwf_uwf_frg_pop, split out so callers that     !!
-!! need the same corb scored against every fragment (the usual case --  !!
-!! see oslo_channel_iterate's and both drivers' do jfrg=1,icufr loops)   !!
-!! compute it once instead of once per fragment.                        !!
-!! arguments:                                                             !!
-!!   sat    (in)  -- (igr,igr,nat) per-atom AO overlap                    !!
-!!   norb   (in)  -- number of orbitals in corb to score                  !!
-!!   corb   (in)  -- (igr,igr) candidate orbital coefficients (only the   !!
-!!                   first norb columns are read)                        !!
-!!   orbpop (out) -- (norb,nat) population of each orbital on each atom   !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: uwf_iterative_oslo
+!! OSLO oxidation states of an unrestricted determinant: the alpha and
+!! beta channels separately (oslo_channel_iterate), with the branching
+!! iterations of each (BRANCH_ITERATION plus BRANCH_ALPHA/BRANCH_BETA),
+!! one OSLO .fchk file with both, the summaries and the oxidation
+!! states.
+!! arguments: as rwf_iterative_oslo
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine uwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
+
+      use basis_set
+      use ao_matrices
+      use integration_grid
+      use input_options_mod, only: maxbranch,nbranch,ibranchit
+      use output_mod, only: print_value
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      integer,intent(in) :: itotps
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+
+      character*20 ctype
+
+      dimension sat(igr,igr,nat)
+      dimension chp(itotps,igr),pcoord(itotps,3)
+      dimension wp(itotps),omp2(itotps,nat)
+
+      allocatable :: Smat(:,:,:),pnocore(:,:)
+      allocatable :: coslo_a(:,:),cosloorth_a(:,:),delocoslo_a(:)
+      allocatable :: coslo_b(:,:),cosloorth_b(:,:),delocoslo_b(:)
+      allocatable :: frgel_a(:),frgel_b(:),oxi(:)
+      allocatable :: shrosl_a(:,:),shrosl_b(:,:)
+      integer, allocatable :: iterosl_a(:),iterosl_b(:)
+      allocatable :: poslo_a(:,:),poslo_b(:,:)
+
+!! branching iterations of each channel: BRANCH_ITERATION plus its own !!
+      dimension ibra(2*maxbranch),ibrb(2*maxbranch)
+
+      ifolitol = iopt(96)
+      ifchk    = iopt(98)
+      folitol = 10.0d0**(-REAL(ifolitol))
+
+      nbra=nbranch(1)+nbranch(2)
+      nbrb=nbranch(1)+nbranch(3)
+      do k=1,nbranch(1)
+        ibra(k)=ibranchit(k,1)
+        ibrb(k)=ibranchit(k,1)
+      end do
+      do k=1,nbranch(2)
+        ibra(nbranch(1)+k)=ibranchit(k,2)
+      end do
+      do k=1,nbranch(3)
+        ibrb(nbranch(1)+k)=ibranchit(k,3)
+      end do
+
+      call oslo_header(.true.,folitol)
+      ALLOCATE(Smat(icufr,igr,igr))
+      call oslo_build_Smat(itotps,wp,omp2,chp,pcoord,Smat)
+      ALLOCATE(frgel_a(icufr),frgel_b(icufr),oxi(icufr))
+
+      call print_box('ALPHA ELECTRONS')
+      call print_value('Electrons',nalf)
+      ALLOCATE(pnocore(igr,igr))
+      pnocore=pa
+      ALLOCATE(coslo_a(igr,igr),cosloorth_a(igr,igr),delocoslo_a(nalf))
+      ALLOCATE(iterosl_a(nalf),shrosl_a(icufr,nalf))
+      call oslo_channel_iterate(nalf,sat,Smat,pnocore,folitol,nbra,
+     &  ibra,'BRANCH_ALPHA',coslo_a,cosloorth_a,delocoslo_a,frgel_a,
+     &  iterosl_a,shrosl_a)
+
+      call print_box('BETA ELECTRONS')
+      call print_value('Electrons',nb)
+      pnocore=pb
+      ALLOCATE(coslo_b(igr,igr),cosloorth_b(igr,igr),delocoslo_b(nb))
+      ALLOCATE(iterosl_b(nb),shrosl_b(icufr,nb))
+      call oslo_channel_iterate(nb,sat,Smat,pnocore,folitol,nbrb,
+     &  ibrb,'BRANCH_BETA',coslo_b,cosloorth_b,delocoslo_b,frgel_b,
+     &  iterosl_b,shrosl_b)
+      DEALLOCATE(pnocore,Smat)
+
+!! one .fchk file with both channels, FOLI values as orbital energies !!
+      ALLOCATE(poslo_a(igr,igr),poslo_b(igr,igr))
+      if(ifchk.eq.2) then
+        call oslo_density_from_coeffs(igr,nalf,coslo_a,ONE,poslo_a)
+        call oslo_density_from_coeffs(igr,nb,coslo_b,ONE,poslo_b)
+        ctype="-OSLOs-preortho"
+        call oslo_fchk_write(.true.,coslo_a,coslo_b,poslo_a,poslo_b,
+     +    delocoslo_a,nalf,delocoslo_b,nb,ctype)
+      end if
+      call oslo_density_from_coeffs(igr,nalf,cosloorth_a,ONE,poslo_a)
+      call oslo_density_from_coeffs(igr,nb,cosloorth_b,ONE,poslo_b)
+      ctype="-OSLOs"
+      call oslo_fchk_write(.true.,cosloorth_a,cosloorth_b,poslo_a,
+     +  poslo_b,delocoslo_a,nalf,delocoslo_b,nb,ctype)
+      DEALLOCATE(poslo_a,poslo_b)
+
+      call print_box('SELECTED ALPHA OSLOs')
+      call oslo_summary(sat,nalf,coslo_a,cosloorth_a,delocoslo_a,
+     +  iterosl_a)
+      call print_box('SELECTED BETA OSLOs')
+      call oslo_summary(sat,nb,coslo_b,cosloorth_b,delocoslo_b,
+     +  iterosl_b)
+
+!! each assigned spin-orbital holds one electron !!
+      call oslo_oxidation_states(frgel_a,ONE,frgel_b,ONE,oxi)
+
+
+      DEALLOCATE(coslo_a,cosloorth_a,delocoslo_a,frgel_a,oxi)
+      DEALLOCATE(coslo_b,cosloorth_b,delocoslo_b,frgel_b)
+      DEALLOCATE(iterosl_a,iterosl_b,shrosl_a,shrosl_b)
+
+      end
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_header
+!! Opens the OSLO section: the atomic definition of the spreads, the
+!! atoms of the fragment populations, the FOLI tolerance and the
+!! densities.
+!! arguments:
+!!   lunres  (in)  logical: unrestricted (alpha and beta separately)
+!!   folitol (in)  FOLI tolerance of a selection
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine oslo_header(lunres,folitol)
+      use input_options_mod, only: ilow2
+      use output_mod, only: print_value
+      implicit double precision(a-h,o-z)
+      logical lunres
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      call print_value('Atomic definition (spreads)',
+     +  trim(ckey)//' (real space)')
+      if(ilow2.eq.1) then
+        call print_value('Fragment populations','MULLIKEN (Hilbert space)')
+      else if(ilow2.eq.2) then
+        call print_value('Fragment populations','LOWDIN (Hilbert space)')
+      else if(ilow2.eq.3) then
+        call print_value('Fragment populations',
+     +    'LOWDIN-DAVIDSON (Hilbert space)')
+      else if(ilow2.eq.6) then
+        call print_value('Fragment populations',
+     +    'NAO-BASIS (Hilbert space)')
+      else
+        call print_value('Fragment populations',trim(ckey))
+      end if
+      call print_value('FOLI tolerance',folitol,5)
+      if(lunres) then
+        call print_value('Densities','alpha and beta separately')
+      else
+        call print_value('Densities','total (closed shell)')
+      end if
+      end
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_summary
+!! Prints the selected OSLOs of one channel, five per block: before the
+!! orthogonalization (iteration, FOLI value and population of each
+!! fragment) and after it (the orbitals of the .fchk file, fragment
+!! populations).
+!! arguments:
+!!   sat       (in)  (igr,igr,nat) atomic overlap matrices
+!!   nel       (in)  number of OSLOs
+!!   coslo     (in)  (igr,igr) OSLOs before orthogonalization
+!!   cosloorth (in)  (igr,igr) final OSLOs
+!!   foli      (in)  (nel) FOLI value of each
+!!   iterosl   (in)  (nel) iteration that selected each
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine oslo_summary(sat,nel,coslo,cosloorth,foli,iterosl)
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+      dimension sat(igr,igr,nat),coslo(igr,igr),cosloorth(igr,igr)
+      dimension foli(*)
+      integer iterosl(*)
+      allocatable :: orbpopat(:,:),orbpop(:),foslo(:,:)
+
+      if(nel.eq.0) then
+        write(*,'(2x,a)') 'No electrons in this channel'
+        return
+      end if
+      ALLOCATE(orbpopat(nel,nat),orbpop(nel),foslo(nel,icufr))
+
+!! the per-atom populations of a set of orbitals are the expensive part, !!
+!! computed once per set and then summed per fragment                    !!
+      do iset=1,2
+        if(iset.eq.1) then
+          call rwf_uwf_orbpop_atom(sat,nel,coslo,orbpopat)
+          write(*,'(2x,a)') 'Before orthogonalization'
+        else
+          call rwf_uwf_orbpop_atom(sat,nel,cosloorth,orbpopat)
+          write(*,'(a)') ''
+          write(*,'(2x,a)') 'After orthogonalization (the orbitals of '//
+     +      'the .fchk file)'
+        end if
+        do jfrg=1,icufr
+          orbpop=ZERO
+          call rwf_uwf_frg_pop(jfrg,nel,orbpopat,orbpop)
+          do ii=1,nel
+            foslo(ii,jfrg)=orbpop(ii)
+          end do
+        end do
+        do k0=1,nel,5
+          k1=min(nel,k0+4)
+          ncol=k1-k0+1
+          if(k0.gt.1) write(*,'(a)') ''
+          write(*,'(2x,a9,5i10)') 'OSLO     ',(k,k=k0,k1)
+          if(iset.eq.1) then
+            write(*,'(2x,a9,5i10)') 'Iteration',(iterosl(k),k=k0,k1)
+            write(*,'(2x,a9,5f10.5)') 'FOLI     ',(foli(k),k=k0,k1)
+          end if
+          write(*,'(2x,a)') repeat('-',9+10*ncol)
+          do jfrg=1,icufr
+            write(*,'(2x,a6,i3,5f10.5)') 'Frag. ',jfrg,
+     +        (foslo(k,jfrg),k=k0,k1)
+          end do
+          write(*,'(2x,a)') repeat('-',9+10*ncol)
+        end do
+      end do
+
+      DEALLOCATE(orbpopat,orbpop,foslo)
+      end
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_oxidation_states
+!! Oxidation state of each fragment, nuclear charge (reduced by an ECP)
+!! minus the electrons of the OSLOs assigned to it, printed with the
+!! shared table; says when shared orbitals make some fractional.
+!! arguments:
+!!   frgel_a, frgel_b (in)  (icufr) orbitals assigned to each fragment,
+!!                          per channel (the same array twice, restricted)
+!!   occ_a, occ_b     (in)  electrons per orbital of each (restricted:
+!!                          2 and 0)
+!!   oxi              (out) (icufr) oxidation states
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine oslo_oxidation_states(frgel_a,occ_a,frgel_b,occ_b,oxi)
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+      common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+      dimension frgel_a(icufr),frgel_b(icufr),oxi(icufr)
+
+!! the nuclear charge counts the electrons an ECP replaces as absent !!
+      ishared=0
+      xtot=ZERO
+      do ifrg=1,icufr
+        izn=0
+        do icenter=1,nfrlist(ifrg)
+          izn=izn+INT(zn(ifrlist(icenter,ifrg)))
+        end do
+        xos=DBLE(izn)-(occ_a*frgel_a(ifrg)+occ_b*frgel_b(ifrg))
+        if(ABS(xos).lt.5.0d-7) xos=ZERO
+        if(ABS(frgel_a(ifrg)-ANINT(frgel_a(ifrg))).gt.1.0d-6.or.
+     +    ABS(frgel_b(ifrg)-ANINT(frgel_b(ifrg))).gt.1.0d-6) ishared=1
+        oxi(ifrg)=xos
+        xtot=xtot+xos
+      end do
+      call print_oxidation_states(icufr,oxi,xtot,.false.,ZERO)
+      if(ishared.eq.1) write(*,'(2x,a)') 'Fractional values: orbitals '//
+     +  'shared between fragments (see the iterations)'
+      end
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_fchk_write
+!! Writes <jobname><ctype>.fchk: a copy of the source .fchk with the
+!! OSLOs as orbitals, their FOLI values in place of the orbital energies
+!! (0 after the last OSLO) and their density. Blocks are replaced
+!! wherever they come (Q-Chem writes the energies after the
+!! coefficients) and skipped by their own N= size, so any .fchk layout
+!! works (G16, G09, pySCF, Q-Chem).
+!! arguments:
+!!   lunres (in)  logical: unrestricted (Beta blocks and spin density)
+!!   cmat_a, cmat_b (in)  (igr,igr) OSLOs of each channel (restricted:
+!!                        cmat_a only)
+!!   pmat_a, pmat_b (in)  (igr,igr) their densities (restricted: P in
+!!                        pmat_a; unrestricted: total Pa+Pb, spin Pa-Pb)
+!!   foli_a, foli_b (in)  FOLI values of the OSLOs of each channel
+!!   nfa, nfb       (in)  number of OSLOs in each channel
+!!   ctype          (in)  file name suffix: "-OSLOs" or "-OSLOs-preortho"
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine oslo_fchk_write(lunres,cmat_a,cmat_b,pmat_a,pmat_b,
+     +  foli_a,nfa,foli_b,nfb,ctype)
+
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /filename/name0
+
+      logical lunres,lfound
+      character*80 line
+      character*60 name0,name1
+      character*20 ctype
+      dimension cmat_a(igr,igr),cmat_b(igr,igr)
+      dimension pmat_a(igr,igr),pmat_b(igr,igr)
+      dimension foli_a(*),foli_b(*)
+      allocatable :: ea(:),eb(:)
+
+      indepigr = int_locate(15,"Number of independ",lfound)
+      norb     = igr*indepigr
+      norbt    = igr*(igr+1)/2
+      ALLOCATE(ea(indepigr),eb(indepigr))
+      ea=ZERO
+      eb=ZERO
+      do ii=1,min(nfa,indepigr)
+        ea(ii)=foli_a(ii)
+      end do
+      do ii=1,min(nfb,indepigr)
+        eb(ii)=foli_b(ii)
+      end do
+
+      name1=trim(name0)//trim(ctype)//".fchk"
+      open(unit=69,file=name1)
+      rewind(69)
+      rewind(15)
+
+      read(15,'(a80)',end=99) line
+      do while(.true.)
+        if(index(line,"Alpha Orbital Energies").eq.1) then
+          write(69,10) "Alpha Orbital Energies","R","N= ",indepigr
+          write(69,13) (ea(ii),ii=1,indepigr)
+        else if(lunres.and.index(line,"Beta Orbital Energies").eq.1)
+     +    then
+          write(69,10) "Beta Orbital Energies ","R","N= ",indepigr
+          write(69,13) (eb(ii),ii=1,indepigr)
+        else if(index(line,"Alpha MO coefficients").eq.1) then
+          write(69,11) "Alpha MO coefficients","R","N= ",norb
+          write(69,13) ((cmat_a(ii,jj),ii=1,igr),jj=1,indepigr)
+        else if(lunres.and.index(line,"Beta MO coefficients").eq.1)
+     +    then
+          write(69,11) "Beta MO coefficients ","R","N= ",norb
+          write(69,13) ((cmat_b(ii,jj),ii=1,igr),jj=1,indepigr)
+        else if(index(line,"Total SCF Density").eq.1) then
+          write(69,12) "Total SCF Density","R","N= ",norbt
+          if(lunres) then
+            write(69,13) ((pmat_a(ii,jj)+pmat_b(ii,jj),jj=1,ii),ii=1,igr)
+          else
+            write(69,13) ((pmat_a(ii,jj),jj=1,ii),ii=1,igr)
+          end if
+        else if(lunres.and.index(line,"Spin SCF Density").eq.1) then
+          write(69,12) "Spin SCF Density ","R","N= ",norbt
+          write(69,13) ((pmat_a(ii,jj)-pmat_b(ii,jj),jj=1,ii),ii=1,igr)
+        else
+          write(69,'(a80)') line
+          read(15,'(a80)',end=99) line
+          cycle
+        end if
+
+!! a replaced block: skip its data (N= values, 5 per line) !!
+        ipos=index(line,"N=")
+        read(line(ipos+2:),*) nval
+        do ii=1,(nval+4)/5
+          read(15,'(a80)',end=99) line
+        end do
+        read(15,'(a80)',end=99) line
+      end do
+99    continue
+      close(69)
+      DEALLOCATE(ea,eb)
+
+10    FORMAT(a22,21x,a1,3x,a3,i11)
+11    FORMAT(a21,22x,a1,3x,a3,i11)
+12    FORMAT(a17,26x,a1,3x,a3,i11)
+13    FORMAT(5(1p,e16.8))
+
+      end
+
+!! ****** !!
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: rwf_uwf_orbpop_atom
+!! Population of each of a set of orbitals on each atom, through the
+!! atomic overlap matrices (the expensive part of a fragment population,
+!! computed once per set of orbitals).
+!! arguments:
+!!   sat    (in)   (igr,igr,nat) atomic overlap matrices
+!!   norb   (in)   number of orbitals
+!!   corb   (in)   (igr,igr) their coefficients
+!!   orbpop (out)  (norb,nat) population of each orbital on each atom
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine rwf_uwf_orbpop_atom(sat,norb,corb,orbpop)
 
       implicit double precision(a-h,o-z)
@@ -892,26 +1189,17 @@
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: rwf_uwf_frg_pop                                           !!
-!! purpose: sums a precomputed per-atom orbital population (see          !!
-!! rwf_uwf_orbpop_atom) onto one fragment -- independent of the          !!
-!! wavefunction type, shared by the restricted and unrestricted OSLO     !!
-!! drivers (and LOBA), called once per fragment per iteration to score   !!
-!! how localized each candidate orbital is. No factor of 2 applied (the  !!
-!! caller decides whether an orbital is singly- or doubly-occupied).     !!
-!! frgpop is only written if DOFRAGS is set (idofr=1) -- always true in  !!
-!! practice since OSLO is meaningless without fragments, but left        !!
-!! unwritten (not zeroed) otherwise, matching this codebase's existing   !!
-!! convention elsewhere for that flag.                                   !!
-!! arguments:                                                             !!
-!!   ifrg   (in)  -- fragment to compute the population on                !!
-!!   norb   (in)  -- number of orbitals scored                            !!
-!!   orbpop (in)  -- (norb,nat) per-atom orbital population, from         !!
-!!                   rwf_uwf_orbpop_atom                                 !!
-!!   frgpop (out) -- (norb) population of each orbital on fragment ifrg   !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: rwf_uwf_frg_pop
+!! Population of each orbital on one fragment, the sum of its atoms'
+!! populations (rwf_uwf_orbpop_atom).
+!! arguments:
+!!   ifrg   (in)   fragment
+!!   norb   (in)   number of orbitals
+!!   orbpop (in)   (norb,nat) populations on each atom
+!!   frgpop (out)  (norb) populations on the fragment
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine rwf_uwf_frg_pop(ifrg,norb,orbpop,frgpop)
 
       implicit double precision(a-h,o-z)
@@ -934,472 +1222,6 @@
           frgpop(iorb)=xx
         end do
       end if
-
-      end
-
-!! ****** !!
-
-!! ********************************************************************* !!
-!! subroutine: rwf_orbprint                                              !!
-!! purpose: writes the restricted OSLO .fchk -- splices the original     !!
-!! wavefunction .fchk's structure, replacing "Alpha MO coefficients"     !!
-!! and "Total SCF Density" with the OSLO coefficients/density, copying   !!
-!! everything else through unchanged. Each replaced block is skipped by  !!
-!! its own N= size (skip_fchk_block), so any .fchk layout works (G16,    !!
-!! G09, pySCF, Q-Chem). See uwf_orbprint for the unrestricted twin.      !!
-!! arguments:                                                             !!
-!!   cmat  (in) -- (igr,igr) OSLO coefficients (columns 1..nocc)          !!
-!!   pmat  (in) -- (igr,igr) OSLO density (2*C*C^T, doubly-occupied)      !!
-!!   ctype (in) -- filename suffix, e.g. "-OSLOs" or "-OSLOs-preortho"    !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
-      subroutine rwf_orbprint(cmat,pmat,ctype)
-
-      implicit double precision(a-h,o-z)
-      include 'parameter.h'
-
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /filename/name0
-
-      character*80 line
-      character*60 name0,name1
-      character*20 ctype
-
-      dimension cmat(igr,igr),pmat(igr,igr)
-
-      indepigr = int_locate(15,"Number of independ",ilog)
-      norb     = igr*indepigr
-      norbt    = igr*(igr+1)/2
-
-!! Name of the .fchk file !!
-      name1=trim(name0)//trim(ctype)//".fchk"
-      open(unit=69,file=name1)
-      rewind(69)
-      rewind(15)
-
-!! Printing until alpha MOs !!
-      read(15,'(a80)') line
-      do while(index(line,"Alpha MO co").eq.0)
-        write(69,'(a80)') line
-        read(15,'(a80)') line
-      end do
-
-!! Printing the new ones, skipping the original block !!
-      write(69,11) "Alpha MO coefficients","R","N= ",norb
-      write(69,13) ((cmat(ii,jj),ii=1,igr),jj=1,indepigr)
-      call skip_fchk_block(15,line)
-
-!! Restart printing until next stop !!
-      do while(index(line,"Total SCF Dens").eq.0)
-        write(69,'(a80)') line
-        read(15,'(a80)') line
-      end do
-
-!! Printing the new one, skipping the original block !!
-      write(69,12) "Total SCF Density","R","N= ",norbt
-      write(69,13) ((pmat(ii,jj),jj=1,ii),ii=1,igr)
-      call skip_fchk_block(15,line)
-
-!! Restart printing until the end !!
-      do while(.true.)
-        write(69,'(a80)') line
-        read(15,'(a80)',end=99) line
-      end do
-99    continue
-      close(69)
-
-!! Printing formats !!
-11    FORMAT(a21,22x,a1,3x,a3,i11)
-12    FORMAT(a17,26x,a1,3x,a3,i11)
-13    FORMAT(5(1p,e16.8))
-
-      end
-
-!! ****** !!
-
-!! ********************************************************************* !!
-!! subroutine: rwf_uwf_print_OSLO_final                                  !!
-!! purpose: prints the per-OSLO fragment-population (and, if requested,  !!
-!! FOLI) summary table in packs of 5 columns -- shared by the restricted !!
-!! and unrestricted OSLO drivers, called once per stage (pre-ortho/      !!
-!! final) and, for the unrestricted case, once per spin channel.         !!
-!! arguments:                                                             !!
-!!   iflag  (in) -- 1 to also print the FOLI Value row, 0 to omit it      !!
-!!   noslo  (in) -- number of OSLOs (columns) to print                    !!
-!!   foli   (in) -- (igr) FOLI value of each OSLO (only read if iflag=1)  !!
-!!   frgpop (in) -- (noslo,icufr) fragment population of each OSLO        !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
-      subroutine rwf_uwf_print_OSLO_final(iflag,noslo,foli,frgpop)
-
-      implicit double precision (a-h,o-z)
-      include 'parameter.h'
-
-      integer :: b,dd
-
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-
-      dimension foli(igr)
-      dimension frgpop(noslo,icufr)
-
-!! number of 5-column packs needed, rounded up. !!
-      b=noslo/5
-      if(b*5.ne.noslo) b=(noslo/5)+1
-
-      dd=1
-      do k=1,b
-
-!! last (possibly partial) pack. !!
-        if(k.eq.b) then
-          write(*,'(2x,a13,5(i7,3x))') "OSLO Number :",(jj,jj=dd,noslo)
-          if(iflag.eq.1) write(*,'(2x,a13,5f10.5)') "FOLI Value  :",(foli(jj),jj=dd,noslo)
-          do jfrg=1,icufr
-            write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,noslo)
-          end do
-          write(*,*)
-
-!! full 5-column packs. !!
-        else
-          write(*,'(2x,a13,5(i7,3x))') "OSLO Number :",(jj,jj=dd,dd+4)
-          if(iflag.eq.1) write(*,'(2x,a13,5f10.5)') "FOLI Value  :",(foli(jj),jj=dd,dd+4)
-          do jfrg=1,icufr
-            write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,dd+4)
-          end do
-          write(*,*)
-          dd=dd+5
-        end if
-      end do
-
-      end
-
-!! ****** !!
-
-!! ********************************************************************* !!
-!! subroutine: uwf_iterative_oslo                                        !!
-!! purpose: OSLO oxidation-state assignment, unrestricted (open-shell)   !!
-!! case -- builds the fragment position-operator matrices                !!
-!! (oslo_build_Smat, shared between spins), runs the iterative           !!
-!! localize/assign/deflate scheme once per spin channel                  !!
-!! (oslo_channel_iterate, alpha then beta), writes the combined (alpha+  !!
-!! beta together) pre-ortho/final OSLO .fchk files, prints the per-OSLO  !!
-!! summary tables for each spin, then the fragment oxidation states      !!
-!! last.                                                                  !!
-!! MG: only the iterative procedure is implemented in this version; the  !!
-!! non-iterative one lives in the development version.                   !!
-!! arguments:                                                             !!
-!!   sat    (in) -- (igr,igr,nat) per-atom AO overlap                     !!
-!!   itotps (in) -- total number of grid points                          !!
-!!   wp     (in) -- integration weight of each grid point                 !!
-!!   omp2   (in) -- atomic weight of each grid point, per atom            !!
-!!   chp    (in) -- basis-function values at each grid point              !!
-!!   pcoord (in) -- xyz coordinates of each grid point                    !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
-      subroutine uwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
-
-      use basis_set
-      use ao_matrices
-      use integration_grid
-      use input_options_mod, only: maxbranch,nbranch,ibranchit
-      implicit double precision(a-h,o-z)
-      include 'parameter.h'
-
-      integer,intent(in) :: itotps
-
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(200)
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-
-      character*20 ctype
-
-      dimension sat(igr,igr,nat)
-      dimension chp(itotps,igr),pcoord(itotps,3)
-      dimension wp(itotps),omp2(itotps,nat)
-
-      allocatable :: Smat(:,:,:),pnocore(:,:)
-      allocatable :: coslo_a(:,:),cosloorth_a(:,:),delocoslo_a(:)
-      allocatable :: coslo_b(:,:),cosloorth_b(:,:),delocoslo_b(:)
-      allocatable :: frgel_a(:),frgel_b(:),iznfrg(:)
-
-!! branching iterations of each channel: BRANCH_ITERATION plus its own !!
-      dimension ibra(2*maxbranch),ibrb(2*maxbranch)
-      allocatable :: poslo_a(:,:),poslo_b(:,:)
-      allocatable :: orbpop(:),orbpop2(:),foslo(:,:),foslo2(:,:)
-      allocatable :: orbpopat(:,:),orbpopat2(:,:)
-
-!! Loading iopts !!
-      ifolitol = iopt(96)
-      ifchk    = iopt(98)
-      folitol = 10.0d0**(-REAL(ifolitol)) !! Default = 10^-3, controlled in .inp !!
-
-      nbra=nbranch(1)+nbranch(2)
-      nbrb=nbranch(1)+nbranch(3)
-      do k=1,nbranch(1)
-        ibra(k)=ibranchit(k,1)
-        ibrb(k)=ibranchit(k,1)
-      end do
-      do k=1,nbranch(2)
-        ibra(nbranch(1)+k)=ibranchit(k,2)
-      end do
-      do k=1,nbranch(3)
-        ibrb(nbranch(1)+k)=ibranchit(k,3)
-      end do
-
-!! Fragment charge extracted from zn (avoids problems when pseudopotentials are used) !!
-      ALLOCATE(frgel_a(icufr),frgel_b(icufr),iznfrg(icufr))
-      do ifrg=1,icufr
-        izn=0
-        do icenter=1,nfrlist(ifrg)
-          iiat=ifrlist(icenter,ifrg)
-          izn=izn+INT(zn(iiat))
-        end do
-        iznfrg(ifrg)=izn
-      end do
-
-      ALLOCATE(Smat(icufr,igr,igr))
-      call oslo_build_Smat(itotps,wp,omp2,chp,pcoord,Smat)
-
-!! Initial printing !!
-      call print_box('STARTING ITERATIVE OSLO ALGORITHM')
-      write(*,'(2x,a50,f10.5)') "Tolerance (in delta-FOLI) used for OSLO selection:",folitol
-
-!! Alpha channel !!
-      call print_box('ALPHA PART')
-
-      ALLOCATE(pnocore(igr,igr))
-      pnocore=pa
-      ALLOCATE(coslo_a(igr,igr),cosloorth_a(igr,igr),delocoslo_a(nalf))
-      call oslo_channel_iterate(nalf,sat,Smat,pnocore,folitol,nbra,
-     &  ibra,'BRANCH_ALPHA',coslo_a,cosloorth_a,delocoslo_a,frgel_a)
-      DEALLOCATE(pnocore)
-
-!! Beta channel !!
-      call print_subbox('BETA PART')
-
-      ALLOCATE(pnocore(igr,igr))
-      pnocore=pb
-      ALLOCATE(coslo_b(igr,igr),cosloorth_b(igr,igr),delocoslo_b(nb))
-      call oslo_channel_iterate(nb,sat,Smat,pnocore,folitol,nbrb,
-     &  ibrb,'BRANCH_BETA',coslo_b,cosloorth_b,delocoslo_b,frgel_b)
-      DEALLOCATE(pnocore,Smat)
-
-!! Printing of the combined .fchk files with the OSLOs (alpha+beta together) !!
-!! Preorthogonalization OSLOs can be visualized if desired (.inp) !!
-      ALLOCATE(poslo_a(igr,igr),poslo_b(igr,igr))
-      if(ifchk.eq.2) then
-        call oslo_density_from_coeffs(igr,nalf,coslo_a,ONE,poslo_a)
-        call oslo_density_from_coeffs(igr,nb,coslo_b,ONE,poslo_b)
-        ctype="-OSLOs-preortho"
-        call uwf_orbprint(coslo_a,coslo_b,poslo_a,poslo_b,ctype)
-      end if
-
-!! Now the final (orthogonalized) ones !!
-      call oslo_density_from_coeffs(igr,nalf,cosloorth_a,ONE,poslo_a)
-      call oslo_density_from_coeffs(igr,nb,cosloorth_b,ONE,poslo_b)
-      ctype="-OSLOs"
-      call uwf_orbprint(cosloorth_a,cosloorth_b,poslo_a,poslo_b,ctype)
-      DEALLOCATE(poslo_a,poslo_b)
-
-!! Evaluating final populations to compare !!
-      call print_subbox('PRINTING FINAL OSLOs INFORMATION')
-
-!! First alpha !!
-      call print_subbox('Summary of the selected alpha OSLOs (pre-ortho)')
-!! coslo_a/cosloorth_a are fixed here, so their expensive per-atom     !!
-!! population matrices are each computed once, then just summed per   !!
-!! fragment below.                                                     !!
-      ALLOCATE(orbpop(nalf),orbpop2(nalf))
-      ALLOCATE(orbpopat(nalf,nat),orbpopat2(nalf,nat))
-      ALLOCATE(foslo(nalf,icufr),foslo2(nalf,icufr))
-      foslo=ZERO
-      foslo2=ZERO
-      call rwf_uwf_orbpop_atom(sat,nalf,coslo_a,orbpopat) !! For the non-orthogonal OSLOs (original) !!
-      call rwf_uwf_orbpop_atom(sat,nalf,cosloorth_a,orbpopat2) !! For the orthogonalized ones (printing later) !!
-      do jfrg=1,icufr
-        orbpop=ZERO
-        orbpop2=ZERO
-        call rwf_uwf_frg_pop(jfrg,nalf,orbpopat,orbpop)
-        call rwf_uwf_frg_pop(jfrg,nalf,orbpopat2,orbpop2)
-        do ii=1,nalf
-          foslo(ii,jfrg)=orbpop(ii)
-          foslo2(ii,jfrg)=orbpop2(ii)
-        end do
-      end do
-      DEALLOCATE(orbpopat,orbpopat2)
-      call rwf_uwf_print_OSLO_final(1,nalf,delocoslo_a,foslo)
-      call print_subbox('Summary of the selected alpha OSLOs (final)')
-      call rwf_uwf_print_OSLO_final(0,nalf,delocoslo_a,foslo2) !! FOLI values given just for using same routine !!
-      DEALLOCATE(orbpop,orbpop2)
-      DEALLOCATE(foslo,foslo2)
-
-!! Now beta !!
-      call print_subbox('Summary of the selected beta OSLOs (pre-ortho)')
-!! coslo_b/cosloorth_b are fixed here, so their expensive per-atom     !!
-!! population matrices are each computed once, then just summed per   !!
-!! fragment below.                                                     !!
-      ALLOCATE(orbpop(nb),orbpop2(nb))
-      ALLOCATE(orbpopat(nb,nat),orbpopat2(nb,nat))
-      ALLOCATE(foslo(nb,icufr),foslo2(nb,icufr))
-      foslo=ZERO
-      foslo2=ZERO
-      call rwf_uwf_orbpop_atom(sat,nb,coslo_b,orbpopat) !! For the non-orthogonal OSLOs (original) !!
-      call rwf_uwf_orbpop_atom(sat,nb,cosloorth_b,orbpopat2) !! For the orthogonalized ones (printing later) !!
-      do jfrg=1,icufr
-        orbpop=ZERO
-        orbpop2=ZERO
-        call rwf_uwf_frg_pop(jfrg,nb,orbpopat,orbpop)
-        call rwf_uwf_frg_pop(jfrg,nb,orbpopat2,orbpop2)
-        do ii=1,nb
-          foslo(ii,jfrg)=orbpop(ii)
-          foslo2(ii,jfrg)=orbpop2(ii)
-        end do
-      end do
-      DEALLOCATE(orbpopat,orbpopat2)
-      call rwf_uwf_print_OSLO_final(1,nb,delocoslo_b,foslo)
-      call print_subbox('Summary of the selected beta OSLOs (final)')
-      call rwf_uwf_print_OSLO_final(0,nb,delocoslo_b,foslo2) !! FOLI values given just for using the same routine !!
-      DEALLOCATE(orbpop,orbpop2)
-      DEALLOCATE(foslo,foslo2)
-
-!! Final oxidation-state assignment, printed last -- each assigned      !!
-!! spin-orbital holds 1 electron.                                       !!
-      call print_subbox('FRAGMENT OXIDATION STATES')
-      write(*,*) "  Frag.  Oxidation State  "
-      write(*,*) " ------------------------ "
-      ishared=0
-      do ifrg=1,icufr
-        xos=DBLE(iznfrg(ifrg))-(frgel_a(ifrg)+frgel_b(ifrg))
-        if(ABS(xos).lt.5.0d-7) xos=ZERO
-        if(ABS(frgel_a(ifrg)-ANINT(frgel_a(ifrg))).gt.1.0d-6.or.
-     +    ABS(frgel_b(ifrg)-ANINT(frgel_b(ifrg))).gt.1.0d-6) ishared=1
-        write(*,20) ifrg,xos
-      end do
-      write(*,*) " ------------------------ "
-      if(ishared.eq.1) write(*,'(2x,a)') 'Fractional values: orbitals '//
-     +  'shared between fragments (see the iterations)'
-      write(*,*)
-
-      DEALLOCATE(coslo_a,cosloorth_a,delocoslo_a,frgel_a)
-      DEALLOCATE(coslo_b,cosloorth_b,delocoslo_b,frgel_b)
-      DEALLOCATE(iznfrg)
-
-20    FORMAT(3x,i3,6x,f8.2)
-
-      end
-
-!! ****** !!
-
-!! ********************************************************************* !!
-!! subroutine: uwf_orbprint                                              !!
-!! purpose: writes a single combined .fchk with the unrestricted OSLO    !!
-!! orbitals -- splices the original wavefunction .fchk's structure,      !!
-!! replacing "Alpha MO coefficients"/"Beta MO coefficients" with the     !!
-!! OSLO coefficients for each spin, and "Total SCF Density"/"Spin SCF    !!
-!! Density" with Pa_oslo+Pb_oslo / Pa_oslo-Pb_oslo -- everything else    !!
-!! copied through unchanged. The Spin SCF Density block is only written  !!
-!! if the source .fchk has one to begin with. Each replaced block is     !!
-!! skipped by its own N= size (skip_fchk_block), so any .fchk layout     !!
-!! works (G16, G09, pySCF, Q-Chem).                                      !!
-!! arguments:                                                             !!
-!!   cmat_a (in) -- (igr,igr) alpha OSLO coefficients (columns 1..nalf)   !!
-!!   cmat_b (in) -- (igr,igr) beta OSLO coefficients (columns 1..nb)      !!
-!!   pmat_a (in) -- (igr,igr) alpha OSLO density (Ca*Ca^T)                !!
-!!   pmat_b (in) -- (igr,igr) beta OSLO density (Cb*Cb^T)                 !!
-!!   ctype  (in) -- filename suffix, e.g. "-OSLOs" or "-OSLOs-preortho"   !!
-!! author: MGimf                                                          !!
-!! ********************************************************************* !!
-      subroutine uwf_orbprint(cmat_a,cmat_b,pmat_a,pmat_b,ctype)
-
-      implicit double precision(a-h,o-z)
-      include 'parameter.h'
-
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /filename/name0
-
-      character*80 line
-      character*60 name0,name1
-      character*20 ctype
-
-      dimension cmat_a(igr,igr),cmat_b(igr,igr)
-      dimension pmat_a(igr,igr),pmat_b(igr,igr)
-
-      indepigr = int_locate(15,"Number of independ",ilog)
-      norb     = igr*indepigr
-      norbt    = igr*(igr+1)/2
-
-!! whether the source .fchk carries a Spin SCF Density block to replace !!
-!! -- a plain presence check, doesn't disturb the real splice pass below !!
-!! since the file gets rewound before that starts.                       !!
-      call locate(15,"Spin SCF Dens",ihasspin)
-
-!! Name of the .fchk file !!
-      name1=trim(name0)//trim(ctype)//".fchk"
-      open(unit=69,file=name1)
-      rewind(69)
-      rewind(15)
-
-!! Printing until alpha MOs !!
-      read(15,'(a80)') line
-      do while(index(line,"Alpha MO co").eq.0)
-        write(69,'(a80)') line
-        read(15,'(a80)') line
-      end do
-
-!! Printing the new alpha block, skipping the original one !!
-      write(69,11) "Alpha MO coefficients","R","N= ",norb
-      write(69,13) ((cmat_a(ii,jj),ii=1,igr),jj=1,indepigr)
-      call skip_fchk_block(15,line)
-
-!! Restart printing until the beta block !!
-      do while(index(line,"Beta MO coef").eq.0)
-        write(69,'(a80)') line
-        read(15,'(a80)') line
-      end do
-
-!! Printing the new beta block, skipping the original one !!
-      write(69,11) "Beta MO coefficients ","R","N= ",norb
-      write(69,13) ((cmat_b(ii,jj),ii=1,igr),jj=1,indepigr)
-      call skip_fchk_block(15,line)
-
-!! Restart printing until total scf density !!
-      do while(index(line,"Total SCF Dens").eq.0)
-        write(69,'(a80)') line
-        read(15,'(a80)') line
-      end do
-
-!! Printing the new total SCF density (Pa+Pb), skipping the original !!
-      write(69,12) "Total SCF Density","R","N= ",norbt
-      write(69,13) ((pmat_a(ii,jj)+pmat_b(ii,jj),jj=1,ii),ii=1,igr)
-      call skip_fchk_block(15,line)
-
-      if(ihasspin.eq.1) then
-
-!! Restart printing until spin scf density !!
-        do while(index(line,"Spin SCF Dens").eq.0)
-          write(69,'(a80)') line
-          read(15,'(a80)') line
-        end do
-
-!! Printing the new spin SCF density (Pa-Pb), skipping the original !!
-        write(69,12) "Spin SCF Density ","R","N= ",norbt
-        write(69,13) ((pmat_a(ii,jj)-pmat_b(ii,jj),jj=1,ii),ii=1,igr)
-        call skip_fchk_block(15,line)
-      end if
-
-!! Restart printing until the end !!
-      do while(.true.)
-        write(69,'(a80)') line
-        read(15,'(a80)',end=99) line
-      end do
-99    continue
-      close(69)
-
-!! Printing formats !!
-11    FORMAT(a21,22x,a1,3x,a3,i11)
-12    FORMAT(a17,26x,a1,3x,a3,i11)
-13    FORMAT(5(1p,e16.8))
 
       end
 

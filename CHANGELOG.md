@@ -284,6 +284,17 @@ program, not a full development history — see `git log` for that.
   unpaired density is one row of a table with its RMSD and whether it
   was kept, the repeated list of electrons per fragment is gone, and the
   final RMSD has 5 decimals like the others. No number changes.
+- **OSLO output and orbital files** — the OSLO section starts with the
+  atomic definition, the atoms of the fragment populations, the FOLI
+  tolerance and the charge centres (now labelled in Å); each iteration
+  lists the candidate orbitals of every fragment, the selection, the
+  Δ-FOLI and the close-alternative check in aligned tables, with
+  warnings and branching as plain lines; the summary of the selected
+  OSLOs gives the iteration that selected each, and the oxidation-state
+  table a total. In `<jobname>-OSLOs.fchk` (and `-OSLOs-preortho.fchk`)
+  the orbital energies are now the FOLI values of the OSLOs (they were
+  the SCF orbital energies of the input file, unrelated to the OSLOs).
+  No number changes.
 - **`utils/apost3d.py` rewritten** — works with current pySCF (2.7 to 2.14
   checked; before, only up to 2.7) and writes basis sets with g functions,
   single atoms, linearly dependent bases, CASCI, the RDMs of FCI and

@@ -20,7 +20,7 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
 1. **Fragment-centered localization.** For each fragment F, the occupied
    orbitals are combined into orbitals of minimal radial spread around a
    reference point $\mathbf R_F$, the fragment's center of nuclear charge
-   (printed in `CHARGE CENTER (R_F) FOR EACH FRAGMENT`, in Å). This is a
+   (printed under `Charge centre R_F of each fragment`, in Å). This is a
    single diagonalization of the spread matrix
    $L^F_{ij} = \int \psi_i(\mathbf r)\,|\mathbf r-\mathbf R_F|^2\,\psi_j(\mathbf r)\,d\mathbf r$
    in the occupied space: no iterations, no multiple minima. For an atom,
@@ -105,42 +105,41 @@ the CH₃ group (all the other atoms).
 
 The excerpts come from the input above (CH₃F, RKS, test `CH3F`).
 
+The section starts with the atomic definition of the spreads, the atoms
+used for the fragment populations, the FOLI tolerance and the charge
+centre of each fragment.
+
 **Iterations.** Each iteration lists, per fragment, its candidate
 orbitals with their spread (bohr²), population on the fragment and FOLI,
 then the selected ones:
 
 % source: tests/reference/CH3F.apost
 ```text
-  ------------------------
-    ITERATION NUMBER   1
-  ------------------------
+  ---------------
+    ITERATION 1
+  ---------------
 
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI
-  ------------------------------------------
-     1    14.20213      0.02652      6.30549
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   14.20213     0.02652   6.30549
   ...
-     8     1.27930      0.99746      1.00381
-     9     0.04119      0.99999      1.00002
-  ------------------------------------------
+     8    1.27930     0.99746   1.00381
+     9    0.04119     0.99999   1.00002
+  -------------------------------------
   ...
-  ---------------------
-    SELECTED ORBITALS
-  ---------------------
+  Lowest FOLI value (fragment 1)          :        1.00002
+  Next FOLI value (fragment 1)            :        1.00381
 
-   Orb.   Frag.   FOLI
+  Selected orbitals
+  Orb.  Frag.      FOLI
   ---------------------
      9      1   1.00002
      9      2   1.00067
   ---------------------
-
-  Number of OSLOs selected:   2
-  delta-FOLI value:    0.00380
-
-  Orbitals left to assign:   7
+  OSLOs selected                          : 2
+  Delta-FOLI                              :        0.00380
+  Orbitals left to assign                 : 7
 ```
 
 In the first iteration the F 1s (FOLI 1.00002) and the C 1s (1.00067,
@@ -149,40 +148,50 @@ iteration the only orbital left, the C–F bond, is assigned to fluorine
 with a FOLI of 1.355 against 2.714 for the CH₃ candidate, a Δ-FOLI of
 1.359: a clear ionic assignment.
 
-**Summary.** The selected OSLOs, in the order they were assigned, with
-their FOLI and fragment populations before (`pre-ortho`) and after
-orthogonalization (`final`), followed by the oxidation states:
+**Summary.** The selected OSLOs, in the order they were assigned (the
+order of the orbitals in the `.fchk` file), with the iteration that
+selected each, its FOLI and its fragment populations before
+orthogonalization, then the populations after it, followed by the
+oxidation states:
 
 % source: tests/reference/CH3F.apost
 ```text
-  ---------------------------------------------
-    Summary of the selected OSLOs (pre-ortho)
-  ---------------------------------------------
+  ------------------
+    SELECTED OSLOs
+  ------------------
 
-  OSLO Number :      1         2         3         4         5
-  FOLI Value  :   1.00002   1.00067   1.00381   1.03691   1.03688
-  Frg. Pop.  1:   0.99999   0.00043   0.99746   0.97593   0.97595
-  Frg. Pop.  2:   0.00001   0.99956   0.00253   0.02408   0.02401
+  Before orthogonalization
+  OSLO              1         2         3         4         5
+  Iteration         1         1         2         3         3
+  FOLI        1.00002   1.00067   1.00381   1.03691   1.03688
+  -----------------------------------------------------------
+  Frag.   1   0.99999   0.00043   0.99746   0.97593   0.97595
+  Frag.   2   0.00001   0.99956   0.00253   0.02408   0.02401
+  -----------------------------------------------------------
 
-  OSLO Number :      6         7         8         9
-  FOLI Value  :   1.04773   1.06153   1.06204   1.35476
-  Frg. Pop.  1:   0.03102   0.03984   0.03982   0.80051
-  Frg. Pop.  2:   0.96906   0.96042   0.96012   0.19950
+  OSLO              6         7         8         9
+  Iteration         4         5         5         6
+  FOLI        1.04773   1.06153   1.06204   1.35476
+  -------------------------------------------------
+  Frag.   1   0.03102   0.03984   0.03982   0.80051
+  Frag.   2   0.96906   0.96042   0.96012   0.19950
+  -------------------------------------------------
   ...
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State
-  ------------------------
-     1         -1.00
-     2          1.00
-  ------------------------
+  Frag.  Oxidation state
+  ----------------------
+      1            -1.00
+      2             1.00
+  ----------------------
+  Total             0.00
 ```
 
 The last OSLO (number 9) is the C–F bond, 80% on fluorine: F(−1) and
 CH₃(+1). For an unrestricted wavefunction the iterations and summaries
-appear twice (`ALPHA PART`, `BETA PART`).
+appear twice (`ALPHA ELECTRONS`, `BETA ELECTRONS`).
 
 **Shared orbitals.** With ethane split into two CH₃ fragments (test
 `C2H6-OSLO-2CH3`), the C–C bond comes last, found from both fragments with
@@ -190,13 +199,12 @@ the same FOLI (2.00115). It is one orbital, shared:
 
 % source: tests/reference/C2H6-OSLO-2CH3.apost
 ```text
-  SHARED ORBITAL: the 2 selected OSLOs span 1 orbital
-
-   Frag.      Share
-  -----------------
-     1      0.50000
-     2      0.50000
-  -----------------
+  Shared orbital: the 2 selected OSLOs span 1 orbital
+  Frag.     Share
+  ---------------
+      1   0.50000
+      2   0.50000
+  ---------------
 ```
 
 Each CH₃ gets one electron of the C–C pair, and both oxidation states are
@@ -208,7 +216,7 @@ fragments (see the iterations)` when a value is fractional.
 The order in which the OSLOs are selected can decide the result in
 borderline cases. After each selection, the program looks at the next
 candidates, those at the next FOLI value beyond the tolerance. Under
-`CHECKING LINEAR DEPENDENCIES` it lists each of them with its overlap
+`Next OSLOs against the selected ones` it lists each of them with its overlap
 with the selected orbitals: 1 means it is one of them (or a combination
 of them) found from another fragment, 0 a different orbital. If an
 overlap is above 0.9 and the Δ-FOLI is below 0.5, two fragments
@@ -218,18 +226,14 @@ input line that follows the alternative (H2 triplet at 0.60 Å, test
 
 % source: tests/reference/H2-T-OSLO-CLOSE.apost
 ```text
-  Next OSLOs: FOLI 2.14466, delta-FOLI 0.29926
-
-   Orb.   Frag.     FOLI    Overlap with selected
-  -------------------------------------------------
-     1      1    2.14466           1.00000
-     1      2    2.14466           1.00000
-  -------------------------------------------------
-  Largest overlap with the selected OSLOs:   1.00000
-
-  **************************************
-   WARNING : CLOSE ALTERNATIVE SELECTION
-  **************************************
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     1      1   2.14466    1.00000
+     1      2   2.14466    1.00000
+  --------------------------------
+  Largest overlap with the selected OSLOs :        1.00000
+  WARNING: close alternative selection. The next OSLO is nearly one of the
   ...
     BRANCH_ALPHA 1
 ```
@@ -241,12 +245,12 @@ is.
 **Branching.** `BRANCH_ITERATION n` in [`# OSLO`](../input/oslo.md)
 selects, at iteration n, the orbitals at the next FOLI value instead of
 the lowest one, and the procedure carries on from there. The output marks
-it with `BRANCHING: THE NEXT FOLI VALUE IS SELECTED`. To compare the two
+it with `Branching: FOLI value ... selected instead of ...`. To compare the two
 results, each run prints at the end of the iterations (per spin channel)
 
 % source: tests/reference/CH3F.apost
 ```text
-  Sum of the FOLI values        :   9.60435
+  Sum of the FOLI values                  :        9.60435
 ```
 
 and a lower sum means OSLOs that are better localized overall. For an
@@ -257,8 +261,9 @@ the output of each channel.
 ## Files written
 
 - `<jobname>-OSLOs.fchk`: a copy of the input `.fchk` with the final OSLOs
-  as its orbitals (and the matching density), for any orbital viewer. Every
-  OSLO run writes it.
+  as its orbitals, in the order they were assigned, their FOLI values in
+  place of the orbital energies (0 after the last OSLO), and the matching
+  density, for any orbital viewer. Every OSLO run writes it.
 - `<jobname>-OSLOs-preortho.fchk`: the OSLOs before orthogonalization,
   with `PRINT_NONORTHO` in `# OSLO`.
 

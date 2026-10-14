@@ -1109,7 +1109,7 @@ c      iopt(200) =
 
 !! OSLO -- variants of the procedure can be found in the dev version !!
       if(ioslo.eq.1) then
-        call print_box('DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)')
+        call print_box('OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)')
         call cpu_time(time)
         call get_wall_time(wtime)
 
@@ -1128,6 +1128,7 @@ c      iopt(200) =
           call uwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         end if
 
+        write(*,*)
         call cpu_time(time2)
         call get_wall_time(wtime2)
         call print_timer('OSLO analysis',time2-time,wtime2-wtime)

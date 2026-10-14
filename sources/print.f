@@ -2087,7 +2087,7 @@
 !!   of a real orbital energy, copying everything else through           !!
 !!   unchanged (including Total SCF Density -- these are visualization   !!
 !!   orbitals, not a real wavefunction). Reuses the same splice pattern  !!
-!!   as OSLO's rwf_orbprint (oslo.f), extended to also cover the Orbital !!
+!!   as OSLO's oslo_fchk_write (oslo.f), extended to also cover the     !!
 !!   Energies block. Called whenever GEOS or EOS runs (DOFRAGS, real-    !!
 !!   space path) on a restricted wavefunction -- see uwf_effao_orbprint  !!
 !!   for the unrestricted twin.                                          !!
@@ -2195,7 +2195,7 @@
 !!   of a real orbital energy, copying everything else through unchanged !!
 !!   (including Total SCF/Spin SCF Density -- these are visualization    !!
 !!   orbitals, not a real wavefunction). Reuses the same splice pattern  !!
-!!   as OSLO's uwf_orbprint (oslo.f), extended to also cover the Orbital !!
+!!   as OSLO's oslo_fchk_write (oslo.f), extended to also cover the     !!
 !!   Energies blocks and to skip past every original block by its known  !!
 !!   size (skip_fchk_orbblock) rather than searching for the next        !!
 !!   section's header -- robust to MOKIT/pySCF-written .fchk files that  !!

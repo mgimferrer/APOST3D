@@ -32,7 +32,9 @@ more features, such as reading the APOST-3D output itself, will come soon.
 
 Each file is a copy of the input `.fchk` whose molecular orbitals are
 replaced by the analysis orbitals; the geometry and basis set are
-unchanged. In the EFO files:
+unchanged. In the OSLO files the orbitals come in the order they were
+assigned, and the **"orbital energy" field holds the FOLI value** of
+each (0 after the last OSLO). In the EFO files:
 
 - the orbitals of all fragments are sorted together by decreasing gross
   occupation, and the **"orbital energy" field holds the gross

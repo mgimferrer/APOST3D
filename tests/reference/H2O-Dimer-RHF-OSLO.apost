@@ -163,8 +163,8 @@
 
   Sum of atomic overlaps, largest error   : 7.67E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 2.77 s
-  TIMING WALL :: Atomic definition                                 0.40 s
+  TIMING CPU  :: Atomic definition                                 2.62 s
+  TIMING WALL :: Atomic definition                                 2.62 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -425,8 +425,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      36.664228
 
-  TIMING CPU  :: enpart one-electron                               1.19 s
-  TIMING WALL :: enpart one-electron                               0.16 s
+  TIMING CPU  :: enpart one-electron                               1.16 s
+  TIMING WALL :: enpart one-electron                               1.16 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -441,7 +441,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -471,8 +471,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :     112.092900
 
-  TIMING CPU  :: Coulomb energy                                    1.58 s
-  TIMING WALL :: Coulomb energy                                    0.25 s
+  TIMING CPU  :: Coulomb energy                                    1.20 s
+  TIMING WALL :: Coulomb energy                                    1.20 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -480,7 +480,7 @@
 
   Two-el integrations for     55 MO pairs
   Threshold for atom pair calculation:   0.001000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
   Skipping numerical integration for     6 atom pairs
 
   -------------------------------------------
@@ -499,8 +499,8 @@
   -------------------------------------------------------------------------------
   Hartree-Fock exchange energy:    -17.9493649
 
-  TIMING CPU  :: Exact-exchange energy                            18.56 s
-  TIMING WALL :: Exact-exchange energy                             2.42 s
+  TIMING CPU  :: Exact-exchange energy                            18.47 s
+  TIMING WALL :: Exact-exchange energy                            18.48 s
 
   Total two-electron part (coul+exch_hf):     94.1435352
   Integration error (kcal/mol):     0.86
@@ -513,8 +513,8 @@
   New error after rotation:    -6.40
   Damping parameter       :      0.8815752
 
-  TIMING CPU  :: Interpolated zero-error                           7.79 s
-  TIMING WALL :: Interpolated zero-error                           1.02 s
+  TIMING CPU  :: Interpolated zero-error                           7.87 s
+  TIMING WALL :: Interpolated zero-error                           7.88 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -594,366 +594,288 @@
   ---------------------------------
   Total (diagonal and one triangle)       :    -152.062383
 
-  TIMING CPU  :: enpart two-electron                              28.25 s
-  TIMING WALL :: enpart two-electron                               3.73 s
+  TIMING CPU  :: enpart two-electron                              27.84 s
+  TIMING WALL :: enpart two-electron                              27.86 s
 
-  ---------------------------------------------------------
-    DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
-  ---------------------------------------------------------
+  ---------------------------------------------------
+    OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
+  ---------------------------------------------------
 
-  -----------------------------------------
-    CHARGE CENTER (R_F) FOR EACH FRAGMENT
-  -----------------------------------------
+  Atomic definition (spreads)             : TFVC (real space)
+  Fragment populations                    : TFVC
+  FOLI tolerance                          :        0.00100
+  Densities                               : total (closed shell)
 
-   Frag.        Charge center (xyz)     
-  ------------------------------------- 
-     1     -1.45359  -0.00003   0.01739
-     2      1.45359   0.00003  -0.01739
-  ------------------------------------- 
+  Charge centre R_F of each fragment (Angstrom)
+  Frag.         x         y         z
+  -----------------------------------
+      1  -1.45359  -0.00003   0.01739
+      2   1.45359   0.00003  -0.01739
+  -----------------------------------
 
+  ---------------
+    ITERATION 1
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
   -------------------------------------
-    STARTING ITERATIVE OSLO ALGORITHM
+     1   40.17873     0.00239  20.49305
+     2   35.35918     0.00058  41.45100
+     3   33.32926     0.00082  34.96061
+     5   22.77174     0.00997  10.11294
+     6    2.75359     0.99936   1.00096
+     7    2.58973     0.98835   1.01766
+     8    2.23152     0.99099   1.01363
+     9    1.79651     0.99874   1.00189
+    10    0.10046     1.00000   1.00001
   -------------------------------------
 
-  Tolerance (in delta-FOLI) used for OSLO selection:   0.00100
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   38.53210     0.00384  16.20120
+     2   34.11049     0.00064  39.58930
+     3   32.23540     0.00119  29.04945
+     4   28.92587     0.00004 155.02162
+     5   23.50631     0.01631   7.95855
+     6    2.76629     0.99428   1.00863
+     7    2.48509     0.99437   1.00849
+     8    2.19398     0.99918   1.00123
+     9    1.79672     0.99893   1.00160
+    10    0.10095     1.00000   1.00000
+  -------------------------------------
 
-  ------------------------
-    ITERATION NUMBER   1
-  ------------------------
+  Lowest FOLI value (fragment 2)          :        1.00000
+  Next FOLI value (fragment 2)            :        1.00123
 
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    40.17873      0.00239     20.49305
-     2    35.35918      0.00058     41.45100
-     3    33.32926      0.00082     34.96061
-     5    22.77174      0.00997     10.11294
-     6     2.75359      0.99936      1.00096
-     7     2.58973      0.98835      1.01766
-     8     2.23152      0.99099      1.01363
-     9     1.79651      0.99874      1.00189
-    10     0.10046      1.00000      1.00001
-  ------------------------------------------ 
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   2
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    38.53210      0.00384     16.20120
-     2    34.11049      0.00064     39.58930
-     3    32.23540      0.00119     29.04945
-     4    28.92587      0.00004    155.02162
-     5    23.50631      0.01631      7.95855
-     6     2.76629      0.99428      1.00863
-     7     2.48509      0.99437      1.00849
-     8     2.19398      0.99918      1.00123
-     9     1.79672      0.99893      1.00160
-    10     0.10095      1.00000      1.00000
-  ------------------------------------------ 
-
-  Lowest FOLI value (frg.)      :   2   1.00000
-  Next FOLI value (frg.)        :   2   1.00123
-
+  Selected orbitals
+  Orb.  Frag.      FOLI
   ---------------------
-    SELECTED ORBITALS
-  ---------------------
-
-   Orb.   Frag.   FOLI  
-  --------------------- 
      6      1   1.00096
     10      1   1.00001
     10      2   1.00000
-  --------------------- 
-
-  Number of OSLOs selected:   3
-  delta-FOLI value:    0.00123
-
-  Orbitals left to assign:   7
-
-  --------------------------------
-    CHECKING LINEAR DEPENDENCIES
-  --------------------------------
-
-  Next OSLOs: FOLI 1.00123, delta-FOLI 0.00123
-
-   Orb.   Frag.     FOLI    Overlap with selected
-  -------------------------------------------------
-     9      1    1.00189           0.00000
-     8      2    1.00123           0.00000
-     9      2    1.00160           0.00000
-  -------------------------------------------------
-  Largest overlap with the selected OSLOs:   0.00000
-
-  ------------------------
-    ITERATION NUMBER   2
-  ------------------------
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    40.17387      0.00239     20.50479
-     2    35.35869      0.00058     41.44667
-     3    33.32926      0.00082     34.96061
-     4    22.78234      0.00998     10.10903
-     5     2.58973      0.98835      1.01766
-     6     2.23152      0.99099      1.01363
-     7     1.79651      0.99874      1.00189
-  ------------------------------------------ 
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   2
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    38.52117      0.00383     16.22854
-     2    32.23455      0.00119     29.04277
-     3    23.52093      0.01636      7.94663
-     4     2.76629      0.99428      1.00863
-     5     2.48510      0.99437      1.00848
-     6     2.19399      0.99918      1.00123
-     7     1.79672      0.99893      1.00160
-  ------------------------------------------ 
-
-  Lowest FOLI value (frg.)      :   2   1.00123
-  Next FOLI value (frg.)        :   2   1.00848
-
   ---------------------
-    SELECTED ORBITALS
-  ---------------------
+  OSLOs selected                          : 3
+  Delta-FOLI                              :        0.00123
+  Orbitals left to assign                 : 7
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     9      1   1.00189    0.00000
+     8      2   1.00123    0.00000
+     9      2   1.00160    0.00000
+  --------------------------------
+  Largest overlap with the selected OSLOs :        0.00000
+
+  ---------------
+    ITERATION 2
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   40.17387     0.00239  20.50479
+     2   35.35869     0.00058  41.44667
+     3   33.32926     0.00082  34.96061
+     4   22.78234     0.00998  10.10903
+     5    2.58973     0.98835   1.01766
+     6    2.23152     0.99099   1.01363
+     7    1.79651     0.99874   1.00189
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   38.52117     0.00383  16.22854
+     2   32.23455     0.00119  29.04277
+     3   23.52093     0.01636   7.94663
+     4    2.76629     0.99428   1.00863
+     5    2.48510     0.99437   1.00848
+     6    2.19399     0.99918   1.00123
+     7    1.79672     0.99893   1.00160
+  -------------------------------------
+
+  Lowest FOLI value (fragment 2)          :        1.00123
+  Next FOLI value (fragment 2)            :        1.00848
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
      7      1   1.00189
      6      2   1.00123
      7      2   1.00160
-  --------------------- 
-
-  Number of OSLOs selected:   3
-  delta-FOLI value:    0.00725
-
-  Orbitals left to assign:   4
-
-  --------------------------------
-    CHECKING LINEAR DEPENDENCIES
-  --------------------------------
-
-  Next OSLOs: FOLI 1.00848, delta-FOLI 0.00725
-
-   Orb.   Frag.     FOLI    Overlap with selected
-  -------------------------------------------------
-     4      2    1.00863           0.00001
-     5      2    1.00848           0.00001
-  -------------------------------------------------
-  Largest overlap with the selected OSLOs:   0.00001
-
-  ------------------------
-    ITERATION NUMBER   3
-  ------------------------
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    35.61891      0.00060     40.96904
-     2    30.84451      0.01119      9.56078
-     3     2.59017      0.98839      1.01760
-     4     2.23192      0.99105      1.01353
-  ------------------------------------------ 
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   2
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    32.25566      0.00121     28.74736
-     2    29.61093      0.01890      7.41234
-     3     2.76643      0.99428      1.00863
-     4     2.48528      0.99438      1.00847
-  ------------------------------------------ 
-
-  Lowest FOLI value (frg.)      :   2   1.00847
-  Next FOLI value (frg.)        :   1   1.01353
-
   ---------------------
-    SELECTED ORBITALS
-  ---------------------
+  OSLOs selected                          : 3
+  Delta-FOLI                              :        0.00725
+  Orbitals left to assign                 : 4
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     4      2   1.00863    0.00001
+     5      2   1.00848    0.00001
+  --------------------------------
+  Largest overlap with the selected OSLOs :        0.00001
+
+  ---------------
+    ITERATION 3
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   35.61891     0.00060  40.96904
+     2   30.84451     0.01119   9.56078
+     3    2.59017     0.98839   1.01760
+     4    2.23192     0.99105   1.01353
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   32.25566     0.00121  28.74736
+     2   29.61093     0.01890   7.41234
+     3    2.76643     0.99428   1.00863
+     4    2.48528     0.99438   1.00847
+  -------------------------------------
+
+  Lowest FOLI value (fragment 2)          :        1.00847
+  Next FOLI value (fragment 1)            :        1.01353
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
      3      2   1.00863
      4      2   1.00847
-  --------------------- 
-
-  Number of OSLOs selected:   2
-  delta-FOLI value:    0.00506
-
-  Orbitals left to assign:   2
-
-  --------------------------------
-    CHECKING LINEAR DEPENDENCIES
-  --------------------------------
-
-  Next OSLOs: FOLI 1.01353, delta-FOLI 0.00506
-
-   Orb.   Frag.     FOLI    Overlap with selected
-  -------------------------------------------------
-     4      1    1.01353           0.00043
-  -------------------------------------------------
-  Largest overlap with the selected OSLOs:   0.00043
-
-  ------------------------
-    ITERATION NUMBER   4
-  ------------------------
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1     2.60790      0.98797      1.01825
-     2     2.24367      0.99192      1.01221
-  ------------------------------------------ 
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   2
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    32.25566      0.00121     28.74736
-     2    29.61093      0.01890      7.41234
-  ------------------------------------------ 
-
-  Lowest FOLI value (frg.)      :   1   1.01221
-  Next FOLI value (frg.)        :   1   1.01825
-
   ---------------------
-    SELECTED ORBITALS
-  ---------------------
+  OSLOs selected                          : 2
+  Delta-FOLI                              :        0.00506
+  Orbitals left to assign                 : 2
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     4      1   1.01353    0.00043
+  --------------------------------
+  Largest overlap with the selected OSLOs :        0.00043
+
+  ---------------
+    ITERATION 4
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1    2.60790     0.98797   1.01825
+     2    2.24367     0.99192   1.01221
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   32.25566     0.00121  28.74736
+     2   29.61093     0.01890   7.41234
+  -------------------------------------
+
+  Lowest FOLI value (fragment 1)          :        1.01221
+  Next FOLI value (fragment 1)            :        1.01825
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
      2      1   1.01221
-  --------------------- 
-
-  Number of OSLOs selected:   1
-  delta-FOLI value:    0.00603
-
-  Orbitals left to assign:   1
-
-  --------------------------------
-    CHECKING LINEAR DEPENDENCIES
-  --------------------------------
-
-  Next OSLOs: FOLI 1.01825, delta-FOLI 0.00603
-
-   Orb.   Frag.     FOLI    Overlap with selected
-  -------------------------------------------------
-     1      1    1.01825           0.00000
-  -------------------------------------------------
-  Largest overlap with the selected OSLOs:   0.00000
-
-  ------------------------
-    ITERATION NUMBER   5
-  ------------------------
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1     2.60790      0.98797      1.01825
-  ------------------------------------------ 
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   2
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1    30.77326      0.01203      9.22703
-  ------------------------------------------ 
-
-  Lowest FOLI value (frg.)      :   1   1.01825
-  Next FOLI value (frg.)        :   2   9.22703
-
   ---------------------
-    SELECTED ORBITALS
-  ---------------------
+  OSLOs selected                          : 1
+  Delta-FOLI                              :        0.00603
+  Orbitals left to assign                 : 1
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     1      1   1.01825    0.00000
+  --------------------------------
+  Largest overlap with the selected OSLOs :        0.00000
+
+  ---------------
+    ITERATION 5
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1    2.60790     0.98797   1.01825
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   30.77326     0.01203   9.22703
+  -------------------------------------
+
+  Lowest FOLI value (fragment 1)          :        1.01825
+  Next FOLI value (fragment 2)            :        9.22703
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
      1      1   1.01825
-  --------------------- 
+  ---------------------
+  OSLOs selected                          : 1
+  Delta-FOLI                              :        8.20878
+  Orbitals left to assign                 : 0
 
-  Number of OSLOs selected:   1
-  delta-FOLI value:    8.20878
+  Close alternatives: not checked, one orbital left
 
-  Orbitals left to assign:   0
+  Sum of the FOLI values                  :       10.05325
 
-  --------------------------------
-    CHECKING LINEAR DEPENDENCIES
-  --------------------------------
+  ------------------
+    SELECTED OSLOs
+  ------------------
 
-  Not evaluated with one orbital left (every candidate is that orbital)
+  Before orthogonalization
+  OSLO              1         2         3         4         5
+  Iteration         1         1         1         2         2
+  FOLI        1.00096   1.00001   1.00000   1.00189   1.00123
+  -----------------------------------------------------------
+  Frag.   1   0.99936   1.00000   0.00000   0.99874   0.00082
+  Frag.   2   0.00064   0.00000   1.00000   0.00126   0.99918
+  -----------------------------------------------------------
 
-  Sum of the FOLI values        :  10.05325
+  OSLO              6         7         8         9        10
+  Iteration         2         3         3         4         5
+  FOLI        1.00160   1.00863   1.00847   1.01221   1.01825
+  -----------------------------------------------------------
+  Frag.   1   0.00107   0.00572   0.00562   0.99192   0.98797
+  Frag.   2   0.99893   0.99428   0.99438   0.00808   0.01203
+  -----------------------------------------------------------
 
-  ------------------------------------
-    PRINTING FINAL OSLOs INFORMATION
-  ------------------------------------
+  After orthogonalization (the orbitals of the .fchk file)
+  OSLO              1         2         3         4         5
+  -----------------------------------------------------------
+  Frag.   1   0.99936   1.00000   0.00000   0.99874   0.00082
+  Frag.   2   0.00064   0.00000   1.00000   0.00126   0.99918
+  -----------------------------------------------------------
 
-  ---------------------------------------------
-    Summary of the selected OSLOs (pre-ortho)
-  ---------------------------------------------
-
-  OSLO Number :      1         2         3         4         5
-  FOLI Value  :   1.00096   1.00001   1.00000   1.00189   1.00123
-  Frg. Pop.  1:   0.99936   1.00000   0.00000   0.99874   0.00082
-  Frg. Pop.  2:   0.00064   0.00000   1.00000   0.00126   0.99918
-
-  OSLO Number :      6         7         8         9        10
-  FOLI Value  :   1.00160   1.00863   1.00847   1.01221   1.01825
-  Frg. Pop.  1:   0.00107   0.00572   0.00562   0.99192   0.98797
-  Frg. Pop.  2:   0.99893   0.99428   0.99438   0.00808   0.01203
-
-  -----------------------------------------
-    Summary of the selected OSLOs (final)
-  -----------------------------------------
-
-  OSLO Number :      1         2         3         4         5
-  Frg. Pop.  1:   0.99936   1.00000   0.00000   0.99874   0.00082
-  Frg. Pop.  2:   0.00064   0.00000   1.00000   0.00126   0.99918
-
-  OSLO Number :      6         7         8         9        10
-  Frg. Pop.  1:   0.00107   0.00572   0.00562   0.99192   0.98797
-  Frg. Pop.  2:   0.99893   0.99428   0.99438   0.00808   0.01203
+  OSLO              6         7         8         9        10
+  -----------------------------------------------------------
+  Frag.   1   0.00107   0.00572   0.00562   0.99192   0.98797
+  Frag.   2   0.99893   0.99428   0.99438   0.00808   0.01203
+  -----------------------------------------------------------
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          0.00
-     2          0.00
-  ------------------------ 
+  Frag.  Oxidation state
+  ----------------------
+      1             0.00
+      2             0.00
+  ----------------------
+  Total             0.00
 
-  TIMING CPU  :: OSLO analysis                                     1.29 s
-  TIMING WALL :: OSLO analysis                                     1.30 s
+  TIMING CPU  :: OSLO analysis                                     1.22 s
+  TIMING WALL :: OSLO analysis                                     1.22 s
 
   ...Normal Termination of APOST-3D...
