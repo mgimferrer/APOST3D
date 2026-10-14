@@ -179,12 +179,12 @@ prints again are those of `bond_orders`.
 
 ### `effao`
 
-Written with `EFFAO` or `UEFFAO` without `EOS`.
+Written with `EFFAO` or `UEFFAO` without `EOS`, and with `EFFAO-U`.
 
 | Key | Content |
 |---|---|
 | `scheme` | as in `populations` |
-| `total`, or `alpha` and `beta` | one object per density the EFOs come from (`total` for `EFFAO`), each with an `efos` table (below) |
+| `total`, `alpha` and `beta`, or `paired` and `unpaired` | one object per density the EFOs come from (`total` for `EFFAO`, `paired`/`unpaired` for `EFFAO-U`), each with an `efos` table (below) |
 
 The `efos` table has one row per EFO above the occupation cutoff,
 fragment by fragment: `fragment`, `net` (net occupation) and, in real
@@ -212,6 +212,26 @@ to that EFO: 1, 0 or a fraction) and `fchk_column` (its orbital in the
 file, `null` past the last one when the basis has linear dependencies).
 For a closed shell, the file has only alpha orbitals.
 
+### `geos`
+
+Written with `GEOS`. As `eos`, with the paired and unpaired densities in
+place of the alpha and beta electrons:
+
+| Key | Content |
+|---|---|
+| `scheme` | as in `populations` |
+| `paired`, `unpaired` | `reliability_percent`, `frontier` and `efos` as in `eos`. The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals; `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
+| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragment`, `net`, `gross`, `recovered_percent` (how closely the orbital in the file reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
+| `fragments` | `oxidation_states`, `electrons_paired`, `electrons_unpaired` |
+| `reliability_percent` | the overall R |
+| `rmsd` | root-mean-square deviation between the pooled occupations and the electrons assigned to them |
+| `orbital_file` | the `.fchk` file with the EFOs |
+
+To label the orbitals of `orbital_file`: alpha orbital k is the row of
+`paired.efos` with `fchk_column` k, or else the row of `negative_efos`
+with that column; beta orbital k is the row of `unpaired.efos` with
+`fchk_column` k. Orbitals with no row are empty (zero coefficients).
+
 ## Index
 
 `index` lists every quantity a program can show without knowing the
@@ -223,7 +243,7 @@ entry per quantity, in the order they are written:
 |---|---|
 | `id` | stable name, the path below `analyses` joined with dots (`"populations.atoms.charges"`) |
 | `analysis` | the key of its block in `analyses` |
-| `spin` | `"alpha"`, `"beta"` or `"total"` for a quantity given per spin channel; `null` otherwise |
+| `spin` | the channel of a quantity given per channel: `"alpha"`, `"beta"`, `"paired"`, `"unpaired"`, or `"total"` for the combined result; `null` otherwise |
 | `path` | JSON Pointer to the value (`"/analyses/populations/atoms/charges"`); for a matrix, to its matrix object |
 | `role` | `"comparison"` for a value printed only to compare with the result (the Mulliken values of a run with another atomic definition); absent otherwise |
 | `kind` | `scalar` (one number, e.g. `local_spin.total_s2`), `atom_vector`, `atom_matrix`, `fragment_vector`, `fragment_matrix` or `table` |

@@ -37,6 +37,7 @@
       use effao_mod, only: p0,p0net,p0gro,ip0
       use input_options_mod, only: inegefos,inegcubthr
       use output_mod, only: print_value
+      use json_mod
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -57,6 +58,10 @@
       allocatable :: S0(:,:),Sm(:,:),Splus(:,:),c0(:,:),pp0(:,:)
       allocatable :: scr(:),s0all(:)
       allocatable :: iup0(:,:),up0net(:,:,:),up0gro(:,:,:),up0coef(:,:,:,:)
+      allocatable :: up0fit(:,:,:)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
       allocatable :: poolcoef(:,:,:)
       allocatable :: ineg_frg(:),xneg_net(:,:),xneg_gro(:,:),cneg(:,:,:)
       allocatable :: xneg_fit(:,:)
@@ -106,7 +111,7 @@
       ALLOCATE(S0(igr,igr),s0all(igr),Sm(igr,igr),Splus(igr,igr))
       ALLOCATE(c0(igr,igr),pp0(igr,igr),occn(igr),fitp(igr))
       if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr),up0gro(2,igr,icufr),
-     +  up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2))
+     +  up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2),up0fit(2,igr,icufr))
       if(iueos.eq.1) ALLOCATE(ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr),
      +  cneg(igr,igr,icufr),xneg_fit(igr,icufr))
 
@@ -114,6 +119,13 @@
       if(iueos.eq.1) then
         ALLOCATE(Sinv(igr,igr),cprojfrag(igr,igr),xfitfrag(igr))
         call build_Sinv(igr,Sinv)
+      end if
+
+!! EFFAO-U writes its EFOs to an "effao" block (GEOS: ueos_analysis) !!
+      if(iueos.eq.0) then
+        call atomic_definition_names(ckey,cname,cshort,cspace)
+        call json_begin_object('effao')
+        call json_value('scheme',trim(ckey))
       end if
 
 !! icase=1: paired density (total-unpaired). icase=2: unpaired density. !!
@@ -298,6 +310,7 @@
             if(iueos.eq.1) then
               up0net(icase,kk,iicenter)=pp0(kk,kk)
               up0gro(icase,kk,iicenter)=s0all(kk)
+              up0fit(icase,kk,iicenter)=fitp(kk)
               do mu=1,igr
                 up0coef(mu,kk,icase,iicenter)=cprojfrag(mu,kk)
               end do
@@ -361,13 +374,16 @@
             DEALLOCATE(p0sav,occsav)
           end if
         end do
+        if(iueos.eq.0) call json_efo_channel(icase+2,.true.,.false.)
       end do
+      if(iueos.eq.0) call json_end()
 
 !! electron/oxidation-state assignment across both channels together,   !!
 !! using gross populations                                              !!
       if(iueos.eq.1) then
         call ueos_analysis(iup0,up0gro,up0coef,poolcoef,
-     +    ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit)
+     +    ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit,
+     +    up0net,up0fit)
 
 !! pooled paired/unpaired EFOs as fake Alpha/Beta MOs in a .fchk, for    !!
 !! visualization in any standard viewer -- printed by default, same as  !!
@@ -398,7 +414,7 @@
       DEALLOCATE(scr,c0,pp0,s0all,occn,fitp)
       DEALLOCATE(Pno,Uno)
       if(iueos.eq.1) then
-        DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef)
+        DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef,up0fit)
         DEALLOCATE(ineg_frg,xneg_net,xneg_gro,cneg,xneg_fit)
         DEALLOCATE(Sinv,cprojfrag,xfitfrag)
       end if
@@ -426,17 +442,22 @@
 !!   cneg     (in)   (igr,igr,icufr) their coefficients
 !!   xminocc_neg (in)  net occupation below which a paired EFO is negative
 !!   xneg_fit (in)   (igr,icufr) fit fraction of each negative EFO
+!!   up0net   (in)   (2,igr,icufr) net occupations of the kept EFOs
+!!   up0fit   (in)   (2,igr,icufr) fit (%) of the kept EFOs
 !! author: MGimf
 !! ----------------------------------------------------------------------
       subroutine ueos_analysis(iup0,up0gro,up0coef,poolcoef,
-     +  ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit)
+     +  ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit,
+     +  up0net,up0fit)
 
       use output_mod, only: print_value
+      use json_mod
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      common /filename/name0
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /loba/ oxi(maxat),errsav(maxat),elec(maxat),effpop(maxat)
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
@@ -446,6 +467,16 @@
       dimension iorbslot(nmax,2)
       dimension ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr)
       dimension cneg(igr,igr,icufr),xneg_fit(igr,icufr)
+      dimension up0net(2,igr,icufr),up0fit(2,igr,icufr)
+      character*60 name0
+      character*80 cfile
+      character*8 cspin
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      integer, allocatable :: ifr(:),icol(:)
+      real*8, allocatable :: xn(:),xf(:),xg(:),xe(:)
+      logical, allocatable :: lcol(:),lok(:)
 
       allocatable :: tmp_occup(:)
       integer, allocatable :: tmp_iorbat(:),tmp_iorbslot(:)
@@ -474,6 +505,9 @@
         end do
         lorb(icase)=iorb
       end do
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      call json_begin_object('geos')
+      call json_value('scheme',trim(ckey))
       call print_box('GEOS ELECTRON ASSIGNMENT')
       call print_value('EFOs in the assignment',lorb(1)+lorb(2))
 
@@ -805,6 +839,60 @@
           write(*,'(2x,a)') 'Paired occupations (0 to 2) are halved in R'
           confi0=confi
         end if
+
+!! results file: this channel's R, frontier table and pooled EFOs, in  !!
+!! the order of the .fchk orbitals of the channel (paired: Alpha,      !!
+!! unpaired: Beta), with the electrons each one gets                   !!
+        cspin='paired'
+        if(icase.eq.2) cspin='unpaired'
+        call json_begin_object(trim(cspin))
+        call json_value('reliability_percent',confi)
+        call json_index('reliability_percent','scalar','Reliability '//
+     +    'index R, '//trim(cspin)//' ('//trim(cshort)//')','%',3,
+     +    trim(cspin),.false.,' ')
+        allocate(lok(icufr))
+        call json_begin_object('frontier')
+        call json_value('rows','fragment')
+        call json_value('n_rows',icufr)
+        call json_begin_array('columns')
+        call json_column('last_occupied','Last occupied EFO',' ',3,
+     +    .false.)
+        call json_column('first_unoccupied','First unoccupied EFO',' ',
+     +    3,.false.)
+        call json_end()
+        call json_begin_object('data')
+        do ifrg=1,icufr
+          lok(ifrg)=ilo(ifrg).eq.1
+        end do
+        call json_vector_or_null('last_occupied',xlo(1:icufr),lok,icufr)
+        do ifrg=1,icufr
+          lok(ifrg)=ifu(ifrg).eq.1
+        end do
+        call json_vector_or_null('first_unoccupied',xfu(1:icufr),lok,
+     +    icufr)
+        call json_end()
+        call json_end()
+        call json_index('frontier','table','GEOS frontier EFOs, '//
+     +    trim(cspin)//' ('//trim(cshort)//')',' ',-1,trim(cspin),
+     +    .false.,' ')
+        deallocate(lok)
+        n=npool(icase)
+        nwin=nindep
+        if(icase.eq.1) nwin=nindep-nneg
+        allocate(ifr(n),icol(n),xn(n),xf(n),xg(n),xe(n),lcol(n))
+        do ii=1,n
+          ifr(ii)=iorbat(ii,icase)
+          xn(ii)=up0net(icase,iorbslot(ii,icase),ifr(ii))
+          xf(ii)=up0fit(icase,iorbslot(ii,icase),ifr(ii))
+          xg(ii)=elec2(ii,icase)
+          xe(ii)=elec_id(ii,icase)
+          icol(ii)=ii
+          lcol(ii)=ii.le.nwin
+        end do
+        call json_efo_table(n,ifr,xn,.true.,xg,.true.,xf,.true.,xe,
+     +    icol,lcol,trim(cspin))
+        deallocate(ifr,icol,xn,xf,xg,xe,lcol)
+        call json_end()
       end do
 
       zztot=ZERO
@@ -819,6 +907,65 @@
 
       confi2=dmin1(confi,confi0)
       call print_oxidation_states(icufr,oxi,zztot,.true.,confi2)
+
+!! results file: the negative paired EFOs (last orbitals of the Alpha  !!
+!! block of the .fchk), per-fragment results, overall R, RMSD, file    !!
+      allocate(ifr(nneg),icol(nneg),xn(nneg),xg(nneg),xf(nneg))
+      do jj=1,nneg
+        ifr(jj)=neg_frg(jj)
+        xn(jj)=xnegnet_pool(jj)
+        xg(jj)=xneggro_pool(jj)
+        xf(jj)=100.0d0*(1.0d0-xneg_fit(neg_slot(jj),neg_frg(jj)))
+        icol(jj)=nindep-nneg+jj
+      end do
+      call json_begin_object('negative_efos')
+      call json_value('rows','orbital')
+      call json_value('n_rows',nneg)
+      call json_begin_array('columns')
+      call json_column('fragment','Fragment',' ',0,.false.)
+      call json_column('net','Net occupation',' ',4,.true.)
+      call json_column('gross','Gross occupation',' ',4,.true.)
+      call json_column('recovered_percent','Recovered','%',2,.false.)
+      call json_column('fchk_column','Column in the .fchk file',' ',0,
+     +  .false.)
+      call json_end()
+      call json_begin_object('data')
+      call json_vector('fragment',ifr,nneg)
+      call json_vector('net',xn,nneg)
+      call json_vector('gross',xg,nneg)
+      call json_vector('recovered_percent',xf,nneg)
+      call json_vector('fchk_column',icol,nneg)
+      call json_end()
+      call json_end()
+      call json_index('negative_efos','table','GEOS negative paired '//
+     +  'EFOs ('//trim(cshort)//')',' ',-1,'paired',.false.,' ')
+      deallocate(ifr,icol,xn,xg,xf)
+      call json_begin_object('fragments')
+      call json_vector('oxidation_states',oxi(1:icufr),icufr)
+      call json_index('oxidation_states','fragment_vector',
+     +  'GEOS oxidation states ('//trim(cshort)//')',' ',2,'total',
+     +  .true.,' ')
+      call json_vector('electrons_paired',elec_frg_count(1:icufr,1),
+     +  icufr)
+      call json_index('electrons_paired','fragment_vector',
+     +  'GEOS electrons, paired ('//trim(cshort)//')',' ',2,'paired',
+     +  .false.,' ')
+      call json_vector('electrons_unpaired',elec_frg_count(1:icufr,2),
+     +  icufr)
+      call json_index('electrons_unpaired','fragment_vector',
+     +  'GEOS electrons, unpaired ('//trim(cshort)//')',' ',2,
+     +  'unpaired',.false.,' ')
+      call json_end()
+      call json_value('reliability_percent',confi2)
+      call json_index('reliability_percent','scalar','Reliability '//
+     +  'index R ('//trim(cshort)//')','%',3,'total',.false.,' ')
+      call json_value('rmsd',xrmsd)
+      call json_index('rmsd','scalar','RMSD of the GEOS electron '//
+     +  'assignment ('//trim(cshort)//')',' ',5,' ',.false.,' ')
+      cfile=trim(name0)//'-GEOS-EFOs.fchk'
+      cfile=cfile(index(cfile,'/',back=.true.)+1:)
+      call json_value('orbital_file',trim(cfile))
+      call json_end()
 
       DEALLOCATE(elec_id,elec2,elec_frg_count)
       if(nneg.gt.0) DEALLOCATE(xnegnet_pool,xneggro_pool,neg_frg,neg_slot)

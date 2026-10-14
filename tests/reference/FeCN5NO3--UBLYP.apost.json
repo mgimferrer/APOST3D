@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -640,7 +640,7 @@
     "job_name": "FeCN5NO3--UBLYP",
     "input_file": "FeCN5NO3--UBLYP.inp",
     "wavefunction_file": "FeCN5NO3--UBLYP.fchk",
-    "date": "2026-10-14T17:06:53+02:00",
+    "date": "2026-10-14T17:54:42+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

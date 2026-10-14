@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -295,7 +295,7 @@
     "job_name": "H2O-Dimer-RHF",
     "input_file": "H2O-Dimer-RHF.inp",
     "wavefunction_file": "H2O-Dimer-RHF.fchk",
-    "date": "2026-10-14T17:06:43+02:00",
+    "date": "2026-10-14T17:54:32+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

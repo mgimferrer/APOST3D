@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -337,7 +337,7 @@
     "job_name": "H2-T-OSLO",
     "input_file": "H2-T-OSLO.inp",
     "wavefunction_file": "H2-T-OSLO.fchk",
-    "date": "2026-10-14T17:06:39+02:00",
+    "date": "2026-10-14T17:54:27+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null
