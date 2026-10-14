@@ -11,8 +11,10 @@ program, not a full development history — see `git log` for that.
 - **Results file `<job>.apost.json`** — every run also writes its
   results in a machine-readable file, for the APOST3Dview visualizer and
   scripts: the wavefunction summary, the input, the molecule and the
-  fragments, the populations, bond orders, valences and local spin
-  analysis, with the other analyses to be added. A run that
+  fragments, the populations, bond orders, valences, local spin
+  analysis, effective fragment orbitals and EOS (with the orbitals of the
+  EFO `.fchk` file mapped to their fragments), with the other analyses to
+  be added. A run that
   stops on an error still writes a complete file that says so. See
   "Results file (JSON)" in the developer guide.
 - **GEOS (Generalized Effective Oxidation States)** — a new open-shell

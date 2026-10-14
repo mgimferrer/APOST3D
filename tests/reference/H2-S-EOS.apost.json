@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -129,6 +129,184 @@
           }
         }
       }
+    },
+    "eos": {
+      "scheme": "TFVC",
+      "alpha": {
+        "reliability_percent": 1.0000000000000000E+002,
+        "assignment": "fractional",
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [5.0000097748482109E-001, 5.0000097748482142E-001],
+            "first_unoccupied": [null, null]
+          }
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "fragment",
+              "title": "Fragment",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "fit_percent",
+              "title": "Fit",
+              "unit": "%",
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragment": [2, 1],
+            "net": [4.5701647367934223E-001, 4.5701647367934217E-001],
+            "gross": [5.0000097748482142E-001, 5.0000097748482109E-001],
+            "fit_percent": [8.2209357626423241E+001, 8.2209357626423255E+001],
+            "electrons": [5.0000000000000000E-001, 5.0000000000000000E-001],
+            "fchk_column": [1, 2]
+          }
+        }
+      },
+      "beta": {
+        "reliability_percent": 1.0000000000000000E+002,
+        "assignment": "fractional",
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [5.0000097693198287E-001, 5.0000097693198398E-001],
+            "first_unoccupied": [null, null]
+          }
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "fragment",
+              "title": "Fragment",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "fit_percent",
+              "title": "Fit",
+              "unit": "%",
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragment": [2, 1],
+            "net": [4.5701647483227076E-001, 4.5701647483227031E-001],
+            "gross": [5.0000097693198398E-001, 5.0000097693198287E-001],
+            "fit_percent": [8.2209358813642169E+001, 8.2209358813642126E+001],
+            "electrons": [5.0000000000000000E-001, 5.0000000000000000E-001],
+            "fchk_column": [1, 2]
+          }
+        }
+      },
+      "fragments": {
+        "oxidation_states": [0.0000000000000000E+000, 0.0000000000000000E+000],
+        "electrons_alpha": [5.0000000000000000E-001, 5.0000000000000000E-001],
+        "electrons_beta": [5.0000000000000000E-001, 5.0000000000000000E-001]
+      },
+      "reliability_percent": 1.0000000000000000E+002,
+      "orbital_file": "H2-S-EOS-EOS-EFOs.fchk"
     }
   },
   "index": [
@@ -379,14 +557,124 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "eos.alpha.reliability_percent",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, alpha (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.frontier",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/frontier",
+      "kind": "table",
+      "title": "EOS frontier EFOs, alpha (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.efos",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/efos",
+      "kind": "table",
+      "title": "EFOs, alpha (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.beta.reliability_percent",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/beta/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, beta (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "eos.beta.frontier",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/beta/frontier",
+      "kind": "table",
+      "title": "EOS frontier EFOs, beta (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.beta.efos",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/beta/efos",
+      "kind": "table",
+      "title": "EFOs, beta (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.oxidation_states",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "EOS oxidation states (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "eos.fragments.electrons_alpha",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/fragments/electrons_alpha",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, alpha (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.electrons_beta",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/fragments/electrons_beta",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, beta (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.reliability_percent",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "H2-S-EOS",
     "input_file": "H2-S-EOS.inp",
     "wavefunction_file": "H2-S-EOS.fchk",
-    "date": "2026-10-14T16:30:56+02:00",
-    "threads": 1,
+    "date": "2026-10-14T17:07:25+02:00",
+    "threads": 8,
     "status": "normal",
     "stop_message": null
   }
