@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -164,7 +164,8 @@
     "job_name": "HI-ECP-G16",
     "input_file": "HI-ECP-G16.inp",
     "wavefunction_file": "HI-ECP-G16.fchk",
-    "date": "2026-10-14T19:13:13+02:00",
+    "date": "2026-10-14T20:49:25+02:00",
+    "id": "2026-10-14T20:49:25+02:00/71e8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

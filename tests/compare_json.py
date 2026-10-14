@@ -4,8 +4,9 @@ compare_json.py -- compare two APOST-3D results files (<job>.apost.json).
 
 The two files must have the same structure (keys, list lengths), the
 same text, integers and booleans, and reals equal within a relative
-tolerance (default 1e-9; --rtol 0 asks for identical values). run.threads
-and run.date are not compared: they describe the run, not its results.
+tolerance (default 1e-9; --rtol 0 asks for identical values). run.threads,
+run.date, run.id and every orbital_file_id are not compared: they describe
+the run, not its results.
 
 Usage:
   python3 tests/compare_json.py REF.apost.json NEW.apost.json [--rtol R]
@@ -20,7 +21,8 @@ import math
 import sys
 from pathlib import Path
 
-IGNORED = {("run", "threads"), ("run", "date")}
+IGNORED = {("run", "threads"), ("run", "date"), ("run", "id")}
+IGNORED_KEYS = {"orbital_file_id"}
 RTOL = 1e-9
 ATOL = 1e-12       # for values that should be zero
 
@@ -37,7 +39,8 @@ def diff(a, b, rtol, path=(), out=None, limit=20):
     """List of 'path: reason' strings, at most limit of them."""
     if out is None:
         out = []
-    if len(out) >= limit or path in IGNORED:
+    if len(out) >= limit or path in IGNORED or \
+            (path and path[-1] in IGNORED_KEYS):
         return out
     where = "".join(f"/{p}" for p in path) or "/"
     if isinstance(a, dict) and isinstance(b, dict):

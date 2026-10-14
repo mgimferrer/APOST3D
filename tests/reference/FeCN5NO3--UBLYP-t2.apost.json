@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -159,6 +159,7 @@
         "oslos": {
           "rows": "orbital",
           "n_rows": 55,
+          "fchk_orbitals": "alpha",
           "columns": [
             {
               "key": "iteration",
@@ -322,6 +323,7 @@
         "oslos": {
           "rows": "orbital",
           "n_rows": 54,
+          "fchk_orbitals": "beta",
           "columns": [
             {
               "key": "iteration",
@@ -483,7 +485,8 @@
         "electrons_alpha": [1.2000000000000000E+001, 7.0000000000000000E+000, 7.0000000000000000E+000, 7.0000000000000000E+000, 7.0000000000000000E+000, 7.0000000000000000E+000, 8.0000000000000000E+000],
         "electrons_beta": [1.2000000000000000E+001, 7.0000000000000000E+000, 7.0000000000000000E+000, 7.0000000000000000E+000, 7.0000000000000000E+000, 7.0000000000000000E+000, 7.0000000000000000E+000]
       },
-      "orbital_file": "FeCN5NO3--UBLYP-t2-OSLOs.fchk"
+      "orbital_file": "FeCN5NO3--UBLYP-t2-OSLOs.fchk",
+      "orbital_file_id": "2026-10-14T20:48:55+02:00/65c0"
     }
   },
   "index": [
@@ -795,7 +798,8 @@
     "job_name": "FeCN5NO3--UBLYP-t2",
     "input_file": "FeCN5NO3--UBLYP-t2.inp",
     "wavefunction_file": "FeCN5NO3--UBLYP-t2.fchk",
-    "date": "2026-10-14T19:12:43+02:00",
+    "date": "2026-10-14T20:48:55+02:00",
+    "id": "2026-10-14T20:48:55+02:00/65c0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

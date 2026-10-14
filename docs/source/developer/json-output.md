@@ -100,6 +100,7 @@ as their list.
 |---|---|
 | `job_name`, `input_file`, `wavefunction_file` | file names without folders (`"water"`, `"water.inp"`, `"water.fchk"`); the input, wavefunction and results files are always in the same folder |
 | `date` | when the run started, ISO 8601 with time zone (`"2026-10-13T14:05:31+02:00"`) |
+| `id` | the run id: the start time and 4 hex digits (`"2026-10-13T14:05:31+02:00/7f3a"`), also written in the title line of every orbital `.fchk` file of the run |
 | `threads` | number of threads |
 | `status` | `"normal"` or `"stopped"` |
 | `stop_message` | the `STOP` message, or `null` |
@@ -136,7 +137,19 @@ A table (several quantities per fragment or per orbital) is an object:
 | `rows` | `"fragment"` (row i is fragment i) or `"orbital"` (one row per orbital, in the order given) |
 | `n_rows` | number of rows |
 | `columns` | one object per column: `key`, `title`, `unit` (or `null`), `decimals`, `signed` (as in the [index](#index)) |
-| `data` | one list per column, under its `key`; `null` where a row has no value. A column may hold a list per row (`oslo`'s `fragments` and `shares`) |
+| `data` | one list per column, under its `key`; `null` where a row has no value. A column may hold a list per row (`fragments`, `shares`) |
+| `fchk_orbitals` | in a table of orbitals written to a `.fchk` file: `"alpha"` or `"beta"`, the block of the file its `fchk_column` values refer to |
+
+**Orbital tables** (`efos`, `negative_efos`, `oslos`) have one row per
+orbital and the same two columns for its fragments: `fragments`, a list
+of fragment numbers, and `shares`, the share of each. An EFO always has
+one fragment and share 1 (`[3]`, `[1.0]`); a shared OSLO has several
+(`[1, 2]`, `[0.5, 0.5]`). A table whose orbitals are in a `.fchk` file
+also has `fchk_orbitals` and a `fchk_column` column (1-based; `null` for
+an orbital the file does not hold). The block of such a table gives the
+file name (`orbital_file`) and `orbital_file_id`, equal to the first line
+of the file after `run `: a file from another run (same molecule,
+other fragments or atomic definition) can be refused by comparing them.
 
 ### `populations`
 
@@ -187,9 +200,11 @@ Written with `EFFAO` or `UEFFAO` without `EOS`, and with `EFFAO-U`.
 | `total`, `alpha` and `beta`, or `paired` and `unpaired` | one object per density the EFOs come from (`total` for `EFFAO`, `paired`/`unpaired` for `EFFAO-U`), each with an `efos` table (below) |
 
 The `efos` table has one row per EFO above the occupation cutoff,
-fragment by fragment: `fragment`, `net` (net occupation) and, in real
+fragment by fragment: `fragments`, `shares`, `net` (net occupation) and, in real
 space, `gross` (gross occupation) and `fit_percent` (how closely the EFO
 written to a `.fchk` file reproduces the fragment-weighted orbital).
+EFFAO writes no orbital file, so these tables have no `fchk_column`
+and their EFOs cannot be drawn from the results file.
 
 ### `eos`
 
@@ -202,11 +217,11 @@ Written with `EOS`.
 | `beta` | as `alpha`; or `{"same_as_alpha": true}` when the beta density equals the alpha one (closed shell), or `{"no_electrons": true}` |
 | `fragments` | `oxidation_states`, `electrons_alpha`, `electrons_beta` |
 | `reliability_percent` | the overall R, the smaller of the two channels |
-| `orbital_file` | the `.fchk` file with the EFOs (in the same folder) |
+| `orbital_file`, `orbital_file_id` | the `.fchk` file with the EFOs (in the same folder) and its id (see [Tables](#tables)) |
 
 The `efos` table of a channel lists every EFO of the assignment, sorted
 by gross occupation as they are assigned, which is also the order of the
-orbitals of that channel in `orbital_file`: `fragment`, `net`, and in
+orbitals of that channel in `orbital_file`: `fragments`, `shares`, `net`, and in
 real space `gross` and `fit_percent` as in `effao`, `electrons` (given
 to that EFO: 1, 0 or a fraction) and `fchk_column` (its orbital in the
 file, `null` past the last one when the basis has linear dependencies).
@@ -221,16 +236,17 @@ place of the alpha and beta electrons:
 |---|---|
 | `scheme` | as in `populations` |
 | `paired`, `unpaired` | `reliability_percent`, `frontier` and `efos` as in `eos`. The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals; `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
-| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragment`, `net`, `gross`, `recovered_percent` (how closely the orbital in the file reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
+| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `recovered_percent` (how closely the orbital in the file reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
 | `fragments` | `oxidation_states`, `electrons_paired`, `electrons_unpaired` |
 | `reliability_percent` | the overall R |
 | `rmsd` | root-mean-square deviation between the pooled occupations and the electrons assigned to them |
-| `orbital_file` | the `.fchk` file with the EFOs |
+| `orbital_file`, `orbital_file_id` | the `.fchk` file with the EFOs and its id |
 
-To label the orbitals of `orbital_file`: alpha orbital k is the row of
-`paired.efos` with `fchk_column` k, or else the row of `negative_efos`
-with that column; beta orbital k is the row of `unpaired.efos` with
-`fchk_column` k. Orbitals with no row are empty (zero coefficients).
+To label the orbitals of `orbital_file`: alpha orbital k is the row with
+`fchk_column` k of a table with `fchk_orbitals` `"alpha"` (`paired.efos`
+or `negative_efos`, the last orbitals of the block); beta orbital k the
+one of `unpaired.efos`. Orbitals with no row are empty (zero
+coefficients). The same rule holds for every orbital file.
 
 ### `oslo`
 
@@ -242,7 +258,7 @@ Written with `OSLO`.
 | `fragment_populations` | the atoms of the fragment populations (`# OSLO` `MULLIKEN`, `LOWDIN`, ...; else as `scheme`) |
 | `total`, or `alpha` and `beta` | one object per channel (`total` for a restricted wavefunction, each orbital doubly occupied): `sum_foli` and the `oslos` table (below) |
 | `fragments` | `oxidation_states`, and `electrons` (restricted) or `electrons_alpha`, `electrons_beta` |
-| `orbital_file` | the `.fchk` file with the final OSLOs |
+| `orbital_file`, `orbital_file_id` | the `.fchk` file with the final OSLOs and its id |
 
 The `oslos` table has one row per OSLO, in the order they were selected,
 which is the order of the orbitals of the channel in `orbital_file`
@@ -284,7 +300,9 @@ analysis).
 `schema_version` is `"major.minor"`. A new key or block increases the
 minor number; a renamed or removed key, or a change of meaning, increases
 the major number. Version 0.x is the draft that becomes 1.0 with
-APOST-3D 5.0.
+APOST-3D 5.0; while it is a draft a key may still be renamed with only a
+minor increase (0.8 replaced the `fragment` column of the EFO tables by
+`fragments` and `shares`).
 
 ## Checking a change
 

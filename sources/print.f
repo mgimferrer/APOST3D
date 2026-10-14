@@ -2077,6 +2077,42 @@
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: write_fchk_title
+!! Title line of an orbital .fchk file written by APOST-3D: what the
+!! orbitals are and the run id of the results file, so that a reader can
+!! tell the file belongs to that run (the source title is dropped).
+!! arguments:
+!!   iu    (in)  unit of the .fchk file being written
+!!   ctype (in)  file name suffix: "-EOS-EFOs", "-GEOS-EFOs", "-OSLOs"
+!!               or "-OSLOs-preortho"
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine write_fchk_title(iu,ctype)
+      use json_mod, only: json_run_id
+      implicit none
+      integer, intent(in) :: iu
+      character(len=*), intent(in) :: ctype
+      character(len=60) :: what
+
+      if(trim(ctype).eq.'-EOS-EFOs') then
+        what='APOST-3D EOS EFOs'
+      else if(trim(ctype).eq.'-GEOS-EFOs') then
+        what='APOST-3D GEOS EFOs'
+      else if(trim(ctype).eq.'-OSLOs-preortho') then
+        what='APOST-3D OSLOs before orthogonalization'
+      else
+        what='APOST-3D OSLOs'
+      end if
+      if(len(json_run_id()).gt.0) then
+        write(iu,'(a)') trim(what)//', run '//json_run_id()
+      else
+        write(iu,'(a)') trim(what)
+      end if
+      end
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: rwf_effao_orbprint                                        !!
 !! purpose: writes a restricted-wavefunction pooled-EFO .fchk -- splices !!
@@ -2132,6 +2168,8 @@
       rewind(69)
       rewind(15)
 
+      read(15,'(a80)') line
+      call write_fchk_title(69,ctype)
       read(15,'(a80)') line
 
 !! standard/MOKIT .fchk layout: Alpha Orbital Energies precedes Alpha    !!
@@ -2253,6 +2291,8 @@
       rewind(69)
       rewind(15)
 
+      read(15,'(a80)') line
+      call write_fchk_title(69,ctype)
       read(15,'(a80)') line
 
       if(iqchem.eq.0) then
@@ -2391,6 +2431,8 @@
       rewind(69)
       rewind(15)
 
+      read(15,'(a80)') line
+      call write_fchk_title(69,ctype)
       read(15,'(a80)') line
 
       if(iqchem.eq.0) then
