@@ -50,8 +50,9 @@ E. Ramos-Cordoba, V. Postils and P. Salvador, *J. Chem. Theory Comput.*,
    and compare with other descriptors.
 5. **Near-degenerate frontier EFOs.** If EFOs of different fragments are
    within 0.0025 of the last occupied one, the electron(s) are shared
-   among them, the program prints `EOS: WARNING, PSEUDO-DEGENERACIES
-   DETECTED`, and the oxidation states become fractional (e.g. two
+   among them, the program prints `Electron assignment : fractional` and
+   a `WARNING` line saying how many electrons are shared by how many
+   EFOs, and the oxidation states become fractional (e.g. two
    equivalent ligands sharing one electron get −1.5 each).
 
 For a closed-shell wavefunction the beta assignment is the same as the
@@ -106,34 +107,32 @@ fragment ([EFFAO](effao.md)), then the assignment for each spin:
 
 % source: tests/reference/FeCO2-PBEPBE.apost
 ```text
-  Total number of eff-AO-s for analysis:   41
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
 
-  -------------------------------------------------
-    EOS: Unambiguous integer electron assignation
-  -------------------------------------------------
+  EFOs in the assignment                  : 41
+  Electron assignment                     : integer
 
-  ------------------------------------
-    EOS ANALYSIS FOR ALPHA ELECTRONS
-  ------------------------------------
-
-   Frag.  Elect.  Last occ.  First unocc.
-  ----------------------------------------
-     1    12.00     0.837     0.321
-     2     7.00     0.787     0.084
-     3     7.00     0.787     0.084
-  ----------------------------------------
-   RELIABILITY INDEX R(%) =  96.598
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1      12.00      0.837         0.321
+      2       7.00      0.787         0.084
+      3       7.00      0.787         0.084
+  -----------------------------------------
+  Reliability index R (%)                 :         96.598
 ```
 
-- `Elect.`: alpha electrons assigned to the fragment.
+- `Electrons`: alpha electrons assigned to the fragment.
 - `Last occ.` / `First unocc.`: gross occupations of the fragment's last
   EFO that received an electron and of its first one that did not.
 - R(%) is computed from the smallest `Last occ.` (0.787, a CO EFO) and the
   largest `First unocc.` of the other fragments (0.321, on Fe):
   100 × (0.787 − 0.321 + 0.5) = 96.6.
 
-Since the wavefunction is closed-shell, the beta part is skipped
-(`SKIPPING EFFAOs FOR BETA ELECTRONS`) and the final table follows:
+Since the wavefunction is closed-shell, the beta electrons are assigned as
+the alpha ones (`The beta density equals the alpha one`) and the final
+table follows:
 
 % source: tests/reference/FeCO2-PBEPBE.apost
 ```text
@@ -141,15 +140,14 @@ Since the wavefunction is closed-shell, the beta part is skipped
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State
-  ------------------------
-     1          2.00
-     2          0.00
-     3          0.00
-  ------------------------
-   Total oxidation state:    2.0
-
-  OVERALL RELIABILITY INDEX R(%) =  96.598
+  Frag.  Oxidation state
+  ----------------------
+      1             2.00
+      2             0.00
+      3             0.00
+  ----------------------
+  Total             2.00
+  Overall reliability index R (%)         :         96.598
 ```
 
 Iron receives 12 alpha and 12 beta electrons, 24 of its 26: Fe(II) with

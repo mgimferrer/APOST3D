@@ -129,15 +129,14 @@ assignment, and ends with
 
 % source: tests/reference/FeCO2-PBEPBE.apost
 ```text
-   Frag.  Oxidation State
-  ------------------------
-     1          2.00
-     2          0.00
-     3          0.00
-  ------------------------
-   Total oxidation state:    2.0
-
-  OVERALL RELIABILITY INDEX R(%) =  96.598
+  Frag.  Oxidation state
+  ----------------------
+      1             2.00
+      2             0.00
+      3             0.00
+  ----------------------
+  Total             2.00
+  Overall reliability index R (%)         :         96.598
 ```
 
 Iron(II) with two neutral CO ligands. The reliability index, 96.6% (100 is

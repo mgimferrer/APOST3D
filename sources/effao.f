@@ -1,39 +1,83 @@
-!! **************************************************************** !!
-!! EFFECTIVE ATOMIC/FRAGMENT ORBITALS (EFAOs/EFOs), REAL-SPACE AND  !!
-!! HILBERT-SPACE:                                                   !!
-!!   ueffao3d_frag   -- real-space (3D grid) fragment EFOs (EOS)    !!
-!!   eos_analysis    -- EFO occupations -> electron counts          !!
-!!                      -> fragment oxidation states                !!
-!!   ueffaolow_frag  -- Lowdin/NAO Hilbert-space fragment EFOs      !!
-!!   ueffaomull_frag -- Mulliken Hilbert-space fragment EFOs        !!
-!!   ueffao3d        -- real-space (3D grid) single-atom EFAOs      !!
-!!                      (EFFAO/DOATOMS pathway, not EOS -- no       !!
-!!                      fragments/oxidation states)                 !!
-!! **************************************************************** !!
+!! ----------------------------------------------------------------------
+!! Effective fragment orbitals (EFOs) and effective oxidation states
+!! (EOS), in real space and in Hilbert space:
+!!   efo_section_header -- opens the section (definition, densities,
+!!                         occupation cutoff)
+!!   ueffao3d_frag      -- real-space EFOs of each fragment
+!!   ueffaolow_frag     -- Lowdin, Davidson-Lowdin or NAO EFOs
+!!   ueffaomull_frag    -- Mulliken EFOs
+!!   ueffao3d           -- real-space EFOs of single atoms (DOATOMS)
+!!   eos_analysis       -- electron assignment and oxidation states
+!! ----------------------------------------------------------------------
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: ueffao3d_frag                                             !!
-!! purpose: computes real-space (3D grid) effective fragment orbitals    !!
-!!   (EFOs) for EOS/EFFAO, one fragment at a time. Results are stored    !!
-!!   into effao_mod (p0/p0net/p0gro/ip0/p0coef), not returned via        !!
-!!   arguments: p0 raw (for cubegen_new), p0coef projected onto          !!
-!!   EFO*fragment-weight (for eos_analysis's .fchk export).              !!
-!! arguments (all read-only):                                            !!
-!!   itotps (in) -- total number of grid points (nat*iatps)              !!
-!!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
-!!   omp    (in) -- becke/tfvc weight of each grid point for its own atom!!
-!!   chp    (in) -- basis-function values at each grid point             !!
-!!   sat    (in) -- per-atom AO overlap matrix (from numint_sat)         !!
-!!   wp     (in) -- integration weight of each grid point                !!
-!!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for   !!
-!!                  every atom                                           !!
-!!   pk     (in) -- density matrix to project onto fragment EFOs (p for  !!
-!!                  closed-shell, pa/pb for alpha/beta)                  !!
-!!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta                      !!
-!! author: PSalse, ERaco, MGimf                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: efo_section_header
+!! Opens the EFFAO/EOS section: the atomic definition, the densities
+!! the EFOs are computed from, and the occupation cutoff.
+!! arguments:
+!!   idobeta (in)  1 when the beta EFOs are computed separately
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine efo_section_header(idobeta)
+      use input_options_mod, only: ieffao,ieffthr,idoat
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+
+      if(idoat.ne.0) then
+        call print_box('EFFECTIVE ATOMIC ORBITALS (EFAOs)')
+      else
+        call print_box('EFFECTIVE FRAGMENT ORBITALS (EFOs)')
+      end if
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      if(cspace.eq.'hilbert') then
+        call print_value('Atomic definition',
+     +    trim(ckey)//' (Hilbert space)')
+      else
+        call print_value('Atomic definition',trim(ckey)//' (real space)')
+      end if
+      if(ieffao.eq.1) then
+        call print_value('Densities','total')
+      else if(idobeta.eq.1.or.idoat.ne.0) then
+        call print_value('Densities','alpha and beta separately')
+      else
+        call print_value('Densities','alpha (beta equal to alpha)')
+      end if
+      if(idoat.ne.0) then
+        call print_value('EFAO occupation cutoff',
+     +    dble(ieffthr)/1000.0d0,5)
+      else
+        call print_value('EFO occupation cutoff',
+     +    dble(ieffthr)/1000.0d0,5)
+      end if
+      if(ieffao.eq.1) write(*,'(a)') ''
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: ueffao3d_frag
+!! Real-space effective fragment orbitals: for each fragment, the
+!! density pk in the basis orthogonalized with the fragment-weighted
+!! overlap, diagonalized; prints the net and gross occupations and the
+!! fit of each EFO and stores them in effao_mod (p0, p0net, p0gro, ip0,
+!! and p0coef, the EFOs reprojected for the .fchk file).
+!! arguments:
+!!   itotps (in)  number of grid points
+!!   ndim   (in)  number of basis functions
+!!   omp    (in)  (itotps) weight of each point for its own atom
+!!   chp    (in)  (itotps,ndim) basis functions at the points
+!!   sat    (in)  (ndim,ndim,nat) atomic overlap matrices
+!!   wp     (in)  (itotps) integration weights
+!!   omp2   (in)  (itotps,nat) atomic weights of each point
+!!   pk     (in)  (ndim,ndim) density: P, Pa or Pb
+!!   icase  (in)  0 total density, 1 alpha, 2 beta
+!! author: PSalse, ERaco, MGimf
+!! ----------------------------------------------------------------------
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
 
       use integration_grid
@@ -60,7 +104,7 @@
       allocatable :: s0all(:)
       allocatable :: scr(:)
       allocatable :: Sinv(:,:),cprojfrag(:,:),xfitfrag(:)
-      character(len=30) :: lbl30
+      allocatable :: occn(:),fitp(:)
 
       icube   = Iopt(13)
       ieffthr = Iopt(24)
@@ -68,14 +112,13 @@
 
       xminocc=REAL(ieffthr)/1000.0d0
 
-      call print_box('DOING EFFAO-3D GENERAL FORMULATION')
       if(icase.eq.1) then
-        call print_subbox('EFFAOs FROM THE ALPHA DENSITY')
+        call print_box('ALPHA DENSITY')
       else if(icase.eq.2) then
-        call print_subbox('EFFAOs FROM THE BETA DENSITY')
+        call print_box('BETA DENSITY')
       end if
 
-      ALLOCATE(scr(iatps*nat))
+      ALLOCATE(scr(iatps*nat),occn(ndim),fitp(ndim))
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
       ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
 
@@ -161,14 +204,6 @@
             end do
           end do
         end do
-        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
-        write(*,*)
-        lbl30="Net occupation for fragment"
-        write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xmaxo
-        write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
-        write(*,60) (pp0(mu,mu),mu=1,imaxo)
-        write(*,*)
-
 !! gross occupation of each EFO via sat (all atoms), scaled by its net   !!
 !! occupation -- this is what eos_analysis now sorts/selects on.         !!
 !! parallel over i: independent per EFO, writes only s0all(i); xx0 is a  !!
@@ -192,21 +227,22 @@
           xx0=xx0+xxx
         end do
 !$OMP END PARALLEL DO
-        lbl30="Gross occupation for fragment"
-        write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
-        write(*,60) (s0all(mu),mu=1,imaxo)
-        write(*,*)
 
 !! store this fragment's EFOs/occupations into effao_mod (see header):   !!
 !! p0 keeps the raw c0 (cubegen_new applies the fragment weight itself), !!
 !! p0coef (persists across fragments, pooled for the .fchk) gets the     !!
-!! projected coefficients. FIT % = 100*(1-xfit), per EFO.                !!
+!! projected coefficients. Fit (%) = 100*(1-xfit), per EFO.              !!
         if(imaxo.gt.0) then
           call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +      c0,1,imaxo,cprojfrag,xfitfrag)
-          write(*,61) (100.0d0*(1.0d0-xfitfrag(mu)),mu=1,imaxo)
         end if
-        write(*,62) xnetall-xmaxo,xgroall-xx0
+        do mu=1,imaxo
+          occn(mu)=pp0(mu,mu)
+          fitp(mu)=100.0d0*(1.0d0-xfitfrag(mu))
+        end do
+        if(iicenter.gt.1) write(*,'(a)') ''
+        call print_efo_block('Fragment',iicenter,imaxo,xmaxo,occn,
+     +    .true.,xx0,s0all,.true.,fitp,xnetall-xmaxo,xgroall-xx0)
         do k=1,imaxo
           do mu=1,igr
             p0(mu,k)=c0(mu,k)
@@ -222,34 +258,33 @@
 
       end do !! end of the per-fragment loop !!
 
-      DEALLOCATE(scr,s0,sm,c0,splus,pp0,s0all)
+      DEALLOCATE(scr,s0,sm,c0,splus,pp0,s0all,occn,fitp)
       DEALLOCATE(Sinv,cprojfrag,xfitfrag)
-
-60    FORMAT("  OCCUP.",8f9.4)
-61    FORMAT("  FIT % ",8f9.2)
-62    FORMAT("  Left out by the cutoff (net / gross):",2f11.5)
 
       end
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: eos_analysis                                              !!
-!! purpose: assigns EFO gross occupations (p0gro) to integer/fractional  !!
-!!   electron counts per fragment (EOS), then derives oxidation states.  !!
-!!   Handles restricted (icase=0), alpha (1) and beta (2) spin cases.    !!
-!!   Also pools/sorts each EFO's coefficient vector the same way,        !!
-!!   truncated to igr and zero-padded, feeding the shared .fchk EFO      !!
-!!   splicer (print.f's rwf/uwf_effao_orbprint), for every scheme.       !!
-!! arguments:                                                            !!
-!!   idobeta (in) -- 0 skips a separate beta pass (doubles alpha result) !!
-!!   icase   (in) -- 0 closed-shell, 1 alpha, 2 beta                     !!
-!!   thres   (in) -- degeneracy threshold for integer electron count     !!
-!! author: PSalse, ERaco, MGimf                                          !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: eos_analysis
+!! Effective oxidation states, one spin channel per call: pools the EFOs
+!! of all fragments, sorted by gross occupation, gives the electrons of
+!! the channel to the most occupied ones (sharing them evenly among
+!! EFOs at the frontier with occupations within thres), prints the
+!! electrons of each fragment and the reliability index R, and after
+!! the beta channel the oxidation states and the EFO .fchk file.
+!! arguments:
+!!   idobeta (in)  0: the beta channel is not computed and is assigned
+!!                 as the alpha one
+!!   icase   (in)  1 alpha, 2 beta
+!!   thres   (in)  occupation difference below which frontier EFOs are
+!!                 treated as degenerate (EOS_THRESH)
+!! author: PSalse, ERaco, MGimf
+!! ----------------------------------------------------------------------
       subroutine eos_analysis(idobeta,icase,thres)
 
       use effao_mod, only: p0gro,ip0,p0coef,p0poolcoef
+      use output_mod, only: print_value
 
       implicit real*8(a-h,o-z)
 
@@ -269,7 +304,9 @@
 
 
       if(idobeta.eq.0.and.icase.eq.2) then
-        call print_box('SKIPPING EFFAOs FOR BETA ELECTRONS')
+        call print_box('BETA DENSITY')
+        write(*,'(2x,a)') 'The beta density equals the alpha one: '//
+     +    'the beta electrons are assigned as the alpha ones'
         lorb(2)=lorb(1)
         do i=1,lorb(2)
           occup(i,2)=occup(i,1)
@@ -278,7 +315,8 @@
         confi=confi0
         go to 99
       else if(icase.eq.2.and.nb.eq.0) then
-        call print_box('CALCULATION HAS NO BETA ELECTRONS')
+        call print_box('EOS, BETA ELECTRONS')
+        write(*,'(2x,a)') 'No beta electrons to assign'
         do i=1,icufr
           elec(i)=ZERO
         end do
@@ -311,7 +349,12 @@
           iorbslot(iorb,icase)=k
         end do
       end do
-      write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",iorb
+      if(icase.eq.1) then
+        call print_box('EOS, ALPHA ELECTRONS')
+      else
+        call print_box('EOS, BETA ELECTRONS')
+      end if
+      call print_value('EFOs in the assignment',iorb)
 
       lorb(icase)=iorb
       ALLOCATE(occup2(iorb))
@@ -374,7 +417,7 @@
       end if
       k=k-1
       if(k.eq.0) then
-        call print_box('EOS: Unambiguous integer electron assignation')
+        call print_value('Electron assignment','integer')
         do i=1,iorb
           if(i.le.nnn) then
             occup2(i)=ONE
@@ -383,7 +426,7 @@
           end if
         end do
       else
-        call print_box('EOS: WARNING, PSEUDO-DEGENERACIES DETECTED')
+        call print_value('Electron assignment','fractional')
         kk=0
 334     kk=kk+1
         if(nnn-kk.ge.1) then
@@ -393,8 +436,15 @@
 !! the kk+1 electrons of the block's occupied EFOs, spread evenly over !!
 !! its kk+k+1 quasi-degenerate EFOs                                    !!
         frac=float(kk+1)/float(kk+k+1)
-        write(*,'(2x,a12,x,i0,x,a14,x,i0,x,a)') "Distributing",kk+1,"electrons over",kk+k+1,
-     +  "pseudodegenerate atomic orbitals"
+        if(kk.eq.0) then
+          write(*,'(2x,a,i0,a,f7.5,a)') 'WARNING: 1 electron shared '//
+     +      'by ',kk+k+1,' EFOs with occupations within ',thres,
+     +      ' of each other'
+        else
+          write(*,'(2x,a,i0,a,i0,a,f7.5,a)') 'WARNING: ',kk+1,
+     +      ' electrons shared by ',kk+k+1,' EFOs with occupations '//
+     +      'within ',thres,' of each other'
+        end if
         do i=1,iorb
           if(i.lt.nnn-kk) then
             occup2(i)=ONE
@@ -438,24 +488,11 @@
         end if
       end do
 
-      if(icase.eq.1) then
-        call print_subbox('EOS ANALYSIS FOR ALPHA ELECTRONS')
-      else if (icase.eq.2) then
-        call print_subbox('EOS ANALYSIS FOR BETA ELECTRONS')
-      end if
-      write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
-      write(*,*) " ---------------------------------------- "
-
 !! xlast: worst (smallest) "last occupied EFO" gross occupation across    !!
 !! fragments -- the weakest-defined occupied/unoccupied boundary.         !!
       xlast=ONE
       ilast=0
       do i=1,icufr
-        if(ifu(i).eq.0) then
-          write(*,10) i,elec(i),xlo(i),'     -'
-        else
-          write(*,15) i,elec(i),xlo(i),xfu(i)
-        end if
         if(ilo(i).eq.1) then
           if(xlo(i).lt.xlast) then
             xlast=xlo(i)
@@ -472,12 +509,11 @@
           if(xfu(i).gt.xfirst) xfirst=xfu(i)
         end if
       end do
-      write(*,*) " ---------------------------------------- "
 
 !! reliability index: 100% if the occupied/unoccupied gap is >=0.5,      !!
 !! scaled down as xlast and xfirst get closer together.                  !!
       confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
-      write(*,'(3x,a24,x,f7.3)') "RELIABILITY INDEX R(%) =",confi
+      call print_eos_frontier(icufr,elec,xlo,ilo,xfu,ifu,confi)
       if(icase.eq.1) confi0=confi
 
 99    continue
@@ -497,18 +533,8 @@
       end do
 
       if(icase.eq.2) then
-        call print_box('FRAGMENT OXIDATION STATES')
-        write(*,*) "  Frag.  Oxidation State  "
-        write(*,*) " ------------------------ "
-        do ifrg=1,icufr
-          write(*,20) ifrg,oxi(ifrg)
-        end do
-        write(*,*) " ------------------------ "
-        write(*,'(3x,a22,x,f6.1)') "Total oxidation state:",zztot
-        write(*,*)
-
         confi2=dmin1(confi,confi0)
-        write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
+        call print_oxidation_states(icufr,oxi,zztot,.true.,confi2)
 
 !! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
 !! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!
@@ -535,27 +561,20 @@
         end if
       end if
 
-!! printing formats !!
-10    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,a6)
-15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
-20    FORMAT(3x,i3,6x,f8.2)
-
       end
 
 !! ****** !!
 
-!! *********************************************************************** !!
-!! subroutine: ueffaolow_frag                                              !!
-!! purpose: computes Hilbert-space (Lowdin or NAO basis) effective         !!
-!!   fragment orbitals (EFOs) for EOS/EFFAO, one fragment at a time, by    !!
-!!   block-diagonalizing the density matrix in the orthogonalized basis.   !!
-!!   Results are stored into effao_mod (p0/p0net/p0gro/ip0), not returned  !!
-!!   via arguments. Real-space (3D grid) twin is ueffao3d_frag; Mulliken   !!
-!!   Hilbert-space twin is ueffaomull_frag.                                !!
-!! arguments:                                                              !!
-!!   icase (in) -- 0 closed-shell, 1 alpha, 2 beta                         !!
-!! author: PSalse, ERaco, MGimf                                            !!
-!! *********************************************************************** !!
+!! ----------------------------------------------------------------------
+!! subroutine: ueffaolow_frag
+!! Hilbert-space EFOs with Lowdin, Davidson-Lowdin or NAO atoms: for
+!! each fragment, the block of the density on its orthogonal basis
+!! functions, diagonalized; prints the occupations and stores them in
+!! effao_mod (EFOs already in the AO basis, net = gross).
+!! arguments:
+!!   icase (in)  0 total density, 1 alpha, 2 beta
+!! author: PSalse, ERaco, MGimf
+!! ----------------------------------------------------------------------
       subroutine ueffaolow_frag(icase)
 
       use basis_set
@@ -574,6 +593,7 @@
       dimension iao_frag(nmax)
 
       allocatable :: s0(:,:), sm(:,:), c0(:,:), splus(:,:), pp0(:,:)
+      allocatable :: occn(:)
 
       icube   = Iopt(13)
       ieffthr = Iopt(24)
@@ -582,7 +602,7 @@
       xminocc=REAL(ieffthr)/1000.0d0
 
       ALLOCATE(s0(igr,igr),sm(igr,igr),splus(igr,igr))
-      ALLOCATE(c0(igr,igr),pp0(igr,igr))
+      ALLOCATE(c0(igr,igr),pp0(igr,igr),occn(igr))
 
 !! AO-to-fragment map. !!
       iao_frag=0
@@ -619,18 +639,9 @@
         sm=s12m
       end if
       if(icase.eq.1) then
-
-!! banner printed only once, on the alpha (or closed-shell) pass. !!
-        if(imulli.eq.4) then
-          call print_box('DOING EFFAO NAO FORMULATION')
-        else if(imulli.eq.3) then
-          call print_box('DOING EFFAO LOWDIN-DAVIDSON FORMULATION')
-        else
-          call print_box('DOING EFFAO LOWDIN FORMULATION')
-        end if
-        call print_subbox('EFFAOs FROM THE ALPHA DENSITY')
+        call print_box('ALPHA DENSITY')
       else if(icase.eq.2) then
-        call print_box('EFFAOs FROM THE BETA DENSITY')
+        call print_box('BETA DENSITY')
       end if
 
 !! transform P with Splus into the orthogonalized basis -- EFOs are      !!
@@ -656,13 +667,12 @@
 !! back-transform: EFOs expanded over the full basis set. !!
         call to_AO_basis(igr,igr,sm,C0)
 
-c max number of effaos
+!! number of basis functions of the fragment: at most that many EFOs !!
         imaxeff=0
         do i=1,igr
           if(iao_frag(i).eq.ifrag) imaxeff=imaxeff+1
         end do
 
-c actual number of effaos
 !! kept EFOs: up to all imaxeff of the fragment, above the cutoff;     !!
 !! xmaxo sums their net occupations, xnetall all of them (the matrix is !!
 !! zero outside the fragment's block, so this is its net population)    !!
@@ -680,15 +690,12 @@ c actual number of effaos
           xnetall=xnetall+pp0(i,i)
         end do
 
-        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
-        write(*,*)
-        write(*,'(2x,a27,3x,i4,f11.5)') "Net occupation for fragment",
-     +    ifrag,xmaxo
-        write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
-        write(*,60) (pp0(mu,mu),mu=1,imaxo)
-        write(*,'(2x,a,f11.5)') 'Left out by the cutoff (net):',
-     +    xnetall-xmaxo
-        write(*,*)
+        do mu=1,imaxo
+          occn(mu)=pp0(mu,mu)
+        end do
+        if(ifrag.gt.1) write(*,'(a)') ''
+        call print_efo_block('Fragment',ifrag,imaxo,xmaxo,occn,.false.,
+     +    ZERO,occn,.false.,occn,xnetall-xmaxo,ZERO)
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
 !! shared effao_mod arrays; the coefficients are already in the AO      !!
@@ -708,26 +715,22 @@ c actual number of effaos
 
       end do
 
-      DEALLOCATE(s0,sm,c0,splus,pp0)
-
-60    FORMAT("  OCCUP.",8f9.4)
+      DEALLOCATE(s0,sm,c0,splus,pp0,occn)
 
       end
 
 !! ****** !!
 
-!! *********************************************************************** !!
-!! subroutine: ueffaomull_frag                                             !!
-!! purpose: computes Hilbert-space (Mulliken basis) effective fragment     !!
-!!   orbitals (EFOs) for EOS/EFFAO, one fragment at a time, by block-      !!
-!!   diagonalizing the density matrix in the orthogonalized (per-fragment  !!
-!!   S^-1/2) AO basis. Results are stored into effao_mod (p0/p0net/p0gro/  !!
-!!   ip0), not returned via arguments. Real-space (3D grid) twin is        !!
-!!   ueffao3d_frag; Lowdin/NAO Hilbert-space twin is ueffaolow_frag.       !!
-!! arguments:                                                              !!
-!!   icase (in) -- 0 closed-shell, 1 alpha, 2 beta                         !!
-!! author: PSalse, ERaco, MGimf                                            !!
-!! *********************************************************************** !!
+!! ----------------------------------------------------------------------
+!! subroutine: ueffaomull_frag
+!! Hilbert-space EFOs with Mulliken atoms: for each fragment, the block
+!! of the density on its basis functions, orthogonalized within the
+!! fragment and diagonalized; prints the occupations and stores them in
+!! effao_mod (net = gross).
+!! arguments:
+!!   icase (in)  0 total density, 1 alpha, 2 beta
+!! author: PSalse, ERaco, MGimf
+!! ----------------------------------------------------------------------
       subroutine ueffaomull_frag(icase)
 
       use basis_set
@@ -745,7 +748,7 @@ c actual number of effaos
       dimension iao_frag(nmax)
 
       allocatable :: s0(:,:),sm(:,:),c0(:,:),splus(:,:),pp0(:,:)
-      allocatable :: pk(:,:)
+      allocatable :: pk(:,:),occn(:)
 
       icube   = Iopt(13)
       ieffthr = Iopt(24)
@@ -753,16 +756,15 @@ c actual number of effaos
       xminocc=real(ieffthr)/1000.0d0
 
       ALLOCATE(s0(igr,igr),sm(igr,igr),splus(igr,igr))
-      ALLOCATE(c0(igr,igr),pp0(igr,igr),pk(igr,igr))
+      ALLOCATE(c0(igr,igr),pp0(igr,igr),pk(igr,igr),occn(igr))
 
       if(icase.eq.0) then
         pk=p
       else if(icase.eq.1) then
-        call print_box('DOING EFFAO MULLIKEN FORMULATION')
-        call print_subbox('EFFAOs FROM THE ALPHA DENSITY')
+        call print_box('ALPHA DENSITY')
         pk=pa
       else if(icase.eq.2) then
-        call print_box('EFFAOs FROM THE BETA DENSITY')
+        call print_box('BETA DENSITY')
         pk=pb
       end if
 
@@ -825,15 +827,12 @@ c actual number of effaos
           xnetall=xnetall+pp0(i,i)
         end do
 
-        write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",ifrag,"**"
-        write(*,*)
-        write(*,'(2x,a27,3x,i4,f11.5)') "Net occupation for fragment",
-     +    ifrag,xmaxo
-        write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
-        write(*,60) (pp0(mu,mu),mu=1,imaxo)
-        write(*,'(2x,a,f11.5)') 'Left out by the cutoff (net):',
-     +    xnetall-xmaxo
-        write(*,*)
+        do mu=1,imaxo
+          occn(mu)=pp0(mu,mu)
+        end do
+        if(ifrag.gt.1) write(*,'(a)') ''
+        call print_efo_block('Fragment',ifrag,imaxo,xmaxo,occn,.false.,
+     +    ZERO,occn,.false.,occn,xnetall-xmaxo,ZERO)
 
 !! save this fragment's EFOs (coefficients and occupations) into the    !!
 !! shared effao_mod arrays; the coefficients are already in the AO      !!
@@ -853,34 +852,18 @@ c actual number of effaos
 
       end do
 
-      DEALLOCATE(s0,sm,c0,splus,pp0,pk)
-
-60    FORMAT("  OCCUP.",8f9.4)
+      DEALLOCATE(s0,sm,c0,splus,pp0,pk,occn)
 
       end
 
-!! ********************************************************************* !!
-!! subroutine: ueffao3d                                                  !!
-!! purpose: computes real-space (3D grid) effective atomic orbitals      !!
-!!   (EFAOs) for EFFAO/DOATOMS, one atom at a time (icuat-restricted     !!
-!!   atom list if DOATOMS narrowed it, else every atom). Same scheme as  !!
-!!   ueffao3d_frag above, per-atom instead of per-fragment -- results    !!
-!!   are stored into effao_mod (p0/p0net/p0gro/ip0), not returned via    !!
-!!   arguments.                                                          !!
-!! arguments (all read-only):                                            !!
-!!   itotps (in) -- total number of grid points (nat*iatps)              !!
-!!   ndim   (in) -- number of basis functions (leading dim of chp/sat/pk)!!
-!!   omp    (in) -- becke/tfvc weight of each grid point for its own atom!!
-!!   chp    (in) -- basis-function values at each grid point             !!
-!!   sat    (in) -- per-atom AO overlap matrix (from numint_sat)         !!
-!!   wp     (in) -- integration weight of each grid point                !!
-!!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for   !!
-!!                  every atom                                           !!
-!!   pk     (in) -- density matrix to project onto atomic EFAOs (p for   !!
-!!                  closed-shell, pa/pb for alpha/beta)                  !!
-!!   icase  (in) -- 0 closed-shell, 1 alpha, 2 beta                      !!
-!! author:                                                                !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: ueffao3d
+!! Real-space effective atomic orbitals (EFAOs) of single atoms
+!! (DOATOMS, the atoms of # ATOMS): as ueffao3d_frag, with the atomic
+!! weight in place of the fragment weight and without the .fchk file.
+!! arguments: as ueffao3d_frag
+!! author:
+!! ----------------------------------------------------------------------
       subroutine ueffao3d(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
 
       use integration_grid
@@ -903,8 +886,7 @@ c actual number of effaos
       dimension pk(ndim,ndim)
 
       allocatable :: s0(:,:),sm(:,:),c0(:,:),splus(:,:),pp0(:,:)
-      allocatable :: s0all(:)
-      character(len=30) :: lbl30
+      allocatable :: s0all(:),occn(:)
 
       icube   = Iopt(13)
       ieffthr = Iopt(24)
@@ -912,18 +894,17 @@ c actual number of effaos
 
       xmaxocc=REAL(ieffthr)/1000.0d0
 
-      call print_box('DOING EFFAO-3D GENERAL FORMULATION')
       if(icase.eq.1) then
-        call print_subbox('EFFAOs FROM THE ALPHA DENSITY')
+        call print_box('ALPHA DENSITY')
       else if(icase.eq.2) then
-        call print_subbox('EFFAOs FROM THE BETA DENSITY')
+        call print_box('BETA DENSITY')
       end if
 
       nat0=nat
       if(icuat.ne.nat) nat0=icuat
 
       ALLOCATE(s0(ndim,ndim),s0all(ndim),sm(ndim,ndim),splus(ndim,ndim))
-      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim))
+      ALLOCATE(c0(ndim,ndim),pp0(ndim,ndim),occn(ndim))
 
 !! per-atom loop kept serial on purpose: icuat/nat0 can be small on a    !!
 !! large system (or a DOATOMS-restricted handful) -- the O(igr^2)/O(igr^3)!!
@@ -990,14 +971,6 @@ c actual number of effaos
           end do
         end do
 
-        write(*,'(2x,a7,x,i3,x,a2)') "** ATOM",icenter,"**"
-        write(*,*)
-        lbl30="Net occupation for atom"
-        write(*,'(2x,a30,i4,f11.5)') lbl30,icenter,xmaxo
-        write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xmaxocc
-        write(*,60) (pp0(mu,mu),mu=1,imaxo)
-        write(*,*)
-
 !! gross occupation of each EFAO via sat, scaled by its net occupation. !!
 !! parallel over i: independent per EFAO, writes only s0all(i); xx0 is  !!
 !! a genuine REDUCTION. c0/sat/pp0 shared, read-only.                   !!
@@ -1015,12 +988,12 @@ c actual number of effaos
           xx0=xx0+xx
         end do
 !$OMP END PARALLEL DO
-        lbl30="Gross occupation for atom"
-        write(*,'(2x,a30,i4,f11.5)') lbl30,icenter,xx0
-        write(*,60) (s0all(mu),mu=1,imaxo)
-        write(*,'(2x,a,2f11.5)') 'Left out by the cutoff '//
-     +    '(net / gross):',xnetall-xmaxo,xgroall-xx0
-        write(*,*)
+        do mu=1,imaxo
+          occn(mu)=pp0(mu,mu)
+        end do
+        if(iicenter.gt.1) write(*,'(a)') ''
+        call print_efo_block('Atom',icenter,imaxo,xmaxo,occn,.true.,
+     +    xx0,s0all,.false.,occn,xnetall-xmaxo,xgroall-xx0)
 
 !! store this atom's EFAOs/occupations into effao_mod (see header). !!
         do k=1,imaxo
@@ -1037,9 +1010,7 @@ c actual number of effaos
 
       end do !! end of the per-atom loop !!
 
-      DEALLOCATE(s0,sm,c0,splus,pp0,s0all)
-
-60    FORMAT("  OCCUP.",8f9.4)
+      DEALLOCATE(s0,sm,c0,splus,pp0,s0all,occn)
 
       end
 

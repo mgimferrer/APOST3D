@@ -104,40 +104,39 @@ DOFRAGS
 
 The excerpt below comes from the FeCO₂²⁺ complex, RKS PBE, TFVC, with Fe
 as fragment 1 and the two CO ligands as fragments 2 and 3 (test
-`FeCO2-PBEPBE`, which runs `EOS`; `UEFFAO` prints the same blocks). Each
-fragment gets one entry per density:
+`FeCO2-PBEPBE`, which runs `EOS`; `UEFFAO` prints the same blocks). The
+section starts with the atomic definition, the densities the EFOs come
+from and the occupation cutoff, then gives each fragment one entry per
+density:
 
 % source: tests/reference/FeCO2-PBEPBE.apost
 ```text
-  ** FRAGMENT   1 **
-
-  Net occupation for fragment      1   12.11689
-  Net occupation using >    0.00100
-  OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
-  OCCUP.   0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
-  OCCUP.   0.0086   0.0081   0.0018
-
-  Gross occupation for fragment    1   12.27814
-  OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
-  OCCUP.   0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
-  OCCUP.   0.0124   0.0117   0.0034
-
-  FIT %     99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
-  FIT %     94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
-  FIT %     70.62    70.47    58.34
-  Left out by the cutoff (net / gross):    0.00007    0.00024
+  Fragment 1
+  Net occupation                          :       12.11689
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
+            0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
+            0.0086   0.0081   0.0018
+  Gross occupation                        :       12.27814
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
+            0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
+            0.0124   0.0117   0.0034
+  Fit (%)    99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
+             94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
+             70.62    70.47    58.34
+  Left out by the cutoff (net)            :        0.00007
+  Left out by the cutoff (gross)          :        0.00024
 ```
 
-- The first `OCCUP.` rows list the net occupations of the fragment's EFOs,
-  in decreasing order, 8 per line. Only EFOs with net occupation above
-  0.001 are listed, and `Net occupation for fragment` is their sum.
-- `Gross occupation for fragment` and the second `OCCUP.` rows are the
-  same for the gross occupations, in the same order.
+- The `Net` rows list the net occupations of the fragment's EFOs, in
+  decreasing order, 8 per line. Only EFOs with net occupation above the
+  cutoff (0.001) are listed, and `Net occupation` is their sum.
+- `Gross occupation` and the `Gross` rows are the same for the gross
+  occupations, in the same order.
 - `Left out by the cutoff` is what the listed EFOs miss of the fragment's
   net and gross (alpha) population: the occupations of the EFOs below
   0.001. Small values mean the listed EFOs describe the fragment's density
   well. With Mulliken, Löwdin or NAO atoms only the net value is printed.
-- `FIT %` (real-space schemes) measures how well each EFO can be
+- `Fit (%)` (real-space schemes) measures how well each EFO can be
   written in terms of the basis functions, which is how `EOS` and `GEOS`
   write them to a `.fchk` file (see
   [Visualizing orbitals](../guide/visualization.md)).
@@ -150,7 +149,7 @@ ligands, is what the [EOS](eos.md) analysis turns into an oxidation
 state.
 
 With `MULLIKEN`, `LOWDIN` or `NAO-BASIS` only one set of occupations is
-printed (there is no separate gross occupation and no `FIT %`). Mulliken
+printed (there is no separate gross occupation and no `Fit (%)`). Mulliken
 occupations can slightly exceed 1.
 
 ## Files written

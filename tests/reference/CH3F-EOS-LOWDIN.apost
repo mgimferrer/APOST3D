@@ -290,62 +290,59 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  ----------------------------------
-    DOING EFFAO LOWDIN FORMULATION
-  ----------------------------------
-
-  ---------------------------------
-    EFFAOs FROM THE ALPHA DENSITY
-  ---------------------------------
-
-  ** FRAGMENT   1 **
-
-  Net occupation for fragment      1    4.56928
-  Net occupation using >    0.00100
-  OCCUP.   1.0000   0.9664   0.9664   0.9558   0.6677   0.0078   0.0027   0.0027
-  Left out by the cutoff (net):    0.00009
-
-  ** FRAGMENT   2 **
-
-  Net occupation for fragment      2    4.43061
-  Net occupation using >    0.00100
-  OCCUP.   0.9999   0.9973   0.9973   0.9922   0.3323   0.0442   0.0336   0.0336
-  Left out by the cutoff (net):    0.00002
-
-  Total number of eff-AO-s for analysis:   16
-
-  -------------------------------------------------
-    EOS: Unambiguous integer electron assignation
-  -------------------------------------------------
-
-  ------------------------------------
-    EOS ANALYSIS FOR ALPHA ELECTRONS
-  ------------------------------------
-
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     5.00     0.668     0.008
-     2     4.00     0.992     0.332
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) =  83.534
-
   --------------------------------------
-    SKIPPING EFFAOs FOR BETA ELECTRONS
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
   --------------------------------------
 
+  Atomic definition                       : LOWDIN (Hilbert space)
+  Densities                               : alpha (beta equal to alpha)
+  EFO occupation cutoff                   :        0.00100
+
+  -----------------
+    ALPHA DENSITY
+  -----------------
+
+  Fragment 1
+  Net occupation                          :        4.56928
+  Net       1.0000   0.9664   0.9664   0.9558   0.6677   0.0078   0.0027   0.0027
+  Left out by the cutoff (net)            :        0.00009
+
+  Fragment 2
+  Net occupation                          :        4.43061
+  Net       0.9999   0.9973   0.9973   0.9922   0.3323   0.0442   0.0336   0.0336
+  Left out by the cutoff (net)            :        0.00002
+
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
+
+  EFOs in the assignment                  : 16
+  Electron assignment                     : integer
+
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       5.00      0.668         0.008
+      2       4.00      0.992         0.332
+  -----------------------------------------
+  Reliability index R (%)                 :         83.534
+
+  ----------------
+    BETA DENSITY
+  ----------------
+
+  The beta density equals the alpha one: the beta electrons are assigned as the alpha ones
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1         -1.00
-     2          1.00
-  ------------------------ 
-   Total oxidation state:    0.0
-
-  OVERALL RELIABILITY INDEX R(%) =  83.534
+  Frag.  Oxidation state
+  ----------------------
+      1            -1.00
+      2             1.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :         83.534
 
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s

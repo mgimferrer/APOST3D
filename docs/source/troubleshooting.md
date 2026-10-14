@@ -209,7 +209,8 @@ wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
 Not an error: the local spins of a closed-shell restricted determinant are
 all zero, so `SPIN` is skipped.
 
-**`EOS: WARNING, PSEUDO-DEGENERACIES DETECTED`**
+**`WARNING: 1 electron shared by 2 EFOs with occupations within ...`**
+(with `Electron assignment : fractional`)
 Not an error: frontier orbitals of different fragments have almost the
 same occupation, and the electrons are shared among them (fractional
 oxidation states); see [EOS](methods/eos.md).

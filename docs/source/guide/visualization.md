@@ -49,12 +49,12 @@ real-space scheme, an effective fragment orbital
 is cut to its fragment by the fragment's weight function, and that shape
 can't be written exactly in terms of the basis functions, which is all a
 `.fchk` file can hold. The file contains its best basis-set
-approximation, and the `FIT %` row printed under each fragment's
+approximation, and the `Fit (%)` row printed under each fragment's
 occupations in the main output gives its quality, 100 × (1 − ‖difference‖
 / ‖orbital‖) (`% recovered` for the negative GEOS orbitals). Typical
 values:
 
-| EFO net occupation | Typical `FIT %` |
+| EFO net occupation | Typical `Fit (%)` |
 |---|---|
 | ≳ 0.9 | 98–99.9 |
 | 0.4–0.8 | 84–95 |

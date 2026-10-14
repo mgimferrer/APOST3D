@@ -767,35 +767,35 @@
         },
         {
           "label": "Fe fragment EFO net occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 12.11689,
           "tol_abs": 0.0002
         },
         {
           "label": "Fe fragment EFO gross occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 12.27814,
           "tol_abs": 0.0002
         },
         {
           "label": "C fragment EFO net occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 6.77837,
           "tol_abs": 0.0002
         },
         {
           "label": "C fragment EFO gross occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 2\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 6.85638,
           "tol_abs": 0.0002
         },
         {
           "label": "Fe frag 1 EFO 11 net occupation",
-          "section": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\r?\\n\\s*Net occupation using[^\\n]*\\r?\\n",
+          "section": "Fragment 1\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 11,
           "ref": 0.8156,
@@ -803,7 +803,7 @@
         },
         {
           "label": "Fe frag 1 EFO 11 gross occupation",
-          "section": "Gross occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\r?\\n",
+          "section": "Fragment 1\\s*\\n[\\s\\S]*?Gross occupation\\s*:[^\\n]*\\n",
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 11,
           "ref": 0.8381,
@@ -811,7 +811,7 @@
         },
         {
           "label": "C frag 2 EFO 7 net occupation",
-          "section": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\r?\\n\\s*Net occupation using[^\\n]*\\r?\\n",
+          "section": "Fragment 2\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 7,
           "ref": 0.7473,
@@ -819,7 +819,7 @@
         },
         {
           "label": "C frag 2 EFO 7 gross occupation",
-          "section": "Gross occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\r?\\n",
+          "section": "Fragment 2\\s*\\n[\\s\\S]*?Gross occupation\\s*:[^\\n]*\\n",
           "pattern": "([-+]?\\d+\\.\\d+)",
           "match_index": 7,
           "ref": 0.787,
@@ -827,8 +827,8 @@
         },
         {
           "label": "Fe EOS alpha electrons (frag 1)",
-          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
-          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "EOS, ALPHA ELECTRONS",
+          "pattern": "\\n\\s*1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 12.0,
           "tol_abs": 0.05
         },
@@ -841,7 +841,7 @@
         },
         {
           "label": "EOS reliability index R(%)",
-          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 96.598,
           "tol_abs": 0.02
         }
@@ -1133,43 +1133,42 @@
         },
         {
           "label": "Fe fragment EFO alpha net occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 13.40094,
           "tol_abs": 0.0002
         },
         {
           "label": "Fe fragment EFO beta net occupation",
-          "section": "EFFAOs FROM THE BETA DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "BETA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 13.11495,
           "tol_abs": 0.0002
         },
         {
           "label": "CN ligand fragment EFO alpha net occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 6.74761,
           "tol_abs": 0.0002
         },
         {
           "label": "EOS alpha reliability index R(%)",
-          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 1,
           "ref": 64.481,
           "tol_abs": 0.02
         },
         {
           "label": "EOS beta reliability index R(%)",
-          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": 67.928,
           "tol_abs": 0.02
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
-          "match_index": 3,
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 64.481,
           "tol_abs": 0.02
         },
@@ -1258,28 +1257,28 @@
         },
         {
           "label": "EOS alpha net occupation fragment 1",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 5.16096,
           "tol_abs": 0.0002
         },
         {
           "label": "EOS beta net occupation fragment 1",
-          "section": "EFFAOs FROM THE BETA DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "BETA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 6.00909,
           "tol_abs": 0.0002
         },
         {
           "label": "EOS alpha reliability index R(%)",
-          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 1,
           "ref": 89.768,
           "tol_abs": 0.02
         },
         {
           "label": "EOS beta reliability index R(%)",
-          "pattern": "RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": 100.0,
           "tol_abs": 0.02
@@ -1334,22 +1333,22 @@
         },
         {
           "label": "Fragment 1 alpha EFO net occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 5.44972,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 alpha EFO net occupation",
-          "section": "EFFAOs FROM THE ALPHA DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 4.54913,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 beta EFO net occupation",
-          "section": "EFFAOs FROM THE BETA DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "BETA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 6.11679,
           "tol_abs": 0.0002
         },
@@ -1369,7 +1368,7 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 81.713,
           "tol_abs": 0.02
         }
@@ -2758,15 +2757,15 @@
       "checks": [
         {
           "label": "F alpha electrons (frag 1)",
-          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
-          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "EOS, ALPHA ELECTRONS",
+          "pattern": "\\n\\s*1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 5.0,
           "tol_abs": 0.05
         },
         {
           "label": "Beta electrons assigned as alpha",
           "type": "present",
-          "pattern": "SKIPPING EFFAOs FOR BETA ELECTRONS"
+          "pattern": "The beta density equals the alpha one: the beta electrons are assigned as the alpha ones"
         },
         {
           "label": "F oxidation state",
@@ -2784,7 +2783,7 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 83.534,
           "tol_abs": 0.02
         }
@@ -2812,12 +2811,12 @@
         {
           "label": "No beta electrons",
           "type": "present",
-          "pattern": "CALCULATION HAS NO BETA ELECTRONS"
+          "pattern": "No beta electrons to assign"
         },
         {
           "label": "H1 alpha electrons (frag 1)",
-          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
-          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "EOS, ALPHA ELECTRONS",
+          "pattern": "\\n\\s*1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.0,
           "tol_abs": 0.05
         },
@@ -2837,7 +2836,7 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 100.0,
           "tol_abs": 0.02
         }
@@ -2865,19 +2864,19 @@
         {
           "label": "Pseudo-degenerate assignment",
           "type": "present",
-          "pattern": "PSEUDO-DEGENERACIES DETECTED"
+          "pattern": "Electron assignment\\s*: fractional"
         },
         {
           "label": "H1 alpha electrons (frag 1)",
-          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
-          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "EOS, ALPHA ELECTRONS",
+          "pattern": "\\n\\s*1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.5,
           "tol_abs": 0.05
         },
         {
           "label": "H2 beta electrons (frag 2)",
-          "section": "EOS ANALYSIS FOR BETA ELECTRONS",
-          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "EOS, BETA ELECTRONS",
+          "pattern": "\\n\\s*2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.5,
           "tol_abs": 0.05
         },
@@ -2897,7 +2896,7 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 100.0,
           "tol_abs": 0.02
         }

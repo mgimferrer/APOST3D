@@ -339,102 +339,85 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  UEFFAO: alpha and beta treated separately
-
-
   --------------------------------------
-    DOING EFFAO-3D GENERAL FORMULATION
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
   --------------------------------------
 
-  ---------------------------------
-    EFFAOs FROM THE ALPHA DENSITY
-  ---------------------------------
+  Atomic definition                       : TFVC (real space)
+  Densities                               : alpha and beta separately
+  EFO occupation cutoff                   :        0.00100
 
-  ** FRAGMENT   1 **
+  -----------------
+    ALPHA DENSITY
+  -----------------
 
-  Net occupation for fragment      1    0.95409
-  Net occupation using >    0.00100
-  OCCUP.   0.8197   0.1344
+  Fragment 1
+  Net occupation                          :        0.95409
+  Net       0.8197   0.1344
+  Gross occupation                        :        0.99998
+  Gross     0.8414   0.1585
+  Fit (%)    80.78    53.97
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  Gross occupation for fragment    1    0.99998
-  OCCUP.   0.8414   0.1585
+  Fragment 2
+  Net occupation                          :        0.95409
+  Net       0.8197   0.1344
+  Gross occupation                        :        0.99998
+  Gross     0.8414   0.1585
+  Fit (%)    80.78    53.97
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  FIT %     80.78    53.97
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-  ** FRAGMENT   2 **
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
 
-  Net occupation for fragment      2    0.95409
-  Net occupation using >    0.00100
-  OCCUP.   0.8197   0.1344
+  EFOs in the assignment                  : 4
+  Electron assignment                     : integer
 
-  Gross occupation for fragment    2    0.99998
-  OCCUP.   0.8414   0.1585
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       1.00      0.841         0.159
+      2       1.00      0.841         0.159
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
 
-  FIT %     80.78    53.97
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-  Total number of eff-AO-s for analysis:    4
+  ----------------
+    BETA DENSITY
+  ----------------
 
-  -------------------------------------------------
-    EOS: Unambiguous integer electron assignation
-  -------------------------------------------------
+  Fragment 1
+  Net occupation                          :        0.00000
+  No EFO above the cutoff
+  Gross occupation                        :        0.00000
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  ------------------------------------
-    EOS ANALYSIS FOR ALPHA ELECTRONS
-  ------------------------------------
+  Fragment 2
+  Net occupation                          :        0.00000
+  No EFO above the cutoff
+  Gross occupation                        :        0.00000
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     1.00     0.841     0.159
-     2     1.00     0.841     0.159
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) = 100.000
+  -----------------------
+    EOS, BETA ELECTRONS
+  -----------------------
 
-  --------------------------------------
-    DOING EFFAO-3D GENERAL FORMULATION
-  --------------------------------------
-
-  --------------------------------
-    EFFAOs FROM THE BETA DENSITY
-  --------------------------------
-
-  ** FRAGMENT   1 **
-
-  Net occupation for fragment      1    0.00000
-  Net occupation using >    0.00100
-  OCCUP.
-
-  Gross occupation for fragment    1    0.00000
-  OCCUP.
-
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-  ** FRAGMENT   2 **
-
-  Net occupation for fragment      2    0.00000
-  Net occupation using >    0.00100
-  OCCUP.
-
-  Gross occupation for fragment    2    0.00000
-  OCCUP.
-
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-
-  -------------------------------------
-    CALCULATION HAS NO BETA ELECTRONS
-  -------------------------------------
-
+  No beta electrons to assign
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          0.00
-     2          0.00
-  ------------------------ 
-   Total oxidation state:    0.0
-
-  OVERALL RELIABILITY INDEX R(%) = 100.000
+  Frag.  Oxidation state
+  ----------------------
+      1             0.00
+      2             0.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :        100.000
 
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s

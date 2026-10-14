@@ -340,117 +340,99 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  UEFFAO: alpha and beta treated separately
-
-
   --------------------------------------
-    DOING EFFAO-3D GENERAL FORMULATION
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
   --------------------------------------
 
-  ---------------------------------
-    EFFAOs FROM THE ALPHA DENSITY
-  ---------------------------------
+  Atomic definition                       : TFVC (real space)
+  Densities                               : alpha and beta separately
+  EFO occupation cutoff                   :        0.00100
 
-  ** FRAGMENT   1 **
+  -----------------
+    ALPHA DENSITY
+  -----------------
 
-  Net occupation for fragment      1    0.45702
-  Net occupation using >    0.00100
-  OCCUP.   0.4570
+  Fragment 1
+  Net occupation                          :        0.45702
+  Net       0.4570
+  Gross occupation                        :        0.50000
+  Gross     0.5000
+  Fit (%)    82.21
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  Gross occupation for fragment    1    0.50000
-  OCCUP.   0.5000
+  Fragment 2
+  Net occupation                          :        0.45702
+  Net       0.4570
+  Gross occupation                        :        0.50000
+  Gross     0.5000
+  Fit (%)    82.21
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  FIT %     82.21
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-  ** FRAGMENT   2 **
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
 
-  Net occupation for fragment      2    0.45702
-  Net occupation using >    0.00100
-  OCCUP.   0.4570
+  EFOs in the assignment                  : 2
+  Electron assignment                     : fractional
+  WARNING: 1 electron shared by 2 EFOs with occupations within 0.00250 of each other
 
-  Gross occupation for fragment    2    0.50000
-  OCCUP.   0.5000
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       0.50      0.500             -
+      2       0.50      0.500             -
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
 
-  FIT %     82.21
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-  Total number of eff-AO-s for analysis:    2
+  ----------------
+    BETA DENSITY
+  ----------------
 
-  ----------------------------------------------
-    EOS: WARNING, PSEUDO-DEGENERACIES DETECTED
-  ----------------------------------------------
+  Fragment 1
+  Net occupation                          :        0.45702
+  Net       0.4570
+  Gross occupation                        :        0.50000
+  Gross     0.5000
+  Fit (%)    82.21
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  Distributing 1 electrons over 2 pseudodegenerate atomic orbitals
-  ------------------------------------
-    EOS ANALYSIS FOR ALPHA ELECTRONS
-  ------------------------------------
+  Fragment 2
+  Net occupation                          :        0.45702
+  Net       0.4570
+  Gross occupation                        :        0.50000
+  Gross     0.5000
+  Fit (%)    82.21
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     0.50     0.500         -
-     2     0.50     0.500         -
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) = 100.000
+  -----------------------
+    EOS, BETA ELECTRONS
+  -----------------------
 
-  --------------------------------------
-    DOING EFFAO-3D GENERAL FORMULATION
-  --------------------------------------
+  EFOs in the assignment                  : 2
+  Electron assignment                     : fractional
+  WARNING: 1 electron shared by 2 EFOs with occupations within 0.00250 of each other
 
-  --------------------------------
-    EFFAOs FROM THE BETA DENSITY
-  --------------------------------
-
-  ** FRAGMENT   1 **
-
-  Net occupation for fragment      1    0.45702
-  Net occupation using >    0.00100
-  OCCUP.   0.4570
-
-  Gross occupation for fragment    1    0.50000
-  OCCUP.   0.5000
-
-  FIT %     82.21
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-  ** FRAGMENT   2 **
-
-  Net occupation for fragment      2    0.45702
-  Net occupation using >    0.00100
-  OCCUP.   0.4570
-
-  Gross occupation for fragment    2    0.50000
-  OCCUP.   0.5000
-
-  FIT %     82.21
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-  Total number of eff-AO-s for analysis:    2
-
-  ----------------------------------------------
-    EOS: WARNING, PSEUDO-DEGENERACIES DETECTED
-  ----------------------------------------------
-
-  Distributing 1 electrons over 2 pseudodegenerate atomic orbitals
-  -----------------------------------
-    EOS ANALYSIS FOR BETA ELECTRONS
-  -----------------------------------
-
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     0.50     0.500         -
-     2     0.50     0.500         -
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) = 100.000
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       0.50      0.500             -
+      2       0.50      0.500             -
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          0.00
-     2          0.00
-  ------------------------ 
-   Total oxidation state:    0.0
-
-  OVERALL RELIABILITY INDEX R(%) = 100.000
+  Frag.  Oxidation state
+  ----------------------
+      1             0.00
+      2             0.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :        100.000
 
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s

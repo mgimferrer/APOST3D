@@ -1209,6 +1209,151 @@
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: print_efo_block
+!! Prints the EFOs of one fragment (or atom): the net occupation of the
+!! EFOs above the cutoff and of each of them, the same for the gross
+!! occupations and the fit of each reprojected EFO when the scheme has
+!! them, and what the cutoff leaves out. Shared by EFFAO, EOS and GEOS.
+!! No empty line before or after: the caller separates the blocks.
+!! arguments:
+!!   clabel  (in)  'Fragment' or 'Atom'
+!!   ifrag   (in)  its number
+!!   n       (in)  number of EFOs above the cutoff
+!!   xnet    (in)  their total net occupation
+!!   occnet  (in)  (n) net occupation of each EFO
+!!   lgross  (in)  logical: print the gross occupations
+!!   xgro    (in)  their total gross occupation (lgross only)
+!!   occgro  (in)  (n) gross occupation of each EFO (lgross only)
+!!   lfit    (in)  logical: print the fit of each EFO
+!!   fitpct  (in)  (n) fit of each EFO, in % (lfit only)
+!!   xleftn  (in)  net occupation left out by the cutoff
+!!   xleftg  (in)  gross occupation left out by the cutoff (lgross only)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_efo_block(clabel,ifrag,n,xnet,occnet,lgross,
+     +  xgro,occgro,lfit,fitpct,xleftn,xleftg)
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      character*(*) clabel
+      dimension occnet(*),occgro(*),fitpct(*)
+      logical lgross,lfit
+
+      write(*,'(2x,a,1x,i0)') clabel,ifrag
+      call print_value('Net occupation',xnet,5)
+      if(n.gt.0) then
+        call print_efo_row('Net',occnet,n,4)
+      else
+        write(*,'(2x,a)') 'No EFO above the cutoff'
+      end if
+      if(lgross) then
+        call print_value('Gross occupation',xgro,5)
+        if(n.gt.0) call print_efo_row('Gross',occgro,n,4)
+      end if
+      if(lfit.and.n.gt.0) call print_efo_row('Fit (%)',fitpct,n,2)
+      call print_value('Left out by the cutoff (net)',xleftn,5)
+      if(lgross) call print_value('Left out by the cutoff (gross)',
+     +  xleftg,5)
+      end
+
+!! ---- !!
+!! one value per EFO, 8 per line, the label on the first line only     !!
+      subroutine print_efo_row(clabel,v,n,ndec)
+      implicit real*8(a-h,o-z)
+      character*(*) clabel
+      dimension v(n)
+      character*20 fmt1,fmt2
+      character*7 lab
+
+      write(fmt1,'(a,i0,a)') '(2x,a7,8f9.',ndec,')'
+      write(fmt2,'(a,i0,a)') '(9x,8f9.',ndec,')'
+      lab=clabel
+      write(*,fmt1) lab,(v(i),i=1,min(n,8))
+      do i0=9,n,8
+        write(*,fmt2) (v(i),i=i0,min(n,i0+7))
+      end do
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: print_eos_frontier
+!! Prints the result of the electron assignment of one spin channel:
+!! the electrons of each fragment, the gross occupations of its last
+!! occupied and first unoccupied EFOs ('-' when it has none), and the
+!! reliability index R. Shared by EOS and GEOS.
+!! arguments:
+!!   n     (in)  number of fragments
+!!   elec  (in)  (n) electrons of each fragment
+!!   xlo   (in)  (n) occupation of its last occupied EFO
+!!   ilo   (in)  (n) 1 when that EFO exists
+!!   xfu   (in)  (n) occupation of its first unoccupied EFO
+!!   ifu   (in)  (n) 1 when that EFO exists
+!!   rel   (in)  reliability index R, in %
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_eos_frontier(n,elec,xlo,ilo,xfu,ifu,rel)
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      dimension elec(n),xlo(n),xfu(n),ilo(n),ifu(n)
+      character*11 clo
+      character*14 cfu
+
+      write(*,'(a)') ''
+      write(*,'(2x,a)') 'Frag.  Electrons  Last occ.  First unocc.'
+      write(*,'(2x,a)') repeat('-',41)
+      do i=1,n
+        if(ilo(i).eq.1) then
+          write(clo,'(f11.3)') xlo(i)
+        else
+          clo='          -'
+        end if
+        if(ifu(i).eq.1) then
+          write(cfu,'(f14.3)') xfu(i)
+        else
+          cfu='             -'
+        end if
+        write(*,'(2x,i5,f11.2,a11,a14)') i,elec(i),clo,cfu
+      end do
+      write(*,'(2x,a)') repeat('-',41)
+      call print_value('Reliability index R (%)',rel,3)
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: print_oxidation_states
+!! Prints the section with the oxidation state of each fragment and
+!! their total, and the overall reliability index when the method has
+!! one. Shared by EOS, GEOS and OSLO.
+!! arguments:
+!!   n     (in)  number of fragments
+!!   oxi   (in)  (n) oxidation states
+!!   xtot  (in)  their total
+!!   lrel  (in)  logical: print the overall reliability index
+!!   rel   (in)  overall reliability index R, in % (lrel only)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_oxidation_states(n,oxi,xtot,lrel,rel)
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      dimension oxi(n)
+      logical lrel
+
+      call print_box('FRAGMENT OXIDATION STATES')
+      write(*,'(2x,a)') 'Frag.  Oxidation state'
+      write(*,'(2x,a)') repeat('-',22)
+      do i=1,n
+        write(*,'(2x,i5,f17.2)') i,oxi(i)
+      end do
+      write(*,'(2x,a)') repeat('-',22)
+      write(*,'(2x,a5,f17.2)') 'Total',xtot
+      if(lrel) call print_value('Overall reliability index R (%)',rel,
+     +  3)
+      end
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: print_int                                                 !!
 !! purpose: writes one AIMPAC/PROAIMV-format ".int" file per atom (plus  !!
