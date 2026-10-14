@@ -259,6 +259,7 @@ Written with `OSLO`.
 | `total`, or `alpha` and `beta` | one object per channel (`total` for a restricted wavefunction, each orbital doubly occupied): `sum_foli` and the `oslos` table (below) |
 | `fragments` | `oxidation_states`, and `electrons` (restricted) or `electrons_alpha`, `electrons_beta` |
 | `orbital_file`, `orbital_file_id` | the `.fchk` file with the final OSLOs and its id |
+| `orbital_file_preortho` | with `PRINT_NONORTHO`: the `.fchk` file with the OSLOs before orthogonalization, the orbitals the FOLI values were computed for. Same order and run id as `orbital_file`, so the `oslos` rows label it too |
 
 The `oslos` table has one row per OSLO, in the order they were selected,
 which is the order of the orbitals of the channel in `orbital_file`

@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.8",
+  "schema_version": "0.9",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -337,7 +337,7 @@
       },
       "reliability_percent": 1.0000000000000000E+002,
       "orbital_file": "H2-S-EOS-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-14T20:49:27+02:00/27c0"
+      "orbital_file_id": "2026-10-14T21:05:05+02:00/b988"
     }
   },
   "index": [
@@ -704,8 +704,8 @@
     "job_name": "H2-S-EOS",
     "input_file": "H2-S-EOS.inp",
     "wavefunction_file": "H2-S-EOS.fchk",
-    "date": "2026-10-14T20:49:27+02:00",
-    "id": "2026-10-14T20:49:27+02:00/27c0",
+    "date": "2026-10-14T21:05:05+02:00",
+    "id": "2026-10-14T21:05:05+02:00/b988",
     "threads": 8,
     "status": "normal",
     "stop_message": null
