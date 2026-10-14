@@ -333,6 +333,7 @@
       enddo
       if(idofr.eq.1) call group_by_frag_mat(0,
      +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
+      call json_local_spin(.false.,xnd,sum,xlsa,xlsa,0.d0,0.d0)
 
 !! "DAVIDSON SPIN DEC." matrix (meant as Clark-Davidson, formula under   !!
 !! review, see the header) -- rindex is safely reused here, xlsa already !!
@@ -702,9 +703,89 @@
       end
 
 !! ----------------------------------------------------------------------
+!! subroutine: json_populations
+!! Writes the populations block of the results file: electron
+!! populations, charges and (when printed) spin populations of the atoms
+!! and fragments, for the atomic definition used and for Mulliken.
+!! arguments: none (/qat/, /coord/)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_populations()
+      use input_options_mod, only: idofr,imulli,icorr
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      common /printout/iaccur
+      dimension chg(maxat,2)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort,cs
+      logical lspin
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+!! spin populations exactly when population_print_overlap prints them !!
+      lspin=kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)
+      do i=1,nat
+        chg(i,1)=zn(i)-qat(i,1)
+        chg(i,2)=zn(i)-qat(i,2)
+      end do
+
+!! set 1: the atomic definition used; set 2: Mulliken, in its own     !!
+!! object, unless Mulliken is the atomic definition                    !!
+      nset=2
+      if(imulli.eq.1) nset=1
+      call json_begin_object('populations')
+      call json_value('scheme',trim(ckey))
+      do iset=1,nset
+        cs=cshort
+        if(iset.eq.2) then
+          cs='Mulliken'
+          call json_begin_object('mulliken')
+        end if
+        call json_begin_object('atoms')
+        call json_vector('electrons',qat(1:nat,iset),nat)
+        call json_index('electrons','atom_vector',
+     +    'Electron populations ('//trim(cs)//')',' ',ndec,' ')
+        call json_vector('charges',chg(1:nat,iset),nat)
+        call json_index('charges','atom_vector',
+     +    'Atomic charges ('//trim(cs)//')',' ',ndec,' ')
+        if(lspin) then
+          call json_vector('spin',qsat(1:nat,iset),nat)
+          call json_index('spin','atom_vector',
+     +      'Spin populations ('//trim(cs)//')',' ',ndec,' ')
+        end if
+        call json_end()
+        if(idofr.eq.1) then
+          call json_begin_object('fragments')
+          call json_frag_vector('electrons',qat(1,iset))
+          call json_index('electrons','fragment_vector',
+     +      'Fragment electron populations ('//trim(cs)//')',' ',ndec,
+     +      ' ')
+          call json_frag_vector('charges',chg(1,iset))
+          call json_index('charges','fragment_vector',
+     +      'Fragment charges ('//trim(cs)//')',' ',ndec,' ')
+          if(lspin) then
+            call json_frag_vector('spin',qsat(1,iset))
+            call json_index('spin','fragment_vector',
+     +        'Fragment spin populations ('//trim(cs)//')',' ',ndec,' ')
+          end if
+          call json_end()
+        end if
+        if(iset.eq.2) call json_end()
+      end do
+      call json_end()
+      end
+
+!! ----------------------------------------------------------------------
 !! subroutine: bond_order_analysis
-!! Bond orders and valences (fborder), and the fragment bond orders with
-!! DOFRAGS.
+!! Bond orders and valences (fborder), the fragment bond orders with
+!! DOFRAGS, and their block in the results file.
 !! arguments:
 !!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
 !! author: MGimf
@@ -719,6 +800,185 @@
 
       call fborder(sat,val)
       if(idofr.eq.1) call group_by_frag_mat(1,'FRAGMENT BOND ORDERS',bo)
+      call json_bond_orders(val)
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_bond_orders
+!! Writes the bond_orders block of the results file: the bond order
+!! matrix and the valences of the atoms and fragments, and the overlap
+!! populations with OPOP.
+!! arguments:
+!!   val (in)  (maxat,3) total, bonded and free valences (fborder)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_bond_orders(val)
+      use input_options_mod, only: idofr,iopop
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common /printout/iaccur
+      dimension val(maxat,3)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      character*20 cval(3)
+      character*40 tval(3),tfrag(3)
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+      cval(1)='valence_total'
+      cval(2)='valence_bonded'
+      cval(3)='valence_free'
+      tval(1)='Total valences'
+      tval(2)='Valences used in bonds'
+      tval(3)='Free valences'
+      tfrag(1)='Fragment total valences'
+      tfrag(2)='Fragment valences used in bonds'
+      tfrag(3)='Fragment free valences'
+
+      call json_begin_object('bond_orders')
+      call json_value('scheme',trim(ckey))
+      call json_begin_object('atoms')
+      call json_atom_matrix('matrix',bo,.true.,'localization index',
+     +  'bond order',-1,0.d0)
+      call json_index('matrix','atom_matrix',
+     +  'Bond orders ('//trim(cshort)//')',' ',ndec,' ')
+      do k=1,3
+        call json_vector(trim(cval(k)),val(1:nat,k),nat)
+        call json_index(trim(cval(k)),'atom_vector',
+     +    trim(tval(k))//' ('//trim(cshort)//')',' ',ndec,' ')
+      end do
+      call json_end()
+
+      if(idofr.eq.1) then
+        call json_begin_object('fragments')
+        call json_frag_matrix('matrix',1,bo,.true.,
+     +    'localization index of the fragment',
+     +    'bond order between the two fragments')
+        call json_index('matrix','fragment_matrix',
+     +    'Fragment bond orders ('//trim(cshort)//')',' ',ndec,' ')
+        do k=1,3
+          call json_frag_vector(trim(cval(k)),val(1,k))
+          call json_index(trim(cval(k)),'fragment_vector',
+     +      trim(tfrag(k))//' ('//trim(cshort)//')',' ',ndec,' ')
+        end do
+        call json_end()
+      end if
+
+      if(iopop.eq.1) then
+        call json_begin_object('overlap_populations')
+        call json_begin_object('atoms')
+        call json_atom_matrix('matrix',op,.true.,
+     +    'overlap population of the atom with itself',
+     +    'overlap population of the two atoms',-1,0.d0)
+        call json_index('matrix','atom_matrix',
+     +    'Overlap populations ('//trim(cshort)//')',' ',ndec,' ')
+        call json_end()
+        if(idofr.eq.1) then
+          call json_begin_object('fragments')
+          call json_frag_matrix('matrix',0,op,.true.,
+     +      'overlap population of the fragment with itself',
+     +      'overlap population of the two fragments')
+          call json_index('matrix','fragment_matrix',
+     +      'Fragment overlap populations ('//trim(cshort)//')',' ',ndec,
+     +      ' ')
+          call json_end()
+        end if
+        call json_end()
+      end if
+      call json_end()
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_local_spin
+!! Writes the local_spin block of the results file: effectively unpaired
+!! electrons and the <S^2> decomposition of the atoms and fragments
+!! (/localspin/), with, for a correlated wavefunction, Mayer's bond
+!! orders from the natural orbitals and the LI/DI matrix from the 2-RDM.
+!! arguments:
+!!   lcorr (in)  logical, correlated wavefunction (spincorr)
+!!   xnd   (in)  total number of effectively unpaired electrons
+!!   xs2   (in)  total <S^2> of the decomposition
+!!   bonew (in)  (maxat,maxat) Mayer's bond orders (lcorr only)
+!!   di2   (in)  (maxat,maxat) LI/DI matrix (lcorr only)
+!!   xbonew,xdi (in)  their totals, diagonal and one triangle
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_local_spin(lcorr,xnd,xs2,bonew,di2,xbonew,xdi)
+      use input_options_mod, only: idofr
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /localspin/ xlsa(maxat,maxat),ua(maxat)
+      common /printout/iaccur
+      dimension bonew(maxat,maxat),di2(maxat,maxat)
+      logical lcorr
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+
+      call json_begin_object('local_spin')
+      call json_value('scheme',trim(ckey))
+      if(lcorr) then
+        call json_value('wavefunction','correlated')
+      else
+        call json_value('wavefunction','single determinant')
+      end if
+      call json_value('total_unpaired_electrons',xnd)
+      call json_value('total_s2',xs2)
+
+      call json_begin_object('atoms')
+      call json_vector('unpaired_electrons',ua(1:nat),nat)
+      call json_index('unpaired_electrons','atom_vector',
+     +  'Effectively unpaired electrons ('//trim(cshort)//')',' ',ndec,
+     +  ' ')
+      call json_atom_matrix('s2',xlsa,.true.,'atomic term <S^2>_A',
+     +  'diatomic term <S^2>_AB',-1,0.d0)
+      call json_index('s2','atom_matrix',
+     +  'S^2 decomposition ('//trim(cshort)//')',' ',ndec,' ')
+      if(lcorr) then
+        call json_atom_matrix('new_bond_orders',bonew,.true.,
+     +    'localization index','bond order',1,xbonew)
+        call json_index('new_bond_orders','atom_matrix',
+     +    'New bond orders ('//trim(cshort)//')',' ',ndec,' ')
+        call json_atom_matrix('li_di',di2,.true.,'localization index',
+     +    'delocalization index',1,xdi)
+        call json_index('li_di','atom_matrix',
+     +    'LI/DI from the 2-RDM ('//trim(cshort)//')',' ',ndec,' ')
+      end if
+      call json_end()
+
+      if(idofr.eq.1) then
+        call json_begin_object('fragments')
+        call json_frag_vector('unpaired_electrons',ua)
+        call json_index('unpaired_electrons','fragment_vector',
+     +    'Fragment unpaired electrons ('//trim(cshort)//')',' ',ndec,
+     +    ' ')
+        call json_frag_matrix('s2',0,xlsa,.true.,
+     +    'fragment term <S^2>_F','fragment pair term <S^2>_FG')
+        call json_index('s2','fragment_matrix',
+     +    'Fragment S^2 decomposition ('//trim(cshort)//')',' ',ndec,
+     +    ' ')
+        if(lcorr) then
+          call json_frag_matrix('li_di',1,di2,.true.,
+     +      'localization index of the fragment',
+     +      'delocalization index between the two fragments')
+          call json_index('li_di','fragment_matrix',
+     +      'Fragment LI/DI from the 2-RDM ('//trim(cshort)//')',' ',
+     +      ndec,' ')
+        end if
+        call json_end()
+      end if
+      call json_end()
       end
 
 !! ----------------------------------------------------------------------

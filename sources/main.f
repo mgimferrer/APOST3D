@@ -684,6 +684,7 @@ c      iopt(200) =
       end if
 
       call population_print_overlap(wp,omp,omp2,rho)
+      call json_populations()
 
 !! Bond orders and valences !!
       call bond_order_analysis(sat)

@@ -259,4 +259,6 @@
       if(idofr.eq.1) call group_by_frag_mat(0,
      +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
 
+      call json_local_spin(.true.,xnd,x2,bonew,di,x1,x0)
+
       end
