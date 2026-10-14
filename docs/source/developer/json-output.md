@@ -136,7 +136,7 @@ A table (several quantities per fragment or per orbital) is an object:
 | `rows` | `"fragment"` (row i is fragment i) or `"orbital"` (one row per orbital, in the order given) |
 | `n_rows` | number of rows |
 | `columns` | one object per column: `key`, `title`, `unit` (or `null`), `decimals`, `signed` (as in the [index](#index)) |
-| `data` | one list per column, under its `key`; `null` where a row has no value |
+| `data` | one list per column, under its `key`; `null` where a row has no value. A column may hold a list per row (`oslo`'s `fragments` and `shares`) |
 
 ### `populations`
 
@@ -231,6 +231,30 @@ To label the orbitals of `orbital_file`: alpha orbital k is the row of
 `paired.efos` with `fchk_column` k, or else the row of `negative_efos`
 with that column; beta orbital k is the row of `unpaired.efos` with
 `fchk_column` k. Orbitals with no row are empty (zero coefficients).
+
+### `oslo`
+
+Written with `OSLO`.
+
+| Key | Content |
+|---|---|
+| `scheme` | the atomic definition of the spreads, as in `populations` |
+| `fragment_populations` | the atoms of the fragment populations (`# OSLO` `MULLIKEN`, `LOWDIN`, ...; else as `scheme`) |
+| `total`, or `alpha` and `beta` | one object per channel (`total` for a restricted wavefunction, each orbital doubly occupied): `sum_foli` and the `oslos` table (below) |
+| `fragments` | `oxidation_states`, and `electrons` (restricted) or `electrons_alpha`, `electrons_beta` |
+| `orbital_file` | the `.fchk` file with the final OSLOs |
+
+The `oslos` table has one row per OSLO, in the order they were selected,
+which is the order of the orbitals of the channel in `orbital_file`
+(alpha orbitals for `total` and `alpha`, beta ones for `beta`):
+`iteration` (that selected it), `foli` (also stored as its orbital
+energy in the file), `fragments` (a list: the fragment it was assigned
+to, or every fragment of a shared orbital), `shares` (a list, as
+`fragments`: 1 for a single fragment; for a shared orbital the shares
+printed in the output, divided equally among the orbitals of the
+selection) and `fchk_column`. The `-OSLOs-preortho.fchk` file, when
+written, has the same orbitals before orthogonalization in the same
+order.
 
 ## Index
 

@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.6",
+  "schema_version": "0.7",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -107,6 +107,88 @@
         "valence_bonded": [2.6384918883370156E+000, 2.5341023145407755E+000],
         "valence_free": [-1.2520153575001913E-006, 3.9884939295742328E-007]
       }
+    },
+    "oslo": {
+      "scheme": "TFVC",
+      "fragment_populations": "TFVC",
+      "total": {
+        "sum_foli": 1.0053245490494621E+001,
+        "oslos": {
+          "rows": "orbital",
+          "n_rows": 10,
+          "columns": [
+            {
+              "key": "iteration",
+              "title": "Iteration",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "foli",
+              "title": "FOLI",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "iteration": [1, 1, 1, 2, 2, 2, 3, 3, 4, 5],
+            "foli": [1.0009588312544413E+000, 1.0000051745336815E+000, 1.0000002731380198E+000, 1.0018851147736056E+000, 1.0012301875373477E+000, 1.0016001291698329E+000, 1.0086315807759167E+000, 1.0084722081557638E+000, 1.0122147838193192E+000, 1.0182472073366935E+000],
+            "fragments": [
+              [1],
+              [1],
+              [2],
+              [1],
+              [2],
+              [2],
+              [2],
+              [2],
+              [1],
+              [1]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
+            "fchk_column": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+          }
+        }
+      },
+      "fragments": {
+        "oxidation_states": [0.0000000000000000E+000, 0.0000000000000000E+000],
+        "electrons": [1.0000000000000000E+001, 1.0000000000000000E+001]
+      },
+      "orbital_file": "H2O-Dimer-RHF-OSLO-OSLOs.fchk"
     }
   },
   "index": [
@@ -289,13 +371,57 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "oslo.total.sum_foli",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/total/sum_foli",
+      "kind": "scalar",
+      "title": "Sum of the FOLI values, total",
+      "unit": null,
+      "decimals": 5,
+      "signed": false
+    },
+    {
+      "id": "oslo.total.oslos",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/total/oslos",
+      "kind": "table",
+      "title": "OSLOs, total",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "oslo.fragments.oxidation_states",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "OSLO oxidation states",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "oslo.fragments.electrons",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "OSLO electrons",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "H2O-Dimer-RHF-OSLO",
     "input_file": "H2O-Dimer-RHF-OSLO.inp",
     "wavefunction_file": "H2O-Dimer-RHF-OSLO.fchk",
-    "date": "2026-10-14T17:54:37+02:00",
+    "date": "2026-10-14T19:12:36+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

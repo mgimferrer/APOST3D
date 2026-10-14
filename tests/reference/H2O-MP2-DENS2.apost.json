@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.6",
+  "schema_version": "0.7",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -166,7 +166,7 @@
     "job_name": "H2O-MP2-DENS2",
     "input_file": "H2O-MP2-DENS2.inp",
     "wavefunction_file": "H2O-MP2-DENS2.fchk",
-    "date": "2026-10-14T17:55:14+02:00",
+    "date": "2026-10-14T19:13:14+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null
