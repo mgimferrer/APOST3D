@@ -140,7 +140,7 @@
      0.00001   0.00001   0.00001   0.00000   0.00000   0.00000   0.00000
 
   TIMING CPU  :: Initialization                                    0.14 s
-  TIMING WALL :: Initialization                                    0.12 s
+  TIMING WALL :: Initialization                                    0.13 s
 
   -----------------------------
     SETTING ATOMIC DEFINITION
@@ -155,15 +155,13 @@
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : LOWDIN (Hilbert space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom         Lowdin    Mulliken
   -------------------------------
     1 Fe    26.516733   27.127712
     2  C     6.149081    6.141436
@@ -179,13 +177,13 @@
    12  N     6.925864    6.931965
    13  O     8.178207    8.232412
   -------------------------------
-  Sum      109.000000  109.000000
+  Total    109.000000  109.000000
 
-  --------------------------------------------
-    FRAGMENT ANALYSIS : Electron populations
-  --------------------------------------------
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.          Lowdin    Mulliken
   ---------------------------------
     1         26.516733   27.127712
     2         13.486916   13.347764
@@ -201,7 +199,7 @@
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom         Lowdin    Mulliken
   -------------------------------
     1 Fe    -0.516733   -1.127712
     2  C    -0.149081   -0.141436
@@ -217,13 +215,13 @@
    12  N     0.074136    0.068035
    13  O    -0.178207   -0.232412
   -------------------------------
-  Sum       -3.000000   -3.000000
+  Total     -3.000000   -3.000000
 
-  --------------------------------------
-    FRAGMENT ANALYSIS : Atomic Charges
-  --------------------------------------
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.          Lowdin    Mulliken
   ---------------------------------
     1         -0.516733   -1.127712
     2         -0.486916   -0.347764
@@ -239,7 +237,7 @@
     SPIN POPULATIONS
   --------------------
 
-  Atom        apost3d    Mulliken
+  Atom         Lowdin    Mulliken
   -------------------------------
     1 Fe     0.286012    0.305751
     2  C     0.011221    0.009226
@@ -255,13 +253,13 @@
    12  N     0.448475    0.464152
    13  O     0.244760    0.227303
   -------------------------------
-  Sum        1.000000    1.000000
+  Total      1.000000    1.000000
 
-  ----------------------------------------
-    FRAGMENT ANALYSIS : Spin Populations
-  ----------------------------------------
+  -----------------------------
+    FRAGMENT SPIN POPULATIONS
+  -----------------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.          Lowdin    Mulliken
   ---------------------------------
     1          0.286012    0.305751
     2          0.009405    0.005416
@@ -273,9 +271,9 @@
   ---------------------------------
   Total        1.000000    1.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------------------------------------------------------
                  1 Fe        2  C        3  N        4  C        5  N        6  C
@@ -335,7 +333,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom         Lowdin
   -------------------
     1 Fe     7.054085
     2  C     4.354479
@@ -352,11 +350,11 @@
    13  O     2.789168
   -------------------
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Total valences
-  -------------------------------------
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
 
-  Fragment     3D-space
+  Frag.          Lowdin
   ---------------------
     1          7.054085
     2          7.781393
@@ -372,9 +370,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom         Lowdin
   -------------------
     1 Fe     6.936444
     2  C     4.354295
@@ -391,11 +389,11 @@
    13  O     2.729017
   -------------------
 
-  ---------------------------------------------
-    FRAGMENT ANALYSIS: Valences used in bonds
-  ---------------------------------------------
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
 
-  Fragment     3D-space
+  Frag.          Lowdin
   ---------------------
     1          6.936444
     2          7.781188
@@ -411,7 +409,7 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom         Lowdin
   -------------------
     1 Fe     0.117641
     2  C     0.000184
@@ -428,11 +426,11 @@
    13  O     0.060151
   -------------------
 
-  ------------------------------------
-    FRAGMENT ANALYSIS: Free valences
-  ------------------------------------
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
 
-  Fragment     3D-space
+  Frag.          Lowdin
   ---------------------
     1          0.117641
     2          0.000205
@@ -444,9 +442,9 @@
   ---------------------
   Total        0.361211
 
-  ----------------------------------------
-    FRAGMENT ANALYSIS : Fuzzy Bond Order
-  ----------------------------------------
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
 
   ---------------------------------------------------------------------------------
                       1           2           3           4           5           6
@@ -473,8 +471,8 @@
   ---------------------
   Total (diagonal and one triangle)       :     109.000000
 
-  TIMING CPU  :: population analyses                               0.10 s
-  TIMING WALL :: population analyses                               0.10 s
+  TIMING CPU  :: Population analysis                               0.10 s
+  TIMING WALL :: Population analysis                               0.10 s
 
   ----------------------------------
     DOING EFFAO LOWDIN FORMULATION
@@ -667,6 +665,6 @@
   TIMING CPU  :: EFFAO computation                                 0.15 s
   TIMING WALL :: EFFAO computation                                 0.11 s
   TIMING CPU  :: EOS analysis                                      0.04 s
-  TIMING WALL :: EOS analysis                                      0.04 s
+  TIMING WALL :: EOS analysis                                      0.05 s
 
   ...Normal Termination of APOST-3D...

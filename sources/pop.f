@@ -1,15 +1,16 @@
-!! ********************************************************************* !!
-!! subroutine: fborder                                                   !!
-!! purpose: builds the "fuzzy atoms" bond order matrix (bo/di, via the   !!
-!!   R-index trace of P*S^A products, Ps-corrected for open-shell) and   !!
-!!   the three derived valence tables (total/used-in-bonds/free).        !!
-!!   called from bond_order_analysis for every AIM scheme -- sat already !!
-!!   encodes which one (numint_sat/tomull/tolow/...).                    !!
-!! arguments:                                                            !!
-!!   sat (in) -- per-atom AO overlap matrix                              !!
-!! author:                                                                !!
-!! ********************************************************************* !!
-      subroutine fborder(sat)
+!! ----------------------------------------------------------------------
+!! subroutine: fborder
+!! Bond orders of every atom pair, Tr(P S^A P S^B) + Tr(Ps S^A Ps S^B),
+!! with the localization index on the diagonal, and the total, bonded
+!! and free valences of each atom (I. Mayer, P. Salvador, Chem. Phys.
+!! Lett. 2004, 383, 368). Works for any atomic definition: sat holds it.
+!! Prints the matrix and the three valence tables.
+!! arguments:
+!!   sat (in)   (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!!   val (out)  (maxat,3) total, bonded and free valences
+!! author:
+!! ----------------------------------------------------------------------
+      subroutine fborder(sat,val)
       use basis_set
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -17,7 +18,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/ op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /qat/ qat(maxat,2),qsat(maxat,2)
-      dimension sat(nbasis,nbasis,natoms)
+      dimension sat(nbasis,nbasis,natoms),val(maxat,3)
 
       dimension rindex(maxat,maxat),tindex(maxat),diag(maxat)
       allocatable tt(:,:,:)
@@ -47,10 +48,10 @@
           rindex(iat,ibt)=x
           rindex(ibt,iat)=x
         enddo
-!! diag(iat) is taken before the Ps correction below: TOTAL VALENCES     !!
-!! follow Mayer's open-shell definition (from P only), while the bond    !!
-!! orders get the Ps term, so the one-center spin part shows up as the   !!
-!! free valence (total valence minus the sum of bond orders).            !!
+!! diag(iat) is taken before the Ps term below: the total valence      !!
+!! follows Mayer's open-shell definition (from P only), while the bond  !!
+!! orders get the Ps term, so the one-center spin part shows up as the  !!
+!! free valence (total valence minus the sum of bond orders).           !!
         diag(iat)=rindex(iat,iat)
       enddo
 
@@ -81,8 +82,8 @@
         enddo
       endif
 
-!! save the bond order matrix -- di gets overwritten later for a !!
-!! correlated (CAS/CISD) calculation. !!
+!! bo keeps the bond orders; di starts as a copy and is replaced by the !!
+!! 2-RDM delocalization indices in a correlated local spin analysis     !!
       do i=1,natoms
         do j=1,natoms
           if(i.eq.j) then
@@ -99,7 +100,7 @@
         rindex(i,i)=0.d0
       enddo
 
-      call print_box('"FUZZY ATOMS" BOND ORDER MATRIX')
+      call print_box('BOND ORDER MATRIX')
       call mprint2(bo,natoms,maxat)
 
 !! valence numbers !!
@@ -115,15 +116,19 @@
         diag(i)=2.d0*qat(i,1)-diag(i)
       enddo
 
-      call print_valence_table('TOTAL VALENCES',' ','Total valences',
-     +  'V_A',diag)
-      call print_valence_table('VALENCES USED IN BONDS',
-     +  '(SUM OF BOND ORDERS)','Valences used in bonds','VB_A',tindex)
+      call print_atom_table('TOTAL VALENCES',' ',
+     +  'FRAGMENT TOTAL VALENCES',diag)
+      call print_atom_table('VALENCES USED IN BONDS',
+     +  'Sum of the bond orders of each atom',
+     +  'FRAGMENT VALENCES USED IN BONDS',tindex)
       do i=1,natoms
+        val(i,1)=diag(i)
+        val(i,2)=tindex(i)
         diag(i)=diag(i)-tindex(i)
+        val(i,3)=diag(i)
       enddo
-      call print_valence_table('FREE VALENCES',' ','Free valences',
-     +  'F_A',diag)
+      call print_atom_table('FREE VALENCES',' ',
+     +  'FRAGMENT FREE VALENCES',diag)
 
       deallocate(tt)
 
@@ -132,21 +137,20 @@
 
       
 
-!! ********************************************************************* !!
-!! subroutine: opop                                                      !!
-!! purpose: builds the atom-pair overlap population matrix (op) by       !!
-!!   numerical integration of the density weighted by each atom's        !!
-!!   fuzzy-partition weight -- the default scheme (iallpo=0) integrates  !!
-!!   each atom's own grid; ALLPOINTS (iallpo=1) instead pre-weights rho   !!
-!!   once and re-sums it over the full grid for every atom pair.         !!
-!! arguments:                                                            !!
-!!   wp        (in) -- integration weight of each grid point             !!
-!!   omp       (in) -- becke weight of each grid point (ALLPOINTS only)  !!
-!!   omp2      (in) -- per-atom fuzzy weight of each grid point          !!
-!!   rho       (in) -- electron density at each grid point (ALLPOINTS    !!
-!!                      rescales this array in place)                    !!
-!! author:                                                                !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: opop
+!! Overlap populations of every atom pair, the integral of w_A w_B rho
+!! over the molecular grid (I. Mayer, P. Salvador, Chem. Phys. Lett.
+!! 2004, 383, 368). By default each atom's own grid points are used;
+!! with ALLPOINTS rho is weighted once and every pair is summed over the
+!! whole grid.
+!! arguments:
+!!   wp   (in)     (itotps) integration weights
+!!   omp  (in)     (itotps) Becke weight of each point (ALLPOINTS only)
+!!   omp2 (in)     (itotps,natoms) atomic weight w_A of each point
+!!   rho  (inout)  (itotps) density; ALLPOINTS rescales it in place
+!! author:
+!! ----------------------------------------------------------------------
       subroutine opop(wp,omp,omp2,rho)
       use basis_set, only: natoms
       use ao_matrices
@@ -209,27 +213,30 @@
       return
       end
 
-!! ********************************************************************* !!
-!! subroutine: fspindec                                                  !!
-!! purpose: "fuzzy atoms" local-spin decomposition for a single-         !!
-!!   determinant density (the SPIN keyword's default path -- spincorr    !!
-!!   in corr.f is the sibling correlated-wavefunction, icas/icisd        !!
-!!   branch). Prints effectively unpaired electrons (u_A), the a=3/4     !!
-!!   <S^2> decomposition (I. Mayer, P. Salvador), and the "DAVIDSON      !!
-!!   SPIN DEC." matrix. That one is meant to be the Clark-Davidson       !!
-!!   decomposition (Ramos-Cordoba et al., JCTC 2012, 8, 1270), but its   !!
-!!   formula does not match that paper's yet and is under review.        !!
-!! arguments:                                                            !!
-!!   sat (in) -- per-atom AO overlap matrix (numint_sat/tomull/tolow)    !!
-!! author:                                                                !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: fspindec
+!! Local spin analysis of a single-determinant wavefunction: effectively
+!! unpaired electrons of each atom and the a=3/4 decomposition of <S^2>
+!! into atomic and diatomic terms (E. Ramos-Cordoba et al., J. Chem.
+!! Theory Comput. 2012, 8, 1270), and the "DAVIDSON SPIN DEC." matrix,
+!! meant as the Clark-Davidson decomposition of the same paper but whose
+!! formula does not match it yet (under review). spincorr (corr.f) does
+!! the same for correlated wavefunctions.
+!! arguments:
+!!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!! author:
+!! ----------------------------------------------------------------------
       subroutine fspindec(sat)
       use basis_set
       use ao_matrices
+      use input_options_mod, only: idofr
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /printout/iaccur
-      character*20 fmthdr
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /qat/ qat(maxat,2),qsat(maxat,2)
       common /localspin/ xlsa(maxat,maxat),ua(maxat)
@@ -246,9 +253,8 @@
         enddo
       enddo
 
-!! parallelization: not done -- the O(nbasis^2*natoms^2) loops below are !!
-!! the dominant cost, but every active test system is small enough that !!
-!! it isn't currently a bottleneck.                                      !!
+!! serial: the O(nbasis^2*natoms^2) loops below are cheap next to the !!
+!! numerical integration                                              !!
 
 !! Ps*S^A products, tts is their sum over atoms !!
       do iat=1,natoms
@@ -277,15 +283,14 @@
         sum=sum+x
       enddo
 
-      call print_box('EFFECTIVELY UNPAIRED ELECTRONS')
-      iw=12
-      if(iaccur.ne.0) iw=20
-      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
-      write(*,fmthdr) 'Atom   ','u_A'
-      write(*,'(2x,a)') repeat('-',7+iw)
-      call vprint(ua,nat,maxat,1)
-      write(*,'(2x,a)') repeat('-',7+iw)
-      write(*,'(2x,a,f10.5)') 'Sum check N_D = ',sum
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+      call print_atom_table('EFFECTIVELY UNPAIRED ELECTRONS',' ',' ',ua)
+      call print_value('Total unpaired electrons N_D',sum,ndec)
+      xnd=sum
+      if(idofr.eq.1) call group_by_frag_vec(1,
+     +  'FRAGMENT UNPAIRED ELECTRONS',ua,cshort,' ')
 
 !! a=3/4 U decomposition (I. Mayer, P. Salvador local-spin formula) !!
       sum=0.0d0
@@ -317,16 +322,17 @@
         enddo
       enddo
 
-      call print_box('"FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)')
-      call mprint(rindex,natoms,maxat)
-      write(*,*)
-      write(*,'(2x,a,f10.5)') 'Sum check <S^2> = ',sum
+      call print_box('S^2 DECOMPOSITION (a=3/4)')
+      call mprint2(rindex,natoms,maxat)
+      call print_value('Total <S^2>',sum,ndec)
 
       do i=1,natoms
         do j=1,natoms
           xlsa(i,j)=rindex(i,j)
         enddo
       enddo
+      if(idofr.eq.1) call group_by_frag_mat(0,
+     +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
 
 !! "DAVIDSON SPIN DEC." matrix (meant as Clark-Davidson, formula under   !!
 !! review, see the header) -- rindex is safely reused here, xlsa already !!
@@ -408,30 +414,36 @@
       return
       end
 
-!! ********************************************************************* !!
-!! subroutine: population_density                                        !!
-!! purpose: spin- and total-density atomic-population contraction        !!
-!! (P*S^A products), writing qat/qsat via COMMON. Split from the print   !!
-!! side (population_print_charges/population_print_overlap) so the       !!
-!! idoint-guarded print_int call in main.f can sit between them,         !!
-!! exactly where it did before this routine existed.                     !!
-!! arguments:                                                            !!
-!! sat (in) -- per-atom AO overlap matrix (numint_sat/tomull/tolow)      !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: population_density
+!! Electron and spin populations of each atom, Tr(P S^A) and Tr(Ps S^A)
+!! in /qat/ column 1, and their Mulliken counterparts in column 2. Opens
+!! the population analysis section with the atomic definition used.
+!! arguments:
+!!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine population_density(sat)
       use basis_set
       use ao_matrices
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /qat/qat(maxat,2),qsat(maxat,2)
       dimension sat(nbasis,nbasis,natoms)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
 
       call print_box('DOING POPULATION ANALYSIS')
-      write(*,'(2x,a)') 'Partial atomic charges'
-      write(*,'(2x,a)') 'Atomic spin densities'
-      write(*,'(2x,a)') 'Bond orders and Valences'
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      if(cspace.eq.'hilbert') then
+        call print_value('Atomic definition',
+     +    trim(ckey)//' (Hilbert space)')
+      else
+        call print_value('Atomic definition',trim(ckey)//' (real space)')
+      end if
 
 !! spin density: P^s*S^A contraction, one atom per outer iteration       !!
       if(kop.ne.0.or.nalf.ne.nb) then
@@ -492,138 +504,130 @@
       return
       end
 
-!! ********************************************************************* !!
-!! subroutine: print_population_table                                    !!
-!! purpose: shared title/column-header/data/sum/fragment-breakdown       !!
-!! layout for the three 2-column (apost3d, Mulliken) atomic tables       !!
-!! (electron populations, atomic charges, spin populations) -- replaces  !!
-!! three near-identical copies of this block, previously inconsistent    !!
-!! in small ways (a stray "apost3D" instead of "apost3d" in one of the   !!
-!! three, an extra blank line before the fragment breakdown in two of    !!
-!! the three but not the first). Header/separator/sum-line widths are    !!
-!! sized to match vprint's own fixed data-row format exactly (32 columns !!
-!! for the default 6-decimal case, 48 for FULLPRECISION) -- previously a  !!
-!! hardcoded 29/35-column layout that didn't cover the actual numbers.    !!
-!! arguments:                                                            !!
-!! title    (in) -- print_box title, e.g. 'ELECTRON POPULATIONS'         !!
-!! fraglabel(in) -- fragment-breakdown label, e.g. 'Electron populations'!!
-!! arr      (in) -- the (maxat,2) table to print (qat/dummyvec/qsat)     !!
-!! tc1,tc2  (in) -- apost3d/Mulliken column sums, computed by the caller !!
-!!                  (the summation itself differs per table)             !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-      subroutine print_population_table(title,fraglabel,arr,tc1,tc2)
-      use input_options_mod, only: idofr
+!! ----------------------------------------------------------------------
+!! subroutine: print_population_table
+!! Prints a per-atom population table (electrons, charges or spin): one
+!! column for the atomic definition used and one for Mulliken (only the
+!! Mulliken column when that is the definition), a Total row, and the
+!! same per fragment with DOFRAGS.
+!! arguments:
+!!   title     (in)  section title, e.g. 'ELECTRON POPULATIONS'
+!!   fragtitle (in)  title of the fragment table
+!!   arr       (in)  (maxat,2) values: atomic definition, Mulliken
+!!   tc1,tc2   (in)  column totals
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_population_table(title,fragtitle,arr,tc1,tc2)
+      use input_options_mod, only: idofr,imulli
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /printout/iaccur
-      character*(*) title,fraglabel
+      character*(*) title,fragtitle
       dimension arr(maxat,2)
-      character*80 line
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      character*30 fmthdr,fmttot
 
-!! atom label 7 characters wide, as in vprint; value columns 12 wide   !!
-!! (6 decimals), 20 wide (13) with FULLPRECISION                      !!
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ncol=2
+      if(imulli.eq.1) ncol=1
+
+!! atom label 7 characters wide, as in vprint; value columns 12 wide    !!
+!! (6 decimals), 20 wide (13) with FULLPRECISION                        !!
+      if(iaccur.eq.0) then
+        iw=12
+        ndec=6
+      else
+        iw=20
+        ndec=13
+      end if
+      write(fmthdr,'(a,i0,a,i0,a)') '(2x,a,',ncol,'a',iw,')'
+      write(fmttot,'(a,i0,a,i0,a,i0,a)') '(2x,a,',ncol,'f',iw,'.',ndec,
+     +  ')'
+
       call print_box(title)
-      if(iaccur.eq.0) then
-        write(*,'(2x,a,2a12)') 'Atom   ','apost3d','Mulliken'
-        write(*,'(2x,a)') repeat('-',31)
+      if(ncol.eq.2) then
+        write(*,fmthdr) 'Atom   ',trim(cshort),'Mulliken'
       else
-        write(*,'(2x,a,2a20)') 'Atom   ','apost3d','Mulliken'
-        write(*,'(2x,a)') repeat('-',47)
+        write(*,fmthdr) 'Atom   ',trim(cshort)
       end if
-      call vprint(arr,nat,maxat,2)
-      if(iaccur.eq.0) then
-        write(*,'(2x,a)') repeat('-',31)
-        write(*,'(2x,a,2f12.6)') 'Sum    ',tc1,tc2
+      write(*,'(2x,a)') repeat('-',7+iw*ncol)
+      call vprint(arr,nat,maxat,ncol)
+      write(*,'(2x,a)') repeat('-',7+iw*ncol)
+      if(ncol.eq.2) then
+        write(*,fmttot) 'Total  ',tc1,tc2
       else
-        write(*,'(2x,a)') repeat('-',47)
-        write(*,'(2x,a,2f20.13)') 'Sum    ',tc1,tc2
+        write(*,fmttot) 'Total  ',tc1
       end if
 
-      if (idofr.eq.1) then
-        line ='   FRAGMENT ANALYSIS : '//fraglabel
-        call group_by_frag_vec(2,line,arr)
-      end if
-
-      return
-
-
+      if(idofr.eq.1) call group_by_frag_vec(ncol,fragtitle,arr,cshort,
+     +  'Mulliken')
       end
 
-!! ********************************************************************* !!
-!! subroutine: print_valence_table                                       !!
-!! purpose: shared title/column-header/data layout for the three         !!
-!! single-column atomic valence tables printed by fborder (V_A/VB_A/     !!
-!! F_A) -- same consolidation print_population_table already applies to  !!
-!! the electron/charge/spin population tables, and for the same reason:  !!
-!! the header/separator width now matches vprint's own fixed data-row    !!
-!! format (20 columns) instead of a hardcoded value that didn't cover    !!
-!! the numbers. Also prints a per-fragment breakdown (DOFRAGS) via        !!
-!! group_by_frag_vec, matching the population/bond-order tables --        !!
-!! previously the only ones of the six population-analysis tables         !!
-!! without one.                                                           !!
-!! arguments:                                                            !!
-!! title    (in) -- print_box title, e.g. 'TOTAL VALENCES'               !!
-!! subtitle (in) -- optional explanatory line under the title, blank     !!
-!!                   (' ') if none, e.g. '(SUM OF BOND ORDERS)'          !!
-!! fraglabel(in) -- fragment-breakdown label, e.g. 'Total valences'      !!
-!! label    (in) -- column header, e.g. 'V_A'                            !!
-!! arr      (in) -- the (maxat) vector to print (diag/tindex)            !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-      subroutine print_valence_table(title,subtitle,fraglabel,label,arr)
+!! ----------------------------------------------------------------------
+!! subroutine: print_atom_table
+!! Prints a one-column per-atom table (valences, unpaired electrons),
+!! headed by the name of the atomic definition, and the same per
+!! fragment with DOFRAGS.
+!! arguments:
+!!   title     (in)  section title, e.g. 'TOTAL VALENCES'
+!!   caption   (in)  line printed under the title, ' ' for none
+!!   fragtitle (in)  title of the fragment table, ' ' for none (the
+!!                   caller prints it)
+!!   arr       (in)  (maxat) values
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_atom_table(title,caption,fragtitle,arr)
       use input_options_mod, only: idofr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
-      common /printout/iaccur
-      character*20 fmthdr
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      character*(*) title,subtitle,fraglabel,label
+      common /printout/iaccur
+      character*(*) title,caption,fragtitle
       dimension arr(maxat)
-      character*80 line
+      character*20 ckey,cspace,fmthdr
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      call print_box(title)
+      if(len_trim(caption).gt.0) then
+        write(*,'(2x,a)') trim(caption)
+        write(*,'(a)') ''
+      end if
 
 !! atom label 7 characters wide, as in vprint; value column 12 wide    !!
-!! (6 decimals), 20 wide (13) with FULLPRECISION                      !!
-      call print_box(title)
-      if(len_trim(subtitle).gt.0) then
-        write(*,'(2x,a)') trim(subtitle)
-        write(*,*)
-      end if
+!! (6 decimals), 20 wide (13) with FULLPRECISION                       !!
       iw=12
       if(iaccur.ne.0) iw=20
       write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
-      write(*,fmthdr) 'Atom   ',label
+      write(*,fmthdr) 'Atom   ',trim(cshort)
       write(*,'(2x,a)') repeat('-',7+iw)
       call vprint(arr,nat,maxat,1)
       write(*,'(2x,a)') repeat('-',7+iw)
 
-      if (idofr.eq.1) then
-        line=' FRAGMENT ANALYSIS: '//fraglabel
-        call group_by_frag_vec(1,line,arr)
+      if(idofr.eq.1.and.len_trim(fragtitle).gt.0) then
+        call group_by_frag_vec(1,fragtitle,arr,cshort,' ')
       end if
-
-      return
       end
 
-!! ********************************************************************* !!
-!! subroutine: population_print_charges                                  !!
-!! purpose: prints electron populations and partial atomic charges       !!
-!! (plus per-fragment breakdowns where DOFRAGS is set) from qat, already !!
-!! filled by population_density. The ELCOUNT/NCTAIM call between these   !!
-!! two prints stays in main.f (like idoint/print_int).                   !!
-!! arguments: none (all via qat/COMMON)                                  !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: population_print_charges
+!! Prints the electron populations and the atomic charges (nuclear
+!! charge minus population) from /qat/, per atom and per fragment.
+!! arguments: none (/qat/, /coord/)
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine population_print_charges()
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
-      dimension dummyvec(maxat,2)
+      dimension chg(maxat,2)
 
-!! electron populations -- straight sum of qat !!
       tc1=0.d0
       tc2=0.d0
       do i=1,nat
@@ -631,33 +635,30 @@
         tc2=tc2+qat(i,2)
       enddo
       call print_population_table('ELECTRON POPULATIONS',
-     +  'Electron populations',qat,tc1,tc2)
+     +  'FRAGMENT ELECTRON POPULATIONS',qat,tc1,tc2)
 
-!! partial charges -- nuclear charge minus qat, atom by atom !!
       tc1=0.d0
       tc2=0.d0
       do i=1,nat
         tc1=tc1-qat(i,1)+zn(i)
         tc2=tc2-qat(i,2)+zn(i)
-        dummyvec(i,1)=zn(i)-qat(i,1)
-        dummyvec(i,2)=zn(i)-qat(i,2)
+        chg(i,1)=zn(i)-qat(i,1)
+        chg(i,2)=zn(i)-qat(i,2)
       enddo
       call print_population_table('TOTAL ATOMIC CHARGES',
-     +  'Atomic Charges',dummyvec,tc1,tc2)
-
-      return
+     +  'FRAGMENT CHARGES',chg,tc1,tc2)
       end
 
-!! ********************************************************************* !!
-!! subroutine: population_print_overlap                                  !!
-!! purpose: prints spin populations (plus per-fragment breakdown) and    !!
-!! overlap populations from qsat/op, already filled by                   !!
-!! population_density -- op itself is built here via opop/mull_opop.     !!
-!! arguments:                                                            !!
-!! wp,omp,omp2,rho (in) -- integration grid weights/density, passed      !!
-!! straight to opop                                                      !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: population_print_overlap
+!! Prints the spin populations (open-shell wavefunctions, and correlated
+!! ones with a spin density) and, with OPOP, the overlap population
+!! matrix, built here (opop in real space, mull_opop for Mulliken).
+!! Without OPOP only the diagonal of op is set, to the populations.
+!! arguments:
+!!   wp,omp,omp2,rho (in)  integration grid and density, for opop
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine population_print_overlap(wp,omp,omp2,rho)
       use basis_set, only: natoms
       use integration_grid
@@ -670,10 +671,7 @@
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       dimension wp(nrad*nang*natoms),rho(nrad*nang*natoms)
       dimension omp(nrad*nang*natoms),omp2(nrad*nang*natoms,natoms)
-      character*80 line
 
-!! spin populations -- straight sum of qsat, only for open-shell/       !!
-!! correlated-with-DM cases                                              !!
       if(kop.ne.0.OR.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)) then
         tc1=0.d0
         tc2=0.d0
@@ -682,11 +680,9 @@
           tc2=tc2+qsat(i,2)
         enddo
         call print_population_table('SPIN POPULATIONS',
-     +    'Spin Populations',qsat,tc1,tc2)
+     +    'FRAGMENT SPIN POPULATIONS',qsat,tc1,tc2)
       end if
 
-!! overlap populations -- op itself comes from opop (real-space) or     !!
-!! mull_opop (Mulliken); iopop=0 just takes the diagonal from qat        !!
       if(iopop.eq.0) then
         do i=1,nat
           op(i,i)=qat(i,1)
@@ -698,76 +694,44 @@
       end if
 
       if(iopop.eq.1) then
-        call print_box('APOST3D OVERLAP POPULATION MATRIX')
+        call print_box('OVERLAP POPULATION MATRIX')
         call mprint2(op,nat,maxat)
-        if (idofr.eq.1) then
-          line ='   FRAGMENT ANALYSIS : Overlap Populations'
-          call group_by_frag_mat(0,line,op)
-        end if
+        if(idofr.eq.1) call group_by_frag_mat(0,
+     +    'FRAGMENT OVERLAP POPULATIONS',op)
       end if
-
-      return
       end
 
-!! ********************************************************************* !!
-!! subroutine: bond_order_analysis                                       !!
-!! purpose: thin wrapper around fborder -- kept separate from            !!
-!! population_density/population_print_charges/population_print_overlap  !!
-!! on purpose, so a future second bond-order scheme gets its own         !!
-!! equally-thin subroutine instead of being wedged into population math. !!
-!! arguments:                                                            !!
-!! sat (in) -- per-atom AO overlap matrix, passed straight to fborder    !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: bond_order_analysis
+!! Bond orders and valences (fborder), and the fragment bond orders with
+!! DOFRAGS.
+!! arguments:
+!!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine bond_order_analysis(sat)
       use basis_set, only: natoms,nbasis
       use input_options_mod, only: idofr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      dimension sat(nbasis,nbasis,natoms)
-      character*80 line
+      dimension sat(nbasis,nbasis,natoms),val(maxat,3)
 
-      call fborder(sat)
-      if (idofr.eq.1) then
-        line ='   FRAGMENT ANALYSIS : Fuzzy Bond Order'
-        call group_by_frag_mat(1,line ,bo)
-      end if
-
-      return
+      call fborder(sat,val)
+      if(idofr.eq.1) call group_by_frag_mat(1,'FRAGMENT BOND ORDERS',bo)
       end
 
-!! ********************************************************************* !!
-!! subroutine: pca_analysis                                              !!
-!! purpose: "fuzzy atoms" PCA -- diagonalizes a covariance-like matrix   !!
-!! built from the overlap population (op) and delocalization index (di)  !!
-!! matrices, printing eigenvectors/eigenvalues and their projection      !!
-!! against qat. Needs di already populated (fborder, called earlier via  !!
-!! bond_order_analysis).                                                 !!
-!! FIXED 2026-08-15 (M. Gimferrer): scr, the eigenvector-output argument !!
-!! to diagonalize, was allocated as scr(nat) -- a vector -- but          !!
-!! diagonalize needs a full (M,M) matrix there, same as every other call !!
-!! site in this codebase. Wrote past scr's allocation whenever nat>1     !!
-!! (heap overflow, never caught -- PCA has zero test coverage). Now      !!
-!! allocated scr(nat,nat). Confirmed output-preserving: diagonalize's    !!
-!! write order fills scr's first nat elements (column 1) before any      !!
-!! out-of-bounds write happens, and every print below only ever read     !!
-!! scr(1:nat) -- i.e. column 1 -- so the values printed are identical    !!
-!! before and after, only the undefined-behavior overflow is gone.       !!
-!! FIXED 2026-08-20 (M. Gimferrer): the two prints right after            !!
-!! diagonalize were swapped relative to its actual contract (util.f's    !!
-!! diagonalize returns eigenvalues on A0's diagonal, eigenvectors as     !!
-!! X's columns -- here A0=pca, X=scr). "PCA EIGENVECTORS" was printing   !!
-!! pca (eigenvalues) and the per-atom row below it was printing          !!
-!! scr(:,1) (genuinely eigenvector 1) unlabeled as such. Now             !!
-!! "PCA EIGENVECTORS" prints scr (the real eigenvector matrix, all N     !!
-!! columns) and the row below it prints pca's diagonal (the N            !!
-!! eigenvalues). The PCA SUM CHECKS table's second column (xx*scr(i,1))  !!
-!! is untouched -- that's a separate, still-open question about the      !!
-!! formula's intent, not the label swap.                                 !!
-!! arguments: none (all via op/di/qat/COMMON)                            !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: pca_analysis
+!! Principal component analysis of the covariance matrix op - di/2
+!! (overlap populations and bond orders): prints the matrix, its
+!! eigenvectors (columns) and eigenvalues, and the projection of the
+!! atomic populations on each component. Needs op and di (fborder).
+!! Under discussion (what it should print): not documented, not in the
+!! results file.
+!! arguments: none (/ovpop/, /qat/)
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine pca_analysis()
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -795,10 +759,8 @@
       write(*,'(2x,a)') 'Eigenvalues:'
       write(*,'(2x,8f10.4)') (pca(i,i),i=1,nat)
 
-!! second column rescales the projection by scr(i,1) -- component i of  !!
-!! the FIRST eigenvector specifically, not eigenvector i. Looks like it !!
-!! may have meant pca(i,i) (eigenvalue i) or scr(i,i); not changed,     !!
-!! same "confirm intent first" caveat as the label-swap question above. !!
+!! the second column multiplies by scr(i,1), component i of the first !!
+!! eigenvector (not eigenvalue i): kept until its intent is settled    !!
       call print_box('PCA SUM CHECKS')
       write(*,'(2x,a)') '  PC   Charge projection    x eigenvector 1'
       write(*,'(2x,a)') repeat('-',44)

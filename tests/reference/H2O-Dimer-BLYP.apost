@@ -151,22 +151,20 @@
 
   Sum of atomic overlaps, largest error   : 4.70E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 2.76 s
-  TIMING WALL :: Atomic definition                                 0.40 s
+  TIMING CPU  :: Atomic definition                                 2.74 s
+  TIMING WALL :: Atomic definition                                 0.39 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O     9.130934    8.188722
     2  H     0.417332    0.865604
@@ -175,13 +173,13 @@
     5  H     0.449220    0.893438
     6  H     0.408036    0.915063
   -------------------------------
-  Sum       20.000000   20.000000
+  Total     20.000000   20.000000
 
   ------------------------
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O    -1.130934   -0.188722
     2  H     0.582668    0.134396
@@ -190,11 +188,11 @@
     5  H     0.550780    0.106562
     6  H     0.591964    0.084937
   -------------------------------
-  Sum        0.000000    0.000000
+  Total      0.000000    0.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -211,7 +209,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1  O     1.521988
     2  H     0.680621
@@ -225,9 +223,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1  O     1.521989
     2  H     0.680621
@@ -241,7 +239,7 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1  O    -0.000001
     2  H     0.000000
@@ -251,8 +249,8 @@
     6  H     0.000000
   -------------------
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   ----------------------------------------
     DOING MOLECULAR ENERGY DECOMPOSITION
@@ -331,8 +329,8 @@
   -------------------------------------------------------------------------------
   Nuclear repulsion energy:     36.6642284
 
-  TIMING CPU  :: enpart one-electron                               1.14 s
-  TIMING WALL :: enpart one-electron                               0.15 s
+  TIMING CPU  :: enpart one-electron                               1.18 s
+  TIMING WALL :: enpart one-electron                               0.16 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -416,8 +414,8 @@
   -------------------------------------------------------------------------------
   Sum of pure KS-DFT exchange-correlation energy:    -18.6913761
 
-  TIMING CPU  :: enpart dft                                        5.89 s
-  TIMING WALL :: enpart dft                                        0.87 s
+  TIMING CPU  :: enpart dft                                        5.86 s
+  TIMING WALL :: enpart dft                                        0.86 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -450,8 +448,8 @@
   -------------------------------------------------------------------------------
   Coulomb energy:    112.1860788
 
-  TIMING CPU  :: Coulomb energy                                    1.61 s
-  TIMING WALL :: Coulomb energy                                    0.23 s
+  TIMING CPU  :: Coulomb energy                                    1.40 s
+  TIMING WALL :: Coulomb energy                                    0.20 s
 
   KS-DFT electron-electron energy (au):     93.4947027
   Integration error (kcal/mol):     5.25
@@ -464,7 +462,7 @@
   New error after rotation:    -9.25
   Damping parameter       :      0.6381144
 
-  TIMING CPU  :: Interpolated zero-error                           0.56 s
+  TIMING CPU  :: Interpolated zero-error                           0.53 s
   TIMING WALL :: Interpolated zero-error                           0.09 s
 
   ---------------------------------------------------------
@@ -505,7 +503,7 @@
   Integration error (au):     -0.0000091
   Integration error (kcal/mol):    -0.01
 
-  TIMING CPU  :: enpart two-electron                               2.48 s
-  TIMING WALL :: enpart two-electron                               0.37 s
+  TIMING CPU  :: enpart two-electron                               2.22 s
+  TIMING WALL :: enpart two-electron                               0.33 s
 
   ...Normal Termination of APOST-3D...

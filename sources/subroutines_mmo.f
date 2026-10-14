@@ -909,7 +909,7 @@ CCCCCCCCCCCCCCC
 
       if (idofr.eq.1) then
        line ='   FRAGMENT ANALYSIS : Electron populations'
-       call group_by_frag_vec(2,line ,qat)
+       call group_by_frag_vec(2,line ,qat,'3D-space','Mulliken')
       end if
 
       END SUBROUTINE

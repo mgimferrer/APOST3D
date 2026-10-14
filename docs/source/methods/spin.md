@@ -119,13 +119,13 @@ section starts with the effectively unpaired electrons of each atom:
     EFFECTIVELY UNPAIRED ELECTRONS
   ----------------------------------
 
-  Atom            u_A
+  Atom           TFVC
   -------------------
     1  O     1.287250
     2  H     0.361616
     3  H     0.361616
   -------------------
-  Sum check N_D =    2.01048
+  Total unpaired electrons N_D            :       2.010481
 ```
 
 followed by the decomposition. Diagonal elements are the local spins
@@ -134,9 +134,9 @@ $\langle \hat S^2\rangle_{AB}$ (each pair appears twice, as AB and BA):
 
 % source: tests/reference/H2O-T-B3LYP.apost
 ```text
-  -------------------------------------------
-    "FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)
-  -------------------------------------------
+  -----------------------------
+    S^2 DECOMPOSITION (a=3/4)
+  -----------------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -145,15 +145,14 @@ $\langle \hat S^2\rangle_{AB}$ (each pair appears twice, as AB and BA):
     2  H     0.091036    0.272245    0.008738
     3  H     0.091036    0.008738    0.272245
   -------------------------------------------
-
-  Sum check <S^2> =    2.00524
+  Total <S^2>                             :       2.005241
 ```
 
 The two unpaired electrons are mostly on oxygen (1.08, compared with 0.75
 for one and 2 for two electrons localized on it), partly delocalized onto
 the hydrogens, and all couplings are positive (ferromagnetic), as expected for
-a triplet. The sum check is the total $\langle \hat S^2\rangle$ of the
-wavefunction: 2.00524 here, slightly above the exact 2 because of the spin
+a triplet. The total is the $\langle \hat S^2\rangle$ of the
+wavefunction: 2.005241 here, slightly above the exact 2 because of the spin
 contamination of the UKS determinant (it matches the `S**2` value of the
 `.fchk` file).
 
@@ -161,21 +160,25 @@ A second matrix, `"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX`, follows. It is
 under revision: use the $a=3/4$ matrix above.
 
 **Correlated wavefunction.** For LiH at 3.5 Å, CASSCF(2,2) (test
-`LiH-35-CAS22`), the section first prints bond order and
-localization/delocalization index matrices built from the 2-RDM, then:
+`LiH-35-CAS22`), the section first prints three matrices: the bond orders
+from the 1-RDM (`BOND ORDER MATRIX (1-RDM)`, the same as in the population
+analysis), the bond orders from the natural orbitals
+(`NEW BOND ORDER MATRIX`, I. Mayer's definition for correlated
+wavefunctions) and the localization and delocalization indices from the
+2-RDM (`LI/DI MATRIX (2-RDM)`). Then:
 
 % source: tests/reference/LiH-35-CAS22.apost
 ```text
-  Atom            u_A
+  Atom           TFVC
   -------------------
     1 Li     0.607882
     2  H     0.793956
   -------------------
-  Sum check N_D =    1.40184
+  Total unpaired electrons N_D            :       1.401839
 
-  -------------------------------------
-    APOST3D S^2 DECOMPOSITION (a=3/4)
-  -------------------------------------
+  -----------------------------
+    S^2 DECOMPOSITION (a=3/4)
+  -----------------------------
 
   -------------------------------
                  1 Li        2  H
@@ -183,8 +186,7 @@ localization/delocalization index matrices built from the 2-RDM, then:
     1 Li     0.452573   -0.452573
     2  H    -0.452573    0.452573
   -------------------------------
-
-  Sum check <S^2> =    0.00000
+  Total <S^2>                             :       0.000000
 ```
 
 The total is zero (a singlet), yet each atom carries a sizeable local spin
@@ -193,13 +195,14 @@ diradical character, two antiferromagnetically coupled electrons on its
 way to two free atoms (where each local spin would be 3/4). At the
 equilibrium distance the same analysis gives small local spins.
 
-With `DOFRAGS`, `FRAGMENT ANALYSIS : Local Spin Analysis` and
-`FRAGMENT ANALYSIS : Num. eff. unpaired elec.` give the same quantities
-summed over the atoms of each fragment.
+With `DOFRAGS`, `FRAGMENT UNPAIRED ELECTRONS` and
+`FRAGMENT S^2 DECOMPOSITION (a=3/4)` follow their atom tables, with the
+same quantities summed over the atoms of each fragment (and, for a
+correlated wavefunction, `FRAGMENT LI/DI (2-RDM)`).
 
 ## Checking the result
 
-- The sum check must equal the total $\langle \hat S^2\rangle$ of the
+- `Total <S^2>` must equal the total $\langle \hat S^2\rangle$ of the
   wavefunction (`S**2` in a Gaussian `.fchk`; 0 for a correlated singlet).
   A clear difference points to an integration problem: use a larger grid
   (see [Running a calculation](../guide/running.md)).

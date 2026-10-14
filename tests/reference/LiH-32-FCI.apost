@@ -171,26 +171,24 @@
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1 Li     2.387845    2.808879
     2  H     1.612448    1.191121
   -------------------------------
-  Sum        4.000293    4.000000
+  Total      4.000293    4.000000
 
-  --------------------------------------------
-    FRAGMENT ANALYSIS : Electron populations
-  --------------------------------------------
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.            TFVC    Mulliken
   ---------------------------------
     1          2.387845    2.808879
     2          1.612448    1.191121
@@ -201,27 +199,27 @@
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1 Li     0.612155    0.191121
     2  H    -0.612448   -0.191121
   -------------------------------
-  Sum       -0.000293    0.000000
+  Total     -0.000293    0.000000
 
-  --------------------------------------
-    FRAGMENT ANALYSIS : Atomic Charges
-  --------------------------------------
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.            TFVC    Mulliken
   ---------------------------------
     1          0.612155    0.191121
     2         -0.612448   -0.191121
   ---------------------------------
   Total       -0.000293    0.000000
 
-  -------------------------------------
-    APOST3D OVERLAP POPULATION MATRIX
-  -------------------------------------
+  -----------------------------
+    OVERLAP POPULATION MATRIX
+  -----------------------------
 
   -------------------------------
                  1 Li        2  H
@@ -230,9 +228,9 @@
     2  H     0.051080    1.561071
   -------------------------------
 
-  -------------------------------------------
-    FRAGMENT ANALYSIS : Overlap Populations
-  -------------------------------------------
+  --------------------------------
+    FRAGMENT OVERLAP POPULATIONS
+  --------------------------------
 
   ---------------------------------
                       1           2
@@ -242,9 +240,9 @@
   ---------------------------------
   Total (all elements)                    :       3.999997
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------
                  1 Li        2  H
@@ -257,17 +255,17 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1 Li     0.642590
     2  H     1.024295
   -------------------
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Total valences
-  -------------------------------------
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          0.642590
     2          1.024295
@@ -278,19 +276,19 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1 Li     0.392298
     2  H     0.392298
   -------------------
 
-  ---------------------------------------------
-    FRAGMENT ANALYSIS: Valences used in bonds
-  ---------------------------------------------
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          0.392298
     2          0.392298
@@ -301,26 +299,26 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1 Li     0.250291
     2  H     0.631996
   -------------------
 
-  ------------------------------------
-    FRAGMENT ANALYSIS: Free valences
-  ------------------------------------
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          0.250291
     2          0.631996
   ---------------------
   Total        0.882288
 
-  ----------------------------------------
-    FRAGMENT ANALYSIS : Fuzzy Bond Order
-  ----------------------------------------
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
 
   ---------------------------------
                       1           2
@@ -330,8 +328,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :       3.559149
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   ----------------------------------
     DOING EFFAO-3D FROM U FUNCTION

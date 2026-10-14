@@ -1327,7 +1327,7 @@
         },
         {
           "label": "Na fragment Davidson-Lowdin population",
-          "section": "FRAGMENT ANALYSIS : Electron populations",
+          "section": "FRAGMENT ELECTRON POPULATIONS",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 11.567181,
           "tol_abs": 2e-05
@@ -1572,15 +1572,15 @@
           "tol_abs": 2e-06
         },
         {
-          "label": "Effectively unpaired electrons sum check N_D",
-          "pattern": "Sum check N_D\\s*=\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 1.40184,
-          "tol_abs": 0.0002
+          "label": "Total effectively unpaired electrons N_D",
+          "pattern": "Total unpaired electrons N_D\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 1.401839,
+          "tol_abs": 2e-05
         },
         {
           "label": "Correlated local spin analysis run",
           "type": "present",
-          "pattern": "Localization/delocalization, correlated WF"
+          "pattern": "Wavefunction\\s*: correlated"
         },
         {
           "label": "Local spin <S^2>_Li",
@@ -1599,7 +1599,7 @@
         {
           "label": "Total <S^2> from the decomposition",
           "section": "S\\^2 DECOMPOSITION \\(a=3/4\\)",
-          "pattern": "Sum check <S\\^2> =\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total <S\\^2>\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.0,
           "tol_abs": 2e-05
         }

@@ -129,8 +129,8 @@
      2.00000   1.99969   1.99944   1.99824   1.00000   1.00000   0.00176   0.00056
      0.00031
 
-  TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING CPU  :: Initialization                                    0.02 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -153,56 +153,54 @@
 
   Sum of atomic overlaps, largest error   : 9.40E-07 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 1.39 s
-  TIMING WALL :: Atomic definition                                 0.22 s
+  TIMING CPU  :: Atomic definition                                 1.43 s
+  TIMING WALL :: Atomic definition                                 0.24 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O     8.551876    8.045576
     2  H     0.724062    0.977212
     3  H     0.724062    0.977212
   -------------------------------
-  Sum       10.000000   10.000000
+  Total     10.000000   10.000000
 
   ------------------------
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O    -0.551876   -0.045576
     2  H     0.275938    0.022788
     3  H     0.275938    0.022788
   -------------------------------
-  Sum        0.000000    0.000000
+  Total      0.000000    0.000000
 
   --------------------
     SPIN POPULATIONS
   --------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O     1.235156    0.934712
     2  H     0.382422    0.532644
     3  H     0.382422    0.532644
   -------------------------------
-  Sum        2.000000    2.000000
+  Total      2.000000    2.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -216,7 +214,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1  O     2.486310
     2  H     1.010009
@@ -227,9 +225,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1  O     1.415472
     2  H     0.867895
@@ -240,37 +238,37 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1  O     1.070838
     2  H     0.142115
     3  H     0.142115
   -------------------
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   -----------------------------
     DOING LOCAL SPIN ANALYSIS
   -----------------------------
 
-   Single-determinant case
+  Wavefunction                            : single determinant
 
   ----------------------------------
     EFFECTIVELY UNPAIRED ELECTRONS
   ----------------------------------
 
-  Atom            u_A
+  Atom           TFVC
   -------------------
     1  O     1.287250
     2  H     0.361616
     3  H     0.361616
   -------------------
-  Sum check N_D =    2.01048
+  Total unpaired electrons N_D            :       2.010481
 
-  -------------------------------------------
-    "FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)
-  -------------------------------------------
+  -----------------------------
+    S^2 DECOMPOSITION (a=3/4)
+  -----------------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -279,8 +277,7 @@
     2  H     0.091036    0.272245    0.008738
     3  H     0.091036    0.008738    0.272245
   -------------------------------------------
-
-  Sum check <S^2> =    2.00524
+  Total <S^2>                             :       2.005241
 
   -------------------------------------------
     "FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX
@@ -355,8 +352,8 @@
   -------------------------------------------
   Nuclear repulsion energy:      7.2850801
 
-  TIMING CPU  :: enpart one-electron                               0.64 s
-  TIMING WALL :: enpart one-electron                               0.09 s
+  TIMING CPU  :: enpart one-electron                               0.69 s
+  TIMING WALL :: enpart one-electron                               0.11 s
 
   --------------------------------
     UKS-DFT ENERGY DECOMPOSITION
@@ -423,8 +420,8 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
 
-  TIMING CPU  :: enpart dft                                        2.72 s
-  TIMING WALL :: enpart dft                                        0.53 s
+  TIMING CPU  :: enpart dft                                        2.74 s
+  TIMING WALL :: enpart dft                                        0.56 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -455,7 +452,7 @@
   Coulomb energy:     44.3183281
 
   TIMING CPU  :: Coulomb energy                                    0.39 s
-  TIMING WALL :: Coulomb energy                                    0.05 s
+  TIMING WALL :: Coulomb energy                                    0.06 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -563,7 +560,7 @@
   Integration error (au):     -0.0000008
   Integration error (kcal/mol):     0.00
 
-  TIMING CPU  :: enpart two-electron                               9.86 s
-  TIMING WALL :: enpart two-electron                               1.36 s
+  TIMING CPU  :: enpart two-electron                               9.88 s
+  TIMING WALL :: enpart two-electron                               1.34 s
 
   ...Normal Termination of APOST-3D...

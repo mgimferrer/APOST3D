@@ -1,25 +1,27 @@
-!! ********************************************************************** !!
-!! subroutine: spincorr                                                   !!
-!! purpose: local spin / delocalization-index decomposition from the      !!
-!!   post-HF 1- and 2-RDMs (dm1/dm2, natural-orbital basis). Prints the   !!
-!!   bond order matrix, Mayer's "new" bond order (CPL 554, 83 (2012)),    !!
-!!   the LI/DI matrix, effectively unpaired electrons (u_A), and the      !!
-!!   S^2 decomposition (a=3/4, Ramos-Cordoba/Salvador local spin) --      !!
-!!   plus their DOFRAGS fragment-analysis breakdowns when requested.      !!
-!! arguments:                                                             !!
-!!   sat (in) -- per-atom AO overlap matrix (igr,igr,nat)                 !!
-!!   dm1 (in) -- one-electron reduced density matrix, spin-orbital        !!
-!!               basis (nspinorb,nspinorb)                                !!
-!!   dm2 (in) -- spinless two-electron reduced density matrix, natural-   !!
-!!               orbital basis (norb,norb,norb,norb)                      !!
-!! author: PSalse, ERaco                                                  !!
-!! ********************************************************************** !!
+!! ----------------------------------------------------------------------
+!! subroutine: spincorr
+!! Local spin analysis of a correlated wavefunction from its 1- and
+!! 2-RDM: the bond orders from the 1-RDM, Mayer's bond orders from the
+!! natural orbitals (I. Mayer, Chem. Phys. Lett. 2012, 554, 83), the
+!! localization and delocalization indices from the 2-RDM, the
+!! effectively unpaired electrons of each atom and the a=3/4
+!! decomposition of <S^2> (E. Ramos-Cordoba et al., J. Chem. Theory
+!! Comput. 2012, 8, 1270), per atom and per fragment.
+!! arguments:
+!!   sat (in)  (igr,igr,nat) atomic overlap matrices S^A
+!!   dm1 (in)  (nspinorb,nspinorb) 1-RDM, spin-orbital basis
+!!   dm2 (in)  (norb,norb,norb,norb) spinless 2-RDM, natural orbitals
+!! author: PSalse, ERaco
+!! ----------------------------------------------------------------------
       subroutine spincorr(sat,dm1,dm2)
       use ao_matrices
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /printout/iaccur
-      character*20 fmthdr
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
       parameter (TOL=1.0d-10)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
@@ -29,7 +31,6 @@
       dimension sat(igr,igr,nat)
       dimension dm1(nspinorb,nspinorb)
       dimension dm2(norb,norb,norb,norb)
-      character*80 line
 
       dimension S234(maxat,maxat)
       dimension bonew(maxat,maxat)
@@ -139,7 +140,8 @@
             delta=delta-satmo(i,j,iat)
           end do
           if(delta.gt.1.0d-2) then
-            write(*,*) 'Large deviation from orthonormality in MOs:',i,j,delta
+            write(*,'(2x,a,i0,a,i0,a,f10.6)') 'WARNING: orbitals ',i,
+     +        ' and ',j,' deviate from orthonormality by ',delta
           end if
         end do
       end do
@@ -226,46 +228,35 @@
       enddo
 
 !! printing !!
-      call print_box('APOST3D BOND ORDER MATRIX')
-      call MPRINT(bo,nat,maxat)
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
 
-      call print_box('APOST3D NEW BOND ORDER MATRIX')
-      write(*,'(2x,a)') 'Improved definition by I. Mayer, CPL 554, 83 (2012)'
-      write(*,*)
-      call MPRINT(bonew,nat,maxat)
-      write(*,*)
-      write(*,'(2x,a,f10.5)') 'Sum check = ',x1
+      call print_box('BOND ORDER MATRIX (1-RDM)')
+      call mprint2(bo,nat,maxat)
 
-      call print_box('APOST3D LI/DI MATRIX')
-      call MPRINT(DI,nat,maxat)
-      write(*,*)
-      write(*,'(2x,a,f10.5)') 'Sum check = ',x0
-      if (idofr.eq.1) then
-        line ='   FRAGMENT ANALYSIS : Deloc. Index'
-        call group_by_frag_mat(1,line ,di)
-      end if
+      call print_box('NEW BOND ORDER MATRIX')
+      write(*,'(2x,a)') 'From the natural orbitals, I. Mayer, '//
+     +  'Chem. Phys. Lett. 2012, 554, 83'
+      write(*,'(a)') ''
+      call mprint2(bonew,nat,maxat)
+      call print_value('Total (diagonal and one triangle)',x1,ndec)
 
-      call print_box('EFFECTIVELY UNPAIRED ELECTRONS')
-      iw=12
-      if(iaccur.ne.0) iw=20
-      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
-      write(*,fmthdr) 'Atom   ','u_A'
-      write(*,'(2x,a)') repeat('-',7+iw)
-      call vprint(ua,nat,maxat,1)
-      write(*,'(2x,a)') repeat('-',7+iw)
-      write(*,'(2x,a,f10.5)') 'Sum check N_D = ',xnd
-      if (idofr.eq.1) then
-        line ='   FRAGMENT ANALYSIS : Num. eff. unpaired elec.'
-        call group_by_frag_vec(1,line ,ua)
-      end if
+      call print_box('LI/DI MATRIX (2-RDM)')
+      call mprint2(di,nat,maxat)
+      call print_value('Total (diagonal and one triangle)',x0,ndec)
+      if(idofr.eq.1) call group_by_frag_mat(1,'FRAGMENT LI/DI (2-RDM)',
+     +  di)
 
-      call print_box('APOST3D S^2 DECOMPOSITION (a=3/4)')
-      call MPRINT(s234,nat,maxat)
-      write(*,*)
-      write(*,'(2x,a,f10.5)') 'Sum check <S^2> = ',x2
-      if (idofr.eq.1) then
-        line ='   FRAGMENT ANALYSIS : Local Spin Analysis'
-        call group_by_frag_mat(0,line ,xlsa)
-      end if
+      call print_atom_table('EFFECTIVELY UNPAIRED ELECTRONS',' ',' ',ua)
+      call print_value('Total unpaired electrons N_D',xnd,ndec)
+      if(idofr.eq.1) call group_by_frag_vec(1,
+     +  'FRAGMENT UNPAIRED ELECTRONS',ua,cshort,' ')
+
+      call print_box('S^2 DECOMPOSITION (a=3/4)')
+      call mprint2(s234,nat,maxat)
+      call print_value('Total <S^2>',x2,ndec)
+      if(idofr.eq.1) call group_by_frag_mat(0,
+     +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
 
       end

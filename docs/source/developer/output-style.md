@@ -120,5 +120,5 @@ The same thing has the same name everywhere:
 | Fragment (`Frag.` in table headings) | Frg., frag, FRAGMENT in running text |
 | EFO, EFOs (effective fragment orbitals) | eff-AO-s, eff-AOs, EFFAOs in text |
 | electron assignment | assignation |
-| the name of the atomic definition in titles (`TFVC BOND ORDER MATRIX`, `MULLIKEN BOND ORDER MATRIX`) | `"FUZZY ATOMS"`, `APOST3D` |
+| neutral titles (`BOND ORDER MATRIX`), the atomic definition named once at the top of its section and as the heading of each value column (`TFVC`, `Mulliken`, `Lowdin-Dav.`) | `"FUZZY ATOMS"`, `APOST3D`, `apost3d`, `3D-space` |
 | Lowdin, Davidson-Lowdin (ASCII in the output) | Löwdin |

@@ -124,8 +124,6 @@ c      -------------------------------------------------------------------------
       common /loba/ oxi(maxat),errsav(maxat),elec(maxat),effpop(maxat)
       common /qat/qat(maxat,2),qsat(maxat,2)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-!! local spin !!
-      common /localspin/xlsa(maxat,maxat),ua(maxat)
 !! Enpart !!
       common /exchg/exch(maxat,maxat),xmix
 !! TFVC features !!
@@ -144,7 +142,6 @@ c      -------------------------------------------------------------------------
       dimension eto(maxat,maxat)
       character*60 name,name2,namepat,name3,name0,cgridarg
       character*40 cbuf
-      character*80 line
 !! for testing !!
       dimension xhess(3,3)
 
@@ -688,38 +685,33 @@ c      iopt(200) =
 
       call population_print_overlap(wp,omp,omp2,rho)
 
-!! Bond orders, valences, number of effectively unpaired electrons !!
+!! Bond orders and valences !!
       call bond_order_analysis(sat)
 
       write(*,*)
       call cpu_time(time2)
       call get_wall_time(wtime2)
-      call print_timer('population analyses',time2-time,wtime2-wtime)
+      call print_timer('Population analysis',time2-time,wtime2-wtime)
       time=time2
       wtime=wtime2
 
 !! Local spin decomposition, single-determinant WF !!
       if(ispin.eq.1.and.icas.eq.0.and.icisd.eq.0) then
         call print_box('DOING LOCAL SPIN ANALYSIS')
-        write(*,'(3x,a)') 'Single-determinant case'
+        call print_value('Wavefunction','single determinant')
         call fspindec(sat)
-        if (idofr.eq.1) then 
-          line ='   FRAGMENT ANALYSIS : Local Spin Analysis'
-          call group_by_frag_mat(0,line ,xlsa)
-          line ='   FRAGMENT ANALYSIS : Num. eff. unpaired elec.'
-          call group_by_frag_vec(1,line ,ua)
-        end if
       end if
 
 !! Local spin and DIs for correlated WFs, needs dm1/dm2 from the DMN   !!
 !! code (E. Matito) or from pySCF                                      !!
       if((icas.eq.1.or.icisd.eq.1).and.ispin.eq.1)then
         call print_box('DOING LOCAL SPIN ANALYSIS')
-        write(*,'(3x,a)') 'Localization/delocalization, correlated WF'
+        call print_value('Wavefunction','correlated (1- and 2-RDM)')
         call spincorr(sat,dm1,dm2)
+        write(*,'(a)') ''
         call cpu_time(time2)
         call get_wall_time(wtime2)
-        call print_timer('local spin analysis',time2-time,wtime2-wtime)
+        call print_timer('Local spin analysis',time2-time,wtime2-wtime)
         time=time2
         wtime=wtime2
       end if

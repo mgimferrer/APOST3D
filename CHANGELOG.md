@@ -249,6 +249,15 @@ program, not a full development history — see `git log` for that.
   (diagonal and one triangle, or all elements). Blank lines are empty
   lines, and a value that rounds to zero is printed as `0.00`, never
   `-0.00`. No number changes.
+- **Population analysis and local spin output** — the section starts
+  with the atomic definition used, and the value columns are named after
+  it (`TFVC`, `Lowdin`, `Hirshfeld`, ...) instead of `apost3d`/`3D-space`;
+  titles no longer say `"FUZZY ATOMS"` or `APOST3D` (`BOND ORDER MATRIX`,
+  `FRAGMENT ELECTRON POPULATIONS`, ...). A Mulliken run prints one
+  column instead of two identical ones. The sum checks of the local spin
+  analysis are `Total unpaired electrons N_D` and `Total <S^2>`, with 6
+  decimals like the tables, and the fragment tables follow the atom
+  tables they sum. No number changes.
 - **`utils/apost3d.py` rewritten** — works with current pySCF (2.7 to 2.14
   checked; before, only up to 2.7) and writes basis sets with g functions,
   single atoms, linearly dependent bases, CASCI, the RDMs of FCI and

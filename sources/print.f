@@ -21,15 +21,12 @@
 !! ENPART:                                                                 !!
 !!   MPRINT2               -- same chunking as MPRINT, plus an 80-column   !!
 !!                             rule around the header and each row block   !!
-!! Fragment-analysis printers (condense a per-atom quantity to per-        !!
-!! fragment via /frlist/'s atom-to-fragment map, then print):              !!
-!!   mprintnoat            -- bordered/chunked fragment x fragment matrix  !!
-!!                             print, called only by group_by_frag_mat     !!
-!!   group_by_frag_mat     -- sums a per-atom matrix to per-fragment,       !!
-!!                             prints via mprintnoat                        !!
-!!   group_by_frag_vec     -- sums a per-atom table to per-fragment,        !!
-!!                             prints bordered to its own actual width      !!
-!!                             (never chunked -- always 1-2 columns)        !!
+!! Fragment values (a per-atom quantity summed over the atoms of each     !!
+!! fragment, /frlist/ map) and their printers:                             !!
+!!   frag_sum_mat / frag_sum_vec -- fragment matrix / table, no printing   !!
+!!   mprintnoat            -- fragment x fragment matrix, as MPRINT2       !!
+!!   group_by_frag_mat     -- section with the fragment matrix and total   !!
+!!   group_by_frag_vec     -- section with the fragment table and total    !!
 !! AIMPAC/PROAIMV interface (opt-in, # METHOD / DOINT):                    !!
 !!   print_int              -- writes one .int file per atom (plus a        !!
 !!                             .files index) holding its MO/NO-basis        !!
@@ -532,6 +529,83 @@
 !! ***** !!
 
 !! ----------------------------------------------------------------------
+!! subroutine: atomic_definition_names
+!! Names of the atomic definition the run uses, from the # METHOD flags,
+!! in the order the program applies them: a Hilbert-space definition,
+!! then Hirshfeld, then the Becke family (TFVC sets the BECKE-RHO and
+!! NEWBEC flags too, so it is tested first).
+!! arguments:
+!!   ckey   (out)  input keyword: 'TFVC', 'MULLIKEN', ...
+!!   cname  (out)  descriptive name: 'Topological fuzzy Voronoi cells'
+!!   cshort (out)  column heading, at most 11 characters: 'TFVC',
+!!                 'Lowdin-Dav.', ...
+!!   cspace (out)  'real' or 'hilbert'
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      SUBROUTINE atomic_definition_names(ckey,cname,cshort,cspace)
+      use input_options_mod, only: imulli,ihirsh,itfvc,inewbec,ibecke
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /achi/achi(maxat,maxat),ibcp
+      character*(*) ckey,cname,cshort,cspace
+
+      cspace='real'
+      ckey=' '
+      cname=' '
+      cshort=' '
+      if(imulli.ge.1) then
+        cspace='hilbert'
+        if(imulli.eq.1) then
+          ckey='MULLIKEN'
+          cname='Mulliken'
+          cshort='Mulliken'
+        else if(imulli.eq.2) then
+          ckey='LOWDIN'
+          cname='Lowdin'
+          cshort='Lowdin'
+        else if(imulli.eq.3) then
+          ckey='LOWDIN-DAVIDSON'
+          cname='Davidson-Lowdin'
+          cshort='Lowdin-Dav.'
+        else if(imulli.eq.4) then
+          ckey='NAO-BASIS'
+          cname='Natural atomic orbitals'
+          cshort='NAO'
+        else if(imulli.eq.5) then
+          ckey='LOWDIN-W'
+          cname='Weighted Lowdin'
+          cshort='Lowdin-W'
+        end if
+      else if(ihirsh.eq.1) then
+        ckey='HIRSH'
+        cname='Hirshfeld'
+        cshort='Hirshfeld'
+      else if(ihirsh.eq.2) then
+        ckey='HIRSH-IT'
+        cname='Iterative Hirshfeld'
+        cshort='Hirshfeld-I'
+      else if(itfvc.eq.1) then
+        ckey='TFVC'
+        cname='Topological fuzzy Voronoi cells'
+        cshort='TFVC'
+      else if(ibcp.eq.1) then
+        ckey='BECKE-RHO'
+        cname='Becke, radii from the density'
+        cshort='Becke-rho'
+      else if(inewbec.eq.1) then
+        ckey='NEWBEC'
+        cname='Becke, NEWBEC radii'
+        cshort='Becke-new'
+      else if(ibecke.eq.1) then
+        ckey='BECKE'
+        cname='Becke, fixed empirical radii'
+        cshort='Becke'
+      end if
+      END SUBROUTINE atomic_definition_names
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
 !! subroutine: json_skeleton
 !! Writes the input, molecule and fragments blocks of the results file
 !! (json_mod) and opens its analyses object, which each analysis then
@@ -547,7 +621,6 @@
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /achi/achi(maxat,maxat),ibcp
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
      +  jfrlist(maxat)
       character(len=1024) :: line
@@ -555,6 +628,7 @@
       character(len=2) :: sym(maxat)
       character(len=20) :: ckey
       character(len=60) :: cname
+      character(len=12) :: cshort
       character(len=8) :: cspace
       integer :: ios,i,ifr
 
@@ -570,47 +644,7 @@
       call json_begin_object('input')
       call json_value('text',text)
 
-!! the atomic definition, chosen as in print_input_summary !!
-      cspace='real'
-      ckey=' '
-      cname=' '
-      if(imulli.ge.1) then
-        cspace='hilbert'
-        if(imulli.eq.1) then
-          ckey='MULLIKEN'
-          cname='Mulliken'
-        else if(imulli.eq.2) then
-          ckey='LOWDIN'
-          cname='Lowdin'
-        else if(imulli.eq.3) then
-          ckey='LOWDIN-DAVIDSON'
-          cname='Lowdin-Davidson'
-        else if(imulli.eq.4) then
-          ckey='NAO-BASIS'
-          cname='Natural atomic orbitals'
-        else if(imulli.eq.5) then
-          ckey='LOWDIN-W'
-          cname='Weighted Lowdin'
-        end if
-      else if(itfvc.eq.1) then
-        ckey='TFVC'
-        cname='Topological fuzzy Voronoi cells'
-      else if(ibcp.eq.1) then
-        ckey='BECKE-RHO'
-        cname='Becke, radii from the density'
-      else if(inewbec.eq.1) then
-        ckey='NEWBEC'
-        cname='Becke, NEWBEC radii'
-      else if(ibecke.eq.1) then
-        ckey='BECKE'
-        cname='Becke, fixed empirical radii'
-      else if(ihirsh.eq.1) then
-        ckey='HIRSH'
-        cname='Hirshfeld'
-      else if(ihirsh.eq.2) then
-        ckey='HIRSH-IT'
-        cname='Iterative Hirshfeld'
-      end if
+      call atomic_definition_names(ckey,cname,cshort,cspace)
       call json_begin_object('atomic_definition')
       call json_value('keyword',trim(ckey))
       call json_value('name',trim(cname))
@@ -873,64 +907,134 @@
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: group_by_frag_mat                                         !!
-!! purpose: sums a per-atom matrix A into a per-fragment matrix B (using !!
-!! /frlist/'s atom-to-fragment map) and prints it via mprintnoat,        !!
-!! MPRINT2-style (bordered, chunked, per-fragment column header).        !!
-!! arguments:                                                            !!
-!! ilog (in) -- 0: sum the full matrix, 1: lower-triangular only         !!
-!!              (symmetric quantity, e.g. bond order)                    !!
-!! line (in) -- title, printed via print_box (leading/trailing blanks    !!
-!!              in the caller's string are stripped)                     !!
-!! A    (in) -- the (maxat,maxat) per-atom matrix to sum and print       !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-      subroutine group_by_frag_mat(ilog,line,A)
-      use output_mod, only: print_value
+!! ----------------------------------------------------------------------
+!! subroutine: frag_sum_mat
+!! Fragment x fragment matrix from an atom x atom one, with the atom-to-
+!! fragment map of /frlist/ (atoms in no fragment are left out).
+!! arguments:
+!!   ilog (in)   0: every element is added (B is A summed by blocks);
+!!               1: A is symmetric with its total over the diagonal and
+!!               one triangle (bond orders, IQA terms), so each atom pair
+!!               is counted once and B is symmetric in the same sense
+!!   A    (in)   (maxat,maxat) atom x atom matrix
+!!   B    (out)  (maxat,maxat) fragment x fragment matrix
+!!   x    (out)  total of B: all elements (ilog=0), or the diagonal and
+!!               one triangle (ilog=1)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine frag_sum_mat(ilog,A,B,x)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /printout/iaccur
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
       dimension A(maxat,maxat),B(maxat,maxat)
-      character*80 line
       integer ilog
 
-!! ilog=0: full matrix, ilog=1: lower triangular (symmetric quantity) !!
       do i=1,nat
-       do j=1,nat
-        B(i,j)=0.0d0
-       end do
+        do j=1,nat
+          B(i,j)=0.0d0
+        end do
       end do
 
+!! ilog=1: atom pairs from the lower triangle and the diagonal only; a !!
+!! pair whose fragments come in the other order lands above the        !!
+!! diagonal of B and is folded back below                              !!
       nnat=nat
       do i=1,nat
-       if(ilog.eq.1) nnat=i
-       do j=1,nnat
-        if(jfrlist(i).ne.0.and.jfrlist(j).ne.0) B(jfrlist(i),jfrlist(j))=B(jfrlist(i),jfrlist(j))+a(i,j)
-       end do
+        if(ilog.eq.1) nnat=i
+        do j=1,nnat
+          if(jfrlist(i).ne.0.and.jfrlist(j).ne.0)
+     +      B(jfrlist(i),jfrlist(j))=B(jfrlist(i),jfrlist(j))+A(i,j)
+        end do
       end do
 
       x=0.0d0
       if(ilog.eq.1) then
-       do i=1,icufr
-        x=x+b(i,i)
-        do j=1,i-1
-         B(i,j)=B(i,j)+B(j,i)
-         x=x+b(i,j)
-         B(j,i)=B(i,j)
+        do i=1,icufr
+          x=x+B(i,i)
+          do j=1,i-1
+            B(i,j)=B(i,j)+B(j,i)
+            x=x+B(i,j)
+            B(j,i)=B(i,j)
+          end do
         end do
-       end do
       else
-      do i=1,icufr
-       do j=1,icufr
-        x=x+b(i,j)
-       end do
-      end do
+        do i=1,icufr
+          do j=1,icufr
+            x=x+B(i,j)
+          end do
+        end do
       end if
+      end
 
-      call print_box(trim(adjustl(line)))
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: frag_sum_vec
+!! Per-fragment table from a per-atom one (sum over the atoms of each
+!! fragment, /frlist/ map; atoms in no fragment are left out).
+!! arguments:
+!!   ndim (in)   number of columns
+!!   A    (in)   (maxat,ndim) per-atom table
+!!   B    (out)  (maxat,ndim) per-fragment table
+!!   x    (out)  (ndim) column totals over the fragments
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine frag_sum_vec(ndim,A,B,x)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
+      dimension A(maxat,ndim),B(maxat,ndim),x(ndim)
+
+      do i=1,nat
+        do j=1,ndim
+          B(i,j)=0.0d0
+        end do
+      end do
+
+      do j=1,ndim
+        do i=1,nat
+          if(jfrlist(i).ne.0) B(jfrlist(i),j)=B(jfrlist(i),j)+A(i,j)
+        end do
+      end do
+
+      do j=1,ndim
+        x(j)=0.0d0
+        do i=1,icufr
+          x(j)=x(j)+B(i,j)
+        end do
+      end do
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: group_by_frag_mat
+!! Prints the fragment x fragment matrix of an atom x atom quantity
+!! (frag_sum_mat) under its own section title, with its total.
+!! arguments:
+!!   ilog  (in)  0: total over all elements; 1: symmetric quantity,
+!!               total over the diagonal and one triangle (frag_sum_mat)
+!!   title (in)  section title (leading blanks are ignored)
+!!   A     (in)  (maxat,maxat) atom x atom matrix
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine group_by_frag_mat(ilog,title,A)
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
+      common /printout/iaccur
+      dimension A(maxat,maxat),B(maxat,maxat)
+      character*(*) title
+      integer ilog
+
+      call frag_sum_mat(ilog,A,B,x)
+      call print_box(trim(adjustl(title)))
       call mprintnoat(B,icufr,icufr,maxat,maxat)
       ndec=6
       if(iaccur.ne.0) ndec=13
@@ -939,59 +1043,33 @@
       else
         call print_value('Total (all elements)',x,ndec)
       end if
-
-      return
-
       end
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: group_by_frag_vec                                         !!
-!! purpose: sums a per-atom (maxat,ndim) table A into a per-fragment      !!
-!! table B (using /frlist/'s atom-to-fragment map) and prints it,        !!
-!! bordered to its own actual width -- unlike group_by_frag_mat's        !!
-!! fragment x fragment matrix, this table's column count never grows     !!
-!! with the number of fragments (always 1 or 2: 3D-space[, Mulliken]),   !!
-!! so a fixed-width MPRINT2-style border would just run off past the     !!
-!! last number for no reason.                                            !!
-!! arguments:                                                            !!
-!! ndim (in) -- number of value columns (1 or 2: 3D-space[, Mulliken])   !!
-!! line (in) -- title, printed via print_box (leading/trailing blanks    !!
-!!              in the caller's string are stripped)                     !!
-!! A    (in) -- the (maxat,ndim) per-atom table to sum and print         !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
-      subroutine group_by_frag_vec(ndim,line,A)
+!! ----------------------------------------------------------------------
+!! subroutine: group_by_frag_vec
+!! Prints the per-fragment table of a per-atom quantity (frag_sum_vec)
+!! under its own section title: one row per fragment and a Total row.
+!! arguments:
+!!   ndim  (in)  number of value columns (1 or 2)
+!!   title (in)  section title (leading blanks are ignored)
+!!   A     (in)  (maxat,ndim) per-atom table
+!!   h1,h2 (in)  column headings (h2 unused when ndim=1)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine group_by_frag_vec(ndim,title,A,h1,h2)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
-      character*80 line
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
       common /printout/iaccur
-      dimension A(maxat,ndim),B(maxat,ndim)
-      dimension x(ndim)
-      integer colw,totw
+      character*(*) title,h1,h2
+      dimension A(maxat,ndim),B(maxat,ndim),x(ndim)
+      integer colw
       character*20 fmtrow,fmttot,fmthdr
 
-      do i=1,nat
-       do j=1,ndim
-        B(i,j)=0.0d0
-       end do
-      end do
-
-      do j=1,ndim
-       do i=1,nat
-        if(jfrlist(i).ne.0) B(jfrlist(i),j)=B(jfrlist(i),j)+a(i,j)
-       end do
-      end do
-
-      do j=1,ndim
-       x(j)=0.0d0
-       do i=1,icufr
-        x(j)=x(j)+b(i,j)
-       end do
-      end do
+      call frag_sum_vec(ndim,A,B,x)
 
 !! fragment number in 3 characters and 6 blanks, as in mprintnoat; value !!
 !! columns 12 wide (6 decimals), 20 wide (13) with FULLPRECISION         !!
@@ -1006,24 +1084,22 @@
         fmttot='(2x,a,2f20.13)'
         fmthdr='(2x,a,2a20)'
       end if
-      totw=9+colw*ndim
 
-      call print_box(trim(adjustl(line)))
+      call print_box(trim(adjustl(title)))
       if(ndim.eq.2) then
-        write(*,fmthdr) 'Fragment ','3D-space','Mulliken'
+        write(*,fmthdr) 'Frag.    ',trim(h1),trim(h2)
       else
-        write(*,fmthdr) 'Fragment ','3D-space'
+        write(*,fmthdr) 'Frag.    ',trim(h1)
       end if
-      write(*,'(2x,a)') repeat('-',totw)
+      write(*,'(2x,a)') repeat('-',9+colw*ndim)
       do i=1,icufr
         write(*,fmtrow) i,(B(i,j),j=1,ndim)
       end do
-      write(*,'(2x,a)') repeat('-',totw)
+      write(*,'(2x,a)') repeat('-',9+colw*ndim)
       write(*,fmttot) 'Total    ',(x(j),j=1,ndim)
-
-      return
-
       end
+
+!! ***** !!
 
 !! ********************************************************************* !!
 !! subroutine: print_int                                                 !!
