@@ -2736,6 +2736,172 @@
           "pattern": "DOING POPULATION ANALYSIS"
         }
       ]
+    },
+    {
+      "name": "CH3F-EOS-LOWDIN",
+      "description": "Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS (beta assigned as alpha, single-channel EFO .fchk), fragments F | CH3.",
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "lowdin",
+        "rks",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "LOWDIN",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "F alpha electrons (frag 1)",
+          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 5.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Beta electrons assigned as alpha",
+          "type": "present",
+          "pattern": "SKIPPING EFFAOs FOR BETA ELECTRONS"
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 83.534,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "H2-T-EOS",
+      "description": "H2 triplet (pySCF UKS), TFVC, one H per fragment: EOS with no beta electrons (the overall R is the alpha one).",
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "tfvc",
+        "uks",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "No beta electrons",
+          "type": "present",
+          "pattern": "CALCULATION HAS NO BETA ELECTRONS"
+        },
+        {
+          "label": "H1 alpha electrons (frag 1)",
+          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H1 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H2 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 100.0,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "H2-S-EOS",
+      "description": "H2 singlet (pySCF UKS, symmetric), TFVC, one H per fragment: pseudo-degenerate EOS, one electron per channel split 0.50/0.50.",
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "tfvc",
+        "uks",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Pseudo-degenerate assignment",
+          "type": "present",
+          "pattern": "PSEUDO-DEGENERACIES DETECTED"
+        },
+        {
+          "label": "H1 alpha electrons (frag 1)",
+          "section": "EOS ANALYSIS FOR ALPHA ELECTRONS",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.5,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H2 beta electrons (frag 2)",
+          "section": "EOS ANALYSIS FOR BETA ELECTRONS",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.5,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H1 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H2 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 100.0,
+          "tol_abs": 0.02
+        }
+      ]
     }
   ]
 }
