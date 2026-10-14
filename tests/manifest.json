@@ -2901,6 +2901,107 @@
           "tol_abs": 0.02
         }
       ]
+    },
+    {
+      "name": "CH3F-GEOS",
+      "description": "Fluoromethane, RKS, TFVC: GEOS on a closed shell (empty unpaired density, no negative EFOs, single-channel EFO .fchk); the oxidation states equal the EOS ones (F -1, CH3 +1).",
+      "tags": [
+        "dft",
+        "geos",
+        "effao",
+        "tfvc",
+        "rks",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "GEOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 100.0,
+          "tol_abs": 0.02
+        },
+        {
+          "label": "No negative paired EFO",
+          "type": "absent",
+          "pattern": "significant negative occupation"
+        }
+      ]
+    },
+    {
+      "name": "LiH-32-FCI-LINDEP",
+      "description": "LiH at 3.2 A, pySCF FCI/aug-cc-pVDZ with one near-linear dependency removed (31 independent of 32 functions): GEOS with a negative paired EFO, which must be written to the EFO .fchk within its 31 orbitals.",
+      "tags": [
+        "fci",
+        "geos",
+        "effao",
+        "tfvc",
+        "pyscf",
+        "fragments",
+        "negative-efo",
+        "lindep"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "GEOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "One negative paired EFO found",
+          "type": "present",
+          "pattern": "Found 1 EFO\\(s\\) with significant negative occupation in the paired channel"
+        },
+        {
+          "label": "Negative EFO (frag 2) net occupation",
+          "section": "significant negative occupation in the paired channel",
+          "pattern": "Frag\\.\\s+2\\s+Net occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.0859,
+          "tol_abs": 0.002
+        },
+        {
+          "label": "Li oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 97.819,
+          "tol_abs": 0.02
+        }
+      ]
     }
   ]
 }

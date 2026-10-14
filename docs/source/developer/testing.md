@@ -147,6 +147,8 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `CH3F-EOS-LOWDIN` | Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS, beta assigned as alpha | `dft eos effao lowdin rks fragments` |
 | `H2-T-EOS` | H2 triplet, UKS from pySCF: EOS with no beta electrons | `dft eos effao tfvc uks fragments` |
 | `H2-S-EOS` | H2 singlet, UKS from pySCF: EOS with one electron per channel shared between the two atoms (fractional assignment) | `dft eos effao tfvc uks fragments` |
+| `CH3F-GEOS` | Fluoromethane, RKS: GEOS on a closed shell, same oxidation states as EOS | `dft geos effao tfvc rks fragments` |
+| `LiH-32-FCI-LINDEP` | LiH at 3.2 Å, pySCF FCI/aug-cc-pVDZ with one near-linear dependency removed: GEOS with a negative paired EFO in a basis with fewer independent functions than basis functions | `fci geos effao tfvc pyscf fragments negative-efo lindep` |
 
 ## Adding a test
 
