@@ -37,6 +37,8 @@ This page is the reference for its content.
   available is `null` (also a non-finite number).
 - Per-atom lists have one entry per atom; per-fragment lists one entry
   per fragment, in `fragments` order. Matrices are lists of rows.
+- Atom and fragment values are both written by APOST-3D: a reader never
+  builds fragment values by summing atom values.
 - Keys may be added in later versions: a reader must ignore keys it does
   not know.
 
@@ -51,7 +53,8 @@ This page is the reference for its content.
 | `input` | the input as written, and the atomic definition used (below) |
 | `molecule` | atoms and geometry (below) |
 | `fragments` | the fragments of `# FRAGMENTS` (below) |
-| `analyses` | one object per analysis that was performed; empty in this version |
+| `analyses` | one object per analysis that was performed (below) |
+| `index` | one entry per quantity that can be shown on atoms, atom pairs, fragments or fragment pairs (below) |
 | `run` | how the run went (below) |
 
 ### `wavefunction`
@@ -108,7 +111,80 @@ output would quote or a visualizer would show: final numbers only. The
 intermediate steps (for example, energy terms before the zero-error
 interpolation of ENPART), diagnostics and settings stay in the text
 output. A block is added in the same version that adds the analysis to
-the results file, and is described on this page then.
+the results file, and is described on this page then. A key is present
+only when the run computes it; the conditions are given with each block.
+
+### Matrix objects
+
+An atom x atom or fragment x fragment matrix is an object:
+
+| Key | Content |
+|---|---|
+| `values` | the full square matrix, a list of rows (also when symmetric) |
+| `symmetric` | `true` when the matrix is symmetric |
+| `diagonal`, `off_diagonal` | what the elements mean, in words (e.g. `"localization index"`, `"bond order"`): the same layout means different things in different analyses |
+| `total`, `total_rule` | when the output prints a total: its value, and how it is formed (`"diagonal and one triangle"` or `"all elements"`) |
+
+Fragment matrices always carry `total` and `total_rule`.
+
+### `populations`
+
+Written by every run (the population analysis is always done).
+
+| Key | Content |
+|---|---|
+| `scheme` | the atomic definition, as `input.atomic_definition.keyword` |
+| `atoms` | `electrons`, `charges` and, for open-shell wavefunctions and correlated ones with a spin density, `spin`: one value per atom |
+| `fragments` | the same per fragment (only with fragments) |
+| `mulliken` | `atoms` and `fragments` as above with Mulliken's definition, printed for comparison (absent when the atomic definition is Mulliken) |
+
+### `bond_orders`
+
+Written by every run.
+
+| Key | Content |
+|---|---|
+| `scheme` | as in `populations` |
+| `atoms` | `matrix`: bond orders (localization index on the diagonal); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free` |
+| `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle) and the three valences summed per fragment (only with fragments) |
+| `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS, GEOS) |
+
+### `local_spin`
+
+Written with `SPIN` (or `DM 2`) for an open-shell single determinant or
+a correlated wavefunction.
+
+| Key | Content |
+|---|---|
+| `scheme` | as in `populations` |
+| `wavefunction` | `"single determinant"` or `"correlated"` |
+| `total_unpaired_electrons` | number of effectively unpaired electrons N_D |
+| `total_s2` | total of the <S^2> decomposition |
+| `atoms` | `unpaired_electrons` (one value per atom) and `s2`, the a=3/4 decomposition of <S^2> (atomic terms on the diagonal, diatomic ones off it); for a correlated wavefunction also `new_bond_orders` (bond orders from the natural orbitals, I. Mayer's definition) and `li_di` (localization and delocalization indices from the 2-RDM), both with their totals |
+| `fragments` | `unpaired_electrons`, `s2` and, for a correlated wavefunction, `li_di`, per fragment (only with fragments) |
+
+The bond orders from the 1-RDM that a correlated local spin analysis
+prints again are those of `bond_orders`.
+
+## Index
+
+`index` lists every quantity a program can show without knowing the
+analysis: values on atoms, atom pairs, fragments and fragment pairs. One
+entry per quantity, in the order they are written:
+
+| Key | Content |
+|---|---|
+| `id` | stable name, the path below `analyses` joined with dots (`"populations.atoms.charges"`) |
+| `analysis` | the key of its block in `analyses` |
+| `spin` | `"alpha"`, `"beta"` or `"total"` for a quantity given per spin channel; `null` otherwise |
+| `path` | JSON Pointer to the value (`"/analyses/populations/atoms/charges"`); for a matrix, to its matrix object |
+| `kind` | `atom_vector`, `atom_matrix`, `fragment_vector` or `fragment_matrix` |
+| `title` | a name for a menu, with the atomic definition (`"Atomic charges (TFVC)"`) |
+| `unit` | as in [Conventions](#conventions), or `null` for a dimensionless quantity |
+| `decimals` | decimals the text output prints (6, or 13 with `FULLPRECISION`): a default for display |
+
+`index` is always present (empty when the run stopped before any
+analysis).
 
 ## Versions
 

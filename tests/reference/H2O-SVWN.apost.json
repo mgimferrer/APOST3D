@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -36,12 +36,126 @@
     ]
   },
   "fragments": [],
-  "analyses": {},
+  "analyses": {
+    "populations": {
+      "scheme": "TFVC",
+      "atoms": {
+        "electrons": [9.1761979832926759E+000, 4.1189995562464193E-001, 4.1189995554603465E-001],
+        "charges": [-1.1761979832926759E+000, 5.8810004437535812E-001, 5.8810004445396535E-001]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [8.2981443761290237E+000, 8.5092781586127919E-001, 8.5092781586127919E-001],
+          "charges": [-2.9814437612902367E-001, 1.4907218413872081E-001, 1.4907218413872081E-001]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "TFVC",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [8.5105328452992595E+000, 6.6566343583004073E-001, 6.6566343533287808E-001],
+            [6.6566343583004073E-001, 7.5020352938304655E-002, 8.0953667107093747E-003],
+            [6.6566343533287808E-001, 8.0953667107093747E-003, 7.5020352907720259E-002]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [1.3313302759868328E+000, 6.7375920537267453E-001, 6.7375920527662880E-001],
+        "valence_bonded": [1.3313268711629189E+000, 6.7375880254075016E-001, 6.7375880204358751E-001],
+        "valence_free": [3.4048239139217173E-006, 4.0283192437318149E-007, 4.0323304129064041E-007]
+      }
+    }
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (TFVC)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (TFVC)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (TFVC)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (TFVC)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (TFVC)",
+      "unit": null,
+      "decimals": 6
+    }
+  ],
   "run": {
     "job_name": "H2O-SVWN",
     "input_file": "H2O-SVWN.inp",
     "wavefunction_file": "H2O-SVWN.fchk",
-    "date": "2026-10-13T17:01:35+02:00",
+    "date": "2026-10-14T11:43:45+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

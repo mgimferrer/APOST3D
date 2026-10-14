@@ -1101,6 +1101,114 @@
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: json_atom_matrix
+!! Writes an atom x atom matrix to the results file as a matrix object:
+!! values (full square), symmetric, what the diagonal and off-diagonal
+!! elements are, and the total when the output prints one.
+!! arguments:
+!!   key   (in)  key of the object
+!!   A     (in)  (maxat,maxat) matrix
+!!   lsym  (in)  logical, the matrix is symmetric
+!!   cdiag (in)  meaning of the diagonal elements
+!!   coff  (in)  meaning of the off-diagonal elements
+!!   itot  (in)  -1: no total; 0: total over all elements; 1: over the
+!!               diagonal and one triangle
+!!   xtot  (in)  the total (unused when itot=-1)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_atom_matrix(key,A,lsym,cdiag,coff,itot,xtot)
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      character*(*) key,cdiag,coff
+      dimension A(maxat,maxat)
+      logical lsym
+
+      call json_begin_object(key)
+      call json_matrix('values',A,nat,nat,maxat)
+      call json_value('symmetric',lsym)
+      call json_value('diagonal',cdiag)
+      call json_value('off_diagonal',coff)
+      if(itot.ge.0) then
+        call json_value('total',xtot)
+        if(itot.eq.1) then
+          call json_value('total_rule','diagonal and one triangle')
+        else
+          call json_value('total_rule','all elements')
+        end if
+      end if
+      call json_end()
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_frag_matrix
+!! Writes the fragment x fragment matrix of an atom x atom quantity
+!! (frag_sum_mat) as a matrix object with its total, the values that
+!! group_by_frag_mat prints.
+!! arguments:
+!!   key   (in)  key of the object
+!!   ilog  (in)  as in frag_sum_mat
+!!   A     (in)  (maxat,maxat) atom x atom matrix
+!!   lsym  (in)  logical, the fragment matrix is symmetric
+!!   cdiag (in)  meaning of the diagonal elements
+!!   coff  (in)  meaning of the off-diagonal elements
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_frag_matrix(key,ilog,A,lsym,cdiag,coff)
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
+      character*(*) key,cdiag,coff
+      dimension A(maxat,maxat),B(maxat,maxat)
+      logical lsym
+
+      call frag_sum_mat(ilog,A,B,x)
+      call json_begin_object(key)
+      call json_matrix('values',B,icufr,icufr,maxat)
+      call json_value('symmetric',lsym)
+      call json_value('diagonal',cdiag)
+      call json_value('off_diagonal',coff)
+      call json_value('total',x)
+      if(ilog.eq.1) then
+        call json_value('total_rule','diagonal and one triangle')
+      else
+        call json_value('total_rule','all elements')
+      end if
+      call json_end()
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_frag_vector
+!! Writes the per-fragment values of a per-atom quantity (frag_sum_vec),
+!! the values that group_by_frag_vec prints.
+!! arguments:
+!!   key (in)  key of the list
+!!   A   (in)  (maxat) per-atom values
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_frag_vector(key,A)
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
+      character*(*) key
+      dimension A(maxat),B(maxat),x(1)
+
+      call frag_sum_vec(1,A,B,x)
+      call json_vector(key,B,icufr)
+      end
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: print_int                                                 !!
 !! purpose: writes one AIMPAC/PROAIMV-format ".int" file per atom (plus  !!

@@ -873,7 +873,11 @@
 !!   json_null(key)                a null value
 !!   json_vector(key,v,n)          real*8, integer or text array
 !!   json_matrix(key,a,n,m,lda)    real*8 n x m matrix, as a list of rows
-!!   json_close(status,message)    "normal" or "stopped"; closes everything
+!!   json_index(key,kind,title,unit,decimals,spin)
+!!                                 adds the value just written under key
+!!                                 (in the current object) to the index
+!!   json_close(status,message)    "normal" or "stopped"; writes the index
+!!                                 and the run block, closes everything
 !! author: MGimf
 !! ----------------------------------------------------------------------
    MODULE json_mod
@@ -882,16 +886,27 @@
    private
    public :: json_open, json_close, json_begin_object, json_begin_array, &
              json_end, json_value, json_null, json_vector, json_matrix, &
-             json_is_open
+             json_index, json_is_open
 
    integer, parameter :: maxdepth=32
    integer :: iu=-1, depth=0
    logical :: is_open=.false.
    logical :: first(0:maxdepth)=.true.
    character(len=1) :: closer(0:maxdepth)=' '
+!! key of each open container: the JSON Pointer of the current position !!
+   character(len=64) :: keys(0:maxdepth)=' '
    character(len=:), allocatable :: final_name, temp_name
    character(len=:), allocatable :: job_name, inp_name, fchk_name
    character(len=25) :: run_date
+
+!! index entries, written by json_close (fields as in the index)       !!
+   type index_entry
+     character(len=128) :: id,analysis,path,title
+     character(len=16) :: kind,unit,spin
+     integer :: decimals
+   end type index_entry
+   type(index_entry), allocatable :: entries(:)
+   integer :: nentries=0
 
    interface json_value
      module procedure value_real, value_int, value_logical, value_text
@@ -939,7 +954,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.2')
+   call json_value('schema_version','0.3')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)
@@ -956,6 +971,7 @@
    do while(depth.gt.1)
      call json_end()
    end do
+   call write_index()
    call json_begin_object('run')
    call json_value('job_name',job_name)
    call json_value('input_file',inp_name)
@@ -996,6 +1012,7 @@
    depth=depth+1
    first(depth)=.true.
    closer(depth)='}'
+   keys(depth)=key
    end subroutine json_begin_object
 
 !! ---- !!
@@ -1007,6 +1024,7 @@
    depth=depth+1
    first(depth)=.true.
    closer(depth)=']'
+   keys(depth)=key
    end subroutine json_begin_array
 
 !! ---- !!
@@ -1131,6 +1149,75 @@
    end do
    call json_end()
    end subroutine json_matrix
+
+!! ---- !!
+!! index entry for the value written under key in the current object:  !!
+!! path = JSON Pointer to it, id = the path below /analyses joined with !!
+!! dots, analysis = the analysis block it is in. kind: atom_vector,     !!
+!! atom_matrix, fragment_vector or fragment_matrix. unit and spin: ' '  !!
+!! is written as null.                                                  !!
+   subroutine json_index(key,kind,title,unit,decimals,spin)
+   character(len=*), intent(in) :: key,kind,title,unit,spin
+   integer, intent(in) :: decimals
+   type(index_entry), allocatable :: tmp(:)
+   character(len=128) :: path,id
+   integer :: i
+   if(.not.is_open) return
+   path=' '
+   id=' '
+   do i=2,depth
+     path=trim(path)//'/'//trim(keys(i))
+     if(i.ge.3) id=trim(id)//trim(keys(i))//'.'
+   end do
+   path=trim(path)//'/'//key
+   id=trim(id)//key
+   if(.not.allocated(entries)) allocate(entries(32))
+   if(nentries.eq.size(entries)) then
+     allocate(tmp(2*nentries))
+     tmp(1:nentries)=entries(1:nentries)
+     call move_alloc(tmp,entries)
+   end if
+   nentries=nentries+1
+   entries(nentries)%id=id
+   entries(nentries)%analysis=' '
+   if(depth.ge.3) entries(nentries)%analysis=keys(3)
+   entries(nentries)%path=path
+   entries(nentries)%kind=kind
+   entries(nentries)%title=title
+   entries(nentries)%unit=unit
+   entries(nentries)%decimals=decimals
+   entries(nentries)%spin=spin
+   end subroutine json_index
+
+!! ---- !!
+!! the index: one object per entry, in the order they were added       !!
+   subroutine write_index()
+   integer :: i
+   call json_begin_array('index')
+   do i=1,nentries
+     call json_begin_object('')
+     call json_value('id',trim(entries(i)%id))
+     call json_value('analysis',trim(entries(i)%analysis))
+     call text_or_null('spin',entries(i)%spin)
+     call json_value('path',trim(entries(i)%path))
+     call json_value('kind',trim(entries(i)%kind))
+     call json_value('title',trim(entries(i)%title))
+     call text_or_null('unit',entries(i)%unit)
+     call json_value('decimals',entries(i)%decimals)
+     call json_end()
+   end do
+   call json_end()
+   end subroutine write_index
+
+!! ---- !!
+   subroutine text_or_null(key,text)
+   character(len=*), intent(in) :: key,text
+   if(len_trim(text).eq.0) then
+     call json_null(key)
+   else
+     call json_value(key,trim(text))
+   end if
+   end subroutine text_or_null
 
 !! ---- !!
 !! a path without its folders                                           !!

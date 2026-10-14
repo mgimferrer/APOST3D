@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -47,12 +47,276 @@
       "atoms": [2, 3, 4, 5]
     }
   ],
-  "analyses": {},
+  "analyses": {
+    "populations": {
+      "scheme": "LOWDIN-DAVIDSON",
+      "atoms": {
+        "electrons": [1.1567181038307472E+001, 5.3790366107593970E+000, 1.0179274558569971E+000, 1.0179274560870040E+000, 1.0179274554840676E+000],
+        "charges": [-5.6718103830747246E-001, -3.7903661075939699E-001, -1.7927455856997065E-002, -1.7927456087003968E-002, -1.7927455484067600E-002],
+        "spin": [-6.6709875447405942E-001, 6.8286335064079562E-001, -5.2548641447424400E-003, -5.2548641625160108E-003, -5.2548644512722337E-003]
+      },
+      "fragments": {
+        "electrons": [1.1567181038307472E+001, 8.4328189781874663E+000],
+        "charges": [-5.6718103830747246E-001, -4.3281897818746562E-001],
+        "spin": [-6.6709875447405942E-001, 6.6709875788226503E-001]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [1.1344362614996637E+001, 5.2667607369038540E+000, 1.1296255545320661E+000, 1.1296255549307954E+000, 1.1296255551316272E+000],
+          "charges": [-3.4436261499663701E-001, -2.6676073690385405E-001, -1.2962555453206615E-001, -1.2962555493079542E-001, -1.2962555513162721E-001],
+          "spin": [-7.1959589819564695E-001, 9.4193170639525192E-001, -7.4111934932531862E-002, -7.4111934934249640E-002, -7.4111934924614806E-002]
+        },
+        "fragments": {
+          "electrons": [1.1344362614996637E+001, 8.6556374014983426E+000],
+          "charges": [-3.4436261499663701E-001, -6.5563740149834282E-001],
+          "spin": [-7.1959589819564695E-001, 7.1959590160385567E-001]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "LOWDIN-DAVIDSON",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [1.1035419949366240E+001, 7.1695008789493231E-001, 1.1552404259197538E-001, 1.1552404260189121E-001, 1.1552404226586480E-001],
+            [7.1695008789493231E-001, 3.6429278979799973E+000, 9.1842244543527751E-001, 9.1842244583900612E-001, 9.1842244460729772E-001],
+            [1.1552404259197538E-001, 9.1842244543527751E-001, 4.5198911616157000E-001, 4.8965095306712975E-002, 4.8965094921751447E-002],
+            [1.1552404260189121E-001, 9.1842244583900612E-001, 4.8965095306712975E-002, 4.5198911641309419E-001, 4.8965094890521289E-002],
+            [1.1552404226586480E-001, 9.1842244460729772E-001, 4.8965094921751447E-002, 4.8965094890521289E-002, 4.5198911638695599E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [1.9693664934021236E+000, 3.8874333995774100E+000, 1.1329276984202405E+000, 1.1329276983772736E+000, 1.1329276972247015E+000],
+        "valence_bonded": [1.0635222153546637E+000, 3.4722174237765135E+000, 1.1318766782557173E+000, 1.1318766786381316E+000, 1.1318766766854353E+000],
+        "valence_free": [9.0584427804745982E-001, 4.1521597580089642E-001, 1.0510201645232975E-003, 1.0510197391420117E-003, 1.0510205392662009E-003]
+      },
+      "fragments": {
+        "matrix": {
+          "values": [
+            [1.1035419949366240E+001, 1.0635222153546637E+000],
+            [1.0635222153546637E+000, 7.9010578679421855E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index of the fragment",
+          "off_diagonal": "bond order between the two fragments",
+          "total": 2.0000000032663088E+001,
+          "total_rule": "diagonal and one triangle"
+        },
+        "valence_total": [1.9693664934021236E+000, 7.2862164935996256E+000],
+        "valence_bonded": [1.0635222153546637E+000, 6.8678474573557970E+000],
+        "valence_free": [9.0584427804745982E-001, 4.1836903624382793E-001]
+      }
+    }
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.atoms.spin",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/spin",
+      "kind": "atom_vector",
+      "title": "Spin populations (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.fragments.spin",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/spin",
+      "kind": "fragment_vector",
+      "title": "Fragment spin populations (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.atoms.spin",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/atoms/spin",
+      "kind": "atom_vector",
+      "title": "Spin populations (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "populations.mulliken.fragments.spin",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/mulliken/fragments/spin",
+      "kind": "fragment_vector",
+      "title": "Fragment spin populations (Mulliken)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.fragments.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/matrix",
+      "kind": "fragment_matrix",
+      "title": "Fragment bond orders (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.fragments.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_total",
+      "kind": "fragment_vector",
+      "title": "Fragment total valences (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.fragments.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_bonded",
+      "kind": "fragment_vector",
+      "title": "Fragment valences used in bonds (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    },
+    {
+      "id": "bond_orders.fragments.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_free",
+      "kind": "fragment_vector",
+      "title": "Fragment free valences (Lowdin-Dav.)",
+      "unit": null,
+      "decimals": 6
+    }
+  ],
   "run": {
     "job_name": "NaBH3--UHF-DAVIDSON",
     "input_file": "NaBH3--UHF-DAVIDSON.inp",
     "wavefunction_file": "NaBH3--UHF-DAVIDSON.fchk",
-    "date": "2026-10-14T11:48:09+02:00",
+    "date": "2026-10-14T11:43:24+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

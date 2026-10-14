@@ -39,11 +39,12 @@ def diff(a, b, rtol, path=(), out=None, limit=20):
         out = []
     if len(out) >= limit or path in IGNORED:
         return out
-    where = "/" + "/".join(str(p) for p in path)
+    where = "".join(f"/{p}" for p in path) or "/"
     if isinstance(a, dict) and isinstance(b, dict):
         for k in sorted(set(a) | set(b)):
             if k not in a or k not in b:
-                out.append(f"{where}/{k}: only in {'new' if k in b else 'reference'}")
+                out.append(f"{where.rstrip('/')}/{k}: only in "
+                           f"{'new' if k in b else 'reference'}")
             else:
                 diff(a[k], b[k], rtol, path + (k,), out, limit)
     elif isinstance(a, list) and isinstance(b, list):
