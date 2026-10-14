@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -524,7 +524,7 @@
     "job_name": "FeCO2-PBEPBE",
     "input_file": "FeCO2-PBEPBE.inp",
     "wavefunction_file": "FeCO2-PBEPBE.fchk",
-    "date": "2026-10-14T17:06:40+02:00",
+    "date": "2026-10-14T17:54:29+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

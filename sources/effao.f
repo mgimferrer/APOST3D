@@ -155,10 +155,11 @@
 
 !! ----------------------------------------------------------------------
 !! subroutine: json_efo_channel
-!! Writes one channel of the "effao" block (EFFAO without EOS): the EFOs
-!! of every fragment, in fragment order, from effao_mod.
+!! Writes one channel of the "effao" block (EFFAO without EOS, or
+!! EFFAO-U): the EFOs of every fragment, in fragment order, from
+!! effao_mod.
 !! arguments:
-!!   icase  (in)  0 total density, 1 alpha, 2 beta
+!!   icase  (in)  0 total density, 1 alpha, 2 beta, 3 paired, 4 unpaired
 !!   lgross (in)  logical: the scheme has gross occupations
 !!   lfit   (in)  logical: the scheme has fits (real space)
 !! author: MGimf
@@ -195,8 +196,12 @@
         cspin='total'
       else if(icase.eq.1) then
         cspin='alpha'
-      else
+      else if(icase.eq.2) then
         cspin='beta'
+      else if(icase.eq.3) then
+        cspin='paired'
+      else
+        cspin='unpaired'
       end if
       call json_begin_object(trim(cspin))
       call json_efo_table(n,ifr,xn,lgross,xg,lfit,xf,.false.,xf,icol,

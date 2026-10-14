@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -104,6 +104,77 @@
         "valence_total": [1.1579429417846328E+000, 6.9463276775265772E+000],
         "valence_bonded": [1.1579233460668708E+000, 6.9473532326229588E+000],
         "valence_free": [1.9595717761999865E-005, -1.0255550963811366E-003]
+      }
+    },
+    "effao": {
+      "scheme": "TFVC",
+      "paired": {
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 17,
+          "columns": [
+            {
+              "key": "fragment",
+              "title": "Fragment",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragment": [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2],
+            "net": [1.9999892910099675E+000, 1.9961069698268565E+000, 1.9469997078717767E+000, 1.9469870419609094E+000, 1.5659611608734807E+000, 5.4124668641925763E-002, 5.3792358297837482E-002, 2.6574805397540036E-002, 2.4515127103344052E-004, 1.9986309334781869E+000, 1.9525944814054459E+000, 1.9036665835521562E+000, 1.9025992904202782E+000, 3.1925422462742525E-001, 3.5746224846426658E-002, 3.5578737451141401E-002, 1.6421920687871745E-003],
+            "gross": [1.9999900762366807E+000, 1.9970585098474034E+000, 1.9555306824982035E+000, 1.9555347829847403E+000, 1.6232750059071157E+000, 7.5999287584572472E-002, 7.6008375424697183E-002, 3.7727108801987111E-002, 7.8403990531390267E-004, 1.9991923929824118E+000, 1.9624546971723187E+000, 1.9245144169297326E+000, 1.9238862538395367E+000, 3.7667181254131704E-001, 4.4428701877384055E-002, 4.4442164869158356E-002, 2.9943239649900507E-003]
+          }
+        }
+      },
+      "unpaired": {
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 0,
+          "columns": [
+            {
+              "key": "fragment",
+              "title": "Fragment",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragment": [],
+            "net": [],
+            "gross": []
+          }
+        }
       }
     }
   },
@@ -287,13 +358,35 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "effao.paired.efos",
+      "analysis": "effao",
+      "spin": "paired",
+      "path": "/analyses/effao/paired/efos",
+      "kind": "table",
+      "title": "EFOs, paired (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "effao.unpaired.efos",
+      "analysis": "effao",
+      "spin": "unpaired",
+      "path": "/analyses/effao/unpaired/efos",
+      "kind": "table",
+      "title": "EFOs, unpaired (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "CH3F-EFFAO-U",
     "input_file": "CH3F-EFFAO-U.inp",
     "wavefunction_file": "CH3F-EFFAO-U.fchk",
-    "date": "2026-10-14T17:07:14+02:00",
+    "date": "2026-10-14T17:55:03+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

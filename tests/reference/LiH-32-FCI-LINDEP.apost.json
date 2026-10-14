@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.5",
+  "schema_version": "0.6",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -125,6 +125,231 @@
           }
         }
       }
+    },
+    "geos": {
+      "scheme": "TFVC",
+      "paired": {
+        "reliability_percent": 9.7819212760613809E+001,
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [1.9982083533708173E+000, 1.1039590817146219E+000],
+            "first_unoccupied": [1.4757482650234571E-001, 1.2810788137415264E-003]
+          }
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 4,
+          "columns": [
+            {
+              "key": "fragment",
+              "title": "Fragment",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "fit_percent",
+              "title": "Fit",
+              "unit": "%",
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragment": [1, 2, 1, 2],
+            "net": [1.9973293826364671E+000, 1.0701653736974166E+000, 1.2556762268480146E-001, 7.1430769652928506E-004],
+            "gross": [1.9982083533708173E+000, 1.1039590817146219E+000, 1.4757482650234571E-001, 1.2810788137415264E-003],
+            "fit_percent": [9.8920180904897961E+001, 8.8974677597145131E+001, 7.4812969382892220E+001, 4.1187622826677284E+001],
+            "electrons": [2.0000000000000000E+000, 2.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            "fchk_column": [1, 2, 3, 4]
+          }
+        }
+      },
+      "unpaired": {
+        "reliability_percent": 1.0000000000000000E+002,
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [null, null],
+            "first_unoccupied": [2.2263585155677593E-001, 4.2033790757183231E-001]
+          }
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 14,
+          "columns": [
+            {
+              "key": "fragment",
+              "title": "Fragment",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "fit_percent",
+              "title": "Fit",
+              "unit": "%",
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragment": [2, 1, 2, 2, 2, 2, 1, 2, 1, 1, 2, 2, 2, 1],
+            "net": [4.2008598110292167E-001, 1.9591265769915628E-001, 1.6166487465335022E-001, 9.3086876120133319E-003, 9.0314764921536062E-003, 9.0314764920921206E-003, 5.4165064067787920E-004, 5.9798924320387300E-004, 3.4906740294766351E-004, 3.4906740294396292E-004, 1.8936476854868522E-004, 1.7328275720023521E-004, 1.7328275718547954E-004, 1.5840214787887443E-004],
+            "gross": [4.2033790757183231E-001, 2.2263585155677593E-001, 1.8866679725920307E-001, 9.4129855682007595E-003, 9.1302613370786538E-003, 9.1302613370170451E-003, 8.0951076576109607E-004, 6.5571916547071257E-004, 4.5385905088957958E-004, 4.5385905088572655E-004, 1.9418994097562825E-004, 1.7858287477090271E-004, 1.7858287475658630E-004, 1.5868396731068865E-004],
+            "fit_percent": [9.9017254213896621E+001, 7.5745166600306831E+001, 7.3283449997511468E+001, 9.4864015097682568E+001, 9.1752580658454264E+001, 9.1752580658433942E+001, 5.6023726577416276E+001, 7.6447017185868660E+001, 5.5508218737081670E+001, 5.5508218737008704E+001, 8.5831157595449326E+001, 8.3604920320660284E+001, 8.3604920319164535E+001, 9.6238410824356038E+001],
+            "electrons": [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            "fchk_column": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+          }
+        }
+      },
+      "negative_efos": {
+        "rows": "orbital",
+        "n_rows": 1,
+        "columns": [
+          {
+            "key": "fragment",
+            "title": "Fragment",
+            "unit": null,
+            "decimals": 0,
+            "signed": false
+          },
+          {
+            "key": "net",
+            "title": "Net occupation",
+            "unit": null,
+            "decimals": 4,
+            "signed": true
+          },
+          {
+            "key": "gross",
+            "title": "Gross occupation",
+            "unit": null,
+            "decimals": 4,
+            "signed": true
+          },
+          {
+            "key": "recovered_percent",
+            "title": "Recovered",
+            "unit": "%",
+            "decimals": 2,
+            "signed": false
+          },
+          {
+            "key": "fchk_column",
+            "title": "Column in the .fchk file",
+            "unit": null,
+            "decimals": 0,
+            "signed": false
+          }
+        ],
+        "data": {
+          "fragment": [2],
+          "net": [-8.5922097825339591E-002],
+          "gross": [-9.7589996704557147E-002],
+          "recovered_percent": [7.5608554090792921E+001],
+          "fchk_column": [31]
+        }
+      },
+      "fragments": {
+        "oxidation_states": [1.0000000000000000E+000, -1.0000000000000000E+000],
+        "electrons_paired": [2.0000000000000000E+000, 2.0000000000000000E+000],
+        "electrons_unpaired": [0.0000000000000000E+000, 0.0000000000000000E+000]
+      },
+      "reliability_percent": 9.7819212760613809E+001,
+      "rmsd": 5.2124257757657033E-001,
+      "orbital_file": "LiH-32-FCI-LINDEP-GEOS-EFOs.fchk"
     }
   },
   "index": [
@@ -329,14 +554,146 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "geos.paired.reliability_percent",
+      "analysis": "geos",
+      "spin": "paired",
+      "path": "/analyses/geos/paired/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, paired (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "geos.paired.frontier",
+      "analysis": "geos",
+      "spin": "paired",
+      "path": "/analyses/geos/paired/frontier",
+      "kind": "table",
+      "title": "GEOS frontier EFOs, paired (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "geos.paired.efos",
+      "analysis": "geos",
+      "spin": "paired",
+      "path": "/analyses/geos/paired/efos",
+      "kind": "table",
+      "title": "EFOs, paired (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "geos.unpaired.reliability_percent",
+      "analysis": "geos",
+      "spin": "unpaired",
+      "path": "/analyses/geos/unpaired/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, unpaired (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "geos.unpaired.frontier",
+      "analysis": "geos",
+      "spin": "unpaired",
+      "path": "/analyses/geos/unpaired/frontier",
+      "kind": "table",
+      "title": "GEOS frontier EFOs, unpaired (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "geos.unpaired.efos",
+      "analysis": "geos",
+      "spin": "unpaired",
+      "path": "/analyses/geos/unpaired/efos",
+      "kind": "table",
+      "title": "EFOs, unpaired (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "geos.negative_efos",
+      "analysis": "geos",
+      "spin": "paired",
+      "path": "/analyses/geos/negative_efos",
+      "kind": "table",
+      "title": "GEOS negative paired EFOs (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "geos.fragments.oxidation_states",
+      "analysis": "geos",
+      "spin": "total",
+      "path": "/analyses/geos/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "GEOS oxidation states (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "geos.fragments.electrons_paired",
+      "analysis": "geos",
+      "spin": "paired",
+      "path": "/analyses/geos/fragments/electrons_paired",
+      "kind": "fragment_vector",
+      "title": "GEOS electrons, paired (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "geos.fragments.electrons_unpaired",
+      "analysis": "geos",
+      "spin": "unpaired",
+      "path": "/analyses/geos/fragments/electrons_unpaired",
+      "kind": "fragment_vector",
+      "title": "GEOS electrons, unpaired (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "geos.reliability_percent",
+      "analysis": "geos",
+      "spin": "total",
+      "path": "/analyses/geos/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "geos.rmsd",
+      "analysis": "geos",
+      "spin": null,
+      "path": "/analyses/geos/rmsd",
+      "kind": "scalar",
+      "title": "RMSD of the GEOS electron assignment (TFVC)",
+      "unit": null,
+      "decimals": 5,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "LiH-32-FCI-LINDEP",
     "input_file": "LiH-32-FCI-LINDEP.inp",
     "wavefunction_file": "LiH-32-FCI-LINDEP.fchk",
-    "date": "2026-10-14T17:30:12+02:00",
-    "threads": 1,
+    "date": "2026-10-14T17:55:14+02:00",
+    "threads": 8,
     "status": "normal",
     "stop_message": null
   }
