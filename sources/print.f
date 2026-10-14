@@ -530,10 +530,9 @@
 
 !! ----------------------------------------------------------------------
 !! subroutine: atomic_definition_names
-!! Names of the atomic definition the run uses, from the # METHOD flags,
-!! in the order the program applies them: a Hilbert-space definition,
-!! then Hirshfeld, then the Becke family (TFVC sets the BECKE-RHO and
-!! NEWBEC flags too, so it is tested first).
+!! Names of the atomic definition the run uses (read_input allows only
+!! one), from the # METHOD flags. TFVC also sets the BECKE-RHO and NEWBEC
+!! flags, so it is tested before them.
 !! arguments:
 !!   ckey   (out)  input keyword: 'TFVC', 'MULLIKEN', ...
 !!   cname  (out)  descriptive name: 'Topological fuzzy Voronoi cells'

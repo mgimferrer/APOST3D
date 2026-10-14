@@ -69,7 +69,8 @@
       call readchar("# METHOD","ALLPOINTS",iallpo)
       call readchar("# METHOD","FULLPRECISION",iaccur)
 
-!! atoms in molecules !!
+!! atoms in molecules: exactly one atomic definition !!
+      call check_one_atomic_definition()
       call readchar("# METHOD","MULLIKEN",imulli)
       call readchar("# METHOD","MULLI",ii)
       if(ii.eq.1) imulli=1
@@ -103,10 +104,8 @@
 
 !! ERC: QTAIM input module !!
       call readchar("# METHOD","QTAIM",iqtaim)
-!! plain Becke atoms (fixed empirical radii) only on request; "BECKE"   !!
-!! is also inside "BECKE-RHO", which selects its own scheme             !!
+!! plain Becke atoms (fixed empirical radii) only on request !!
       call readchar("# METHOD","BECKE",ibecke)
-      if(ibcp.eq.1) ibecke=0
 
 !! no atomic definition at all: the TFVC flags, with a warning (itfvcdef) !!
       itfvcdef=0
@@ -737,6 +736,44 @@
         if(index(linea,"#").ne.0) ii=1
       end do
 10    return
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: check_one_atomic_definition
+!! Stops when # METHOD names more than one atomic definition: every
+!! analysis of a run uses the same one. MULLI is MULLIKEN.
+!! arguments: none (the input file on unit 16)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine check_one_atomic_definition()
+      implicit none
+      integer, parameter :: nkeys=12
+      character(len=16) :: keys(nkeys)
+      character(len=200) :: given
+      integer :: k,n,ival,ival2
+      data keys /'MULLIKEN','LOWDIN','LOWDIN-DAVIDSON','NAO-BASIS',
+     +  'LOWDIN-W','HIRSH','HIRSH-IT','BECKE-RHO','NEWBEC','TFVC',
+     +  'BECKE','QTAIM'/
+
+      n=0
+      given=' '
+      do k=1,nkeys
+        call readchar("# METHOD",trim(keys(k)),ival)
+        if(k.eq.1) then
+          call readchar("# METHOD","MULLI",ival2)
+          if(ival2.eq.1) ival=1
+        end if
+        if(ival.eq.1) then
+          n=n+1
+          given=trim(given)//' '//trim(keys(k))
+        end if
+      end do
+      if(n.gt.1) then
+        write(*,'(2x,a,a)') 'More than one atomic definition in '//
+     +    '# METHOD:',trim(given)
+        write(*,'(2x,a)') 'Give exactly one (TFVC is recommended)'
+        call apost_stop(' More than one atomic definition')
+      end if
       end
 
 !! ----------------------------------------------------------------------

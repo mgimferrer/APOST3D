@@ -5,7 +5,8 @@ more analyses and the general options.
 
 ## Atomic definition
 
-Always give one; `TFVC` is recommended. How to choose is explained in
+Always give exactly one (the run stops with more than one); `TFVC` is
+recommended. How to choose is explained in
 [Atoms in molecules](../guide/aim.md).
 
 | Keyword | Scheme | Type |
