@@ -8,6 +8,7 @@
 !!   ueffaomull_frag    -- Mulliken EFOs
 !!   ueffao3d           -- real-space EFOs of single atoms (DOATOMS)
 !!   eos_analysis       -- electron assignment and oxidation states
+!!   efo_json_open, json_efo_table, json_efo_channel -- the results file
 !! ----------------------------------------------------------------------
 
 !! ***** !!
@@ -60,6 +61,152 @@
 !! ***** !!
 
 !! ----------------------------------------------------------------------
+!! subroutine: efo_json_open
+!! Opens the block of the EFOs in the results file: "eos" with EOS,
+!! "effao" otherwise, with the atomic definition. main.f closes it once
+!! every channel is written.
+!! arguments: none
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine efo_json_open()
+      use input_options_mod, only: ieos
+      use json_mod
+      implicit real*8(a-h,o-z)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      if(ieos.eq.1) then
+        call json_begin_object('eos')
+      else
+        call json_begin_object('effao')
+      end if
+      call json_value('scheme',trim(ckey))
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_efo_table
+!! Writes an "efos" table, one row per EFO, and its index entry: its
+!! fragment, net occupation, and when given the gross occupation, the
+!! fit of the reprojected EFO, the electrons the EOS assignment gives it
+!! and its column in the EFO .fchk file (null when the file has none).
+!! arguments:
+!!   n      (in)  number of EFOs
+!!   ifr    (in)  (n) fragment of each EFO
+!!   xn     (in)  (n) net occupations
+!!   lgross (in)  logical: gross occupations given in xg
+!!   xg     (in)  (n) gross occupations
+!!   lfit   (in)  logical: fits given in xf
+!!   xf     (in)  (n) fits, in %
+!!   lelec  (in)  logical: assigned electrons in xe and .fchk columns
+!!   xe     (in)  (n) assigned electrons
+!!   icol   (in)  (n) .fchk column of each EFO
+!!   lcol   (in)  (n) logical: the EFO is in the .fchk file
+!!   cspin  (in)  'total', 'alpha' or 'beta', for the index
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_efo_table(n,ifr,xn,lgross,xg,lfit,xf,lelec,xe,
+     +  icol,lcol,cspin)
+      use json_mod
+      implicit real*8(a-h,o-z)
+      dimension ifr(*),xn(*),xg(*),xf(*),xe(*),icol(*)
+      logical lgross,lfit,lelec,lcol(*)
+      character*(*) cspin
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      call json_begin_object('efos')
+      call json_value('rows','orbital')
+      call json_value('n_rows',n)
+      call json_begin_array('columns')
+      call json_column('fragment','Fragment',' ',0,.false.)
+      call json_column('net','Net occupation',' ',4,.false.)
+      if(lgross) call json_column('gross','Gross occupation',' ',4,
+     +  .false.)
+      if(lfit) call json_column('fit_percent','Fit','%',2,.false.)
+      if(lelec) then
+        call json_column('electrons','Assigned electrons',' ',2,.false.)
+        call json_column('fchk_column','Column in the .fchk file',' ',
+     +    0,.false.)
+      end if
+      call json_end()
+      call json_begin_object('data')
+      call json_vector('fragment',ifr(1:n),n)
+      call json_vector('net',xn(1:n),n)
+      if(lgross) call json_vector('gross',xg(1:n),n)
+      if(lfit) call json_vector('fit_percent',xf(1:n),n)
+      if(lelec) then
+        call json_vector('electrons',xe(1:n),n)
+        call json_vector_or_null('fchk_column',icol(1:n),lcol(1:n),n)
+      end if
+      call json_end()
+      call json_end()
+      call json_index('efos','table','EFOs, '//trim(cspin)//' ('//
+     +  trim(cshort)//')',' ',-1,cspin,.false.,' ')
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_efo_channel
+!! Writes one channel of the "effao" block (EFFAO without EOS): the EFOs
+!! of every fragment, in fragment order, from effao_mod.
+!! arguments:
+!!   icase  (in)  0 total density, 1 alpha, 2 beta
+!!   lgross (in)  logical: the scheme has gross occupations
+!!   lfit   (in)  logical: the scheme has fits (real space)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_efo_channel(icase,lgross,lfit)
+      use effao_mod, only: p0net,p0gro,p0fit,ip0
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
+      logical lgross,lfit
+      character*8 cspin
+      integer, allocatable :: ifr(:),icol(:)
+      real*8, allocatable :: xn(:),xg(:),xf(:)
+      logical, allocatable :: lcol(:)
+
+      n=0
+      do i=1,icufr
+        n=n+ip0(i)
+      end do
+      allocate(ifr(n),xn(n),xg(n),xf(n),icol(n),lcol(n))
+      k=0
+      do i=1,icufr
+        do j=1,ip0(i)
+          k=k+1
+          ifr(k)=i
+          xn(k)=p0net(j,i)
+          xg(k)=p0gro(j,i)
+          xf(k)=p0fit(j,i)
+        end do
+      end do
+      if(icase.eq.0) then
+        cspin='total'
+      else if(icase.eq.1) then
+        cspin='alpha'
+      else
+        cspin='beta'
+      end if
+      call json_begin_object(trim(cspin))
+      call json_efo_table(n,ifr,xn,lgross,xg,lfit,xf,.false.,xf,icol,
+     +  lcol,trim(cspin))
+      call json_end()
+      deallocate(ifr,xn,xg,xf,icol,lcol)
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
 !! subroutine: ueffao3d_frag
 !! Real-space effective fragment orbitals: for each fragment, the
 !! density pk in the basis orthogonalized with the fragment-weighted
@@ -81,7 +228,8 @@
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
 
       use integration_grid
-      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef
+      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef,p0fit
+      use input_options_mod, only: ieos
 
       implicit real*8(a-h,o-z)
 
@@ -250,6 +398,7 @@
           end do
           p0net(k,iicenter)=pp0(k,k)
           p0gro(k,iicenter)=s0all(k)
+          p0fit(k,iicenter)=fitp(k)
         end do
         ip0(iicenter)=imaxo
 
@@ -257,6 +406,7 @@
         if(icube.eq.1) call cubegen_new(iicenter,icase)
 
       end do !! end of the per-fragment loop !!
+      if(ieos.eq.0) call json_efo_channel(icase,.true.,.true.)
 
       DEALLOCATE(scr,s0,sm,c0,splus,pp0,s0all,occn,fitp)
       DEALLOCATE(Sinv,cprojfrag,xfitfrag)
@@ -283,8 +433,10 @@
 !! ----------------------------------------------------------------------
       subroutine eos_analysis(idobeta,icase,thres)
 
-      use effao_mod, only: p0gro,ip0,p0coef,p0poolcoef
+      use effao_mod, only: p0gro,ip0,p0coef,p0poolcoef,p0net,p0fit
       use output_mod, only: print_value
+      use json_mod
+      use input_options_mod, only: imulli
 
       implicit real*8(a-h,o-z)
 
@@ -295,12 +447,26 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
+      common /filename/name0
 
       character(len=20) :: ctype
+      character*60 name0
+      character*80 cfile
+      character*5 cspin
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
       dimension iorbslot(nmax,2)
       dimension xlo(maxfrag),xfu(maxfrag),ilo(maxfrag),ifu(maxfrag)
       dimension nlo(maxfrag),ncount(maxfrag)
       allocatable :: occup2(:)
+!! alpha electrons of each fragment, kept for the results file !!
+      dimension elec1(maxfrag)
+      save elec1
+      integer, allocatable :: ifr(:),icol(:)
+      real*8, allocatable :: xn(:),xf(:)
+      logical, allocatable :: lcol(:),lok(:)
+      logical lreal,lfound
 
 
       if(idobeta.eq.0.and.icase.eq.2) then
@@ -313,6 +479,9 @@
           iorbat(i,2)= iorbat(i,1)
         end do
         confi=confi0
+        call json_begin_object('beta')
+        call json_value('same_as_alpha',.true.)
+        call json_end()
         go to 99
       else if(icase.eq.2.and.nb.eq.0) then
         call print_box('EOS, BETA ELECTRONS')
@@ -322,6 +491,9 @@
         end do
         lorb(2)=0
         p0poolcoef(:,:,2)=ZERO
+        call json_begin_object('beta')
+        call json_value('no_electrons',.true.)
+        call json_end()
 !! no beta occupied/unoccupied boundary: the overall R is the alpha one !!
         confi=confi0
         go to 99
@@ -418,6 +590,7 @@
       k=k-1
       if(k.eq.0) then
         call print_value('Electron assignment','integer')
+        ifrac=0
         do i=1,iorb
           if(i.le.nnn) then
             occup2(i)=ONE
@@ -427,6 +600,7 @@
         end do
       else
         call print_value('Electron assignment','fractional')
+        ifrac=1
         kk=0
 334     kk=kk+1
         if(nnn-kk.ge.1) then
@@ -460,7 +634,6 @@
         elec(iorbat(i,icase))=elec(iorbat(i,icase))+occup2(i)
       end do
 
-      DEALLOCATE(occup2)
 
 !! frontier EFOs of each fragment: with nn its electrons rounded up, the  !!
 !! nn-th (last occupied, xlo) and (nn+1)-th (first unoccupied, xfu) of   !!
@@ -514,6 +687,70 @@
 !! scaled down as xlast and xfirst get closer together.                  !!
       confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
       call print_eos_frontier(icufr,elec,xlo,ilo,xfu,ifu,confi)
+      if(icase.eq.1) then
+        do i=1,icufr
+          elec1(i)=elec(i)
+        end do
+      end if
+
+!! results file: this channel's R, frontier table and pooled EFOs (in  !!
+!! the order of the .fchk columns, with the electrons each one gets)   !!
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      cspin='alpha'
+      if(icase.eq.2) cspin='beta'
+      lreal=imulli.eq.0
+      call json_begin_object(trim(cspin))
+      call json_value('reliability_percent',confi)
+      call json_index('reliability_percent','scalar','Reliability '//
+     +  'index R, '//trim(cspin)//' ('//trim(cshort)//')','%',3,
+     +  trim(cspin),.false.,' ')
+      if(ifrac.eq.0) then
+        call json_value('assignment','integer')
+      else
+        call json_value('assignment','fractional')
+      end if
+      allocate(lok(icufr))
+      call json_begin_object('frontier')
+      call json_value('rows','fragment')
+      call json_value('n_rows',icufr)
+      call json_begin_array('columns')
+      call json_column('last_occupied','Last occupied EFO',' ',3,
+     +  .false.)
+      call json_column('first_unoccupied','First unoccupied EFO',' ',3,
+     +  .false.)
+      call json_end()
+      call json_begin_object('data')
+      do i=1,icufr
+        lok(i)=ilo(i).eq.1
+      end do
+      call json_vector_or_null('last_occupied',xlo(1:icufr),lok,icufr)
+      do i=1,icufr
+        lok(i)=ifu(i).eq.1
+      end do
+      call json_vector_or_null('first_unoccupied',xfu(1:icufr),lok,
+     +  icufr)
+      call json_end()
+      call json_end()
+      call json_index('frontier','table','EOS frontier EFOs, '//
+     +  trim(cspin)//' ('//trim(cshort)//')',' ',-1,trim(cspin),
+     +  .false.,' ')
+      deallocate(lok)
+!! the .fchk file holds the first min(igr, independent functions) EFOs !!
+      ncolf=min(igr,int_locate(15,"Number of independ",lfound))
+      allocate(ifr(iorb),icol(iorb),xn(iorb),xf(iorb),lcol(iorb))
+      do jj=1,iorb
+        ifr(jj)=iorbat(jj,icase)
+        xn(jj)=p0net(iorbslot(jj,icase),ifr(jj))
+        xf(jj)=ZERO
+        if(lreal) xf(jj)=p0fit(iorbslot(jj,icase),ifr(jj))
+        icol(jj)=jj
+        lcol(jj)=jj.le.ncolf
+      end do
+      call json_efo_table(iorb,ifr,xn,lreal,occup(1:iorb,icase),lreal,
+     +  xf,.true.,occup2,icol,lcol,trim(cspin))
+      deallocate(ifr,icol,xn,xf,lcol)
+      call json_end()
+      DEALLOCATE(occup2)
       if(icase.eq.1) confi0=confi
 
 99    continue
@@ -535,6 +772,29 @@
       if(icase.eq.2) then
         confi2=dmin1(confi,confi0)
         call print_oxidation_states(icufr,oxi,zztot,.true.,confi2)
+
+!! results file: per-fragment results, overall R, the EFO file !!
+        call atomic_definition_names(ckey,cname,cshort,cspace)
+        call json_begin_object('fragments')
+        call json_vector('oxidation_states',oxi(1:icufr),icufr)
+        call json_index('oxidation_states','fragment_vector',
+     +    'EOS oxidation states ('//trim(cshort)//')',' ',2,'total',
+     +    .true.,' ')
+        call json_vector('electrons_alpha',elec1(1:icufr),icufr)
+        call json_index('electrons_alpha','fragment_vector',
+     +    'EOS electrons, alpha ('//trim(cshort)//')',' ',2,'alpha',
+     +    .false.,' ')
+        call json_vector('electrons_beta',elec(1:icufr),icufr)
+        call json_index('electrons_beta','fragment_vector',
+     +    'EOS electrons, beta ('//trim(cshort)//')',' ',2,'beta',
+     +    .false.,' ')
+        call json_end()
+        call json_value('reliability_percent',confi2)
+        call json_index('reliability_percent','scalar','Reliability '//
+     +    'index R ('//trim(cshort)//')','%',3,'total',.false.,' ')
+        cfile=trim(name0)//"-EOS-EFOs.fchk"
+        cfile=cfile(index(cfile,'/',back=.true.)+1:)
+        call json_value('orbital_file',trim(cfile))
 
 !! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
 !! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!
@@ -580,7 +840,8 @@
       use basis_set
       use ao_matrices
       use effao_mod, only: p0,p0net,p0gro,ip0,p0coef
-      use nao_mod, only: unao,ssnao !! replaces common /nao/ -- see modules.f90 !!
+      use nao_mod, only: unao,ssnao
+      use input_options_mod, only: ieos !! replaces common /nao/ -- see modules.f90 !!
 
       implicit real*8(A-H,O-Z)
 
@@ -715,6 +976,8 @@
 
       end do
 
+      if(ieos.eq.0) call json_efo_channel(icase,.false.,.false.)
+
       DEALLOCATE(s0,sm,c0,splus,pp0,occn)
 
       end
@@ -736,6 +999,7 @@
       use basis_set
       use ao_matrices
       use effao_mod, only: p0,p0net,p0gro,ip0,p0coef
+      use input_options_mod, only: ieos
 
       implicit real*8(A-H,O-Z)
 
@@ -851,6 +1115,8 @@
         if(icube.eq.1) call cubegen_new(ifrag,icase)
 
       end do
+
+      if(ieos.eq.0) call json_efo_channel(icase,.false.,.false.)
 
       DEALLOCATE(s0,sm,c0,splus,pp0,pk,occn)
 

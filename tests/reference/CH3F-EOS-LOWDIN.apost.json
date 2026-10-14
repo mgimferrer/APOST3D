@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -105,6 +105,87 @@
         "valence_bonded": [1.3693265313174603E+000, 7.4029439342538623E+000],
         "valence_free": [-8.7626919054173413E-009, 1.1826356560717954E-008]
       }
+    },
+    "eos": {
+      "scheme": "LOWDIN",
+      "alpha": {
+        "reliability_percent": 8.3533915679571649E+001,
+        "assignment": "integer",
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [6.6766957878131228E-001, 9.9221770815972476E-001],
+            "first_unoccupied": [7.7822910501584722E-003, 3.3233042198559576E-001]
+          }
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 16,
+          "columns": [
+            {
+              "key": "fragment",
+              "title": "Fragment",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragment": [1, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1],
+            "net": [9.9997649587710025E-001, 9.9991315266666836E-001, 9.9732637163159810E-001, 9.9732569967388873E-001, 9.9221770815972476E-001, 9.6637449977590983E-001, 9.6635379660760690E-001, 9.5577400168244231E-001, 6.6766957878131228E-001, 3.3233042198559576E-001, 4.4225998510010169E-002, 3.3646204123902936E-002, 3.3625500880283578E-002, 7.7822910501584722E-003, 2.6742997268254295E-003, 2.6736278179822731E-003],
+            "electrons": [1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            "fchk_column": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+          }
+        }
+      },
+      "beta": {
+        "same_as_alpha": true
+      },
+      "fragments": {
+        "oxidation_states": [-1.0000000000000000E+000, 1.0000000000000000E+000],
+        "electrons_alpha": [5.0000000000000000E+000, 4.0000000000000000E+000],
+        "electrons_beta": [5.0000000000000000E+000, 4.0000000000000000E+000]
+      },
+      "reliability_percent": 8.3533915679571649E+001,
+      "orbital_file": "CH3F-EOS-LOWDIN-EOS-EFOs.fchk"
     }
   },
   "index": [
@@ -287,14 +368,91 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "eos.alpha.reliability_percent",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, alpha (Lowdin)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.frontier",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/frontier",
+      "kind": "table",
+      "title": "EOS frontier EFOs, alpha (Lowdin)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.efos",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/efos",
+      "kind": "table",
+      "title": "EFOs, alpha (Lowdin)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.oxidation_states",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "EOS oxidation states (Lowdin)",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "eos.fragments.electrons_alpha",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/fragments/electrons_alpha",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, alpha (Lowdin)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.electrons_beta",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/fragments/electrons_beta",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, beta (Lowdin)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.reliability_percent",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R (Lowdin)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "CH3F-EOS-LOWDIN",
     "input_file": "CH3F-EOS-LOWDIN.inp",
     "wavefunction_file": "CH3F-EOS-LOWDIN.fchk",
-    "date": "2026-10-14T16:30:56+02:00",
-    "threads": 1,
+    "date": "2026-10-14T17:07:25+02:00",
+    "threads": 8,
     "status": "normal",
     "stop_message": null
   }

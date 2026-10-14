@@ -109,7 +109,7 @@ c      -------------------------------------------------------------------------
       use integration_grid
       use timing_mod
       use input_options_mod
-      use json_mod, only: json_open, json_close
+      use json_mod, only: json_open, json_close, json_end
       use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -753,6 +753,7 @@ c      iopt(200) =
           if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) idobeta=1
         end if
         if(ieffao.ne.3) call efo_section_header(idobeta)
+        if(ieffao.ne.3.and.idoat.eq.0) call efo_json_open()
 
 !! Mulliken !!
         if(imulli.eq.1) then
@@ -855,6 +856,7 @@ c      iopt(200) =
             end if
           end if
         end if
+        if(ieffao.ne.3.and.idoat.eq.0) call json_end()
 
         write(*,*)
         call cpu_time(time2)

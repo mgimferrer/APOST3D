@@ -127,6 +127,17 @@ An atom x atom or fragment x fragment matrix is an object:
 
 Fragment matrices always carry `total` and `total_rule`.
 
+### Tables
+
+A table (several quantities per fragment or per orbital) is an object:
+
+| Key | Content |
+|---|---|
+| `rows` | `"fragment"` (row i is fragment i) or `"orbital"` (one row per orbital, in the order given) |
+| `n_rows` | number of rows |
+| `columns` | one object per column: `key`, `title`, `unit` (or `null`), `decimals`, `signed` (as in the [index](#index)) |
+| `data` | one list per column, under its `key`; `null` where a row has no value |
+
 ### `populations`
 
 Written by every run (the population analysis is always done).
@@ -166,6 +177,41 @@ a correlated wavefunction.
 The bond orders from the 1-RDM that a correlated local spin analysis
 prints again are those of `bond_orders`.
 
+### `effao`
+
+Written with `EFFAO` or `UEFFAO` without `EOS`.
+
+| Key | Content |
+|---|---|
+| `scheme` | as in `populations` |
+| `total`, or `alpha` and `beta` | one object per density the EFOs come from (`total` for `EFFAO`), each with an `efos` table (below) |
+
+The `efos` table has one row per EFO above the occupation cutoff,
+fragment by fragment: `fragment`, `net` (net occupation) and, in real
+space, `gross` (gross occupation) and `fit_percent` (how closely the EFO
+written to a `.fchk` file reproduces the fragment-weighted orbital).
+
+### `eos`
+
+Written with `EOS`.
+
+| Key | Content |
+|---|---|
+| `scheme` | as in `populations` |
+| `alpha` | `reliability_percent` (R of the channel), `assignment` (`"integer"`, or `"fractional"` when electrons are shared among EFOs of equal occupation at the frontier), `frontier` (table per fragment: `last_occupied`, `first_unoccupied`, the gross occupations of its last occupied and first unoccupied EFOs, `null` when it has none), `efos` (below) |
+| `beta` | as `alpha`; or `{"same_as_alpha": true}` when the beta density equals the alpha one (closed shell), or `{"no_electrons": true}` |
+| `fragments` | `oxidation_states`, `electrons_alpha`, `electrons_beta` |
+| `reliability_percent` | the overall R, the smaller of the two channels |
+| `orbital_file` | the `.fchk` file with the EFOs (in the same folder) |
+
+The `efos` table of a channel lists every EFO of the assignment, sorted
+by gross occupation as they are assigned, which is also the order of the
+orbitals of that channel in `orbital_file`: `fragment`, `net`, and in
+real space `gross` and `fit_percent` as in `effao`, `electrons` (given
+to that EFO: 1, 0 or a fraction) and `fchk_column` (its orbital in the
+file, `null` past the last one when the basis has linear dependencies).
+For a closed shell, the file has only alpha orbitals.
+
 ## Index
 
 `index` lists every quantity a program can show without knowing the
@@ -180,10 +226,10 @@ entry per quantity, in the order they are written:
 | `spin` | `"alpha"`, `"beta"` or `"total"` for a quantity given per spin channel; `null` otherwise |
 | `path` | JSON Pointer to the value (`"/analyses/populations/atoms/charges"`); for a matrix, to its matrix object |
 | `role` | `"comparison"` for a value printed only to compare with the result (the Mulliken values of a run with another atomic definition); absent otherwise |
-| `kind` | `scalar` (one number, e.g. `local_spin.total_s2`), `atom_vector`, `atom_matrix`, `fragment_vector` or `fragment_matrix` |
+| `kind` | `scalar` (one number, e.g. `local_spin.total_s2`), `atom_vector`, `atom_matrix`, `fragment_vector`, `fragment_matrix` or `table` |
 | `title` | a name for a menu, with the atomic definition (`"Atomic charges (TFVC)"`) |
-| `unit` | as in [Conventions](#conventions), or `null` for a dimensionless quantity |
-| `decimals` | decimals the text output prints (6, or 13 with `FULLPRECISION`): a default for display |
+| `unit` | `"au"`, `"%"`, ... or `null` for a dimensionless quantity |
+| `decimals` | decimals the text output prints (6, or 13 with `FULLPRECISION`): a default for display; `null` for a table, whose columns give their own |
 | `signed` | `true` when the values can be negative by nature (charges, spin populations, the <S^2> decomposition, and Mulliken bond orders and overlap populations): a diverging colour scale centred on zero suits them; `false` when they are not (populations, bond orders, valences), even if a value comes out slightly negative from the numerical integration |
 
 `index` is always present (empty when the run stopped before any

@@ -728,6 +728,7 @@
    real*8, allocatable :: p0(:,:)    !! p0(igr,igr)    -- effective AO population matrix
    real*8, allocatable :: p0net(:,:) !! p0net(igr,nat) -- net population, per basis fn/atom
    real*8, allocatable :: p0gro(:,:) !! p0gro(igr,nat) -- gross population, per basis fn/atom
+   real*8, allocatable :: p0fit(:,:) !! p0fit(igr,nat) -- fit (%) of each reprojected EFO (real space)
    integer, allocatable :: ip0(:)    !! ip0(nat)       -- per-atom effective AO bookkeeping
    real*8, allocatable :: p0coef(:,:,:)      !! p0coef(igr,igr,nat) -- per-fragment EFO coefficients (EOS real-space path),
                                              !! persists across ueffao3d_frag's per-fragment loop, unlike scratch p0
@@ -752,6 +753,7 @@
    integer, intent(in) :: igr,nat
 
    allocate(p0(igr,igr),p0net(igr,nat),p0gro(igr,nat),ip0(nat))
+   allocate(p0fit(igr,nat))
    allocate(p0coef(igr,igr,nat),p0poolcoef(igr,igr,2))
 
    END SUBROUTINE allocate_effao
@@ -873,6 +875,10 @@
 !!   json_null(key)                a null value
 !!   json_vector(key,v,n)          real*8, integer or text array
 !!   json_matrix(key,a,n,m,lda)    real*8 n x m matrix, as a list of rows
+!!   json_vector_or_null(key,v,lok,n)  real*8 or integer array, null
+!!                                 where lok is false
+!!   json_column(key,title,unit,decimals,lsigned)  one column description
+!!                                 of a table (inside its columns array)
 !!   json_index(key,kind,title,unit,decimals,spin,lsigned,role)
 !!                                 adds the value just written under key
 !!                                 (in the current object) to the index
@@ -886,7 +892,7 @@
    private
    public :: json_open, json_close, json_begin_object, json_begin_array, &
              json_end, json_value, json_null, json_vector, json_matrix, &
-             json_index, json_is_open
+             json_index, json_is_open, json_vector_or_null, json_column
 
    integer, parameter :: maxdepth=32
    integer :: iu=-1, depth=0
@@ -914,6 +920,9 @@
    end interface
    interface json_vector
      module procedure vector_real, vector_int, vector_text
+   end interface
+   interface json_vector_or_null
+     module procedure vector_real_or_null, vector_int_or_null
    end interface
 
    CONTAINS
@@ -955,7 +964,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.4')
+   call json_value('schema_version','0.5')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)
@@ -1137,6 +1146,67 @@
    end subroutine vector_text
 
 !! ---- !!
+   subroutine vector_real_or_null(key,v,lok,n)
+   character(len=*), intent(in) :: key
+   integer, intent(in) :: n
+   real*8, intent(in) :: v(n)
+   logical, intent(in) :: lok(n)
+   integer :: i
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') '['
+   do i=1,n
+     if(i.gt.1) write(iu,'(a)',advance='no') ', '
+     if(lok(i)) then
+       write(iu,'(a)',advance='no') real_text(v(i))
+     else
+       write(iu,'(a)',advance='no') 'null'
+     end if
+   end do
+   write(iu,'(a)',advance='no') ']'
+   end subroutine vector_real_or_null
+
+!! ---- !!
+   subroutine vector_int_or_null(key,v,lok,n)
+   character(len=*), intent(in) :: key
+   integer, intent(in) :: n
+   integer, intent(in) :: v(n)
+   logical, intent(in) :: lok(n)
+   integer :: i
+   character(len=24) :: buf
+   if(.not.is_open) return
+   call item(key)
+   write(iu,'(a)',advance='no') '['
+   do i=1,n
+     if(i.gt.1) write(iu,'(a)',advance='no') ', '
+     if(lok(i)) then
+       write(buf,'(i0)') v(i)
+       write(iu,'(a)',advance='no') trim(buf)
+     else
+       write(iu,'(a)',advance='no') 'null'
+     end if
+   end do
+   write(iu,'(a)',advance='no') ']'
+   end subroutine vector_int_or_null
+
+!! ---- !!
+!! a table column: {"key", "title", "unit" (null for ' '), "decimals",  !!
+!! "signed"}                                                            !!
+   subroutine json_column(key,title,unit,decimals,lsigned)
+   character(len=*), intent(in) :: key,title,unit
+   integer, intent(in) :: decimals
+   logical, intent(in) :: lsigned
+   if(.not.is_open) return
+   call json_begin_object('')
+   call json_value('key',key)
+   call json_value('title',title)
+   call text_or_null('unit',unit)
+   call json_value('decimals',decimals)
+   call json_value('signed',lsigned)
+   call json_end()
+   end subroutine json_column
+
+!! ---- !!
 !! rows 1..n, columns 1..m of a(lda,*)                                   !!
    subroutine json_matrix(key,a,n,m,lda)
    character(len=*), intent(in) :: key
@@ -1156,7 +1226,8 @@
 !! path = JSON Pointer to it, id = the path below /analyses joined with !!
 !! dots, analysis = the analysis block it is in. kind: scalar,          !!
 !! atom_vector, atom_matrix, fragment_vector or fragment_matrix. unit   !!
-!! and spin: ' ' is written as null. lsigned: the values can be         !!
+!! and spin: ' ' is written as null; decimals < 0 too (a table, whose  !!
+!! columns carry their own). lsigned: the values can be                 !!
 !! negative by nature (a diverging colour scale suits them). role: ' '  !!
 !! for a result, 'comparison' for a value printed only to compare with  !!
 !! (the key is left out for ' ').                                       !!
@@ -1212,7 +1283,11 @@
      call json_value('kind',trim(entries(i)%kind))
      call json_value('title',trim(entries(i)%title))
      call text_or_null('unit',entries(i)%unit)
-     call json_value('decimals',entries(i)%decimals)
+     if(entries(i)%decimals.ge.0) then
+       call json_value('decimals',entries(i)%decimals)
+     else
+       call json_null('decimals')
+     end if
      call json_value('signed',entries(i)%signed)
      call json_end()
    end do
