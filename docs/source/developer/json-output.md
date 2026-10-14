@@ -72,7 +72,7 @@ This page is the reference for its content.
 | Key | Content |
 |---|---|
 | `text` | the whole input file, as written |
-| `atomic_definition` | `keyword` (`"TFVC"`, `"MULLIKEN"`, ...), `name`, `space` (`"real"` or `"hilbert"`), `default` (`true` when no atomic definition was given and TFVC was used) |
+| `atomic_definition` | `keyword` (`"TFVC"`, `"MULLIKEN"`, ...), `name`, `short_name` (the name in the output's column headings and in the index titles: `"TFVC"`, `"Lowdin"`, `"Lowdin-Dav."`, ...), `space` (`"real"` or `"hilbert"`), `default` (`true` when no atomic definition was given and TFVC was used) |
 
 ### `molecule`
 
@@ -122,7 +122,7 @@ An atom x atom or fragment x fragment matrix is an object:
 |---|---|
 | `values` | the full square matrix, a list of rows (also when symmetric) |
 | `symmetric` | `true` when the matrix is symmetric |
-| `diagonal`, `off_diagonal` | what the elements mean, in words (e.g. `"localization index"`, `"bond order"`): the same layout means different things in different analyses |
+| `diagonal`, `off_diagonal` | what the elements are, as a short noun for a legend (`"localization index"`, `"bond order"`, `"local spin"`, `"spin coupling"`): the same layout means different things in different analyses |
 | `total`, `total_rule` | when the output prints a total: its value, and how it is formed (`"diagonal and one triangle"` or `"all elements"`) |
 
 Fragment matrices always carry `total` and `total_rule`.
@@ -169,7 +169,8 @@ prints again are those of `bond_orders`.
 ## Index
 
 `index` lists every quantity a program can show without knowing the
-analysis: values on atoms, atom pairs, fragments and fragment pairs. One
+analysis: single numbers and values on atoms, atom pairs, fragments and
+fragment pairs. One
 entry per quantity, in the order they are written:
 
 | Key | Content |
@@ -178,10 +179,12 @@ entry per quantity, in the order they are written:
 | `analysis` | the key of its block in `analyses` |
 | `spin` | `"alpha"`, `"beta"` or `"total"` for a quantity given per spin channel; `null` otherwise |
 | `path` | JSON Pointer to the value (`"/analyses/populations/atoms/charges"`); for a matrix, to its matrix object |
-| `kind` | `atom_vector`, `atom_matrix`, `fragment_vector` or `fragment_matrix` |
+| `role` | `"comparison"` for a value printed only to compare with the result (the Mulliken values of a run with another atomic definition); absent otherwise |
+| `kind` | `scalar` (one number, e.g. `local_spin.total_s2`), `atom_vector`, `atom_matrix`, `fragment_vector` or `fragment_matrix` |
 | `title` | a name for a menu, with the atomic definition (`"Atomic charges (TFVC)"`) |
 | `unit` | as in [Conventions](#conventions), or `null` for a dimensionless quantity |
 | `decimals` | decimals the text output prints (6, or 13 with `FULLPRECISION`): a default for display |
+| `signed` | `true` when the values can be negative by nature (charges, spin populations, the <S^2> decomposition, and Mulliken bond orders and overlap populations): a diverging colour scale centred on zero suits them; `false` when they are not (populations, bond orders, valences), even if a value comes out slightly negative from the numerical integration |
 
 `index` is always present (empty when the run stopped before any
 analysis).

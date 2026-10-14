@@ -873,7 +873,7 @@
 !!   json_null(key)                a null value
 !!   json_vector(key,v,n)          real*8, integer or text array
 !!   json_matrix(key,a,n,m,lda)    real*8 n x m matrix, as a list of rows
-!!   json_index(key,kind,title,unit,decimals,spin)
+!!   json_index(key,kind,title,unit,decimals,spin,lsigned,role)
 !!                                 adds the value just written under key
 !!                                 (in the current object) to the index
 !!   json_close(status,message)    "normal" or "stopped"; writes the index
@@ -902,8 +902,9 @@
 !! index entries, written by json_close (fields as in the index)       !!
    type index_entry
      character(len=128) :: id,analysis,path,title
-     character(len=16) :: kind,unit,spin
+     character(len=16) :: kind,unit,spin,role
      integer :: decimals
+     logical :: signed
    end type index_entry
    type(index_entry), allocatable :: entries(:)
    integer :: nentries=0
@@ -954,7 +955,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.3')
+   call json_value('schema_version','0.4')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)
@@ -1153,12 +1154,16 @@
 !! ---- !!
 !! index entry for the value written under key in the current object:  !!
 !! path = JSON Pointer to it, id = the path below /analyses joined with !!
-!! dots, analysis = the analysis block it is in. kind: atom_vector,     !!
-!! atom_matrix, fragment_vector or fragment_matrix. unit and spin: ' '  !!
-!! is written as null.                                                  !!
-   subroutine json_index(key,kind,title,unit,decimals,spin)
-   character(len=*), intent(in) :: key,kind,title,unit,spin
+!! dots, analysis = the analysis block it is in. kind: scalar,          !!
+!! atom_vector, atom_matrix, fragment_vector or fragment_matrix. unit   !!
+!! and spin: ' ' is written as null. lsigned: the values can be         !!
+!! negative by nature (a diverging colour scale suits them). role: ' '  !!
+!! for a result, 'comparison' for a value printed only to compare with  !!
+!! (the key is left out for ' ').                                       !!
+   subroutine json_index(key,kind,title,unit,decimals,spin,lsigned,role)
+   character(len=*), intent(in) :: key,kind,title,unit,spin,role
    integer, intent(in) :: decimals
+   logical, intent(in) :: lsigned
    type(index_entry), allocatable :: tmp(:)
    character(len=128) :: path,id
    integer :: i
@@ -1187,6 +1192,8 @@
    entries(nentries)%unit=unit
    entries(nentries)%decimals=decimals
    entries(nentries)%spin=spin
+   entries(nentries)%signed=lsigned
+   entries(nentries)%role=role
    end subroutine json_index
 
 !! ---- !!
@@ -1199,11 +1206,14 @@
      call json_value('id',trim(entries(i)%id))
      call json_value('analysis',trim(entries(i)%analysis))
      call text_or_null('spin',entries(i)%spin)
+     if(len_trim(entries(i)%role).gt.0) &
+       call json_value('role',trim(entries(i)%role))
      call json_value('path',trim(entries(i)%path))
      call json_value('kind',trim(entries(i)%kind))
      call json_value('title',trim(entries(i)%title))
      call text_or_null('unit',entries(i)%unit)
      call json_value('decimals',entries(i)%decimals)
+     call json_value('signed',entries(i)%signed)
      call json_end()
    end do
    call json_end()

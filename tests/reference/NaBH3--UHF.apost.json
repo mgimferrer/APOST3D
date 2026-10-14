@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -20,6 +20,7 @@
     "atomic_definition": {
       "keyword": "MULLIKEN",
       "name": "Mulliken",
+      "short_name": "Mulliken",
       "space": "hilbert",
       "default": false
     }
@@ -87,8 +88,8 @@
             [5.1835035876590707E-001, 8.3964622193988241E+000]
           ],
           "symmetric": true,
-          "diagonal": "localization index of the fragment",
-          "off_diagonal": "bond order between the two fragments",
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
           "total": 2.0000000032663102E+001,
           "total_rule": "diagonal and one triangle"
         },
@@ -107,8 +108,8 @@
               [-2.1554719282693008E-004, 4.0116867562552094E-001, -3.2973701482055431E-002, -3.2973701456950021E-002, 7.9461982963793876E-001]
             ],
             "symmetric": true,
-            "diagonal": "overlap population of the atom with itself",
-            "off_diagonal": "overlap population of the two atoms"
+            "diagonal": "self overlap population",
+            "off_diagonal": "overlap population"
           }
         },
         "fragments": {
@@ -118,8 +119,8 @@
               [1.7030768677168029E-001, 8.4853297147266602E+000]
             ],
             "symmetric": true,
-            "diagonal": "overlap population of the fragment with itself",
-            "off_diagonal": "overlap population of the two fragments",
+            "diagonal": "self overlap population",
+            "off_diagonal": "overlap population",
             "total": 2.0000000016494976E+001,
             "total_rule": "all elements"
           }
@@ -136,7 +137,8 @@
       "kind": "atom_vector",
       "title": "Electron populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "populations.atoms.charges",
@@ -146,7 +148,8 @@
       "kind": "atom_vector",
       "title": "Atomic charges (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.atoms.spin",
@@ -156,7 +159,8 @@
       "kind": "atom_vector",
       "title": "Spin populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.fragments.electrons",
@@ -166,7 +170,8 @@
       "kind": "fragment_vector",
       "title": "Fragment electron populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "populations.fragments.charges",
@@ -176,7 +181,8 @@
       "kind": "fragment_vector",
       "title": "Fragment charges (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.fragments.spin",
@@ -186,7 +192,8 @@
       "kind": "fragment_vector",
       "title": "Fragment spin populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "bond_orders.atoms.matrix",
@@ -196,7 +203,8 @@
       "kind": "atom_matrix",
       "title": "Bond orders (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "bond_orders.atoms.valence_total",
@@ -206,7 +214,8 @@
       "kind": "atom_vector",
       "title": "Total valences (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.atoms.valence_bonded",
@@ -216,7 +225,8 @@
       "kind": "atom_vector",
       "title": "Valences used in bonds (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.atoms.valence_free",
@@ -226,7 +236,8 @@
       "kind": "atom_vector",
       "title": "Free valences (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.fragments.matrix",
@@ -236,7 +247,8 @@
       "kind": "fragment_matrix",
       "title": "Fragment bond orders (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "bond_orders.fragments.valence_total",
@@ -246,7 +258,8 @@
       "kind": "fragment_vector",
       "title": "Fragment total valences (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.fragments.valence_bonded",
@@ -256,7 +269,8 @@
       "kind": "fragment_vector",
       "title": "Fragment valences used in bonds (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.fragments.valence_free",
@@ -266,7 +280,8 @@
       "kind": "fragment_vector",
       "title": "Fragment free valences (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.overlap_populations.atoms.matrix",
@@ -276,7 +291,8 @@
       "kind": "atom_matrix",
       "title": "Overlap populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "bond_orders.overlap_populations.fragments.matrix",
@@ -286,15 +302,16 @@
       "kind": "fragment_matrix",
       "title": "Fragment overlap populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     }
   ],
   "run": {
     "job_name": "NaBH3--UHF",
     "input_file": "NaBH3--UHF.inp",
     "wavefunction_file": "NaBH3--UHF.fchk",
-    "date": "2026-10-14T11:43:24+02:00",
-    "threads": 8,
+    "date": "2026-10-14T15:23:12+02:00",
+    "threads": 1,
     "status": "normal",
     "stop_message": null
   }
