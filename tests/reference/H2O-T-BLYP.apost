@@ -154,56 +154,54 @@
 
   Sum of atomic overlaps, largest error   : 7.03E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.36 s
+  TIMING CPU  :: Atomic definition                                 0.35 s
   TIMING WALL :: Atomic definition                                 0.06 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O     8.972910    7.530137
     2  H     0.513543    1.234932
     3  H     0.513543    1.234932
   -------------------------------
-  Sum        9.999997   10.000000
+  Total      9.999997   10.000000
 
   ------------------------
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O    -0.972910    0.469863
     2  H     0.486457   -0.234932
     3  H     0.486457   -0.234932
   -------------------------------
-  Sum        0.000003    0.000000
+  Total      0.000003    0.000000
 
   --------------------
     SPIN POPULATIONS
   --------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O     1.567076    0.988732
     2  H     0.216463    0.505634
     3  H     0.216463    0.505634
   -------------------------------
-  Sum        2.000001    2.000000
+  Total      2.000001    2.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -217,7 +215,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1  O     2.723855
     2  H     0.836318
@@ -228,9 +226,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1  O     1.408632
     2  H     0.789596
@@ -241,15 +239,15 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1  O     1.315223
     2  H     0.046723
     3  H     0.046723
   -------------------
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   ----------------------------------------
     DOING MOLECULAR ENERGY DECOMPOSITION
@@ -319,7 +317,7 @@
   -------------------------------------------
   Nuclear repulsion energy:      9.1193799
 
-  TIMING CPU  :: enpart one-electron                               0.29 s
+  TIMING CPU  :: enpart one-electron                               0.28 s
   TIMING WALL :: enpart one-electron                               0.04 s
 
   --------------------------------
@@ -381,7 +379,7 @@
   -------------------------------------------
   Sum of pure KS-DFT exchange-correlation energy:     -9.2197241
 
-  TIMING CPU  :: enpart dft                                        1.36 s
+  TIMING CPU  :: enpart dft                                        1.35 s
   TIMING WALL :: enpart dft                                        0.32 s
 
   -------------------------------------------------------
@@ -460,6 +458,6 @@
   Integration error (kcal/mol):     0.06
 
   TIMING CPU  :: enpart two-electron                               0.63 s
-  TIMING WALL :: enpart two-electron                               0.13 s
+  TIMING WALL :: enpart two-electron                               0.12 s
 
   ...Normal Termination of APOST-3D...

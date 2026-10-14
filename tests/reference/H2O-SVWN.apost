@@ -153,37 +153,35 @@
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O     9.176198    8.298144
     2  H     0.411900    0.850928
     3  H     0.411900    0.850928
   -------------------------------
-  Sum        9.999998   10.000000
+  Total      9.999998   10.000000
 
   ------------------------
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  O    -1.176198   -0.298144
     2  H     0.588100    0.149072
     3  H     0.588100    0.149072
   -------------------------------
-  Sum        0.000002    0.000000
+  Total      0.000002    0.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -197,7 +195,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1  O     1.331330
     2  H     0.673759
@@ -208,9 +206,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1  O     1.331327
     2  H     0.673759
@@ -221,15 +219,15 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1  O     0.000003
     2  H     0.000000
     3  H     0.000000
   -------------------
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   ----------------------------------------
     DOING MOLECULAR ENERGY DECOMPOSITION

@@ -144,42 +144,40 @@
 
   Sum of atomic overlaps, largest error   : 6.81E-09 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.35 s
+  TIMING CPU  :: Atomic definition                                 0.34 s
   TIMING WALL :: Atomic definition                                 0.06 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  H     1.352377    0.933544
     2  I    24.647623   25.066456
   -------------------------------
-  Sum       26.000000   26.000000
+  Total     26.000000   26.000000
 
   ------------------------
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  H    -0.352377    0.066456
     2  I     0.352377   -0.066456
   -------------------------------
-  Sum        0.000000    0.000000
+  Total      0.000000    0.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------
                  1  H        2  I
@@ -192,7 +190,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1  H     1.380662
     2  I     1.380662
@@ -202,9 +200,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1  H     1.380662
     2  I     1.380662
@@ -214,14 +212,14 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1  H     0.000000
     2  I     0.000000
   -------------------
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   ----------------------------------------
     DOING MOLECULAR ENERGY DECOMPOSITION
@@ -326,8 +324,8 @@
   -------------------------------
   Hartree-Fock exchange energy:    -21.4887492
 
-  TIMING CPU  :: Exact-exchange energy                             5.20 s
-  TIMING WALL :: Exact-exchange energy                             0.69 s
+  TIMING CPU  :: Exact-exchange energy                             4.98 s
+  TIMING WALL :: Exact-exchange energy                             0.64 s
 
   Total two-electron part (coul+exch_hf):    229.0361861
   Integration error (kcal/mol):   -13.71
@@ -341,8 +339,8 @@
   Same-sign error on both grids: extrapolating, not interpolating
   Damping parameter       :      1.4600955
 
-  TIMING CPU  :: Interpolated zero-error                           3.53 s
-  TIMING WALL :: Interpolated zero-error                           0.50 s
+  TIMING CPU  :: Interpolated zero-error                           3.65 s
+  TIMING WALL :: Interpolated zero-error                           0.54 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -386,7 +384,7 @@
   Integration error (au):     -0.0000005
   Integration error (kcal/mol):     0.00
 
-  TIMING CPU  :: enpart two-electron                               8.97 s
+  TIMING CPU  :: enpart two-electron                               8.86 s
   TIMING WALL :: enpart two-electron                               1.22 s
 
   ...Normal Termination of APOST-3D...

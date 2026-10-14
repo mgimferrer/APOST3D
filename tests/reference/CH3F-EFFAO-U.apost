@@ -164,15 +164,13 @@
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  C     5.126631    5.845837
     2  F     9.721908    9.259127
@@ -180,13 +178,13 @@
     4  H     1.050654    0.965037
     5  H     1.050704    0.964978
   -------------------------------
-  Sum       18.000503   18.000000
+  Total     18.000503   18.000000
 
-  --------------------------------------------
-    FRAGMENT ANALYSIS : Electron populations
-  --------------------------------------------
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.            TFVC    Mulliken
   ---------------------------------
     1          9.721908    9.259127
     2          8.278595    8.740873
@@ -197,7 +195,7 @@
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  C     0.873369    0.154163
     2  F    -0.721908   -0.259127
@@ -205,22 +203,22 @@
     4  H    -0.050654    0.034963
     5  H    -0.050704    0.035022
   -------------------------------
-  Sum       -0.000503    0.000000
+  Total     -0.000503    0.000000
 
-  --------------------------------------
-    FRAGMENT ANALYSIS : Atomic Charges
-  --------------------------------------
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.            TFVC    Mulliken
   ---------------------------------
     1         -0.721908   -0.259127
     2          0.721405    0.259127
   ---------------------------------
   Total       -0.000503    0.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------------------------------------------
                  1  C        2  F        3  H        4  H        5  H
@@ -236,7 +234,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1  C     3.559854
     2  F     1.157943
@@ -245,11 +243,11 @@
     5  H     1.128871
   -------------------
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Total valences
-  -------------------------------------
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          1.157943
     2          6.946328
@@ -260,9 +258,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1  C     3.560325
     2  F     1.157923
@@ -271,11 +269,11 @@
     5  H     1.129427
   -------------------
 
-  ---------------------------------------------
-    FRAGMENT ANALYSIS: Valences used in bonds
-  ---------------------------------------------
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          1.157923
     2          6.947353
@@ -286,7 +284,7 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1  C    -0.000472
     2  F     0.000020
@@ -295,20 +293,20 @@
     5  H    -0.000556
   -------------------
 
-  ------------------------------------
-    FRAGMENT ANALYSIS: Free valences
-  ------------------------------------
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          0.000020
     2         -0.001026
   ---------------------
   Total       -0.001006
 
-  ----------------------------------------
-    FRAGMENT ANALYSIS : Fuzzy Bond Order
-  ----------------------------------------
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
 
   ---------------------------------
                       1           2
@@ -318,8 +316,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      18.001005
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   ----------------------------------
     DOING EFFAO-3D FROM U FUNCTION

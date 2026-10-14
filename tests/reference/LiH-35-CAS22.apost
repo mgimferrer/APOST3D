@@ -162,7 +162,7 @@
 
   Sum of atomic overlaps, largest error   : 6.76E-10 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.14 s
+  TIMING CPU  :: Atomic definition                                 0.15 s
   TIMING WALL :: Atomic definition                                 0.03 s
 
   ---------------------------------
@@ -186,35 +186,33 @@
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1 Li     2.759868    2.911325
     2  H     1.240132    1.088675
   -------------------------------
-  Sum        4.000000    4.000000
+  Total      4.000000    4.000000
 
   ------------------------
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1 Li     0.240132    0.088675
     2  H    -0.240132   -0.088675
   -------------------------------
-  Sum        0.000000    0.000000
+  Total      0.000000    0.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------
                  1 Li        2  H
@@ -227,7 +225,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1 Li     0.946823
     2  H     1.132897
@@ -237,9 +235,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1 Li     0.338941
     2  H     0.338941
@@ -249,23 +247,23 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1 Li     0.607882
     2  H     0.793956
   -------------------
 
-  TIMING CPU  :: population analyses                               0.00 s
-  TIMING WALL :: population analyses                               0.00 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   -----------------------------
     DOING LOCAL SPIN ANALYSIS
   -----------------------------
 
-   Localization/delocalization, correlated WF
+  Wavefunction                            : correlated (1- and 2-RDM)
 
   -----------------------------
-    APOST3D BOND ORDER MATRIX
+    BOND ORDER MATRIX (1-RDM)
   -----------------------------
 
   -------------------------------
@@ -275,11 +273,11 @@
     2  H     0.338941    0.673683
   -------------------------------
 
-  ---------------------------------
-    APOST3D NEW BOND ORDER MATRIX
-  ---------------------------------
+  -------------------------
+    NEW BOND ORDER MATRIX
+  -------------------------
 
-  Improved definition by I. Mayer, CPL 554, 83 (2012)
+  From the natural orbitals, I. Mayer, Chem. Phys. Lett. 2012, 554, 83
 
   -------------------------------
                  1 Li        2  H
@@ -287,11 +285,10 @@
     1 Li     2.547829    0.424079
     2  H     0.424079    1.028092
   -------------------------------
-
-  Sum check =    4.00000
+  Total (diagonal and one triangle)       :       4.000000
 
   ------------------------
-    APOST3D LI/DI MATRIX
+    LI/DI MATRIX (2-RDM)
   ------------------------
 
   -------------------------------
@@ -300,23 +297,22 @@
     1 Li     2.568568    0.382600
     2  H     0.382600    1.048832
   -------------------------------
-
-  Sum check =    4.00000
+  Total (diagonal and one triangle)       :       4.000000
 
   ----------------------------------
     EFFECTIVELY UNPAIRED ELECTRONS
   ----------------------------------
 
-  Atom            u_A
+  Atom           TFVC
   -------------------
     1 Li     0.607882
     2  H     0.793956
   -------------------
-  Sum check N_D =    1.40184
+  Total unpaired electrons N_D            :       1.401839
 
-  -------------------------------------
-    APOST3D S^2 DECOMPOSITION (a=3/4)
-  -------------------------------------
+  -----------------------------
+    S^2 DECOMPOSITION (a=3/4)
+  -----------------------------
 
   -------------------------------
                  1 Li        2  H
@@ -324,10 +320,10 @@
     1 Li     0.452573   -0.452573
     2  H    -0.452573    0.452573
   -------------------------------
+  Total <S^2>                             :       0.000000
 
-  Sum check <S^2> =    0.00000
-  TIMING CPU  :: local spin analysis                               0.00 s
-  TIMING WALL :: local spin analysis                               0.00 s
+  TIMING CPU  :: Local spin analysis                               0.00 s
+  TIMING WALL :: Local spin analysis                               0.00 s
 
   ----------------------------------------
     DOING MOLECULAR ENERGY DECOMPOSITION
@@ -429,7 +425,7 @@
   -------------------------------
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
 
-  TIMING CPU  :: PHF Exc energy                                    1.01 s
+  TIMING CPU  :: PHF Exc energy                                    1.02 s
   TIMING WALL :: PHF Exc energy                                    1.01 s
 
   Total two-electron part (coul+exc):      2.7365314
@@ -487,7 +483,7 @@
   Total energy in Fchk file:     -7.9411448
   Integration error (au):      0.0000000
   Integration error (kcal/mol):     0.00
-  TIMING CPU  :: enpart two-electron                               2.02 s
+  TIMING CPU  :: enpart two-electron                               2.03 s
   TIMING WALL :: enpart two-electron                               1.84 s
 
   ...Normal Termination of APOST-3D...

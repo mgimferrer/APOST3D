@@ -106,8 +106,8 @@ step is printed after it:
 
 % source: tests/reference/FeCN5NO3--UBLYP.apost
 ```text
-  TIMING CPU  :: population analyses                               0.05 s
-  TIMING WALL :: population analyses                               0.05 s
+  TIMING CPU  :: Population analysis                               0.10 s
+  TIMING WALL :: Population analysis                               0.10 s
 ```
 
 (CPU time is summed over all threads; WALL is the elapsed time.)

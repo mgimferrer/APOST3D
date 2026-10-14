@@ -19,7 +19,7 @@
     "text": "# METHOD\nLOWDIN-DAVIDSON\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
     "atomic_definition": {
       "keyword": "LOWDIN-DAVIDSON",
-      "name": "Lowdin-Davidson",
+      "name": "Davidson-Lowdin",
       "space": "hilbert",
       "default": false
     }
@@ -52,7 +52,7 @@
     "job_name": "NaBH3--UHF-DAVIDSON",
     "input_file": "NaBH3--UHF-DAVIDSON.inp",
     "wavefunction_file": "NaBH3--UHF-DAVIDSON.fchk",
-    "date": "2026-10-13T17:01:14+02:00",
+    "date": "2026-10-14T11:48:09+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

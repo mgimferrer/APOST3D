@@ -64,7 +64,7 @@ does. The atomic charges:
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1 Fe     1.443242    0.880964
     2  C     0.412799    0.412495
@@ -72,11 +72,11 @@ does. The atomic charges:
     4  O    -0.134560    0.147023
     5  O    -0.134560    0.147023
   -------------------------------
-  Sum        1.999719    2.000000
+  Total      1.999719    2.000000
 ```
 
-The `apost3d` column holds the TFVC values, the `Mulliken` column the
-Mulliken ones for comparison. The sum is the charge of the molecule, +2,
+The `TFVC` column holds the values of the atomic definition used, the
+`Mulliken` column the Mulliken ones for comparison. The total is the charge of the molecule, +2,
 up to the numerical integration error. Iron carries +1.44, not +2: atomic
 charges are not oxidation states, because bonding shares electrons
 between the atoms. The bond orders show it:

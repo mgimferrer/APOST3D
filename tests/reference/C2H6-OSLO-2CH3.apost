@@ -160,22 +160,20 @@
 
   Sum of atomic overlaps, largest error   : 2.63E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 1.75 s
-  TIMING WALL :: Atomic definition                                 0.26 s
+  TIMING CPU  :: Atomic definition                                 1.78 s
+  TIMING WALL :: Atomic definition                                 0.27 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
   -----------------------------
 
-  Partial atomic charges
-  Atomic spin densities
-  Bond orders and Valences
+  Atomic definition                       : TFVC (real space)
 
   ------------------------
     ELECTRON POPULATIONS
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  C     5.712052    6.180470
     2  C     5.712052    6.180470
@@ -186,13 +184,13 @@
     7  H     1.095684    0.939845
     8  H     1.095684    0.939845
   -------------------------------
-  Sum       17.998271   18.000000
+  Total     17.998271   18.000000
 
-  --------------------------------------------
-    FRAGMENT ANALYSIS : Electron populations
-  --------------------------------------------
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.            TFVC    Mulliken
   ---------------------------------
     1          8.999136    9.000000
     2          8.999136    9.000000
@@ -203,7 +201,7 @@
     TOTAL ATOMIC CHARGES
   ------------------------
 
-  Atom        apost3d    Mulliken
+  Atom           TFVC    Mulliken
   -------------------------------
     1  C     0.287948   -0.180470
     2  C     0.287948   -0.180470
@@ -214,22 +212,22 @@
     7  H    -0.095684    0.060155
     8  H    -0.095684    0.060155
   -------------------------------
-  Sum        0.001729    0.000000
+  Total      0.001729    0.000000
 
-  --------------------------------------
-    FRAGMENT ANALYSIS : Atomic Charges
-  --------------------------------------
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
 
-  Fragment     3D-space    Mulliken
+  Frag.            TFVC    Mulliken
   ---------------------------------
     1          0.000864    0.000000
     2          0.000864    0.000000
   ---------------------------------
   Total        0.001729    0.000000
 
-  -----------------------------------
-    "FUZZY ATOMS" BOND ORDER MATRIX
-  -----------------------------------
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
 
   -------------------------------------------------------------------------------
                  1  C        2  C        3  H        4  H        5  H        6  H
@@ -261,7 +259,7 @@
     TOTAL VALENCES
   ------------------
 
-  Atom            V_A
+  Atom           TFVC
   -------------------
     1  C     4.020761
     2  C     4.020761
@@ -273,11 +271,11 @@
     8  H     1.181869
   -------------------
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Total valences
-  -------------------------------------
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          7.566458
     2          7.566458
@@ -288,9 +286,9 @@
     VALENCES USED IN BONDS
   --------------------------
 
-  (SUM OF BOND ORDERS)
+  Sum of the bond orders of each atom
 
-  Atom           VB_A
+  Atom           TFVC
   -------------------
     1  C     4.019464
     2  C     4.019464
@@ -302,11 +300,11 @@
     8  H     1.181943
   -------------------
 
-  ---------------------------------------------
-    FRAGMENT ANALYSIS: Valences used in bonds
-  ---------------------------------------------
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          7.564730
     2          7.564730
@@ -317,7 +315,7 @@
     FREE VALENCES
   -----------------
 
-  Atom            F_A
+  Atom           TFVC
   -------------------
     1  C     0.001297
     2  C     0.001297
@@ -329,20 +327,20 @@
     8  H    -0.000073
   -------------------
 
-  ------------------------------------
-    FRAGMENT ANALYSIS: Free valences
-  ------------------------------------
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
 
-  Fragment     3D-space
+  Frag.            TFVC
   ---------------------
     1          0.001727
     2          0.001727
   ---------------------
   Total        0.003455
 
-  ----------------------------------------
-    FRAGMENT ANALYSIS : Fuzzy Bond Order
-  ----------------------------------------
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
 
   ---------------------------------
                       1           2
@@ -352,8 +350,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      17.996544
 
-  TIMING CPU  :: population analyses                               0.02 s
-  TIMING WALL :: population analyses                               0.02 s
+  TIMING CPU  :: Population analysis                               0.02 s
+  TIMING WALL :: Population analysis                               0.02 s
 
   ---------------------------------------------------------
     DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
@@ -671,7 +669,7 @@
   ------------------------ 
   Fractional values: orbitals shared between fragments (see the iterations)
 
-  TIMING CPU  :: OSLO analysis                                     1.33 s
-  TIMING WALL :: OSLO analysis                                     1.30 s
+  TIMING CPU  :: OSLO analysis                                     1.31 s
+  TIMING WALL :: OSLO analysis                                     1.27 s
 
   ...Normal Termination of APOST-3D...
