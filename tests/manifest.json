@@ -1637,93 +1637,97 @@
         },
         {
           "label": "Number of natural orbitals (NOs)",
-          "pattern": "Number of natural orbitals \\(NOs\\):\\s*(\\d+)",
+          "pattern": "Natural orbitals\\s*:\\s*(\\d+)",
           "ref": 19,
           "tol_abs": 0.5
         },
         {
           "label": "Fragment 1 paired net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 10.71802,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 paired gross occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 10.77144,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 paired EFO #6 net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+([\\d.]+)",
+          "section": "    PAIRED DENSITY[\\s\\S]*?Fragment 1\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 0.7192,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 6
         },
         {
           "label": "Fragment 2 paired net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 8.35398,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 paired gross occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 8.41027,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 paired EFO #5 net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+([\\d.]+)",
+          "section": "    PAIRED DENSITY[\\s\\S]*?Fragment 2\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 0.3784,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 5
         },
         {
           "label": "Fragment 1 unpaired net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.46521,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 unpaired gross occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.48539,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 unpaired EFO #1 net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+([\\d.]+)",
+          "section": "UNPAIRED DENSITY[\\s\\S]*?Fragment 1\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 0.4067,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 1
         },
         {
           "label": "Fragment 2 unpaired net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.39196,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 unpaired gross occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.4119,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 unpaired EFO #1 net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+([\\d.]+)",
+          "section": "UNPAIRED DENSITY[\\s\\S]*?Fragment 2\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 0.3663,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 1
         },
         {
           "label": "Fragment 1 oxidation state",
@@ -1741,39 +1745,39 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 80.734,
           "tol_abs": 0.02
         },
         {
           "label": "Electronic assignment RMSD value",
-          "pattern": "ELECTRONIC ASSIGNMENT RMSD VALUE\\s*=\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 0.274,
-          "tol_abs": 0.01
+          "pattern": "RMSD of the electron assignment\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.27393,
+          "tol_abs": 2e-05
         },
         {
           "label": "Two significant negative paired EFOs found",
           "type": "present",
-          "pattern": "Found 2 EFO\\(s\\) with significant negative occupation in the paired channel"
+          "pattern": "WARNING: 2 paired EFO\\(s\\) with net occupation below"
         },
         {
           "label": "Negative EFO (frag 2) net occupation",
-          "section": "significant negative occupation in the paired channel",
-          "pattern": "Frag\\.\\s+2\\s+Net occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "section": "left out of the assignment",
+          "pattern": "\\n\\s*2\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.0277,
           "tol_abs": 0.002
         },
         {
           "label": "Negative EFO (frag 1) net occupation",
-          "section": "significant negative occupation in the paired channel",
-          "pattern": "Frag\\.\\s+1\\s+Net occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "section": "left out of the assignment",
+          "pattern": "\\n\\s*1\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.0378,
           "tol_abs": 0.002
         },
         {
           "label": "Negative EFO (frag 1) % recovered",
-          "section": "significant negative occupation in the paired channel",
-          "pattern": "Frag\\.\\s+1\\s+Net occ\\.[^\\n]*% recovered\\s+([-+]?\\d+\\.\\d+)",
+          "section": "left out of the assignment",
+          "pattern": "\\n\\s*1\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([\\d.]+)",
           "ref": 80.97,
           "tol_abs": 0.05
         }
@@ -1817,7 +1821,7 @@
         },
         {
           "label": "Number of natural orbitals (NOs)",
-          "pattern": "Number of natural orbitals \\(NOs\\):\\s*(\\d+)",
+          "pattern": "Natural orbitals\\s*:\\s*(\\d+)",
           "ref": 44,
           "tol_abs": 0.5
         },
@@ -1837,104 +1841,107 @@
         },
         {
           "label": "Fragment 1 (Li) paired net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 2.11883,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 (H) paired net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 1.05137,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 (H) paired gross occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 1.08681,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 paired EFO #1 net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+([\\d.]+)",
+          "section": "    PAIRED DENSITY[\\s\\S]*?Fragment 1\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 1.988,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 1
         },
         {
           "label": "Fragment 2 paired EFO #1 net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+([\\d.]+)",
+          "section": "    PAIRED DENSITY[\\s\\S]*?Fragment 2\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 1.0512,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 1
         },
         {
           "label": "Fragment 1 paired EFO #1 FIT %",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n(?:\\s*OCCUP\\.[^\\n]*\\n)+\\s*FIT %\\s+([\\d.]+)",
+          "section": "    PAIRED DENSITY[\\s\\S]*?Fragment 1\\s*\\n[\\s\\S]*?Fit \\(%\\)",
+          "pattern": "([\\d.]+)",
           "ref": 99.41,
           "tol_abs": 0.05
         },
         {
           "label": "Fragment 2 paired EFO #1 FIT %",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n(?:\\s*OCCUP\\.[^\\n]*\\n)+\\s*FIT %\\s+([\\d.]+)",
+          "section": "    PAIRED DENSITY[\\s\\S]*?Fragment 2\\s*\\n[\\s\\S]*?Fit \\(%\\)",
+          "pattern": "([\\d.]+)",
           "ref": 93.01,
           "tol_abs": 0.05
         },
         {
           "label": "Fragment 1 (Li) unpaired net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.22178,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 (H) unpaired net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.60346,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 unpaired EFO #1 net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+([\\d.]+)",
+          "section": "UNPAIRED DENSITY[\\s\\S]*?Fragment 2\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 0.427,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 1
         },
         {
           "label": "Fragment 2 unpaired EFO #1 FIT %",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+2\\s+[-+]?\\d+\\.\\d+\\s*\\n(?:\\s*OCCUP\\.[^\\n]*\\n)+\\s*FIT %\\s+([\\d.]+)",
+          "section": "UNPAIRED DENSITY[\\s\\S]*?Fragment 2\\s*\\n[\\s\\S]*?Fit \\(%\\)",
+          "pattern": "([\\d.]+)",
           "ref": 99.37,
           "tol_abs": 0.05
         },
         {
           "label": "One significant negative paired EFO found",
           "type": "present",
-          "pattern": "Found 1 EFO\\(s\\) with significant negative occupation in the paired channel"
+          "pattern": "WARNING: 1 paired EFO\\(s\\) with net occupation below"
         },
         {
           "label": "Negative EFO (frag 2) net occupation",
-          "section": "significant negative occupation in the paired channel",
-          "pattern": "Frag\\.\\s+2\\s+Net occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "section": "left out of the assignment",
+          "pattern": "\\n\\s*2\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.0856,
           "tol_abs": 0.002
         },
         {
           "label": "Negative EFO (frag 2) gross occupation",
-          "section": "significant negative occupation in the paired channel",
-          "pattern": "Gross occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "section": "left out of the assignment",
+          "pattern": "\\n\\s*2\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.0978,
           "tol_abs": 0.002
         },
         {
           "label": "Negative EFO (frag 2) % recovered",
-          "section": "significant negative occupation in the paired channel",
-          "pattern": "% recovered\\s+([-+]?\\d+\\.\\d+)",
+          "section": "left out of the assignment",
+          "pattern": "\\n\\s*2\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([\\d.]+)",
           "ref": 84.36,
           "tol_abs": 0.05
         },
@@ -1946,7 +1953,7 @@
         {
           "label": "Negative-EFO cube generated (paired channel, frag 2 only)",
           "type": "present",
-          "pattern": "EFFAOs FROM THE PAIRED DENSITY[\\s\\S]*Generating cube files for eff-AOs\\s+1 to\\s+1 of atom/fragment\\s+2[\\s\\S]*EFFAOs FROM THE UNPAIRED DENSITY"
+          "pattern": "    PAIRED DENSITY[\\s\\S]*Generating cube files for eff-AOs\\s+1 to\\s+1 of atom/fragment\\s+2[\\s\\S]*UNPAIRED DENSITY"
         },
         {
           "label": "Negative-EFO cube normalization",
@@ -1957,8 +1964,8 @@
         },
         {
           "label": "Paired reliability index R(%)",
-          "section": "EOS ANALYSIS FOR PAIRED ELECTRONS",
-          "pattern": "RELIABILITY INDEX R\\(%\\) =\\s+([-+]?\\d+\\.\\d+)",
+          "section": "GEOS, PAIRED ELECTRONS",
+          "pattern": "Reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 96.638,
           "tol_abs": 0.02
         },
@@ -1978,15 +1985,15 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\) =\\s+([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 96.638,
           "tol_abs": 0.02
         },
         {
           "label": "Electronic assignment RMSD",
-          "pattern": "ELECTRONIC ASSIGNMENT RMSD VALUE =\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.532,
-          "tol_abs": 0.002
+          "pattern": "RMSD of the electron assignment\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.53195,
+          "tol_abs": 2e-05
         }
       ]
     },
@@ -2028,56 +2035,57 @@
         },
         {
           "label": "Number of natural orbitals (NOs)",
-          "pattern": "Number of natural orbitals \\(NOs\\):\\s*(\\d+)",
+          "pattern": "Natural orbitals\\s*:\\s*(\\d+)",
           "ref": 9,
           "tol_abs": 0.5
         },
         {
           "label": "Fragment 1 paired net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 9.59078,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 paired gross occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 9.72191,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 paired EFO #5 net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+[-+]?\\d+\\.\\d+\\s*\\n\\s*Net occupation using[^\\n]*\\n\\s*OCCUP\\.\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+([\\d.]+)",
+          "section": "    PAIRED DENSITY[\\s\\S]*?Fragment 1\\s*\\n\\s*Net occupation\\s*:[^\\n]*\\n",
+          "pattern": "([-+]?\\d+\\.\\d+)",
           "ref": 1.566,
-          "tol_abs": 0.002
+          "tol_abs": 0.002,
+          "match_index": 5
         },
         {
           "label": "Fragment 2 paired net occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 8.14972,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 paired gross occupation",
-          "section": "EFFAOs FROM THE PAIRED DENSITY",
-          "pattern": "Gross occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "    PAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n[\\s\\S]*?Gross occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 8.27858,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 1 unpaired net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.0,
           "tol_abs": 0.0002
         },
         {
           "label": "Fragment 2 unpaired net occupation",
-          "section": "EFFAOs FROM THE UNPAIRED DENSITY",
-          "pattern": "Net occupation for fragment\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "section": "UNPAIRED DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.0,
           "tol_abs": 0.0002
         }
@@ -2937,14 +2945,14 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 100.0,
           "tol_abs": 0.02
         },
         {
           "label": "No negative paired EFO",
           "type": "absent",
-          "pattern": "significant negative occupation"
+          "pattern": "with net occupation below"
         }
       ]
     },
@@ -2972,12 +2980,12 @@
         {
           "label": "One negative paired EFO found",
           "type": "present",
-          "pattern": "Found 1 EFO\\(s\\) with significant negative occupation in the paired channel"
+          "pattern": "WARNING: 1 paired EFO\\(s\\) with net occupation below"
         },
         {
           "label": "Negative EFO (frag 2) net occupation",
-          "section": "significant negative occupation in the paired channel",
-          "pattern": "Frag\\.\\s+2\\s+Net occ\\.\\s+([-+]?\\d+\\.\\d+)",
+          "section": "left out of the assignment",
+          "pattern": "\\n\\s*2\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.0859,
           "tol_abs": 0.002
         },
@@ -2997,7 +3005,7 @@
         },
         {
           "label": "Overall reliability index R(%)",
-          "pattern": "OVERALL RELIABILITY INDEX R\\(%\\)\\s*=\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 97.819,
           "tol_abs": 0.02
         }

@@ -171,9 +171,12 @@ large enough for the diffuse orbital on H. Here there is one:
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
-  Found 1 EFO(s) with significant negative occupation in the paired channel
-  (net occupation < -0.0250), excluded from oxidation-state assignment:
-    Frag. 2    Net occ.  -0.0856    Gross occ.  -0.0978    % recovered  84.36
+  WARNING: 1 paired EFO(s) with net occupation below -0.0250 left out of the assignment
+
+  Frag.  Net occ.  Gross occ.  Recovered (%)
+  ------------------------------------------
+      2   -0.0856     -0.0978          84.36
+  ------------------------------------------
 ```
 
 written as `LiH-32-FCI_tfvc_paired_neg_FR2_1.cube`. The same orbital is the

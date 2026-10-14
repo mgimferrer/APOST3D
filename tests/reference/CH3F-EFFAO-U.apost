@@ -158,7 +158,7 @@
   Sum of atomic overlaps, largest error   : 1.14E-03 (from the analytic overlap S)
 
   TIMING CPU  :: Atomic definition                                 0.11 s
-  TIMING WALL :: Atomic definition                                 0.02 s
+  TIMING WALL :: Atomic definition                                 0.11 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -319,66 +319,57 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  ----------------------------------
-    DOING EFFAO-3D FROM U FUNCTION
-  ----------------------------------
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
 
-  EFFAO-U: paired and unpaired densities treated separately
-  Number of natural orbitals (NOs): 9
+  Atomic definition                       : TFVC (real space)
+  Densities                               : paired and unpaired
+  EFO occupation cutoff                   :        0.00010
+  Natural orbitals                        : 9
 
-  ----------------------------------
-    EFFAOs FROM THE PAIRED DENSITY
-  ----------------------------------
+  ------------------
+    PAIRED DENSITY
+  ------------------
 
-  ** FRAGMENT   1 **
+  Fragment 1
+  Net occupation                          :        9.59078
+  Net       2.0000   1.9961   1.9470   1.9470   1.5660   0.0541   0.0538   0.0266
+            0.0002
+  Gross occupation                        :        9.72191
+  Gross     2.0000   1.9971   1.9555   1.9555   1.6233   0.0760   0.0760   0.0377
+            0.0008
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  Net occupation for fragment      1    9.59078
-  Net occupation using >    0.00010
-  OCCUP.   2.0000   1.9961   1.9470   1.9470   1.5660   0.0541   0.0538   0.0266
-  OCCUP.   0.0002
+  Fragment 2
+  Net occupation                          :        8.14971
+  Net       1.9986   1.9526   1.9037   1.9026   0.3193   0.0357   0.0356   0.0016
+  Gross occupation                        :        8.27858
+  Gross     1.9992   1.9625   1.9245   1.9239   0.3767   0.0444   0.0444   0.0030
+  Left out by the cutoff (net)            :        0.00001
+  Left out by the cutoff (gross)          :        0.00001
 
-  Gross occupation for fragment    1    9.72191
-  OCCUP.   2.0000   1.9971   1.9555   1.9555   1.6233   0.0760   0.0760   0.0377
-  OCCUP.   0.0008
-  Left out by the cutoff (net / gross):    0.00000    0.00000
+  --------------------
+    UNPAIRED DENSITY
+  --------------------
 
-  ** FRAGMENT   2 **
+  Fragment 1
+  Net occupation                          :        0.00000
+  No EFO above the cutoff
+  Gross occupation                        :        0.00000
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
-  Net occupation for fragment      2    8.14971
-  Net occupation using >    0.00010
-  OCCUP.   1.9986   1.9526   1.9037   1.9026   0.3193   0.0357   0.0356   0.0016
-
-  Gross occupation for fragment    2    8.27858
-  OCCUP.   1.9992   1.9625   1.9245   1.9239   0.3767   0.0444   0.0444   0.0030
-  Left out by the cutoff (net / gross):    0.00001    0.00001
-
-  ------------------------------------
-    EFFAOs FROM THE UNPAIRED DENSITY
-  ------------------------------------
-
-  ** FRAGMENT   1 **
-
-  Net occupation for fragment      1    0.00000
-  Net occupation using >    0.00010
-  OCCUP.
-
-  Gross occupation for fragment    1    0.00000
-  OCCUP.
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-
-  ** FRAGMENT   2 **
-
-  Net occupation for fragment      2    0.00000
-  Net occupation using >    0.00010
-  OCCUP.
-
-  Gross occupation for fragment    2    0.00000
-  OCCUP.
-  Left out by the cutoff (net / gross):    0.00000    0.00000
-
+  Fragment 2
+  Net occupation                          :        0.00000
+  No EFO above the cutoff
+  Gross occupation                        :        0.00000
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
 
   TIMING CPU  :: EFFAO computation                                 0.10 s
-  TIMING WALL :: EFFAO computation                                 0.02 s
+  TIMING WALL :: EFFAO computation                                 0.10 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

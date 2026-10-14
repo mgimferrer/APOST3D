@@ -1299,7 +1299,6 @@
       character*11 clo
       character*14 cfu
 
-      write(*,'(a)') ''
       write(*,'(2x,a)') 'Frag.  Electrons  Last occ.  First unocc.'
       write(*,'(2x,a)') repeat('-',41)
       do i=1,n
