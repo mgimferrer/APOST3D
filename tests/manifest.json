@@ -323,14 +323,14 @@
         },
         {
           "label": "OSLO 1 FOLI value",
-          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
-          "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
+          "section": "Before orthogonalization",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00002,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 9 FOLI value (most delocalized)",
-          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
+          "section": "Before orthogonalization",
           "pattern": "1\\.06204\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.35476,
           "tol_abs": 0.0002
@@ -492,25 +492,25 @@
         {
           "label": "Last selection spans one orbital",
           "type": "present",
-          "pattern": "SHARED ORBITAL: the 2 selected OSLOs span 1 orbital"
+          "pattern": "Shared orbital: the 2 selected OSLOs span 1 orbital"
         },
         {
           "label": "Share of fragment 1",
-          "section": "SHARED ORBITAL",
-          "pattern": "1\\s+(\\d+\\.\\d+)",
+          "section": "Shared orbital",
+          "pattern": "\\n\\s*1\\s+(\\d+\\.\\d+)",
           "ref": 0.5,
           "tol_abs": 0.0002
         },
         {
           "label": "Share of fragment 2",
-          "section": "SHARED ORBITAL",
-          "pattern": "2\\s+(\\d+\\.\\d+)",
+          "section": "Shared orbital",
+          "pattern": "\\n\\s*2\\s+(\\d+\\.\\d+)",
           "ref": 0.5,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 9 (C-C bond) population on fragment 1",
-          "section": "Summary of the selected OSLOs \\(final\\)",
+          "section": "After orthogonalization",
           "pattern": "0\\.97695\\s+0\\.02269\\s+0\\.02269\\s+(\\d+\\.\\d+)",
           "ref": 0.49981,
           "tol_abs": 0.0002
@@ -568,7 +568,7 @@
         {
           "label": "Selection spans one orbital (alpha)",
           "type": "present",
-          "pattern": "SHARED ORBITAL: the 2 selected OSLOs span 1 orbital"
+          "pattern": "Shared orbital: the 2 selected OSLOs span 1 orbital"
         },
         {
           "label": "BRANCH_ALPHA 1 with no other candidate",
@@ -624,20 +624,20 @@
         },
         {
           "label": "Largest overlap with the selected OSLOs (alpha)",
-          "pattern": "Largest overlap with the selected OSLOs:\\s+([-+]?\\d+\\.\\d+)",
+          "pattern": "Largest overlap with the selected OSLOs\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 1.0,
           "tol_abs": 0.0002
         },
         {
           "label": "delta-FOLI (alpha)",
-          "pattern": "delta-FOLI value:\\s+([-+]?\\d+\\.\\d+)",
+          "pattern": "Delta-FOLI\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.29926,
           "tol_abs": 0.0002
         },
         {
           "label": "Close-alternative warning",
           "type": "present",
-          "pattern": "WARNING : CLOSE ALTERNATIVE SELECTION"
+          "pattern": "WARNING: close alternative selection"
         },
         {
           "label": "Suggested branching line",
@@ -690,7 +690,7 @@
         {
           "label": "Branching applied",
           "type": "present",
-          "pattern": "BRANCHING: THE NEXT FOLI VALUE IS SELECTED"
+          "pattern": "Branching: FOLI value"
         },
         {
           "label": "FOLI value selected by branching",
@@ -932,15 +932,15 @@
         },
         {
           "label": "OSLO 1 FOLI value",
-          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
-          "pattern": "FOLI Value\\s+:\\s+([-+]?\\d+\\.\\d+)",
+          "section": "Before orthogonalization",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.0001,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 5 FOLI value (fully localized)",
-          "section": "Summary of the selected OSLOs \\(pre-ortho\\)",
-          "pattern": "FOLI Value\\s+:\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "section": "Before orthogonalization",
+          "pattern": "FOLI\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.0,
           "tol_abs": 0.0002
         }
@@ -1432,45 +1432,45 @@
         },
         {
           "label": "OSLO 1 alpha FOLI value",
-          "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
-          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "section": "SELECTED ALPHA OSLOs",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00035,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 6 alpha FOLI value",
-          "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
-          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "section": "SELECTED ALPHA OSLOs",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": 1.0002,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 1 alpha fragment 1 population",
-          "section": "Summary of the selected alpha OSLOs \\(pre-ortho\\)",
-          "pattern": "Frg\\. Pop\\.\\s+1:\\s+([-+]?\\d+\\.\\d+)",
+          "section": "SELECTED ALPHA OSLOs",
+          "pattern": "Frag\\.\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.99977,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 1 beta FOLI value",
-          "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
-          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "section": "SELECTED BETA OSLOs",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.00035,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 6 beta FOLI value",
-          "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
-          "pattern": "FOLI Value  :\\s+([-+]?\\d+\\.\\d+)",
+          "section": "SELECTED BETA OSLOs",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
           "match_index": 2,
           "ref": 1.00019,
           "tol_abs": 0.0002
         },
         {
           "label": "OSLO 1 beta fragment 1 population",
-          "section": "Summary of the selected beta OSLOs \\(pre-ortho\\)",
-          "pattern": "Frg\\. Pop\\.\\s+1:\\s+([-+]?\\d+\\.\\d+)",
+          "section": "SELECTED BETA OSLOs",
+          "pattern": "Frag\\.\\s+1\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.99977,
           "tol_abs": 0.0002
         }

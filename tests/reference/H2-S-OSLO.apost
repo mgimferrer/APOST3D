@@ -157,7 +157,7 @@
 
   Sum of atomic overlaps, largest error   : 4.06E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.01 s
+  TIMING CPU  :: Atomic definition                                 0.00 s
   TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
@@ -323,195 +323,166 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  ---------------------------------------------------------
-    DOING OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
-  ---------------------------------------------------------
+  ---------------------------------------------------
+    OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
+  ---------------------------------------------------
 
-  -----------------------------------------
-    CHARGE CENTER (R_F) FOR EACH FRAGMENT
-  -----------------------------------------
+  Atomic definition (spreads)             : TFVC (real space)
+  Fragment populations                    : TFVC
+  FOLI tolerance                          :        0.00100
+  Densities                               : alpha and beta separately
 
-   Frag.        Charge center (xyz)     
-  ------------------------------------- 
-     1      0.00000   0.00000   0.00000
-     2      0.00000   0.00000   0.74000
-  ------------------------------------- 
+  Charge centre R_F of each fragment (Angstrom)
+  Frag.         x         y         z
+  -----------------------------------
+      1   0.00000   0.00000   0.00000
+      2   0.00000   0.00000   0.74000
+  -----------------------------------
 
+  -------------------
+    ALPHA ELECTRONS
+  -------------------
+
+  Electrons                               : 1
+
+  ---------------
+    ITERATION 1
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
   -------------------------------------
-    STARTING ITERATIVE OSLO ALGORITHM
+     1    3.01351     0.50000   1.99999
   -------------------------------------
 
-  Tolerance (in delta-FOLI) used for OSLO selection:   0.00100
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1    3.01351     0.50000   1.99999
+  -------------------------------------
 
-  --------------
-    ALPHA PART
-  --------------
-
-  ------------------------
-    ITERATION NUMBER   1
-  ------------------------
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1     3.01351      0.50000      1.99999
-  ------------------------------------------ 
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   2
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1     3.01351      0.50000      1.99999
-  ------------------------------------------ 
-
-  Lowest FOLI value (frg.)      :   1   1.99999
-  Next FOLI value               : none
+  Lowest FOLI value (fragment 1)          :        1.99999
+  Next FOLI value                         : none
   Branching asked at this iteration, but there is no other candidate: not applied
 
+  Selected orbitals
+  Orb.  Frag.      FOLI
   ---------------------
-    SELECTED ORBITALS
-  ---------------------
-
-   Orb.   Frag.   FOLI  
-  --------------------- 
      1      1   1.99999
      1      2   1.99999
-  --------------------- 
-
-  Number of OSLOs selected:   2
-  delta-FOLI value: none (no other candidate)
-
-  SHARED ORBITAL: the 2 selected OSLOs span 1 orbital
-
-   Frag.      Share
-  -----------------
-     1      0.50000
-     2      0.50000
-  -----------------
-
-  Orbitals left to assign:   0
-
-  --------------------------------
-    CHECKING LINEAR DEPENDENCIES
-  --------------------------------
-
-  Not evaluated with one orbital left (every candidate is that orbital)
-
-  Sum of the FOLI values        :   1.99999
-
-  -------------
-    BETA PART
-  -------------
-
-  ------------------------
-    ITERATION NUMBER   1
-  ------------------------
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   1
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1     3.01351      0.50000      1.99999
-  ------------------------------------------ 
-
-  ----------------------------------------
-    ORBITAL INFORMATION FOR FRAGMENT   2
-  ----------------------------------------
-
-   Orb.    Spread      Frg. Pop.      FOLI   
-  ------------------------------------------ 
-     1     3.01351      0.50000      1.99999
-  ------------------------------------------ 
-
-  Lowest FOLI value (frg.)      :   1   1.99999
-  Next FOLI value               : none
-
   ---------------------
-    SELECTED ORBITALS
-  ---------------------
+  OSLOs selected                          : 2
+  Delta-FOLI                              : none (no other candidate)
 
-   Orb.   Frag.   FOLI  
-  --------------------- 
+  Shared orbital: the 2 selected OSLOs span 1 orbital
+  Frag.     Share
+  ---------------
+      1   0.50000
+      2   0.50000
+  ---------------
+  Orbitals left to assign                 : 0
+
+  Close alternatives: not checked, one orbital left
+
+  Sum of the FOLI values                  :        1.99999
+
+  ------------------
+    BETA ELECTRONS
+  ------------------
+
+  Electrons                               : 1
+
+  ---------------
+    ITERATION 1
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1    3.01351     0.50000   1.99999
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1    3.01351     0.50000   1.99999
+  -------------------------------------
+
+  Lowest FOLI value (fragment 1)          :        1.99999
+  Next FOLI value                         : none
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
      1      1   1.99999
      1      2   1.99999
-  --------------------- 
+  ---------------------
+  OSLOs selected                          : 2
+  Delta-FOLI                              : none (no other candidate)
 
-  Number of OSLOs selected:   2
-  delta-FOLI value: none (no other candidate)
+  Shared orbital: the 2 selected OSLOs span 1 orbital
+  Frag.     Share
+  ---------------
+      1   0.50000
+      2   0.50000
+  ---------------
+  Orbitals left to assign                 : 0
 
-  SHARED ORBITAL: the 2 selected OSLOs span 1 orbital
+  Close alternatives: not checked, one orbital left
 
-   Frag.      Share
-  -----------------
-     1      0.50000
-     2      0.50000
-  -----------------
-
-  Orbitals left to assign:   0
-
-  --------------------------------
-    CHECKING LINEAR DEPENDENCIES
-  --------------------------------
-
-  Not evaluated with one orbital left (every candidate is that orbital)
-
-  Sum of the FOLI values        :   1.99999
+  Sum of the FOLI values                  :        1.99999
   Branching at iteration 2: not reached, not applied
 
-  ------------------------------------
-    PRINTING FINAL OSLOs INFORMATION
-  ------------------------------------
+  ------------------------
+    SELECTED ALPHA OSLOs
+  ------------------------
 
-  ---------------------------------------------------
-    Summary of the selected alpha OSLOs (pre-ortho)
-  ---------------------------------------------------
+  Before orthogonalization
+  OSLO              1
+  Iteration         1
+  FOLI        1.99999
+  -------------------
+  Frag.   1   0.50000
+  Frag.   2   0.50000
+  -------------------
 
-  OSLO Number :      1
-  FOLI Value  :   1.99999
-  Frg. Pop.  1:   0.50000
-  Frg. Pop.  2:   0.50000
+  After orthogonalization (the orbitals of the .fchk file)
+  OSLO              1
+  -------------------
+  Frag.   1   0.50000
+  Frag.   2   0.50000
+  -------------------
 
-  -----------------------------------------------
-    Summary of the selected alpha OSLOs (final)
-  -----------------------------------------------
+  -----------------------
+    SELECTED BETA OSLOs
+  -----------------------
 
-  OSLO Number :      1
-  Frg. Pop.  1:   0.50000
-  Frg. Pop.  2:   0.50000
+  Before orthogonalization
+  OSLO              1
+  Iteration         1
+  FOLI        1.99999
+  -------------------
+  Frag.   1   0.50000
+  Frag.   2   0.50000
+  -------------------
 
-  --------------------------------------------------
-    Summary of the selected beta OSLOs (pre-ortho)
-  --------------------------------------------------
-
-  OSLO Number :      1
-  FOLI Value  :   1.99999
-  Frg. Pop.  1:   0.50000
-  Frg. Pop.  2:   0.50000
-
-  ----------------------------------------------
-    Summary of the selected beta OSLOs (final)
-  ----------------------------------------------
-
-  OSLO Number :      1
-  Frg. Pop.  1:   0.50000
-  Frg. Pop.  2:   0.50000
+  After orthogonalization (the orbitals of the .fchk file)
+  OSLO              1
+  -------------------
+  Frag.   1   0.50000
+  Frag.   2   0.50000
+  -------------------
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          0.00
-     2          0.00
-  ------------------------ 
+  Frag.  Oxidation state
+  ----------------------
+      1             0.00
+      2             0.00
+  ----------------------
+  Total             0.00
   Fractional values: orbitals shared between fragments (see the iterations)
 
   TIMING CPU  :: OSLO analysis                                     0.00 s
