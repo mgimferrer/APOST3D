@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.8",
+  "schema_version": "0.9",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -254,8 +254,8 @@
     "job_name": "H2O-T-B3LYP",
     "input_file": "H2O-T-B3LYP.inp",
     "wavefunction_file": "H2O-T-B3LYP.fchk",
-    "date": "2026-10-14T20:48:21+02:00",
-    "id": "2026-10-14T20:48:21+02:00/a350",
+    "date": "2026-10-14T21:03:58+02:00",
+    "id": "2026-10-14T21:03:58+02:00/80c8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

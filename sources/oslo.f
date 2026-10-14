@@ -1216,7 +1216,9 @@
 
 !! ----------------------------------------------------------------------
 !! subroutine: oslo_json_file
-!! Results file: the name of the OSLO .fchk file (no folder).
+!! Results file: the names of the OSLO .fchk files (no folder): the
+!! final OSLOs, and with PRINT_NONORTHO the same OSLOs before
+!! orthogonalization (same order, same run id).
 !! arguments: none
 !! author: MGimf
 !! ----------------------------------------------------------------------
@@ -1224,12 +1226,18 @@
       use json_mod
       implicit double precision(a-h,o-z)
       common /filename/name0
+      common /iops/iopt(200)
       character*60 name0
       character*80 cfile
 
       cfile=trim(name0)//'-OSLOs.fchk'
       cfile=cfile(index(cfile,'/',back=.true.)+1:)
       call json_value('orbital_file',trim(cfile))
+      if(iopt(98).eq.2) then
+        cfile=trim(name0)//'-OSLOs-preortho.fchk'
+        cfile=cfile(index(cfile,'/',back=.true.)+1:)
+        call json_value('orbital_file_preortho',trim(cfile))
+      end if
       call json_value('orbital_file_id',json_run_id())
       end
 
