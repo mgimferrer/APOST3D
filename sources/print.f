@@ -647,6 +647,7 @@
       call json_begin_object('atomic_definition')
       call json_value('keyword',trim(ckey))
       call json_value('name',trim(cname))
+      call json_value('short_name',trim(cshort))
       call json_value('space',trim(cspace))
       call json_value('default',itfvcdef.eq.1)
       call json_end()

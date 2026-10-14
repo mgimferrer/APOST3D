@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -20,6 +20,7 @@
     "atomic_definition": {
       "keyword": "TFVC",
       "name": "Topological fuzzy Voronoi cells",
+      "short_name": "TFVC",
       "space": "real",
       "default": false
     }
@@ -93,8 +94,8 @@
             [1.0000039088374284E+000, 5.0000195441871420E-001]
           ],
           "symmetric": true,
-          "diagonal": "localization index of the fragment",
-          "off_diagonal": "bond order between the two fragments",
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
           "total": 2.0000078176748568E+000,
           "total_rule": "diagonal and one triangle"
         },
@@ -113,7 +114,8 @@
       "kind": "atom_vector",
       "title": "Electron populations (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "populations.atoms.charges",
@@ -123,7 +125,8 @@
       "kind": "atom_vector",
       "title": "Atomic charges (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.atoms.spin",
@@ -133,7 +136,8 @@
       "kind": "atom_vector",
       "title": "Spin populations (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.fragments.electrons",
@@ -143,7 +147,8 @@
       "kind": "fragment_vector",
       "title": "Fragment electron populations (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "populations.fragments.charges",
@@ -153,7 +158,8 @@
       "kind": "fragment_vector",
       "title": "Fragment charges (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.fragments.spin",
@@ -163,67 +169,80 @@
       "kind": "fragment_vector",
       "title": "Fragment spin populations (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.mulliken.atoms.electrons",
       "analysis": "populations",
       "spin": null,
+      "role": "comparison",
       "path": "/analyses/populations/mulliken/atoms/electrons",
       "kind": "atom_vector",
       "title": "Electron populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "populations.mulliken.atoms.charges",
       "analysis": "populations",
       "spin": null,
+      "role": "comparison",
       "path": "/analyses/populations/mulliken/atoms/charges",
       "kind": "atom_vector",
       "title": "Atomic charges (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.mulliken.atoms.spin",
       "analysis": "populations",
       "spin": null,
+      "role": "comparison",
       "path": "/analyses/populations/mulliken/atoms/spin",
       "kind": "atom_vector",
       "title": "Spin populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.mulliken.fragments.electrons",
       "analysis": "populations",
       "spin": null,
+      "role": "comparison",
       "path": "/analyses/populations/mulliken/fragments/electrons",
       "kind": "fragment_vector",
       "title": "Fragment electron populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "populations.mulliken.fragments.charges",
       "analysis": "populations",
       "spin": null,
+      "role": "comparison",
       "path": "/analyses/populations/mulliken/fragments/charges",
       "kind": "fragment_vector",
       "title": "Fragment charges (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "populations.mulliken.fragments.spin",
       "analysis": "populations",
       "spin": null,
+      "role": "comparison",
       "path": "/analyses/populations/mulliken/fragments/spin",
       "kind": "fragment_vector",
       "title": "Fragment spin populations (Mulliken)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": true
     },
     {
       "id": "bond_orders.atoms.matrix",
@@ -233,7 +252,8 @@
       "kind": "atom_matrix",
       "title": "Bond orders (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.atoms.valence_total",
@@ -243,7 +263,8 @@
       "kind": "atom_vector",
       "title": "Total valences (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.atoms.valence_bonded",
@@ -253,7 +274,8 @@
       "kind": "atom_vector",
       "title": "Valences used in bonds (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.atoms.valence_free",
@@ -263,7 +285,8 @@
       "kind": "atom_vector",
       "title": "Free valences (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.fragments.matrix",
@@ -273,7 +296,8 @@
       "kind": "fragment_matrix",
       "title": "Fragment bond orders (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.fragments.valence_total",
@@ -283,7 +307,8 @@
       "kind": "fragment_vector",
       "title": "Fragment total valences (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.fragments.valence_bonded",
@@ -293,7 +318,8 @@
       "kind": "fragment_vector",
       "title": "Fragment valences used in bonds (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     },
     {
       "id": "bond_orders.fragments.valence_free",
@@ -303,14 +329,15 @@
       "kind": "fragment_vector",
       "title": "Fragment free valences (TFVC)",
       "unit": null,
-      "decimals": 6
+      "decimals": 6,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "H2-S-OSLO",
     "input_file": "H2-S-OSLO.inp",
     "wavefunction_file": "H2-S-OSLO.fchk",
-    "date": "2026-10-14T11:43:10+02:00",
+    "date": "2026-10-14T15:18:09+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null
