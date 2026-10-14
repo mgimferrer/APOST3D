@@ -2707,6 +2707,35 @@
           "tol_abs": 2e-05
         }
       ]
+    },
+    {
+      "name": "H2-TWO-AIM",
+      "description": "H2 (pySCF UKS singlet) with two atomic definitions in # METHOD (TFVC and HIRSH): the run must stop while reading the input.",
+      "tags": [
+        "input",
+        "expected-stop"
+      ],
+      "expected_rc": 1,
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [],
+      "checks": [
+        {
+          "label": "Two atomic definitions named",
+          "type": "present",
+          "pattern": "More than one atomic definition in # METHOD: HIRSH TFVC"
+        },
+        {
+          "label": "Stop line",
+          "type": "present",
+          "pattern": "STOP\\s+More than one atomic definition"
+        },
+        {
+          "label": "No population analysis",
+          "type": "absent",
+          "pattern": "DOING POPULATION ANALYSIS"
+        }
+      ]
     }
   ]
 }
