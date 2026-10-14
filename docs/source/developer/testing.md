@@ -137,7 +137,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `FeCN5NO3--UBLYP-t2` | Same complex, UKS BLYP: TFVC + unrestricted OSLO with LOWDIN fragment populations, 7 fragments | `dft oslo lowdin tfvc uks fragments openshell` |
 | `LiH-35-CAS22` | LiH, CASSCF(2,2) from pySCF (`pySCF` in `# DM`): ENPART (CASSCF), every pair computed, and correlated local spin | `hf enpart casscf dm pyscf spin tfvc` |
 | `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP: GEOS, 2 fragments, two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |
-| `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ: GEOS with a negative paired EFO, `FIT %`, `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
+| `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ: GEOS with a negative paired EFO, `Fit (%)`, `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
 | `CH3F-EFFAO-U` | Fluoromethane, RKS: EFFAO-U with 2 fragments, paired/unpaired EFOs without oxidation states (empty unpaired channel) | `dft effao tfvc rks fragments` |
 | `H2O-T-BLYP` | Water, triplet UKS BLYP given as libxc ids (`LIBRARY`): ENPART, every pair computed | `dft enpart tfvc uks openshell libxc-ids` |
 | `H2O-TPSS` | Water, RKS TPSS: meta-GGAs are not supported yet, ENPART must stop with a message | `dft enpart tfvc rks meta-gga expected-stop` |
@@ -184,7 +184,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | EOS last occupied / first unoccupied occupation | `2e-3` |
 | Reliability index R(%) | `0.02` |
 | OSLO FOLI values | `2e-4` |
-| `Fit (%)`, `% recovered` | `0.05` |
+| `Fit (%)`, `Recovered (%)` | `0.05` |
 | `Normalization from cube` | `1e-3` |
 
 A manifest check looks like:

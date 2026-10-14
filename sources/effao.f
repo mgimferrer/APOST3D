@@ -15,14 +15,15 @@
 
 !! ----------------------------------------------------------------------
 !! subroutine: efo_section_header
-!! Opens the EFFAO/EOS section: the atomic definition, the densities
-!! the EFOs are computed from, and the occupation cutoff.
+!! Opens the EFFAO/EOS/GEOS section: the atomic definition, the
+!! densities the EFOs are computed from, and the occupation cutoff.
 !! arguments:
 !!   idobeta (in)  1 when the beta EFOs are computed separately
+!!   xcut    (in)  EFO occupation cutoff
 !! author: MGimf
 !! ----------------------------------------------------------------------
-      subroutine efo_section_header(idobeta)
-      use input_options_mod, only: ieffao,ieffthr,idoat
+      subroutine efo_section_header(idobeta,xcut)
+      use input_options_mod, only: ieffao,idoat
       use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       character*20 ckey,cspace
@@ -43,17 +44,17 @@
       end if
       if(ieffao.eq.1) then
         call print_value('Densities','total')
+      else if(ieffao.eq.3) then
+        call print_value('Densities','paired and unpaired')
       else if(idobeta.eq.1.or.idoat.ne.0) then
         call print_value('Densities','alpha and beta separately')
       else
         call print_value('Densities','alpha (beta equal to alpha)')
       end if
       if(idoat.ne.0) then
-        call print_value('EFAO occupation cutoff',
-     +    dble(ieffthr)/1000.0d0,5)
+        call print_value('EFAO occupation cutoff',xcut,5)
       else
-        call print_value('EFO occupation cutoff',
-     +    dble(ieffthr)/1000.0d0,5)
+        call print_value('EFO occupation cutoff',xcut,5)
       end if
       if(ieffao.eq.1) write(*,'(a)') ''
       end
@@ -686,6 +687,7 @@
 !! reliability index: 100% if the occupied/unoccupied gap is >=0.5,      !!
 !! scaled down as xlast and xfirst get closer together.                  !!
       confi=100.0*min(1.0d0,xlast-xfirst+0.5d0)
+      write(*,'(a)') ''
       call print_eos_frontier(icufr,elec,xlo,ilo,xfu,ifu,confi)
       if(icase.eq.1) then
         do i=1,icufr

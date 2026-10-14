@@ -75,27 +75,27 @@ The excerpts below come from LiH at 3.2 Å, pySCF FCI/cc-pVTZ, with Li and
 H as fragments 1 and 2 (the full input is
 [Example 6](../input/examples.md)).
 
-**EFO blocks.** One block per density (`EFFAOs FROM THE PAIRED DENSITY`,
-then `... UNPAIRED DENSITY`), with one entry per fragment:
+**EFO blocks.** After the atomic definition, the densities, the
+occupation cutoff (0.0001 for GEOS) and the number of natural orbitals,
+one section per density (`PAIRED DENSITY`, then `UNPAIRED DENSITY`), with
+one entry per fragment:
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
-  ** FRAGMENT   2 **
-
-  Net occupation for fragment      2    1.05137
-  Net occupation using >    0.00010
-  OCCUP.   1.0512   0.0002
-
-  Gross occupation for fragment    2    1.08681
-  OCCUP.   1.0861   0.0007
-  FIT %     93.01    33.07
-  Left out by the cutoff (net / gross):   -0.09431   -0.10682
+  Fragment 2
+  Net occupation                          :        1.05137
+  Net       1.0512   0.0002
+  Gross occupation                        :        1.08681
+  Gross     1.0861   0.0007
+  Fit (%)    93.01    33.07
+  Left out by the cutoff (net)            :       -0.09431
+  Left out by the cutoff (gross)          :       -0.10682
 ```
 
-- The first `OCCUP.` rows are the net occupations of the fragment's EFOs,
-  and the second ones their gross occupations, 8 per line, in the same
-  order. Paired occupations go up to 2, unpaired ones up to 1.
-- `FIT %` gives, for each EFO, how faithfully the orbital written to the
+- The `Net` rows are the net occupations of the fragment's EFOs, and the
+  `Gross` rows their gross occupations, 8 per line, in the same order.
+  Paired occupations go up to 2, unpaired ones up to 1.
+- `Fit (%)` gives, for each EFO, how faithfully the orbital written to the
   `.fchk` file reproduces it (see *Orbitals in the .fchk file* below).
 - `Left out by the cutoff` is what the listed EFOs miss of the fragment's
   net and gross population in that density (see [EFFAO](effao.md)). In
@@ -104,14 +104,17 @@ then `... UNPAIRED DENSITY`), with one entry per fragment:
 
 **Negative paired EFOs.** The paired density is the difference of two
 densities, so unlike a normal density it can yield EFOs with a *negative*
-occupation. Those with net occupation below −0.025 are listed
-separately:
+occupation. Those with net occupation below −0.025 are listed at the
+start of the assignment section:
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
-  Found 1 EFO(s) with significant negative occupation in the paired channel
-  (net occupation < -0.0250), excluded from oxidation-state assignment:
-    Frag. 2    Net occ.  -0.0856    Gross occ.  -0.0978    % recovered  84.36
+  WARNING: 1 paired EFO(s) with net occupation below -0.0250 left out of the assignment
+
+  Frag.  Net occ.  Gross occ.  Recovered (%)
+  ------------------------------------------
+      2   -0.0856     -0.0978          84.36
+  ------------------------------------------
 ```
 
 They never take part in the electron assignment. They are written to the
@@ -122,40 +125,44 @@ They never take part in the electron assignment. They are written to the
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
-  Ideal assignment: 0 forced-unpaired electron(s), 2 electron pair(s)
-  Initial RMSD: 0.53195
+  Ideal assignment                        : 2 electron pairs, 0 unpaired electrons
+  RMSD of the ideal assignment            :        0.53195
 
-  Trying: paired EFO (frag 2, occ  1.0861) -> unpaired (frag 2, occ  0.4272 / frag 1, occ  0.2352)
-    RMSD =  0.73340 -- rejected, keeping RMSD =  0.53195
-
-  Electrons assigned per fragment (paired / unpaired):
-    Fragment 1:  2.00 /  0.00
-    Fragment 2:  2.00 /  0.00
+  Pairs moved to the unpaired density (kept while the RMSD decreases):
+  Try  Frag.  Paired  Frag.  Unpaired  Frag.  Unpaired     RMSD  Result
+  -----------------------------------------------------------------------
+    1      2  1.0861      2    0.4272      1    0.2352  0.73340  rejected
+  -----------------------------------------------------------------------
+  RMSD of the electron assignment         :        0.53195
 ```
 
-Then come the usual EOS tables, one per density (`EOS ANALYSIS FOR PAIRED
-ELECTRONS` / `... UNPAIRED ELECTRONS`: electrons per fragment, last
-occupied and first unoccupied gross occupation, and R(%); paired
-occupations are halved when computing R(%)), followed by:
+The assignment starts with every electron paired (except the
+`|Nα − Nβ|` that must be unpaired) and moves one pair at a time, from the
+least occupied paired EFO to the two most occupied unpaired ones, while
+that lowers the RMSD between occupations and assigned electrons; each try
+is listed. Here moving the pair raises the RMSD, so it is rejected.
+
+Then come the usual EOS tables, one per density (`GEOS, PAIRED
+ELECTRONS` / `GEOS, UNPAIRED ELECTRONS`: electrons per fragment, last
+occupied and first unoccupied gross occupation, and R; paired
+occupations are halved when computing R), followed by:
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
-   Frag.  Oxidation State
-  ------------------------
-     1          1.00
-     2         -1.00
-  ------------------------
-   Sum:  0.0
-
-  OVERALL RELIABILITY INDEX R(%) =  96.638
-  ELECTRONIC ASSIGNMENT RMSD VALUE =   0.532
+  Frag.  Oxidation state
+  ----------------------
+      1             1.00
+      2            -1.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :         96.638
 ```
 
 ## Orbitals in the .fchk file
 
 Every GEOS run writes `<jobname>-GEOS-EFOs.fchk`, with the EFOs of all
 fragments as its orbitals (see [Visualizing orbitals](../guide/visualization.md)
-for the general layout and the meaning of `FIT %`):
+for the general layout and the meaning of `Fit (%)`):
 
 - **Alpha orbitals:** paired EFOs of all fragments, sorted by decreasing
   gross occupation; the negative paired EFOs, if any, are the **last**
@@ -166,7 +173,7 @@ for the general layout and the meaning of `FIT %`):
 
 In the LiH example, the negative EFO of the H atom is the last Alpha
 orbital, with "orbital energy" −0.0978 (its gross occupation), and its
-`% recovered` of 84.36 is the `FIT %` of that orbital.
+`Recovered (%)` of 84.36 is the `Fit (%)` of that orbital.
 
 ## Cube files
 
@@ -197,8 +204,8 @@ RADIUS_SCALE 12.0
 ## Checking the result
 
 - R(%) is read as in [EOS](eos.md#how-it-works), per density and overall.
-- `ELECTRONIC ASSIGNMENT RMSD VALUE` is the root-mean-square deviation
+- `RMSD of the electron assignment` is the root-mean-square deviation
   between the assigned and the actual EFO occupations: the smaller, the
   closer the electron distribution is to the integer assignment.
-- For negative paired EFOs, `% recovered` tells how faithfully the
+- For negative paired EFOs, `Recovered (%)` tells how faithfully the
   orbital in the `.fchk` file represents them.

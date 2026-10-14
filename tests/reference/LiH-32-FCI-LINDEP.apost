@@ -323,121 +323,118 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  ----------------------------------
-    DOING EFFAO-3D FROM U FUNCTION
-  ----------------------------------
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
 
-  EFFAO-U: paired and unpaired densities treated separately
-  Number of natural orbitals (NOs): 28
+  Atomic definition                       : TFVC (real space)
+  Densities                               : paired and unpaired
+  EFO occupation cutoff                   :        0.00010
+  Natural orbitals                        : 28
 
-  ----------------------------------
-    EFFAOs FROM THE PAIRED DENSITY
-  ----------------------------------
+  ------------------
+    PAIRED DENSITY
+  ------------------
 
-  ** FRAGMENT   1 **
+  Fragment 1
+  Net occupation                          :        2.12290
+  Net       1.9973   0.1256
+  Gross occupation                        :        2.14578
+  Gross     1.9982   0.1476
+  Fit (%)    98.92    74.81
+  Left out by the cutoff (net)            :       -0.00081
+  Left out by the cutoff (gross)          :       -0.00131
 
-  Net occupation for fragment      1    2.12290
-  Net occupation using >    0.00010
-  OCCUP.   1.9973   0.1256
+  Fragment 2
+  Net occupation                          :        1.07088
+  Net       1.0702   0.0007
+  Gross occupation                        :        1.10524
+  Gross     1.1040   0.0013
+  Fit (%)    88.97    41.19
+  Left out by the cutoff (net)            :       -0.10017
+  Left out by the cutoff (gross)          :       -0.11203
 
-  Gross occupation for fragment    1    2.14578
-  OCCUP.   1.9982   0.1476
-  FIT %     98.92    74.81
-  Left out by the cutoff (net / gross):   -0.00081   -0.00131
+  --------------------
+    UNPAIRED DENSITY
+  --------------------
 
-  ** FRAGMENT   2 **
+  Fragment 1
+  Net occupation                          :        0.19731
+  Net       0.1959   0.0005   0.0003   0.0003   0.0002
+  Gross occupation                        :        0.22451
+  Gross     0.2226   0.0008   0.0005   0.0005   0.0002
+  Fit (%)    75.75    56.02    55.51    55.51    96.24
+  Left out by the cutoff (net)            :        0.00010
+  Left out by the cutoff (gross)          :        0.00016
 
-  Net occupation for fragment      2    1.07088
-  Net occupation using >    0.00010
-  OCCUP.   1.0702   0.0007
+  Fragment 2
+  Net occupation                          :        0.61026
+  Net       0.4201   0.1617   0.0093   0.0090   0.0090   0.0006   0.0002   0.0002
+            0.0002
+  Gross occupation                        :        0.63789
+  Gross     0.4203   0.1887   0.0094   0.0091   0.0091   0.0007   0.0002   0.0002
+            0.0002
+  Fit (%)    99.02    73.28    94.86    91.75    91.75    76.45    85.83    83.60
+             83.60
+  Left out by the cutoff (net)            :        0.00008
+  Left out by the cutoff (gross)          :        0.00009
 
-  Gross occupation for fragment    2    1.10524
-  OCCUP.   1.1040   0.0013
-  FIT %     88.97    41.19
-  Left out by the cutoff (net / gross):   -0.10017   -0.11203
+  ----------------------------
+    GEOS ELECTRON ASSIGNMENT
+  ----------------------------
 
-  ------------------------------------
-    EFFAOs FROM THE UNPAIRED DENSITY
-  ------------------------------------
+  EFOs in the assignment                  : 18
+  WARNING: 1 paired EFO(s) with net occupation below -0.0250 left out of the assignment
 
-  ** FRAGMENT   1 **
+  Frag.  Net occ.  Gross occ.  Recovered (%)
+  ------------------------------------------
+      2   -0.0859     -0.0976          75.61
+  ------------------------------------------
 
-  Net occupation for fragment      1    0.19731
-  Net occupation using >    0.00010
-  OCCUP.   0.1959   0.0005   0.0003   0.0003   0.0002
+  Ideal assignment                        : 2 electron pairs, 0 unpaired electrons
+  RMSD of the ideal assignment            :        0.52124
 
-  Gross occupation for fragment    1    0.22451
-  OCCUP.   0.2226   0.0008   0.0005   0.0005   0.0002
-  FIT %     75.75    56.02    55.51    55.51    96.24
-  Left out by the cutoff (net / gross):    0.00010    0.00016
+  Pairs moved to the unpaired density (kept while the RMSD decreases):
+  Try  Frag.  Paired  Frag.  Unpaired  Frag.  Unpaired     RMSD  Result
+  -----------------------------------------------------------------------
+    1      2  1.1040      2    0.4203      1    0.2226  0.74442  rejected
+  -----------------------------------------------------------------------
+  RMSD of the electron assignment         :        0.52124
 
-  ** FRAGMENT   2 **
+  --------------------------
+    GEOS, PAIRED ELECTRONS
+  --------------------------
 
-  Net occupation for fragment      2    0.61026
-  Net occupation using >    0.00010
-  OCCUP.   0.4201   0.1617   0.0093   0.0090   0.0090   0.0006   0.0002   0.0002
-  OCCUP.   0.0002
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       2.00      1.998         0.148
+      2       2.00      1.104         0.001
+  -----------------------------------------
+  Reliability index R (%)                 :         97.819
+  Paired occupations (0 to 2) are halved in R
 
-  Gross occupation for fragment    2    0.63789
-  OCCUP.   0.4203   0.1887   0.0094   0.0091   0.0091   0.0007   0.0002   0.0002
-  OCCUP.   0.0002
-  FIT %     99.02    73.28    94.86    91.75    91.75    76.45    85.83    83.60
-  FIT %     83.60
-  Left out by the cutoff (net / gross):    0.00008    0.00009
+  ----------------------------
+    GEOS, UNPAIRED ELECTRONS
+  ----------------------------
 
-  Total number of eff-AO-s for analysis:   18
-
-  Found 1 EFO(s) with significant negative occupation in the paired channel
-  (net occupation < -0.0250), excluded from oxidation-state assignment:
-    Frag. 2    Net occ.  -0.0859    Gross occ.  -0.0976    % recovered  75.61
-
-  Ideal assignment: 0 forced-unpaired electron(s), 2 electron pair(s)
-  Initial RMSD: 0.52124
-
-  Trying: paired EFO (frag 2, occ  1.1040) -> unpaired (frag 2, occ  0.4203 / frag 1, occ  0.2226)
-    RMSD =  0.74442 -- rejected, keeping RMSD =  0.52124
-
-  Electrons assigned per fragment (paired / unpaired):
-    Fragment 1:  2.00 /  0.00
-    Fragment 2:  2.00 /  0.00
-
-  -------------------------------------
-    EOS ANALYSIS FOR PAIRED ELECTRONS
-  -------------------------------------
-
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     2.00     1.998     0.148
-     2     2.00     1.104     0.001
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) =  97.819
-
-  INFO: (paired) occ. values halved in R(%) calculation
-
-  ---------------------------------------
-    EOS ANALYSIS FOR UNPAIRED ELECTRONS
-  ---------------------------------------
-
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     0.00     0.000     0.223
-     2     0.00     0.000     0.420
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) = 100.000
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       0.00          -         0.223
+      2       0.00          -         0.420
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          1.00
-     2         -1.00
-  ------------------------ 
-   Sum:  0.0
-
-  OVERALL RELIABILITY INDEX R(%) =  97.819
-  ELECTRONIC ASSIGNMENT RMSD VALUE =   0.521
+  Frag.  Oxidation state
+  ----------------------
+      1             1.00
+      2            -1.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :         97.819
 
   TIMING CPU  :: EFFAO computation                                 0.04 s
   TIMING WALL :: EFFAO computation                                 0.04 s

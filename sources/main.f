@@ -752,7 +752,8 @@ c      iopt(200) =
         else
           if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) idobeta=1
         end if
-        if(ieffao.ne.3) call efo_section_header(idobeta)
+        if(ieffao.ne.3) call efo_section_header(idobeta,
+     +    dble(ieffthr)/1000.0d0)
         if(ieffao.ne.3.and.idoat.eq.0) call efo_json_open()
 
 !! Mulliken !!

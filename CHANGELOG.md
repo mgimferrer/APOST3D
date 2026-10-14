@@ -175,6 +175,11 @@ program, not a full development history — see `git log` for that.
   from net/gross population` lines, which were not computed correctly.
   With Mulliken or Löwdin atoms, a fragment with a single basis function
   no longer loses its only orbital.
+- **GEOS with a linearly dependent basis** — the negative paired EFOs
+  were left out of `<jobname>-GEOS-EFOs.fchk` when the basis had near
+  linear dependencies (fewer independent functions than basis
+  functions, e.g. with diffuse functions); they are now its last alpha
+  orbitals, as in any other basis.
 - **EFFAO/EOS with `LOWDIN-DAVIDSON`** — the orbitals are now built in the
   Davidson-Löwdin basis, as its populations are; they silently used plain
   Löwdin, so oxidation states and R(%) were Löwdin ones. `EFFAO`/`EOS`
@@ -272,6 +277,13 @@ program, not a full development history — see `git log` for that.
   overall reliability index. A closed-shell run says that the beta
   electrons are assigned as the alpha ones, and a run without beta
   electrons says so. No number changes.
+- **GEOS and EFFAO-U output** — the same layout as EFFAO and EOS
+  (section header, `Net`/`Gross`/`Fit (%)` rows, one table per density
+  and the shared oxidation-state table). The negative paired EFOs are a
+  table after a warning line, each pair moved from the paired to the
+  unpaired density is one row of a table with its RMSD and whether it
+  was kept, the repeated list of electrons per fragment is gone, and the
+  final RMSD has 5 decimals like the others. No number changes.
 - **`utils/apost3d.py` rewritten** — works with current pySCF (2.7 to 2.14
   checked; before, only up to 2.7) and writes basis sets with g functions,
   single atoms, linearly dependent bases, CASCI, the RDMs of FCI and

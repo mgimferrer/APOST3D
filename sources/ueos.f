@@ -1,50 +1,34 @@
-!! *********************************************************************** !!
-!! GEOS ("Generalized Effective Oxidation State", `.inp` keyword GEOS      !!
-!!   -- effective atomic/fragment orbitals from the paired and unpaired    !!
-!!      densities separately (open-shell systems), then electron/oxidation !!
-!!      state assignment across both channels together.                    !!
-!!   effao3d_u    -- real-space EFOs from the paired/unpaired densities    !!
-!!                   (Takatsuka's definition), one fragment at a time      !!                                                !!
-!!   ueos_analysis -- pools every fragment's paired/unpaired EFOs, assigns !!
-!!                    electrons to minimize the RMSD against ideal (2 for  !!
-!!                    paired, 1 for unpaired) occupations, then derives    !!
-!!                    fragment oxidation states                            !!
-!! *********************************************************************** !!
+!! ----------------------------------------------------------------------
+!! GEOS (generalized effective oxidation states) and EFFAO-U: effective
+!! fragment orbitals of the paired and unpaired densities, and the
+!! electron assignment across both.
+!!   effao3d_u     -- EFOs of the paired and unpaired densities
+!!   ueos_analysis -- electron assignment, oxidation states, .fchk order
+!! ----------------------------------------------------------------------
 
 !! ***** !!
 
-!! ********************************************************************** !!
-!! subroutine: effao3d_u                                                  !!
-!! purpose: computes real-space (3D grid) effective fragment orbitals     !!
-!!   (EFOs) separately from the paired and unpaired one-particle          !!
-!!   densities, using Takatsuka's definition of the unpaired density      !!
-!!   (u = n(2-n) per natural-orbital occupation n; paired = total - u).   !!
-!!   Same per-fragment scheme as ueffao3d_frag (effao.f), run twice       !!
-!!   (icase=1 paired, icase=2 unpaired). Results are stored into          !!
-!!   effao_mod (p0/p0net/p0gro/ip0, raw, for cubegen_new) and, if         !!
-!!   iueos=1, into the local up0net/up0gro/up0coef/iup0 arrays consumed   !!
-!!   by ueos_analysis below, which also writes the pooled EFOs into a     !!
-!!   .fchk (paired -> Alpha, unpaired -> Beta); up0coef/cneg hold the     !!
-!!   EFOs projected onto EFO*fragment-weight. Also scans the paired       !!
-!!   channel (only -- Pno-Uno isn't PSD, Uno alone is) for EFOs with      !!
-!!   significant negative net occupation (below xminocc_neg) and stores   !!
-!!   them separately (ineg_frg/xneg_net/xneg_gro/cneg), excluded from     !!
-!!   oxidation-state assignment but still exported to the .fchk. With     !!
-!!   # CUBE NEG_EFOS, paired EFOs below that keyword's own threshold get  !!
-!!   ..._paired_neg_... cube files (independent of xminocc_neg).          !!
-!! arguments:                                                             !!
-!!   itotps (in) -- total number of grid points (nat*iatps)               !!
-!!   ndim   (in) -- number of basis functions (leading dim of chp/sat)    !!
-!!   omp    (in) -- becke/tfvc weight of each grid point for its own atom !!
-!!   chp    (in) -- basis-function values at each grid point              !!
-!!   sat    (in) -- per-atom AO overlap matrix (from numint_sat)          !!
-!!   wp     (in) -- integration weight of each grid point                 !!
-!!   omp2   (in) -- becke/tfvc (or hirshfeld) weight of each point for    !!
-!!                  every atom                                            !!
-!!   iueos  (in) -- 1 to also run the electron/oxidation-state assignment !!
-!!                  (ueos_analysis) once both densities are done          !!
-!! author: MGimf                                                          !!
-!! ********************************************************************** !!
+!! ----------------------------------------------------------------------
+!! subroutine: effao3d_u
+!! Real-space EFOs of the paired and unpaired densities (unpaired: u =
+!! n(2-n) per natural orbital, Takatsuka; paired: total minus unpaired),
+!! one fragment at a time, as ueffao3d_frag does for alpha and beta.
+!! Paired EFOs with a clearly negative net occupation (below
+!! xminocc_neg; the paired density is a difference of densities) are
+!! kept apart: reported, written to the .fchk file, left out of the
+!! assignment. With GEOS (iueos=1) ueos_analysis then assigns the
+!! electrons; with EFFAO-U only the EFOs are printed.
+!! arguments:
+!!   itotps (in)  number of grid points
+!!   ndim   (in)  number of basis functions
+!!   omp    (in)  (itotps) weight of each point for its own atom
+!!   chp    (in)  (itotps,ndim) basis functions at the points
+!!   sat    (in)  (ndim,ndim,nat) atomic overlap matrices
+!!   wp     (in)  (itotps) integration weights
+!!   omp2   (in)  (itotps,nat) atomic weights of each point
+!!   iueos  (in)  1: GEOS (assignment and .fchk); 0: EFFAO-U
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine effao3d_u(itotps,ndim,omp,chp,sat,wp,omp2,iueos)
 
       use basis_set
@@ -52,6 +36,7 @@
       use integration_grid
       use effao_mod, only: p0,p0net,p0gro,ip0
       use input_options_mod, only: inegefos,inegcubthr
+      use output_mod, only: print_value
 
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -77,7 +62,7 @@
       allocatable :: xneg_fit(:,:)
       allocatable :: Sinv(:,:),cprojfrag(:,:),xfitfrag(:)
       allocatable :: p0sav(:,:),occsav(:,:)
-      character(len=30) :: lbl30
+      allocatable :: occn(:),fitp(:)
       character(len=20) :: ctype
 
       icube = iopt(13)
@@ -93,8 +78,7 @@
 !! triggers this. Hand-tuned for now, expect per-system adjustment.       !!
       xminocc_neg=-0.025d0
 
-      call print_box('DOING EFFAO-3D FROM U FUNCTION')
-      write(*,'(2x,a)') 'EFFAO-U: paired and unpaired densities treated separately'
+      call efo_section_header(0,xminocc)
 
 !! build the total (Pno) and Takatsuka unpaired (Uno) density matrices,  !!
 !! in the AO basis, from the natural orbitals already in ao_matrices.    !!
@@ -102,7 +86,7 @@
       do ii=1,igr
         if(occ_no(ii,ii).ge.thresh) nnorb=nnorb+1
       end do
-      write(*,'(2x,a,1x,i0)') 'Number of natural orbitals (NOs):',nnorb
+      call print_value('Natural orbitals',nnorb)
 
       ALLOCATE(Pno(igr,igr),Uno(igr,igr))
       do mu=1,igr
@@ -120,7 +104,7 @@
 
       ALLOCATE(scr(itotps))
       ALLOCATE(S0(igr,igr),s0all(igr),Sm(igr,igr),Splus(igr,igr))
-      ALLOCATE(c0(igr,igr),pp0(igr,igr))
+      ALLOCATE(c0(igr,igr),pp0(igr,igr),occn(igr),fitp(igr))
       if(iueos.eq.1) ALLOCATE(iup0(2,icufr),up0net(2,igr,icufr),up0gro(2,igr,icufr),
      +  up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2))
       if(iueos.eq.1) ALLOCATE(ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr),
@@ -135,9 +119,9 @@
 !! icase=1: paired density (total-unpaired). icase=2: unpaired density. !!
       do icase=1,2
         if(icase.eq.1) then
-          call print_box('EFFAOs FROM THE PAIRED DENSITY')
+          call print_box('PAIRED DENSITY')
         else if(icase.eq.2) then
-          call print_box('EFFAOs FROM THE UNPAIRED DENSITY')
+          call print_box('UNPAIRED DENSITY')
         end if
 
 !! per-fragment loop kept serial on purpose: icufr can be small on a    !!
@@ -230,14 +214,6 @@
             end do
           end do
 
-          write(*,'(2x,a11,x,i3,x,a2)') "** FRAGMENT",iicenter,"**"
-          write(*,*)
-          lbl30="Net occupation for fragment"
-          write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xmaxo
-          write(*,'(2x,a22,x,f10.5)') "Net occupation using >",xminocc
-          write(*,60) (pp0(mu,mu),mu=1,imaxo)
-          write(*,*)
-
 !! gross occupation of each EFO via sat, scaled by its net occupation.  !!
 !! parallel over ii: independent per EFO, writes only s0all(ii); xx0 is !!
 !! a genuine REDUCTION. c0/sat/pp0 shared, read-only.                   !!
@@ -260,9 +236,6 @@
             xx0=xx0+xxx
           end do
 !$OMP END PARALLEL DO
-          lbl30="Gross occupation for fragment"
-          write(*,'(2x,a30,i4,f11.5)') lbl30,iicenter,xx0
-          write(*,60) (s0all(mu),mu=1,imaxo)
 
 !! gross occupation of the significant-negative-occupation EFOs found     !!
 !! above (paired channel only) -- same sat contraction as the positive    !!
@@ -301,17 +274,21 @@
           if(iueos.eq.1.and.icase.eq.1) ineg_frg(iicenter)=ineg
 
 !! store for cube generation (raw c0 -- cubegen_new applies the fragment !!
-!! weight itself) and, if requested, for ueos_analysis (projected, for   !!
-!! the .fchk). FIT % = 100*(1-xfit), per EFO, right under the gross rows !!
+!! weight itself) and, with GEOS, for ueos_analysis (projected, for the  !!
+!! .fchk); Fit (%) = 100*(1-xfit), per EFO                               !!
           if(iueos.eq.1.and.imaxo.gt.0) then
             call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +        c0,1,imaxo,cprojfrag,xfitfrag)
-            write(*,61) (100.0d0*(1.0d0-xfitfrag(mu)),mu=1,imaxo)
+            do mu=1,imaxo
+              fitp(mu)=100.0d0*(1.0d0-xfitfrag(mu))
+            end do
           end if
-          write(*,62) xnetall-xmaxo,xgroall-xx0
-
-!! just for printing purposes... style of the output !!
-          if(.not.(icase.eq.1.and.iicenter.eq.icufr)) write(*,*)
+          do mu=1,imaxo
+            occn(mu)=pp0(mu,mu)
+          end do
+          if(iicenter.gt.1) write(*,'(a)') ''
+          call print_efo_block('Fragment',iicenter,imaxo,xmaxo,occn,
+     +      .true.,xx0,s0all,iueos.eq.1,fitp,xnetall-xmaxo,xgroall-xx0)
           do kk=1,imaxo
             do mu=1,igr
               p0(mu,kk)=c0(mu,kk)
@@ -418,7 +395,7 @@
       end if
 
       DEALLOCATE(S0,Splus,Sm)
-      DEALLOCATE(scr,c0,pp0,s0all)
+      DEALLOCATE(scr,c0,pp0,s0all,occn,fitp)
       DEALLOCATE(Pno,Uno)
       if(iueos.eq.1) then
         DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef)
@@ -426,48 +403,35 @@
         DEALLOCATE(Sinv,cprojfrag,xfitfrag)
       end if
 
-60    FORMAT("  OCCUP.",8f9.4)
-61    FORMAT("  FIT % ",8f9.2)
-62    FORMAT("  Left out by the cutoff (net / gross):",2f11.5)
-
       end
 
 !! ****** !!
 
-!! ********************************************************************* !!
-!! subroutine: ueos_analysis                                             !!
-!! purpose: pools every fragment's paired and unpaired EFO gross         !!
-!!   occupations (from effao3d_u above), assigns integer electrons (2    !!
-!!   per paired EFO, 1 per unpaired) to whichever pooled slots minimize  !!
-!!   the RMSD against these occupations, then derives fragment           !!
-!!   oxidation states from the resulting electron counts. Also pools     !!
-!!   and sorts each EFO's coefficient vector the same way, truncated to  !!
-!!   igr and zero-padded, feeding the shared .fchk EFO splicer           !!
-!!   (print.f's rwf/uwf_effao_orbprint), also used by plain EOS.         !!
-!! arguments:                                                            !!
-!!   iup0    (in)  -- number of EFOs kept per (channel, fragment)        !!
-!!   up0gro  (in)  -- gross occupation of each EFO, per (channel, index, !!
-!!                    fragment)                                          !!
-!!   up0coef (in)  -- AO coefficients of each EFO, per (basis fn, index, !!
-!!                    channel, fragment)                                 !!
-!!   poolcoef (out) -- pooled+sorted EFO coefficients, per (basis fn,    !!
-!!                    pooled index truncated to igr, channel)            !!
-!!   ineg_frg (in) -- number of significant-negative-occupation paired   !!
-!!                    EFOs found per fragment (effao3d_u)                !!
-!!   xneg_net (in) -- their net occupation, per (index, fragment)        !!
-!!   xneg_gro (in) -- their gross occupation, per (index, fragment)      !!
-!!   cneg     (in) -- their AO coefficients, per (basis fn, index,       !!
-!!                    fragment)                                          !!
-!!   xminocc_neg (in) -- the negative-occupation threshold, for the      !!
-!!                    console report below                               !!
-!!   xneg_fit (in) -- reproject_efos_ao's fit fraction for each, per     !!
-!!                    (index, fragment) -- printed as "% recovered"      !!
-!!                    alongside the console report                       !!
-!! author: MGimf                                                         !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: ueos_analysis
+!! GEOS electron assignment: pools the paired and unpaired EFOs of all
+!! fragments, sorted by gross occupation; starts from every electron
+!! paired (except the |Na-Nb| unpaired ones) and moves one pair at a
+!! time to the two most occupied unpaired EFOs while that lowers the
+!! RMSD between occupations and assigned electrons; prints both
+!! channels, the oxidation states and R, and orders the EFOs (negative
+!! paired ones last) for the .fchk file.
+!! arguments:
+!!   iup0     (in)   (2,icufr) EFOs kept per channel and fragment
+!!   up0gro   (in)   (2,igr,icufr) their gross occupations
+!!   up0coef  (in)   (igr,igr,2,icufr) their coefficients (reprojected)
+!!   poolcoef (out)  (igr,igr,2) pooled coefficients, .fchk order
+!!   ineg_frg (in)   (icufr) negative paired EFOs of each fragment
+!!   xneg_net, xneg_gro (in)  (igr,icufr) their net, gross occupations
+!!   cneg     (in)   (igr,igr,icufr) their coefficients
+!!   xminocc_neg (in)  net occupation below which a paired EFO is negative
+!!   xneg_fit (in)   (igr,icufr) fit fraction of each negative EFO
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine ueos_analysis(iup0,up0gro,up0coef,poolcoef,
      +  ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit)
 
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 
@@ -493,6 +457,7 @@
       dimension npool(2)
       allocatable :: xnegnet_pool(:),xneggro_pool(:),neg_frg(:),neg_slot(:)
       logical lfound
+      character*60 cval
 
 !! pool every fragment's EFOs into one list per channel (1=paired,      !!
 !! 2=unpaired); iorbslot keeps each pooled slot's local (within-        !!
@@ -509,7 +474,8 @@
         end do
         lorb(icase)=iorb
       end do
-      write(*,'(2x,a38,x,i4)') "Total number of eff-AO-s for analysis:",lorb(1)+lorb(2)
+      call print_box('GEOS ELECTRON ASSIGNMENT')
+      call print_value('EFOs in the assignment',lorb(1)+lorb(2))
 
 !! sort each channel's pooled EFOs by decreasing occupation, keeping    !!
 !! iorbat/iorbslot aligned so each slot still knows its source fragment !!
@@ -595,18 +561,18 @@
           end do
         end do
 
-        write(*,*)
-        write(*,'(2x,a,i0,a)') 'Found ',nneg,
-     +    ' EFO(s) with significant negative occupation in the paired channel'
-        write(*,'(2x,a,f7.4,a)') '(net occupation < ',xminocc_neg,
-     +    '), excluded from oxidation-state assignment:'
+        write(*,'(2x,a,i0,a,f7.4,a)') 'WARNING: ',nneg,' paired '//
+     +    'EFO(s) with net occupation below ',xminocc_neg,
+     +    ' left out of the assignment'
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Frag.  Net occ.  Gross occ.  Recovered (%)'
+        write(*,'(2x,a)') repeat('-',42)
         do ii=1,nneg
-          write(*,'(4x,a,i0,3x,a,f8.4,3x,a,f8.4,3x,a,f6.2)') 'Frag. ',
-     +      neg_frg(ii),' Net occ. ',xnegnet_pool(ii),' Gross occ. ',
-     +      xneggro_pool(ii),' % recovered ',
+          write(*,'(2x,i5,f10.4,f12.4,f15.2)') neg_frg(ii),
+     +      xnegnet_pool(ii),xneggro_pool(ii),
      +      100.0d0*(1.0d0-xneg_fit(neg_slot(ii),neg_frg(ii)))
         end do
-        write(*,*)
+        write(*,'(2x,a)') repeat('-',42)
       end if
 
 !! pooled coefficient matrix per channel, in the sorted order above,    !!
@@ -679,8 +645,10 @@
         elec_id(ii,1)=TWO
         nnn=nnn-2
       end do
-      write(*,'(2x,a,i0,a,i0,a)') 'Ideal assignment: ',nunp,
-     +  ' forced-unpaired electron(s), ',npair,' electron pair(s)'
+      write(*,'(a)') ''
+      write(cval,'(i0,a,i0,a)') npair,' electron pairs, ',nunp,
+     +  ' unpaired electrons'
+      call print_value('Ideal assignment',trim(cval))
 
 !! RMSD between the actual pooled occupations and this ideal assignment !!
       xrmsd=ZERO
@@ -693,14 +661,22 @@
       end do
       xrmsd=xrmsd/REAL(nalf+nb)
       xrmsd=dsqrt(xrmsd)
-      write(*,'(2x,a,f8.5)') 'Initial RMSD:',xrmsd
-      write(*,*)
+      call print_value('RMSD of the ideal assignment',xrmsd,5)
 
 !! iteratively move the least-occupied paired electron pair to the two  !!
 !! most-occupied unpaired slots, keeping the move only while it lowers  !!
 !! the RMSD. code stops at the first move that doesn't help.            !!
       ALLOCATE(tmp_elec_id(ilorb,2))
       tmp_elec_id=elec_id
+      if(npair.gt.0) then
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Pairs moved to the unpaired density '//
+     +    '(kept while the RMSD decreases):'
+        write(*,'(2x,a)') 'Try  Frag.  Paired  Frag.  Unpaired  '//
+     +    'Frag.  Unpaired     RMSD  Result'
+        write(*,'(2x,a)') repeat('-',71)
+      end if
+      itry=0
       do while(npair.gt.0)
         tmp_elec_id(npair,1)=ZERO
         tmp_elec_id(nunp+1,2)=ONE
@@ -717,17 +693,17 @@
         xrmsd2=xrmsd2/REAL(nalf+nb)
         xrmsd2=dsqrt(xrmsd2)
 
-        write(*,'(2x,a,i0,a,f7.4,a,i0,a,f7.4,a,i0,a,f7.4,a)')
-     +    'Trying: paired EFO (frag ',iorbat(npair,1),', occ ',elec2(npair,1),
-     +    ') -> unpaired (frag ',iorbat(nunp+1,2),', occ ',elec2(nunp+1,2),
-     +    ' / frag ',iorbat(nunp+2,2),', occ ',elec2(nunp+2,2),')'
+        itry=itry+1
         if((xrmsd2-xrmsd).lt.ZERO) then
-          write(*,'(4x,a,f8.5,a)') 'RMSD = ',xrmsd2,' -- accepted'
+          write(*,100) itry,iorbat(npair,1),elec2(npair,1),
+     +      iorbat(nunp+1,2),elec2(nunp+1,2),iorbat(nunp+2,2),
+     +      elec2(nunp+2,2),xrmsd2,'accepted'
           elec_id=tmp_elec_id
           xrmsd=xrmsd2
         else
-          write(*,'(4x,a,f8.5,a,f8.5)') 'RMSD = ',xrmsd2,
-     +      ' -- rejected, keeping RMSD = ',xrmsd
+          write(*,100) itry,iorbat(npair,1),elec2(npair,1),
+     +      iorbat(nunp+1,2),elec2(nunp+1,2),iorbat(nunp+2,2),
+     +      elec2(nunp+2,2),xrmsd2,'rejected'
           go to 69
         end if
 
@@ -735,7 +711,8 @@
         npair=npair-1
       end do
 69    continue
-      write(*,*)
+      if(itry.gt.0) write(*,'(2x,a)') repeat('-',71)
+      call print_value('RMSD of the electron assignment',xrmsd,5)
       DEALLOCATE(tmp_elec_id)
 
 !! electrons assigned to each fragment, split by paired/unpaired for    !!
@@ -760,20 +737,12 @@
       npool(2)=lorb(2)
       if(nneg.gt.0) lorb(1)=MAX(lorb(1),nindep)
 
-      write(*,'(2x,a)') 'Electrons assigned per fragment (paired / unpaired):'
-      do ifrg=1,icufr
-        write(*,'(4x,a,i0,a,f5.2,a,f5.2)') 'Fragment ',ifrg,': ',
-     +    elec_frg_count(ifrg,1),' / ',elec_frg_count(ifrg,2)
-      end do
-
       do icase=1,2
         if(icase.eq.1) then
-          call print_box('EOS ANALYSIS FOR PAIRED ELECTRONS')
+          call print_box('GEOS, PAIRED ELECTRONS')
         else if(icase.eq.2) then
-          call print_box('EOS ANALYSIS FOR UNPAIRED ELECTRONS')
+          call print_box('GEOS, UNPAIRED ELECTRONS')
         end if
-        write(*,*) "  Frag.  Elect.  Last occ.  First unocc.  "
-        write(*,*) " ---------------------------------------- "
 
 !! last occupied / first unoccupied EFO gross occupation per fragment, !!
 !! as in effao.f's eos_analysis: with nn its occupied EFOs (pairs in    !!
@@ -811,11 +780,6 @@
         if(icase.eq.2) xlast=ONE
         ilast=0
         do ifrg=1,icufr
-          if(ifu(ifrg).eq.0) then
-            write(*,10) ifrg,elec_frg_count(ifrg,icase),xlo(ifrg)
-          else
-            write(*,15) ifrg,elec_frg_count(ifrg,icase),xlo(ifrg),xfu(ifrg)
-          end if
           if(ilo(ifrg).eq.1) then
             if(xlo(ifrg).lt.xlast) then
               xlast=xlo(ifrg)
@@ -830,16 +794,15 @@
             if(xfu(ifrg).gt.xfirst) xfirst=xfu(ifrg)
           end if
         end do
-        write(*,*) " ---------------------------------------- "
 
 !! reliability index: paired occupations run 0-2 instead of 0-1, so the !!
 !! gap is halved before the same +0.5 scaling used for unpaired/EOS.    !!
         if(icase.eq.1) confi=100.0*dmin1(1.0d0,(xlast-xfirst)/TWO+0.5d0)
         if(icase.eq.2) confi=100.0*dmin1(1.0d0,xlast-xfirst+0.5d0)
-        write(*,'(3x,a24,x,f7.3)') "RELIABILITY INDEX R(%) =",confi
+        call print_eos_frontier(icufr,elec_frg_count(1,icase),xlo,ilo,
+     +    xfu,ifu,confi)
         if(icase.eq.1) then
-          write(*,*)
-          write(*,'(2x,a)') 'INFO: (paired) occ. values halved in R(%) calculation'
+          write(*,'(2x,a)') 'Paired occupations (0 to 2) are halved in R'
           confi0=confi
         end if
       end do
@@ -854,26 +817,13 @@
         zztot=zztot+oxi(ifrg)
       end do
 
-      call print_box('FRAGMENT OXIDATION STATES')
-      write(*,*) "  Frag.  Oxidation State  "
-      write(*,*) " ------------------------ "
-      do ifrg=1,icufr
-        write(*,20) ifrg,oxi(ifrg)
-      end do
-      write(*,*) " ------------------------ "
-      write(*,'(3x,a4,x,f4.1)') "Sum:",zztot
-      write(*,*)
-
       confi2=dmin1(confi,confi0)
-      write(*,'(2x,a32,x,f7.3)') "OVERALL RELIABILITY INDEX R(%) =",confi2
-      write(*,'(2x,a34,x,f7.3)') "ELECTRONIC ASSIGNMENT RMSD VALUE =",xrmsd
+      call print_oxidation_states(icufr,oxi,zztot,.true.,confi2)
 
       DEALLOCATE(elec_id,elec2,elec_frg_count)
       if(nneg.gt.0) DEALLOCATE(xnegnet_pool,xneggro_pool,neg_frg,neg_slot)
 
-10    FORMAT(3x,i3,3x,f6.2,4x,f12.3,'    < thresh',2f12.3)
-15    FORMAT(3x,i3,3x,f6.2,4x,f6.3,4x,f6.3)
-20    FORMAT(3x,i3,6x,f8.2)
+100   FORMAT(2x,i3,i7,f8.4,i7,f10.4,i7,f10.4,f9.5,2x,a)
 
       end
 
