@@ -10,6 +10,7 @@
 !!                              by both drivers
 !!   oslo_fchk_write         -- the OSLO .fchk files (FOLI as orbital
 !!                              energies)
+!!   oslo_json_scheme, oslo_json_file, json_oslo_channel -- results file
 !!   rwf_uwf_orbpop_atom, rwf_uwf_frg_pop -- orbital populations per atom
 !!                              and per fragment (also used by LOBA)
 !! ----------------------------------------------------------------------
@@ -676,8 +677,8 @@
 !! subroutine: rwf_iterative_oslo
 !! OSLO oxidation states of a restricted (closed-shell) determinant: one
 !! channel of doubly occupied orbitals (oslo_channel_iterate), the OSLO
-!! .fchk files, the summary of the selected OSLOs and the oxidation
-!! states.
+!! .fchk files, the summary of the selected OSLOs, the oxidation states
+!! and the oslo block of the results file.
 !! arguments:
 !!   sat    (in)  (igr,igr,nat) atomic overlap matrices
 !!   itotps (in)  number of grid points
@@ -693,6 +694,7 @@
       use ao_matrices
       use integration_grid
       use input_options_mod, only: nbranch,ibranchit
+      use json_mod
       implicit double precision(a-h,o-z)
       include 'parameter.h'
 
@@ -751,6 +753,19 @@
 !! each assigned orbital holds two electrons !!
       call oslo_oxidation_states(frgel,TWO,frgel,ZERO,oxi)
 
+      call json_begin_object('oslo')
+      call oslo_json_scheme()
+      call json_oslo_channel('total',nocc,delocoslo,iterosl,shrosl)
+      call json_begin_object('fragments')
+      call json_vector('oxidation_states',oxi,icufr)
+      call json_index('oxidation_states','fragment_vector',
+     +  'OSLO oxidation states',' ',2,'total',.true.,' ')
+      call json_vector('electrons',TWO*frgel,icufr)
+      call json_index('electrons','fragment_vector',
+     +  'OSLO electrons',' ',2,'total',.false.,' ')
+      call json_end()
+      call oslo_json_file()
+      call json_end()
 
       DEALLOCATE(coslo,cosloorth,delocoslo,frgel,oxi,iterosl,shrosl)
 
@@ -763,8 +778,8 @@
 !! OSLO oxidation states of an unrestricted determinant: the alpha and
 !! beta channels separately (oslo_channel_iterate), with the branching
 !! iterations of each (BRANCH_ITERATION plus BRANCH_ALPHA/BRANCH_BETA),
-!! one OSLO .fchk file with both, the summaries and the oxidation
-!! states.
+!! one OSLO .fchk file with both, the summaries, the oxidation states and
+!! the oslo block of the results file.
 !! arguments: as rwf_iterative_oslo
 !! author: MGimf
 !! ----------------------------------------------------------------------
@@ -775,6 +790,7 @@
       use integration_grid
       use input_options_mod, only: maxbranch,nbranch,ibranchit
       use output_mod, only: print_value
+      use json_mod
       implicit double precision(a-h,o-z)
       include 'parameter.h'
 
@@ -869,6 +885,24 @@
 !! each assigned spin-orbital holds one electron !!
       call oslo_oxidation_states(frgel_a,ONE,frgel_b,ONE,oxi)
 
+      call json_begin_object('oslo')
+      call oslo_json_scheme()
+      call json_oslo_channel('alpha',nalf,delocoslo_a,iterosl_a,
+     +  shrosl_a)
+      call json_oslo_channel('beta',nb,delocoslo_b,iterosl_b,shrosl_b)
+      call json_begin_object('fragments')
+      call json_vector('oxidation_states',oxi,icufr)
+      call json_index('oxidation_states','fragment_vector',
+     +  'OSLO oxidation states',' ',2,'total',.true.,' ')
+      call json_vector('electrons_alpha',frgel_a,icufr)
+      call json_index('electrons_alpha','fragment_vector',
+     +  'OSLO electrons, alpha',' ',2,'alpha',.false.,' ')
+      call json_vector('electrons_beta',frgel_b,icufr)
+      call json_index('electrons_beta','fragment_vector',
+     +  'OSLO electrons, beta',' ',2,'beta',.false.,' ')
+      call json_end()
+      call oslo_json_file()
+      call json_end()
 
       DEALLOCATE(coslo_a,cosloorth_a,delocoslo_a,frgel_a,oxi)
       DEALLOCATE(coslo_b,cosloorth_b,delocoslo_b,frgel_b)
@@ -1142,6 +1176,150 @@
 12    FORMAT(a17,26x,a1,3x,a3,i11)
 13    FORMAT(5(1p,e16.8))
 
+      end
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_json_scheme
+!! Results file: the atomic definition of the spreads and the atoms of
+!! the fragment populations, in the current (oslo) object.
+!! arguments: none
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine oslo_json_scheme()
+      use input_options_mod, only: ilow2
+      use json_mod
+      implicit double precision(a-h,o-z)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      call json_value('scheme',trim(ckey))
+      if(ilow2.eq.1) then
+        call json_value('fragment_populations','MULLIKEN')
+      else if(ilow2.eq.2) then
+        call json_value('fragment_populations','LOWDIN')
+      else if(ilow2.eq.3) then
+        call json_value('fragment_populations','LOWDIN-DAVIDSON')
+      else if(ilow2.eq.6) then
+        call json_value('fragment_populations','NAO-BASIS')
+      else
+        call json_value('fragment_populations',trim(ckey))
+      end if
+      end
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: oslo_json_file
+!! Results file: the name of the OSLO .fchk file (no folder).
+!! arguments: none
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine oslo_json_file()
+      use json_mod
+      implicit double precision(a-h,o-z)
+      common /filename/name0
+      character*60 name0
+      character*80 cfile
+
+      cfile=trim(name0)//'-OSLOs.fchk'
+      cfile=cfile(index(cfile,'/',back=.true.)+1:)
+      call json_value('orbital_file',trim(cfile))
+      end
+
+!! ****** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_oslo_channel
+!! Results file: one channel of the oslo block, the sum of its FOLI
+!! values and the "oslos" table, one row per OSLO in the order of the
+!! channel's orbitals in the .fchk file: iteration, FOLI value, the
+!! fragments it was assigned to and their shares, and its column.
+!! arguments:
+!!   ckey    (in)  'total' (restricted), 'alpha' or 'beta'
+!!   nel     (in)  number of OSLOs
+!!   foli    (in)  (nel) FOLI values
+!!   iterosl (in)  (nel) iterations
+!!   shrosl  (in)  (icufr,nel) share of each fragment in each OSLO
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_oslo_channel(ckey,nel,foli,iterosl,shrosl)
+      use json_mod
+      implicit double precision(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
+      character*(*) ckey
+      dimension foli(*),shrosl(icufr,*)
+      integer iterosl(*)
+      integer, allocatable :: ifr(:),icol(:)
+      real*8, allocatable :: xs(:)
+      logical, allocatable :: lcol(:)
+      logical lfound
+
+      ncolf=min(igr,int_locate(15,"Number of independ",lfound))
+      xsum=ZERO
+      do k=1,nel
+        xsum=xsum+foli(k)
+      end do
+      call json_begin_object(ckey)
+      call json_value('sum_foli',xsum)
+      call json_index('sum_foli','scalar','Sum of the FOLI values, '//
+     +  ckey,' ',5,ckey,.false.,' ')
+      call json_begin_object('oslos')
+      call json_value('rows','orbital')
+      call json_value('n_rows',nel)
+      call json_begin_array('columns')
+      call json_column('iteration','Iteration',' ',0,.false.)
+      call json_column('foli','FOLI',' ',5,.false.)
+      call json_column('fragments','Fragments',' ',0,.false.)
+      call json_column('shares','Fragment shares',' ',5,.false.)
+      call json_column('fchk_column','Column in the .fchk file',' ',0,
+     +  .false.)
+      call json_end()
+      call json_begin_object('data')
+      call json_vector('iteration',iterosl(1:nel),nel)
+      call json_vector('foli',foli(1:nel),nel)
+      ALLOCATE(ifr(icufr),xs(icufr))
+      call json_begin_array('fragments')
+      do k=1,nel
+        n=0
+        do ifrg=1,icufr
+          if(shrosl(ifrg,k).gt.1.0d-12) then
+            n=n+1
+            ifr(n)=ifrg
+          end if
+        end do
+        call json_vector('',ifr(1:n),n)
+      end do
+      call json_end()
+      call json_begin_array('shares')
+      do k=1,nel
+        n=0
+        do ifrg=1,icufr
+          if(shrosl(ifrg,k).gt.1.0d-12) then
+            n=n+1
+            xs(n)=shrosl(ifrg,k)
+          end if
+        end do
+        call json_vector('',xs(1:n),n)
+      end do
+      call json_end()
+      ALLOCATE(icol(nel),lcol(nel))
+      do k=1,nel
+        icol(k)=k
+        lcol(k)=k.le.ncolf
+      end do
+      call json_vector_or_null('fchk_column',icol,lcol,nel)
+      call json_end()
+      call json_end()
+      call json_index('oslos','table','OSLOs, '//ckey,' ',-1,ckey,
+     +  .false.,' ')
+      call json_end()
+      DEALLOCATE(ifr,xs,icol,lcol)
       end
 
 !! ****** !!

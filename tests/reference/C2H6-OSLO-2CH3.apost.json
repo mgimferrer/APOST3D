@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.6",
+  "schema_version": "0.7",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -111,6 +111,86 @@
         "valence_bonded": [7.5647302688982654E+000, 7.5647302688982645E+000],
         "valence_free": [1.7274893540248915E-003, 1.7274893539829250E-003]
       }
+    },
+    "oslo": {
+      "scheme": "TFVC",
+      "fragment_populations": "TFVC",
+      "total": {
+        "sum_foli": 1.0213666927341873E+001,
+        "oslos": {
+          "rows": "orbital",
+          "n_rows": 9,
+          "columns": [
+            {
+              "key": "iteration",
+              "title": "Iteration",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "foli",
+              "title": "FOLI",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "iteration": [1, 1, 2, 2, 3, 3, 3, 3, 4],
+            "foli": [1.0001020209354887E+000, 1.0001020209354372E+000, 1.0279066422830232E+000, 1.0279066422830367E+000, 1.0386959748404863E+000, 1.0395551007506281E+000, 1.0386959748405020E+000, 1.0395551007506374E+000, 2.0011474497226334E+000],
+            "fragments": [
+              [1],
+              [2],
+              [1],
+              [2],
+              [1],
+              [1],
+              [2],
+              [2],
+              [1, 2]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [5.0000000000000067E-001, 4.9999999999999944E-001]
+            ],
+            "fchk_column": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+          }
+        }
+      },
+      "fragments": {
+        "oxidation_states": [0.0000000000000000E+000, 0.0000000000000000E+000],
+        "electrons": [9.0000000000000018E+000, 8.9999999999999982E+000]
+      },
+      "orbital_file": "C2H6-OSLO-2CH3-OSLOs.fchk"
     }
   },
   "index": [
@@ -293,13 +373,57 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "oslo.total.sum_foli",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/total/sum_foli",
+      "kind": "scalar",
+      "title": "Sum of the FOLI values, total",
+      "unit": null,
+      "decimals": 5,
+      "signed": false
+    },
+    {
+      "id": "oslo.total.oslos",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/total/oslos",
+      "kind": "table",
+      "title": "OSLOs, total",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "oslo.fragments.oxidation_states",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "OSLO oxidation states",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "oslo.fragments.electrons",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "OSLO electrons",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "C2H6-OSLO-2CH3",
     "input_file": "C2H6-OSLO-2CH3.inp",
     "wavefunction_file": "C2H6-OSLO-2CH3.fchk",
-    "date": "2026-10-14T17:54:27+02:00",
+    "date": "2026-10-14T19:12:27+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

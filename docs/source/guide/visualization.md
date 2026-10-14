@@ -39,8 +39,9 @@ each (0 after the last OSLO). In the EFO files:
 - the orbitals of all fragments are sorted together by decreasing gross
   occupation, and the **"orbital energy" field holds the gross
   occupation**, so the viewer's orbital list reads as an occupation list;
-- fragment labels are not stored: match an orbital to its fragment
-  through its occupation and the main output;
+- fragment labels are not stored in the file: the results file
+  (`<jobname>.apost.json`) maps every orbital to its fragment, and so
+  does the main output through the occupations;
 - the densities in the file are the original ones, not built from the
   EFOs.
 

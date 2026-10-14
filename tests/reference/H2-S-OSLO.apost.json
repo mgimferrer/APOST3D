@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.6",
+  "schema_version": "0.7",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -103,6 +103,126 @@
         "valence_bonded": [1.0000039088374284E+000, 1.0000039088374284E+000],
         "valence_free": [-3.9088412318033505E-006, -3.9088412306931275E-006]
       }
+    },
+    "oslo": {
+      "scheme": "TFVC",
+      "fragment_populations": "TFVC",
+      "alpha": {
+        "sum_foli": 1.9999941351054100E+000,
+        "oslos": {
+          "rows": "orbital",
+          "n_rows": 1,
+          "columns": [
+            {
+              "key": "iteration",
+              "title": "Iteration",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "foli",
+              "title": "FOLI",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "iteration": [1],
+            "foli": [1.9999941351054100E+000],
+            "fragments": [
+              [1, 2]
+            ],
+            "shares": [
+              [4.9999999999999895E-001, 5.0000000000000100E-001]
+            ],
+            "fchk_column": [1]
+          }
+        }
+      },
+      "beta": {
+        "sum_foli": 1.9999941384224182E+000,
+        "oslos": {
+          "rows": "orbital",
+          "n_rows": 1,
+          "columns": [
+            {
+              "key": "iteration",
+              "title": "Iteration",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "foli",
+              "title": "FOLI",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "iteration": [1],
+            "foli": [1.9999941384224182E+000],
+            "fragments": [
+              [1, 2]
+            ],
+            "shares": [
+              [4.9999999999999895E-001, 5.0000000000000089E-001]
+            ],
+            "fchk_column": [1]
+          }
+        }
+      },
+      "fragments": {
+        "oxidation_states": [0.0000000000000000E+000, 0.0000000000000000E+000],
+        "electrons_alpha": [4.9999999999999895E-001, 5.0000000000000100E-001],
+        "electrons_beta": [4.9999999999999895E-001, 5.0000000000000089E-001]
+      },
+      "orbital_file": "H2-S-OSLO-OSLOs.fchk"
     }
   },
   "index": [
@@ -331,13 +451,90 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "oslo.alpha.sum_foli",
+      "analysis": "oslo",
+      "spin": "alpha",
+      "path": "/analyses/oslo/alpha/sum_foli",
+      "kind": "scalar",
+      "title": "Sum of the FOLI values, alpha",
+      "unit": null,
+      "decimals": 5,
+      "signed": false
+    },
+    {
+      "id": "oslo.alpha.oslos",
+      "analysis": "oslo",
+      "spin": "alpha",
+      "path": "/analyses/oslo/alpha/oslos",
+      "kind": "table",
+      "title": "OSLOs, alpha",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "oslo.beta.sum_foli",
+      "analysis": "oslo",
+      "spin": "beta",
+      "path": "/analyses/oslo/beta/sum_foli",
+      "kind": "scalar",
+      "title": "Sum of the FOLI values, beta",
+      "unit": null,
+      "decimals": 5,
+      "signed": false
+    },
+    {
+      "id": "oslo.beta.oslos",
+      "analysis": "oslo",
+      "spin": "beta",
+      "path": "/analyses/oslo/beta/oslos",
+      "kind": "table",
+      "title": "OSLOs, beta",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "oslo.fragments.oxidation_states",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "OSLO oxidation states",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "oslo.fragments.electrons_alpha",
+      "analysis": "oslo",
+      "spin": "alpha",
+      "path": "/analyses/oslo/fragments/electrons_alpha",
+      "kind": "fragment_vector",
+      "title": "OSLO electrons, alpha",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "oslo.fragments.electrons_beta",
+      "analysis": "oslo",
+      "spin": "beta",
+      "path": "/analyses/oslo/fragments/electrons_beta",
+      "kind": "fragment_vector",
+      "title": "OSLO electrons, beta",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
     }
   ],
   "run": {
     "job_name": "H2-S-OSLO",
     "input_file": "H2-S-OSLO.inp",
     "wavefunction_file": "H2-S-OSLO.fchk",
-    "date": "2026-10-14T17:54:29+02:00",
+    "date": "2026-10-14T19:12:29+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

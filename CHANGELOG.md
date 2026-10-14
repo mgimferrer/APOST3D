@@ -12,9 +12,9 @@ program, not a full development history — see `git log` for that.
   results in a machine-readable file, for the APOST3Dview visualizer and
   scripts: the wavefunction summary, the input, the molecule and the
   fragments, the populations, bond orders, valences, local spin
-  analysis, effective fragment orbitals, EOS and GEOS (with the orbitals
-  of the EFO `.fchk` files mapped to their fragments), with the other
-  analyses to be added. A run that
+  analysis, effective fragment orbitals, EOS, GEOS and OSLO (with the
+  orbitals of the EFO and OSLO `.fchk` files mapped to their fragments),
+  with the other analyses to be added. A run that
   stops on an error still writes a complete file that says so. See
   "Results file (JSON)" in the developer guide.
 - **GEOS (Generalized Effective Oxidation States)** — a new open-shell

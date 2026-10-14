@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.6",
+  "schema_version": "0.7",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -164,7 +164,7 @@
     "job_name": "HI-ECP-pySCF",
     "input_file": "HI-ECP-pySCF.inp",
     "wavefunction_file": "HI-ECP-pySCF.fchk",
-    "date": "2026-10-14T17:55:11+02:00",
+    "date": "2026-10-14T19:13:12+02:00",
     "threads": 8,
     "status": "normal",
     "stop_message": null
