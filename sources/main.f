@@ -743,6 +743,17 @@ c      iopt(200) =
           end do
         end if
 
+!! beta EFOs computed separately (open shell, or a correlated          !!
+!! wavefunction with a spin density; the test differs between the      !!
+!! Hilbert-space and real-space paths)                                 !!
+        idobeta=0
+        if(imulli.ge.1) then
+          if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) idobeta=1
+        else
+          if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) idobeta=1
+        end if
+        if(ieffao.ne.3) call efo_section_header(idobeta)
+
 !! Mulliken !!
         if(imulli.eq.1) then
           if(ieffao.eq.1) then
@@ -758,10 +769,7 @@ c      iopt(200) =
               xeos_cpu=xeos_cpu+(xeos2-xeos1)
               xeos_wall=xeos_wall+(wxeos2-wxeos1)
             end if
-            if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
-              call ueffaomull_frag(2)
-              idobeta=1
-            end if
+            if(idobeta.eq.1) call ueffaomull_frag(2)
             if (ieos.eq.1) then
               call cpu_time(xeos1)
               call get_wall_time(wxeos1)
@@ -788,10 +796,7 @@ c      iopt(200) =
               xeos_cpu=xeos_cpu+(xeos2-xeos1)
               xeos_wall=xeos_wall+(wxeos2-wxeos1)
             end if
-            if(kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb)) then
-              call ueffaolow_frag(2)
-              idobeta=1
-            end if
+            if(idobeta.eq.1) call ueffaolow_frag(2)
             if(ieos.eq.1) then
               call cpu_time(xeos1)
               call get_wall_time(wxeos1)
@@ -821,10 +826,6 @@ c      iopt(200) =
             if(ieffao.eq.1) then
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,p,0)
             else if(ieffao.eq.2) then
-              idobeta=0
-              write(*,*)
-              write(*,*) ' UEFFAO: alpha and beta treated separately'
-              write(*,*)
               call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pa,1)
               if(ieos.eq.1) then
                 call cpu_time(xeos1)
@@ -835,8 +836,7 @@ c      iopt(200) =
                 xeos_cpu=xeos_cpu+(xeos2-xeos1)
                 xeos_wall=xeos_wall+(wxeos2-wxeos1)
               end if
-              if(kop.ne.0.or.(icas.eq.1.and.icass.ne.0)) then
-                idobeta=1
+              if(idobeta.eq.1) then
                 call ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pb,2)
               end if
               if(ieos.eq.1) then

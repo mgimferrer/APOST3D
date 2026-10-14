@@ -260,6 +260,16 @@ program, not a full development history — see `git log` for that.
   analysis are `Total unpaired electrons N_D` and `Total <S^2>`, with 6
   decimals like the tables, and the fragment tables follow the atom
   tables they sum. No number changes.
+- **EFFAO and EOS output** — the section starts with the atomic
+  definition, the densities the orbitals come from and the occupation
+  cutoff (printed once instead of in every fragment); each fragment lists
+  its `Net` and `Gross` occupations and `Fit (%)` under clear labels; the
+  assignment of each spin channel is one table with a `Reliability index
+  R (%)` line, a fractional assignment is a warning line instead of a
+  box, and the oxidation-state table ends with a `Total` row and the
+  overall reliability index. A closed-shell run says that the beta
+  electrons are assigned as the alpha ones, and a run without beta
+  electrons says so. No number changes.
 - **`utils/apost3d.py` rewritten** — works with current pySCF (2.7 to 2.14
   checked; before, only up to 2.7) and writes basis sets with g functions,
   single atoms, linearly dependent bases, CASCI, the RDMs of FCI and

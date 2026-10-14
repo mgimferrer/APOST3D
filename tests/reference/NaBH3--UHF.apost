@@ -396,92 +396,81 @@
      5          0.455943          0.000946
   --------------------------------------------
 
-  ------------------------------------
-    DOING EFFAO MULLIKEN FORMULATION
-  ------------------------------------
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
 
-  ---------------------------------
-    EFFAOs FROM THE ALPHA DENSITY
-  ---------------------------------
+  Atomic definition                       : MULLIKEN (Hilbert space)
+  Densities                               : alpha and beta separately
+  EFO occupation cutoff                   :        0.00100
 
-  ** FRAGMENT   1 **
+  -----------------
+    ALPHA DENSITY
+  -----------------
 
-  Net occupation for fragment      1    5.16096
-  Net occupation using >    0.00100
-  OCCUP.   1.0081   1.0000   1.0000   1.0000   0.9999   0.1529
-  Left out by the cutoff (net):    0.00239
+  Fragment 1
+  Net occupation                          :        5.16096
+  Net       1.0081   1.0000   1.0000   1.0000   0.9999   0.1529
+  Left out by the cutoff (net)            :        0.00239
 
-  ** FRAGMENT   2 **
+  Fragment 2
+  Net occupation                          :        4.53857
+  Net       1.0245   1.0000   0.9817   0.9817   0.5505
+  Left out by the cutoff (net)            :        0.00001
 
-  Net occupation for fragment      2    4.53857
-  Net occupation using >    0.00100
-  OCCUP.   1.0245   1.0000   0.9817   0.9817   0.5505
-  Left out by the cutoff (net):    0.00001
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
 
-  Total number of eff-AO-s for analysis:   11
+  EFOs in the assignment                  : 11
+  Electron assignment                     : integer
 
-  -------------------------------------------------
-    EOS: Unambiguous integer electron assignation
-  -------------------------------------------------
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       5.00      1.000         0.153
+      2       5.00      0.551             -
+  -----------------------------------------
+  Reliability index R (%)                 :         89.768
 
-  ------------------------------------
-    EOS ANALYSIS FOR ALPHA ELECTRONS
-  ------------------------------------
+  ----------------
+    BETA DENSITY
+  ----------------
 
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     5.00     1.000     0.153
-     2     5.00     0.551         -
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) =  89.768
+  Fragment 1
+  Net occupation                          :        6.00909
+  Net       1.0107   1.0000   1.0000   1.0000   0.9999   0.9985
+  Left out by the cutoff (net)            :        0.00161
 
-  --------------------------------
-    EFFAOs FROM THE BETA DENSITY
-  --------------------------------
+  Fragment 2
+  Net occupation                          :        3.94623
+  Net       1.0000   0.9860   0.9860   0.9742
+  Left out by the cutoff (net)            :        0.00052
 
-  ** FRAGMENT   1 **
+  -----------------------
+    EOS, BETA ELECTRONS
+  -----------------------
 
-  Net occupation for fragment      1    6.00909
-  Net occupation using >    0.00100
-  OCCUP.   1.0107   1.0000   1.0000   1.0000   0.9999   0.9985
-  Left out by the cutoff (net):    0.00161
+  EFOs in the assignment                  : 10
+  Electron assignment                     : integer
 
-  ** FRAGMENT   2 **
-
-  Net occupation for fragment      2    3.94623
-  Net occupation using >    0.00100
-  OCCUP.   1.0000   0.9860   0.9860   0.9742
-  Left out by the cutoff (net):    0.00052
-
-  Total number of eff-AO-s for analysis:   10
-
-  -------------------------------------------------
-    EOS: Unambiguous integer electron assignation
-  -------------------------------------------------
-
-  -----------------------------------
-    EOS ANALYSIS FOR BETA ELECTRONS
-  -----------------------------------
-
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1     6.00     0.999         -
-     2     4.00     0.974         -
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) = 100.000
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       6.00      0.999             -
+      2       4.00      0.974             -
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          0.00
-     2         -1.00
-  ------------------------ 
-   Total oxidation state:   -1.0
-
-  OVERALL RELIABILITY INDEX R(%) =  89.768
+  Frag.  Oxidation state
+  ----------------------
+      1             0.00
+      2            -1.00
+  ----------------------
+  Total            -1.00
+  Overall reliability index R (%)         :         89.768
 
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s

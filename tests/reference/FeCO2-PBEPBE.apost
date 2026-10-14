@@ -147,8 +147,8 @@
 
   Sum of atomic overlaps, largest error   : 6.16E-04 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.31 s
-  TIMING WALL :: Atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.33 s
+  TIMING WALL :: Atomic definition                                 0.34 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -342,101 +342,93 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  UEFFAO: alpha and beta treated separately
-
-
   --------------------------------------
-    DOING EFFAO-3D GENERAL FORMULATION
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
   --------------------------------------
 
-  ---------------------------------
-    EFFAOs FROM THE ALPHA DENSITY
-  ---------------------------------
+  Atomic definition                       : TFVC (real space)
+  Densities                               : alpha (beta equal to alpha)
+  EFO occupation cutoff                   :        0.00100
 
-  ** FRAGMENT   1 **
+  -----------------
+    ALPHA DENSITY
+  -----------------
 
-  Net occupation for fragment      1   12.11689
-  Net occupation using >    0.00100
-  OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
-  OCCUP.   0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
-  OCCUP.   0.0086   0.0081   0.0018
+  Fragment 1
+  Net occupation                          :       12.11689
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9963   0.9963   0.9957
+            0.9854   0.9816   0.8156   0.8144   0.2759   0.1644   0.0609   0.0120
+            0.0086   0.0081   0.0018
+  Gross occupation                        :       12.27814
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
+            0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
+            0.0124   0.0117   0.0034
+  Fit (%)    99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
+             94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
+             70.62    70.47    58.34
+  Left out by the cutoff (net)            :        0.00007
+  Left out by the cutoff (gross)          :        0.00024
 
-  Gross occupation for fragment    1   12.27814
-  OCCUP.   1.0000   1.0000   1.0000   1.0000   1.0000   0.9978   0.9978   0.9974
-  OCCUP.   0.9908   0.9886   0.8381   0.8374   0.3210   0.1676   0.0981   0.0160
-  OCCUP.   0.0124   0.0117   0.0034
+  Fragment 2
+  Net occupation                          :        6.77837
+  Net       1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
+            0.0708   0.0060   0.0019
+  Gross occupation                        :        6.85638
+  Gross     1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
+            0.0822   0.0112   0.0047
+  Fit (%)    99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
+             76.77    53.13     8.70
+  Left out by the cutoff (net)            :        0.00154
+  Left out by the cutoff (gross)          :        0.00450
 
-  FIT %     99.99    99.99    99.93    99.93    99.90    97.92    97.92    98.89
-  FIT %     94.65    95.36    90.95    90.85    86.78    93.03    59.76    84.76
-  FIT %     70.62    70.47    58.34
-  Left out by the cutoff (net / gross):    0.00007    0.00024
-  ** FRAGMENT   2 **
+  Fragment 3
+  Net occupation                          :        6.77837
+  Net       1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
+            0.0708   0.0060   0.0019
+  Gross occupation                        :        6.85638
+  Gross     1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
+            0.0822   0.0112   0.0047
+  Fit (%)    99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
+             76.77    53.13     8.70
+  Left out by the cutoff (net)            :        0.00154
+  Left out by the cutoff (gross)          :        0.00450
 
-  Net occupation for fragment      2    6.77837
-  Net occupation using >    0.00100
-  OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
-  OCCUP.   0.0708   0.0060   0.0019
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
 
-  Gross occupation for fragment    2    6.85638
-  OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
-  OCCUP.   0.0822   0.0112   0.0047
+  EFOs in the assignment                  : 41
+  Electron assignment                     : integer
 
-  FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
-  FIT %     76.77    53.13     8.70
-  Left out by the cutoff (net / gross):    0.00154    0.00450
-  ** FRAGMENT   3 **
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1      12.00      0.837         0.321
+      2       7.00      0.787         0.084
+      3       7.00      0.787         0.084
+  -----------------------------------------
+  Reliability index R (%)                 :         96.598
 
-  Net occupation for fragment      3    6.77837
-  Net occupation using >    0.00100
-  OCCUP.   1.0000   1.0000   1.0000   0.9914   0.9833   0.9056   0.7473   0.0721
-  OCCUP.   0.0708   0.0060   0.0019
+  ----------------
+    BETA DENSITY
+  ----------------
 
-  Gross occupation for fragment    3    6.85638
-  OCCUP.   1.0000   1.0000   1.0000   0.9928   0.9861   0.9087   0.7870   0.0838
-  OCCUP.   0.0822   0.0112   0.0047
-
-  FIT %     99.96    99.84    99.87    98.43    97.80    97.57    91.51    76.80
-  FIT %     76.77    53.13     8.70
-  Left out by the cutoff (net / gross):    0.00154    0.00450
-  Total number of eff-AO-s for analysis:   41
-
-  -------------------------------------------------
-    EOS: Unambiguous integer electron assignation
-  -------------------------------------------------
-
-  ------------------------------------
-    EOS ANALYSIS FOR ALPHA ELECTRONS
-  ------------------------------------
-
-   Frag.  Elect.  Last occ.  First unocc.  
-  ---------------------------------------- 
-     1    12.00     0.837     0.321
-     2     7.00     0.787     0.084
-     3     7.00     0.787     0.084
-  ---------------------------------------- 
-   RELIABILITY INDEX R(%) =  96.598
-
-  --------------------------------------
-    SKIPPING EFFAOs FOR BETA ELECTRONS
-  --------------------------------------
-
+  The beta density equals the alpha one: the beta electrons are assigned as the alpha ones
 
   -----------------------------
     FRAGMENT OXIDATION STATES
   -----------------------------
 
-   Frag.  Oxidation State  
-  ------------------------ 
-     1          2.00
-     2          0.00
-     3          0.00
-  ------------------------ 
-   Total oxidation state:    2.0
+  Frag.  Oxidation state
+  ----------------------
+      1             2.00
+      2             0.00
+      3             0.00
+  ----------------------
+  Total             2.00
+  Overall reliability index R (%)         :         96.598
 
-  OVERALL RELIABILITY INDEX R(%) =  96.598
-
-  TIMING CPU  :: EFFAO computation                                 0.53 s
-  TIMING WALL :: EFFAO computation                                 0.11 s
+  TIMING CPU  :: EFFAO computation                                 0.52 s
+  TIMING WALL :: EFFAO computation                                 0.55 s
   TIMING CPU  :: EOS analysis                                      0.01 s
   TIMING WALL :: EOS analysis                                      0.01 s
 

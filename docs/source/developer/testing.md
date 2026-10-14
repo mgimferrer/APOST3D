@@ -143,6 +143,10 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2O-TPSS` | Water, RKS TPSS: meta-GGAs are not supported yet, ENPART must stop with a message | `dft enpart tfvc rks meta-gga expected-stop` |
 | `H2O-SVWN` | Water, Gaussian 16 SVWN: predefined functional keyword, LDA family | `dft enpart tfvc rks lda functional-keyword` |
 | `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, BLYP / B3LYP at the default `THREBOD`: 7 weak pairs by the multipolar expansion | `dft enpart tfvc rks threbod multipolar` |
+| `H2-TWO-AIM` | H2 with two atomic definitions in `# METHOD`: the run must stop while reading the input | `input expected-stop` |
+| `CH3F-EOS-LOWDIN` | Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS, beta assigned as alpha | `dft eos effao lowdin rks fragments` |
+| `H2-T-EOS` | H2 triplet, UKS from pySCF: EOS with no beta electrons | `dft eos effao tfvc uks fragments` |
+| `H2-S-EOS` | H2 singlet, UKS from pySCF: EOS with one electron per channel shared between the two atoms (fractional assignment) | `dft eos effao tfvc uks fragments` |
 
 ## Adding a test
 
@@ -173,12 +177,12 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | Integration error (kcal/mol) | `1e-2` |
 | IQA atom and pair terms, charges, populations, spin populations, bond orders, valences | `2e-5` |
 | EFO net/gross occupation (fragment level) | `2e-4` |
-| EFO occupation, per EFO (`OCCUP.` row) | `2e-3` |
+| EFO occupation, per EFO (`Net`/`Gross` rows) | `2e-3` |
 | EOS electrons per fragment, oxidation states | `0.05` |
 | EOS last occupied / first unoccupied occupation | `2e-3` |
 | Reliability index R(%) | `0.02` |
 | OSLO FOLI values | `2e-4` |
-| `FIT %`, `% recovered` | `0.05` |
+| `Fit (%)`, `% recovered` | `0.05` |
 | `Normalization from cube` | `1e-3` |
 
 A manifest check looks like:
