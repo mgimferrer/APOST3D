@@ -1128,6 +1128,8 @@
       rewind(15)
 
       read(15,'(a80)',end=99) line
+      call write_fchk_title(69,ctype)
+      read(15,'(a80)',end=99) line
       do while(.true.)
         if(index(line,"Alpha Orbital Energies").eq.1) then
           write(69,10) "Alpha Orbital Energies","R","N= ",indepigr
@@ -1228,6 +1230,7 @@
       cfile=trim(name0)//'-OSLOs.fchk'
       cfile=cfile(index(cfile,'/',back=.true.)+1:)
       call json_value('orbital_file',trim(cfile))
+      call json_value('orbital_file_id',json_run_id())
       end
 
 !! ****** !!
@@ -1272,6 +1275,12 @@
       call json_begin_object('oslos')
       call json_value('rows','orbital')
       call json_value('n_rows',nel)
+!! the restricted channel is the alpha block of the .fchk file !!
+      if(ckey.eq.'beta') then
+        call json_value('fchk_orbitals','beta')
+      else
+        call json_value('fchk_orbitals','alpha')
+      end if
       call json_begin_array('columns')
       call json_column('iteration','Iteration',' ',0,.false.)
       call json_column('foli','FOLI',' ',5,.false.)

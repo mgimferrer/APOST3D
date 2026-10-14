@@ -889,8 +889,13 @@
           icol(ii)=ii
           lcol(ii)=ii.le.nwin
         end do
-        call json_efo_table(n,ifr,xn,.true.,xg,.true.,xf,.true.,xe,
-     +    icol,lcol,trim(cspin))
+        if(icase.eq.1) then
+          call json_efo_table(n,ifr,xn,.true.,xg,.true.,xf,.true.,xe,
+     +      icol,lcol,trim(cspin),'alpha')
+        else
+          call json_efo_table(n,ifr,xn,.true.,xg,.true.,xf,.true.,xe,
+     +      icol,lcol,trim(cspin),'beta')
+        end if
         deallocate(ifr,icol,xn,xf,xg,xe,lcol)
         call json_end()
       end do
@@ -921,8 +926,10 @@
       call json_begin_object('negative_efos')
       call json_value('rows','orbital')
       call json_value('n_rows',nneg)
+      call json_value('fchk_orbitals','alpha')
       call json_begin_array('columns')
-      call json_column('fragment','Fragment',' ',0,.false.)
+      call json_column('fragments','Fragments',' ',0,.false.)
+      call json_column('shares','Fragment shares',' ',5,.false.)
       call json_column('net','Net occupation',' ',4,.true.)
       call json_column('gross','Gross occupation',' ',4,.true.)
       call json_column('recovered_percent','Recovered','%',2,.false.)
@@ -930,7 +937,16 @@
      +  .false.)
       call json_end()
       call json_begin_object('data')
-      call json_vector('fragment',ifr,nneg)
+      call json_begin_array('fragments')
+      do jj=1,nneg
+        call json_vector('',ifr(jj:jj),1)
+      end do
+      call json_end()
+      call json_begin_array('shares')
+      do jj=1,nneg
+        call json_vector('',(/ONE/),1)
+      end do
+      call json_end()
       call json_vector('net',xn,nneg)
       call json_vector('gross',xg,nneg)
       call json_vector('recovered_percent',xf,nneg)
@@ -965,6 +981,7 @@
       cfile=trim(name0)//'-GEOS-EFOs.fchk'
       cfile=cfile(index(cfile,'/',back=.true.)+1:)
       call json_value('orbital_file',trim(cfile))
+      call json_value('orbital_file_id',json_run_id())
       call json_end()
 
       DEALLOCATE(elec_id,elec2,elec_frg_count)

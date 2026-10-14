@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -120,6 +120,7 @@
         "oslos": {
           "rows": "orbital",
           "n_rows": 9,
+          "fchk_orbitals": "alpha",
           "columns": [
             {
               "key": "iteration",
@@ -190,7 +191,8 @@
         "oxidation_states": [0.0000000000000000E+000, 0.0000000000000000E+000],
         "electrons": [9.0000000000000018E+000, 8.9999999999999982E+000]
       },
-      "orbital_file": "C2H6-OSLO-2CH3-OSLOs.fchk"
+      "orbital_file": "C2H6-OSLO-2CH3-OSLOs.fchk",
+      "orbital_file_id": "2026-10-14T20:48:39+02:00/1620"
     }
   },
   "index": [
@@ -423,7 +425,8 @@
     "job_name": "C2H6-OSLO-2CH3",
     "input_file": "C2H6-OSLO-2CH3.inp",
     "wavefunction_file": "C2H6-OSLO-2CH3.fchk",
-    "date": "2026-10-14T19:12:27+02:00",
+    "date": "2026-10-14T20:48:39+02:00",
+    "id": "2026-10-14T20:48:39+02:00/1620",
     "threads": 8,
     "status": "normal",
     "stop_message": null

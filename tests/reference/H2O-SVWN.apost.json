@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -166,7 +166,8 @@
     "job_name": "H2O-SVWN",
     "input_file": "H2O-SVWN.inp",
     "wavefunction_file": "H2O-SVWN.fchk",
-    "date": "2026-10-14T19:13:04+02:00",
+    "date": "2026-10-14T20:49:17+02:00",
+    "id": "2026-10-14T20:49:17+02:00/a928",
     "threads": 8,
     "status": "normal",
     "stop_message": null

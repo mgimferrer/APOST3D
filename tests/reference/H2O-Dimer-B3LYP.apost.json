@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -172,7 +172,8 @@
     "job_name": "H2O-Dimer-B3LYP",
     "input_file": "H2O-Dimer-B3LYP.inp",
     "wavefunction_file": "H2O-Dimer-B3LYP.fchk",
-    "date": "2026-10-14T19:13:06+02:00",
+    "date": "2026-10-14T20:49:19+02:00",
+    "id": "2026-10-14T20:49:19+02:00/9368",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -892,7 +892,8 @@
    private
    public :: json_open, json_close, json_begin_object, json_begin_array, &
              json_end, json_value, json_null, json_vector, json_matrix, &
-             json_index, json_is_open, json_vector_or_null, json_column
+             json_index, json_is_open, json_vector_or_null, json_column, &
+             json_run_id
 
    integer, parameter :: maxdepth=32
    integer :: iu=-1, depth=0
@@ -904,6 +905,9 @@
    character(len=:), allocatable :: final_name, temp_name
    character(len=:), allocatable :: job_name, inp_name, fchk_name
    character(len=25) :: run_date
+!! run id: the start time and 4 hex digits of the system clock, written !!
+!! to run.id and to the title line of the orbital .fchk files            !!
+   character(len=30) :: run_id=' '
 
 !! index entries, written by json_close (fields as in the index)       !!
    type index_entry
@@ -928,6 +932,24 @@
    CONTAINS
 
 !! ---- !!
+!! the run id (blank before json_open)                                  !!
+   function json_run_id() result(id)
+   character(len=:), allocatable :: id
+   id=trim(run_id)
+   end function json_run_id
+
+!! ---- !!
+   function to_lower(s) result(r)
+   character(len=*), intent(in) :: s
+   character(len=len(s)) :: r
+   integer :: i
+   r=s
+   do i=1,len(s)
+     if(s(i:i).ge.'A'.and.s(i:i).le.'Z') r(i:i)=achar(iachar(s(i:i))+32)
+   end do
+   end function to_lower
+
+!! ---- !!
    logical function json_is_open()
    json_is_open=is_open
    end function json_is_open
@@ -939,6 +961,8 @@
    use version_mod, only: version_full, version_date_iso
    character(len=*), intent(in) :: job,inp,fchk
    integer :: ios,iold
+   integer(kind=8) :: iclock
+   character(len=4) :: hex4
    character(len=8) :: d
    character(len=10) :: t
    character(len=5) :: z
@@ -952,6 +976,9 @@
    call date_and_time(d,t,z)
    run_date=d(1:4)//'-'//d(5:6)//'-'//d(7:8)//'T'//t(1:2)//':'//t(3:4)// &
             ':'//t(5:6)//z(1:3)//':'//z(4:5)
+   call system_clock(iclock)
+   write(hex4,'(z4.4)') mod(iclock,65536)
+   run_id=trim(run_date)//'/'//to_lower(hex4)
    open(newunit=iold,file=final_name,status='old',iostat=ios)
    if(ios.eq.0) close(iold,status='delete')
    open(newunit=iu,file=temp_name,status='replace',action='write', &
@@ -964,7 +991,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.7')
+   call json_value('schema_version','0.8')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)
@@ -987,6 +1014,7 @@
    call json_value('input_file',inp_name)
    call json_value('wavefunction_file',fchk_name)
    call json_value('date',trim(run_date))
+   call json_value('id',trim(run_id))
    call json_value('threads',omp_get_max_threads())
    call json_value('status',trim(status))
    if(len_trim(message).gt.0) then

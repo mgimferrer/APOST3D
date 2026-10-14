@@ -91,9 +91,11 @@
 !! ----------------------------------------------------------------------
 !! subroutine: json_efo_table
 !! Writes an "efos" table, one row per EFO, and its index entry: its
-!! fragment, net occupation, and when given the gross occupation, the
-!! fit of the reprojected EFO, the electrons the EOS assignment gives it
-!! and its column in the EFO .fchk file (null when the file has none).
+!! fragment (as the one-element lists fragments and shares, the form
+!! every orbital table uses), net occupation, and when given the gross
+!! occupation, the fit of the reprojected EFO, the electrons the EOS
+!! assignment gives it and its orbital in the EFO .fchk file (null when
+!! the file has none), whose block fchk_orbitals names.
 !! arguments:
 !!   n      (in)  number of EFOs
 !!   ifr    (in)  (n) fragment of each EFO
@@ -106,26 +108,33 @@
 !!   xe     (in)  (n) assigned electrons
 !!   icol   (in)  (n) .fchk column of each EFO
 !!   lcol   (in)  (n) logical: the EFO is in the .fchk file
-!!   cspin  (in)  'total', 'alpha' or 'beta', for the index
+!!   cspin  (in)  channel, for the index
+!!   cfchk  (in)  'alpha' or 'beta': the block of the .fchk file that
+!!                holds these EFOs; ' ' when there is no file
 !! author: MGimf
 !! ----------------------------------------------------------------------
       subroutine json_efo_table(n,ifr,xn,lgross,xg,lfit,xf,lelec,xe,
-     +  icol,lcol,cspin)
+     +  icol,lcol,cspin,cfchk)
       use json_mod
       implicit real*8(a-h,o-z)
       dimension ifr(*),xn(*),xg(*),xf(*),xe(*),icol(*)
       logical lgross,lfit,lelec,lcol(*)
-      character*(*) cspin
+      character*(*) cspin,cfchk
+      dimension xunit(1)
       character*20 ckey,cspace
       character*60 cname
       character*12 cshort
 
       call atomic_definition_names(ckey,cname,cshort,cspace)
+      xunit(1)=1.0d0
       call json_begin_object('efos')
       call json_value('rows','orbital')
       call json_value('n_rows',n)
+      if(len_trim(cfchk).gt.0) call json_value('fchk_orbitals',
+     +  trim(cfchk))
       call json_begin_array('columns')
-      call json_column('fragment','Fragment',' ',0,.false.)
+      call json_column('fragments','Fragments',' ',0,.false.)
+      call json_column('shares','Fragment shares',' ',5,.false.)
       call json_column('net','Net occupation',' ',4,.false.)
       if(lgross) call json_column('gross','Gross occupation',' ',4,
      +  .false.)
@@ -137,7 +146,16 @@
       end if
       call json_end()
       call json_begin_object('data')
-      call json_vector('fragment',ifr(1:n),n)
+      call json_begin_array('fragments')
+      do k=1,n
+        call json_vector('',ifr(k:k),1)
+      end do
+      call json_end()
+      call json_begin_array('shares')
+      do k=1,n
+        call json_vector('',xunit,1)
+      end do
+      call json_end()
       call json_vector('net',xn(1:n),n)
       if(lgross) call json_vector('gross',xg(1:n),n)
       if(lfit) call json_vector('fit_percent',xf(1:n),n)
@@ -205,7 +223,7 @@
       end if
       call json_begin_object(trim(cspin))
       call json_efo_table(n,ifr,xn,lgross,xg,lfit,xf,.false.,xf,icol,
-     +  lcol,trim(cspin))
+     +  lcol,trim(cspin),' ')
       call json_end()
       deallocate(ifr,xn,xg,xf,icol,lcol)
       end
@@ -754,7 +772,7 @@
         lcol(jj)=jj.le.ncolf
       end do
       call json_efo_table(iorb,ifr,xn,lreal,occup(1:iorb,icase),lreal,
-     +  xf,.true.,occup2,icol,lcol,trim(cspin))
+     +  xf,.true.,occup2,icol,lcol,trim(cspin),trim(cspin))
       deallocate(ifr,icol,xn,xf,lcol)
       call json_end()
       DEALLOCATE(occup2)
@@ -802,6 +820,7 @@
         cfile=trim(name0)//"-EOS-EFOs.fchk"
         cfile=cfile(index(cfile,'/',back=.true.)+1:)
         call json_value('orbital_file',trim(cfile))
+        call json_value('orbital_file_id',json_run_id())
 
 !! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
 !! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!

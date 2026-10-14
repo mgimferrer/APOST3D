@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -162,12 +162,20 @@
         "efos": {
           "rows": "orbital",
           "n_rows": 2,
+          "fchk_orbitals": "alpha",
           "columns": [
             {
-              "key": "fragment",
-              "title": "Fragment",
+              "key": "fragments",
+              "title": "Fragments",
               "unit": null,
               "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
               "signed": false
             },
             {
@@ -207,7 +215,14 @@
             }
           ],
           "data": {
-            "fragment": [2, 1],
+            "fragments": [
+              [2],
+              [1]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
             "net": [4.5701647367934223E-001, 4.5701647367934217E-001],
             "gross": [5.0000097748482142E-001, 5.0000097748482109E-001],
             "fit_percent": [8.2209357626423241E+001, 8.2209357626423255E+001],
@@ -246,12 +261,20 @@
         "efos": {
           "rows": "orbital",
           "n_rows": 2,
+          "fchk_orbitals": "beta",
           "columns": [
             {
-              "key": "fragment",
-              "title": "Fragment",
+              "key": "fragments",
+              "title": "Fragments",
               "unit": null,
               "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
               "signed": false
             },
             {
@@ -291,7 +314,14 @@
             }
           ],
           "data": {
-            "fragment": [2, 1],
+            "fragments": [
+              [2],
+              [1]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
             "net": [4.5701647483227076E-001, 4.5701647483227031E-001],
             "gross": [5.0000097693198398E-001, 5.0000097693198287E-001],
             "fit_percent": [8.2209358813642169E+001, 8.2209358813642126E+001],
@@ -306,7 +336,8 @@
         "electrons_beta": [5.0000000000000000E-001, 5.0000000000000000E-001]
       },
       "reliability_percent": 1.0000000000000000E+002,
-      "orbital_file": "H2-S-EOS-EOS-EFOs.fchk"
+      "orbital_file": "H2-S-EOS-EOS-EFOs.fchk",
+      "orbital_file_id": "2026-10-14T20:49:27+02:00/27c0"
     }
   },
   "index": [
@@ -673,7 +704,8 @@
     "job_name": "H2-S-EOS",
     "input_file": "H2-S-EOS.inp",
     "wavefunction_file": "H2-S-EOS.fchk",
-    "date": "2026-10-14T19:13:15+02:00",
+    "date": "2026-10-14T20:49:27+02:00",
+    "id": "2026-10-14T20:49:27+02:00/27c0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

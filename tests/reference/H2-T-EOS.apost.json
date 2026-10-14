@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.7",
+  "schema_version": "0.8",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -162,12 +162,20 @@
         "efos": {
           "rows": "orbital",
           "n_rows": 4,
+          "fchk_orbitals": "alpha",
           "columns": [
             {
-              "key": "fragment",
-              "title": "Fragment",
+              "key": "fragments",
+              "title": "Fragments",
               "unit": null,
               "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
               "signed": false
             },
             {
@@ -207,7 +215,18 @@
             }
           ],
           "data": {
-            "fragment": [2, 1, 1, 2],
+            "fragments": [
+              [2],
+              [1],
+              [1],
+              [2]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
             "net": [8.1970930728370850E-001, 8.1970930728370894E-001, 1.3438192752728675E-001, 1.3438192752728625E-001],
             "gross": [8.4143612781778887E-001, 8.4143612781778787E-001, 1.5854651959273525E-001, 1.5854651959273466E-001],
             "fit_percent": [8.0783503332864953E+001, 8.0783503332864939E+001, 5.3971598881162144E+001, 5.3971598881162095E+001],
@@ -225,7 +244,8 @@
         "electrons_beta": [0.0000000000000000E+000, 0.0000000000000000E+000]
       },
       "reliability_percent": 1.0000000000000000E+002,
-      "orbital_file": "H2-T-EOS-EOS-EFOs.fchk"
+      "orbital_file": "H2-T-EOS-EOS-EFOs.fchk",
+      "orbital_file_id": "2026-10-14T20:49:27+02:00/fde0"
     }
   },
   "index": [
@@ -559,7 +579,8 @@
     "job_name": "H2-T-EOS",
     "input_file": "H2-T-EOS.inp",
     "wavefunction_file": "H2-T-EOS.fchk",
-    "date": "2026-10-14T19:13:15+02:00",
+    "date": "2026-10-14T20:49:27+02:00",
+    "id": "2026-10-14T20:49:27+02:00/fde0",
     "threads": 8,
     "status": "normal",
     "stop_message": null
