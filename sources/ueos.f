@@ -492,6 +492,7 @@
       dimension nlo(maxfrag),ncount(maxfrag)
       dimension npool(2)
       allocatable :: xnegnet_pool(:),xneggro_pool(:),neg_frg(:),neg_slot(:)
+      logical lfound
 
 !! pool every fragment's EFOs into one list per channel (1=paired,      !!
 !! 2=unpaired); iorbslot keeps each pooled slot's local (within-        !!
@@ -608,20 +609,16 @@
         write(*,*)
       end if
 
-!! build the final, igr-wide pooled coefficient matrix per channel from  !!
-!! the sorted order above -- zero-initialized, so any channel with      !!
-!! fewer than igr pooled EFOs above threshold is correctly zero-padded  !!
-!! (always the opposite in practice: more pooled EFOs than igr). The    !!
-!! paired channel (icase=1) reserves its last nneg slots for the        !!
-!! significant-negative-occupation EFOs pooled/sorted above instead of  !!
-!! the next positive ones -- unpaired (icase=2) is never affected, this !!
-!! only ever happens for GEOS's paired density (see effao3d_u). Left    !!
-!! serial: at most 2*igr*igr copies, once per run, negligible next to   !!
-!! the O(igr^2)/O(igr^3) diagonalization work already done above.       !!
+!! pooled coefficient matrix per channel, in the sorted order above,    !!
+!! zero-padded. The .fchk file holds one orbital per independent basis  !!
+!! function (nindep, fewer than igr with linear dependencies), so the   !!
+!! paired channel keeps the last nneg of those slots for the negative   !!
+!! EFOs pooled above, after the positive ones that fit before them.     !!
+      nindep=min(igr,int_locate(15,"Number of independ",lfound))
       poolcoef=ZERO
       do icase=1,2
-        nwin=igr
-        if(icase.eq.1) nwin=igr-nneg
+        nwin=nindep
+        if(icase.eq.1) nwin=nindep-nneg
         do jj=1,MIN(lorb(icase),nwin)
           ii=iorbat(jj,icase)
           kk=iorbslot(jj,icase)
@@ -636,7 +633,7 @@
           ii=neg_frg(jj)
           kk=neg_slot(jj)
           do mu=1,igr
-            poolcoef(mu,igr-nneg+jj,1)=cneg(mu,kk,ii)
+            poolcoef(mu,nindep-nneg+jj,1)=cneg(mu,kk,ii)
           end do
         end do
       end if
@@ -658,8 +655,11 @@
 !! elec2 has already captured the real (unpatched) values above, so the   !!
 !! electron-assignment logic below never sees these EFOs.                 !!
       if(nneg.gt.0) then
+        do jj=lorb(1)+1,nindep-nneg
+          occup(jj,1)=ZERO
+        end do
         do jj=1,nneg
-          occup(igr-nneg+jj,1)=xneggro_pool(jj)
+          occup(nindep-nneg+jj,1)=xneggro_pool(jj)
         end do
       end if
 
@@ -753,15 +753,12 @@
         end do
       end do
 
-!! bump the paired channel's reported EFO count up to igr so print.f's   !!
-!! writers (rwf/rwfu/uwf_effao_orbprint, called after this returns) walk !!
-!! occup(:,1) all the way to where the negative-EFO tail was patched     !!
-!! above, even on a small system where the true positive-EFO count      !!
-!! (lorb(1)) is below igr -- every electron-assignment use of lorb(1)    !!
-!! above has already completed by this point, so this is safe.          !!
+!! the paired EFO count goes up to nindep so that the .fchk writers    !!
+!! (print.f, called after this returns) reach the negative EFOs placed  !!
+!! at the end; every use of lorb(1) in the assignment is done by now    !!
       npool(1)=lorb(1)
       npool(2)=lorb(2)
-      if(nneg.gt.0) lorb(1)=MAX(lorb(1),igr)
+      if(nneg.gt.0) lorb(1)=MAX(lorb(1),nindep)
 
       write(*,'(2x,a)') 'Electrons assigned per fragment (paired / unpaired):'
       do ifrg=1,icufr
