@@ -310,5 +310,6 @@ minor increase (0.8 replaced the `fragment` column of the EFO tables by
 The test suite keeps a reference results file for every test
 (`tests/reference/<test>.apost.json`) and compares each run with it
 (`tests/compare_json.py`: same structure, text and integers, reals within
-a relative 1e-9). `make update-ref` rewrites them together with the
+a relative 1e-9 or an absolute 1e-8, so that values that cancel to almost
+zero compare across machines). `make update-ref` rewrites them together with the
 `.apost` references.

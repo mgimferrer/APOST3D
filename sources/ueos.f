@@ -526,7 +526,10 @@
 
         do ii=1,lorb(icase)-1
           do jj=ii+1,lorb(icase)
-            if(tmp_occup(ii).lt.tmp_occup(jj)) then
+!! occupations equal within 1.0d-8 (symmetry-equivalent fragments, whose !!
+!! grid integrals differ in the last digits) are a tie and are not       !!
+!! swapped, so the order is the same on every machine                    !!
+            if(tmp_occup(ii).lt.tmp_occup(jj)-1.0d-8) then
               tmp_swap=tmp_occup(ii)
               tmp_occup(ii)=tmp_occup(jj)
               tmp_occup(jj)=tmp_swap
@@ -575,7 +578,7 @@
 
         do ii=1,nneg-1
           do jj=ii+1,nneg
-            if(xnegnet_pool(ii).lt.xnegnet_pool(jj)) then
+            if(xnegnet_pool(ii).lt.xnegnet_pool(jj)-1.0d-8) then
               tmp_swap=xnegnet_pool(ii)
               xnegnet_pool(ii)=xnegnet_pool(jj)
               xnegnet_pool(jj)=tmp_swap
