@@ -560,7 +560,10 @@
 !! index each slot came from.                                            !!
       do i=1,iorb-1
         do j=i+1,iorb
-          if (occup(j,icase).gt.occup(i,icase))then
+!! occupations equal within 1.0d-8 (symmetry-equivalent fragments, whose !!
+!! grid integrals differ in the last digits) are a tie and are not       !!
+!! swapped, so the order is the same on every machine                    !!
+          if (occup(j,icase).gt.occup(i,icase)+1.0d-8) then
             xkk=occup(j,icase)
             occup(j,icase)=occup(i,icase)
             occup(i,icase)=xkk

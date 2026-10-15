@@ -4,7 +4,10 @@ compare_json.py -- compare two APOST-3D results files (<job>.apost.json).
 
 The two files must have the same structure (keys, list lengths), the
 same text, integers and booleans, and reals equal within a relative
-tolerance (default 1e-9; --rtol 0 asks for identical values). run.threads,
+tolerance (default 1e-9) or an absolute one of 1e-8: quantities that
+cancel to almost zero (free valences of 1e-6, a total <S^2> of 1e-10)
+differ between machines by ~1e-10, far below the printed digits
+(--rtol 0 asks for identical values). run.threads,
 run.date, run.id and every orbital_file_id are not compared: they describe
 the run, not its results.
 
@@ -24,7 +27,7 @@ from pathlib import Path
 IGNORED = {("run", "threads"), ("run", "date"), ("run", "id")}
 IGNORED_KEYS = {"orbital_file_id"}
 RTOL = 1e-9
-ATOL = 1e-12       # for values that should be zero
+ATOL = 1e-8        # values that cancel to almost zero, across machines
 
 
 def load(path):
