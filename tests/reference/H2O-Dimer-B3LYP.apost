@@ -113,12 +113,17 @@
   # METHOD
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
   Energy decomposition                    : ENPART (IQA terms, see # ENPART)
+  Fragments                               : 2 (see # FRAGMENTS)
 
   # ENPART
   Functional                              : B3LYP (libxc 402)
   Atom-pair threshold (bond order)        : 0.0050 (THREBOD 50)
   Two-electron grid                       : 40 x 146 (# GRID)
   Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
+
+  # FRAGMENTS (2 fragments)
+  Fragment  1 :   1   2   3
+  Fragment  2 :   4   5   6
 
   TIMING CPU  :: Initialization                                    0.01 s
   TIMING WALL :: Initialization                                    0.01 s
@@ -151,8 +156,8 @@
 
   Sum of atomic overlaps, largest error   : 5.79E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 2.73 s
-  TIMING WALL :: Atomic definition                                 0.38 s
+  TIMING CPU  :: Atomic definition                                 2.62 s
+  TIMING WALL :: Atomic definition                                 2.62 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -175,6 +180,17 @@
   -------------------------------
   Total     20.000000   20.000000
 
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          9.970072    9.929569
+    2         10.029929   10.070431
+  ---------------------------------
+  Total       20.000000   20.000000
+
   ------------------------
     TOTAL ATOMIC CHARGES
   ------------------------
@@ -189,6 +205,17 @@
     6  H     0.607351    0.107653
   -------------------------------
   Total      0.000000    0.000000
+
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          0.029928    0.070431
+    2         -0.029929   -0.070431
+  ---------------------------------
+  Total        0.000000    0.000000
 
   ---------------------
     BOND ORDER MATRIX
@@ -219,6 +246,17 @@
     6  H     0.664478
   -------------------
 
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          2.802574
+    2          2.708175
+  ---------------------
+  Total        5.510749
+
   --------------------------
     VALENCES USED IN BONDS
   --------------------------
@@ -235,6 +273,17 @@
     6  H     0.664478
   -------------------
 
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          2.802575
+    2          2.708175
+  ---------------------
+  Total        5.510750
+
   -----------------
     FREE VALENCES
   -----------------
@@ -248,6 +297,29 @@
     5  H     0.000000
     6  H     0.000000
   -------------------
+
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1         -0.000001
+    2          0.000000
+  ---------------------
+  Total       -0.000001
+
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          9.882953    0.174238
+    2          0.174238    9.942809
+  ---------------------------------
+  Total (diagonal and one triangle)       :      20.000001
 
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
@@ -287,6 +359,18 @@
   Electron-nuclei energy:   -435.0913605
   Integration error (kcal/mol):     0.00
 
+  -------------------------------------------------
+    FRAGMENT ANALYSIS: Electron-nuclei attraction
+  -------------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1       -199.073895  -36.630306
+    2        -36.630306 -199.387160
+  ---------------------------------
+  Total (diagonal and one triangle)       :    -435.091360
+
   ------------------
     KINETIC ENERGY
   ------------------
@@ -304,6 +388,18 @@
   Kinetic energy:    152.0939470
   Integration error (kcal/mol):     0.00
 
+  -------------------------------------
+    FRAGMENT ANALYSIS: Kinetic energy
+  -------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         76.029789    0.000000
+    2          0.000000   76.064158
+  ---------------------------------
+  Total (diagonal and one triangle)       :     152.093947
+
   -----------------------------
     NUCLEAR-NUCLEAR REPULSION
   -----------------------------
@@ -320,8 +416,20 @@
   -------------------------------------------------------------------------------
   Nuclear repulsion energy:     36.6642284
 
-  TIMING CPU  :: enpart one-electron                               1.16 s
-  TIMING WALL :: enpart one-electron                               0.15 s
+  -----------------------------------------------
+    FRAGMENT ANALYSIS: Nuclear repulsion energy
+  -----------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          9.167387   18.348523
+    2         18.348523    9.148318
+  ---------------------------------
+  Total (diagonal and one triangle)       :      36.664228
+
+  TIMING CPU  :: enpart one-electron                               1.20 s
+  TIMING WALL :: enpart one-electron                               1.21 s
 
   --------------------------------
     RKS-DFT ENERGY DECOMPOSITION
@@ -409,8 +517,20 @@
   Note: DFT part only. The 0.200 x HF-type exchange is added in the
   two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
 
-  TIMING CPU  :: enpart dft                                        6.06 s
-  TIMING WALL :: enpart dft                                        0.96 s
+  ----------------------------------------
+    FRAGMENT ANALYSIS: Exc Decomposition
+  ----------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -7.555770   -0.017844
+    2         -0.017844   -7.578995
+  ---------------------------------
+  Total (diagonal and one triangle)       :     -15.152609
+
+  TIMING CPU  :: enpart dft                                        6.08 s
+  TIMING WALL :: enpart dft                                        6.09 s
 
   -------------------------------------------------------
     SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
@@ -425,7 +545,7 @@
   -----------------------------
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -443,8 +563,20 @@
   -------------------------------------------------------------------------------
   Coulomb energy:    112.2264252
 
-  TIMING CPU  :: Coulomb energy                                    1.57 s
-  TIMING WALL :: Coulomb energy                                    0.23 s
+  -------------------------------------
+    FRAGMENT ANALYSIS: Coulomb energy
+  -------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         46.811265   18.273004
+    2         18.273004   47.142156
+  ---------------------------------
+  Total (diagonal and one triangle)       :     112.226425
+
+  TIMING CPU  :: Coulomb energy                                    1.20 s
+  TIMING WALL :: Coulomb energy                                    1.20 s
 
   ---------------------------------------------------
     EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
@@ -452,7 +584,7 @@
 
   Two-el integrations for     55 MO pairs
   Threshold for atom pair calculation:   0.005000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
   Skipping numerical integration for     7 atom pairs
 
   -------------------------------------------
@@ -472,8 +604,8 @@
   Hartree-Fock exchange energy:    -17.9413951
   Note: full HF-type exchange, before scaling by 0.200.
 
-  TIMING CPU  :: Exact-exchange energy                            17.32 s
-  TIMING WALL :: Exact-exchange energy                             2.21 s
+  TIMING CPU  :: Exact-exchange energy                            17.26 s
+  TIMING WALL :: Exact-exchange energy                            17.27 s
 
   --------------------------
     HYBRID KS-DFT XC TERMS
@@ -502,8 +634,8 @@
   New error after rotation:    -9.24
   Damping parameter       :      0.7065478
 
-  TIMING CPU  :: Interpolated zero-error                           7.82 s
-  TIMING WALL :: Interpolated zero-error                           1.02 s
+  TIMING CPU  :: Interpolated zero-error                           7.89 s
+  TIMING WALL :: Interpolated zero-error                           7.89 s
 
   ---------------------------------------------------------
     INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -520,6 +652,18 @@
     6  H     1.059806    0.034491    0.034477    1.605653    0.048797    0.083551
   -------------------------------------------------------------------------------
   Coulomb energy:    112.2196289
+
+  -------------------------------------
+    FRAGMENT ANALYSIS: Coulomb energy
+  -------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         46.807910   18.273004
+    2         18.273004   47.138715
+  ---------------------------------
+  Total (diagonal and one triangle)       :     112.219629
 
   --------------------------------------------------------
     INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS
@@ -554,6 +698,18 @@
   -------------------------------------------------------------------------------
   Total exchange-correlation energy:    -18.7402078
 
+  ----------------------------------------------
+    FRAGMENT ANALYSIS: Final Exc Decomposition
+  ----------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -9.342905   -0.024437
+    2         -0.024437   -9.372865
+  ---------------------------------
+  Total (diagonal and one triangle)       :     -18.740208
+
   KS-DFT electron-electron energy:     93.4794210
   Integration error (kcal/mol):     0.00
 
@@ -576,7 +732,19 @@
   Integration error (au):     -0.0000105
   Integration error (kcal/mol):    -0.01
 
-  TIMING CPU  :: enpart two-electron                              27.01 s
-  TIMING WALL :: enpart two-electron                               3.51 s
+  -------------------------------------------
+    FRAGMENT ANALYSIS: Energy Decomposition
+  -------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1        -76.411715   -0.033217
+    2         -0.033217  -76.408833
+  ---------------------------------
+  Total (diagonal and one triangle)       :    -152.853764
+
+  TIMING CPU  :: enpart two-electron                              26.66 s
+  TIMING WALL :: enpart two-electron                              26.67 s
 
   ...Normal Termination of APOST-3D...
