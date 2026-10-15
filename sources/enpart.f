@@ -67,6 +67,7 @@
       dimension edip(maxat,maxat)
       dimension tkin(maxat),fdip(maxat,2)
       character*40 cfld
+      logical lref
       common /printout/iaccur
 
       allocatable :: chp2(:,:),scr(:),chpaux(:,:)
@@ -186,13 +187,17 @@
 
 !! xxdip is added here (not just eelnuc) since it's excluded from the    !!
 !! atomic epa contributions above -- keeps this check apples-to-apples.  !!
-      if(eelnuc0.ne.ZERO) then
-        call print_value('Integration error',
-     +    (eelnuc+xxdip-eelnuc0)*tokcal,2,'kcal/mol')
+      lref=eelnuc0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(eelnuc+xxdip-eelnuc0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
         eelnuc0=eelnuc
       end if
       call enpart_frag('ELECTRON-NUCLEAR ATTRACTION',epa)
+      call json_enpart_term('electron_nuclear','Electron-nuclear '//
+     +  'attraction',epa,eelnuc,lref,errk)
 
 !! second-derivative AO values, needed for the kinetic-energy density below !!
       ALLOCATE(chpaux(itotps,igr))
@@ -239,14 +244,20 @@
      +  ' the kinetic energy has no pair terms.',' ',1,tkin,'Kinetic',
      +  ' ',.false.)
       call print_value('Kinetic energy',ekinen,ndec,'au')
-      if(ekin0.ne.ZERO) then
-        call print_value('Integration error',(ekinen-ekin0)*tokcal,2,
-     +    'kcal/mol')
+      lref=ekin0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(ekinen-ekin0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
         ekin0=ekinen
       end if
       if(idofr.eq.1) call group_by_frag_vec(1,'FRAGMENT KINETIC ENERGY',
      +  tkin,'Kinetic',' ')
+!! the results file keeps the kinetic energy as a (diagonal) matrix, !!
+!! like the other terms                                              !!
+      call json_enpart_term('kinetic','Kinetic energy',ekin,ekinen,lref,
+     +  errk)
       DEALLOCATE(chpaux)
 
       erep=ZERO
@@ -267,6 +278,8 @@
       call enpart_matrix('NUCLEAR-NUCLEAR REPULSION',' ',' ',enuc,
      +  'Nuclear-nuclear repulsion',erep)
       call enpart_frag('NUCLEAR-NUCLEAR REPULSION',enuc)
+      call json_enpart_term('nuclear_repulsion','Nuclear-nuclear '//
+     +  'repulsion',enuc,erep,.false.,0.0d0)
 
       if(ifield.eq.1) then
         xxx=ZERO
@@ -539,15 +552,23 @@
       allocatable :: sc(:,:)
       character*(*) cstage
       character*80 c1,c2,ct
+      logical lfin
+
+!! the results file gets the final matrices only !!
+      lfin=len_trim(cstage).eq.0
 
       ct='COULOMB ENERGY'//cstage
       call enpart_matrix(ct,' ',' ',coul,'Coulomb energy',xcoul)
       call enpart_frag(ct,coul)
+      if(lfin) call json_enpart_term('coulomb','Coulomb energy',coul,
+     +  xcoul,.false.,0.0d0)
 
       if(ihf.eq.1) then
         ct='EXCHANGE ENERGY (HARTREE-FOCK)'//cstage
         call enpart_matrix(ct,' ',' ',exhf,'Exchange energy',xexhf)
         call enpart_frag(ct,exhf)
+        if(lfin) call json_enpart_term('xc','Exchange energy (HF)',exhf,
+     +    xexhf,.false.,0.0d0)
       else if(xmix.gt.0.0d0) then
         if(iverbose.eq.1) then
           ct='HF-TYPE EXCHANGE, UNSCALED'//cstage
@@ -575,6 +596,8 @@
         c2='functional, already scaled, as it enters the energy.'
         call enpart_matrix(ct,c1,c2,sc,'Exact-exchange share',xsc)
         call enpart_frag(ct,sc)
+        if(lfin) call json_enpart_term('exact_exchange_share',
+     +    'Exact-exchange share',sc,xsc,.false.,0.0d0)
         DEALLOCATE(sc)
         ct='EXCHANGE-CORRELATION ENERGY'//cstage
         c1='DFT part (DFT EXCHANGE-CORRELATION ENERGY) + exact-exchange'//
@@ -582,7 +605,179 @@
         call enpart_matrix(ct,c1,' ',exc,'Exchange-correlation energy',
      +    xexc)
         call enpart_frag(ct,exc)
+        if(lfin) call json_enpart_term('xc','Exchange-correlation '//
+     +    'energy',exc,xexc,.false.,0.0d0)
+      else
+!! pure functional: its exchange-correlation is the DFT part !!
+        if(lfin) call json_enpart_term('xc','Exchange-correlation '//
+     +    'energy',exc,xexc,.false.,0.0d0)
       end if
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_enpart_term
+!! Writes one ENPART term to the results file (inside the enpart block):
+!! an object with the atom matrix and, with DOFRAGS, the fragment matrix
+!! (self terms on the diagonal, whole pair terms off it, totals over the
+!! diagonal and one triangle), and the integration error of the term
+!! when the output prints one.
+!! arguments:
+!!   key   (in)  key of the term ('total' and 'classical_interaction'
+!!               get their own nouns for the diagonal and off-diagonal)
+!!   title (in)  title of the term for the index
+!!   A     (in)  (maxat,maxat) atom matrix
+!!   xtot  (in)  its total
+!!   lerr  (in)  logical, write errk
+!!   errk  (in)  integration error of the term (kcal/mol)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_enpart_term(key,title,A,xtot,lerr,errk)
+      use input_options_mod, only: idofr
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /printout/iaccur
+      character*(*) key,title
+      dimension A(maxat,maxat)
+      logical lerr
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      character*30 cdiag,coff
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+!! nouns for legends: the IQA matrix has self-energies and interaction !!
+!! energies; the classical interactions have no self terms              !!
+      cdiag='self term'
+      coff='pair term'
+      if(key.eq.'total') then
+        cdiag='self-energy'
+        coff='interaction energy'
+      else if(key.eq.'classical_interaction') then
+        cdiag='none'
+        coff='classical interaction energy'
+      end if
+      call json_begin_object(key)
+      call json_atom_matrix('atoms',A,.true.,trim(cdiag),trim(coff),1,
+     +  xtot)
+      call json_index('atoms','atom_matrix',trim(title)//' ('//
+     +  trim(cshort)//')','au',ndec,' ',.true.,' ')
+      if(idofr.eq.1) then
+        call json_frag_matrix('fragments',1,A,.true.,trim(cdiag),
+     +    trim(coff))
+        call json_index('fragments','fragment_matrix','Fragment '//
+     +    trim(title)//' ('//trim(cshort)//')','au',ndec,' ',.true.,' ')
+      end if
+      if(lerr) then
+        call json_value('integration_error_kcal',errk)
+        call json_index('integration_error_kcal','scalar',trim(title)//
+     +    ', integration error','kcal/mol',2,' ',.true.,' ')
+      end if
+      call json_end()
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_enpart_ee
+!! Writes the two_electron_integration object of the enpart block: the
+!! electron-electron energy on the first grid, its error, the tolerance,
+!! whether the zero-error correction was applied and its results.
+!! arguments:
+!!   evee1 (in)  electron-electron energy, first grid (au)
+!!   err1  (in)  its integration error (kcal/mol)
+!!   iref  (in)  1 if the .fchk has the reference energy
+!!   tol   (in)  tolerance (kcal/mol)
+!!   izerr (in)  1 if the zero-error correction was applied
+!!   err2  (in)  error on the rotated grid (kcal/mol), izerr=1
+!!   damp  (in)  damping parameter, izerr=1
+!!   evee  (in)  corrected electron-electron energy (au), izerr=1
+!!   errc  (in)  its error (kcal/mol), izerr=1
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_enpart_ee(evee1,err1,iref,tol,izerr,err2,damp,
+     +  evee,errc)
+      use json_mod
+      implicit real*8(a-h,o-z)
+      common /printout/iaccur
+
+      ndec=7
+      if(iaccur.ne.0) ndec=13
+      call json_begin_object('two_electron_integration')
+      call json_value('energy',evee1)
+      call json_index('energy','scalar','Electron-electron energy, '//
+     +  'first grid','au',ndec,' ',.false.,' ')
+      if(iref.eq.1) then
+        call json_value('error_kcal',err1)
+        call json_value('tolerance_kcal',tol)
+        if(izerr.eq.1) then
+          call json_value('zero_error_correction','applied')
+        else
+          call json_value('zero_error_correction','not needed')
+        end if
+      else
+        call json_null('error_kcal')
+        call json_null('tolerance_kcal')
+        call json_value('zero_error_correction','no reference energy')
+      end if
+      call json_index('error_kcal','scalar','Two-electron integration '//
+     +  'error, first grid','kcal/mol',2,' ',.true.,' ')
+      if(izerr.eq.1) then
+        call json_value('rotated_grid_error_kcal',err2)
+        call json_value('damping',damp)
+        call json_value('corrected_energy',evee)
+        call json_value('corrected_error_kcal',errc)
+        call json_index('corrected_error_kcal','scalar','Two-electron '//
+     +    'integration error, corrected','kcal/mol',2,' ',.true.,' ')
+      else
+        call json_null('rotated_grid_error_kcal')
+        call json_null('damping')
+        call json_null('corrected_energy')
+        call json_null('corrected_error_kcal')
+      end if
+      call json_end()
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_enpart_pairs
+!! Writes the atom-pair threshold of the enpart block and the atom pairs
+!! below it, whose exchange(-correlation) term comes from the multipolar
+!! expansion.
+!! arguments: none (THREBOD from input_options_mod, bond orders /ovpop/)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_enpart_pairs()
+      use input_options_mod, only: ithrebod
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      dimension ipair(2)
+
+      if(ithrebod.lt.1) then
+        threbod=0.0d0
+      else
+        threbod=real(ithrebod)/10000.0d0
+      end if
+      call json_value('pair_threshold',threbod)
+      call json_begin_array('multipolar_pairs')
+      do i=1,nat
+        do j=i+1,nat
+          if(bo(i,j).lt.threbod) then
+            ipair(1)=i
+            ipair(2)=j
+            call json_vector(' ',ipair,2)
+          end if
+        end do
+      end do
+      call json_end()
       end
 
 !! ***** !!
@@ -605,6 +800,7 @@
       subroutine enpart_iqa(eto,etot,escf,ifield,edip,xcfin)
       use output_mod, only: print_value
       use input_options_mod, only: idofr
+      use json_mod
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -614,7 +810,7 @@
       dimension eto(maxat,maxat),xcfin(maxat,maxat)
       dimension arr(maxat,2)
       allocatable :: vcl(:,:),bm(:,:)
-      dimension bf(maxat,2),bv(maxat,1),x(2),xs(1)
+      dimension bf(maxat,2),bv(maxat,1),x(2),xs(1),fself(maxat)
       character*20 ckey,cspace
       character*60 cname
       character*12 cshort
@@ -636,6 +832,16 @@
       call print_value('Integration error',err,ndec,'au')
       call print_value('Integration error',err*tokcal,2,'kcal/mol')
       call enpart_frag(ct,eto)
+      call json_enpart_term('total','IQA energy terms',eto,etot,
+     +  .false.,0.0d0)
+      call json_value('total_energy',etot)
+      call json_index('total_energy','scalar','Total energy (IQA)','au',
+     +  ndec,' ',.true.,' ')
+      call json_value('reference_energy',escf)
+      call json_value('integration_error',err)
+      call json_index('integration_error','scalar','Integration error'//
+     +  ' of the total energy','au',ndec,' ',.true.,' ')
+      call json_value('integration_error_kcal',err*tokcal)
 
 !! additive atomic energies: self-energy + half of each interaction !!
       do i=1,nat
@@ -652,6 +858,17 @@
      +  'Self-energy','Additive',.true.)
       if(ifield.eq.1) write(*,'(2x,a)')
      +  'The field interaction energy is not included.'
+      ndv=6
+      if(iaccur.ne.0) ndv=13
+      call json_begin_object('atomic_energies')
+      call json_begin_object('atoms')
+      call json_vector('self_energy',arr(1:nat,1),nat)
+      call json_index('self_energy','atom_vector','Atomic self-'//
+     +  'energies','au',ndv,' ',.true.,' ')
+      call json_vector('additive_energy',arr(1:nat,2),nat)
+      call json_index('additive_energy','atom_vector','Additive atomic'//
+     +  ' energies','au',ndv,' ',.true.,' ')
+      call json_end()
       if(idofr.eq.1) then
         ALLOCATE(bm(maxat,maxat))
         call frag_sum_mat(1,eto,bm,xx)
@@ -666,6 +883,17 @@
         end do
         call print_frag_table(2,'FRAGMENT ATOMIC ENERGIES',bf,x,
      +    'Self-energy','Additive')
+        do k=1,icufr
+          fself(k)=bf(k,1)
+        end do
+        call json_begin_object('fragments')
+        call json_vector('self_energy',fself,icufr)
+        call json_index('self_energy','fragment_vector','Fragment self-'//
+     +    'energies','au',ndv,' ',.true.,' ')
+        call json_frag_vector('additive_energy',arr(1,2))
+        call json_index('additive_energy','fragment_vector','Additive '//
+     +    'fragment energies','au',ndv,' ',.true.,' ')
+        call json_end()
         DEALLOCATE(bm)
       end if
 
@@ -685,7 +913,10 @@
      +  ' Coulomb part of each interaction;','the rest of it is the'//
      +  ' exchange-correlation part. No self terms.',vcl,
      +  'Classical interaction energy',xx)
+      call json_end()
       call enpart_frag(ct,vcl)
+      call json_enpart_term('classical_interaction','Classical '//
+     +  'interaction energies',vcl,xx,.false.,0.0d0)
       DEALLOCATE(vcl)
       end
 
@@ -1078,6 +1309,11 @@
 
       if(ianalytical.eq.1) twoeltoler=232000
       call enpart_ee_head(evee,twoelerr,iref,twoeltoler)
+!! first-grid values, kept for the results file !!
+      eveefg=evee
+      errfg=twoelerr
+      err2=ZERO
+      phabest=ZERO
 
 !! the zero-error correction changes only the one-center terms; the      !!
 !! first-grid matrices are kept for VERBOSE 1                            !!
@@ -1265,6 +1501,9 @@
         wxtime=wxtime2
       end if
 
+      call json_enpart_ee(eveefg,errfg,iref,twoeltoler,izerr,err2,
+     +  phabest,evee,twoelerr)
+
 !! final two-electron matrices; with VERBOSE 1 first the first-grid ones !!
 !! when the zero-error correction was applied                            !!
       if(izerr.eq.1.and.iverbose.eq.1) call enpart_two_mats(ihf,xmix,
@@ -1351,6 +1590,7 @@
       dimension edip(maxat,maxat)
       dimension tkin(maxat),fdip(maxat,2)
       character*40 cfld
+      logical lref
       common /printout/iaccur
       allocatable :: chp2(:,:),scr(:),chpaux(:,:), chp3(:,:)
 
@@ -1469,13 +1709,17 @@
 
 !! xxdip is added here (not just eelnuc) since it's excluded from the    !!
 !! atomic epa contributions above -- keeps this check apples-to-apples.  !!
-      if(eelnuc0.ne.ZERO) then
-        call print_value('Integration error',
-     +    (eelnuc+xxdip-eelnuc0)*tokcal,2,'kcal/mol')
+      lref=eelnuc0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(eelnuc+xxdip-eelnuc0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
         eelnuc0=eelnuc
       end if
       call enpart_frag('ELECTRON-NUCLEAR ATTRACTION',epa)
+      call json_enpart_term('electron_nuclear','Electron-nuclear '//
+     +  'attraction',epa,eelnuc,lref,errk)
 
 !! second-derivative AO values, needed for the kinetic-energy density below !!
       ALLOCATE(chpaux(itotps,igr))
@@ -1527,14 +1771,20 @@
      +  ' the kinetic energy has no pair terms.',' ',1,tkin,'Kinetic',
      +  ' ',.false.)
       call print_value('Kinetic energy',ekinen,ndec,'au')
-      if(ekin0.ne.ZERO) then
-        call print_value('Integration error',(ekinen-ekin0)*tokcal,2,
-     +    'kcal/mol')
+      lref=ekin0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(ekinen-ekin0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
         ekin0=ekinen
       end if
       if(idofr.eq.1) call group_by_frag_vec(1,'FRAGMENT KINETIC ENERGY',
      +  tkin,'Kinetic',' ')
+!! the results file keeps the kinetic energy as a (diagonal) matrix, !!
+!! like the other terms                                              !!
+      call json_enpart_term('kinetic','Kinetic energy',ekin,ekinen,lref,
+     +  errk)
 
       erep=ZERO
       do i=1,nat
@@ -1554,6 +1804,8 @@
       call enpart_matrix('NUCLEAR-NUCLEAR REPULSION',' ',' ',enuc,
      +  'Nuclear-nuclear repulsion',erep)
       call enpart_frag('NUCLEAR-NUCLEAR REPULSION',enuc)
+      call json_enpart_term('nuclear_repulsion','Nuclear-nuclear '//
+     +  'repulsion',enuc,erep,.false.,0.0d0)
 
       if(ifield.eq.1) then
         xxx=ZERO
@@ -2018,6 +2270,11 @@
 
       if(ianalytical.eq.1) twoeltoler=232000
       call enpart_ee_head(evee,twoelerr,iref,twoeltoler)
+!! first-grid values, kept for the results file !!
+      eveefg=evee
+      errfg=twoelerr
+      err2=ZERO
+      phabest=ZERO
 
 !! the zero-error correction changes only the one-center terms; the      !!
 !! first-grid matrices are kept for VERBOSE 1                            !!
@@ -2239,6 +2496,9 @@
         xtime=xtime2
         wxtime=wxtime2
       end if
+
+      call json_enpart_ee(eveefg,errfg,iref,twoeltoler,izerr,err2,
+     +  phabest,evee,twoelerr)
 
 !! final two-electron matrices; with VERBOSE 1 first the first-grid ones !!
 !! when the zero-error correction was applied                            !!

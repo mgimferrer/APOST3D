@@ -448,6 +448,8 @@
       call enpart_matrix('DFT EXCHANGE-CORRELATION ENERGY',c1,c2,exch,
      +  'DFT exchange-correlation',exchen)
       call enpart_frag('DFT EXCHANGE-CORRELATION ENERGY',exch)
+      call json_enpart_term('xc_dft','DFT exchange-correlation',exch,
+     +  exchen,.false.,0.0d0)
 
       xtot=ZERO
       do ii=1,nat
@@ -1251,6 +1253,8 @@
       call enpart_matrix('DFT EXCHANGE-CORRELATION ENERGY',c1,c2,exch,
      +  'DFT exchange-correlation',exchen)
       call enpart_frag('DFT EXCHANGE-CORRELATION ENERGY',exch)
+      call json_enpart_term('xc_dft','DFT exchange-correlation',exch,
+     +  exchen,.false.,0.0d0)
 
       xtot=ZERO
       do ii=1,nat
@@ -1388,6 +1392,7 @@
 
       use xc_f03_lib_m
       use output_mod, only: print_value
+      use json_mod
 
       implicit real*8(a-h,o-z)
 
@@ -1481,6 +1486,14 @@
         write(clab,'(a,i0,a)') 'Reference [',irefref,']'
         call print_value(trim(clab),trim(adjustl(name_ref)))
       end do
+
+!! results file: one object per libxc component (main.f opened the array) !!
+      call json_begin_object(' ')
+      call json_value('libxc_id',id_func)
+      call json_value('name',trim(name_func))
+      call json_value('kind',trim(ckind))
+      call json_value('family',trim(cfam))
+      call json_end()
 
 !! everything past this point is a clean stop for functionals APOST-3D !!
 !! can't decompose yet -- before any energy is computed, never silently. !!

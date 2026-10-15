@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.9",
+  "schema_version": "0.10",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -67,6 +67,21 @@
         "valence_total": [1.3991943865662080E+000, 7.0855384918174724E-001, 7.0855384910858987E-001],
         "valence_bonded": [1.3991924591359153E+000, 7.0855359665465667E-001, 7.0855359616140312E-001],
         "valence_free": [1.9274302927030362E-006, 2.5252709057177469E-007, 2.5294718675183958E-007]
+      }
+    },
+    "enpart": {
+      "wavefunction": "KS-DFT",
+      "formalism": "restricted",
+      "functional": {
+        "keyword": "LIBRARY",
+        "components": [
+          {
+            "libxc_id": 231,
+            "name": "Tao, Perdew, Staroverov & Scuseria",
+            "kind": "correlation",
+            "family": "meta-GGA"
+          }
+        ]
       }
     }
   },
@@ -166,8 +181,8 @@
     "job_name": "H2O-TPSS",
     "input_file": "H2O-TPSS.inp",
     "wavefunction_file": "H2O-TPSS.fchk",
-    "date": "2026-10-14T21:04:54+02:00",
-    "id": "2026-10-14T21:04:54+02:00/3618",
+    "date": "2026-10-15T16:38:34+02:00",
+    "id": "2026-10-15T16:38:34+02:00/5cd0",
     "threads": 8,
     "status": "stopped",
     "stop_message": "META-GGA FUNCTIONALS NOT YET SUPPORTED"
