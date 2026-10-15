@@ -109,8 +109,8 @@ as their list.
 
 Each analysis writes the results it reports, the values a reader of the
 output would quote or a visualizer would show: final numbers only. The
-intermediate steps (for example, energy terms before the zero-error
-interpolation of ENPART), diagnostics and settings stay in the text
+intermediate steps (for example, the ENPART matrices before the
+zero-error correction), diagnostics and settings stay in the text
 output. A block is added in the same version that adds the analysis to
 the results file, and is described on this page then. A key is present
 only when the run computes it; the conditions are given with each block.
@@ -272,6 +272,38 @@ printed in the output, divided equally among the orbitals of the
 selection) and `fchk_column`. The `-OSLOs-preortho.fchk` file, when
 written, has the same orbitals before orthogonalization in the same
 order.
+
+### `enpart`
+
+Written with `ENPART` for Hartree-Fock and KS-DFT wavefunctions (the
+CASSCF/CISD block comes in a later version). Energies in au; every matrix
+is a [matrix object](#matrix-objects) in the convention of the text
+output: one-center terms on the diagonal, the whole A–B term off it, the
+total over the diagonal and one triangle. The external-field terms and
+`POLAR` are not written.
+
+| Key | Content |
+|---|---|
+| `wavefunction`, `formalism` | `"Hartree-Fock"` or `"KS-DFT"`; `"restricted"` or `"unrestricted"` |
+| `functional` | KS-DFT: `keyword` (the predefined keyword of `# ENPART`, or `"LIBRARY"`), `components` (one object per libxc functional: `libxc_id`, `name`, `kind`, `family`) and `exact_exchange_fraction` (0 for a pure functional); `null` for Hartree-Fock |
+| `pair_threshold`, `multipolar_pairs` | the `THREBOD` bond order, and the atom pairs below it (a list of `[A, B]`, 1-based), whose exchange-correlation term comes from the multipolar expansion |
+| `electron_nuclear`, `kinetic`, `nuclear_repulsion` | one-electron terms (below); `kinetic` is a diagonal matrix |
+| `xc_dft` | KS-DFT: the DFT part of the exchange-correlation (for a hybrid, without the exact exchange) |
+| `two_electron_integration` | `energy` and `error_kcal` on the first grid, `tolerance_kcal`, `zero_error_correction` (`"applied"`, `"not needed"` or `"no reference energy"`), and when applied `rotated_grid_error_kcal`, `damping`, `corrected_energy`, `corrected_error_kcal` (`null` otherwise) |
+| `coulomb` | the Coulomb term |
+| `exact_exchange_share` | hybrid functionals: the HF-type exchange multiplied by the exact-exchange fraction, as it enters the energy |
+| `xc` | the final exchange-correlation term: the exchange for Hartree-Fock, `xc_dft` for a pure functional, `xc_dft` + `exact_exchange_share` for a hybrid |
+| `total` | the IQA matrix: self-energies on the diagonal, interaction energies off it |
+| `total_energy`, `reference_energy`, `integration_error`, `integration_error_kcal` | the total of `total`, the energy of the `.fchk` and their difference |
+| `atomic_energies` | `atoms` and, with `DOFRAGS`, `fragments`: `self_energy` and `additive_energy` (self-energy + half of each interaction energy; they add up to `total_energy`) |
+| `classical_interaction` | the electron-nuclear + nuclear-nuclear + Coulomb part of each interaction energy (`total` − `xc` off the diagonal; the diagonal is zero) |
+
+Each term (`electron_nuclear` ... `total`, `classical_interaction`) is an
+object with `atoms` (atom matrix), `fragments` (fragment matrix, with
+`DOFRAGS`) and, for `electron_nuclear` and `kinetic` when the `.fchk` has
+the reference energies, `integration_error_kcal`. All values are the
+final ones, after the zero-error correction when it was applied; the
+matrices of `VERBOSE 1` are not written.
 
 ## Index
 

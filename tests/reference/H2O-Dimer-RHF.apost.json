@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.9",
+  "schema_version": "0.10",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -106,6 +106,242 @@
         "valence_total": [2.6384906363216585E+000, 2.5341027133901686E+000],
         "valence_bonded": [2.6384918883370156E+000, 2.5341023145407755E+000],
         "valence_free": [-1.2520153575001913E-006, 3.9884939295742328E-007]
+      }
+    },
+    "enpart": {
+      "wavefunction": "Hartree-Fock",
+      "formalism": "restricted",
+      "functional": null,
+      "pair_threshold": 1.0000000000000000E-003,
+      "multipolar_pairs": [
+        [2, 4],
+        [2, 5],
+        [2, 6],
+        [3, 4],
+        [3, 5],
+        [3, 6]
+      ],
+      "electron_nuclear": {
+        "atoms": {
+          "values": [
+            [-1.8478610196929804E+002, -6.3623535159271318E+000, -6.3623634169722525E+000, -2.6926310615182050E+001, -1.9475696352371890E+000, -3.3328690841133710E+000],
+            [-6.3623535159271318E+000, -6.3419813139121495E-001, -2.3732107025053090E-001, -1.9400382793301723E+000, -1.0405706198751144E-001, -1.5966817014789053E-001],
+            [-6.3623634169722525E+000, -2.3732107025053090E-001, -6.3420149353905653E-001, -1.9392080021441727E+000, -1.0402212662905277E-001, -1.5960480867073723E-001],
+            [-2.6926310615182050E+001, -1.9400382793301723E+000, -1.9392080021441727E+000, -1.8492900862319846E+002, -6.4802585294995634E+000, -6.2727896333519588E+000],
+            [-1.9475696352371890E+000, -1.0405706198751144E-001, -1.0402212662905277E-001, -6.4802585294995634E+000, -6.7121796992493343E-001, -2.3899147890766545E-001],
+            [-3.3328690841133710E+000, -1.5966817014789053E-001, -1.5960480867073723E-001, -6.2727896333519588E+000, -2.3899147890766545E-001, -6.0117075053532076E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": -4.3482332436623841E+002,
+          "total_rule": "diagonal and one triangle"
+        },
+        "fragments": {
+          "values": [
+            [-1.9901653959737823E+002, -3.6613347783442144E+001],
+            [-3.6613347783442144E+001, -1.9919343698541789E+002]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": -4.3482332436623824E+002,
+          "total_rule": "diagonal and one triangle"
+        },
+        "integration_error_kcal": -1.7482658469735724E-003
+      },
+      "kinetic": {
+        "atoms": {
+          "values": [
+            [7.5341181441095259E+001, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 3.1330298539446955E-001, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 0.0000000000000000E+000, 3.1330714555421418E-001, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 7.5355738923105264E+001, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 3.3273642184131225E-001, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 2.9828086455988034E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 1.5195454778155039E+002,
+          "total_rule": "diagonal and one triangle"
+        },
+        "fragments": {
+          "values": [
+            [7.5967791572043950E+001, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 7.5986756209506467E+001]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 1.5195454778155042E+002,
+          "total_rule": "diagonal and one triangle"
+        },
+        "integration_error_kcal": -7.6937380769393710E-003
+      },
+      "nuclear_repulsion": {
+        "atoms": {
+          "values": [
+            [0.0000000000000000E+000, 4.4100583539097791E+000, 4.4100693323178835E+000, 1.1657822412364499E+001, 1.2623532503680763E+000, 2.1769656060129594E+000],
+            [4.4100583539097791E+000, 0.0000000000000000E+000, 3.4725939393841709E-001, 1.2720940414391892E+000, 1.3671813014780446E-001, 2.1720844212823004E-001],
+            [4.4100693323178835E+000, 3.4725939393841709E-001, 0.0000000000000000E+000, 1.2715648936938497E+000, 1.3667370982308816E-001, 2.1712265473461692E-001],
+            [1.1657822412364499E+001, 1.2720940414391892E+000, 1.2715648936938497E+000, 0.0000000000000000E+000, 4.4190373848052031E+000, 4.3821510693682546E+000],
+            [1.2623532503680763E+000, 1.3671813014780446E-001, 1.3667370982308816E-001, 4.4190373848052031E+000, 0.0000000000000000E+000, 3.4712968518036869E-001],
+            [2.1769656060129594E+000, 2.1720844212823004E-001, 2.1712265473461692E-001, 4.3821510693682546E+000, 3.4712968518036869E-001, 0.0000000000000000E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 3.6664228360232222E+001,
+          "total_rule": "diagonal and one triangle"
+        },
+        "fragments": {
+          "values": [
+            [9.1673870801660797E+000, 1.8348523140712309E+001],
+            [1.8348523140712309E+001, 9.1483181393538260E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 3.6664228360232215E+001,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "two_electron_integration": {
+        "energy": 9.4143535220286452E+001,
+        "error_kcal": 8.5993724598066534E-001,
+        "tolerance_kcal": 2.5000000000000000E-001,
+        "zero_error_correction": "applied",
+        "rotated_grid_error_kcal": -6.4015253985692135E+000,
+        "damping": 8.8157520212183493E-001,
+        "corrected_energy": 9.4142164823330006E+001,
+        "corrected_error_kcal": 0.0000000000000000E+000
+      },
+      "coulomb": {
+        "atoms": {
+          "values": [
+            [4.3485619712279913E+001, 1.5669074587613083E+000, 1.5668633677136372E+000, 1.5545394739762404E+001, 5.7169761960164722E-001, 9.5882251032239751E-001],
+            [1.5669074587613083E+000, 7.8620683412165812E-002, 4.1215118275291972E-002, 5.3944192543979819E-001, 1.9783653415381217E-002, 2.9186252797927390E-002],
+            [1.5668633677136372E+000, 4.1215118275291972E-002, 7.8620487064666025E-002, 5.3918971997824106E-001, 1.9776797754006890E-002, 2.9174754719001730E-002],
+            [1.5545394739762404E+001, 5.3944192543979819E-001, 5.3918971997824106E-001, 4.3656800995011992E+001, 1.6908415860302271E+000, 1.4705845000716893E+000],
+            [5.7169761960164722E-001, 1.9783653415381217E-002, 1.9776797754006890E-002, 1.6908415860302271E+000, 8.9454624641304659E-002, 4.1614270826851624E-002],
+            [9.5882251032239751E-001, 2.9186252797927390E-002, 2.9174754719001730E-002, 1.4705845000716893E+000, 4.1614270826851624E-002, 7.0537803369434382E-002]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 1.1209014858124931E+002,
+          "total_rule": "diagonal and one triangle"
+        },
+        "fragments": {
+          "values": [
+            [4.6817846827506983E+001, 1.8252467973790807E+001],
+            [1.8252467973790807E+001, 4.7019833779951490E+001]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 1.1209014858124928E+002,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "xc": {
+        "atoms": {
+          "values": [
+            [-8.4890975997672982E+000, -1.9345575983772567E-001, -1.9342959740268309E-001, -9.6577008963937942E-003, -1.0473230983463386E-004, -1.6878793228853824E-002],
+            [-1.9345575983772567E-001, -3.6587234353624466E-002, -8.4863519297182877E-004, -5.1521512306837134E-005, -3.9391453390889541E-007, -9.2891238877631314E-005],
+            [-1.9342959740268309E-001, -8.4863519297182877E-004, -3.6587240877085259E-002, -5.1550261537218558E-005, -3.9321648840381024E-007, -9.2942771819871190E-005],
+            [-9.6577008963937942E-003, -5.1521512306837134E-005, -5.1550261537218558E-005, -8.5208889141048054E+000, -2.0528775056861329E-001, -1.7189365925145819E-001],
+            [-1.0473230983463386E-004, -3.9391453390889541E-007, -3.9321648840381024E-007, -2.0528775056861329E-001, -4.1490102354429813E-002, -7.6330284450016727E-004],
+            [-1.6878793228853824E-002, -9.2891238877631314E-005, -9.2942771819871190E-005, -1.7189365925145819E-001, -7.6330284450016727E-004, -3.0723042013455659E-002]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": -1.7947983757919296E+001,
+          "total_rule": "diagonal and one triangle"
+        },
+        "fragments": {
+          "values": [
+            [-8.9500060674313886E+000, -2.6930919350646121E-002],
+            [-2.6930919350646121E-002, -8.9710467711372637E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": -1.7947983757919300E+001,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "total": {
+        "atoms": {
+          "values": [
+            [-7.4448398415690178E+001, -5.7884346309377011E-001, -5.7886031434341489E-001, 2.6724883604845956E-001, -1.1362349757730004E-001, -2.1395976100686792E-001],
+            [-5.7884346309377011E-001, -2.7886169693820406E-001, 1.5030480677020636E-001, -1.2855383396349165E-001, 5.2444327661140322E-002, 8.6633633539389257E-002],
+            [-5.7886031434341489E-001, 1.5030480677020636E-001, -2.7886110179726159E-001, -1.2850493873361910E-001, 5.2427987731553868E-002, 8.6599658011061550E-002],
+            [2.6724883604845956E-001, -1.2855383396349165E-001, -1.2850493873361910E-001, -7.4437357619186002E+001, -5.7566730923274645E-001, -5.9194772316347311E-001],
+            [-1.1362349757730004E-001, 5.2444327661140322E-002, 5.2427987731553868E-002, -5.7566730923274645E-001, -2.9051702579674632E-001, 1.4898917425505470E-001],
+            [-2.1395976100686792E-001, 8.6633633539389257E-002, 8.6599658011061550E-002, -5.9194772316347311E-001, 1.4898917425505470E-001, -2.6307512461946170E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "self-energy",
+          "off_diagonal": "interaction energy",
+          "total": -1.5206238340112569E+002,
+          "total_rule": "diagonal and one triangle"
+        },
+        "fragments": {
+          "values": [
+            [-7.6013520185092631E+001, -3.9287588289674172E-002],
+            [-3.9287588289674172E-002, -7.6009575627743374E+001]
+          ],
+          "symmetric": true,
+          "diagonal": "self-energy",
+          "off_diagonal": "interaction energy",
+          "total": -1.5206238340112569E+002,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "total_energy": -1.5206238340112569E+002,
+      "reference_energy": -1.5206236833536570E+002,
+      "integration_error": -1.5065759981780502E-005,
+      "integration_error_kcal": -9.4539090198630903E-003,
+      "atomic_energies": {
+        "atoms": {
+          "self_energy": [-7.4448398415690178E+001, -2.7886169693820406E-001, -2.7886110179726159E-001, -7.4437357619186002E+001, -2.9051702579674632E-001, -2.6307512461946170E-001],
+          "additive_energy": [-7.5057417515676619E+001, -4.8786896148146702E-001, -4.8787750207936764E-001, -7.5016070103708444E+001, -5.0823168437789512E-001, -5.0491763380187948E-001]
+        },
+        "fragments": {
+          "self_energy": [-7.6013520185092631E+001, -7.6009575627743374E+001],
+          "additive_energy": [-7.6033163979237457E+001, -7.6029219421888214E+001]
+        }
+      },
+      "classical_interaction": {
+        "atoms": {
+          "values": [
+            [0.0000000000000000E+000, -3.8538770325604443E-001, -3.8543071694073183E-001, 2.7690653694485334E-001, -1.1351876526746540E-001, -1.9708096777801409E-001],
+            [-3.8538770325604443E-001, 0.0000000000000000E+000, 1.5115344196317818E-001, -1.2850231245118482E-001, 5.2444721575674230E-002, 8.6726524778266895E-002],
+            [-3.8543071694073183E-001, 1.5115344196317818E-001, 0.0000000000000000E+000, -1.2845338847208188E-001, 5.2428380948042273E-002, 8.6692600782881421E-002],
+            [2.7690653694485334E-001, -1.2850231245118482E-001, -1.2845338847208188E-001, 0.0000000000000000E+000, -3.7037955866413319E-001, -4.2005406391201494E-001],
+            [-1.1351876526746540E-001, 5.2444721575674230E-002, 5.2428380948042273E-002, -3.7037955866413319E-001, 0.0000000000000000E+000, 1.4975247709955486E-001],
+            [-1.9708096777801409E-001, 8.6726524778266895E-002, 8.6692600782881421E-002, -4.2005406391201494E-001, 1.4975247709955486E-001, 0.0000000000000000E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "none",
+          "off_diagonal": "classical interaction energy",
+          "total": -1.2727027926492194E+000,
+          "total_rule": "diagonal and one triangle"
+        },
+        "fragments": {
+          "values": [
+            [-6.1966497823359812E-001, -1.2356668939028023E-002],
+            [-1.2356668939028023E-002, -6.4068114547659327E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "none",
+          "off_diagonal": "classical interaction energy",
+          "total": -1.2727027926492194E+000,
+          "total_rule": "diagonal and one triangle"
+        }
       }
     }
   },
@@ -289,14 +525,289 @@
       "unit": null,
       "decimals": 6,
       "signed": false
+    },
+    {
+      "id": "enpart.electron_nuclear.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/electron_nuclear/atoms",
+      "kind": "atom_matrix",
+      "title": "Electron-nuclear attraction (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.electron_nuclear.fragments",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/electron_nuclear/fragments",
+      "kind": "fragment_matrix",
+      "title": "Fragment Electron-nuclear attraction (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.electron_nuclear.integration_error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/electron_nuclear/integration_error_kcal",
+      "kind": "scalar",
+      "title": "Electron-nuclear attraction, integration error",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.kinetic.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/kinetic/atoms",
+      "kind": "atom_matrix",
+      "title": "Kinetic energy (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.kinetic.fragments",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/kinetic/fragments",
+      "kind": "fragment_matrix",
+      "title": "Fragment Kinetic energy (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.kinetic.integration_error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/kinetic/integration_error_kcal",
+      "kind": "scalar",
+      "title": "Kinetic energy, integration error",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.nuclear_repulsion.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/nuclear_repulsion/atoms",
+      "kind": "atom_matrix",
+      "title": "Nuclear-nuclear repulsion (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.nuclear_repulsion.fragments",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/nuclear_repulsion/fragments",
+      "kind": "fragment_matrix",
+      "title": "Fragment Nuclear-nuclear repulsion (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.two_electron_integration.energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/two_electron_integration/energy",
+      "kind": "scalar",
+      "title": "Electron-electron energy, first grid",
+      "unit": "au",
+      "decimals": 7,
+      "signed": false
+    },
+    {
+      "id": "enpart.two_electron_integration.error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/two_electron_integration/error_kcal",
+      "kind": "scalar",
+      "title": "Two-electron integration error, first grid",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.two_electron_integration.corrected_error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/two_electron_integration/corrected_error_kcal",
+      "kind": "scalar",
+      "title": "Two-electron integration error, corrected",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.coulomb.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/coulomb/atoms",
+      "kind": "atom_matrix",
+      "title": "Coulomb energy (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.coulomb.fragments",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/coulomb/fragments",
+      "kind": "fragment_matrix",
+      "title": "Fragment Coulomb energy (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.xc.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/xc/atoms",
+      "kind": "atom_matrix",
+      "title": "Exchange energy (HF) (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.xc.fragments",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/xc/fragments",
+      "kind": "fragment_matrix",
+      "title": "Fragment Exchange energy (HF) (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.total.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/total/atoms",
+      "kind": "atom_matrix",
+      "title": "IQA energy terms (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.total.fragments",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/total/fragments",
+      "kind": "fragment_matrix",
+      "title": "Fragment IQA energy terms (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.total_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/total_energy",
+      "kind": "scalar",
+      "title": "Total energy (IQA)",
+      "unit": "au",
+      "decimals": 7,
+      "signed": true
+    },
+    {
+      "id": "enpart.integration_error",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/integration_error",
+      "kind": "scalar",
+      "title": "Integration error of the total energy",
+      "unit": "au",
+      "decimals": 7,
+      "signed": true
+    },
+    {
+      "id": "enpart.atomic_energies.atoms.self_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/atomic_energies/atoms/self_energy",
+      "kind": "atom_vector",
+      "title": "Atomic self-energies",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.atomic_energies.atoms.additive_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/atomic_energies/atoms/additive_energy",
+      "kind": "atom_vector",
+      "title": "Additive atomic energies",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.atomic_energies.fragments.self_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/atomic_energies/fragments/self_energy",
+      "kind": "fragment_vector",
+      "title": "Fragment self-energies",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.atomic_energies.fragments.additive_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/atomic_energies/fragments/additive_energy",
+      "kind": "fragment_vector",
+      "title": "Additive fragment energies",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.classical_interaction.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/classical_interaction/atoms",
+      "kind": "atom_matrix",
+      "title": "Classical interaction energies (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.classical_interaction.fragments",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/classical_interaction/fragments",
+      "kind": "fragment_matrix",
+      "title": "Fragment Classical interaction energies (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
     }
   ],
   "run": {
     "job_name": "H2O-Dimer-RHF",
     "input_file": "H2O-Dimer-RHF.inp",
     "wavefunction_file": "H2O-Dimer-RHF.fchk",
-    "date": "2026-10-14T21:04:22+02:00",
-    "id": "2026-10-14T21:04:22+02:00/7b88",
+    "date": "2026-10-15T16:37:57+02:00",
+    "id": "2026-10-15T16:37:57+02:00/16f8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

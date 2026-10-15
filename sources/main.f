@@ -109,7 +109,8 @@ c      -------------------------------------------------------------------------
       use integration_grid
       use timing_mod
       use input_options_mod
-      use json_mod, only: json_open, json_close, json_end
+      use json_mod, only: json_open, json_close, json_end,
+     +  json_begin_object, json_begin_array, json_value, json_null
       use output_mod, only: print_value
       use omp_lib, only: omp_get_max_threads
       implicit real*8(a-h,o-z)
@@ -917,6 +918,22 @@ c      iopt(200) =
         if(iverbose.eq.0.and.iposthf.eq.0) write(*,'(2x,a)')
      +    'VERBOSE 1 in # METHOD also prints the intermediate matrices.'
 
+!! results file: enpart block of HF and KS-DFT (closed after the     !!
+!! two-electron part); the external-field terms stay out of it       !!
+        if(iposthf.eq.0) then
+          call json_begin_object('enpart')
+          if(ihf.eq.1) then
+            call json_value('wavefunction','Hartree-Fock')
+          else
+            call json_value('wavefunction','KS-DFT')
+          end if
+          if(kop.eq.1) then
+            call json_value('formalism','unrestricted')
+          else
+            call json_value('formalism','restricted')
+          end if
+        end if
+
 !! One-electron part: CASSCF and CI WFs !!
         if(iposthf.eq.1) then
           call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
@@ -931,7 +948,15 @@ c      iopt(200) =
         else 
 
 !! Initialize DFT functional for info and initial printing !!
+          if(id_xfunc.eq.-1) call json_null('functional')
           if(id_xfunc.ne.-1) then
+            call json_begin_object('functional')
+            if(len_trim(cfuncname).gt.0) then
+              call json_value('keyword',trim(cfuncname))
+            else
+              call json_value('keyword','LIBRARY')
+            end if
+            call json_begin_array('components')
             ifuncfirst=1
             itype=0
             jtype=0
@@ -949,7 +974,11 @@ c      iopt(200) =
             end if
             if(itype.ge.jtype) iopt(55) = itype
             if(jtype.gt.itype) iopt(55) = jtype
+            call json_end()
+            call json_value('exact_exchange_fraction',xmix)
+            call json_end()
           end if
+          call json_enpart_pairs()
 
 !! Restricted case !!
           if(kop.ne.1) then
@@ -1076,6 +1105,8 @@ c      iopt(200) =
      +  wtime2-wtime)
           time=time2
           wtime=wtime2
+!! closes the enpart block of the results file !!
+          call json_end()
 
 !! End of WF-type dispatch !!
         end if 

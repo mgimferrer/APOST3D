@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.9",
+  "schema_version": "0.10",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -270,8 +270,8 @@
     "job_name": "LiH-35-CAS22",
     "input_file": "LiH-35-CAS22.inp",
     "wavefunction_file": "LiH-35-CAS22.fchk",
-    "date": "2026-10-14T21:04:50+02:00",
-    "id": "2026-10-14T21:04:50+02:00/aa88",
+    "date": "2026-10-15T16:38:31+02:00",
+    "id": "2026-10-15T16:38:31+02:00/8f00",
     "threads": 8,
     "status": "normal",
     "stop_message": null

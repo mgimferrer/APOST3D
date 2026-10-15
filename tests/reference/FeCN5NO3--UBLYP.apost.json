@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.9",
+  "schema_version": "0.10",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -712,7 +712,7 @@
       },
       "reliability_percent": 6.4480668122986401E+001,
       "orbital_file": "FeCN5NO3--UBLYP-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-15T09:07:19+02:00/f138"
+      "orbital_file_id": "2026-10-15T16:38:13+02:00/ccf0"
     }
   },
   "index": [
@@ -1057,9 +1057,9 @@
     "job_name": "FeCN5NO3--UBLYP",
     "input_file": "FeCN5NO3--UBLYP.inp",
     "wavefunction_file": "FeCN5NO3--UBLYP.fchk",
-    "date": "2026-10-15T09:07:19+02:00",
-    "id": "2026-10-15T09:07:19+02:00/f138",
-    "threads": 1,
+    "date": "2026-10-15T16:38:13+02:00",
+    "id": "2026-10-15T16:38:13+02:00/ccf0",
+    "threads": 8,
     "status": "normal",
     "stop_message": null
   }
