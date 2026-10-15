@@ -323,7 +323,7 @@
                   end do
                 end do
 
-!! DEFINING A-B BODEN AS A-B + B-A, HENCE FACTOR OF 2
+!! the A-B BODEN counts A-B and B-A, hence the factor of 2 !!
                 scr_a(jfut)=ff2
                 if(iatom.ne.jatom) scr_a(jfut)=TWO*ff2
                 x1=x1+x2*scr_a(jfut)
@@ -342,6 +342,8 @@
             call xc(itotps,scr_a,scr,scr_tau,scr2)
 
             x1=ZERO
+!! xc energy of the pair on the grid: x1 is a reduction, nothing else !!
+!! is written                                                         !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
             do icenter=1,nat
               do iloc=1,iatps
@@ -1093,11 +1095,10 @@
           else
             xx=ZERO
             xxb=ZERO
-!! MG: same false-sharing-free parallelization as the RHF twin
-!! (numint_dft) above -- ff2/ff2b are genuine per-grid-point local scalars,
-!! scr_bod(:,jfut) is written at a unique index per iteration, xx/xxb are
-!! plain reductions. jfut computed inside the loop body, same reason as
-!! the RHF twin above (gfortran's COLLAPSE needs loop-invariant bounds). !!
+!! parallel as in the RHF twin (numint_dft): ff2/ff2b are PRIVATE       !!
+!! per-point scalars, scr_bod(:,jfut) is written at a unique index per  !!
+!! iteration, xx/xxb are reductions; jfut is computed in the body       !!
+!! because COLLAPSE needs loop-invariant bounds.                        !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jloc,jfut,x2,wa,wb,ff2,ff2b,ii,jj,ff,ffb) REDUCTION(+:xx,xxb)
             do icenter=1,nat
               do jloc=1,iatps
@@ -1141,6 +1142,8 @@
             if(itype.gt.1) call grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iatom,jatom,sab,sab2)
             call xc_uks(itotps,scr_bod,scrall,tau,scr2)
             x1=ZERO
+!! xc energy of the pair on the grid: x1 is a reduction, nothing else !!
+!! is written                                                         !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,iloc,ifut) REDUCTION(+:x1)
             do icenter=1,nat
               do iloc=1,iatps
