@@ -713,7 +713,7 @@
 !!   rho    (in)  -- electron density at each grid point                   !!
 !!   eto    (inout) -- total energy matrix, accumulated on top of the      !!
 !!                   one-electron part already in it                       !!
-!! author: PSalse, MGimf.                                                  !!
+!! author: PSalse, MGimf; loop order for OpenMP: R. Oswald.               !!
 !! *********************************************************************** !!
       subroutine numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
@@ -841,11 +841,9 @@
       if(ianalytical.eq.0) then
         call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       else
-!! chp2b is never declared/allocated in this subroutine -- under IMPLICIT !!
-!! REAL*8 it's silently a scalar, not the rank-2 array calc_twoel_        !!
-!! analytical expects (confirmed by gfortran's own rank-mismatch warning !!
-!! at compile time). Only reached if ianalytical=1, an apparently        !!
-!! untested path. Not fixed here, needs sign-off.                        !!
+!! chp2b is not declared here: under implicit typing it is a scalar, not !!
+!! the rank-2 array calc_twoel_analytical expects (gfortran warns of the  !!
+!! rank mismatch). Only reached with ANALYTIC, which no test covers.      !!
         call calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
       call cpu_time(xtime2)
@@ -862,8 +860,7 @@
 !! (closed shell: weight -2 for phi_i^2, -4 for phi_i*phi_j, i<j)        !!
           call multipolar_mo(nocc,itotps,wp,omp2,pcoord,chp2,-TWO,-FOUR,Excmp)
 
-!! loops reordered for parallelization purposes -- implementation !!
-!! performed thanks to Dr. R. Oswald.                             !!
+!! loops ordered for the thread splitting below (R. Oswald) !!
 
 !! same-center terms first; determine the core count for thread splitting. !!
           call getenv('OMP_NUM_THREADS',threadenv)
@@ -872,6 +869,8 @@
           else
             read(unit=threadenv,FMT='(I4)') ithreadenv
           end if
+!! a parallel region only to query the thread and processor counts;  !!
+!! every thread writes the same values to iprocs/ithreads            !!
         !$OMP PARALLEL
           iprocs=OMP_GET_MAX_THREADS()
           ithreads=INT(OMP_GET_NUM_PROCS())
@@ -888,12 +887,10 @@
 !! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
 !! avoids an old cap that limited parallelization to 8 cores.               !!
           exch_hfk=ZERO
-        !DIR$ NOPARALLEL
           do icenter=1,nat
             ioffset=(icenter-1)*iatps
             istart=0
             iend=0
-          !DIR$ NOPARALLEL
             do ik=1,(ithreads-1)
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
@@ -904,11 +901,10 @@
 !! both calls below are required for the thread count to actually take effect. !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-!! real OMP restored here (the old !DIR$ PARALLEL was an ifort-only hint  !!
-!! gfortran ignores). f3loc is a genuine PRIVATE scalar absorbing the     !!
-!! i/j accumulation; f3k(ik)/exch_hfk(icenter,ik) -- SHARED but           !!
-!! index-partitioned by ik, one write per ifut -- avoid the false sharing !!
-!! adjacent ik slots would cause if written every inner iteration.        !!
+!! parallel over the thread slices ik: f3loc is a PRIVATE scalar that     !!
+!! absorbs the i/j accumulation; exch_hfk(icenter,ik) is SHARED but        !!
+!! index-partitioned by ik and written once per ifut, which avoids the     !!
+!! false sharing of writing adjacent ik slots in every inner iteration.    !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
             do ik=1,ithreads
               do ifut=istart(ik),iend(ik)
@@ -929,7 +925,7 @@
                       f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
                       do j=i+1,nocc
                         f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
                       end do
                     end do
                     f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
@@ -971,25 +967,20 @@
           itilerest=mod(iatps,ithreads)
           ispace=(iatps-itilerest)/ithreads
           exch_hfij=ZERO
-        !DIR$ NOPARALLEL
           do numpairnat=1,ipaircounter
             icenter=ijpaircount(numpairnat,1)
             jcenter=ijpaircount(numpairnat,2)
             ioffset=(icenter-1)*iatps
             istart=0
             iend=0
-          !DIR$ NOPARALLEL
             do ik=1,(ithreads-1)
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
             end do
             istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
             iend(ithreads)=icenter*iatps
-!! MG: same fix as the same-center block above -- real OMP PARALLEL
-!! DO in place of the dead !DIR$ PARALLEL Intel directive. !!
-!! MG: same false-sharing fix as the same-center block above --
-!! f3loc is a genuine PRIVATE scalar absorbing the i/j accumulation;
-!! exch_hfij is only touched once per ifut instead of once per i/j pair. !!
+!! parallel over the thread slices ik, as the same-center block above: !!
+!! f3loc is PRIVATE, exch_hfij(numpairnat,ik) written once per ifut.     !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  chp2snifut,chp2snjfut,chp2sijfut,chp2siifut,i,j,f2,f3loc)
             do ik=1,ithreads
@@ -1013,7 +1004,7 @@
                       chp2siifut=chp2s(i,ifut)
                       do j=i+1,nocc
                         f2=TWO*x0*chp2siifut*chp2s(j,ifut)
-                        f3loc=f3loc+f2*x1*chp2sijfut*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2sijfut*chp2s(j,jfut)/dist
                       end do
                       f2=x0*chp2siifut*chp2siifut
                       f3loc=f3loc+f2*x1*chp2sijfut*chp2sijfut/dist
@@ -1148,12 +1139,10 @@
 
 !! same-center recompute, same manual-chunking shape as above. !!
           exch_hfk=ZERO
-        !DIR$ NOPARALLEL
           do icenter=1,nat
             ioffset=(icenter-1)*iatps
             istart=0
             iend=0
-          !DIR$ NOPARALLEL
             do ik=1,(ithreads-1)
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
@@ -1164,8 +1153,8 @@
 !! both calls below are required for the thread count to actually take effect. !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-!! MG: same fix as above -- real OMP PARALLEL DO in place of the
-!! dead !DIR$ PARALLEL Intel directive. !!
+!! parallel over the thread slices ik, as the same-center block above: !!
+!! f3loc is PRIVATE, exch_hfk(icenter,ik) written once per ifut.         !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
             do ik=1,ithreads
               do ifut=istart(ik),iend(ik)
@@ -1186,7 +1175,7 @@
                       f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
                       do j=i+1,nocc
                         f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
                       end do
                     end do
                     f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
@@ -1635,13 +1624,13 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/twoel/twoeltoler !MMO- adding common
+      common/twoel/twoeltoler
       common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/exchg/exch(maxat,maxat),xmix
-      common/efield/field(4),edipole !MMO- adding common
+      common/efield/field(4),edipole
 !! rotated-grid angles/thresholds, read from the # GRID input section. !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
 
@@ -1670,8 +1659,8 @@
       ihf         = Iopt(18)
       ithrebod    = Iopt(44)
       ipolar      = Iopt(46)
-      ifield      = Iopt(47) !MMO- adding iopt
-      ianalytical = Iopt(91) !MMO- analytical
+      ifield      = Iopt(47)
+      ianalytical = Iopt(91)
 
       if(ithrebod.lt.1) then
         threbod=ZERO
@@ -1721,7 +1710,7 @@
       call ao_to_mo_grid_t(itotps,igr,nalf,c,chp,chp2,chp2s)
       call ao_to_mo_grid_t(itotps,igr,nb,cb,chp,chp2b,chp2bs)
 
-      if(ianalytical.eq.0) then !MMO- skip if analytical
+      if(ianalytical.eq.0) then !! not for the analytical path !!
 
 !! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
 !! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
@@ -1755,7 +1744,7 @@
           rhopha(k)=xtot+xtotb
         end do
 !$OMP END PARALLEL DO
-      end if !MMO- non-analytical skip ends here
+      end if !! end of the non-analytical part !!
 
 !! Coulomb energy term. !!
       call cpu_time(xtime)
@@ -1773,7 +1762,7 @@
       wxtime=wxtime2
 
 !! HF-type exchange, computed only if requested (idoex). !!
-      if(ianalytical.eq.0) then !MMO- skip if analytical
+      if(ianalytical.eq.0) then !! not for the analytical path !!
         if(idoex.eq.1) then
 
 !! multipolar approximation, used below for atom pairs skipped by THREBOD, !!
@@ -1800,6 +1789,8 @@
           else
             read(unit=threadenv,FMT='(I4)') ithreadenv
           end if
+!! a parallel region only to query the thread and processor counts;  !!
+!! every thread writes the same values to iprocs/ithreads            !!
         !$OMP PARALLEL
           iprocs=OMP_GET_MAX_THREADS()
           ithreads=INT(OMP_GET_NUM_PROCS())
@@ -1816,12 +1807,10 @@
 !! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
 !! avoids an old cap that limited parallelization to 8 cores.               !!
           exch_hfk=ZERO
-        !DIR$ NOPARALLEL
           do icenter=1,nat
             ioffset=(icenter-1)*iatps
             istart=0
             iend=0
-          !DIR$ NOPARALLEL
             do ik=1,(ithreads-1)
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
@@ -1859,7 +1848,7 @@
                       end if
                       do j=i+1,nalf
                         f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
                         if(j.le.nb) then
                           f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
                           f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
@@ -1912,22 +1901,20 @@
           itilerest=mod(iatps,ithreads)
           ispace=(iatps-itilerest)/ithreads
           exch_hfij=ZERO
-        !DIR$ NOPARALLEL
           do numpairnat=1,ipaircounter
             icenter=ijpaircount(numpairnat,1)
             jcenter=ijpaircount(numpairnat,2)
             ioffset=(icenter-1)*iatps
             istart=0
             iend=0
-          !DIR$ NOPARALLEL
             do ik=1,(ithreads-1)
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
             end do
             istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
             iend(ithreads)=icenter*iatps
-!! MG: false-sharing fix -- same as the same-center block above,
-!! f3loc is a genuine PRIVATE scalar. !!
+!! parallel over the thread slices ik, as the same-center block above: !!
+!! f3loc is PRIVATE, exch_hfij(numpairnat,ik) written once per ifut.     !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  i,j,f2,f2b,f3loc)
             do ik=1,ithreads
@@ -1953,7 +1940,7 @@
                       end if
                       do j=i+1,nalf
                         f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                        f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist
                         if(j.le.nb) then
                           f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
                           f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
@@ -2109,12 +2096,10 @@
 
 !! same-center recompute, same manual-chunking shape as above. !!
           exch_hfk=ZERO
-          !DIR$ NOPARALLEL
           do icenter=1,nat
             ioffset=(icenter-1)*iatps
             istart=0
             iend=0
-            !DIR$ NOPARALLEL
             do ik=1,(ithreads-1)
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
@@ -2125,8 +2110,8 @@
 !! both calls below are required for the thread count to actually take effect. !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-!! MG: false-sharing fix -- same as the earlier blocks in this
-!! subroutine, f3loc is a genuine PRIVATE scalar. !!
+!! parallel over the thread slices ik, as the blocks above: f3loc is   !!
+!! PRIVATE, exch_hfk(icenter,ik) written once per ifut.                 !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
 !$OMP&  i,j,f2,f2b,f3loc)
             do ik=1,ithreads
@@ -2152,7 +2137,7 @@
                       end if
                       do j=i+1,nalf
                         f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
                         if(j.le.nb) then
                           f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
                           f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
@@ -3051,6 +3036,8 @@ c  energetics
       else
         read(unit=threadenv,FMT='(I4)') ithreadenv
       end if
+!! a parallel region only to query the thread and processor counts;  !!
+!! every thread writes the same values to iprocs/ithreads            !!
       !$OMP PARALLEL
       iprocs=OMP_GET_MAX_THREADS()
       ithreads=INT(OMP_GET_NUM_PROCS())
@@ -3068,12 +3055,10 @@ c  energetics
 !! avoids an old cap that limited parallelization to 8 cores.               !!
       coul=ZERO
       ecoul_k=ZERO
-      !DIR$ NOPARALLEL
       do icenter=1,nat
         ioffset=(icenter-1)*iatps
         istart=0
         iend=0
-        !DIR$ NOPARALLEL
         do ik=1,(ithreads-1)
           istart(ik)=ioffset+((ik-1)*ispace)+1
           iend(ik)=ioffset+(ik*ispace)
@@ -3084,9 +3069,8 @@ c  energetics
 !! both calls below are required for the thread count to actually take effect. !!
         call omp_set_dynamic(.false.)
         call omp_set_num_threads(ithreads)
-!! MG: restored real OpenMP parallelization here -- see numint_two
-!! (same file) for the full explanation; same fix, same already-safe
-!! per-ik data layout (f3k(ik), ecoul_k(icenter,ik)). !!
+!! parallel over the thread slices ik, as in numint_two: f3loc is      !!
+!! PRIVATE, ecoul_k(icenter,ik) written once per ifut.                  !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
         do ik=1,ithreads
           do ifut=istart(ik),iend(ik)
@@ -3133,21 +3117,19 @@ c  energetics
       itilerest=mod(iatps,ithreads)
       ispace=(iatps-itilerest)/ithreads
       ecoul_ij=ZERO
-      !DIR$ NOPARALLEL
       do numpairnat=1,ipaircounter
         icenter=ijpaircount(numpairnat,1)
         jcenter=ijpaircount(numpairnat,2)
         ioffset=(icenter-1)*iatps
         istart=0
         iend=0
-        !DIR$ NOPARALLEL
         do ik=1,(ithreads-1)
           istart(ik)=ioffset+((ik-1)*ispace)+1
           iend(ik)=ioffset+(ik*ispace)
         end do
         istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
-!! MG: same fix as the same-center block above. !!
+!! parallel over the thread slices ik, as the same-center block above. !!
 !$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
         do ik=1,ithreads
           do ifut=istart(ik),iend(ik)
