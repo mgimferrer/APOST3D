@@ -1470,6 +1470,9 @@
 !! miscellaneous / integration control !!
    integer :: iopop,idoint,ipca,ilaplacian,ielcount, &
               iatdens,inopop
+!! VERBOSE (# METHOD): 0 (default) prints the final results only, 1 also  !!
+!! the intermediate matrices (for now only ENPART uses it)                 !!
+   integer :: iverbose
    real*8  :: Rmax
 
 !! eff-AOs and EOS !!

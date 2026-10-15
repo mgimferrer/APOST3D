@@ -154,6 +154,8 @@
       subroutine numint_dft(ndim,itotps,wp,rho,omp,omp2,chp,eto,pcoord,sat)
       use ao_matrices
       use integration_grid
+      use output_mod, only: print_value
+      use input_options_mod, only: iverbose
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -167,13 +169,14 @@
       dimension omp(itotps),omp2(itotps,nat),rho(itotps),pcoord(itotps,3)
       dimension exch2(maxat,maxat),Excmp(maxat,maxat)
       dimension sat(igr,igr,nat)
-      character*80 line
+      character*80 c1,c2
+      dimension xoc(maxat,2)
+      allocatable :: ocm(:,:)
 
       allocatable :: chp2(:,:),scr(:),scrx(:,:)
       allocatable :: scr_a(:),rho_a(:),scr2(:),scr_tau(:)
       allocatable :: sab(:,:,:),chpd(:,:,:)
 
-      idofr    =  Iopt(40)
       ithrebod =  Iopt(44)
       itype    =  Iopt(55)
       iatps    =  nang*nrad
@@ -197,9 +200,6 @@
         threbod=real(ithrebod)/10000.0d0
       end if
 
-      call print_box('RKS-DFT ENERGY DECOMPOSITION')
-      write(*,*) " USING BOND ORDER DENSITY APPROACH "
-      write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! per-atom AO overlap projected onto MOs (sab), used by the BODEN kernel !!
 !! below. parallel over iatom: each iteration only writes its own         !!
@@ -239,7 +239,8 @@
             x=x+sab(ii,jj,kk)
           end do
           if(abs(x).gt.1.0d-3) then
-            write(*,*) ii,jj,x
+            write(*,'(2x,a,i0,a,i0,a,es10.2)') 'Atomic overlaps of the MOs ',
+     +        ii,' and ',jj,' do not add up to the MO overlap: ',x
             call apost_stop(" PROBLEM WITH MOs OVERLAPS ")
           end if
         end do
@@ -279,10 +280,19 @@
       end do
       if(nskip.gt.0) call multipolar_mo(nocc,itotps,wp,omp2,pcoord,chp2,-TWO,-FOUR,Excmp)
 
-      call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
-      write(*,*) " --------------------------- "
-      write(*,*) "  Atom   Atom   BODEN value  "
-      write(*,*) " --------------------------- "
+      npairs=nat*(nat-1)/2-nskip
+      call print_box('DFT EXCHANGE-CORRELATION (BODEN)')
+      call print_value('Pairs from the bond order density',npairs)
+      call print_value('Pairs from the multipolar expansion',nskip)
+      if(nskip.gt.0) call print_skipped_pairs(xmix)
+      if(iverbose.eq.1) then
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Integral of the bond order density (BODEN) of'//
+     +    ' each atom pair:'
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Atom pair       BODEN'
+        write(*,'(2x,a)') repeat('-',21)
+      end if
       do iatom=1,nat
         do jatom=iatom+1,nat
 
@@ -291,7 +301,8 @@
           if(bx0.lt.threbod) then
 !! a hybrid's xmix share is added with the HF-type exchange (numint_two). !!
             exch2(iatom,jatom)=(ONE-xmix)*Excmp(iatom,jatom)
-            write(*,'(4x,i3,4x,i3,4x,a10)') iatom,jatom,'multipolar'
+            if(iverbose.eq.1) write(*,'(2x,i3,a2,i3,a13)') iatom,' -',
+     +        jatom,'multipolar'
           else
             x1=ZERO
 !! ff2 is PRIVATE, scr_a(jfut) written at a unique index per iteration --  !!
@@ -319,7 +330,8 @@
               end do
             end do
 !$OMP END PARALLEL DO
-            write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,x1
+            if(iverbose.eq.1) write(*,'(2x,i3,a2,i3,f13.7)') iatom,' -',
+     +        jatom,x1
 
 !! BODEN gradient, for GGA functionals -- scr_a: BODEN for this atom pair, !!
 !! scr: sigma BODEN, scr2: XC functional value. Unreachable for meta-GGA   !!
@@ -342,10 +354,8 @@
           end if
         end do
       end do
-      write(*,*) " --------------------------- "
-      if(nskip.gt.0) call print_skipped_pairs(nskip,xmix)
+      if(iverbose.eq.1) write(*,'(2x,a)') repeat('-',21)
 
-      call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
       do ii=1,nat
         do jj=ii,nat
@@ -353,7 +363,14 @@
           exchen=exchen+exch2(ii,jj)
         end do
       end do
-      call MPRINT2(exch2,nat,maxat)
+      if(iverbose.eq.1) then
+        call enpart_matrix('DFT EXCHANGE-CORRELATION, PAIR TERMS',
+     +    'Off-diagonal: the pair terms (BODEN, or the multipolar'//
+     +    ' expansion below',
+     +    'the THREBOD threshold). No one-center terms here.',exch2,
+     +    'DFT pair terms',exchen)
+        call enpart_frag('DFT EXCHANGE-CORRELATION, PAIR TERMS',exch2)
+      end if
 
       if(itype.gt.1) call sigma(pcoord,chp2,scr)
 
@@ -373,12 +390,25 @@
       end do
 !$OMP END PARALLEL DO
 
-      call print_box('PURE KS-DFT XC ONE-CENTER TERMS (EXACT)')
-      call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
-      write(*,*)
+!! one-center terms by direct integration, kept for the tables below !!
+      ALLOCATE(ocm(maxat,maxat))
+      ocm=ZERO
+      do ii=1,nat
+        xoc(ii,1)=exch(ii,ii)
+        ocm(ii,ii)=exch(ii,ii)
+      end do
+      if(iverbose.eq.1) then
+        call enpart_matrix('DFT EXCHANGE-CORRELATION, ONE-CENTER TERMS',
+     +    'Diagonal: the functional integrated within each atom, before'//
+     +    ' half of',
+     +    'each pair term is moved out of it.',ocm,
+     +    'DFT one-center terms',xtot)
+        call enpart_frag('DFT EXCHANGE-CORRELATION, ONE-CENTER TERMS',
+     +    ocm)
+      end if
+      DEALLOCATE(ocm)
 
-      write(*,*) " REARRANGING ATOMIC COMPONENTS "
+!! self term: the one-center term minus half of each pair term of the atom !!
       do ii=1,nat
         x0=ZERO
         do jj=1,nat
@@ -390,26 +420,32 @@
         exch(ii,ii)=exch(ii,ii)-x0/TWO
       end do
 
-      call print_box('FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS')
+      do ii=1,nat
+        xoc(ii,2)=exch(ii,ii)
+      end do
+      call enpart_atom_table('DFT EXCHANGE-CORRELATION BY ATOM',
+     +  'In the atom: the functional integrated within the atom. Self'//
+     +  ' term: the same',
+     +  'minus half of each pair term of the atom (the diagonal below).',
+     +  2,xoc,'In the atom','Self term',.true.)
+
       exchen=ZERO
       do ii=1,nat
         do jj=ii,nat
           exchen=exchen+exch(ii,jj)
         end do
       end do
-      call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       if(xmix.gt.ZERO) then
-        write(*,*)
-        write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
-     +    ' x HF-type exchange is added in the'
-        write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
+        write(c1,'(a,f5.3,a)') 'DFT part only, without the ',xmix,
+     +    ' x HF-type exchange: the complete'
+        c2='terms are in EXCHANGE-CORRELATION ENERGY, further below.'
+      else
+        c1='The whole exchange-correlation energy (pure functional).'
+        c2=' '
       end if
-      if (idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Exc Decomposition'
-        call group_by_frag_mat(1,line,exch)
-      end if
-      write(*,*)
+      call enpart_matrix('DFT EXCHANGE-CORRELATION ENERGY',c1,c2,exch,
+     +  'DFT exchange-correlation',exchen)
+      call enpart_frag('DFT EXCHANGE-CORRELATION ENERGY',exch)
 
       xtot=ZERO
       do ii=1,nat
@@ -869,6 +905,8 @@
       subroutine numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
       use ao_matrices
       use integration_grid
+      use output_mod, only: print_value
+      use input_options_mod, only: iverbose
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -878,7 +916,9 @@
       common/actual/iact,jat,icenter
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/exchg/exch(maxat,maxat),xmix
-      character*80 line
+      character*80 c1,c2
+      dimension xoc(maxat,2)
+      allocatable :: ocm(:,:)
       dimension eto(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim)
       dimension omp(itotps),omp2(itotps,nat),pcoord(itotps,3)
@@ -887,7 +927,6 @@
       allocatable :: chpd(:,:,:),sab(:,:,:),sab2(:,:,:),scr_bod(:,:)
       allocatable :: chpbd(:,:,:),tau(:,:)
 
-      idofr    = Iopt(40)
       ithrebod = Iopt(44)
       itype    = Iopt(55)
       iatps    = nang*nrad
@@ -931,9 +970,6 @@
       end do
 !$OMP END PARALLEL DO
 
-      call print_box('UKS-DFT ENERGY DECOMPOSITION')
-      write(*,*) " USING BOND ORDER DENSITY APPROACH "
-      write(*,'(2x,a36,1x,f10.6)') "Threshold for atom pair calculation:",threbod
 
 !! per-atom MO overlap, alpha (sab) and beta (sab2). parallel over       !!
 !! iatom: each iteration only writes its own sab(:,:,iatom)/             !!
@@ -969,7 +1005,8 @@
             xa=xa+sab(ii,jj,kk)
           end do
           if(abs(xa).gt.1.0d-3) then
-            write(*,*) ii,jj,xa
+            write(*,'(2x,a,i0,a,i0,a,es10.2)') 'Atomic overlaps of the alpha MOs ',
+     +        ii,' and ',jj,' do not add up to the MO overlap: ',xa
             call apost_stop(" PROBLEM WITH ALPHA MOs OVERLAPS ")
           end if
         end do
@@ -982,7 +1019,8 @@
             xb=xb+sab2(ii,jj,kk)
           end do
           if(abs(xb).gt.1.0d-3) then
-            write(*,*) ii,jj,xb
+            write(*,'(2x,a,i0,a,i0,a,es10.2)') 'Atomic overlaps of the beta MOs ',
+     +        ii,' and ',jj,' do not add up to the MO overlap: ',xb
             call apost_stop(" PROBLEM WITH BETA MOs OVERLAPS ")
           end if
         end do
@@ -1029,10 +1067,19 @@
         call multipolar_mo(nb,itotps,wp,omp2,pcoord,chp3,-ONE,-TWO,Excmpb)
       end if
 
-      call print_box('BOND ORDER DENSITY FOR ALL ATOM PAIRS')
-      write(*,*) " --------------------------- "
-      write(*,*) "  Atom   Atom   BODEN value  "
-      write(*,*) " --------------------------- "
+      npairs=nat*(nat-1)/2-nskip
+      call print_box('DFT EXCHANGE-CORRELATION (BODEN)')
+      call print_value('Pairs from the bond order density',npairs)
+      call print_value('Pairs from the multipolar expansion',nskip)
+      if(nskip.gt.0) call print_skipped_pairs(xmix)
+      if(iverbose.eq.1) then
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Integral of the bond order density (BODEN) of'//
+     +    ' each atom pair:'
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Atom pair       BODEN'
+        write(*,'(2x,a)') repeat('-',21)
+      end if
       do iatom=1,nat
         do jatom=iatom+1,nat
 
@@ -1041,7 +1088,8 @@
           if(bx0.lt.threbod) then
 !! a hybrid's xmix share is added with the HF-type exchange (numint_two_uhf). !!
             exch2(iatom,jatom)=(ONE-xmix)*(Excmp(iatom,jatom)+Excmpb(iatom,jatom))
-            write(*,'(4x,i3,4x,i3,4x,a10)') iatom,jatom,'multipolar'
+            if(iverbose.eq.1) write(*,'(2x,i3,a2,i3,a13)') iatom,' -',
+     +        jatom,'multipolar'
           else
             xx=ZERO
             xxb=ZERO
@@ -1083,7 +1131,8 @@
               end do
             end do
 !$OMP END PARALLEL DO
-            write(*,'(4x,i3,4x,i3,4x,f10.7)') iatom,jatom,xx+xxb
+            if(iverbose.eq.1) write(*,'(2x,i3,a2,i3,f13.7)') iatom,' -',
+     +        jatom,xx+xxb
 
 !! BODEN gradient, for unrestricted GGA functionals. Unreachable for       !!
 !! meta-GGA today (see the itype.eq.3 guard above) -- tau here is the      !!
@@ -1104,10 +1153,8 @@
           end if
         end do
       end do
-      write(*,*) " --------------------------- "
-      if(nskip.gt.0) call print_skipped_pairs(nskip,xmix)
+      if(iverbose.eq.1) write(*,'(2x,a)') repeat('-',21)
 
-      call print_box('DIATOMIC PURE KS-DFT XC TERMS (BODEN)')
       exchen=ZERO
       do ii=1,nat
         exchen=exchen+exch2(ii,ii)
@@ -1118,7 +1165,14 @@
           end if
         end do
       end do
-      CALL MPRINT2(exch2,nat,maxat)
+      if(iverbose.eq.1) then
+        call enpart_matrix('DFT EXCHANGE-CORRELATION, PAIR TERMS',
+     +    'Off-diagonal: the pair terms (BODEN, or the multipolar'//
+     +    ' expansion below',
+     +    'the THREBOD threshold). No one-center terms here.',exch2,
+     +    'DFT pair terms',exchen)
+        call enpart_frag('DFT EXCHANGE-CORRELATION, PAIR TERMS',exch2)
+      end if
 
       if(itype.gt.1) call sigma_uks(pcoord,chp2,chp3,scrall)
 
@@ -1138,12 +1192,25 @@
       end do
 !$OMP END PARALLEL DO
 
-      call print_box('PURE KS-DFT XC ONE-CENTER TERMS (EXACT)')
-      call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a35,x,f14.7)') "KS-DFT exchange-correlation energy:",xtot
-      write(*,*)
+!! one-center terms by direct integration, kept for the tables below !!
+      ALLOCATE(ocm(maxat,maxat))
+      ocm=ZERO
+      do ii=1,nat
+        xoc(ii,1)=exch(ii,ii)
+        ocm(ii,ii)=exch(ii,ii)
+      end do
+      if(iverbose.eq.1) then
+        call enpart_matrix('DFT EXCHANGE-CORRELATION, ONE-CENTER TERMS',
+     +    'Diagonal: the functional integrated within each atom, before'//
+     +    ' half of',
+     +    'each pair term is moved out of it.',ocm,
+     +    'DFT one-center terms',xtot)
+        call enpart_frag('DFT EXCHANGE-CORRELATION, ONE-CENTER TERMS',
+     +    ocm)
+      end if
+      DEALLOCATE(ocm)
 
-      write(*,*) " REARRANGING ATOMIC COMPONENTS "
+!! self term: the one-center term minus half of each pair term of the atom !!
       do ii=1,nat
         x0=ZERO
         do jj=1,nat
@@ -1155,26 +1222,32 @@
         exch(ii,ii)=exch(ii,ii)-x0/TWO
       end do
 
-      call print_box('FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS')
+      do ii=1,nat
+        xoc(ii,2)=exch(ii,ii)
+      end do
+      call enpart_atom_table('DFT EXCHANGE-CORRELATION BY ATOM',
+     +  'In the atom: the functional integrated within the atom. Self'//
+     +  ' term: the same',
+     +  'minus half of each pair term of the atom (the diagonal below).',
+     +  2,xoc,'In the atom','Self term',.true.)
+
       exchen=ZERO
       do ii=1,nat
         do jj=ii,nat
           exchen=exchen+exch(ii,jj)
         end do
       end do
-      call MPRINT2(exch,nat,maxat)
-      write(*,'(2x,a47,x,f14.7)') "Sum of pure KS-DFT exchange-correlation energy:",exchen
       if(xmix.gt.ZERO) then
-        write(*,*)
-        write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
-     +    ' x HF-type exchange is added in the'
-        write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
+        write(c1,'(a,f5.3,a)') 'DFT part only, without the ',xmix,
+     +    ' x HF-type exchange: the complete'
+        c2='terms are in EXCHANGE-CORRELATION ENERGY, further below.'
+      else
+        c1='The whole exchange-correlation energy (pure functional).'
+        c2=' '
       end if
-      if (idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Exc Decomposition'
-        call group_by_frag_mat(1,line,exch)
-      end if
-      write(*,*)
+      call enpart_matrix('DFT EXCHANGE-CORRELATION ENERGY',c1,c2,exch,
+     +  'DFT exchange-correlation',exchen)
+      call enpart_frag('DFT EXCHANGE-CORRELATION ENERGY',exch)
 
       xtot=ZERO
       do ii=1,nat
@@ -1270,46 +1343,48 @@
 
 !! *********************************************************************** !!
 !! subroutine: print_skipped_pairs                                         !!
-!! purpose: explains, under the BODEN table, where the xc term of the      !!
-!!   atom pairs below the THREBOD threshold comes from.                    !!
+!! purpose: explains, under the pair counts of the DFT part, where the xc  !!
+!!   term of the atom pairs below the THREBOD threshold comes from.        !!
 !! arguments:                                                              !!
-!!   nskip (in) -- number of such pairs                                    !!
 !!   xmix  (in) -- exact-exchange fraction of the functional               !!
 !! author: MGimf                                                           !!
 !! *********************************************************************** !!
-      subroutine print_skipped_pairs(nskip,xmix)
+      subroutine print_skipped_pairs(xmix)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 
-      write(*,'(2x,i0,a)') nskip,' atom pair(s) below the threshold: exchange-correlation'
-      write(*,'(2x,a)') 'from the multipolar expansion, not BODEN.'
-      if(xmix.gt.ZERO) write(*,'(2x,a,f5.3,a,f5.3,a)') 'Here its (1 - ',xmix,
-     +  ') share; the ',xmix,' share comes with the HF-type exchange.'
-
+      write(*,'(a)') ''
+      write(*,'(2x,a)') 'Pairs below the THREBOD threshold take their whole'//
+     +  ' exchange-correlation'
+      write(*,'(2x,a)') 'from the multipolar expansion, not from BODEN.'
+      if(xmix.gt.ZERO) then
+        write(*,'(2x,a,f5.3,a,f5.3,a)') 'The DFT part holds its (1 - ',
+     +    xmix,') share; the ',xmix,' share is in'
+        write(*,'(2x,a)') 'EXACT-EXCHANGE SHARE.'
+      end if
       end
 
 !! ***** !!
 
 !! *********************************************************************** !!
 !! subroutine: func_info_print                                             !!
-!! purpose: prints the density-functional identification block (name,     !!
-!!   references, exchange/correlation type, family) via libxc's own info   !!
-!!   query functions, and classifies the functional into itype (1 LDA,    !!
-!!   2 GGA) for the caller's gradient-calculation dispatch. Stops cleanly  !!
-!!   on anything else (invalid id, meta-GGA, range-separated, VV10...).    !!
+!! purpose: prints one component of the DENSITY FUNCTIONAL section (libxc  !!
+!!   name and id, kind, family, exact-exchange fraction, references) via   !!
+!!   libxc's own info query functions, and classifies the functional into  !!
+!!   itype (1 LDA, 2 GGA) for the caller's gradient-calculation dispatch.  !!
+!!   Stops cleanly on anything else (invalid id, meta-GGA, range-separated,!!
+!!   VV10...).                                                             !!
 !! arguments:                                                              !!
 !!   id_func (in)  -- libxc functional id (from iopt, read by the caller)  !!
 !!   itype   (out) -- functional family classification, see above          !!
-!!   ifirst  (in)  -- 1 if this is the first of up to 3 consecutive calls  !!
-!!                   from the caller (subbox, no leading blank -- the      !!
-!!                   caller's own preceding box already supplies one), 0   !!
-!!                   otherwise (print_box, own leading blank needed since  !!
-!!                   the previous call's content isn't blank-terminated)   !!
+!!   ifirst  (in)  -- 1 for the first of up to 3 consecutive calls (opens  !!
+!!                   the section), 0 otherwise (a blank line before)       !!
 !! author: PSalse, MGimf.                                                  !!
 !! *********************************************************************** !!
       subroutine func_info_print(id_func,itype,ifirst)
 
       use xc_f03_lib_m
+      use output_mod, only: print_value
 
       implicit real*8(a-h,o-z)
 
@@ -1324,12 +1399,14 @@
 
       character*120 name_ref
       character*80 name_func
+      character*100 cbuf
+      character*20 ckind,cfam,clab
 
       if(kop.ne.1) call xc_f03_func_init(xc_func,id_func,XC_UNPOLARIZED,ierr)
       if(kop.eq.1) call xc_f03_func_init(xc_func,id_func,XC_POLARIZED,ierr)
 !! an unknown id leaves xc_func without info -- querying it segfaults. !!
       if(ierr.ne.0) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a,1x,i0,1x,a)') 'ERROR: functional id',id_func,
      +    'is not a valid libxc functional id.'
         write(*,'(2x,a)') 'See https://libxc.gitlab.io/functionals/ for the list of ids.'
@@ -1339,36 +1416,17 @@
       xmix = xc_f03_hyb_exx_coef(xc_func)
       name_func = xc_f03_func_info_get_name(xc_info)
 
-      if(ifirst.eq.1) then
-        call print_subbox('DENSITY FUNCTIONAL INFORMATION')
-      else
-        call print_box('DENSITY FUNCTIONAL INFORMATION')
-      end if
-      write(*,*) " Functional name --> ",trim(name_func)
-!! xc_f03_func_info_get_references uses lookahead semantics: the call that !!
-!! returns the LAST reference also sets ii=-1 on that same call (unlike    !!
-!! the old xc_f90_info_refs, which only signalled "done" on the following, !!
-!! empty call). irefref tracks the printed 1-based ordinal separately from !!
-!! ii, which is consumed as the next-index cursor. !!
-      ii=0
-      irefref=0
-      do while(ii.ge.0)
-        xc_ref = xc_f03_func_info_get_references(xc_info,ii)
-        irefref=irefref+1
-        name_ref = xc_f03_func_reference_get_ref(xc_ref)
-        write(*,'(2x,a15,i2,a1,x,a120)') "Reference --> [",irefref,"]",name_ref
-      end do
       select case(xc_f03_func_info_get_kind(xc_info))
       case(XC_EXCHANGE)
-        write(*,*) " Functional type --> exchange"
+        ckind='exchange'
       case(XC_CORRELATION)
-        write(*,*) " Functional type --> correlation"
+        ckind='correlation'
       case(XC_EXCHANGE_CORRELATION)
-        write(*,*) " Functional type --> exchange-correlation"
+        ckind='exchange-correlation'
       case(XC_KINETIC)
-        write(*,*) " Functional type --> kinetic energy"
+        ckind='kinetic energy'
       case default
-        write(*,*) " Functional type --> unknown"
+        ckind='unknown'
       end select
 
 !! itype: 1 LDA, 2 GGA, 3 meta-GGA. Hybrid functionals get xmix>0 as well. !!
@@ -1379,22 +1437,47 @@
       itype=0
       select case(xc_f03_func_info_get_family(xc_info))
       case(XC_FAMILY_LDA)
-        write(*,*) " LDA functional selected"
+        cfam='LDA'
         itype=1
       case(XC_FAMILY_GGA)
-        write(*,*) " GGA functional selected"
+        cfam='GGA'
         itype=2
       case(XC_FAMILY_HYB_GGA)
-        write(*,*) " HYBRID-GGA functional selected"
-!! for a range-separated hybrid this would be the long-range fraction only. !!
-        if(irsh.eq.0) write(*,'(2x,a26,x,f5.3)') "HF-type exchange coeff -->",xmix
+        cfam='hybrid GGA'
         itype=2
       case(XC_FAMILY_MGGA,XC_FAMILY_HYB_MGGA)
-        write(*,*) " META-GGA functional selected"
+        cfam='meta-GGA'
         itype=3
       case default
+        cfam='other'
         itype=-1
       end select
+
+      if(ifirst.eq.1) then
+        call print_box('DENSITY FUNCTIONAL')
+      else
+        write(*,'(a)') ''
+      end if
+      write(cbuf,'(a,a,i0,a)') trim(name_func),' (libxc id ',id_func,')'
+      call print_value('libxc functional',trim(cbuf))
+      call print_value('Kind',trim(ckind))
+      call print_value('Family',trim(cfam))
+!! for a range-separated hybrid this would be the long-range fraction only. !!
+      if(itype.eq.2.and.xmix.gt.ZERO.and.irsh.eq.0)
+     +  call print_value('Exact-exchange fraction',xmix,3)
+
+!! xc_f03_func_info_get_references uses lookahead semantics: the call that !!
+!! returns the LAST reference also sets ii=-1 on that same call. irefref   !!
+!! numbers the printed references, ii is the next-index cursor.            !!
+      ii=0
+      irefref=0
+      do while(ii.ge.0)
+        xc_ref = xc_f03_func_info_get_references(xc_info,ii)
+        irefref=irefref+1
+        name_ref = xc_f03_func_reference_get_ref(xc_ref)
+        write(clab,'(a,i0,a)') 'Reference [',irefref,']'
+        call print_value(trim(clab),trim(adjustl(name_ref)))
+      end do
 
 !! everything past this point is a clean stop for functionals APOST-3D !!
 !! can't decompose yet -- before any energy is computed, never silently. !!
@@ -1404,18 +1487,18 @@
 !! meta-GGA: tau is wired into the one-center term and DFT-DM1, but the  !!
 !! BODEN atom-pair term still has no tau analog (under discussion).       !!
       if(itype.eq.3) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') 'Meta-GGA functionals are not supported yet (implementation'
         write(*,'(2x,a)') 'in progress). Use an LDA, GGA or global-hybrid GGA functional.'
         call apost_stop('META-GGA FUNCTIONALS NOT YET SUPPORTED')
       end if
       if(itype.lt.0) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') 'Only LDA, GGA and global-hybrid GGA functionals are supported.'
         call apost_stop('UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp')
       end if
       if(ikind.eq.XC_KINETIC) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') 'This is a kinetic-energy functional, not an exchange or'
         write(*,'(2x,a)') 'correlation one.'
         call apost_stop('KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp')
@@ -1424,13 +1507,13 @@
 !! range fraction, the short-range exact exchange is never integrated;    !!
 !! VV10: libxc's exc omits the nonlocal correlation part.                 !!
       if(irsh.ne.0) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') 'Range-separated hybrids (CAM-B3LYP, wB97X, HSE, LC-...) are'
         write(*,'(2x,a)') 'not supported: only global hybrids are.'
         call apost_stop('RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp')
       end if
       if(iand(iflags,XC_FLAGS_VV10).ne.0) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') 'Functionals with VV10 nonlocal correlation are not supported.'
         call apost_stop('VV10 FUNCTIONAL NOT SUPPORTED. REVISE inp')
       end if

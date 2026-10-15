@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -121,7 +123,7 @@
   Rotation angles (two-electron grid)     : 0.162 / 0.182 (ROTATION_2E)
 
   TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -146,8 +148,8 @@
 
   Sum of atomic overlaps, largest error   : 1.22E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.35 s
-  TIMING WALL :: Atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.23 s
+  TIMING WALL :: Atomic definition                                 0.04 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -229,32 +231,32 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  ----------------------------------------
-    DOING MOLECULAR ENERGY DECOMPOSITION
-  ----------------------------------------
+  --------------------------------
+    ENERGY PARTITIONING (ENPART)
+  --------------------------------
 
-  ----------------------------------
-    DENSITY FUNCTIONAL INFORMATION
-  ----------------------------------
+  Wavefunction                            : KS-DFT, restricted
+  Atomic definition                       : TFVC (real space)
 
-  Functional name --> Vosko, Wilk & Nusair (VWN5_RPA)
-  Reference --> [ 1] S. H. Vosko, L. Wilk, and M. Nusair,  Can. J. Phys. 58, 1200 (1980)                                                     
-  Functional type --> correlation
-  LDA functional selected
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
+  VERBOSE 1 in # METHOD also prints the intermediate matrices.
 
-  ----------------------------------
-    DENSITY FUNCTIONAL INFORMATION
-  ----------------------------------
+  ----------------------
+    DENSITY FUNCTIONAL
+  ----------------------
 
-  Functional name --> Slater exchange
-  Reference --> [ 1] P. A. M. Dirac,  Math. Proc. Cambridge Philos. Soc. 26, 376 (1930)                                                      
-  Reference --> [ 2] F. Bloch,  Z. Phys. 57, 545 (1929)                                                                                      
-  Functional type --> exchange
-  LDA functional selected
+  libxc functional                        : Vosko, Wilk & Nusair (VWN5_RPA) (libxc id 8)
+  Kind                                    : correlation
+  Family                                  : LDA
+  Reference [1]                           : S. H. Vosko, L. Wilk, and M. Nusair,  Can. J. Phys. 58, 1200 (1980)
 
-  -----------------------------
-    GENERAL ONE-ELECTRON PART
-  -----------------------------
+  libxc functional                        : Slater exchange (libxc id 1)
+  Kind                                    : exchange
+  Family                                  : LDA
+  Reference [1]                           : P. A. M. Dirac,  Math. Proc. Cambridge Philos. Soc. 26, 376 (1930)
+  Reference [2]                           : F. Bloch,  Z. Phys. 57, 545 (1929)
 
   -------------------------------
     ELECTRON-NUCLEAR ATTRACTION
@@ -267,22 +269,23 @@
     2  H    -6.402883   -0.662774   -0.257508
     3  H    -6.402883   -0.257508   -0.662774
   -------------------------------------------
-  Electron-nuclei energy:   -198.9264417
-  Integration error (kcal/mol):     0.01
+  Electron-nuclear attraction (au)        :    -198.9264417
+  Integration error (kcal/mol)            :           0.01
 
   ------------------
     KINETIC ENERGY
   ------------------
 
-  -------------------------------------------
-                 1  O        2  H        3  H
-  -------------------------------------------
-    1  O    75.224302    0.000000    0.000000
-    2  H     0.000000    0.330571    0.000000
-    3  H     0.000000    0.000000    0.330571
-  -------------------------------------------
-  Kinetic energy:     75.8854436
-  Integration error (kcal/mol):     0.01
+  One-center terms only: the kinetic energy has no pair terms.
+
+  Atom        Kinetic
+  -------------------
+    1  O    75.224302
+    2  H     0.330571
+    3  H     0.330571
+  -------------------
+  Kinetic energy (au)                     :      75.8854436
+  Integration error (kcal/mol)            :           0.01
 
   -----------------------------
     NUCLEAR-NUCLEAR REPULSION
@@ -295,60 +298,38 @@
     2  H     4.385467    0.000000    0.348447
     3  H     4.385467    0.348447    0.000000
   -------------------------------------------
-  Nuclear repulsion energy:      9.1193799
+  Nuclear-nuclear repulsion (au)          :       9.1193799
 
-  TIMING CPU  :: enpart one-electron                               0.27 s
-  TIMING WALL :: enpart one-electron                               0.04 s
+  TIMING CPU  :: ENPART one-electron terms                         0.19 s
+  TIMING WALL :: ENPART one-electron terms                         0.03 s
 
-  --------------------------------
-    RKS-DFT ENERGY DECOMPOSITION
-  --------------------------------
+  ------------------------------------
+    DFT EXCHANGE-CORRELATION (BODEN)
+  ------------------------------------
 
-  USING BOND ORDER DENSITY APPROACH 
-  Threshold for atom pair calculation:   0.000000
+  Pairs from the bond order density       : 3
+  Pairs from the multipolar expansion     : 0
 
-  -----------------------------------------
-    BOND ORDER DENSITY FOR ALL ATOM PAIRS
-  -----------------------------------------
+  ------------------------------------
+    DFT EXCHANGE-CORRELATION BY ATOM
+  ------------------------------------
 
-  --------------------------- 
-   Atom   Atom   BODEN value  
-  --------------------------- 
-      1      2     0.6656624
-      1      3     0.6656624
-      2      3     0.0080953
-  --------------------------- 
+  In the atom: the functional integrated within the atom. Self term: the same
+  minus half of each pair term of the atom (the diagonal below).
 
-  -----------------------------------------
-    DIATOMIC PURE KS-DFT XC TERMS (BODEN)
-  -----------------------------------------
+  Atom    In the atom   Self term
+  -------------------------------
+    1  O    -8.680091   -8.498405
+    2  H    -0.150998   -0.059858
+    3  H    -0.150998   -0.059858
+  -------------------------------
+  Total     -8.982088   -8.618121
 
-  -------------------------------------------
-                 1  O        2  H        3  H
-  -------------------------------------------
-    1  O     0.000000   -0.181686   -0.181686
-    2  H    -0.181686    0.000000   -0.000594
-    3  H    -0.181686   -0.000594    0.000000
-  -------------------------------------------
+  -----------------------------------
+    DFT EXCHANGE-CORRELATION ENERGY
+  -----------------------------------
 
-  -------------------------------------------
-    PURE KS-DFT XC ONE-CENTER TERMS (EXACT)
-  -------------------------------------------
-
-  -------------------------------------------
-                 1  O        2  H        3  H
-  -------------------------------------------
-    1  O    -8.680091    0.000000    0.000000
-    2  H     0.000000   -0.150998    0.000000
-    3  H     0.000000    0.000000   -0.150998
-  -------------------------------------------
-  KS-DFT exchange-correlation energy:     -8.9820876
-
-  REARRANGING ATOMIC COMPONENTS 
-
-  ------------------------------------------------------------
-    FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS
-  ------------------------------------------------------------
+  The whole exchange-correlation energy (pure functional).
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -357,60 +338,45 @@
     2  H    -0.181686   -0.059858   -0.000594
     3  H    -0.181686   -0.000594   -0.059858
   -------------------------------------------
-  Sum of pure KS-DFT exchange-correlation energy:     -8.9820876
+  DFT exchange-correlation (au)           :      -8.9820876
 
-  TIMING CPU  :: enpart dft                                        0.06 s
-  TIMING WALL :: enpart dft                                        0.03 s
+  TIMING CPU  :: ENPART DFT exchange-correlation                   0.04 s
+  TIMING WALL :: ENPART DFT exchange-correlation                   0.02 s
 
-  -------------------------------------------------------
-    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
-  -------------------------------------------------------
+  ---------------------
+    TWO-ELECTRON GRID
+  ---------------------
 
   Radial points                           : 40
   Angular points                          : 146
   Grid points                             : 17520
 
-  -----------------------------
-    GENERAL TWO-ELECTRON PART
-  -----------------------------
+  TIMING CPU  :: ENPART Coulomb                                    0.27 s
+  TIMING WALL :: ENPART Coulomb                                    0.04 s
 
-  Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
+  ----------------------------------
+    TWO-ELECTRON INTEGRATION ERROR
+  ----------------------------------
 
-  --------------------------------------------
-    COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
-  --------------------------------------------
-
-  -------------------------------------------
-                 1  O        2  H        3  H
-  -------------------------------------------
-    1  O    43.281211    1.669866    1.669866
-    2  H     1.669866    0.089416    0.048442
-    3  H     1.669866    0.048442    0.089416
-  -------------------------------------------
-  Coulomb energy:     46.8482175
-
-  TIMING CPU  :: Coulomb energy                                    0.39 s
-  TIMING WALL :: Coulomb energy                                    0.06 s
-
-  KS-DFT electron-electron energy (au):     37.8661299
-  Integration error (kcal/mol):    -3.09
-
-  Max error accepted on the two-electron part (kcal/mol):     0.25
-
-  Zero-error strategy applied: the INTERPOLATED tables below replace
-  the ones above (only their one-center terms change).
-  Rotating for angles:   0.000000   0.182000
-  New error after rotation:   -10.41
+  Electron-electron energy (au)           :      37.8661299
+  Integration error (kcal/mol)            :          -3.09
+  Tolerance (kcal/mol)                    :           0.25
+  Zero-error correction                   : applied to the one-center terms
+  Error on the rotated grid (kcal/mol)    :         -10.41
   Same-sign error on both grids: extrapolating, not interpolating
-  Damping parameter       :      1.4227849
+  Damping parameter                       :       1.4227849
+  Corrected electron-electron energy (au) :      37.8710578
+  Corrected integration error (kcal/mol)  :           0.00
 
-  TIMING CPU  :: Interpolated zero-error                           0.19 s
-  TIMING WALL :: Interpolated zero-error                           0.06 s
+  The one-center Coulomb and exchange terms of the matrices below
+  are the corrected ones; the pair terms do not change.
 
-  ---------------------------------------------------------
-    INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
-  ---------------------------------------------------------
+  TIMING CPU  :: ENPART zero-error correction                      0.11 s
+  TIMING WALL :: ENPART zero-error correction                      0.04 s
+
+  ------------------
+    COULOMB ENERGY
+  ------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -419,14 +385,13 @@
     2  H     1.669866    0.089432    0.048442
     3  H     1.669866    0.048442    0.089432
   -------------------------------------------
-  Coulomb energy:     46.8531454
+  Coulomb energy (au)                     :      46.8531454
 
-  KS-DFT electron-electron energy:     37.8710578
-  Integration error (kcal/mol):     0.00
+  ---------------------------
+    IQA ENERGY TERMS (TFVC)
+  ---------------------------
 
-  ----------------------------------------
-    FUZZY ATOMS KS-DFT ENERGY COMPONENTS
-  ----------------------------------------
+  Self-energies on the diagonal, interaction energies off it.
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -435,12 +400,43 @@
     2  H    -0.529236   -0.302629    0.138786
     3  H    -0.529236    0.138786   -0.302629
   -------------------------------------------
-  Total KS-DFT energy      :    -76.0505604
-  Total energy in Fchk file:    -76.0505886
-  Integration error (au):      0.0000282
-  Integration error (kcal/mol):     0.02
+  Total energy (au)                       :     -76.0505604
+  Energy in the .fchk file (au)           :     -76.0505886
+  Integration error (au)                  :       0.0000282
+  Integration error (kcal/mol)            :           0.02
 
-  TIMING CPU  :: enpart two-electron                               0.62 s
-  TIMING WALL :: enpart two-electron                               0.12 s
+  -------------------
+    ATOMIC ENERGIES
+  -------------------
+
+  Additive energy = self-energy + half of each interaction energy of the atom;
+  the additive energies add up to the total energy.
+
+  Atom    Self-energy    Additive
+  -------------------------------
+    1  O   -74.525615  -75.054851
+    2  H    -0.302629   -0.497855
+    3  H    -0.302629   -0.497855
+  -------------------------------
+  Total    -75.130874  -76.050560
+
+  ----------------------------------
+    CLASSICAL INTERACTION ENERGIES
+  ----------------------------------
+
+  Electron-nuclear + nuclear-nuclear + Coulomb part of each interaction;
+  the rest of it is the exchange-correlation part. No self terms.
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     0.000000   -0.347550   -0.347550
+    2  H    -0.347550    0.000000    0.139380
+    3  H    -0.347550    0.139380    0.000000
+  -------------------------------------------
+  Classical interaction energy (au)       :      -0.5557203
+
+  TIMING CPU  :: ENPART two-electron terms                         0.41 s
+  TIMING WALL :: ENPART two-electron terms                         0.08 s
 
   ...Normal Termination of APOST-3D...

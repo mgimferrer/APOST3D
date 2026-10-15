@@ -199,6 +199,8 @@
      "description": "GEOS: cubes of paired EFOs with net occ. <= -val/1000 (optional val, default 50)",       "priority": "medium"},
     {"id": "FULLPRECISION",   "key": "FULLPRECISION",     "section": "# METHOD",   "category": "output",
      "description": "Enhanced output precision (more decimal places)",                                        "priority": "low"},
+    {"id": "VERBOSE",         "key": "VERBOSE",           "section": "# METHOD",   "category": "output",
+     "description": "Output detail: 1 also prints the intermediate matrices (ENPART)",                       "priority": "medium"},
     {"id": "NOPOPU",          "key": "NOPOPU",            "section": "# METHOD",   "category": "output",
      "description": "Suppress population analysis output",                                                     "priority": "low"},
     {"id": "GRID/RADIAL",     "key": "RADIAL",            "section": "# GRID",     "category": "grid",

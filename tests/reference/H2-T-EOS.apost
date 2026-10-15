@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -419,7 +421,7 @@
   Total             0.00
   Overall reliability index R (%)         :        100.000
 
-  TIMING CPU  :: EFFAO computation                                 0.00 s
+  TIMING CPU  :: EFFAO computation                                 0.01 s
   TIMING WALL :: EFFAO computation                                 0.00 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

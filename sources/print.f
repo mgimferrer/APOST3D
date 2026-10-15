@@ -27,6 +27,7 @@
 !!   mprintnoat            -- fragment x fragment matrix, as MPRINT2       !!
 !!   group_by_frag_mat     -- section with the fragment matrix and total   !!
 !!   group_by_frag_vec     -- section with the fragment table and total    !!
+!!   print_frag_table      -- section with a given fragment table          !!
 !! AIMPAC/PROAIMV interface (opt-in, # METHOD / DOINT):                    !!
 !!   print_int              -- writes one .int file per atom (plus a        !!
 !!                             .files index) holding its MO/NO-basis        !!
@@ -332,6 +333,8 @@
       if(icube.eq.1) call print_value('Cube files','CUBE (see # CUBE)')
       if(iaccur.eq.1) call print_value('Output precision',
      +  'FULLPRECISION (13 decimals)')
+      if(iverbose.eq.1) call print_value('Output detail',
+     +  'full (VERBOSE 1)')
       if(inopop.eq.1) call print_value('Population output',
      +  'NOPOPU (suppressed)')
       if(nrad_in.gt.0.or.nang_in.gt.0) then
@@ -1061,15 +1064,37 @@
       subroutine group_by_frag_vec(ndim,title,A,h1,h2)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      character*(*) title,h1,h2
+      dimension A(maxat,ndim),B(maxat,ndim),x(ndim)
+
+      call frag_sum_vec(ndim,A,B,x)
+      call print_frag_table(ndim,title,B,x,h1,h2)
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: print_frag_table
+!! Prints a per-fragment table under its own section title: one row per
+!! fragment and a Total row with the given column totals.
+!! arguments:
+!!   ndim  (in)  number of value columns (1 or 2)
+!!   title (in)  section title (leading blanks are ignored)
+!!   B     (in)  (maxat,ndim) per-fragment table
+!!   x     (in)  (ndim) column totals
+!!   h1,h2 (in)  column headings (h2 unused when ndim=1)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_frag_table(ndim,title,B,x,h1,h2)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
      +  jfrlist(maxat)
       common /printout/iaccur
       character*(*) title,h1,h2
-      dimension A(maxat,ndim),B(maxat,ndim),x(ndim)
+      dimension B(maxat,ndim),x(ndim)
       integer colw
       character*20 fmtrow,fmttot,fmthdr
-
-      call frag_sum_vec(ndim,A,B,x)
 
 !! fragment number in 3 characters and 6 blanks, as in mprintnoat; value !!
 !! columns 12 wide (6 decimals), 20 wide (13) with FULLPRECISION         !!

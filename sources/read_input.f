@@ -12,9 +12,11 @@
       subroutine read_input()
 
       use input_options_mod
+      use output_mod, only: print_value
       use integration_grid, only: check_grid
 
       implicit real*8(a-h,o-z)
+      character*40 cfldv
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -68,6 +70,16 @@
 !! look for options !!
       call readchar("# METHOD","ALLPOINTS",iallpo)
       call readchar("# METHOD","FULLPRECISION",iaccur)
+
+!! output detail: VERBOSE 0 (default) or 1; a bare VERBOSE stops !!
+      call readchar("# METHOD","VERBOSE",ii)
+      call readint("# METHOD","VERBOSE",iverbose,-1,1)
+      if(ii.eq.0) iverbose=0
+      if(iverbose.ne.0.and.iverbose.ne.1) then
+        write(*,'(2x,a)') 'VERBOSE takes the value 0 (default) or 1,'//
+     +    ' e.g. VERBOSE 1'
+        call apost_stop(' Wrong VERBOSE value in # METHOD')
+      end if
 
 !! atoms in molecules: exactly one atomic definition !!
       call check_one_atomic_definition()
@@ -322,10 +334,12 @@
 !! removed, no longer used here                                         !!
       end if
 
+!! a static field in the .fchk ends the WAVEFUNCTION SUMMARY !!
       call field_misc(ifield)
       if(ifield.eq.1) then
-        write(*,*) 'The system is under a static electric field' 
-        write(*,'(3(a4,f8.6))') 'Fx=',field(2), 'Fy=',field(3),'Fz=',field(4) 
+        write(cfldv,'(3f10.6)') field(2),field(3),field(4)
+        call print_value('External electric field, x y z',
+     +    trim(adjustl(cfldv)),'au')
       end if
 
 !! do for restricted number of atoms !!

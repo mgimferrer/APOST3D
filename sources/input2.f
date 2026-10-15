@@ -739,6 +739,7 @@
       use basis_set
       use ao_matrices
       use integration_grid
+      use output_mod, only: print_value
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -790,7 +791,6 @@
 897   continue
 
       if(iecp.eq.1) then
-        write(*,'(2x,a)') 'Pseudopotential matrix found in .fchk file'
         ntri=igr*(igr+1)/2
         nn=-1
         i=index(line,"N=")
@@ -829,8 +829,8 @@
           xecp=xecp+xxx
         end do
         DEALLOCATE(xecpm)
-        write(*,'(2x,a,1x,f16.8)') 'Pseudopotential energy (au)      :',
-     +    xecp
+        write(*,'(a)') ''
+        call print_value('Pseudopotential energy',xecp,8,'au')
       end if
 
       return

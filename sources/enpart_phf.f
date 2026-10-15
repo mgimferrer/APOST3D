@@ -417,6 +417,14 @@
       call cpu_time(xtime)
       call get_wall_time(wxtime)
       call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
+      call print_box('COULOMB (ELECTRON-ELECTRON) ENERGY TERMS')
+      call MPRINT2(coul,nat,maxat)
+      write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
+      if(idofr.eq.1) then
+        line=' FRAGMENT ANALYSIS: Coulomb energy '
+        call group_by_frag_mat(1,line,coul)
+      end if
+      write(*,*)
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('Coulomb energy',xtime2-xtime,wxtime2-wxtime)

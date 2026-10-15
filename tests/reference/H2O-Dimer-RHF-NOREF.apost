@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -126,7 +128,7 @@
   Fragment  2 :   4   5   6
 
   TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -156,8 +158,8 @@
 
   Sum of atomic overlaps, largest error   : 7.67E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 2.61 s
-  TIMING WALL :: Atomic definition                                 2.63 s
+  TIMING CPU  :: Atomic definition                                 1.86 s
+  TIMING WALL :: Atomic definition                                 0.27 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -324,13 +326,17 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  ----------------------------------------
-    DOING MOLECULAR ENERGY DECOMPOSITION
-  ----------------------------------------
+  --------------------------------
+    ENERGY PARTITIONING (ENPART)
+  --------------------------------
 
-  -----------------------------
-    GENERAL ONE-ELECTRON PART
-  -----------------------------
+  Wavefunction                            : Hartree-Fock, restricted
+  Atomic definition                       : TFVC (real space)
+
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
+  VERBOSE 1 in # METHOD also prints the intermediate matrices.
 
   -------------------------------
     ELECTRON-NUCLEAR ATTRACTION
@@ -346,11 +352,11 @@
     5  H    -1.947570   -0.104057   -0.104022   -6.480259   -0.671218   -0.238991
     6  H    -3.332869   -0.159668   -0.159605   -6.272790   -0.238991   -0.601171
   -------------------------------------------------------------------------------
-  Electron-nuclei energy:   -434.8233244
+  Electron-nuclear attraction (au)        :    -434.8233244
 
-  -------------------------------------------------
-    FRAGMENT ANALYSIS: Electron-nuclei attraction
-  -------------------------------------------------
+  ----------------------------------------
+    FRAGMENT ELECTRON-NUCLEAR ATTRACTION
+  ----------------------------------------
 
   ---------------------------------
                       1           2
@@ -364,29 +370,29 @@
     KINETIC ENERGY
   ------------------
 
-  -------------------------------------------------------------------------------
-                 1  O        2  H        3  H        4  O        5  H        6  H
-  -------------------------------------------------------------------------------
-    1  O    75.341181    0.000000    0.000000    0.000000    0.000000    0.000000
-    2  H     0.000000    0.313303    0.000000    0.000000    0.000000    0.000000
-    3  H     0.000000    0.000000    0.313307    0.000000    0.000000    0.000000
-    4  O     0.000000    0.000000    0.000000   75.355739    0.000000    0.000000
-    5  H     0.000000    0.000000    0.000000    0.000000    0.332736    0.000000
-    6  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.298281
-  -------------------------------------------------------------------------------
-  Kinetic energy:    151.9545478
+  One-center terms only: the kinetic energy has no pair terms.
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Kinetic energy
-  -------------------------------------
+  Atom        Kinetic
+  -------------------
+    1  O    75.341181
+    2  H     0.313303
+    3  H     0.313307
+    4  O    75.355739
+    5  H     0.332736
+    6  H     0.298281
+  -------------------
+  Kinetic energy (au)                     :     151.9545478
 
-  ---------------------------------
-                      1           2
-  ---------------------------------
-    1         75.967792    0.000000
-    2          0.000000   75.986756
-  ---------------------------------
-  Total (diagonal and one triangle)       :     151.954548
+  ---------------------------
+    FRAGMENT KINETIC ENERGY
+  ---------------------------
+
+  Frag.         Kinetic
+  ---------------------
+    1         75.967792
+    2         75.986756
+  ---------------------
+  Total      151.954548
 
   -----------------------------
     NUCLEAR-NUCLEAR REPULSION
@@ -402,11 +408,11 @@
     5  H     1.262353    0.136718    0.136674    4.419037    0.000000    0.347130
     6  H     2.176966    0.217208    0.217123    4.382151    0.347130    0.000000
   -------------------------------------------------------------------------------
-  Nuclear repulsion energy:     36.6642284
+  Nuclear-nuclear repulsion (au)          :      36.6642284
 
-  -----------------------------------------------
-    FRAGMENT ANALYSIS: Nuclear repulsion energy
-  -----------------------------------------------
+  --------------------------------------
+    FRAGMENT NUCLEAR-NUCLEAR REPULSION
+  --------------------------------------
 
   ---------------------------------
                       1           2
@@ -416,27 +422,38 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      36.664228
 
-  TIMING CPU  :: enpart one-electron                               1.17 s
-  TIMING WALL :: enpart one-electron                               1.18 s
+  TIMING CPU  :: ENPART one-electron terms                         0.79 s
+  TIMING WALL :: ENPART one-electron terms                         0.11 s
 
-  -------------------------------------------------------
-    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
-  -------------------------------------------------------
+  ---------------------
+    TWO-ELECTRON GRID
+  ---------------------
 
   Radial points                           : 40
   Angular points                          : 146
   Grid points                             : 35040
+  Pairs integrated (exact exchange)       : 9
+  Pairs from the multipolar expansion     : 6
 
-  -----------------------------
-    GENERAL TWO-ELECTRON PART
-  -----------------------------
+  TIMING CPU  :: ENPART Coulomb                                    0.90 s
+  TIMING WALL :: ENPART Coulomb                                    0.14 s
+  TIMING CPU  :: ENPART exact exchange                            12.45 s
+  TIMING WALL :: ENPART exact exchange                             1.66 s
 
-  Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
+  ----------------------------------
+    TWO-ELECTRON INTEGRATION ERROR
+  ----------------------------------
 
-  --------------------------------------------
-    COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
-  --------------------------------------------
+  Electron-electron energy (au)           :      94.1435352
+
+  No reference electron-electron energy in the .fchk file: the error
+  is neither estimated nor corrected. To enable it, append the
+  reference energies to the .fchk (utils/get_energy_g16 for Gaussian 16;
+  utils/apost3d.py writes them for pySCF).
+
+  ------------------
+    COULOMB ENERGY
+  ------------------
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -448,11 +465,11 @@
     5  H     0.571698    0.019784    0.019777    1.690842    0.089458    0.041614
     6  H     0.958823    0.029186    0.029175    1.470585    0.041614    0.070542
   -------------------------------------------------------------------------------
-  Coulomb energy:    112.0929001
+  Coulomb energy (au)                     :     112.0929001
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Coulomb energy
-  -------------------------------------
+  ---------------------------
+    FRAGMENT COULOMB ENERGY
+  ---------------------------
 
   ---------------------------------
                       1           2
@@ -462,21 +479,9 @@
   ---------------------------------
   Total (diagonal and one triangle)       :     112.092900
 
-  TIMING CPU  :: Coulomb energy                                    1.21 s
-  TIMING WALL :: Coulomb energy                                    1.22 s
-
-  ---------------------------------------------------
-    EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
-  ---------------------------------------------------
-
-  Two-el integrations for     55 MO pairs
-  Threshold for atom pair calculation:   0.001000
-  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
-  Skipping numerical integration for     6 atom pairs
-
-  -------------------------------------------
-    HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS
-  -------------------------------------------
+  ----------------------------------
+    EXCHANGE ENERGY (HARTREE-FOCK)
+  ----------------------------------
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -488,22 +493,25 @@
     5  H    -0.000105    0.000000    0.000000   -0.205288   -0.041492   -0.000763
     6  H    -0.016879   -0.000093   -0.000093   -0.171894   -0.000763   -0.030725
   -------------------------------------------------------------------------------
-  Hartree-Fock exchange energy:    -17.9493649
+  Exchange energy (au)                    :     -17.9493649
 
-  TIMING CPU  :: Exact-exchange energy                            18.50 s
-  TIMING WALL :: Exact-exchange energy                            18.58 s
+  -------------------------------------------
+    FRAGMENT EXCHANGE ENERGY (HARTREE-FOCK)
+  -------------------------------------------
 
-  Total two-electron part (coul+exch_hf):     94.1435352
-  No reference electron-electron energy in the .fchk file:
-  two-electron integration error not estimated or corrected.
-  To enable it, append the reference energies to the .fchk
-  (Gaussian: utils/get_energy or utils/get_energy_g16).
-  Max error accepted on the two-electron part (kcal/mol):     0.25
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -8.950694   -0.026931
+    2         -0.026931   -8.971740
+  ---------------------------------
+  Total (diagonal and one triangle)       :     -17.949365
 
+  ---------------------------
+    IQA ENERGY TERMS (TFVC)
+  ---------------------------
 
-  ----------------------------------------------
-    FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS
-  ----------------------------------------------
+  Self-energies on the diagonal, interaction energies off it.
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -515,14 +523,14 @@
     5  H    -0.113623    0.052444    0.052428   -0.575667   -0.290515    0.148989
     6  H    -0.213960    0.086634    0.086600   -0.591948    0.148989   -0.263073
   -------------------------------------------------------------------------------
-  Total integrated energy  :   -152.0610130
-  Total energy in Fchk file:   -152.0623683
-  Integration error (au):      0.0013553
-  Integration error (kcal/mol):     0.85
+  Total energy (au)                       :    -152.0610130
+  Energy in the .fchk file (au)           :    -152.0623683
+  Integration error (au)                  :       0.0013553
+  Integration error (kcal/mol)            :           0.85
 
-  -------------------------------------------
-    FRAGMENT ANALYSIS: Energy Decomposition
-  -------------------------------------------
+  ------------------------------------
+    FRAGMENT IQA ENERGY TERMS (TFVC)
+  ------------------------------------
 
   ---------------------------------
                       1           2
@@ -532,7 +540,67 @@
   ---------------------------------
   Total (diagonal and one triangle)       :    -152.061013
 
-  TIMING CPU  :: enpart two-electron                              20.01 s
-  TIMING WALL :: enpart two-electron                              20.09 s
+  -------------------
+    ATOMIC ENERGIES
+  -------------------
+
+  Additive energy = self-energy + half of each interaction energy of the atom;
+  the additive energies add up to the total energy.
+
+  Atom    Self-energy    Additive
+  -------------------------------
+    1  O   -74.447739  -75.056758
+    2  H    -0.278860   -0.487867
+    3  H    -0.278859   -0.487875
+    4  O   -74.436654  -75.015367
+    5  H    -0.290515   -0.508230
+    6  H    -0.263073   -0.504916
+  -------------------------------
+  Total   -149.995701 -152.061013
+
+  ----------------------------
+    FRAGMENT ATOMIC ENERGIES
+  ----------------------------
+
+  Frag.     Self-energy    Additive
+  ---------------------------------
+    1        -76.012857  -76.032500
+    2        -76.008869  -76.028513
+  ---------------------------------
+  Total     -152.021725 -152.061013
+
+  ----------------------------------
+    CLASSICAL INTERACTION ENERGIES
+  ----------------------------------
+
+  Electron-nuclear + nuclear-nuclear + Coulomb part of each interaction;
+  the rest of it is the exchange-correlation part. No self terms.
+
+  -------------------------------------------------------------------------------
+                 1  O        2  H        3  H        4  O        5  H        6  H
+  -------------------------------------------------------------------------------
+    1  O     0.000000   -0.385388   -0.385431    0.276907   -0.113519   -0.197081
+    2  H    -0.385388    0.000000    0.151153   -0.128502    0.052445    0.086727
+    3  H    -0.385431    0.151153    0.000000   -0.128453    0.052428    0.086693
+    4  O     0.276907   -0.128502   -0.128453    0.000000   -0.370380   -0.420054
+    5  H    -0.113519    0.052445    0.052428   -0.370380    0.000000    0.149752
+    6  H    -0.197081    0.086727    0.086693   -0.420054    0.149752    0.000000
+  -------------------------------------------------------------------------------
+  Classical interaction energy (au)       :      -1.2727028
+
+  -------------------------------------------
+    FRAGMENT CLASSICAL INTERACTION ENERGIES
+  -------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -0.619665   -0.012357
+    2         -0.012357   -0.640681
+  ---------------------------------
+  Total (diagonal and one triangle)       :      -1.272703
+
+  TIMING CPU  :: ENPART two-electron terms                        13.54 s
+  TIMING WALL :: ENPART two-electron terms                         1.83 s
 
   ...Normal Termination of APOST-3D...

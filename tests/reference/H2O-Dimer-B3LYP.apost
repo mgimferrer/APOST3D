@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -156,8 +158,8 @@
 
   Sum of atomic overlaps, largest error   : 5.79E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 2.62 s
-  TIMING WALL :: Atomic definition                                 2.62 s
+  TIMING CPU  :: Atomic definition                                 1.92 s
+  TIMING WALL :: Atomic definition                                 0.29 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -324,23 +326,27 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
-  ----------------------------------------
-    DOING MOLECULAR ENERGY DECOMPOSITION
-  ----------------------------------------
+  --------------------------------
+    ENERGY PARTITIONING (ENPART)
+  --------------------------------
 
-  ----------------------------------
-    DENSITY FUNCTIONAL INFORMATION
-  ----------------------------------
+  Wavefunction                            : KS-DFT, restricted
+  Atomic definition                       : TFVC (real space)
 
-  Functional name --> B3LYP
-  Reference --> [ 1] P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch,  J. Phys. Chem. 98, 11623 (1994)                     
-  Functional type --> exchange-correlation
-  HYBRID-GGA functional selected
-  HF-type exchange coeff --> 0.200
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
+  VERBOSE 1 in # METHOD also prints the intermediate matrices.
 
-  -----------------------------
-    GENERAL ONE-ELECTRON PART
-  -----------------------------
+  ----------------------
+    DENSITY FUNCTIONAL
+  ----------------------
+
+  libxc functional                        : B3LYP (libxc id 402)
+  Kind                                    : exchange-correlation
+  Family                                  : hybrid GGA
+  Exact-exchange fraction                 :          0.200
+  Reference [1]                           : P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch,  J. Phys. Chem. 98, 11623 (1994)
 
   -------------------------------
     ELECTRON-NUCLEAR ATTRACTION
@@ -356,12 +362,12 @@
     5  H    -1.970469   -0.110789   -0.110752   -6.535120   -0.698532   -0.258359
     6  H    -3.411322   -0.173743   -0.173674   -6.363003   -0.258359   -0.642794
   -------------------------------------------------------------------------------
-  Electron-nuclei energy:   -435.0913605
-  Integration error (kcal/mol):     0.00
+  Electron-nuclear attraction (au)        :    -435.0913605
+  Integration error (kcal/mol)            :           0.00
 
-  -------------------------------------------------
-    FRAGMENT ANALYSIS: Electron-nuclei attraction
-  -------------------------------------------------
+  ----------------------------------------
+    FRAGMENT ELECTRON-NUCLEAR ATTRACTION
+  ----------------------------------------
 
   ---------------------------------
                       1           2
@@ -375,30 +381,30 @@
     KINETIC ENERGY
   ------------------
 
-  -------------------------------------------------------------------------------
-                 1  O        2  H        3  H        4  O        5  H        6  H
-  -------------------------------------------------------------------------------
-    1  O    75.368847    0.000000    0.000000    0.000000    0.000000    0.000000
-    2  H     0.000000    0.330468    0.000000    0.000000    0.000000    0.000000
-    3  H     0.000000    0.000000    0.330474    0.000000    0.000000    0.000000
-    4  O     0.000000    0.000000    0.000000   75.391833    0.000000    0.000000
-    5  H     0.000000    0.000000    0.000000    0.000000    0.350294    0.000000
-    6  H     0.000000    0.000000    0.000000    0.000000    0.000000    0.322031
-  -------------------------------------------------------------------------------
-  Kinetic energy:    152.0939470
-  Integration error (kcal/mol):     0.00
+  One-center terms only: the kinetic energy has no pair terms.
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Kinetic energy
-  -------------------------------------
+  Atom        Kinetic
+  -------------------
+    1  O    75.368847
+    2  H     0.330468
+    3  H     0.330474
+    4  O    75.391833
+    5  H     0.350294
+    6  H     0.322031
+  -------------------
+  Kinetic energy (au)                     :     152.0939470
+  Integration error (kcal/mol)            :           0.00
 
-  ---------------------------------
-                      1           2
-  ---------------------------------
-    1         76.029789    0.000000
-    2          0.000000   76.064158
-  ---------------------------------
-  Total (diagonal and one triangle)       :     152.093947
+  ---------------------------
+    FRAGMENT KINETIC ENERGY
+  ---------------------------
+
+  Frag.         Kinetic
+  ---------------------
+    1         76.029789
+    2         76.064158
+  ---------------------
+  Total      152.093947
 
   -----------------------------
     NUCLEAR-NUCLEAR REPULSION
@@ -414,11 +420,11 @@
     5  H     1.262353    0.136718    0.136674    4.419037    0.000000    0.347130
     6  H     2.176966    0.217208    0.217123    4.382151    0.347130    0.000000
   -------------------------------------------------------------------------------
-  Nuclear repulsion energy:     36.6642284
+  Nuclear-nuclear repulsion (au)          :      36.6642284
 
-  -----------------------------------------------
-    FRAGMENT ANALYSIS: Nuclear repulsion energy
-  -----------------------------------------------
+  --------------------------------------
+    FRAGMENT NUCLEAR-NUCLEAR REPULSION
+  --------------------------------------
 
   ---------------------------------
                       1           2
@@ -428,79 +434,45 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      36.664228
 
-  TIMING CPU  :: enpart one-electron                               1.20 s
-  TIMING WALL :: enpart one-electron                               1.21 s
+  TIMING CPU  :: ENPART one-electron terms                         0.81 s
+  TIMING WALL :: ENPART one-electron terms                         0.11 s
 
-  --------------------------------
-    RKS-DFT ENERGY DECOMPOSITION
-  --------------------------------
+  ------------------------------------
+    DFT EXCHANGE-CORRELATION (BODEN)
+  ------------------------------------
 
-  USING BOND ORDER DENSITY APPROACH 
-  Threshold for atom pair calculation:   0.005000
+  Pairs from the bond order density       : 8
+  Pairs from the multipolar expansion     : 7
 
-  -----------------------------------------
-    BOND ORDER DENSITY FOR ALL ATOM PAIRS
-  -----------------------------------------
+  Pairs below the THREBOD threshold take their whole exchange-correlation
+  from the multipolar expansion, not from BODEN.
+  The DFT part holds its (1 - 0.200) share; the 0.200 share is in
+  EXACT-EXCHANGE SHARE.
 
-  --------------------------- 
-   Atom   Atom   BODEN value  
-  --------------------------- 
-      1      2     0.6532590
-      1      3     0.6532532
-      1      4     0.0783004
-      1      5    multipolar
-      1      6     0.0896425
-      2      3     0.0076562
-      2      4    multipolar
-      2      5    multipolar
-      2      6    multipolar
-      3      4    multipolar
-      3      5    multipolar
-      3      6    multipolar
-      4      5     0.6943032
-      4      6     0.5658597
-      5      6     0.0068057
-  --------------------------- 
-  7 atom pair(s) below the threshold: exchange-correlation
-  from the multipolar expansion, not BODEN.
-  Here its (1 - 0.200) share; the 0.200 share comes with the HF-type exchange.
+  ------------------------------------
+    DFT EXCHANGE-CORRELATION BY ATOM
+  ------------------------------------
 
-  -----------------------------------------
-    DIATOMIC PURE KS-DFT XC TERMS (BODEN)
-  -----------------------------------------
+  In the atom: the functional integrated within the atom. Self term: the same
+  minus half of each pair term of the atom (the diagonal below).
 
-  -------------------------------------------------------------------------------
-                 1  O        2  H        3  H        4  O        5  H        6  H
-  -------------------------------------------------------------------------------
-    1  O     0.000000   -0.150959   -0.150958   -0.007855   -0.000108   -0.009531
-    2  H    -0.150959    0.000000   -0.000626   -0.000077   -0.000001   -0.000098
-    3  H    -0.150958   -0.000626    0.000000   -0.000077   -0.000001   -0.000098
-    4  O    -0.007855   -0.000077   -0.000077    0.000000   -0.161383   -0.129142
-    5  H    -0.000108   -0.000001   -0.000001   -0.161383    0.000000   -0.000541
-    6  H    -0.009531   -0.000098   -0.000098   -0.129142   -0.000541    0.000000
-  -------------------------------------------------------------------------------
+  Atom    In the atom   Self term
+  -------------------------------
+    1  O    -7.317246   -7.157541
+    2  H    -0.123723   -0.047843
+    3  H    -0.123724   -0.047844
+    4  O    -7.333542   -7.184276
+    5  H    -0.133500   -0.052484
+    6  H    -0.120874   -0.051169
+  -------------------------------
+  Total    -15.152609  -14.541157
 
-  -------------------------------------------
-    PURE KS-DFT XC ONE-CENTER TERMS (EXACT)
-  -------------------------------------------
+  -----------------------------------
+    DFT EXCHANGE-CORRELATION ENERGY
+  -----------------------------------
 
-  -------------------------------------------------------------------------------
-                 1  O        2  H        3  H        4  O        5  H        6  H
-  -------------------------------------------------------------------------------
-    1  O    -7.317246    0.000000    0.000000    0.000000    0.000000    0.000000
-    2  H     0.000000   -0.123723    0.000000    0.000000    0.000000    0.000000
-    3  H     0.000000    0.000000   -0.123724    0.000000    0.000000    0.000000
-    4  O     0.000000    0.000000    0.000000   -7.333542    0.000000    0.000000
-    5  H     0.000000    0.000000    0.000000    0.000000   -0.133500    0.000000
-    6  H     0.000000    0.000000    0.000000    0.000000    0.000000   -0.120874
-  -------------------------------------------------------------------------------
-  KS-DFT exchange-correlation energy:    -15.1526092
-
-  REARRANGING ATOMIC COMPONENTS 
-
-  ------------------------------------------------------------
-    FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS
-  ------------------------------------------------------------
+  DFT part only, without the 0.200 x HF-type exchange: the complete
+  terms are in EXCHANGE-CORRELATION ENERGY, further below.
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -512,14 +484,11 @@
     5  H    -0.000108   -0.000001   -0.000001   -0.161383   -0.052484   -0.000541
     6  H    -0.009531   -0.000098   -0.000098   -0.129142   -0.000541   -0.051169
   -------------------------------------------------------------------------------
-  Sum of pure KS-DFT exchange-correlation energy:    -15.1526092
+  DFT exchange-correlation (au)           :     -15.1526092
 
-  Note: DFT part only. The 0.200 x HF-type exchange is added in the
-  two-electron part; complete terms: HYBRID KS-DFT XC TERMS.
-
-  ----------------------------------------
-    FRAGMENT ANALYSIS: Exc Decomposition
-  ----------------------------------------
+  --------------------------------------------
+    FRAGMENT DFT EXCHANGE-CORRELATION ENERGY
+  --------------------------------------------
 
   ---------------------------------
                       1           2
@@ -529,117 +498,44 @@
   ---------------------------------
   Total (diagonal and one triangle)       :     -15.152609
 
-  TIMING CPU  :: enpart dft                                        6.08 s
-  TIMING WALL :: enpart dft                                        6.09 s
+  TIMING CPU  :: ENPART DFT exchange-correlation                   4.05 s
+  TIMING WALL :: ENPART DFT exchange-correlation                   0.68 s
 
-  -------------------------------------------------------
-    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
-  -------------------------------------------------------
+  ---------------------
+    TWO-ELECTRON GRID
+  ---------------------
 
   Radial points                           : 40
   Angular points                          : 146
   Grid points                             : 35040
 
-  -----------------------------
-    GENERAL TWO-ELECTRON PART
-  -----------------------------
+  TIMING CPU  :: ENPART Coulomb                                    0.93 s
+  TIMING WALL :: ENPART Coulomb                                    0.15 s
+  TIMING CPU  :: ENPART exact exchange                            12.01 s
+  TIMING WALL :: ENPART exact exchange                             1.66 s
 
-  Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
+  ----------------------------------
+    TWO-ELECTRON INTEGRATION ERROR
+  ----------------------------------
 
-  --------------------------------------------
-    COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
-  --------------------------------------------
+  Electron-electron energy (au)           :      93.4855370
+  Integration error (kcal/mol)            :           3.84
+  Tolerance (kcal/mol)                    :           0.25
+  Zero-error correction                   : applied to the one-center terms
+  Error on the rotated grid (kcal/mol)    :          -9.24
+  Damping parameter                       :       0.7065478
+  Corrected electron-electron energy (au) :      93.4794210
+  Corrected integration error (kcal/mol)  :           0.00
 
-  -------------------------------------------------------------------------------
-                 1  O        2  H        3  H        4  O        5  H        6  H
-  -------------------------------------------------------------------------------
-    1  O    43.292967    1.648675    1.648633   15.353084    0.604768    1.059806
-    2  H     1.648675    0.087213    0.046565    0.570900    0.022428    0.034491
-    3  H     1.648633    0.046565    0.087213    0.570630    0.022420    0.034477
-    4  O    15.353084    0.570900    0.570630   43.524641    1.780290    1.605653
-    5  H     0.604768    0.022428    0.022420    1.780290    0.099212    0.048797
-    6  H     1.059806    0.034491    0.034477    1.605653    0.048797    0.083563
-  -------------------------------------------------------------------------------
-  Coulomb energy:    112.2264252
+  The one-center Coulomb and exchange terms of the matrices below
+  are the corrected ones; the pair terms do not change.
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Coulomb energy
-  -------------------------------------
+  TIMING CPU  :: ENPART zero-error correction                      5.62 s
+  TIMING WALL :: ENPART zero-error correction                      0.81 s
 
-  ---------------------------------
-                      1           2
-  ---------------------------------
-    1         46.811265   18.273004
-    2         18.273004   47.142156
-  ---------------------------------
-  Total (diagonal and one triangle)       :     112.226425
-
-  TIMING CPU  :: Coulomb energy                                    1.20 s
-  TIMING WALL :: Coulomb energy                                    1.20 s
-
-  ---------------------------------------------------
-    EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS
-  ---------------------------------------------------
-
-  Two-el integrations for     55 MO pairs
-  Threshold for atom pair calculation:   0.005000
-  Two-el integration will be distributed over   1 threads out of  10 available hardware cores
-  Skipping numerical integration for     7 atom pairs
-
-  -------------------------------------------
-    HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS
-  -------------------------------------------
-
-  -------------------------------------------------------------------------------
-                 1  O        2  H        3  H        4  O        5  H        6  H
-  -------------------------------------------------------------------------------
-    1  O    -8.454199   -0.200677   -0.200653   -0.011207   -0.000135   -0.021185
-    2  H    -0.200677   -0.040442   -0.000959   -0.000096   -0.000001   -0.000122
-    3  H    -0.200653   -0.000959   -0.040442   -0.000096   -0.000001   -0.000122
-    4  O    -0.011207   -0.000096   -0.000096   -8.494153   -0.212683   -0.181395
-    5  H    -0.000135   -0.000001   -0.000001   -0.212683   -0.045856   -0.000879
-    6  H    -0.021185   -0.000122   -0.000122   -0.181395   -0.000879   -0.036091
-  -------------------------------------------------------------------------------
-  Hartree-Fock exchange energy:    -17.9413951
-  Note: full HF-type exchange, before scaling by 0.200.
-
-  TIMING CPU  :: Exact-exchange energy                            17.26 s
-  TIMING WALL :: Exact-exchange energy                            17.27 s
-
-  --------------------------
-    HYBRID KS-DFT XC TERMS
-  --------------------------
-
-  -------------------------------------------------------------------------------
-                 1  O        2  H        3  H        4  O        5  H        6  H
-  -------------------------------------------------------------------------------
-    1  O    -8.848381   -0.191094   -0.191089   -0.010096   -0.000135   -0.013768
-    2  H    -0.191094   -0.055932   -0.000817   -0.000096   -0.000001   -0.000122
-    3  H    -0.191089   -0.000817   -0.055933   -0.000096   -0.000001   -0.000122
-    4  O    -0.010096   -0.000096   -0.000096   -8.883107   -0.203919   -0.165421
-    5  H    -0.000135   -0.000001   -0.000001   -0.203919   -0.061655   -0.000717
-    6  H    -0.013768   -0.000122   -0.000122   -0.165421   -0.000717   -0.058388
-  -------------------------------------------------------------------------------
-  Total exchange-correlation energy:    -18.7408882
-
-  KS-DFT electron-electron energy (au):     93.4855370
-  Integration error (kcal/mol):     3.84
-
-  Max error accepted on the two-electron part (kcal/mol):     0.25
-
-  Zero-error strategy applied: the INTERPOLATED tables below replace
-  the ones above (only their one-center terms change).
-  Rotating for angles:   0.000000   0.182000
-  New error after rotation:    -9.24
-  Damping parameter       :      0.7065478
-
-  TIMING CPU  :: Interpolated zero-error                           7.89 s
-  TIMING WALL :: Interpolated zero-error                           7.89 s
-
-  ---------------------------------------------------------
-    INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
-  ---------------------------------------------------------
+  ------------------
+    COULOMB ENERGY
+  ------------------
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -651,11 +547,11 @@
     5  H     0.604768    0.022428    0.022420    1.780290    0.099203    0.048797
     6  H     1.059806    0.034491    0.034477    1.605653    0.048797    0.083551
   -------------------------------------------------------------------------------
-  Coulomb energy:    112.2196289
+  Coulomb energy (au)                     :     112.2196289
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Coulomb energy
-  -------------------------------------
+  ---------------------------
+    FRAGMENT COULOMB ENERGY
+  ---------------------------
 
   ---------------------------------
                       1           2
@@ -665,26 +561,42 @@
   ---------------------------------
   Total (diagonal and one triangle)       :     112.219629
 
-  --------------------------------------------------------
-    INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS
-  --------------------------------------------------------
+  ------------------------
+    EXACT-EXCHANGE SHARE
+  ------------------------
+
+  0.200 x the HF-type exchange: the exact-exchange part of the
+  functional, already scaled, as it enters the energy.
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
   -------------------------------------------------------------------------------
-    1  O    -8.452512   -0.200677   -0.200653   -0.011207   -0.000135   -0.021185
-    2  H    -0.200677   -0.040436   -0.000959   -0.000096   -0.000001   -0.000122
-    3  H    -0.200653   -0.000959   -0.040437   -0.000096   -0.000001   -0.000122
-    4  O    -0.011207   -0.000096   -0.000096   -8.492460   -0.212683   -0.181395
-    5  H    -0.000135   -0.000001   -0.000001   -0.212683   -0.045851   -0.000879
-    6  H    -0.021185   -0.000122   -0.000122   -0.181395   -0.000879   -0.036085
+    1  O    -1.690502   -0.040135   -0.040131   -0.002241   -0.000027   -0.004237
+    2  H    -0.040135   -0.008087   -0.000192   -0.000019    0.000000   -0.000024
+    3  H    -0.040131   -0.000192   -0.008087   -0.000019    0.000000   -0.000024
+    4  O    -0.002241   -0.000019   -0.000019   -1.698492   -0.042537   -0.036279
+    5  H    -0.000027    0.000000    0.000000   -0.042537   -0.009170   -0.000176
+    6  H    -0.004237   -0.000024   -0.000024   -0.036279   -0.000176   -0.007217
   -------------------------------------------------------------------------------
-  Hartree-Fock exchange energy:    -17.9379934
-  Note: full HF-type exchange, before scaling by 0.200.
+  Exact-exchange share (au)               :      -3.5875987
 
-  ---------------------------------------
-    INTERPOLATED HYBRID KS-DFT XC TERMS
-  ---------------------------------------
+  ---------------------------------
+    FRAGMENT EXACT-EXCHANGE SHARE
+  ---------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -1.787135   -0.006593
+    2         -0.006593   -1.793871
+  ---------------------------------
+  Total (diagonal and one triangle)       :      -3.587599
+
+  -------------------------------
+    EXCHANGE-CORRELATION ENERGY
+  -------------------------------
+
+  DFT part (DFT EXCHANGE-CORRELATION ENERGY) + exact-exchange share.
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -696,11 +608,11 @@
     5  H    -0.000135   -0.000001   -0.000001   -0.203919   -0.061654   -0.000717
     6  H    -0.013768   -0.000122   -0.000122   -0.165421   -0.000717   -0.058386
   -------------------------------------------------------------------------------
-  Total exchange-correlation energy:    -18.7402078
+  Exchange-correlation energy (au)        :     -18.7402078
 
-  ----------------------------------------------
-    FRAGMENT ANALYSIS: Final Exc Decomposition
-  ----------------------------------------------
+  ----------------------------------------
+    FRAGMENT EXCHANGE-CORRELATION ENERGY
+  ----------------------------------------
 
   ---------------------------------
                       1           2
@@ -710,12 +622,11 @@
   ---------------------------------
   Total (diagonal and one triangle)       :     -18.740208
 
-  KS-DFT electron-electron energy:     93.4794210
-  Integration error (kcal/mol):     0.00
+  ---------------------------
+    IQA ENERGY TERMS (TFVC)
+  ---------------------------
 
-  ----------------------------------------
-    FUZZY ATOMS KS-DFT ENERGY COMPONENTS
-  ----------------------------------------
+  Self-energies on the diagonal, interaction energies off it.
 
   -------------------------------------------------------------------------------
                  1  O        2  H        3  H        4  O        5  H        6  H
@@ -727,14 +638,14 @@
     5  H    -0.103482    0.048356    0.048341   -0.539711   -0.310689    0.136850
     6  H    -0.188319    0.077834    0.077804   -0.540620    0.136850   -0.295598
   -------------------------------------------------------------------------------
-  Total KS-DFT energy      :   -152.8537641
-  Total energy in Fchk file:   -152.8537536
-  Integration error (au):     -0.0000105
-  Integration error (kcal/mol):    -0.01
+  Total energy (au)                       :    -152.8537641
+  Energy in the .fchk file (au)           :    -152.8537536
+  Integration error (au)                  :      -0.0000105
+  Integration error (kcal/mol)            :          -0.01
 
-  -------------------------------------------
-    FRAGMENT ANALYSIS: Energy Decomposition
-  -------------------------------------------
+  ------------------------------------
+    FRAGMENT IQA ENERGY TERMS (TFVC)
+  ------------------------------------
 
   ---------------------------------
                       1           2
@@ -744,7 +655,67 @@
   ---------------------------------
   Total (diagonal and one triangle)       :    -152.853764
 
-  TIMING CPU  :: enpart two-electron                              26.66 s
-  TIMING WALL :: enpart two-electron                              26.67 s
+  -------------------
+    ATOMIC ENERGIES
+  -------------------
+
+  Additive energy = self-energy + half of each interaction energy of the atom;
+  the additive energies add up to the total energy.
+
+  Atom    Self-energy    Additive
+  -------------------------------
+    1  O   -74.877289  -75.440754
+    2  H    -0.298597   -0.493776
+    3  H    -0.298596   -0.493793
+    4  O   -74.859065  -75.396105
+    5  H    -0.310689   -0.515513
+    6  H    -0.295598   -0.513824
+  -------------------------------
+  Total   -150.939835 -152.853764
+
+  ----------------------------
+    FRAGMENT ATOMIC ENERGIES
+  ----------------------------
+
+  Frag.     Self-energy    Additive
+  ---------------------------------
+    1        -76.411715  -76.428323
+    2        -76.408833  -76.425441
+  ---------------------------------
+  Total     -152.820548 -152.853764
+
+  ----------------------------------
+    CLASSICAL INTERACTION ENERGIES
+  ----------------------------------
+
+  Electron-nuclear + nuclear-nuclear + Coulomb part of each interaction;
+  the rest of it is the exchange-correlation part. No self terms.
+
+  -------------------------------------------------------------------------------
+                 1  O        2  H        3  H        4  O        5  H        6  H
+  -------------------------------------------------------------------------------
+    1  O     0.000000   -0.347940   -0.347978    0.253069   -0.103347   -0.174551
+    2  H    -0.347940    0.000000    0.141687   -0.118288    0.048356    0.077956
+    3  H    -0.347978    0.141687    0.000000   -0.118243    0.048342    0.077926
+    4  O     0.253069   -0.118288   -0.118243    0.000000   -0.335792   -0.375199
+    5  H    -0.103347    0.048356    0.048342   -0.335792    0.000000    0.137567
+    6  H    -0.174551    0.077956    0.077926   -0.375199    0.137567    0.000000
+  -------------------------------------------------------------------------------
+  Classical interaction energy (au)       :      -1.1364352
+
+  -------------------------------------------
+    FRAGMENT CLASSICAL INTERACTION ENERGIES
+  -------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -0.554232   -0.008779
+    2         -0.008779   -0.573424
+  ---------------------------------
+  Total (diagonal and one triangle)       :      -1.136435
+
+  TIMING CPU  :: ENPART two-electron terms                        18.75 s
+  TIMING WALL :: ENPART two-electron terms                         2.65 s
 
   ...Normal Termination of APOST-3D...
