@@ -496,7 +496,9 @@
       call print_value('Error on the rotated grid',err2,2,'kcal/mol')
       if(err1*err2.gt.0.0d0) write(*,'(2x,a)')
      +  'Same-sign error on both grids: extrapolating, not interpolating'
-      call print_value('Damping parameter',damp,ndec)
+!! 7 decimals also with FULLPRECISION: a ratio of small differences, !!
+!! its further digits depend on the summation order                  !!
+      call print_value('Damping parameter',damp,7)
       call print_value('Corrected electron-electron energy',evee,ndec,
      +  'au')
       call print_value('Corrected integration error',errc,2,'kcal/mol')
