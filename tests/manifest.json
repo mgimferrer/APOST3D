@@ -1138,6 +1138,154 @@
       ]
     },
     {
+      "name": "H2O-RHF-FIELD",
+      "description": "Water, RHF / cc-pVDZ from Gaussian 16 in a static field of 0.005 au along z (the C2 axis) — ENPART field terms (restricted) and the POLAR dipole decomposition; the field energy equals mu.F and the integration errors are those of the field-free run.",
+      "tags": [
+        "hf",
+        "enpart",
+        "tfvc",
+        "rhf",
+        "field",
+        "polar"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/HF",
+        "POLAR",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Electron-nuclear integration error, field included (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.01,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "Field interaction energy (au)",
+          "pattern": "Field interaction energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.0041737862963,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Field: intrinsic dipole terms, total (au)",
+          "section": "(?m)^    FIELD INTERACTION PER ATOM$",
+          "pattern": "Total\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0025706664947,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Field: charge-transfer terms, total (au)",
+          "section": "(?m)^    FIELD INTERACTION PER ATOM$",
+          "pattern": "Total\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.0067444527911,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Total energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -76.0266812288729,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error with the field term (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 2.76049463e-05,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "POLAR total dipole, z (au)",
+          "pattern": "Total dipole moment: \\s*\\n.*\\n\\s*\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.834757259269764,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "H2O-T-UB3LYP-FIELD",
+      "description": "Water triplet, UKS B3LYP / cc-pVDZ from Gaussian 16 in a static field of 0.005 au along x — ENPART field terms (unrestricted) and the POLAR dipole decomposition.",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "uks",
+        "openshell",
+        "hybrid",
+        "field",
+        "polar"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/B3LYP",
+        "POLAR",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Electron-nuclear integration error, field included (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.01,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "Field interaction energy (au)",
+          "pattern": "Field interaction energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.0014504441382,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Field: intrinsic dipole terms, total (au)",
+          "section": "(?m)^    FIELD INTERACTION PER ATOM$",
+          "pattern": "Total\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.0009607184552,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Field: charge-transfer terms, total (au)",
+          "section": "(?m)^    FIELD INTERACTION PER ATOM$",
+          "pattern": "Total\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.000489725683,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Total energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -76.1468467048755,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error with the field term (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.0001161389868,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "POLAR total dipole, x (au)",
+          "pattern": "Total dipole moment: \\s*\\n.*\\n\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.29008882764155,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
       "name": "H2O-Dimer-RHF-OSLO",
       "description": "Water dimer, RHF — ENPART and fragment OSLO in one input: OSLO runs on the primary grid rebuilt after ENPART; VERBOSE 1 (HF exchange before the zero-error correction).",
       "tags": [

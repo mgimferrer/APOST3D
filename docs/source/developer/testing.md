@@ -129,6 +129,8 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `C2H6-B3LYP` | Ethane, RKS B3LYP: full ENPART with `THREBOD` and a 40 × 146 two-electron grid, the largest ENPART case | `dft enpart tfvc rks threbod` |
 | `H2O-Dimer-RHF` | Water dimer, RHF: ENPART (HF), `THREBOD 10` (6 pairs by the multipolar expansion), fragments | `hf enpart tfvc rhf threbod multipolar fragments` |
 | `H2O-Dimer-RHF-NOREF` | Same water dimer without the reference energies in the `.fchk`: ENPART reports the raw integration error, no zero-error correction | `hf enpart tfvc rhf threbod multipolar fragments noref` |
+| `H2O-RHF-FIELD` | Water, RHF from Gaussian 16 in a field of 0.005 au along z: ENPART field terms (restricted) and the POLAR dipole decomposition | `hf enpart tfvc rhf field polar` |
+| `H2O-T-UB3LYP-FIELD` | Water triplet, UKS B3LYP in a field of 0.005 au along x: ENPART field terms (unrestricted) and POLAR | `dft enpart tfvc uks openshell hybrid field polar` |
 | `HI-ECP-pySCF` | Hydrogen iodide, RHF/def2-SVP from pySCF with the def2 pseudopotential on I: ENPART (HF), ECP matrix from the `.fchk` added to the E-N terms | `hf enpart tfvc rhf pyscf ecp` |
 | `HI-ECP-G16` | Same molecule from Gaussian 16, energies and ECP matrix appended by `get_energy_g16`: ENPART (HF), the ECP matrix printed with 6 significant digits leaves −0.08 kcal/mol in the E-N reference | `hf enpart tfvc rhf gaussian ecp` |
 | `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition), `VERBOSE 1` | `hf enpart oslo tfvc rhf fragments verbose` |
