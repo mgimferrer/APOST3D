@@ -327,6 +327,37 @@ matrix is the fragment's one-center term (those of its atoms plus the
 pair terms between them), the off-diagonal elements the terms between
 fragments.
 
+### External electric field
+
+When the `.fchk` file comes from a calculation in a static electric field
+(Gaussian's `Field` keyword; APOST-3D reads it from the `External
+E-field` block), the wavefunction summary shows the field, and ENPART
+adds an `EXTERNAL ELECTRIC FIELD` section after the one-electron terms.
+For water, RHF/cc-pVDZ in a field of 0.005 au along *z* (test
+`H2O-RHF-FIELD`, which also uses `POLAR` and therefore prints 13
+decimals):
+
+% source: tests/reference/H2O-RHF-FIELD.apost
+```text
+    EXTERNAL ELECTRIC FIELD
+  Field x, y, z (au)                      : 0.000000  0.000000  0.005000
+  Electronic dipole term (au)             :      -0.0041737862763
+  Nuclear dipole term (au)                :      -0.0000000000200
+  Field interaction energy (au)           :      -0.0041737862963
+```
+
+- The field interaction energy follows Gaussian's convention,
+  *E* = +**μ**·**F** (the energy goes down when the dipole points along
+  the field), and equals the molecular dipole times the field.
+- It is **not** part of the IQA terms: the IQA matrices decompose the
+  energy without it, and the energy check of `IQA ENERGY TERMS` adds it
+  to their total before comparing with the energy of the `.fchk` (which
+  includes it). The integration errors are therefore those of a
+  field-free calculation.
+- `FIELD INTERACTION PER ATOM` splits it into an intrinsic dipole term
+  per atom (origin independent) and a charge-transfer term (origin
+  dependent); the two columns add up to the field interaction energy.
+
 ### More detail: VERBOSE 1
 
 `VERBOSE 1` in `# METHOD` also prints the intermediate matrices, for
