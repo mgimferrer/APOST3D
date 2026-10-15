@@ -1240,17 +1240,13 @@
         call group_by_frag_mat(1,line ,ekin)
       end if
 
-!! eto(j,i) below should read eto(i,j) (matches the restricted twin,      !!
-!! numint_one) -- currently harmless since nothing reads the eto lower    !!
-!! triangle from this subroutine downstream, but not fixed here, needs    !!
-!! sign-off before changing.                                              !!
       erep=ZERO
       do i=1,nat
         eto(i,i)=ekin(i,i)+epa(i,i)
         do j=i+1,nat
           dist=dsqrt((coord(1,i)-coord(1,j))**2 +(coord(2,i)-coord(2,j))**2+(coord(3,i)-coord(3,j))**2)
           eto(i,j)=ekin(i,j)+epa(i,j)+zn(i)*zn(j)/dist
-          eto(j,i)=epa(i,j)
+          eto(j,i)=eto(i,j)
 
 !! enuc: nuclear-repulsion pair matrix, kept only for the printout below. !!
           enuc(i,j)=zn(i)*zn(j)/dist
