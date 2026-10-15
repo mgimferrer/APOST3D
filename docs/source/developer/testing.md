@@ -114,7 +114,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 
 | System | Description | Tags |
 |--------|-------------|------|
-| `H2O-T-B3LYP` | Water, triplet UKS B3LYP: TFVC, ENPART, local spin; `THREBOD 2000` treats the H–H pair with the multipolar expansion | `dft enpart spin tfvc uks openshell hybrid threbod multipolar` |
+| `H2O-T-B3LYP` | Water, triplet UKS B3LYP: TFVC, ENPART, local spin, fragments O and H2; `THREBOD 2000` treats the H–H pair with the multipolar expansion | `dft enpart spin tfvc uks openshell hybrid threbod multipolar fragments` |
 | `CH3F` | Fluoromethane, RKS: TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `CH3F-pySCF` | Fluoromethane, RKS B3LYP from pySCF (`utils/apost3d.py`): TFVC, fragment OSLO and its `.fchk` export | `dft oslo tfvc rks fragments pyscf` |
 | `HF-G-pySCF` | Hydrogen fluoride, RHF from pySCF with cc-pVQZ (g shells) on F: TFVC; the Mulliken charges equal pySCF's, which checks the order and normalization of every shell type | `hf tfvc rhf pyscf g-functions` |
@@ -128,6 +128,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `FeO4-2` | Ferrate(VI), RKS, Q-Chem `.fchk`: TFVC, fragment OSLO | `dft oslo tfvc rks fragments qchem` |
 | `C2H6-B3LYP` | Ethane, RKS B3LYP: full ENPART with `THREBOD` and a 40 × 146 two-electron grid, the largest ENPART case | `dft enpart tfvc rks threbod` |
 | `H2O-Dimer-RHF` | Water dimer, RHF: ENPART (HF), `THREBOD 10` (6 pairs by the multipolar expansion), fragments | `hf enpart tfvc rhf threbod multipolar fragments` |
+| `H2O-Dimer-RHF-NOREF` | Same water dimer without the reference energies in the `.fchk`: ENPART reports the raw integration error, no zero-error correction | `hf enpart tfvc rhf threbod multipolar fragments noref` |
 | `HI-ECP-pySCF` | Hydrogen iodide, RHF/def2-SVP from pySCF with the def2 pseudopotential on I: ENPART (HF), ECP matrix from the `.fchk` added to the E-N terms | `hf enpart tfvc rhf pyscf ecp` |
 | `HI-ECP-G16` | Same molecule from Gaussian 16, energies and ECP matrix appended by `get_energy_g16`: ENPART (HF), the ECP matrix printed with 6 significant digits leaves −0.08 kcal/mol in the E-N reference | `hf enpart tfvc rhf gaussian ecp` |
 | `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition) | `hf enpart oslo tfvc rhf fragments` |
@@ -142,7 +143,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2O-T-BLYP` | Water, triplet UKS BLYP given as libxc ids (`LIBRARY`): ENPART, every pair computed | `dft enpart tfvc uks openshell libxc-ids` |
 | `H2O-TPSS` | Water, RKS TPSS: meta-GGAs are not supported yet, ENPART must stop with a message | `dft enpart tfvc rks meta-gga expected-stop` |
 | `H2O-SVWN` | Water, Gaussian 16 SVWN: predefined functional keyword, LDA family | `dft enpart tfvc rks lda functional-keyword` |
-| `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, BLYP / B3LYP at the default `THREBOD`: 7 weak pairs by the multipolar expansion | `dft enpart tfvc rks threbod multipolar` |
+| `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, BLYP / B3LYP at the default `THREBOD`: 7 weak pairs by the multipolar expansion; B3LYP also with two water fragments | `dft enpart tfvc rks threbod multipolar` (B3LYP: also `hybrid fragments`) |
 | `H2-TWO-AIM` | H2 with two atomic definitions in `# METHOD`: the run must stop while reading the input | `input expected-stop` |
 | `CH3F-EOS-LOWDIN` | Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS, beta assigned as alpha | `dft eos effao lowdin rks fragments` |
 | `H2-T-EOS` | H2 triplet, UKS from pySCF: EOS with no beta electrons | `dft eos effao tfvc uks fragments` |
