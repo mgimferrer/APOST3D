@@ -74,13 +74,37 @@ program, not a full development history — see `git log` for that.
   yet supported), range-separated hybrids, VV10 functionals, invalid libxc
   ids, and ENPART with a Hilbert-space atom definition (`MULLIKEN`, `LOWDIN`)
   now stop with a message before any energy is computed.
-- **Clearer output** — for hybrid functionals, the DFT-part tables now
-  say that the HF-type exchange share is added in the two-electron part,
-  and point to the complete tables. The zero-error strategy says when it
-  is applied, and warns when it extrapolates instead of interpolating.
+- **Clearer output** — the section starts with the wavefunction, the
+  atomic definition and how to read the matrices; every term is printed
+  once, with its final values: the two-electron matrices follow a
+  `TWO-ELECTRON INTEGRATION ERROR` section (error, tolerance, whether the
+  zero-error correction is applied, damping parameter, corrected
+  energy), instead of being printed before and again after the
+  correction. For hybrid functionals the exact exchange is printed
+  already multiplied by the exact-exchange fraction (`EXACT-EXCHANGE
+  SHARE`), so `DFT EXCHANGE-CORRELATION ENERGY` + `EXACT-EXCHANGE SHARE` =
+  `EXCHANGE-CORRELATION ENERGY`. The kinetic energy is a column per atom
+  (it has no pair terms), the KS-DFT one-center terms are one table per
+  atom, and with `DOFRAGS` every printed matrix is followed by its
+  fragment matrix (the HF exchange and the hybrid exchange-correlation
+  had none). The final matrix is `IQA ENERGY TERMS (TFVC)` (or the
+  atomic definition used) instead of `FUZZY ATOMS ... ENERGY
+  COMPONENTS`. The intermediate matrices are printed with `VERBOSE 1`.
+  No number changes.
+- **Additive atomic energies and classical interaction energies** —
+  printed after the final decomposition, from its final matrices:
+  `ATOMIC ENERGIES` (self-energy and additive energy of each atom, which
+  add up to the total energy) and `CLASSICAL INTERACTION ENERGIES` (the
+  electron-nuclear, nuclear-nuclear and Coulomb part of each interaction
+  energy), also per fragment.
 
 ### Other changes that affect inputs
 
+- **`VERBOSE`** — new option in `# METHOD`: `VERBOSE 1` also prints the
+  intermediate matrices of an analysis (for now ENPART: the BODEN of each
+  pair, the DFT pair and one-center terms, the unscaled HF-type
+  exchange, and the matrices before the zero-error correction). The
+  default, `VERBOSE 0`, prints the final results only.
 - **EOS and GEOS need fragments** — like OSLO, they now stop without
   `DOFRAGS` and a `# FRAGMENTS` block instead of giving every atom its own
   oxidation state by default. For one oxidation state per atom, define
@@ -240,6 +264,9 @@ program, not a full development history — see `git log` for that.
 
 ### Others
 
+- **Thread count** — printed once, after the banner (`OpenMP threads`),
+  instead of in the ENPART section together with the number of cores of
+  the machine.
 - **Start of the output** — the wavefunction and input summaries and the
   setup blocks (grids, atomic definition, density matrices of correlated
   wavefunctions) use one aligned `label (unit) : value` layout. The

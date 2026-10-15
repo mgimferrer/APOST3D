@@ -60,7 +60,7 @@ A failing full-output check lists the lines that differ:
 
 ```text
            ✗  Full output vs reference               1 line(s) differ
-                  in 'FUZZY ATOMS KS-DFT ENERGY COMPONENTS':
+                  in 'IQA ENERGY TERMS (TFVC)':
                     ref   443: 1  O   -74.525625   -0.529237   -0.529236
                     new   443: 1  O   -74.525615   -0.529236   -0.529236   <- -74.525625 -> -74.525615 (off by 10 in the last digit)
 ```
@@ -114,7 +114,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 
 | System | Description | Tags |
 |--------|-------------|------|
-| `H2O-T-B3LYP` | Water, triplet UKS B3LYP: TFVC, ENPART, local spin, fragments O and H2; `THREBOD 2000` treats the H–H pair with the multipolar expansion | `dft enpart spin tfvc uks openshell hybrid threbod multipolar fragments` |
+| `H2O-T-B3LYP` | Water, triplet UKS B3LYP: TFVC, ENPART, local spin, fragments O and H2, `VERBOSE 1`; `THREBOD 2000` treats the H–H pair with the multipolar expansion | `dft enpart spin tfvc uks openshell hybrid threbod multipolar fragments verbose` |
 | `CH3F` | Fluoromethane, RKS: TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `CH3F-pySCF` | Fluoromethane, RKS B3LYP from pySCF (`utils/apost3d.py`): TFVC, fragment OSLO and its `.fchk` export | `dft oslo tfvc rks fragments pyscf` |
 | `HF-G-pySCF` | Hydrogen fluoride, RHF from pySCF with cc-pVQZ (g shells) on F: TFVC; the Mulliken charges equal pySCF's, which checks the order and normalization of every shell type | `hf tfvc rhf pyscf g-functions` |
@@ -131,7 +131,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2O-Dimer-RHF-NOREF` | Same water dimer without the reference energies in the `.fchk`: ENPART reports the raw integration error, no zero-error correction | `hf enpart tfvc rhf threbod multipolar fragments noref` |
 | `HI-ECP-pySCF` | Hydrogen iodide, RHF/def2-SVP from pySCF with the def2 pseudopotential on I: ENPART (HF), ECP matrix from the `.fchk` added to the E-N terms | `hf enpart tfvc rhf pyscf ecp` |
 | `HI-ECP-G16` | Same molecule from Gaussian 16, energies and ECP matrix appended by `get_energy_g16`: ENPART (HF), the ECP matrix printed with 6 significant digits leaves −0.08 kcal/mol in the E-N reference | `hf enpart tfvc rhf gaussian ecp` |
-| `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition) | `hf enpart oslo tfvc rhf fragments` |
+| `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition), `VERBOSE 1` | `hf enpart oslo tfvc rhf fragments verbose` |
 | `FeCN5NO3--UBLYP` | [Fe(CN)₅NO]³⁻ doublet, UKS BLYP: LOWDIN, EFFAO, EOS, 7 fragments | `dft lowdin effao eos uks fragments openshell` |
 | `NaBH3--UHF` | NaBH3 anion, UHF: MULLIKEN, EOS | `hf uhf mulliken pca eos fragments` |
 | `NaBH3--UHF-DAVIDSON` | Same wavefunction: LOWDIN-DAVIDSON, EFOs in the Davidson-Löwdin basis, EOS | `hf uhf lowdin eos effao fragments openshell` |

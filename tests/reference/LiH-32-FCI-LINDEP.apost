@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -157,7 +159,7 @@
   Sum of atomic overlaps, largest error   : 9.61E-03 (from the analytic overlap S)
 
   TIMING CPU  :: Atomic definition                                 0.02 s
-  TIMING WALL :: Atomic definition                                 0.02 s
+  TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -436,8 +438,8 @@
   Total             0.00
   Overall reliability index R (%)         :         97.819
 
-  TIMING CPU  :: EFFAO computation                                 0.04 s
-  TIMING WALL :: EFFAO computation                                 0.04 s
+  TIMING CPU  :: EFFAO computation                                 0.03 s
+  TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

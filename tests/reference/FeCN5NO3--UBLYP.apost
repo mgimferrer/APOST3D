@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -139,8 +141,8 @@
      0.00049   0.00020   0.00011   0.00011   0.00009   0.00003   0.00002   0.00001
      0.00001   0.00001   0.00001   0.00000   0.00000   0.00000   0.00000
 
-  TIMING CPU  :: Initialization                                    0.15 s
-  TIMING WALL :: Initialization                                    0.15 s
+  TIMING CPU  :: Initialization                                    0.07 s
+  TIMING WALL :: Initialization                                    0.06 s
 
   -----------------------------
     SETTING ATOMIC DEFINITION
@@ -148,8 +150,8 @@
 
   Hilbert-space atoms                     : Lowdin basis
 
-  TIMING CPU  :: Atomic definition                                 0.11 s
-  TIMING WALL :: Atomic definition                                 0.11 s
+  TIMING CPU  :: Atomic definition                                 0.06 s
+  TIMING WALL :: Atomic definition                                 0.06 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -471,8 +473,8 @@
   ---------------------
   Total (diagonal and one triangle)       :     109.000000
 
-  TIMING CPU  :: Population analysis                               0.10 s
-  TIMING WALL :: Population analysis                               0.10 s
+  TIMING CPU  :: Population analysis                               0.05 s
+  TIMING WALL :: Population analysis                               0.05 s
 
   --------------------------------------
     EFFECTIVE FRAGMENT ORBITALS (EFOs)
@@ -631,9 +633,9 @@
   Total            -3.00
   Overall reliability index R (%)         :         64.481
 
-  TIMING CPU  :: EFFAO computation                                 0.09 s
-  TIMING WALL :: EFFAO computation                                 0.09 s
-  TIMING CPU  :: EOS analysis                                      0.04 s
-  TIMING WALL :: EOS analysis                                      0.05 s
+  TIMING CPU  :: EFFAO computation                                 0.08 s
+  TIMING WALL :: EFFAO computation                                 0.06 s
+  TIMING CPU  :: EOS analysis                                      0.02 s
+  TIMING WALL :: EOS analysis                                      0.02 s
 
   ...Normal Termination of APOST-3D...

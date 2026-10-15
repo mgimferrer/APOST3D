@@ -16,7 +16,7 @@
     "energy_au": -7.6224110796678957E+001
   },
   "input": {
-    "text": "# METHOD\nTFVC\nSPIN\nENPART\nDOFRAGS\n#\n# ENPART\nB3LYP\nTHREBOD 2000\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
+    "text": "# METHOD\nTFVC\nSPIN\nENPART\nDOFRAGS\nVERBOSE 1\n#\n# ENPART\nB3LYP\nTHREBOD 2000\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
     "atomic_definition": {
       "keyword": "TFVC",
       "name": "Topological fuzzy Voronoi cells",
@@ -438,9 +438,9 @@
     "job_name": "H2O-T-B3LYP",
     "input_file": "H2O-T-B3LYP.inp",
     "wavefunction_file": "H2O-T-B3LYP.fchk",
-    "date": "2026-10-15T11:11:27+02:00",
-    "id": "2026-10-15T11:11:27+02:00/86f8",
-    "threads": 1,
+    "date": "2026-10-15T15:34:29+02:00",
+    "id": "2026-10-15T15:34:29+02:00/c3b8",
+    "threads": 8,
     "status": "normal",
     "stop_message": null
   }

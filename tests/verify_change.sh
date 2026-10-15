@@ -101,7 +101,7 @@ run_suite "$WT/apost3d"   1 "$WORKDIR/base"
 run_suite "$REPO/apost3d" 1 "$WORKDIR/new"
 
 ## lines that change from run to run without being results
-NOISE='TIMING (CPU|WALL)|Elapsed time|distributed over|threads out of|OMP_NUM_THREADS'
+NOISE='TIMING (CPU|WALL)|Elapsed time|distributed over|threads out of|OMP_NUM_THREADS|OpenMP threads'
 filtered() { grep -Ev "$NOISE" "$1" || true; }
 
 echo

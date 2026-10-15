@@ -2,7 +2,7 @@
   "tests": [
     {
       "name": "H2O-T-B3LYP",
-      "description": "Water, triplet UKS B3LYP / cc-pVTZ — TFVC populations, local spin, ENPART (DFT), fragments O and H2. THREBOD 2000 skips the H–H pair (bond order 0.16): unrestricted multipolar paths, DFT part and HF-type exchange part.",
+      "description": "Water, triplet UKS B3LYP / cc-pVTZ — TFVC populations, local spin, ENPART (DFT), fragments O and H2, VERBOSE 1 (intermediate matrices, also before the zero-error correction). THREBOD 2000 skips the H–H pair (bond order 0.16): unrestricted multipolar paths, DFT part and HF-type exchange part.",
       "tags": [
         "dft",
         "enpart",
@@ -13,7 +13,8 @@
         "hybrid",
         "threbod",
         "multipolar",
-        "fragments"
+        "fragments",
+        "verbose"
       ],
       "timeout": 600,
       "extra_input_files": [],
@@ -25,7 +26,8 @@
         "ENPART/THREBOD",
         "GRID/RADIAL_2E",
         "GRID/ANGULAR_2E",
-        "DOFRAGS"
+        "DOFRAGS",
+        "VERBOSE"
       ],
       "checks": [
         {
@@ -35,13 +37,13 @@
         },
         {
           "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -76.2241116,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -8e-07,
           "tol_abs": 2e-06
         },
@@ -82,14 +84,14 @@
         },
         {
           "label": "O IQA self-energy (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -75.02127,
           "tol_abs": 2e-05
         },
         {
           "label": "O-H IQA interaction (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.23781,
           "tol_abs": 2e-05
@@ -97,79 +99,79 @@
         {
           "label": "1 pair below THREBOD takes the multipolar estimate",
           "type": "present",
-          "pattern": "1 atom pair\\(s\\) below the threshold"
+          "pattern": "Pairs from the multipolar expansion\\s*:\\s*1\\n"
         },
         {
           "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "DFT exchange-correlation \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -7.4029752,
           "tol_abs": 2e-06
         },
         {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "label": "Electron-electron energy before the zero-error correction (au)",
+          "pattern": "Electron-electron energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 35.1634586,
           "tol_abs": 2e-06
         },
         {
           "label": "H-H DFT part, skipped pair: 0.8 x multipolar (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
           "ref": -0.010233,
           "tol_abs": 2e-05
         },
         {
           "label": "H-H HF-type exchange, skipped pair: multipolar (au)",
-          "section": "INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS",
+          "section": "(?m)^    HF-TYPE EXCHANGE, UNSCALED$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
           "ref": -0.012792,
           "tol_abs": 2e-05
         },
         {
           "label": "H-H complete xc, skipped pair: multipolar (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
           "ref": -0.012792,
           "tol_abs": 2e-05
         },
         {
           "label": "O-H complete xc, computed pair (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.173514,
           "tol_abs": 2e-05
         },
         {
           "label": "H IQA self-energy (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.370728,
           "tol_abs": 2e-05
         },
         {
           "label": "H-H IQA interaction, skipped pair (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
           "ref": 0.014235,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment O-H2 IQA interaction (au)",
-          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "section": "(?m)^    FRAGMENT IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.475621,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment H2 IQA self-energy, includes the skipped H-H pair (au)",
-          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "section": "(?m)^    FRAGMENT IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "2\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.727221,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment O-H2 xc interaction (au)",
-          "section": "FRAGMENT ANALYSIS: Final Exc Decomposition",
+          "section": "(?m)^    FRAGMENT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.347028,
           "tol_abs": 2e-05
@@ -204,13 +206,13 @@
         },
         {
           "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -79.8655614,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 5.2e-05,
           "tol_abs": 2e-06
         },
@@ -244,19 +246,19 @@
         },
         {
           "label": "Electron-nuclei energy (au)",
-          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Electron-nuclear attraction \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -268.6482977,
           "tol_abs": 2e-06
         },
         {
           "label": "Kinetic energy (au)",
-          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 79.2827782,
           "tol_abs": 2e-06
         },
         {
           "label": "KS-DFT electron-electron energy (au)",
-          "pattern": "KS-DFT electron-electron energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Corrected electron-electron energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 67.2363766,
           "tol_abs": 2e-06
         }
@@ -1000,38 +1002,37 @@
         },
         {
           "label": "Atom pairs skipped (multipolar path)",
-          "pattern": "Skipping numerical integration for\\s+([-+]?\\d+) atom pairs",
+          "pattern": "Pairs from the multipolar expansion\\s*:\\s*([-+]?\\d+)",
           "ref": 6,
           "tol_abs": 0.5
         },
         {
           "label": "Electron-nuclei energy (au)",
-          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Electron-nuclear attraction \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -434.8233244,
           "tol_abs": 2e-06
         },
         {
           "label": "Kinetic energy (au)",
-          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 151.9545478,
           "tol_abs": 2e-06
         },
         {
-          "label": "Interpolated HF exchange energy (au)",
-          "pattern": "Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
-          "match_index": 2,
+          "label": "HF exchange energy, after the zero-error correction (au)",
+          "pattern": "Exchange energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -17.9479838,
           "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy (au)",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -152.0623834,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -1.51e-05,
           "tol_abs": 2e-06
         },
@@ -1090,37 +1091,37 @@
         },
         {
           "label": "Atom pairs skipped (multipolar path)",
-          "pattern": "Skipping numerical integration for\\s+([-+]?\\d+) atom pairs",
+          "pattern": "Pairs from the multipolar expansion\\s*:\\s*([-+]?\\d+)",
           "ref": 6,
           "tol_abs": 0.5
         },
         {
           "label": "Electron-nuclei energy (au)",
-          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Electron-nuclear attraction \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -434.8233244,
           "tol_abs": 2e-06
         },
         {
           "label": "Kinetic energy (au)",
-          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 151.9545478,
           "tol_abs": 2e-06
         },
         {
           "label": "HF exchange energy, first grid only (au)",
-          "pattern": "Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Exchange energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -17.9493649,
           "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy (au)",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -152.061013,
           "tol_abs": 2e-06
         },
         {
           "label": "Raw integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.0013553,
           "tol_abs": 2e-06
         },
@@ -1138,14 +1139,15 @@
     },
     {
       "name": "H2O-Dimer-RHF-OSLO",
-      "description": "Water dimer, RHF — ENPART and fragment OSLO in one input: OSLO runs on the primary grid rebuilt after ENPART.",
+      "description": "Water dimer, RHF — ENPART and fragment OSLO in one input: OSLO runs on the primary grid rebuilt after ENPART; VERBOSE 1 (HF exchange before the zero-error correction).",
       "tags": [
         "hf",
         "enpart",
         "oslo",
         "tfvc",
         "rhf",
-        "fragments"
+        "fragments",
+        "verbose"
       ],
       "timeout": 300,
       "extra_input_files": [],
@@ -1155,7 +1157,8 @@
         "ENPART/HF",
         "ENPART/THREBOD",
         "OSLO",
-        "DOFRAGS"
+        "DOFRAGS",
+        "VERBOSE"
       ],
       "checks": [
         {
@@ -1165,7 +1168,7 @@
         },
         {
           "label": "Total integrated energy (au)",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -152.0623834,
           "tol_abs": 2e-06
         },
@@ -2223,45 +2226,45 @@
         },
         {
           "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -76.1309793,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 9.06e-05,
           "tol_abs": 2e-06
         },
         {
           "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "DFT exchange-correlation \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -9.2197241,
           "tol_abs": 2e-06
         },
         {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "label": "Electron-electron energy before the zero-error correction (au)",
+          "pattern": "Electron-electron energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 36.0247872,
           "tol_abs": 2e-06
         },
         {
           "label": "O-H BODEN XC term (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.164928,
           "tol_abs": 2e-05
         },
         {
           "label": "O IQA self-energy (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -74.786669,
           "tol_abs": 2e-05
         },
         {
           "label": "O-H IQA interaction (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.429062,
           "tol_abs": 2e-05
@@ -2298,7 +2301,7 @@
         {
           "label": "No energy decomposition printed",
           "type": "absent",
-          "pattern": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS"
+          "pattern": "IQA ENERGY TERMS"
         },
         {
           "label": "No Normal Termination",
@@ -2337,45 +2340,45 @@
         },
         {
           "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -76.0505604,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 2.82e-05,
           "tol_abs": 2e-06
         },
         {
           "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "DFT exchange-correlation \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -8.9820876,
           "tol_abs": 2e-06
         },
         {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "label": "Electron-electron energy before the zero-error correction (au)",
+          "pattern": "Electron-electron energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 37.8661299,
           "tol_abs": 2e-06
         },
         {
           "label": "O-H BODEN XC term, DFT part (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.181686,
           "tol_abs": 2e-05
         },
         {
           "label": "O IQA self-energy (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -74.525615,
           "tol_abs": 2e-05
         },
         {
           "label": "O-H IQA interaction (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.529236,
           "tol_abs": 2e-05
@@ -2411,70 +2414,70 @@
         {
           "label": "7 pairs below THREBOD take the multipolar estimate",
           "type": "present",
-          "pattern": "7 atom pair\\(s\\) below the threshold"
+          "pattern": "Pairs from the multipolar expansion\\s*:\\s*7\\n"
         },
         {
           "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -152.8094344,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -9.1e-06,
           "tol_abs": 2e-06
         },
         {
           "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "DFT exchange-correlation \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -18.6913761,
           "tol_abs": 2e-06
         },
         {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "label": "Electron-electron energy before the zero-error correction (au)",
+          "pattern": "Electron-electron energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 93.4947027,
           "tol_abs": 2e-06
         },
         {
           "label": "O1-H5 xc, skipped pair: multipolar (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
           "ref": -0.00015,
           "tol_abs": 2e-05
         },
         {
           "label": "H2-H6 xc, skipped pair: multipolar (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.000135,
           "tol_abs": 2e-05
         },
         {
           "label": "H5-H6 xc, 1-3 pair just above the threshold: BODEN (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "5\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.000714,
           "tol_abs": 2e-05
         },
         {
           "label": "O4-H6 xc, computed pair: BODEN (au)",
-          "section": "FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "4\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.161738,
           "tol_abs": 2e-05
         },
         {
           "label": "O1-H5 IQA interaction, skipped pair (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
           "ref": -0.098434,
           "tol_abs": 2e-05
         },
         {
           "label": "O1-H6 IQA interaction, hydrogen bond (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.177824,
           "tol_abs": 2e-05
@@ -2513,91 +2516,91 @@
         {
           "label": "7 pairs below THREBOD take the multipolar estimate",
           "type": "present",
-          "pattern": "7 atom pair\\(s\\) below the threshold"
+          "pattern": "Pairs from the multipolar expansion\\s*:\\s*7\\n"
         },
         {
           "label": "Total KS-DFT energy (au)",
-          "pattern": "Total KS-DFT energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -152.8537641,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -1.05e-05,
           "tol_abs": 2e-06
         },
         {
           "label": "Pure KS-DFT XC energy, one-center exact (au)",
-          "pattern": "KS-DFT exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "DFT exchange-correlation \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -15.1526092,
           "tol_abs": 2e-06
         },
         {
-          "label": "KS-DFT electron-electron energy before zero-error interpolation (au)",
-          "pattern": "KS-DFT electron-electron energy \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "label": "Electron-electron energy before the zero-error correction (au)",
+          "pattern": "Electron-electron energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 93.485537,
           "tol_abs": 2e-06
         },
         {
           "label": "O1-H5 xc, skipped pair: multipolar (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
           "ref": -0.000135,
           "tol_abs": 2e-05
         },
         {
           "label": "H2-H6 xc, skipped pair: multipolar (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.000122,
           "tol_abs": 2e-05
         },
         {
           "label": "H5-H6 xc, 1-3 pair just above the threshold: BODEN (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$",
           "pattern": "5\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.000717,
           "tol_abs": 2e-05
         },
         {
           "label": "O4-H6 xc, computed pair: BODEN (au)",
-          "section": "INTERPOLATED HYBRID KS-DFT XC TERMS",
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$",
           "pattern": "4\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.165421,
           "tol_abs": 2e-05
         },
         {
           "label": "O1-H5 IQA interaction, skipped pair (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){4}([-+]?\\d+\\.\\d+)",
           "ref": -0.103482,
           "tol_abs": 2e-05
         },
         {
           "label": "O1-H6 IQA interaction, hydrogen bond (au)",
-          "section": "FUZZY ATOMS KS-DFT ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+(?:[-+]?\\d+\\.\\d+\\s+){5}([-+]?\\d+\\.\\d+)",
           "ref": -0.188319,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment 1 IQA self-energy (au)",
-          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "section": "(?m)^    FRAGMENT IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
           "ref": -76.411715,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment 1-2 IQA interaction (au)",
-          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "section": "(?m)^    FRAGMENT IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.033217,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment 1-2 xc interaction, includes skipped pairs (au)",
-          "section": "FRAGMENT ANALYSIS: Final Exc Decomposition",
+          "section": "(?m)^    FRAGMENT EXCHANGE-CORRELATION ENERGY$",
           "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.024437,
           "tol_abs": 2e-05
@@ -2638,32 +2641,32 @@
         },
         {
           "label": "Electron-nuclei energy incl. ECP (au)",
-          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Electron-nuclear attraction \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -648.7483763,
           "tol_abs": 2e-06
         },
         {
           "label": "E-N integration error (kcal/mol)",
-          "pattern": "Integration error \\(kcal/mol\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 1,
           "ref": 0.0,
           "tol_abs": 0.01
         },
         {
           "label": "Kinetic energy (au)",
-          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 114.2366681,
           "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy (au)",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -297.2315321,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -5e-07,
           "tol_abs": 2e-06
         },
@@ -2710,32 +2713,32 @@
         },
         {
           "label": "Electron-nuclei energy incl. ECP (au)",
-          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Electron-nuclear attraction \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -648.7484967,
           "tol_abs": 2e-06
         },
         {
           "label": "E-N integration error (kcal/mol)",
-          "pattern": "Integration error \\(kcal/mol\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 1,
           "ref": -0.08,
           "tol_abs": 0.01
         },
         {
           "label": "Kinetic energy (au)",
-          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 114.2366681,
           "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy (au)",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -297.2316525,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -0.0001208,
           "tol_abs": 2e-06
         },

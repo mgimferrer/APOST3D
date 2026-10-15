@@ -45,7 +45,7 @@ from pathlib import Path
 
 # Lines whose content depends on the machine, the thread count or the date.
 IGNORE_RE = re.compile(
-    r"TIMING (CPU|WALL)|Elapsed time|threads out of|Version \d+\s+--"
+    r"TIMING (CPU|WALL)|Elapsed time|threads out of|OpenMP threads|Version \d+\s+--"
 )
 # A number not glued to a preceding letter, digit or underscore (so the 2 of
 # H2O or the 1 of FR1_13 stay part of the text).

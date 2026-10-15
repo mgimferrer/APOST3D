@@ -150,98 +150,204 @@ the one-center terms (see *Checking the result* below). Details in
 
 The excerpts below come from water, RKS SVWN/cc-pVDZ from Gaussian 16,
 with the `SVWN` keyword, `THREBOD -1` and a 40 × 146 two-electron grid
-(test `H2O-SVWN`).
+(test `H2O-SVWN`), unless said otherwise.
 
-**Functional information.** One box per libxc component, with its name,
-references, type and family.
-
-**One-electron part.** One matrix per term (`ELECTRON-NUCLEAR
-ATTRACTION`, `KINETIC ENERGY`, `NUCLEAR-NUCLEAR REPULSION`). With
-reference energies in the `.fchk`, each total is followed by its
-integration error:
+**Section header.** The wavefunction, the atomic definition and how to
+read the matrices:
 
 % source: tests/reference/H2O-SVWN.apost
 ```text
-  Electron-nuclei energy:   -198.9264417
-  Integration error (kcal/mol):     0.01
+  Wavefunction                            : KS-DFT, restricted
+  Atomic definition                       : TFVC (real space)
+
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
 ```
 
-**KS-DFT exchange-correlation.** The BODEN of each pair (`multipolar`
-for pairs below `THREBOD`, followed by a note on how they are treated),
-then the `DIATOMIC PURE KS-DFT XC TERMS (BODEN)`, the `PURE KS-DFT XC
-ONE-CENTER TERMS (EXACT)` and, after rearranging, the final matrix:
+Every matrix follows this convention: the diagonal element of atom A is
+its one-center term, and each off-diagonal element is the **whole** A–B
+term (not half of it), so the total is the sum of the upper triangle
+including the diagonal.
+
+**Functional** (KS-DFT). `DENSITY FUNCTIONAL` lists each libxc component
+with its id, kind, family, exact-exchange fraction (hybrids) and
+references.
+
+**One-electron terms.** `ELECTRON-NUCLEAR ATTRACTION` and
+`NUCLEAR-NUCLEAR REPULSION` are matrices; `KINETIC ENERGY` is a column
+per atom, since the kinetic energy has no pair terms. With reference
+energies in the `.fchk`, each total is followed by its integration error:
 
 % source: tests/reference/H2O-SVWN.apost
 ```text
-    FINAL PURE KS-DFT EXCHANGE-CORRELATION ENERGY COMPONENTS
+    ELECTRON-NUCLEAR ATTRACTION
+                 1  O        2  H        3  H
+    1  O  -184.537618   -6.402883   -6.402883
+    2  H    -6.402883   -0.662774   -0.257508
+    3  H    -6.402883   -0.257508   -0.662774
+  Electron-nuclear attraction (au)        :    -198.9264417
+  Integration error (kcal/mol)            :           0.01
+```
+
+**DFT exchange-correlation** (KS-DFT). `DFT EXCHANGE-CORRELATION (BODEN)`
+counts the atom pairs computed from the bond order density and those
+below `THREBOD`, taken from the multipolar expansion (with a note on how
+they are treated). `DFT EXCHANGE-CORRELATION BY ATOM` gives, for each
+atom, the functional integrated within the atom and its self term (the
+same minus half of each of its pair terms), and `DFT
+EXCHANGE-CORRELATION ENERGY` is the final matrix:
+
+% source: tests/reference/H2O-SVWN.apost
+```text
+    DFT EXCHANGE-CORRELATION ENERGY
+  The whole exchange-correlation energy (pure functional).
                  1  O        2  H        3  H
     1  O    -8.498405   -0.181686   -0.181686
     2  H    -0.181686   -0.059858   -0.000594
     3  H    -0.181686   -0.000594   -0.059858
-  Sum of pure KS-DFT exchange-correlation energy:     -8.9820876
+  DFT exchange-correlation (au)           :      -8.9820876
 ```
 
-For a hybrid functional, this matrix is only the DFT part, and a note
-says so. The exact-exchange part is added in the two-electron section,
-which prints `HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS` (the full HF-type
-exchange, before scaling by the exact-exchange fraction, also noted
-there) and then the complete `HYBRID KS-DFT XC TERMS`.
+For a pure functional this is the whole exchange-correlation energy; for
+a hybrid one it is only the DFT part, as the line under the title says.
 
-**Two-electron part.** The Coulomb matrix, the electron-electron energy
-and its integration error, followed by the zero-error strategy:
+**Two-electron integration error.** With reference energies, the
+electron-electron energy integrated on the first grid is compared with the
+reference, and the zero-error strategy is applied when the error exceeds
+`TWOELTOLER`:
 
 % source: tests/reference/H2O-SVWN.apost
 ```text
-  KS-DFT electron-electron energy (au):     37.8661299
-  Integration error (kcal/mol):    -3.09
-
-  Max error accepted on the two-electron part (kcal/mol):     0.25
-
-  Zero-error strategy applied: the INTERPOLATED tables below replace
-  the ones above (only their one-center terms change).
-  Rotating for angles:   0.000000   0.182000
-  New error after rotation:   -10.41
+    TWO-ELECTRON INTEGRATION ERROR
+  Electron-electron energy (au)           :      37.8661299
+  Integration error (kcal/mol)            :          -3.09
+  Tolerance (kcal/mol)                    :           0.25
+  Zero-error correction                   : applied to the one-center terms
+  Error on the rotated grid (kcal/mol)    :         -10.41
   Same-sign error on both grids: extrapolating, not interpolating
-  Damping parameter       :      1.4227849
+  Damping parameter                       :       1.4227849
+  Corrected electron-electron energy (au) :      37.8710578
+  Corrected integration error (kcal/mol)  :           0.00
 ```
 
-When the zero-error strategy is applied, a note says so, and the
-`INTERPOLATED ...` matrices that follow replace the first ones (they
-differ only on the diagonal). Without reference energies, a note says
-that the error is neither estimated nor corrected.
+Below the tolerance the section says the correction is not needed;
+without reference energies it says that the error is neither estimated
+nor corrected. Either way, **the matrices printed after this section hold
+the final values**: when the correction is applied, their one-center
+Coulomb and exchange terms are the corrected ones (pair terms do not
+change).
 
-**Final decomposition.**
+**Two-electron terms.** `COULOMB ENERGY`, then:
+
+- Hartree-Fock: `EXCHANGE ENERGY (HARTREE-FOCK)`, the exchange matrix.
+- Hybrid functional: `EXACT-EXCHANGE SHARE` and `EXCHANGE-CORRELATION
+  ENERGY`, the complete exchange-correlation terms (DFT part +
+  exact-exchange share).
+- Pure functional: nothing more, its exchange-correlation is the DFT part
+  printed before.
+
+```{admonition} Hybrid functionals: the exact exchange is printed already scaled
+:class: important
+
+`EXACT-EXCHANGE SHARE` is the HF-type exchange **multiplied by the
+exact-exchange fraction** *a* of the functional (0.20 for B3LYP), i.e. the
+part of the exchange that enters the energy. The matrices add up directly:
+
+DFT EXCHANGE-CORRELATION ENERGY + EXACT-EXCHANGE SHARE =
+EXCHANGE-CORRELATION ENERGY
+
+The full, unscaled HF-type exchange of the Kohn-Sham orbitals is printed
+only with `VERBOSE 1`, as `HF-TYPE EXCHANGE, UNSCALED` (see below).
+```
+
+For water, triplet UKS B3LYP (test `H2O-T-B3LYP`):
+
+% source: tests/reference/H2O-T-B3LYP.apost
+```text
+    EXACT-EXCHANGE SHARE
+  0.200 x the HF-type exchange: the exact-exchange part of the
+  functional, already scaled, as it enters the energy.
+                 1  O        2  H        3  H
+    1  O    -1.632116   -0.035618   -0.035618
+    2  H    -0.035618   -0.022472   -0.002558
+    3  H    -0.035618   -0.002558   -0.022472
+  Exact-exchange share (au)               :      -1.7508548
+```
+
+**IQA energy terms.** The final decomposition, titled with the atomic
+definition:
 
 % source: tests/reference/H2O-SVWN.apost
 ```text
-    FUZZY ATOMS KS-DFT ENERGY COMPONENTS
+    IQA ENERGY TERMS (TFVC)
+  Self-energies on the diagonal, interaction energies off it.
                  1  O        2  H        3  H
     1  O   -74.525615   -0.529236   -0.529236
     2  H    -0.529236   -0.302629    0.138786
     3  H    -0.529236    0.138786   -0.302629
-  Total KS-DFT energy      :    -76.0505604
-  Total energy in Fchk file:    -76.0505886
-  Integration error (au):      0.0000282
-  Integration error (kcal/mol):     0.02
+  Total energy (au)                       :     -76.0505604
+  Energy in the .fchk file (au)           :     -76.0505886
+  Integration error (au)                  :       0.0000282
+  Integration error (kcal/mol)            :           0.02
 ```
 
-- The diagonal elements are the atomic self-energies *E*<sub>self</sub>(A)
-  and the off-diagonal ones the interaction energies
-  *E*<sub>int</sub>(A,B). The total is the sum of the upper triangle
-  including the diagonal.
-- The same convention holds for every matrix printed before: each
-  off-diagonal element is the full A–B term. The exchange-correlation
-  part of an interaction is the off-diagonal element of the **last**
-  exchange-correlation matrix printed (for hybrids `HYBRID KS-DFT XC
-  TERMS`, or its `INTERPOLATED` version); its
-  classical part is the rest, *E*<sub>int</sub>(A,B) − *V*<sub>xc</sub>(A,B).
+The diagonal elements are the atomic self-energies *E*<sub>self</sub>(A)
+and the off-diagonal ones the interaction energies *E*<sub>int</sub>(A,B).
 
-Hartree-Fock and CASSCF/CISD outputs follow the same pattern, with
-`HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS` or `POST-HARTREE-FOCK-TYPE
-EXCHANGE-CORRELATION ENERGY TERMS`, and a final `FUZZY ATOMS Hartree-Fock
-ENERGY COMPONENTS` or `FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS`
-matrix. With `DOFRAGS`, every matrix is also condensed to fragments
-(`FRAGMENT ANALYSIS: ...`).
+**Atomic energies and classical interactions.** Built from the final
+matrices:
+
+- `ATOMIC ENERGIES`: each atom's self-energy and its additive energy,
+  *E*<sub>A</sub> = *E*<sub>self</sub>(A) + ½ Σ<sub>B</sub>
+  *E*<sub>int</sub>(A,B); the additive energies add up to the total
+  energy.
+- `CLASSICAL INTERACTION ENERGIES`: the electron-nuclear, nuclear-nuclear
+  and Coulomb part of each interaction energy. The rest of it,
+  *E*<sub>int</sub>(A,B) − *V*<sub>cl</sub>(A,B), is the
+  exchange-correlation part: the off-diagonal element of `EXCHANGE
+  ENERGY (HARTREE-FOCK)`, `EXCHANGE-CORRELATION ENERGY` (hybrids) or `DFT
+  EXCHANGE-CORRELATION ENERGY` (pure functionals).
+
+% source: tests/reference/H2O-SVWN.apost
+```text
+    ATOMIC ENERGIES
+  Additive energy = self-energy + half of each interaction energy of the atom;
+  the additive energies add up to the total energy.
+  Atom    Self-energy    Additive
+    1  O   -74.525615  -75.054851
+    2  H    -0.302629   -0.497855
+    3  H    -0.302629   -0.497855
+  Total    -75.130874  -76.050560
+```
+
+**Fragments.** With `DOFRAGS`, every matrix and per-atom table is followed
+by its fragment version (`FRAGMENT ...`): the diagonal of a fragment
+matrix is the fragment's one-center term (those of its atoms plus the
+pair terms between them), the off-diagonal elements the terms between
+fragments.
+
+### More detail: VERBOSE 1
+
+`VERBOSE 1` in `# METHOD` also prints the intermediate matrices, for
+checks and development (the results do not change):
+
+- KS-DFT: the BODEN integral of each atom pair (`multipolar` for the pairs
+  below `THREBOD`), `DFT EXCHANGE-CORRELATION, PAIR TERMS` and `DFT
+  EXCHANGE-CORRELATION, ONE-CENTER TERMS` (the functional integrated
+  within each atom, before half of each pair term is moved out of it);
+- hybrid functionals: `HF-TYPE EXCHANGE, UNSCALED`, the full HF-type
+  exchange before the exact-exchange fraction is applied;
+- when the zero-error correction is applied, the two-electron matrices
+  integrated on the first grid, titled `..., BEFORE THE ZERO-ERROR
+  CORRECTION`.
+
+Each comes with its fragment version under `DOFRAGS`.
+
+Correlated (CASSCF/CISD) wavefunctions print
+`POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS` and a final
+`FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS` matrix, with the same
+conventions.
 
 ## Checking the result
 
@@ -249,7 +355,8 @@ matrix. With `DOFRAGS`, every matrix is also condensed to fragments
   the zero-error strategy has been applied: it is close to zero by
   construction, even if the functional does not match the wavefunction.
 - The informative numbers are the one-electron integration errors, the
-  two-electron error **before** the zero-error strategy (a few kcal/mol
+  two-electron error **before** the zero-error strategy (the first
+  `Integration error` of `TWO-ELECTRON INTEGRATION ERROR`, a few kcal/mol
   at most with sensible grids), and the damping parameter (about 1.2 to
   1.4 in the tests, with the 40 × 146 two-electron grid). A much larger error or damping parameter
   points to a functional that does not match the wavefunction.

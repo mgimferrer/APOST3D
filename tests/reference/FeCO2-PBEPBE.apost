@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -121,8 +123,8 @@
   Fragment  2 :   2   4
   Fragment  3 :   3   5
 
-  TIMING CPU  :: Initialization                                    0.02 s
-  TIMING WALL :: Initialization                                    0.02 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -147,8 +149,8 @@
 
   Sum of atomic overlaps, largest error   : 6.16E-04 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.33 s
-  TIMING WALL :: Atomic definition                                 0.34 s
+  TIMING CPU  :: Atomic definition                                 0.21 s
+  TIMING WALL :: Atomic definition                                 0.03 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -427,9 +429,9 @@
   Total             2.00
   Overall reliability index R (%)         :         96.598
 
-  TIMING CPU  :: EFFAO computation                                 0.52 s
-  TIMING WALL :: EFFAO computation                                 0.55 s
-  TIMING CPU  :: EOS analysis                                      0.01 s
-  TIMING WALL :: EOS analysis                                      0.01 s
+  TIMING CPU  :: EFFAO computation                                 0.33 s
+  TIMING WALL :: EFFAO computation                                 0.07 s
+  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.00 s
 
   ...Normal Termination of APOST-3D...

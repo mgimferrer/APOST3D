@@ -111,6 +111,7 @@ c      -------------------------------------------------------------------------
       use input_options_mod
       use json_mod, only: json_open, json_close, json_end
       use output_mod, only: print_value
+      use omp_lib, only: omp_get_max_threads
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 !! general parameters !!
@@ -142,6 +143,9 @@ c      -------------------------------------------------------------------------
       dimension eto(maxat,maxat)
       character*60 name,name2,namepat,name3,name0,cgridarg
       character*40 cbuf
+      character*20 cakey,caspace
+      character*60 caname
+      character*12 cashort
 !! for testing !!
       dimension xhess(3,3)
 
@@ -179,8 +183,10 @@ c      -------------------------------------------------------------------------
         call apost_stop('The required input filename is missing')
       end if
 
-!! print version info !!
+!! print version info and the thread count of this run !!
       call kiir()
+      write(*,*)
+      call print_value('OpenMP threads',omp_get_max_threads())
 
 !! the grid is set in # GRID, no longer on the command line !!
       CALL GETARG(2,cgridarg)
@@ -884,14 +890,40 @@ c      iopt(200) =
 
 !! Energy decomposition (ENPART) !!
       if(ienpart.eq.1) then
-        call print_box('DOING MOLECULAR ENERGY DECOMPOSITION')
+        call print_box('ENERGY PARTITIONING (ENPART)')
+        if(icas.eq.1) then
+          cbuf='CASSCF'
+        else if(icisd.eq.1) then
+          cbuf='CISD'
+        else if(ihf.eq.1) then
+          cbuf='Hartree-Fock'
+        else
+          cbuf='KS-DFT'
+        end if
+        if(kop.eq.1) then
+          cbuf=trim(cbuf)//', unrestricted'
+        else
+          cbuf=trim(cbuf)//', restricted'
+        end if
+        call print_value('Wavefunction',trim(cbuf))
+        call atomic_definition_names(cakey,caname,cashort,caspace)
+        call print_value('Atomic definition',trim(cakey)//' (real space)')
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Each matrix below holds the one-center (self) terms'//
+     +    ' on the diagonal and'
+        write(*,'(2x,a)') 'the whole A-B pair term off it; its total adds the'//
+     +    ' diagonal and one'
+        write(*,'(2x,a)') 'triangle. Energies in au.'
+        if(iverbose.eq.0.and.iposthf.eq.0) write(*,'(2x,a)')
+     +    'VERBOSE 1 in # METHOD also prints the intermediate matrices.'
 
 !! One-electron part: CASSCF and CI WFs !!
         if(iposthf.eq.1) then
           call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
           call cpu_time(time2)
           call get_wall_time(wtime2)
-          call print_timer('enpart one-electron',time2-time,wtime2-wtime)
+          call print_timer('ENPART one-electron terms',time2-time,
+     +  wtime2-wtime)
           time=time2
           wtime=wtime2
 
@@ -917,7 +949,6 @@ c      iopt(200) =
             end if
             if(itype.ge.jtype) iopt(55) = itype
             if(jtype.gt.itype) iopt(55) = jtype
-            write(*,*)
           end if
 
 !! Restricted case !!
@@ -927,7 +958,9 @@ c      iopt(200) =
             call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
             call cpu_time(time2)
             call get_wall_time(wtime2)
-            call print_timer('enpart one-electron',time2-time,wtime2-wtime)
+            write(*,*)
+            call print_timer('ENPART one-electron terms',time2-time,
+     +  wtime2-wtime)
             time=time2
             wtime=wtime2
 
@@ -940,7 +973,9 @@ c      iopt(200) =
               end if
               call cpu_time(time2)
               call get_wall_time(wtime2)
-              call print_timer('enpart dft',time2-time,wtime2-wtime)
+              write(*,*)
+              call print_timer('ENPART DFT exchange-correlation',
+     +  time2-time,wtime2-wtime)
               time=time2
               wtime=wtime2
             end if
@@ -952,7 +987,9 @@ c      iopt(200) =
             call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
             call cpu_time(time2)
             call get_wall_time(wtime2)
-            call print_timer('enpart one-electron',time2-time,wtime2-wtime)
+            write(*,*)
+            call print_timer('ENPART one-electron terms',time2-time,
+     +  wtime2-wtime)
             time=time2
             wtime=wtime2
 
@@ -961,7 +998,9 @@ c      iopt(200) =
               call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
               call cpu_time(time2)
               call get_wall_time(wtime2)
-              call print_timer('enpart dft',time2-time,wtime2-wtime)
+              write(*,*)
+              call print_timer('ENPART DFT exchange-correlation',
+     +  time2-time,wtime2-wtime)
               time=time2
               wtime=wtime2
             end if
@@ -974,7 +1013,7 @@ c      iopt(200) =
 !! Two-electron part !!
 
 !! Two-electron integration defaults !!
-        call print_box('SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION')
+        call print_box('TWO-ELECTRON GRID')
 
 !! RADIAL_2E/ANGULAR_2E of # GRID (modgrid common, read_grid); default !!
 !! 150/590; the rotation angles follow the angular grid                  !!
@@ -988,13 +1027,12 @@ c      iopt(200) =
 !! explicit # GRID (and, since the plain default grew to 150/590, this   !!
 !! was a downgrade in that case, not the increase the message claims).   !!
         if(ianalytical.eq.1.and.igrid2e.eq.0) then
-          write(*,*) " Analytical calculation has been requested: Increasing grid because 2-electron is now 1-electron "
-          write(*,*)
+          write(*,'(2x,a)') 'ANALYTIC: two-electron grid raised to 70 x 434'//
+     +      ' (the two-electron part is a one-electron integral)'
           nrad=70
           nang=434
         else if(ianalytical.eq.1) then
-          write(*,*) " Analytical calculation has been requested: keeping the user-configured # GRID (RADIAL_2E/ANGULAR_2E) "
-          write(*,*)
+          write(*,'(2x,a)') 'ANALYTIC: two-electron grid of # GRID kept'
         end if
 
 !! Printing info !!
@@ -1015,7 +1053,8 @@ c      iopt(200) =
           call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
           call cpu_time(time2)
           call get_wall_time(wtime2)
-          call print_timer('enpart two-electron',time2-time,wtime2-wtime)
+          call print_timer('ENPART two-electron terms',time2-time,
+     +  wtime2-wtime)
           time=time2
           wtime=wtime2
 
@@ -1033,7 +1072,8 @@ c      iopt(200) =
           write(*,*)
           call cpu_time(time2)
           call get_wall_time(wtime2)
-          call print_timer('enpart two-electron',time2-time,wtime2-wtime)
+          call print_timer('ENPART two-electron terms',time2-time,
+     +  wtime2-wtime)
           time=time2
           wtime=wtime2
 

@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -128,8 +130,8 @@
      2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   1.99994   1.99994
      1.99952   1.74329   0.25671   0.00048   0.00006   0.00006   0.00000
 
-  TIMING CPU  :: Initialization                                    0.08 s
-  TIMING WALL :: Initialization                                    0.08 s
+  TIMING CPU  :: Initialization                                    0.04 s
+  TIMING WALL :: Initialization                                    0.04 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -154,8 +156,8 @@
 
   Sum of atomic overlaps, largest error   : 2.80E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 1.12 s
-  TIMING WALL :: Atomic definition                                 1.13 s
+  TIMING CPU  :: Atomic definition                                 0.68 s
+  TIMING WALL :: Atomic definition                                 0.11 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -364,8 +366,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      19.999813
 
-  TIMING CPU  :: Population analysis                               0.02 s
-  TIMING WALL :: Population analysis                               0.02 s
+  TIMING CPU  :: Population analysis                               0.01 s
+  TIMING WALL :: Population analysis                               0.01 s
 
   --------------------------------------
     EFFECTIVE FRAGMENT ORBITALS (EFOs)
@@ -482,8 +484,8 @@
   Total            -1.00
   Overall reliability index R (%)         :         80.734
 
-  TIMING CPU  :: EFFAO computation                                 1.77 s
-  TIMING WALL :: EFFAO computation                                 1.77 s
+  TIMING CPU  :: EFFAO computation                                 1.21 s
+  TIMING WALL :: EFFAO computation                                 0.29 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

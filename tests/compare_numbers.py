@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 
 NOISE = re.compile(r"TIMING (CPU|WALL)|Elapsed time|distributed over|"
-                   r"threads out of|OMP_NUM_THREADS|Version \d+\s+--")
+                   r"threads out of|OMP_NUM_THREADS|OpenMP threads|Version \d+\s+--")
 NUMBER = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[EeDd][-+]?\d+)?")
 
 

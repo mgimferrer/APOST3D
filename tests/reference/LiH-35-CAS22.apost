@@ -93,6 +93,8 @@
 
   ------------------------------------------------------------------------------
 
+  OpenMP threads                          : 8
+
   ------------------------
     WAVEFUNCTION SUMMARY
   ------------------------
@@ -162,8 +164,8 @@
 
   Sum of atomic overlaps, largest error   : 6.76E-10 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.15 s
-  TIMING WALL :: Atomic definition                                 0.03 s
+  TIMING CPU  :: Atomic definition                                 0.10 s
+  TIMING WALL :: Atomic definition                                 0.02 s
 
   ---------------------------------
     POST-HARTREE-FOCK CALCULATION
@@ -325,10 +327,16 @@
   TIMING CPU  :: Local spin analysis                               0.00 s
   TIMING WALL :: Local spin analysis                               0.00 s
 
-  ----------------------------------------
-    DOING MOLECULAR ENERGY DECOMPOSITION
-  ----------------------------------------
+  --------------------------------
+    ENERGY PARTITIONING (ENPART)
+  --------------------------------
 
+  Wavefunction                            : CASSCF, restricted
+  Atomic definition                       : TFVC (real space)
+
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
 
   ------------------------------------- 
    POST-HARTREE-FOCK ONE-ELECTRON PART  
@@ -372,12 +380,12 @@
   -------------------------------
   Nuclear repulsion energy:      0.4535805
 
-  TIMING CPU  :: enpart one-electron                               0.10 s
-  TIMING WALL :: enpart one-electron                               0.02 s
+  TIMING CPU  :: ENPART one-electron terms                         0.07 s
+  TIMING WALL :: ENPART one-electron terms                         0.01 s
 
-  -------------------------------------------------------
-    SETTING GRID FOR TWO-ELECTRON NUMERICAL INTEGRATION
-  -------------------------------------------------------
+  ---------------------
+    TWO-ELECTRON GRID
+  ---------------------
 
   Radial points                           : 40
   Angular points                          : 146
@@ -388,7 +396,6 @@
   ------------------------------------- 
 
   Rotating for angles:   0.000000   0.162000
-  Two-el integration will be distributed over   8 threads out of  10 available hardware cores
 
   --------------------------------------------
     COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
@@ -402,8 +409,8 @@
   -------------------------------
   Coulomb energy:      4.8192880
 
-  TIMING CPU  :: Coulomb energy                                    0.19 s
-  TIMING WALL :: Coulomb energy                                    0.03 s
+  TIMING CPU  :: Coulomb energy                                    0.13 s
+  TIMING WALL :: Coulomb energy                                    0.02 s
 
   ------------------------------------------------------------------ 
    EVALUATING POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION INTEGRALS  
@@ -425,8 +432,8 @@
   -------------------------------
   Post-Hartree-Fock exchange-correlation energy:     -2.0827565
 
-  TIMING CPU  :: PHF Exc energy                                    1.02 s
-  TIMING WALL :: PHF Exc energy                                    1.01 s
+  TIMING CPU  :: PHF Exc energy                                    0.53 s
+  TIMING WALL :: PHF Exc energy                                    0.53 s
 
   Total two-electron part (coul+exc):      2.7365314
   Integration error (kcal/mol):    -0.09
@@ -483,7 +490,7 @@
   Total energy in Fchk file:     -7.9411448
   Integration error (au):      0.0000000
   Integration error (kcal/mol):     0.00
-  TIMING CPU  :: enpart two-electron                               2.03 s
-  TIMING WALL :: enpart two-electron                               1.84 s
+  TIMING CPU  :: ENPART two-electron terms                         1.09 s
+  TIMING WALL :: ENPART two-electron terms                         0.97 s
 
   ...Normal Termination of APOST-3D...
