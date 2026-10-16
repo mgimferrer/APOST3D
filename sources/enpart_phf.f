@@ -1,6 +1,22 @@
       
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: numint_one_rphf
+!! One-electron IQA terms of a correlated (CASSCF/CISD) wavefunction:
+!! electron-nuclear attraction, kinetic energy (from the natural
+!! orbitals) and nuclear repulsion, printed and added to eto.
+!! arguments:
+!!   ndim   (in)  number of basis functions
+!!   itotps (in)  number of grid points
+!!   wp     (in)  integration weights
+!!   omp2   (in)  atomic weight of each point for every atom
+!!   pcoord (in)  coordinates of the points
+!!   chp    (in)  basis functions on the grid
+!!   rho    (inout) density on the grid (recomputed from the NOs)
+!!   eto    (out) one-electron IQA matrix
+!! author: PSalse, MGimf
+!! ----------------------------------------------------------------------
       subroutine numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
 
       use ao_matrices
@@ -36,7 +52,7 @@
       ndec=7
       if(iaccur.ne.0) ndec=13
 
-!! CALCULATING NUMBER OF CORE+ACTIVE ORBITALS !!
+!! number of occupied (core + active) natural orbitals !!
       imaxorb=0
       do ii=1,igr
         if(occ_no(ii,ii).gt.1.0d-8) imaxorb=imaxorb+1
@@ -45,9 +61,8 @@
 
       ALLOCATE(chp2(itotps,norb),scr(itotps))
 
-!! CALCULATING THE DENSITY FROM NATURAL ORBITALS !!
-! in principle no need. rho() has already been computed from P-matrix
-! but just in case
+!! density from the natural orbitals (rho is already built from P; it is !!
+!! recomputed here from the same orbitals as the energy terms)           !!
 !! parallel over grid points: each ii writes only chp2(ii,:) and rho(ii) !!
 !$OMP PARALLEL DO PRIVATE(ii,xx,jj,xx1,kk)
       do ii=1,itotps
@@ -64,13 +79,13 @@
       end do 
 !$OMP END PARALLEL DO
 
-!! ZEROING MATRICES !!
+!! energy matrices !!
       epa=ZERO
       ekin=ZERO
       enuc=ZERO
       eto=ZERO
 
-!! IN CASE OF HAVING PSEUDOPOTENTIAL !!
+!! pseudopotential (ECP) energies, added to the E-N one-center terms !!
       call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
         do ii=1,nat
@@ -79,7 +94,7 @@
       end if
 
 
-!! ELECTRON-NUCLEI ATTRACTION INTEGRALS !!
+!! electron-nuclear attraction !!
 !! parallel over the (icenter,jcenter) pairs (COLLAPSE(2), constant bounds): !!
 !! each pair writes only its own epa(icenter,jcenter)                        !!
 !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jcenter,xx,zz,dx0,dy0,dz0,
@@ -135,11 +150,11 @@
       end if
       call enpart_frag('ELECTRON-NUCLEAR ATTRACTION',epa)
 
-!! GENERATIONG GRID FOR 2nd DERIVATIVE OVER AOs !!
+!! second derivatives of the AOs on the grid, for the kinetic energy !!
       ALLOCATE(chpaux(itotps,igr))
       call dpoints(chpaux,pcoord)
 
-!! KINETIC ENERGY !!
+!! kinetic energy density from the natural orbitals !!
 !! parallel over grid points: each ii writes only scr(ii) !!
 !$OMP PARALLEL DO PRIVATE(ii,xx,jj,xx1,kk)
       do ii=1,itotps
@@ -185,7 +200,7 @@
      +  tkin,'Kinetic',' ')
       DEALLOCATE(chpaux)
 
-!! ADDING NUCLEAR REPULSION !!
+!! nuclear repulsion, and the one-electron IQA matrix !!
 
       erep=ZERO
       do i=1,nat
@@ -207,7 +222,7 @@
       call enpart_frag('NUCLEAR-NUCLEAR REPULSION',enuc)
 
 
-!! TOTAL ENERGY UP TO HERE !!
+!! one-electron total, and its reference counterpart !!
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
       DEALLOCATE(chp2,scr)
@@ -216,6 +231,20 @@
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: numint_two_rphf
+!! Two-electron IQA terms of a correlated wavefunction: Coulomb, and the
+!! exchange-correlation from the cumulant of the 2-RDM (with CORRELATION
+!! also exchange and correlation separately), the zero-error correction,
+!! the printing of the final matrices and of the IQA matrix.
+!! arguments:
+!!   ndim,itotps,wp,omp2,pcoord,chp,rho (in)  grid and density, as in
+!!                                       numint_one_rphf
+!!   eto    (inout) IQA matrix: one-electron terms in, total out
+!!   dm1    (in)  spin-orbital 1-RDM
+!!   dm2    (in)  spinless 2-RDM
+!! author: PSalse, MGimf
+!! ----------------------------------------------------------------------
       subroutine numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
 
       use ao_matrices
@@ -237,14 +266,14 @@
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/twoel/twoeltoler
-!! FROM # GRID SECTION !!
+!! rotation angles of the two-electron grid (# GRID) !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
 
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3),rho(itotps)
       dimension  omp2(itotps,nat),eto(maxat,maxat),Excmp(maxat,maxat)
       dimension  coul0(maxat,2*maxpass),coul(maxat,maxat)
       dimension  Ex(maxat,maxat),Ec(maxat,maxat),Exc(maxat,maxat)
-      dimension  scr(maxat,maxat),xvee(maxat,maxat)
+      dimension  scr(maxat,maxat)
       dimension  dm1(nspinorb,nspinorb),dm2(norb,norb,norb,norb)
 
       allocatable :: coulb(:,:),excb(:,:)
@@ -258,13 +287,8 @@
 
       idofr    = iopt(40)
       ithrebod = iopt(44)
-      ipolar   = iopt(46)
       iecorr   = iopt(59)
-      iorca    = iopt(43)
-      ipyscf   = iopt(87)
-      ispinsep = iopt(88)
       iatps    = nang*nrad
-      npass    = 2
 
       if(ithrebod.lt.1) then
         threbod=ZERO
@@ -272,14 +296,13 @@
         threbod=real(ithrebod)/10000.0d0
       end if
       
-!! ZEROING MATRICES !!
+!! energy matrices !!
 
       coul=ZERO
       Exc=ZERO
       Ex=ZERO
       Ec=ZERO
       scr=ZERO
-      xvee=ZERO
       coul0=ZERO
 
 !! the atom pairs integrated and those from the multipolar expansion !!
@@ -297,8 +320,7 @@
       call print_value('Pairs integrated (exchange-correlation)',npairs)
       call print_value('Pairs from the multipolar expansion',nskip)
 
-!! ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
+!! second, rotated grid for the one-center terms (angles: # GRID) !!
       phb=phb12
       pha=ZERO 
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
@@ -311,9 +333,8 @@
       ALLOCATE(chp2(itotps,norb))
       ALLOCATE(chp3(itotps,norb),chp3pha(itotps,norb))
 
-!! CALCULATING THE DENSITY FROM NATURAL ORBITALS !!
-!! HERE CHP2 AND CHP2PHA ARE THE NOs, CHP3 AND CHP3PHA ARE THE MOs !!
-!! MOs CONSTRUCTION REQUIRED FOR CORRELATION ENERGY CALCULATION !!
+!! on both grids: natural orbitals (chp2, chp2pha) for the density, MOs !!
+!! (chp3, chp3pha) for the cumulant, whose RDMs are in the MO basis      !!
 !! parallel over grid points: each ii writes only its own row of chp2,  !!
 !! chp2pha, chp3, chp3pha and its rho(ii), rhopha(ii)                   !!
 !$OMP PARALLEL DO PRIVATE(ii,xx,xxpha,jj,xx1,xx1pha,xx3,xx3pha,kk)
@@ -343,7 +364,7 @@
       end do
 !$OMP END PARALLEL DO
 
-!! COULOMB PART !!
+!! Coulomb !!
       call cpu_time(xtime)
       call get_wall_time(wxtime)
       call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
@@ -354,14 +375,13 @@
       xtime=xtime2
       wxtime=wxtime2
 
-!! EXCHANGE-CORRELATION PART !!
-
-!! MONADIC DIAGONALIZATION !!
+!! exchange-correlation: diagonalize the cumulant (monadic_diag), !!
+!! integrate its pair functions, multipolar estimate for the pairs  !!
+!! below THREBOD                                                    !!
       norb2=norb*(norb+1)/2
       ALLOCATE(cumulab(norb2,norb2),ffa1(itotps,norb2),ffb2(itotps,norb2))
       call monadic_diag(0,itotps,chp3,chp3pha,dm1,dm2,cumulab,ffa1,ffb2)
 
-!! COMPUTING Exc, MULTIPOLAR APPROACH AND COMPLETING THE MATRIX !!
       call numint_two_pmon(itotps,norb2,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,cumulab,ffa1,ffb2,Exc)
       call multipolar(norb,itotps,wp,omp2,pcoord,ffa1,cumulab,Excmp)
 
@@ -384,8 +404,8 @@
       wxtime=wxtime2
       DEALLOCATE(cumulab,ffa1,ffb2)
 
-!! EXCHANGE ENERGY PART ONLY (IF ASKED IN THE INPUT FILE) !!
-!! REPEATING THE PROCESS THAN FROM Exc !!
+!! CORRELATION: the exchange part from the exchange cumulant, the same !!
+!! way; correlation = exchange-correlation - exchange                  !!
       if(iecorr.eq.1) then
         ALLOCATE(cumulab(norb2,norb2),ffa1(itotps,norb2),ffb2(itotps,norb2))
         call monadic_diag(1,itotps,chp3,chp3pha,dm1,dm2,cumulab,ffa1,ffb2)
@@ -412,7 +432,6 @@
         exenx=xx
         exenc=xxc
 
-!! TIMINGS... !!
         call cpu_time(xtime2)
         call get_wall_time(wxtime2)
         call print_timer('ENPART exchange and correlation',xtime2-xtime,
@@ -422,12 +441,11 @@
         DEALLOCATE(cumulab,ffa1,ffb2)
       end if
 
-!! ZERO ERROR STRATEGY START !!
       DEALLOCATE(wppha,omp2pha,chppha,chp2pha,pcoordpha,rhopha,chp3pha)
 
-!! two-electron accuracy check and zero-error interpolation, on the    !!
-!! total exchange-correlation (also with CORRELATION, whose separate   !!
-!! exchange and correlation tables are left as computed)              !!
+!! two-electron accuracy check and zero-error correction, on the total !!
+!! exchange-correlation (with CORRELATION, exchange and correlation are !!
+!! not corrected: see enpart_phf_mats below)                            !!
       evee=coulen+exch_corr
 !! the error stays zero (no correction) without a reference energy !!
       iref=0
@@ -463,8 +481,8 @@
 
       if(izerr.eq.1) then
 
-!! NEW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
+!! zero-error correction: the one-center terms again on a grid rotated !!
+!! by the second angle of # GRID, then interpolated                       !!
       phb=phb22
       pha=ZERO
       ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
@@ -472,7 +490,7 @@
       ALLOCATE(chp3pha(itotps,norb),rhopha(itotps))
       call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! COMPUTING MOs AND DENSITY !!
+!! MOs and density on the rotated grid !!
 !! parallel over grid points: each ii writes only chp3pha(ii,:), rhopha(ii) !!
 !$OMP PARALLEL DO PRIVATE(ii,xxpha,jj,xx1pha,xx3pha,kk)
       do ii=1,itotps
@@ -491,8 +509,7 @@
       end do
 !$OMP END PARALLEL DO
 
-!! DOING INTEGRATIONS FOR ONLY THE ATOMIC TERMS !!
-!! COULOMB PART !!
+!! one-center terms only: Coulomb !!
 !! parallel over the points ifut of each atom: f3 is PRIVATE, xacc a  !!
 !! reduction added to coul0(icenter,3) after the loop (on one thread   !!
 !! the summation order is the serial one)                               !!
@@ -520,8 +537,9 @@
         coul0(icenter,3)=coul0(icenter,3)+xacc
       end do
 
-!! EXCHANGE-CORRELATION PART !!
-!! NASTY TRICK: CONTROLLED BY ITHREBOD, BUT RECOMPUTING ffb2 IS REQUIRED !!
+!! one-center terms only: exchange-correlation, with ffb2 recomputed for !!
+!! the rotated grid; THREBOD is raised for the call so that every pair   !!
+!! is skipped                                                            !!
       ALLOCATE(cumulab(norb2,norb2),ffa1(itotps,norb2),ffb2(itotps,norb2))
       call monadic_diag(0,itotps,chp3,chp3pha,dm1,dm2,cumulab,ffa1,ffb2)
       ithr=iopt(44)
@@ -534,7 +552,7 @@
       DEALLOCATE(ffa1,ffb2,cumulab)
       DEALLOCATE(wppha,omp2pha,chppha,pcoordpha,rhopha,chp3pha)
 
-!! CHECKING NEW VALUES !!
+!! the change of the one-center terms between the grids, and the damping !!
       do ii=1,nat
         coul0(ii,1)=coul(ii,ii)
         coul0(ii,2)=Exc(ii,ii)
@@ -548,7 +566,7 @@
       err1=twoelerr
       err2=twoelerr-deltaee
 
-!! INTERPOLATING ENERGIES, REPLACING OLD COULOMB AND EXCHANGE-CORRELATION TERMS !!
+!! interpolated one-center Coulomb and exchange-correlation terms !!
       do ii=1,nat
         coul(ii,ii)=coul0(ii,1)*phabest+(ONE-phabest)*coul0(ii,3)
         Exc(ii,ii)=coul0(ii,2)*phabest+(ONE-phabest)*coul0(ii,4)
@@ -574,7 +592,6 @@
       xtime=xtime2
       wxtime=wxtime2
 
-!! END ZES !!
       end if
 
 !! final two-electron matrices; with VERBOSE 1 first the first-grid ones !!
@@ -596,7 +613,7 @@
         write(*,'(2x,a)') 'it (VERBOSE 1).'
       end if
 
-!! FINAL PRINTING !!
+!! IQA matrix: one-electron terms (in eto) + Coulomb + xc !!
       xtot=ZERO
       do ii=1,nat
         eto(ii,ii)=eto(ii,ii)+coul(ii,ii)+Exc(ii,ii)
@@ -611,13 +628,29 @@
 
       call enpart_iqa(eto,etot,escf,0,ZERO,Exc,.false.)
 
-!! DEALLOCATING !!
       DEALLOCATE(chp2,chp3)
 
       end
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: monadic_diag
+!! Builds the cumulant of the 2-RDM (exchange-correlation, exchange or
+!! correlation), compacts and diagonalizes it, and evaluates its pair
+!! functions (eigenvectors on the orbital products) on both grids.
+!! arguments:
+!!   ic      (in)  0 exchange-correlation, 1 exchange, 2 correlation
+!!   itotps  (in)  number of grid points
+!!   chp2    (in)  MOs on the first grid
+!!   chp2pha (in)  MOs on the rotated grid
+!!   dm1,dm2 (in)  the RDMs
+!!   cumulab (out) diagonalized compacted cumulant (eigenvalues on the
+!!                 diagonal)
+!!   fij     (out) pair functions on the first grid
+!!   fijb    (out) pair functions on the rotated grid
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine monadic_diag(ic,itotps,chp2,chp2pha,dm1,dm2,cumulab,fij,fijb)
 
       IMPLICIT REAL*8(A-H,O-Z)
@@ -635,11 +668,12 @@
       allocatable :: cumul(:,:,:,:),eigenmat(:,:),fa1(:,:),fb2(:,:)
       allocatable :: sfdm1(:,:),psdm1(:,:) 
 
-!! TRANSFORMATION OF THE DM2 INTO THE CUMMULANT (XC IF ic = 0, X IF ic = 1 AND C IF ic = 2) !!
+!! cumulant of the 2-RDM: exchange-correlation (ic=0), exchange (ic=1) !!
+!! or correlation (ic=2)                                                  !!
       ALLOCATE(cumul(norb,norb,norb,norb))
       ALLOCATE(sfdm1(norb,norb),psdm1(norb,norb))
 
-!! P AND Ps in MO basis !!
+!! total and spin 1-RDMs in the MO basis !!
       do i=1,norb
         do k=1,norb
           sfdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)+dm1((i-1)*2+2,(k-1)*2+2)
@@ -668,8 +702,8 @@
 
       DEALLOCATE(sfdm1,psdm1)
 
-!! GROUPING TERMS FOR J >/ I AND L >/ K, NECESSARY FOR COMPACTING LATER !!
-!! COMPACTING INDEXES FOR THE CUMULANT (I,J --> IJ AND K,L --> KL) !!
+!! fold the cumulant onto the pairs i<=j and k<=l, then compact them !!
+!! into one index each (ij, kl)                                      !!
       ij=1
       do ii=1,norb
         do jj=ii,norb
@@ -688,13 +722,12 @@
       end do
       DEALLOCATE(cumul)
 
-!! DIAGONALIZING THE CORRESPONDING CUMULANT !!
+!! diagonalize the compacted cumulant !!
       norb2=norb*(norb+1)/2
       ALLOCATE(eigenmat(norb2,norb2))
       call diagonalize(norb2,norb2,cumulab,eigenmat,0)
 
-!! FINISHING INDEX COMPACTATION !!
-!! PRODUCT OF ORBITALS FROM FIRST GRID IN fa1, FROM SECOND (ROTATED) IN fb2 !!
+!! orbital products on the first grid (fa1) and the rotated one (fb2) !!
       ALLOCATE(fa1(itotps,norb2),fb2(itotps,norb2))
 !! parallel over grid points: each ifut writes only fa1(ifut,:), fb2(ifut,:) !!
 !$OMP PARALLEL DO PRIVATE(ifut,ij,ii,jj)
@@ -710,7 +743,7 @@
       end do  
 !$OMP END PARALLEL DO
 
-!! TRANSFORMATION OF fa1 AND fb2 FROM DIAGONALIZATION OF COMPACTED EXCHANGE-CORRELATION CUMULANT !!
+!! pair functions: the products transformed by the eigenvectors !!
 !! parallel over grid points: each ifut writes only fij(ifut,:), fijb(ifut,:) !!
 !$OMP PARALLEL DO PRIVATE(ifut,ii,xx,xxb,kk)
       do ifut=1,itotps
@@ -732,6 +765,24 @@
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: numint_two_pmon
+!! Integrates the cumulant pair functions over two electrons: one-center
+!! terms with the rotated grid for the second electron, pair terms for
+!! the atom pairs at or above THREBOD (the others are left to the
+!! multipolar expansion). Adds them to ef.
+!! arguments:
+!!   itotps        (in)  number of grid points
+!!   iorb2         (in)  number of pair functions
+!!   wp,wppha      (in)  weights on the first and the rotated grid
+!!   omp2,omp2pha  (in)  atomic weights on both grids
+!!   pcoord,pcoordpha (in) coordinates on both grids
+!!   cumulab       (in)  cumulant eigenvalues (diagonal)
+!!   ffa1,ffb2     (in)  pair functions on the first and the rotated grid
+!!   ef            (inout) exchange(-correlation) matrix (one-center terms
+!!                 counted twice, pair terms once per pair)
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine numint_two_pmon(itotps,iorb2,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,cumulab,ffa1,ffb2,ef)
 
       use integration_grid
@@ -759,12 +810,13 @@
       end if
       
 
-!! TWO-EL NUMERICAL INTEGRATION FOR PHF and HF Exc, Ex and Ec !!
+!! two-electron integration of the pair functions, weighted by the !!
+!! cumulant eigenvalues                                           !!
 
 !! parallel over the points ifut of each atom: f3 and the point loop  !!
-!! are PRIVATE; the row efrow(icenter:nat) of the atom and iterms are   !!
-!! reductions, added to ef after the loop (on one thread the summation  !!
-!! order is the serial one)                                             !!
+!! are PRIVATE; the row efrow(icenter:nat) of the atom is a reduction,  !!
+!! added to ef after the loop (on one thread the summation order is the !!
+!! serial one)                                                          !!
       do icenter=1,nat
         do jcenter=1,nat
           efrow(jcenter)=ZERO
