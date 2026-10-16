@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -173,6 +173,7 @@
       },
       "total_energy": -7.6026681228872917E+001,
       "reference_energy": -7.6030882620115591E+001,
+      "field_energy": -4.1737862963488193E-003,
       "integration_error": 2.7604946325116009E-005,
       "integration_error_kcal": 1.7322368826495016E-002,
       "atomic_energies": {
@@ -469,8 +470,8 @@
     "job_name": "H2O-RHF-FIELD",
     "input_file": "H2O-RHF-FIELD.inp",
     "wavefunction_file": "H2O-RHF-FIELD.fchk",
-    "date": "2026-10-16T10:28:35+02:00",
-    "id": "2026-10-16T10:28:35+02:00/27f8",
+    "date": "2026-10-16T17:11:26+02:00",
+    "id": "2026-10-16T17:11:26+02:00/c640",
     "threads": 8,
     "status": "normal",
     "stop_message": null

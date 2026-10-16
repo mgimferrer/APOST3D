@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -162,7 +162,7 @@
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": 1.5195454778155036E+002,
+          "total": 1.5195454778155039E+002,
           "total_rule": "diagonal and one triangle"
         },
         "fragments": {
@@ -301,6 +301,7 @@
       },
       "total_energy": -1.5206101300416921E+002,
       "reference_energy": -1.5206236833536570E+002,
+      "field_energy": null,
       "integration_error": 1.3553311964926706E-003,
       "integration_error_kcal": 8.5048333697863709E-001,
       "atomic_energies": {
@@ -771,8 +772,8 @@
     "job_name": "H2O-Dimer-RHF-NOREF",
     "input_file": "H2O-Dimer-RHF-NOREF.inp",
     "wavefunction_file": "H2O-Dimer-RHF-NOREF.fchk",
-    "date": "2026-10-16T10:28:32+02:00",
-    "id": "2026-10-16T10:28:32+02:00/9660",
+    "date": "2026-10-16T17:11:23+02:00",
+    "id": "2026-10-16T17:11:23+02:00/39b8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

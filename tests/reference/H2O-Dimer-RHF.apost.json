@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -303,6 +303,7 @@
       },
       "total_energy": -1.5206238340112569E+002,
       "reference_energy": -1.5206236833536570E+002,
+      "field_energy": null,
       "integration_error": -1.5065759981780502E-005,
       "integration_error_kcal": -9.4539090198630903E-003,
       "atomic_energies": {
@@ -806,8 +807,8 @@
     "job_name": "H2O-Dimer-RHF",
     "input_file": "H2O-Dimer-RHF.inp",
     "wavefunction_file": "H2O-Dimer-RHF.fchk",
-    "date": "2026-10-16T10:28:29+02:00",
-    "id": "2026-10-16T10:28:29+02:00/ae10",
+    "date": "2026-10-16T17:11:18+02:00",
+    "id": "2026-10-16T17:11:18+02:00/b898",
     "threads": 8,
     "status": "normal",
     "stop_message": null

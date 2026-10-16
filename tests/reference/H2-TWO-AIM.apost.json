@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -20,8 +20,8 @@
     "job_name": "H2-TWO-AIM",
     "input_file": "H2-TWO-AIM.inp",
     "wavefunction_file": "H2-TWO-AIM.fchk",
-    "date": "2026-10-16T10:29:03+02:00",
-    "id": "2026-10-16T10:29:03+02:00/aae0",
+    "date": "2026-10-16T17:12:11+02:00",
+    "id": "2026-10-16T17:12:11+02:00/0530",
     "threads": 8,
     "status": "stopped",
     "stop_message": "More than one atomic definition"

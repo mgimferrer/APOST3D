@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -186,7 +186,7 @@
         "electrons": [1.0000000000000000E+001, 8.0000000000000000E+000]
       },
       "orbital_file": "CH3F-pySCF-OSLOs.fchk",
-      "orbital_file_id": "2026-10-16T10:28:27+02:00/0ba8"
+      "orbital_file_id": "2026-10-16T17:11:13+02:00/1d40"
     }
   },
   "index": [
@@ -419,8 +419,8 @@
     "job_name": "CH3F-pySCF",
     "input_file": "CH3F-pySCF.inp",
     "wavefunction_file": "CH3F-pySCF.fchk",
-    "date": "2026-10-16T10:28:27+02:00",
-    "id": "2026-10-16T10:28:27+02:00/0ba8",
+    "date": "2026-10-16T17:11:13+02:00",
+    "id": "2026-10-16T17:11:13+02:00/1d40",
     "threads": 8,
     "status": "normal",
     "stop_message": null

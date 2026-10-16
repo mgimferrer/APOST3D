@@ -279,8 +279,9 @@ Written with `ENPART`, for Hartree-Fock, KS-DFT and correlated
 (CASSCF/CISD) wavefunctions. Energies in au; every matrix
 is a [matrix object](#matrix-objects) in the convention of the text
 output: one-center terms on the diagonal, the whole A–B term off it, the
-total over the diagonal and one triangle. The external-field terms and
-`POLAR` are not written.
+total over the diagonal and one triangle. The external-field analysis
+(per-atom terms) and `POLAR` are not written; only the field interaction
+energy, needed to check the total.
 
 | Key | Content |
 |---|---|
@@ -295,7 +296,7 @@ total over the diagonal and one triangle. The external-field terms and
 | `xc` | the final exchange-correlation term: the exchange for Hartree-Fock, `xc_dft` for a pure functional, `xc_dft` + `exact_exchange_share` for a hybrid, the cumulant term for a correlated wavefunction |
 | `exchange`, `correlation` | correlated wavefunctions with `CORRELATION`, only when the zero-error correction was not applied (it corrects their sum `xc`): the exchange and correlation parts, adding up to `xc` |
 | `total` | the IQA matrix: self-energies on the diagonal, interaction energies off it |
-| `total_energy`, `reference_energy`, `integration_error`, `integration_error_kcal` | the total of `total`, the energy of the `.fchk` and their difference |
+| `total_energy`, `reference_energy`, `field_energy`, `integration_error`, `integration_error_kcal` | the total of `total`, the energy of the `.fchk` (which includes the interaction with an external field, when there is one), the field interaction energy (`null` without a field; it is not part of the IQA terms), and `integration_error` = `total_energy` + `field_energy` − `reference_energy` |
 | `atomic_energies` | `atoms` and, with `DOFRAGS`, `fragments`: `self_energy` and `additive_energy` (self-energy + half of each interaction energy; they add up to `total_energy`) |
 | `classical_interaction` | the electron-nuclear + nuclear-nuclear + Coulomb part of each interaction energy (`total` − `xc` off the diagonal; the diagonal is zero) |
 
