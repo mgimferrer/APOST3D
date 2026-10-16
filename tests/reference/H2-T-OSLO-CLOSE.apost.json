@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.10",
+  "schema_version": "0.11",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -223,7 +223,7 @@
         "electrons_beta": [0.0000000000000000E+000, 0.0000000000000000E+000]
       },
       "orbital_file": "H2-T-OSLO-CLOSE-OSLOs.fchk",
-      "orbital_file_id": "2026-10-15T16:37:54+02:00/b198"
+      "orbital_file_id": "2026-10-16T10:28:28+02:00/5d58"
     }
   },
   "index": [
@@ -535,8 +535,8 @@
     "job_name": "H2-T-OSLO-CLOSE",
     "input_file": "H2-T-OSLO-CLOSE.inp",
     "wavefunction_file": "H2-T-OSLO-CLOSE.fchk",
-    "date": "2026-10-15T16:37:54+02:00",
-    "id": "2026-10-15T16:37:54+02:00/b198",
+    "date": "2026-10-16T10:28:28+02:00",
+    "id": "2026-10-16T10:28:28+02:00/5d58",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.10",
+  "schema_version": "0.11",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -229,7 +229,7 @@
       },
       "reliability_percent": 8.3533915679571649E+001,
       "orbital_file": "CH3F-EOS-LOWDIN-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-15T16:38:46+02:00/4228"
+      "orbital_file_id": "2026-10-16T10:29:03+02:00/aa68"
     }
   },
   "index": [
@@ -495,8 +495,8 @@
     "job_name": "CH3F-EOS-LOWDIN",
     "input_file": "CH3F-EOS-LOWDIN.inp",
     "wavefunction_file": "CH3F-EOS-LOWDIN.fchk",
-    "date": "2026-10-15T16:38:46+02:00",
-    "id": "2026-10-15T16:38:46+02:00/4228",
+    "date": "2026-10-16T10:29:03+02:00",
+    "id": "2026-10-16T10:29:03+02:00/aa68",
     "threads": 8,
     "status": "normal",
     "stop_message": null

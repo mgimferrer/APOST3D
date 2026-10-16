@@ -14,8 +14,8 @@ program, not a full development history — see `git log` for that.
   fragments, the populations, bond orders, valences, local spin
   analysis, effective fragment orbitals, EOS, GEOS and OSLO (with the
   orbitals of the EFO and OSLO `.fchk` files mapped to their fragments)
-  and the ENPART energy decomposition of HF and KS-DFT wavefunctions,
-  with the other analyses to be added. A run that
+  and the ENPART energy decomposition (HF, KS-DFT, CASSCF/CISD), with
+  the other analyses to be added. A run that
   stops on an error still writes a complete file that says so. See
   "Results file (JSON)" in the developer guide.
 - **GEOS (Generalized Effective Oxidation States)** — a new open-shell

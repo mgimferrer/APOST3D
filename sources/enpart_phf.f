@@ -149,6 +149,8 @@
         eelnuc0=eelnuc
       end if
       call enpart_frag('ELECTRON-NUCLEAR ATTRACTION',epa)
+      call json_enpart_term('electron_nuclear','Electron-nuclear '//
+     +  'attraction',epa,eelnuc,lref,errk)
 
 !! second derivatives of the AOs on the grid, for the kinetic energy !!
       ALLOCATE(chpaux(itotps,igr))
@@ -198,6 +200,9 @@
       end if
       if(idofr.eq.1) call group_by_frag_vec(1,'FRAGMENT KINETIC ENERGY',
      +  tkin,'Kinetic',' ')
+!! the results file keeps the kinetic energy as a (diagonal) matrix !!
+      call json_enpart_term('kinetic','Kinetic energy',ekin,ekinen,lref,
+     +  errk)
       DEALLOCATE(chpaux)
 
 !! nuclear repulsion, and the one-electron IQA matrix !!
@@ -220,6 +225,8 @@
       call enpart_matrix('NUCLEAR-NUCLEAR REPULSION',' ',' ',enuc,
      +  'Nuclear-nuclear repulsion',erep)
       call enpart_frag('NUCLEAR-NUCLEAR REPULSION',enuc)
+      call json_enpart_term('nuclear_repulsion','Nuclear-nuclear '//
+     +  'repulsion',enuc,erep,.false.,0.0d0)
 
 
 !! one-electron total, and its reference counterpart !!
@@ -594,6 +601,9 @@
 
       end if
 
+      call json_enpart_ee(eveefg,errfg,iref,twoeltoler,izerr,err2,
+     +  phabest,evee,twoelerr)
+
 !! final two-electron matrices; with VERBOSE 1 first the first-grid ones !!
 !! (with CORRELATION, exchange and correlation separately: only where   !!
 !! no zero-error correction applies, which corrects their sum)          !!
@@ -626,7 +636,7 @@
       end do
       etot=xtot
 
-      call enpart_iqa(eto,etot,escf,0,ZERO,Exc,.false.)
+      call enpart_iqa(eto,etot,escf,0,ZERO,Exc,.true.)
 
       DEALLOCATE(chp2,chp3)
 
@@ -905,22 +915,33 @@
       logical lxc
       character*(*) cstage
       character*80 ct
+      logical lfin
 
+!! the results file gets the final matrices only !!
+      lfin=len_trim(cstage).eq.0
       ct='COULOMB ENERGY'//cstage
       call enpart_matrix(ct,' ',' ',coul,'Coulomb energy',xcoul)
       call enpart_frag(ct,coul)
+      if(lfin) call json_enpart_term('coulomb','Coulomb energy',coul,
+     +  xcoul,.false.,0.0d0)
       ct='EXCHANGE-CORRELATION ENERGY'//cstage
       call enpart_matrix(ct,'From the cumulant of the 2-RDM.',' ',exc,
      +  'Exchange-correlation energy',xexc)
       call enpart_frag(ct,exc)
+      if(lfin) call json_enpart_term('xc','Exchange-correlation energy',
+     +  exc,xexc,.false.,0.0d0)
       if(lxc) then
         ct='EXCHANGE ENERGY'//cstage
         call enpart_matrix(ct,'The exchange part of the exchange-'//
      +    'correlation.',' ',ex,'Exchange energy',xex)
         call enpart_frag(ct,ex)
+        if(lfin) call json_enpart_term('exchange','Exchange energy',ex,
+     +    xex,.false.,0.0d0)
         ct='CORRELATION ENERGY'//cstage
         call enpart_matrix(ct,'Exchange-correlation minus exchange.',
      +    ' ',ec,'Correlation energy',xec)
         call enpart_frag(ct,ec)
+        if(lfin) call json_enpart_term('correlation','Correlation '//
+     +    'energy',ec,xec,.false.,0.0d0)
       end if
       end

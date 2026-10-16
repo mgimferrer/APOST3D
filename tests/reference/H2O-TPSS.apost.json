@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.10",
+  "schema_version": "0.11",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -181,8 +181,8 @@
     "job_name": "H2O-TPSS",
     "input_file": "H2O-TPSS.inp",
     "wavefunction_file": "H2O-TPSS.fchk",
-    "date": "2026-10-15T16:38:34+02:00",
-    "id": "2026-10-15T16:38:34+02:00/5cd0",
+    "date": "2026-10-16T10:28:56+02:00",
+    "id": "2026-10-16T10:28:56+02:00/2150",
     "threads": 8,
     "status": "stopped",
     "stop_message": "META-GGA FUNCTIONALS NOT YET SUPPORTED"
