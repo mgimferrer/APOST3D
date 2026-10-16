@@ -21,8 +21,6 @@
 !!   dfunctxyz       -- directional derivative of the density at a point  !!
 !!   d2functxyz      -- second-derivative density contraction at a point  !!
 !!   orbxyz          -- value of one MO at a point                        !!
-!! Note: print.f's cubegen_new calls wathirsh2 with one argument more     !!
-!! than it declares (harmless: wathirsh2 reads pop from a COMMON).        !!
 !! ********************************************************************** !!
 
 !! ***** !!

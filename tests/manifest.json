@@ -2402,7 +2402,7 @@
           "label": "Negative-EFO cube normalization",
           "section": "Generating cube files for eff-AOs",
           "pattern": "Normalization from cube:\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.2922,
+          "ref": 0.3024,
           "tol_abs": 0.001
         },
         {
@@ -2437,6 +2437,12 @@
           "pattern": "RMSD of the electron assignment\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.53195,
           "tol_abs": 2e-05
+        },
+        {
+          "label": "Cube file follows the cube layout",
+          "type": "cube_files",
+          "glob": "*.cube",
+          "count": 1
         }
       ]
     },
@@ -3572,6 +3578,56 @@
       ]
     },
     {
+      "name": "LiH-35-CAS22-DOINT",
+      "description": "LiH at 3.5 Å, CASSCF(2,2) with # DM PYSCF (the LiH-35-CAS22 wavefunction), TFVC: DOINT in the natural-orbital basis of a correlated wavefunction.",
+      "tags": [
+        "casscf",
+        "pyscf",
+        "tfvc",
+        "doint"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "LiH-35-CAS22-DOINT.dm1",
+        "LiH-35-CAS22-DOINT.dm2"
+      ],
+      "keywords": [
+        "TFVC",
+        "DOINT",
+        "DM/PYSCF"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Natural orbitals used",
+          "pattern": "Using\\s+(\\d+)\\s+natural orbitals",
+          "ref": 3,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "One .int file per atom",
+          "type": "files",
+          "glob": "*.int",
+          "count": 2
+        },
+        {
+          "label": "List of the .int files",
+          "type": "files",
+          "glob": "*.files",
+          "count": 1
+        },
+        {
+          "label": "Atomic overlaps add up to the identity",
+          "type": "absent",
+          "pattern": "Dev\\. from"
+        }
+      ]
+    },
+    {
       "name": "CH3F-EOS-CUBE",
       "description": "Fluoromethane, RKS, TFVC: EOS with fragments F | CH3 and a cube file for every EFO with net occupation below 1 (default box and spacing).",
       "tags": [
@@ -3606,17 +3662,23 @@
           "count": 15
         },
         {
+          "label": "Cube files follow the cube layout",
+          "type": "cube_files",
+          "glob": "*.cube",
+          "count": 15
+        },
+        {
           "label": "Fragment 1, EFO 2 cube normalization",
           "pattern": "Normalization from cube:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 2,
-          "ref": 0.8977,
+          "ref": 0.978,
           "tol_abs": 0.001
         },
         {
           "label": "Fragment 2, EFO 1 cube normalization",
           "pattern": "Normalization from cube:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 9,
-          "ref": 0.8984,
+          "ref": 0.9763,
           "tol_abs": 0.001
         },
         {

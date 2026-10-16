@@ -93,7 +93,7 @@
 
   ------------------------------------------------------------------------------
 
-  OpenMP threads                          : 1
+  OpenMP threads                          : 8
 
   ------------------------
     WAVEFUNCTION SUMMARY
@@ -159,7 +159,7 @@
   Sum of atomic overlaps, largest error   : 1.14E-03 (from the analytic overlap S)
 
   TIMING CPU  :: Atomic definition                                 0.11 s
-  TIMING WALL :: Atomic definition                                 0.16 s
+  TIMING WALL :: Atomic definition                                 0.02 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -368,21 +368,21 @@
   Left out by the cutoff (gross)          :        0.00039
   Generating cube files for eff-AOs  1 to  8 of atom/fragment   1
   Size of cube (x,y,z):  28  28  28
-  Normalization from cube:  0.6624
+  Normalization from cube:  0.7216
 
-  Normalization from cube:  0.8977
+  Normalization from cube:  0.9780
 
-  Normalization from cube:  0.9187
+  Normalization from cube:  1.0008
 
-  Normalization from cube:  0.9187
+  Normalization from cube:  1.0008
 
-  Normalization from cube:  0.9183
+  Normalization from cube:  1.0004
 
-  Normalization from cube:  0.9156
+  Normalization from cube:  0.9974
 
-  Normalization from cube:  0.9207
+  Normalization from cube:  1.0030
 
-  Normalization from cube:  0.9219
+  Normalization from cube:  1.0043
 
 
   Fragment 2
@@ -395,19 +395,19 @@
   Left out by the cutoff (gross)          :        0.00150
   Generating cube files for eff-AOs  1 to  7 of atom/fragment   2
   Size of cube (x,y,z):  20  23  24
-  Normalization from cube:  0.8984
+  Normalization from cube:  0.9763
 
-  Normalization from cube:  0.8639
+  Normalization from cube:  0.9388
 
-  Normalization from cube:  0.8532
+  Normalization from cube:  0.9271
 
-  Normalization from cube:  0.8467
+  Normalization from cube:  0.9201
 
-  Normalization from cube:  0.8940
+  Normalization from cube:  0.9715
 
-  Normalization from cube:  0.8009
+  Normalization from cube:  0.8703
 
-  Normalization from cube:  0.8101
+  Normalization from cube:  0.8803
 
 
   ------------------------
@@ -442,8 +442,8 @@
   Total             0.00
   Overall reliability index R (%)         :        100.000
 
-  TIMING CPU  :: EFFAO computation                                 0.44 s
-  TIMING WALL :: EFFAO computation                                 0.45 s
+  TIMING CPU  :: EFFAO computation                                 0.47 s
+  TIMING WALL :: EFFAO computation                                 0.14 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
