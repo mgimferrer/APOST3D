@@ -166,9 +166,9 @@
     "job_name": "H2O-DOINT",
     "input_file": "H2O-DOINT.inp",
     "wavefunction_file": "H2O-DOINT.fchk",
-    "date": "2026-10-16T17:57:55+02:00",
-    "id": "2026-10-16T17:57:55+02:00/7390",
-    "threads": 1,
+    "date": "2026-10-16T18:04:52+02:00",
+    "id": "2026-10-16T18:04:52+02:00/a870",
+    "threads": 8,
     "status": "normal",
     "stop_message": null
   }

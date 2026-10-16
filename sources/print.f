@@ -1407,9 +1407,8 @@
       dimension sat(nbas,nbas,nat0)
       character name*60
 
-      character nameaim*55,charnu*2,charnu2*2,charnu1
-      character charnu3*3,ext*4,namefiles*55
-      character*80 line
+      character nameaim*256,charnu*2,atnum*12,ext*4,namefiles*256
+      logical lfound
 
       allocatable c3(:,:),c2(:,:),csave(:,:),scr(:,:)
 
@@ -1422,22 +1421,15 @@
       inato=0
       if(icorr.eq.1.or.icas.eq.1.or.icisd.eq.1) inato=1
 
-!! rescan the .fchk (unit 15, already fully read by input()) for the    !!
-!! independent-function count -- same rewind+rescan pattern as          !!
-!! input2.f's readchar/readint.                                         !!
-      rewind(15)
- 998  read(15,'(a80)') line
-      if(index(line,"Number of independant functions").ne.0) then
-        read(line(54:61),'(i8)') ndim
-      else if(index(line,"Number of independent functions").ne.0) then
-        read(line(54:61),'(i8)') ndim
-      else
-        go to 998
-      end if
+!! independent-function count from the .fchk (unit 15); one per basis  !!
+!! function when the file doesn't give it                               !!
+      ndim=int_locate(15,"Number of independ",lfound)
+      if(.not.lfound) ndim=igr
 
-      allocate( c3(2*igr,2*igr))
-      allocate( c2(igr,igr),csave(igr,igr),scr(igr,igr))
+      allocate( c3(2*igr,2*igr),csave(2*igr,2*igr))
+      allocate( c2(igr,igr),scr(igr,igr))
       scr=0.0d0
+      csave=0.0d0
 
       do i=1,igr
         do j=1,igr
@@ -1454,12 +1446,6 @@
           end do
         end do
       end if
-
-      do i=1,igr
-        do j=1,ndim
-          csave(i,j)=0.0d0
-        end do
-      end do
 
 !! building file !!
       naim=88
@@ -1495,28 +1481,9 @@
         end if
         charnu=element_symbol(iznuc(jat))
         charnu=adjustl(charnu)
-        l1=len_trim(name)
-!! atom index formatted 1/2/3 digits wide -- assumes up to 999 atoms !!
-        if(jat.lt.10) then
-          write(charnu1,'(i1)')jat
-          nameaim=name(1:l1)//ext//trim(charnu)//charnu1
-        else if(jat.lt.100) then
-          write(charnu2,'(i2)')jat
-          nameaim=name(1:l1)//ext//trim(charnu)//charnu2
-        else
-          write(charnu3,'(i3)')jat
-          nameaim=name(1:l1)//ext//trim(charnu)//charnu3
-        end if
-        j=len(nameaim)
-        do i=1,j
-          if(nameaim(i:i).eq.' ') then
-            l=i-1
-            go to 10
-          end if
-        end do
-  10   continue
-        nameaim=nameaim(1:l)//".int"
-        write(naim3,'(a40)') nameaim
+        write(atnum,'(i0)')jat
+        nameaim=trim(name)//ext//trim(charnu)//trim(atnum)//".int"
+        write(naim3,'(a)') trim(nameaim)
         open(file=nameaim,unit=naim,status="unknown")
         rewind(naim)
 
@@ -1633,8 +1600,13 @@
           end do
         end if
 
-        do i=1,igr
-          do j=1,igr
+!! orbitals written: occupied alpha then beta (unrestricted), occupied !!
+!! (restricted) or natural orbitals (correlated)                         !!
+        nwrit=nocc
+        if(kop.eq.1.and.inato.eq.0) nwrit=nalf+nb
+        if(inato.eq.1) nwrit=numorb
+        do i=1,nwrit
+          do j=1,nwrit
             csave(i,j)=csave(i,j)+c3(i,j)
           end do
         end do
@@ -1709,34 +1681,22 @@
         xmax=1.0d-2
         xmaxd=1.0d-3
         xmaxns=1.0d-4
-        do i=1,igr
-          do j=i,igr
+        do i=1,nwrit
+          do j=i,nwrit
             if(i.eq.j) then
-              if(abs(csave(i,i))-1.0d0.gt.xmax) then
-                xx=abs(csave(i,i))-1.0d0
-                imaxd=i
-                if(i.le.nalf) then
-                  write(*,'(2x,a,f10.6,i3)') 'Dev. from normalization ',xx,imaxd
-                end if
+              xx=abs(csave(i,i)-1.0d0)
+              if(xx.gt.xmax) then
+                write(*,'(2x,a,f10.6,i3)') 'Dev. from normalization ',xx,i
               end if
             else
-              if(abs(csave(i,j)).gt.xmaxd) then
-                xx=abs(csave(i,j))
-                imax1=i
-                imax2=j
-                if(i.le.nalf.and.j.le.nalf) then
-                  write(*,'(2x,a,f10.6,2i3)') 'Dev. from orth. in occ. set:',xx,
-     1      imax1,imax2
-                end if
+              xx=abs(csave(i,j))
+              if(xx.gt.xmaxd) then
+                write(*,'(2x,a,f10.6,2i3)') 'Dev. from orth. in occ. set:',xx,
+     1      i,j
               end if
-              if(j.gt.i) then
-                xxx=abs(csave(i,j))-abs(csave(j,i))
-                if(xxx.gt.xmaxns) then
-                  xx=xxx
-                  imaxns1=i
-                  imaxns2=j
-                  write(*,'(2x,a,f10.6,2i3)') 'Dev. from hermiticity',xx,imaxns1,imaxns2
-                end if
+              xx=abs(csave(i,j)-csave(j,i))
+              if(xx.gt.xmaxns) then
+                write(*,'(2x,a,f10.6,2i3)') 'Dev. from hermiticity',xx,i,j
               end if
             end if
           end do
@@ -1776,23 +1736,20 @@
       common /atomrad/atr(maxat),dist(maxat,maxat)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /qat/qat(maxat,2),qsat(maxat,2)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
       common /iops/iopt(200)
       character*60 name
       common /filename/name
 
       character*30 name2
-      character nameaim*256, charnu*2,atnu*2,charnu1*3
+      character nameaim*256,charnu*2,atnu*12,charnu1*12
 
       dimension pgrid(maxgrid,3),igrid(3),xgrid(3,3)
-      dimension pop(maxat)
       allocatable c0(:,:),xyz(:,:,:)
 
       ihirsh=iopt(6)
       imulli= Iopt(5)
       ibcp=Iopt(14)
-      iqtaim = Iopt(16)
       inewbec = Iopt(31)
       idofr=Iopt(40)
       jcubthr=iopt(41)
@@ -1856,14 +1813,10 @@
               name2="tfvc"
             end if
           end if
-          if(iqtaim.eq.1) name2="qtaim"
         else if(ihirsh.eq.1) then
           name2="hirsh"
         else if(ihirsh.eq.2) then
           name2="hirsh-it"
-          do i=1,nat
-            pop(i)=qat(i,1)
-          end do
         end if
       end if
       if(icase.eq.3) name2=trim(name2)//"_paired"
@@ -1877,7 +1830,6 @@
 !! scaled by RADIUS_SCALE times the extremal atom's covalent radius       !!
       xmesh=cubespacing
       rrmax=cuberadscale
-      volume=1.0d0
 !! furthest x y z atomic positions of the fragment !!
       do i=1,3
         xmax=-1.0d8
@@ -1901,7 +1853,6 @@
         do j=1,igrid(i)
           pgrid(j,i)=xmin+(j-1)*xgrid(i,i)
         end do
-        volume=volume*dist0
       end do
 
 !! now the grid !!
@@ -1928,17 +1879,12 @@
                 ww=0.0d0
                 do iatom=1,nfrlist(ifrag)
                   jjat=ifrlist(iatom,ifrag)
-                  if(ihirsh.eq.0.and.iqtaim.eq.0) then
+                  if(ihirsh.eq.0) then
                     ww=ww+wat(jjat,xabs,yabs,zabs)
                   else if(ihirsh.eq.1) then
                     ww=ww+wathirsh(jjat,xabs,yabs,zabs)
                   else if(ihirsh.eq.2) then
-                    ww=ww+wathirsh2(jjat,xabs,yabs,zabs,pop)
-                  else if(iqtaim.eq.1) then
-!! QTAIM cube weighting was never wired up (cubeqtaim doesn't exist       !!
-!! codebase-wide) -- ww stays 0 here, so a QTAIM-weighted cube would be   !!
-!! all zeros rather than erroring. Unreachable in practice regardless:    !!
-!! main.f:218 hard-stops the whole run at startup when iqtaim=1.          !!
+                    ww=ww+wathirsh2(jjat,xabs,yabs,zabs)
                   end if
                 end do
                 xyz(i,j,k)=orbxyz(c0,ivec,xabs,yabs,zabs)*ww
@@ -1960,7 +1906,7 @@
           end do
         end do
 !$OMP END PARALLEL DO
-        write(*,'(2x,a25,f7.4)') 'Normalization from cube: ',x0*volume/(igrid(1)*igrid(2)*igrid(3))
+        write(*,'(2x,a25,f7.4)') 'Normalization from cube: ',x0*xmesh**3
         write(*,*)
 
 !! output !!
@@ -1971,19 +1917,8 @@
         else
           charnu="FR"
         end if
-!! assuming up to 99 atoms !!
-        if(ifrag.lt.10) then
-          write(atnu,'(i1)')ifrag
-        else
-          write(atnu,'(i2)')ifrag
-        end if
-        if(ivec.lt.10) then
-          write(charnu1,'(i1)')ivec
-        else if (ivec.lt.100) then
-          write(charnu1,'(i2)')ivec
-        else
-          write(charnu1,'(i3)')ivec
-        end if
+        write(atnu,'(i0)')ifrag
+        write(charnu1,'(i0)')ivec
         if(icase.ne.2) then
           nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
      +   trim(atnu)//"_"//trim(charnu1)
@@ -1991,15 +1926,7 @@
           nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
      +   trim(atnu)//"_"//trim(charnu1)//"beta"
         end if
-        j=len(nameaim)
-        do i=1,j
-          if(nameaim(i:i).eq.' ') then
-            llen=i-1
-            go to 10
-          end if
-        end do
-  10   continue
-        nameaim=nameaim(1:llen)//".cube"
+        nameaim=trim(nameaim)//".cube"
 
         open(44,file=nameaim,status="unknown")
         rewind(44)
@@ -2020,8 +1947,6 @@
         do i=1,nat
           write(44,43) iznuc(i),zn(i),(coord(j,i),j=1,3)
         end do
-        ione=1
-        write(44,'(2i5)')ione,ione
         do i=1,igrid(1)
           do j=1,igrid(2)
             write(44,40)(xyz(i,j,k),k=1,igrid(3))

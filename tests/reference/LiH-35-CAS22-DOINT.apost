@@ -1,0 +1,326 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : CASSCF
+  Number of atoms                         : 2
+  Number of basis functions               : 20
+  Primitive gaussians                     : 28
+  Spin density                            : read from the .fchk
+  CAS active electrons                    : 2
+  CAS active orbitals                     : 2
+  CAS spin-orbitals                       : 6
+  Alpha / beta electrons                  : 2 / 2
+  SCF energy (au)                         :      -7.9411447876
+
+  Note: closed-shell correlated wavefunction: its local spins come from electron correlation
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Local spin                              : SPIN
+  Atomic overlaps (ESI-3D, FCALC)         : DOINT (one .int file per atom)
+
+  # DM
+  Density matrices                        : 2-RDM
+  Source                                  : pySCF
+  1-RDM file                              : LiH-35-CAS22-DOINT.dm1
+  2-RDM file                              : LiH-35-CAS22-DOINT.dm2
+
+  --------------------
+    NATURAL ORBITALS
+  --------------------
+
+  Occupation numbers (>1.0e-6):
+     2.00000   1.54688   0.45312
+
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 11680
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : subdivision 20, ratio  0.99601
+
+  Sum of atomic overlaps, largest error   : 1.14E-04 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 0.01 s
+  TIMING WALL :: Atomic definition                                 0.00 s
+
+  ---------------------------------
+    POST-HARTREE-FOCK CALCULATION
+  ---------------------------------
+
+  Spin-orbitals (total / active / core)   : 6 / 2 / 2
+  Core spin-orbitals (occupation 1)       : 2
+  1-RDM, largest idempotency error        : 0.17522984
+  Density matrices P and Ps               : built from the 1-RDM
+  P, largest difference from the .fchk    : 0.00000000
+  2-RDM, core orbitals added              : 1
+  2-RDM, active orbitals                  : 2
+  2-RDM, orbitals in total                : 3
+  2-RDM, elements read                    : 4
+  2-RDM trace, core orbitals              : 2.00000000
+  2-RDM trace, active orbitals            : 2.00000000
+  2-RDM trace / N(N-1)                    : 12.00000000 / 12
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+  Using 3 natural orbitals
+  Atomic overlap matrices (DOINT) written: one .int file per atom, listed in LiH-35-CAS22-DOINTfuz.files
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Li     2.759880    2.911325
+    2  H     1.240153    1.088675
+  -------------------------------
+  Total      4.000032    4.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Li     0.240120    0.088675
+    2  H    -0.240153   -0.088675
+  -------------------------------
+  Total     -0.000032    0.000000
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------
+                 1 Li        2  H
+  -------------------------------
+    1 Li     2.286467    0.338970
+    2  H     0.338970    0.673692
+  -------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1 Li     0.946825
+    2  H     1.132922
+  -------------------
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1 Li     0.338970
+    2  H     0.338970
+  -------------------
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1 Li     0.607855
+    2  H     0.793952
+  -------------------
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  -----------------------------
+    DOING LOCAL SPIN ANALYSIS
+  -----------------------------
+
+  Wavefunction                            : correlated (1- and 2-RDM)
+
+  -----------------------------
+    BOND ORDER MATRIX (1-RDM)
+  -----------------------------
+
+  -------------------------------
+                 1 Li        2  H
+  -------------------------------
+    1 Li     2.286467    0.338970
+    2  H     0.338970    0.673692
+  -------------------------------
+
+  -------------------------
+    NEW BOND ORDER MATRIX
+  -------------------------
+
+  From the natural orbitals, I. Mayer, Chem. Phys. Lett. 2012, 554, 83
+
+  -------------------------------
+                 1 Li        2  H
+  -------------------------------
+    1 Li     2.547838    0.424123
+    2  H     0.424123    1.028103
+  -------------------------------
+  Total (diagonal and one triangle)       :       4.000065
+
+  ------------------------
+    LI/DI MATRIX (2-RDM)
+  ------------------------
+
+  -------------------------------
+                 1 Li        2  H
+  -------------------------------
+    1 Li     2.568586    0.382636
+    2  H     0.382636    1.048843
+  -------------------------------
+  Total (diagonal and one triangle)       :       4.000065
+
+  ----------------------------------
+    EFFECTIVELY UNPAIRED ELECTRONS
+  ----------------------------------
+
+  Atom           TFVC
+  -------------------
+    1 Li     0.607880
+    2  H     0.793975
+  -------------------
+  Total unpaired electrons N_D            :       1.401839
+
+  -----------------------------
+    S^2 DECOMPOSITION (a=3/4)
+  -----------------------------
+
+  -------------------------------
+                 1 Li        2  H
+  -------------------------------
+    1 Li     0.452574   -0.452573
+    2  H    -0.452573    0.452560
+  -------------------------------
+  Total <S^2>                             :      -0.000012
+
+  TIMING CPU  :: Local spin analysis                               0.00 s
+  TIMING WALL :: Local spin analysis                               0.00 s
+
+  ...Normal Termination of APOST-3D...

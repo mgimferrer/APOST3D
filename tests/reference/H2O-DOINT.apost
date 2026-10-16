@@ -93,7 +93,7 @@
 
   ------------------------------------------------------------------------------
 
-  OpenMP threads                          : 1
+  OpenMP threads                          : 8
 
   ------------------------
     WAVEFUNCTION SUMMARY
@@ -116,7 +116,7 @@
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
   Atomic overlaps (ESI-3D, FCALC)         : DOINT (one .int file per atom)
 
-  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING CPU  :: Initialization                                    0.00 s
   TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
@@ -143,7 +143,7 @@
   Sum of atomic overlaps, largest error   : 2.91E-03 (from the analytic overlap S)
 
   TIMING CPU  :: Atomic definition                                 0.02 s
-  TIMING WALL :: Atomic definition                                 0.02 s
+  TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
