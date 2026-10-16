@@ -49,6 +49,8 @@
 !! CALCULATING THE DENSITY FROM NATURAL ORBITALS !!
 ! in principle no need. rho() has already been computed from P-matrix
 ! but just in case
+!! parallel over grid points: each ii writes only chp2(ii,:) and rho(ii) !!
+!$OMP PARALLEL DO PRIVATE(ii,xx,jj,xx1,kk)
       do ii=1,itotps
         xx=ZERO
         do jj=1,norb
@@ -61,6 +63,7 @@
         end do 
         rho(ii)=xx
       end do 
+!$OMP END PARALLEL DO
 
 !! ZEROING MATRICES !!
       epa=ZERO
@@ -79,6 +82,10 @@
 
 
 !! ELECTRON-NUCLEI ATTRACTION INTEGRALS !!
+!! parallel over the (icenter,jcenter) pairs (COLLAPSE(2), constant bounds): !!
+!! each pair writes only its own epa(icenter,jcenter)                        !!
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jcenter,xx,zz,dx0,dy0,dz0,
+!$OMP&  ifut,distx,disty,distz,rr)
       do icenter=1,nat
         do jcenter=1,nat     
           xx=ZERO
@@ -98,6 +105,7 @@
           epa(icenter,jcenter)=epa(icenter,jcenter)-xx
         end do
       end do
+!$OMP END PARALLEL DO
 
       xtot=ZERO
       do ii=1,nat
@@ -135,6 +143,8 @@
       call dpoints(chpaux,pcoord)
 
 !! KINETIC ENERGY !!
+!! parallel over grid points: each ii writes only scr(ii) !!
+!$OMP PARALLEL DO PRIVATE(ii,xx,jj,xx1,kk)
       do ii=1,itotps
         xx=ZERO
         do jj=1,norb
@@ -146,6 +156,7 @@
         end do
         scr(ii)=xx
       end do
+!$OMP END PARALLEL DO
       xtot=ZERO
       do icenter=1,nat
         xx=ZERO
@@ -303,6 +314,9 @@
 !! CALCULATING THE DENSITY FROM NATURAL ORBITALS !!
 !! HERE CHP2 AND CHP2PHA ARE THE NOs, CHP3 AND CHP3PHA ARE THE MOs !!
 !! MOs CONSTRUCTION REQUIRED FOR CORRELATION ENERGY CALCULATION !!
+!! parallel over grid points: each ii writes only its own row of chp2,  !!
+!! chp2pha, chp3, chp3pha and its rho(ii), rhopha(ii)                   !!
+!$OMP PARALLEL DO PRIVATE(ii,xx,xxpha,jj,xx1,xx1pha,xx3,xx3pha,kk)
       do ii=1,itotps
         xx=ZERO
         xxpha=ZERO
@@ -327,6 +341,7 @@
         rho(ii)=xx
         rhopha(ii)=xxpha
       end do
+!$OMP END PARALLEL DO
 
 !! COULOMB PART !!
       call cpu_time(xtime)
@@ -488,6 +503,8 @@
       call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
 !! COMPUTING MOs AND DENSITY !!
+!! parallel over grid points: each ii writes only chp3pha(ii,:), rhopha(ii) !!
+!$OMP PARALLEL DO PRIVATE(ii,xxpha,jj,xx1pha,xx3pha,kk)
       do ii=1,itotps
         xxpha=ZERO
         do jj=1,norb
@@ -502,10 +519,17 @@
         end do
         rhopha(ii)=xxpha
       end do
+!$OMP END PARALLEL DO
 
 !! DOING INTEGRATIONS FOR ONLY THE ATOMIC TERMS !!
 !! COULOMB PART !!
+!! parallel over the points ifut of each atom: f3 is PRIVATE, xacc a  !!
+!! reduction added to coul0(icenter,3) after the loop (on one thread   !!
+!! the summation order is the serial one)                               !!
       do icenter=1,nat
+        xacc=ZERO
+!$OMP PARALLEL DO PRIVATE(ifut,x0,dx0,dy0,dz0,f3,jfut,x1,dx1,dy1,dz1,
+!$OMP&  dist) REDUCTION(+:xacc)
         do ifut=iatps*(icenter-1)+1,iatps*icenter
           x0=wp(ifut)*omp2(ifut,icenter)
           dx0=pcoord(ifut,1)
@@ -520,8 +544,10 @@
             dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
             if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist
           end do
-          coul0(icenter,3)=coul0(icenter,3)+f3/TWO
+          xacc=xacc+f3/TWO
         end do
+!$OMP END PARALLEL DO
+        coul0(icenter,3)=coul0(icenter,3)+xacc
       end do
 
 !! EXCHANGE-CORRELATION PART !!
@@ -722,6 +748,8 @@
 !! FINISHING INDEX COMPACTATION !!
 !! PRODUCT OF ORBITALS FROM FIRST GRID IN fa1, FROM SECOND (ROTATED) IN fb2 !!
       ALLOCATE(fa1(itotps,norb2),fb2(itotps,norb2))
+!! parallel over grid points: each ifut writes only fa1(ifut,:), fb2(ifut,:) !!
+!$OMP PARALLEL DO PRIVATE(ifut,ij,ii,jj)
       do ifut=1,itotps
         ij=1
         do ii=1,norb
@@ -732,8 +760,11 @@
           end do
         end do
       end do  
+!$OMP END PARALLEL DO
 
 !! TRANSFORMATION OF fa1 AND fb2 FROM DIAGONALIZATION OF COMPACTED EXCHANGE-CORRELATION CUMULANT !!
+!! parallel over grid points: each ifut writes only fij(ifut,:), fijb(ifut,:) !!
+!$OMP PARALLEL DO PRIVATE(ifut,ii,xx,xxb,kk)
       do ifut=1,itotps
         do ii=1,norb2
           xx=ZERO
@@ -746,6 +777,7 @@
           fijb(ifut,ii)=xxb
         end do
       end do
+!$OMP END PARALLEL DO
       DEALLOCATE(fa1,fb2,eigenmat)
 
       end 
@@ -767,7 +799,7 @@
       dimension :: wp(itotps),wppha(itotps),pcoord(itotps,3),pcoordpha(itotps,3)
       dimension :: omp2(itotps,nat),omp2pha(itotps,nat),cumulab(iorb2,iorb2)
       dimension :: ffa1(itotps,iorb2),ffb2(itotps,iorb2)
-      dimension :: ef(maxat,maxat)
+      dimension :: ef(maxat,maxat),efrow(maxat)
 
       ithrebod = iopt(44)
       iatps    = nrad*nang
@@ -787,7 +819,16 @@
 
 !! TWO-EL NUMERICAL INTEGRATION FOR PHF and HF Exc, Ex and Ec !!
 
+!! parallel over the points ifut of each atom: f3 and the point loop  !!
+!! are PRIVATE; the row efrow(icenter:nat) of the atom and iterms are   !!
+!! reductions, added to ef after the loop (on one thread the summation  !!
+!! order is the serial one)                                             !!
       do icenter=1,nat
+        do jcenter=1,nat
+          efrow(jcenter)=ZERO
+        end do
+!$OMP PARALLEL DO PRIVATE(ifut,x0,dx0,dy0,dz0,f3,jfut,x1,dx1,dy1,dz1,
+!$OMP&  dist,xxw,ij,jcenter,bx0) REDUCTION(+:efrow,iterms)
         do ifut=iatps*(icenter-1)+1,iatps*icenter
           x0=wp(ifut)*omp2(ifut,icenter)
           dx0=pcoord(ifut,1)
@@ -810,7 +851,7 @@
               end do
             end if
           end do
-          ef(icenter,icenter)=ef(icenter,icenter)+f3
+          efrow(icenter)=efrow(icenter)+f3
 
 !! PAIRS OF CENTERS !!
 
@@ -831,11 +872,15 @@
                   end do
                 end if
               end do
-              ef(icenter,jcenter)=ef(icenter,jcenter)+f3
+              efrow(jcenter)=efrow(jcenter)+f3
             else
               iterms=iterms+1
             end if
           end do
+        end do
+!$OMP END PARALLEL DO
+        do jcenter=icenter,nat
+          ef(icenter,jcenter)=ef(icenter,jcenter)+efrow(jcenter)
         end do
       end do
       write(*,*) " Skipping diatomic exchange integrals for ",iterms
