@@ -497,12 +497,15 @@
 !!   damp    (in)  damping parameter of the interpolation
 !!   evee    (in)  corrected electron-electron energy (au)
 !!   errc    (in)  its error (kcal/mol)
+!!   lphf    (in)  logical, correlated wavefunction (the corrected terms
+!!                 are its exchange-correlation, not an exchange)
 !! author: MGimf
 !! ----------------------------------------------------------------------
-      subroutine enpart_ee_tail(err1,err2,damp,evee,errc)
+      subroutine enpart_ee_tail(err1,err2,damp,evee,errc,lphf)
       use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       common /printout/iaccur
+      logical lphf
 
       ndec=7
       if(iaccur.ne.0) ndec=13
@@ -516,10 +519,17 @@
      +  'au')
       call print_value('Corrected integration error',errc,2,'kcal/mol')
       write(*,'(a)') ''
-      write(*,'(2x,a)') 'The one-center Coulomb and exchange terms of the'//
-     +  ' matrices below'
-      write(*,'(2x,a)') 'are the corrected ones; the pair terms do not'//
-     +  ' change.'
+      if(lphf) then
+        write(*,'(2x,a)') 'The one-center Coulomb and exchange-correlation'//
+     +    ' terms of the matrices'
+        write(*,'(2x,a)') 'below are the corrected ones; the pair terms'//
+     +    ' do not change.'
+      else
+        write(*,'(2x,a)') 'The one-center Coulomb and exchange terms of the'//
+     +    ' matrices below'
+        write(*,'(2x,a)') 'are the corrected ones; the pair terms do not'//
+     +    ' change.'
+      end if
       end
 
 !! ***** !!
@@ -795,9 +805,11 @@
 !!   ifield (in)  1 with an external field
 !!   edip   (in)  field interaction energy (ifield=1)
 !!   xcfin  (in)  (maxat,maxat) final exchange-correlation matrix
+!!   ljson  (in)  logical, write the results-file entries (the caller has
+!!                the enpart block open)
 !! author: MGimf
 !! ----------------------------------------------------------------------
-      subroutine enpart_iqa(eto,etot,escf,ifield,edip,xcfin)
+      subroutine enpart_iqa(eto,etot,escf,ifield,edip,xcfin,ljson)
       use output_mod, only: print_value
       use input_options_mod, only: idofr
       use json_mod
@@ -811,6 +823,7 @@
       dimension arr(maxat,2)
       allocatable :: vcl(:,:),bm(:,:)
       dimension bf(maxat,2),bv(maxat,1),x(2),xs(1),fself(maxat)
+      logical ljson
       character*20 ckey,cspace
       character*60 cname
       character*12 cshort
@@ -832,16 +845,18 @@
       call print_value('Integration error',err,ndec,'au')
       call print_value('Integration error',err*tokcal,2,'kcal/mol')
       call enpart_frag(ct,eto)
-      call json_enpart_term('total','IQA energy terms',eto,etot,
-     +  .false.,0.0d0)
-      call json_value('total_energy',etot)
-      call json_index('total_energy','scalar','Total energy (IQA)','au',
-     +  ndec,' ',.true.,' ')
-      call json_value('reference_energy',escf)
-      call json_value('integration_error',err)
-      call json_index('integration_error','scalar','Integration error'//
-     +  ' of the total energy','au',ndec,' ',.true.,' ')
-      call json_value('integration_error_kcal',err*tokcal)
+      if(ljson) then
+        call json_enpart_term('total','IQA energy terms',eto,etot,
+     +    .false.,0.0d0)
+        call json_value('total_energy',etot)
+        call json_index('total_energy','scalar','Total energy (IQA)',
+     +    'au',ndec,' ',.true.,' ')
+        call json_value('reference_energy',escf)
+        call json_value('integration_error',err)
+        call json_index('integration_error','scalar','Integration '//
+     +    'error of the total energy','au',ndec,' ',.true.,' ')
+        call json_value('integration_error_kcal',err*tokcal)
+      end if
 
 !! additive atomic energies: self-energy + half of each interaction !!
       do i=1,nat
@@ -860,15 +875,17 @@
      +  'The field interaction energy is not included.'
       ndv=6
       if(iaccur.ne.0) ndv=13
-      call json_begin_object('atomic_energies')
-      call json_begin_object('atoms')
-      call json_vector('self_energy',arr(1:nat,1),nat)
-      call json_index('self_energy','atom_vector','Atomic self-'//
-     +  'energies','au',ndv,' ',.true.,' ')
-      call json_vector('additive_energy',arr(1:nat,2),nat)
-      call json_index('additive_energy','atom_vector','Additive atomic'//
-     +  ' energies','au',ndv,' ',.true.,' ')
-      call json_end()
+      if(ljson) then
+        call json_begin_object('atomic_energies')
+        call json_begin_object('atoms')
+        call json_vector('self_energy',arr(1:nat,1),nat)
+        call json_index('self_energy','atom_vector','Atomic self-'//
+     +    'energies','au',ndv,' ',.true.,' ')
+        call json_vector('additive_energy',arr(1:nat,2),nat)
+        call json_index('additive_energy','atom_vector','Additive '//
+     +    'atomic energies','au',ndv,' ',.true.,' ')
+        call json_end()
+      end if
       if(idofr.eq.1) then
         ALLOCATE(bm(maxat,maxat))
         call frag_sum_mat(1,eto,bm,xx)
@@ -886,14 +903,16 @@
         do k=1,icufr
           fself(k)=bf(k,1)
         end do
-        call json_begin_object('fragments')
-        call json_vector('self_energy',fself,icufr)
-        call json_index('self_energy','fragment_vector','Fragment self-'//
-     +    'energies','au',ndv,' ',.true.,' ')
-        call json_frag_vector('additive_energy',arr(1,2))
-        call json_index('additive_energy','fragment_vector','Additive '//
-     +    'fragment energies','au',ndv,' ',.true.,' ')
-        call json_end()
+        if(ljson) then
+          call json_begin_object('fragments')
+          call json_vector('self_energy',fself,icufr)
+          call json_index('self_energy','fragment_vector','Fragment '//
+     +      'self-energies','au',ndv,' ',.true.,' ')
+          call json_frag_vector('additive_energy',arr(1,2))
+          call json_index('additive_energy','fragment_vector','Additive'//
+     +      ' fragment energies','au',ndv,' ',.true.,' ')
+          call json_end()
+        end if
         DEALLOCATE(bm)
       end if
 
@@ -913,10 +932,10 @@
      +  ' Coulomb part of each interaction;','the rest of it is the'//
      +  ' exchange-correlation part. No self terms.',vcl,
      +  'Classical interaction energy',xx)
-      call json_end()
+      if(ljson) call json_end()
       call enpart_frag(ct,vcl)
-      call json_enpart_term('classical_interaction','Classical '//
-     +  'interaction energies',vcl,xx,.false.,0.0d0)
+      if(ljson) call json_enpart_term('classical_interaction',
+     +  'Classical interaction energies',vcl,xx,.false.,0.0d0)
       DEALLOCATE(vcl)
       end
 
@@ -1491,7 +1510,7 @@
           evee=coulen+exchen_hf
         end if
         twoelerr=(evee-evee0)*tokcal
-        call enpart_ee_tail(err1,err2,phabest,evee,twoelerr)
+        call enpart_ee_tail(err1,err2,phabest,evee,twoelerr,.false.)
         write(*,'(a)') ''
         call cpu_time(xtime2)
         call get_wall_time(wxtime2)
@@ -1526,7 +1545,7 @@
           end do
         end do
         etot=xtot
-        call enpart_iqa(eto,etot,escf,ifield,edipole,exch_hf)
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch_hf,.true.)
       else
         xtot=ZERO
         do i=1,nat
@@ -1539,7 +1558,7 @@
           end do
         end do
         etot=xtot
-        call enpart_iqa(eto,etot,escf,ifield,edipole,exch)
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch,.true.)
       end if
 
       if(ianalytical.eq.0) then
@@ -2487,7 +2506,7 @@
           evee=coulen+exchen_hf
         end if
         twoelerr=(evee-evee0)*tokcal
-        call enpart_ee_tail(err1,err2,phabest,evee,twoelerr)
+        call enpart_ee_tail(err1,err2,phabest,evee,twoelerr,.false.)
         write(*,'(a)') ''
         call cpu_time(xtime2)
         call get_wall_time(wxtime2)
@@ -2522,7 +2541,7 @@
           end do
         end do
         etot=xtot
-        call enpart_iqa(eto,etot,escf,ifield,edipole,exch_hf)
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch_hf,.true.)
       else
         xtot=ZERO
         do i=1,nat
@@ -2535,7 +2554,7 @@
           end do
         end do
         etot=xtot
-        call enpart_iqa(eto,etot,escf,ifield,edipole,exch)
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch,.true.)
       end if
 
       if(ianalytical.eq.0) then

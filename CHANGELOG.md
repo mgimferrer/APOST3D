@@ -93,7 +93,11 @@ program, not a full development history — see `git log` for that.
   had none). The final matrix is `IQA ENERGY TERMS (TFVC)` (or the
   atomic definition used) instead of `FUZZY ATOMS ... ENERGY
   COMPONENTS`. The intermediate matrices are printed with `VERBOSE 1`.
-  No number changes.
+  CASSCF/CISD wavefunctions follow the same layout; with `CORRELATION`,
+  exchange and correlation are printed separately only when the
+  zero-error correction (which applies to their sum) is not applied, or
+  with `VERBOSE 1` before it. The pair count of the correlated part, which
+  counted grid points, is now the number of atom pairs. No number changes.
 - **Additive atomic energies and classical interaction energies** —
   printed after the final decomposition, from its final matrices:
   `ATOMIC ENERGIES` (self-energy and additive energy of each atom, which

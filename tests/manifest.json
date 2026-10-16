@@ -1787,38 +1787,38 @@
         },
         {
           "label": "Electron-nuclei energy",
-          "pattern": "Electron-nuclei energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Electron-nuclear attraction \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -19.0204933,
           "tol_abs": 2e-06
         },
         {
           "label": "Kinetic energy",
-          "pattern": "Kinetic energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 7.8890984,
           "tol_abs": 2e-06
         },
         {
           "label": "Nuclear repulsion energy",
-          "pattern": "Nuclear repulsion energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Nuclear-nuclear repulsion \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.4535805,
           "tol_abs": 2e-06
         },
         {
           "label": "Post-Hartree-Fock exchange-correlation energy (interpolated)",
-          "section": "INTERPOLATED POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS",
-          "pattern": "Post-Hartree-Fock exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$",
+          "pattern": "Exchange-correlation energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -2.0829236,
           "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -7.9411448,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -0.0,
           "tol_abs": 2e-06
         },
@@ -1896,59 +1896,61 @@
         },
         {
           "label": "Total integrated energy (au)",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -75.0085711,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -2.3e-06,
           "tol_abs": 2e-06
         },
         {
           "label": "Two-electron error before the zero-error correction (kcal/mol)",
-          "pattern": "Integration error \\(kcal/mol\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 3,
           "ref": 0.57,
           "tol_abs": 0.01
         },
         {
           "label": "Exchange-correlation after the correction (au)",
-          "pattern": "Post-Hartree-Fock exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
-          "match_index": 2,
+          "pattern": "Exchange-correlation energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -9.1813671,
-          "tol_abs": 2e-06
+          "tol_abs": 2e-06,
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$"
         },
         {
           "label": "Exchange, first grid (au)",
-          "pattern": "Post-Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Exchange energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -9.0707708,
-          "tol_abs": 2e-06
+          "tol_abs": 2e-06,
+          "section": "(?m)^    EXCHANGE ENERGY, BEFORE THE ZERO-ERROR CORRECTION$"
         },
         {
           "label": "Correlation, first grid (au)",
-          "pattern": "Post-Hartree-Fock correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Correlation energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -0.1115639,
-          "tol_abs": 2e-06
+          "tol_abs": 2e-06,
+          "section": "(?m)^    CORRELATION ENERGY, BEFORE THE ZERO-ERROR CORRECTION$"
         },
         {
           "label": "O self-energy (au)",
-          "section": "FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -73.639303,
           "tol_abs": 2e-05
         },
         {
           "label": "H-H interaction (au)",
-          "section": "FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
           "ref": 0.060043,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment O-H2 interaction (au)",
-          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "section": "(?m)^    FRAGMENT IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.678688,
           "tol_abs": 2e-05
@@ -1994,52 +1996,54 @@
         },
         {
           "label": "Total integrated energy (au)",
-          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -75.0111992,
           "tol_abs": 2e-06
         },
         {
           "label": "Raw integration error (au)",
-          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.000674,
           "tol_abs": 2e-06
         },
         {
           "label": "Exchange-correlation (au)",
-          "pattern": "Post-Hartree-Fock exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Exchange-correlation energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -9.1830173,
           "tol_abs": 2e-06
         },
         {
           "label": "Exchange (au)",
-          "pattern": "Post-Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Exchange energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -9.0671176,
-          "tol_abs": 2e-06
+          "tol_abs": 2e-06,
+          "section": "(?m)^    EXCHANGE ENERGY$"
         },
         {
           "label": "Correlation (au)",
-          "pattern": "Post-Hartree-Fock correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "pattern": "Correlation energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": -0.1158997,
-          "tol_abs": 2e-06
+          "tol_abs": 2e-06,
+          "section": "(?m)^    CORRELATION ENERGY$"
         },
         {
           "label": "O self-energy (au)",
-          "section": "FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
           "ref": -73.645385,
           "tol_abs": 2e-05
         },
         {
           "label": "Fragment O-H2 interaction (au)",
-          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "section": "(?m)^    FRAGMENT IQA ENERGY TERMS \\(TFVC\\)$",
           "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
           "ref": -0.667117,
           "tol_abs": 2e-05
         },
         {
           "label": "No zero-error correction",
-          "type": "absent",
-          "pattern": "Zero-error strategy applied"
+          "type": "present",
+          "pattern": "Zero-error correction\\s*: not needed"
         }
       ]
     },

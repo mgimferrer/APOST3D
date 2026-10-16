@@ -926,7 +926,7 @@ c      iopt(200) =
         write(*,'(2x,a)') 'the whole A-B pair term off it; its total adds the'//
      +    ' diagonal and one'
         write(*,'(2x,a)') 'triangle. Energies in au.'
-        if(iverbose.eq.0.and.iposthf.eq.0) write(*,'(2x,a)')
+        if(iverbose.eq.0) write(*,'(2x,a)')
      +    'VERBOSE 1 in # METHOD also prints the intermediate matrices.'
 
 !! results file: enpart block of HF and KS-DFT (closed after the     !!
@@ -950,6 +950,7 @@ c      iopt(200) =
           call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
           call cpu_time(time2)
           call get_wall_time(wtime2)
+          write(*,*)
           call print_timer('ENPART one-electron terms',time2-time,
      +  wtime2-wtime)
           time=time2
@@ -1093,6 +1094,7 @@ c      iopt(200) =
           call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
           call cpu_time(time2)
           call get_wall_time(wtime2)
+          write(*,*)
           call print_timer('ENPART two-electron terms',time2-time,
      +  wtime2-wtime)
           time=time2

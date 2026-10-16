@@ -373,14 +373,28 @@ checks and development (the results do not change):
   exchange before the exact-exchange fraction is applied;
 - when the zero-error correction is applied, the two-electron matrices
   integrated on the first grid, titled `..., BEFORE THE ZERO-ERROR
-  CORRECTION`.
+  CORRECTION` (for a correlated wavefunction with `CORRELATION`, also the
+  separate exchange and correlation).
 
 Each comes with its fragment version under `DOFRAGS`.
 
-Correlated (CASSCF/CISD) wavefunctions print
-`POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS` and a final
-`FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS` matrix, with the same
-conventions.
+### Correlated wavefunctions
+
+CASSCF and CISD wavefunctions (also FCI) print the same sections, with
+`EXCHANGE-CORRELATION ENERGY` built from the cumulant of the 2-RDM in
+place of the exchange or the DFT terms, and the same
+`TWO-ELECTRON INTEGRATION ERROR` section. With `CORRELATION` in
+`# ENPART`, the exchange-correlation is also split into `EXCHANGE ENERGY`
+and `CORRELATION ENERGY`. The zero-error correction applies to the
+exchange-correlation as a whole, never to exchange or correlation
+separately, so:
+
+- without the correction (error within `TWOELTOLER`, or no reference
+  energies), the separate exchange and correlation matrices are printed,
+  and they add up to the exchange-correlation;
+- with the correction, only the corrected `EXCHANGE-CORRELATION ENERGY`
+  is printed, with a note; `VERBOSE 1` also prints the exchange and
+  correlation before the correction.
 
 ## Checking the result
 
