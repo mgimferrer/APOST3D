@@ -1385,20 +1385,18 @@
 
 !! ***** !!
 
-!! ********************************************************************* !!
-!! subroutine: print_int                                                 !!
-!! purpose: writes one AIMPAC/PROAIMV-format ".int" file per atom (plus  !!
-!!   a ".files" index) holding that atom's overlap matrix in the MO/NO   !!
-!!   basis -- read by external programs (ESI-3D, FCALC) to compute       !!
-!!   properties from APOST-3D's atomic partition. Opt-in via # METHOD /  !!
-!!   DOINT. Also runs a final MO-orthogonality sanity check (sum of all  !!
-!!   atomic overlap matrices vs. the identity) once every atom is done.  !!
-!! arguments:                                                            !!
-!!   nbas,nat0 (in) -- sat's declared dimensions (basis functions, atoms)!!
-!!   sat       (in) -- per-atom atomic-orbital overlap matrix            !!
-!!   name      (in) -- job name, used as the ".int"/".files" basename    !!
-!! author:                                                               !!
-!! ********************************************************************* !!
+!! ----------------------------------------------------------------------
+!! subroutine: print_int
+!! DOINT: writes the atomic overlap matrix of each atom in the basis of
+!! the occupied (or natural) orbitals, one AIMPAC-format .int file per
+!! atom plus a .files list, for programs such as ESI-3D. With every atom,
+!! checks that the matrices add up to the identity.
+!! arguments:
+!!   nbas,nat0 (in)  declared dimensions of sat (basis functions, atoms)
+!!   sat       (in)  (nbas,nbas,nat0) atomic overlap matrices, AO basis
+!!   name      (in)  job name, start of the file names
+!! author:
+!! ----------------------------------------------------------------------
       subroutine print_int(nbas,nat0,sat,name)
       use elements_mod
       use output_mod
@@ -1421,7 +1419,6 @@
 
       allocatable c3(:,:),c2(:,:),csave(:,:),scr(:,:)
 
-!! iopt flags used by this routine !!
       ihirsh = Iopt(6)
       imulli=Iopt(5)
       icorr=Iopt(26)
@@ -1455,7 +1452,7 @@
         end do
       end if
 
-!! building file !!
+!! the .files list and its extension by atomic definition !!
       naim=88
       naim3=89
       l=len_trim(name)
@@ -1495,10 +1492,8 @@
         open(file=nameaim,unit=naim,status="unknown")
         rewind(naim)
 
-!! the following .int-file content is read by external programs         !!
-!! (ESI-3D, FCALC) -- format is AIMPAC/PROAIMV-compatible, do not       !!
-!! restyle. AE and BK are placeholders (see header) kept only for format !!
-!! compatibility, not computed from the real SCF energy.                !!
+!! the .int layout is that of AIMPAC (PROAIMV), read by other programs: !!
+!! keep it as it is. AE and BK are placeholders, not computed energies   !!
         BK=1.0d0
         AE=-1.0d0
         write(naim,'(a20)') 'Created by APOST3D '
@@ -1565,7 +1560,7 @@
           end do
         end do
 
-!! transform sat matrix into the AO basis !!
+!! S^A in the orbital basis, C^T S^A C !!
         numorb=nalf
         if(inato.eq.1) numorb=ndim
         do i=1,numorb
@@ -1586,7 +1581,7 @@
             c3(i,j)=xx
           end do
         end do
-!! open-shell !!
+!! beta orbitals of an unrestricted wavefunction, after the alpha ones !!
         if(kop.eq.1.and.inato.eq.0)  then
           do i=1,nb
             do j=1,igr
@@ -1630,7 +1625,7 @@
               write(naim,*) (c3(i,j),j=1,nalf+nb)
             end do
           end if
-!! recalculate spin populations !!
+!! alpha and beta populations from the diagonal !!
           qalf=0.0d0
           do i=1,nalf
             qalf=qalf+c3(i,i)
@@ -1656,7 +1651,7 @@
           write(naim,*) '  '
           write(naim,'(a41,e21.14)') 'ALPHA ELECTRONS (NA)',qat(jat,1)/2.0d0
           write(naim,'(a41,e21.14)') 'BETA ELECTRONS (NB)',qat(jat,1)/2.0d0
-!! correlated wave function !!
+!! correlated wavefunction !!
         else if(inato.eq.1) then
           if (imulli.ne.1) then
             do i=1,numorb
@@ -1713,29 +1708,24 @@
 
 !! ***** !!
 
-!! ********************************************************************** !!
-!! subroutine: cubegen_new                                               !!
-!! purpose: writes one Gaussian-style .cube file per requested EFO        !!
-!! (imaxeff..imineff, thresholded by MAX_OCC/MIN_OCC) of fragment/atom    !!
-!! ifrag -- adaptive grid, fixed point spacing (# CUBE SPACING, bohr)     !!
-!! with padding scaled by RADIUS_SCALE times the extremal atom's          !!
-!! covalent radius in each direction, so point count (not spacing)        !!
-!! grows with fragment size. icase selects RHF/UHF-alpha/UHF-beta/UEOS    !!
-!! paired/unpaired naming; imulli selects orbital-value output (Mulliken/ !!
-!! Lowdin) vs AIM-weighted density (Becke/TFVC/Hirshfeld/QTAIM).          !!
-!! icase=5: GEOS negative-occupation paired EFOs (# CUBE NEG_EFOS),       !!
-!! staged into p0(:,1:ip0) by effao3d_u -- all plotted, MAX_OCC/MIN_OCC   !!
-!! ignored.                                                               !!
-!! arguments: ifrag (in) -- fragment/atom index, icase (in) -- 0-5,       !!
-!! see above                                                              !!
-!! author: PSalse, MGimf                                                  !!
-!! ********************************************************************** !!
+!! ----------------------------------------------------------------------
+!! subroutine: cubegen_new
+!! CUBE: writes one cube file for each EFO of fragment (or atom) ifrag
+!! whose net occupation is within MAX_OCC/MIN_OCC, and prints a table
+!! with the norm of each cube. Real-space schemes write the EFO times the
+!! fragment's weight, Hilbert-space schemes the EFO itself.
+!! arguments:
+!!   ifrag (in)  fragment (atom without DOFRAGS)
+!!   icase (in)  density: 0 closed shell, 1 alpha, 2 beta, 3 paired,
+!!               4 unpaired, 5 negative paired EFOs (all written)
+!! author: PSalse, MGimf
+!! ----------------------------------------------------------------------
       subroutine cubegen_new(ifrag,icase)
       use elements_mod
       use output_mod
       use ao_matrices
       use integration_grid
-      use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
+      use effao_mod, only: p0,p0net,p0gro,ip0
       use input_options_mod, only: cubespacing,cuberadscale
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
@@ -1836,14 +1826,12 @@
       if(icase.eq.4) name2=trim(name2)//"_unpaired"
       if(icase.eq.5) name2=trim(name2)//"_paired_neg"
 
-!! assuming rectangular grid !!
       xgrid=0.0d0
 
-!! adaptive-size cube: fixed point spacing (# CUBE SPACING), padding      !!
-!! scaled by RADIUS_SCALE times the extremal atom's covalent radius       !!
+!! box: the fragment's atoms plus RADIUS_SCALE times the covalent      !!
+!! radius of the outermost atom on each side, points SPACING apart     !!
       xmesh=cubespacing
       rrmax=cuberadscale
-!! furthest x y z atomic positions of the fragment !!
       do i=1,3
         xmax=-1.0d8
         xmin=1.0d8
@@ -1868,7 +1856,6 @@
         end do
       end do
 
-!! now the grid !!
       allocate ( xyz(igrid(1),igrid(2),igrid(3)))
       allocate(xnrm(imaxeff:imineff),cfile(imaxeff:imineff))
 
@@ -1907,8 +1894,8 @@
         end do
 !$OMP END PARALLEL DO
 
-!! approximate normalization of orbital -- same independence argument,   !!
-!! reduction on x0                                                        !!
+!! norm in the cube, sum of the squared values times the voxel volume !!
+!! (same independence argument, reduction on x0)                       !!
         x0=ZERO
 !$OMP PARALLEL DO COLLAPSE(3) PRIVATE(i,j,k) REDUCTION(+:x0)
         do i=1,igrid(1)
@@ -1921,7 +1908,7 @@
 !$OMP END PARALLEL DO
         xnrm(ivec)=x0*xmesh**3
 
-!! output !!
+!! file name and the cube file !!
 
         if(idofr.eq.0) then
           charnu=element_symbol(iznuc(ifrag))
