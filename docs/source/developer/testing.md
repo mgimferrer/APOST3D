@@ -143,6 +143,8 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `NaBH3--UHF-DAVIDSON` | Same wavefunction: LOWDIN-DAVIDSON, EFOs in the Davidson-Löwdin basis, EOS | `hf uhf lowdin eos effao fragments openshell` |
 | `FeCN5NO3--UBLYP-t2` | Same complex, UKS BLYP: TFVC + unrestricted OSLO with LOWDIN fragment populations, 7 fragments | `dft oslo lowdin tfvc uks fragments openshell` |
 | `LiH-35-CAS22` | LiH, CASSCF(2,2) from pySCF (`pySCF` in `# DM`): ENPART (CASSCF), every pair computed, and correlated local spin | `hf enpart casscf dm pyscf spin tfvc` |
+| `H2O-CAS44` | Water, CASSCF(4,4)/STO-3G from pySCF (O–H σ active space): post-HF ENPART with all pairs, fragments O and H2, `CORRELATION`, `VERBOSE 1`, zero-error correction applied | `casscf enpart tfvc pyscf dm fragments correlation verbose spin` |
+| `H2O-CISD` | Water, CISD/STO-3G from pySCF (written as a CAS with every orbital active): post-HF ENPART, fragments, `CORRELATION` without the correction (`TWOELTOLER 100`) | `cisd enpart tfvc pyscf dm fragments correlation spin` |
 | `NaBH3--B3LYP-GEOS` | NaBH3 anion, broken-symmetry UKS B3LYP: GEOS, 2 fragments, two negative paired EFOs | `dft geos effao tfvc uks fragments openshell` |
 | `LiH-32-FCI` | LiH at 3.2 Å, pySCF FCI/cc-pVTZ: GEOS with a negative paired EFO, `Fit (%)`, `CUBE` with `NEG_EFOS` | `fci geos effao tfvc pyscf fragments cube negative-efo` |
 | `CH3F-EFFAO-U` | Fluoromethane, RKS: EFFAO-U with 2 fragments, paired/unpaired EFOs without oxidation states (empty unpaired channel) | `dft effao tfvc rks fragments` |

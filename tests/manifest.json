@@ -1857,6 +1857,193 @@
       ]
     },
     {
+      "name": "H2O-CAS44",
+      "description": "Water, CASSCF(4,4)/STO-3G from pySCF (utils/apost3d.py), active space the two O-H sigma bonds and their antibonding orbitals — post-HF ENPART with all pairs, fragments O and H2, CORRELATION, VERBOSE 1; the zero-error correction is applied.",
+      "tags": [
+        "casscf",
+        "enpart",
+        "tfvc",
+        "pyscf",
+        "dm",
+        "fragments",
+        "correlation",
+        "verbose",
+        "spin"
+      ],
+      "timeout": 600,
+      "extra_input_files": [
+        "H2O-CAS44.dm1",
+        "H2O-CAS44.dm2"
+      ],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "DM/PYSCF",
+        "DOFRAGS",
+        "VERBOSE",
+        "ENPART/CASSCF",
+        "ENPART/THREBOD",
+        "ENPART/CORRELATION",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E",
+        "SPIN"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -75.0085711,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -2.3e-06,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Two-electron error before the zero-error correction (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\):\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 3,
+          "ref": 0.57,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "Exchange-correlation after the correction (au)",
+          "pattern": "Post-Hartree-Fock exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 2,
+          "ref": -9.1813671,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Exchange, first grid (au)",
+          "pattern": "Post-Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.0707708,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Correlation, first grid (au)",
+          "pattern": "Post-Hartree-Fock correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.1115639,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "O self-energy (au)",
+          "section": "FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -73.639303,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H-H interaction (au)",
+          "section": "FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS",
+          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
+          "ref": 0.060043,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Fragment O-H2 interaction (au)",
+          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
+          "ref": -0.678688,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "H2O-CISD",
+      "description": "Water, CISD/STO-3G from pySCF (utils/apost3d.py, written as a CAS with every orbital active, read with CASSCF in # ENPART) — post-HF ENPART with all pairs, fragments O and H2, CORRELATION; TWOELTOLER 100, so no zero-error correction and the separate exchange and correlation are final.",
+      "tags": [
+        "cisd",
+        "enpart",
+        "tfvc",
+        "pyscf",
+        "dm",
+        "fragments",
+        "correlation",
+        "spin"
+      ],
+      "timeout": 600,
+      "extra_input_files": [
+        "H2O-CISD.dm1",
+        "H2O-CISD.dm2"
+      ],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "DM/PYSCF",
+        "DOFRAGS",
+        "ENPART/CASSCF",
+        "ENPART/THREBOD",
+        "ENPART/CORRELATION",
+        "ENPART/TWOELTOLER",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E",
+        "SPIN"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total integrated energy\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -75.0111992,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Raw integration error (au)",
+          "pattern": "Integration error \\(au\\):\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.000674,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Exchange-correlation (au)",
+          "pattern": "Post-Hartree-Fock exchange-correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.1830173,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Exchange (au)",
+          "pattern": "Post-Hartree-Fock exchange energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.0671176,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Correlation (au)",
+          "pattern": "Post-Hartree-Fock correlation energy:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.1158997,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "O self-energy (au)",
+          "section": "FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -73.645385,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Fragment O-H2 interaction (au)",
+          "section": "FRAGMENT ANALYSIS: Energy Decomposition",
+          "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
+          "ref": -0.667117,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "No zero-error correction",
+          "type": "absent",
+          "pattern": "Zero-error strategy applied"
+        }
+      ]
+    },
+    {
       "name": "NaBH3--B3LYP-GEOS",
       "description": "NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS with 2 fragments, including two negative paired EFOs.",
       "tags": [
