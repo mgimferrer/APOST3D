@@ -287,6 +287,65 @@ def evaluate_check(output: str, check: dict) -> dict:
     return result
 
 
+def _cube_layout_error(path: Path):
+    """
+    Return why a .cube file breaks the Gaussian cube layout, or None.
+
+    Layout: two title lines; atom count and origin; three lines with the
+    point count and step of each axis; one line per atom; with a negative
+    atom count only, one line of orbital indices; then exactly n1*n2*n3
+    values.
+    """
+    try:
+        lines = path.read_text(errors="replace").splitlines()
+        nat = int(lines[2].split()[0])
+        npts = [int(lines[3 + i].split()[0]) for i in range(3)]
+        first = 6 + abs(nat)
+        if nat < 0:
+            first += 1
+        nval = sum(len(l.split()) for l in lines[first:])
+        for l in lines[first:]:
+            for x in l.split():
+                float(x)
+    except (IndexError, ValueError) as exc:
+        return f"unreadable ({exc})"
+    expected = npts[0] * npts[1] * npts[2]
+    if nval != expected:
+        return f"{nval} values for {npts[0]}x{npts[1]}x{npts[2]} = {expected} points"
+    return None
+
+
+def evaluate_file_check(rundir: Path, check: dict) -> dict:
+    """
+    Apply one check to the files a run wrote.
+
+      files       the files matching `glob` number `count`
+      cube_files  the same, and every one follows the cube layout
+    """
+    ctype = check["type"]
+    result = {"label": check["label"], "type": ctype}
+    found = sorted(rundir.glob(check["glob"]))
+    count = int(check["count"])
+    if len(found) != count:
+        result["status"] = "fail"
+        result["message"] = f"{len(found)} file(s) {check['glob']}, expected {count}"
+        return result
+    if ctype == "cube_files":
+        bad = [(p.name, _cube_layout_error(p)) for p in found]
+        bad = [(n, e) for n, e in bad if e]
+        if bad:
+            result["status"] = "fail"
+            result["message"] = f"{len(bad)} of {count} cube file(s) break the layout"
+            result["details"] = [f"{n}: {e}" for n, e in bad]
+            return result
+        result["status"] = "pass"
+        result["message"] = f"{count} cube file(s), layout ok"
+        return result
+    result["status"] = "pass"
+    result["message"] = f"{count} file(s) {check['glob']}"
+    return result
+
+
 def full_output_check(ref_file: Path, out_file: Path, ulps: float,
                       strict: bool) -> dict:
     """
@@ -458,7 +517,12 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
             shutil.copy(json_file, output_dir / f"{name}.apost.json")
 
         # Evaluate all checks
-        check_results = [evaluate_check(output, c) for c in test.get("checks", [])]
+        check_results = [
+            evaluate_file_check(rundir, c)
+            if c.get("type") in ("files", "cube_files")
+            else evaluate_check(output, c)
+            for c in test.get("checks", [])
+        ]
         check_results.append(results_file_check(json_file,
                                                 test.get("expected_rc", 0)))
         if ref_dir is not None:
