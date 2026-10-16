@@ -7,7 +7,9 @@ same text, integers and booleans, and reals equal within a relative
 tolerance (default 1e-9) or an absolute one of 1e-8: quantities that
 cancel to almost zero (free valences of 1e-6, a total <S^2> of 1e-10)
 differ between machines by ~1e-10, far below the printed digits
-(--rtol 0 asks for identical values). run.threads,
+(--rtol 0 asks for identical values). Values in kcal/mol (keys ending in
+_kcal, e.g. integration errors, differences of energies of hundreds of
+au) get the same absolute tolerance converted: 1e-8 au = 6.3e-6 kcal/mol. run.threads,
 run.date, run.id and every orbital_file_id are not compared: they describe
 the run, not its results.
 
@@ -28,6 +30,7 @@ IGNORED = {("run", "threads"), ("run", "date"), ("run", "id")}
 IGNORED_KEYS = {"orbital_file_id"}
 RTOL = 1e-9
 ATOL = 1e-8        # values that cancel to almost zero, across machines
+KCAL = 627.5096    # au -> kcal/mol, as in parameter.h
 
 
 def load(path):
@@ -36,6 +39,16 @@ def load(path):
         return json.loads(Path(path).read_text())
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"{Path(path).name}: not valid JSON ({exc})")
+
+
+def _atol(path, rtol):
+    """Absolute tolerance of the value at path: 1e-8 au, in kcal/mol for
+    keys ending in _kcal; 0 when identical values are asked for."""
+    if not rtol:
+        return 0.0
+    if path and isinstance(path[-1], str) and path[-1].endswith("_kcal"):
+        return ATOL * KCAL
+    return ATOL
 
 
 def diff(a, b, rtol, path=(), out=None, limit=20):
@@ -69,7 +82,7 @@ def diff(a, b, rtol, path=(), out=None, limit=20):
     elif isinstance(a, (int, float)) and isinstance(b, (int, float)):
         if type(a) is not type(b):
             out.append(f"{where}: {a!r} in reference, {b!r} in new (type)")
-        elif not math.isclose(a, b, rel_tol=rtol, abs_tol=ATOL if rtol else 0.0):
+        elif not math.isclose(a, b, rel_tol=rtol, abs_tol=_atol(path, rtol)):
             out.append(f"{where}: {a!r} in reference, {b!r} in new")
     else:
         out.append(f"{where}: {type(a).__name__} in reference, "
