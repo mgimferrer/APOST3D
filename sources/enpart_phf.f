@@ -16,22 +16,19 @@
       common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /energ0/ekin0,eelnuc0,evee0,etot0
-      common /efield/field(4),edipole
       
       integer, intent(in) :: ndim,itotps
       character*80 line
       
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp2(itotps,nat),rho(itotps)
-      dimension epa(maxat,maxat),ekin(maxat,maxat),dip(maxat,3),enuc(maxat,maxat)
+      dimension epa(maxat,maxat),ekin(maxat,maxat),enuc(maxat,maxat)
       dimension eto(maxat,maxat)
-      dimension eecp(maxat),ect(maxat,maxat)
-      dimension edip(maxat,maxat)
+      dimension eecp(maxat)
 
       allocatable :: chp2(:,:),scr(:),chpaux(:,:)
 
       idofr  = iopt(40)
-      ifield = iopt(47)
       iatps  = nang*nrad
 
       write(*,*)
@@ -70,7 +67,6 @@
       ekin=ZERO
       enuc=ZERO
       eto=ZERO
-      ect=ZERO
 
 !! IN CASE OF HAVING PSEUDOPOTENTIAL !!
       call mga_misc(iecp,eecp)
@@ -81,48 +77,6 @@
         end do 
       end if
 
-!! IN CASE OF HAVING AN EXTERNAL ELECTRIC FIELD !!
-!! MG: ADAPTED TO THE VERSION IN enpart.f !!
-!! MG: NOT CHECKED BY ME, NO IDEA IF WORKS PROPERLY (will ever be used?) !!
-      call field_misc(ifield)
-      if(ifield.eq.1) then
-        write(*,*) " The system is under a static electric field "
-        write(*,'(2x,3(x,a3,x,f8.6))') "Fx=",field(2),"Fy=",field(3),"Fz=",field(4)
-        write(*,*) " Electron-nuclear and nuclear repulsion terms are affected by E. field "
-        xtot=ZERO
-        do icenter=1,nat
-          x=ZERO
-          y=ZERO
-          z=ZERO
-          zztop=ZERO
-          do ifut=iatps*(icenter-1)+1,iatps*icenter
-            distx=pcoord(ifut,1)
-            disty=pcoord(ifut,2)
-            distz=pcoord(ifut,3)
-            x=x+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distx
-            y=y+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*disty
-            z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
-            zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
-          end do
-          dip(icenter,1)=-x+zztop*coord(1,icenter)    
-          dip(icenter,2)=-y+zztop*coord(2,icenter)    
-          dip(icenter,3)=-z+zztop*coord(3,icenter)    
-          xtot=(coord(1,icenter)*field(2)+coord(2,icenter)*field(3)+coord(3,icenter)*field(4))    
-          ect(icenter,icenter)=-zztop*xtot                
-        end do
-
-!! ENERGY CONTRIBUTIONS. ELECTRIC FIELD X,Y,Z COMPONENTS ARE ON field(2-4) !!
-        xtot=ZERO
-        do ii=1,nat
-          edip(ii,ii)=+dip(ii,1)*field(2)+dip(ii,2)*field(3)+dip(ii,3)*field(4)
-          xtot=xtot+ect(ii,ii)+edip(ii,ii)
-        end do
-        xxdip=xtot
-        write(*,'(2x,a37,x,f14.7)') "Electronic dipole moment energy term:",xxdip
-        write(*,*)
-      else
-        xxdip=ZERO
-      end if
 
 !! ELECTRON-NUCLEI ATTRACTION INTEGRALS !!
       do icenter=1,nat
@@ -166,7 +120,7 @@
 
 !! CHECKING INTEGRATION ERROR (IF ENERGIES INCLUDED IN .fchk FILE) !!
       if(eelnuc0.ne.ZERO) then
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
+        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc-eelnuc0)*tokcal
       else
         eelnuc0=eelnuc
       end if
@@ -250,43 +204,6 @@
       write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
       write(*,*)
 
-!! IN CASE OF HAVING AN ELECTRIC FIELD !!
-      if(ifield.eq.1) then
-        xxx=ZERO
-        xtot=ZERO
-        do i=1,nat
-          xxx=zn(i)*(coord(1,i)*field(2)+coord(2,i)*field(3)+coord(3,i)*field(4))
-          ect(i,i)=ect(i,i)+xxx
-          xtot=xtot+xxx
-        end do
-        write(*,'(2x,a50,x,f14.7)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
-        write(*,'(2x,a34,x,f14.7)') "Nuclear dipole moment energy term:",xtot
-        edipole=xtot+xxdip
-        write(*,'(2x,a32,x,f14.7)') "Total dipole moment energy term:",edipole
-        write(*,*)
-        write(*,*) " ----------------------------------------------------------- "
-        write(*,*) "  INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)  "
-        write(*,*) " ----------------------------------------------------------- "
-        write(*,*)
-        call MPRINT2(edip,nat,maxat)
-        xtot=ZERO
-        do i=1,nat
-          xtot=xtot+edip(i,i)
-        end do
-        write(*,'(2x,a28,x,f14.7)') "Total Intrinsic dipole term:",xtot
-        write(*,*)
-        write(*,*) " -------------------------------------------------------- "
-        write(*,*) "  CHARGE-TRANSFER ENERGY CONTRIBUTION (ORIGIN DEPENDENT)  "
-        write(*,*) " -------------------------------------------------------- "
-        write(*,*)
-        call MPRINT2(ect,nat,maxat)
-        xtot=ZERO
-        do i=1,nat
-          xtot=xtot+ect(i,i)
-        end do
-        write(*,'(2x,a27,x,f14.7)') "Total Charge-Transfer term:",xtot
-        write(*,*)
-      end if
 
 !! TOTAL ENERGY UP TO HERE !!
       etot=ekinen+eelnuc+erep
@@ -316,7 +233,6 @@
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/twoel/twoeltoler
-      common/efield/field(4),edipole
 !! FROM # GRID SECTION !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
 
@@ -338,7 +254,6 @@
 
       idofr    = iopt(40)
       ithrebod = iopt(44)
-      ifield   = iopt(47)
       ipolar   = iopt(46)
       iecorr   = iopt(59)
       iorca    = iopt(43)
@@ -714,12 +629,7 @@
       call MPRINT2(eto,nat,maxat)
       write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
       write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf  
-      if(ifield.eq.1) then
-        write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
-        err=(etot-escf+edipole)
-      else
-        err=(etot-escf)
-      end if
+      err=(etot-escf)
       write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
       write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
       if (idofr.eq.1) then

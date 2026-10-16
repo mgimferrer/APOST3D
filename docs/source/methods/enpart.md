@@ -333,6 +333,8 @@ When the `.fchk` file comes from a calculation in a static electric field
 (Gaussian's `Field` keyword; APOST-3D reads it from the `External
 E-field` block), the wavefunction summary shows the field, and ENPART
 adds an `EXTERNAL ELECTRIC FIELD` section after the one-electron terms.
+This works for Hartree-Fock and KS-DFT wavefunctions; for a correlated
+(CASSCF/CISD) wavefunction in a field, ENPART stops with a message.
 For water, RHF/cc-pVDZ in a field of 0.005 au along *z* (test
 `H2O-RHF-FIELD`, which also uses `POLAR` and therefore prints 13
 decimals):

@@ -74,7 +74,9 @@ program, not a full development history — see `git log` for that.
 - **Clear stops instead of wrong numbers** — meta-GGA functionals (not
   yet supported), range-separated hybrids, VV10 functionals, invalid libxc
   ids, and ENPART with a Hilbert-space atom definition (`MULLIKEN`, `LOWDIN`)
-  now stop with a message before any energy is computed.
+  now stop with a message before any energy is computed. So do ENPART of a
+  correlated (CASSCF/CISD) wavefunction computed in an electric field, and
+  `POLAR` with a correlated wavefunction, whose untested code was removed.
 - **Clearer output** — the section starts with the wavefunction, the
   atomic definition and how to read the matrices; every term is printed
   once, with its final values: the two-electron matrices follow a
