@@ -268,9 +268,25 @@ program, not a full development history — see `git log` for that.
 - **`.int` files of atoms with an ECP** — the `NET CHARGE` written by
   `DOINT` uses the nuclear charge left by the pseudopotential (it counted
   the core electrons the ECP replaces as a positive charge).
+- **Cube file layout** — cube files no longer carry a line of orbital
+  indices after the atoms. The cube format has that line only with a
+  negative atom count, so strict readers (ASE, VMD) shifted the data by
+  two values.
+- **Cube norm** — the printed norm of each cube (now `Norm in cube`) used
+  a voxel volume that was too small, making it 5–10% low. It is the share
+  of the orbital inside the box, and a warning now flags values below
+  0.9. Fragment and orbital numbers of any size go into the file names.
+- **`DOINT` file names and check** — `.int` and `.files` names keep the
+  whole job name (they were cut to 55 characters, the lines of the
+  `.files` list to 40). The check that the atomic overlap matrices add up
+  to the identity covers exactly the orbitals written: for correlated
+  wavefunctions it printed false deviations. The output now gives the
+  largest deviation, with a warning when it is too large.
 
 ### Others
 
+- **`CUBE` without an EFO analysis** — the input summary warns that no
+  cube file is written.
 - **Thread count** — printed once, after the banner (`OpenMP threads`),
   instead of in the ENPART section together with the number of cores of
   the machine.
