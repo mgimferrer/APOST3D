@@ -243,6 +243,17 @@ c      -------------------------------------------------------------------------
       if(iposthf.eq.1) then
         if(ispin.eq.1.and.icorr.lt.2) call apost_stop(' Local Spin needs dm1 and dm2 for correlated WFs')
         if(ienpart.eq.1.and.icorr.lt.2) call apost_stop(' Enpart needs dm1 and dm2 for correlated WFs')
+!! the external-field terms and POLAR are for HF and KS-DFT only !!
+        if(ipolar.eq.1) then
+          write(*,'(2x,a)') 'POLAR works with HF and KS-DFT wavefunctions only.'
+          call apost_stop(' POLAR is not available for correlated wavefunctions')
+        end if
+        if(ienpart.eq.1.and.ifield.eq.1) then
+          write(*,'(2x,a)') 'The .fchk file has an external electric field: ENPART'//
+     +      ' of a correlated'
+          write(*,'(2x,a)') 'wavefunction in a field is not available.'
+          call apost_stop(' ENPART in a field is not available for correlated wavefunctions')
+        end if
 !! OSLO's iterative localize/assign/deflate algorithm assumes integer-  !!
 !! occupied canonical-type orbitals -- it has no defined behavior for a !!
 !! multireference wavefunction's fractionally-occupied natural orbitals !!
