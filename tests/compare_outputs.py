@@ -13,7 +13,11 @@ number after it. On aligned lines:
     (default K=5: 5e-6 for a value printed with 6 decimals, 0.05 for one
     printed with 2), so a rounding flip on another machine passes but a real
     change does not. A value printed with a different number of digits is
-    compared at the coarser of the two (strict: that already fails).
+    compared at the coarser of the two (strict: that already fails);
+  - besides, two decimals that differ by at most 1e-8 in absolute value
+    (--abs-tol) are equal: digits beyond that are numerical noise that
+    changes between machines (13-decimal output of FULLPRECISION/POLAR).
+    It only matters for values printed with more than 8 decimals.
 
 Two levels:
 
@@ -89,7 +93,7 @@ def _ulp(tok):
     return 10.0 ** (int(exp or 0) - dec)
 
 
-def compare_files(ref_path, new_path, ulps=5, strict=False):
+def compare_files(ref_path, new_path, ulps=5, strict=False, abs_tol=1e-8):
     """
     Compare two .apost files. Returns a dict with:
       numbers   numbers compared on aligned lines
@@ -129,7 +133,10 @@ def compare_files(ref_path, new_path, ulps=5, strict=False):
                     # A value now printed with fewer digits is compared at
                     # the coarser precision: that is formatting, not a change
                     u = max(ua, ub)
-                    dev = abs(_value(ta) - _value(tb)) / u
+                    diff = abs(_value(ta) - _value(tb))
+                    if diff <= abs_tol:
+                        continue
+                    dev = diff / u
                     worst = max(worst, dev)
                     if dev > ulps:
                         bad.append(f"{ta} -> {tb} (off by {dev:.0f} in the last digit)")
@@ -201,6 +208,9 @@ def main():
     p.add_argument("--ulps", type=float, default=5,
                    help="allowed deviation in units of the last printed digit "
                         "(default 5)")
+    p.add_argument("--abs-tol", type=float, default=1e-8,
+                   help="decimals within this absolute difference are equal "
+                        "(default 1e-8; 0 for an exact comparison)")
     p.add_argument("--strict", action="store_true",
                    help="fail on any difference, layout and wording included")
     p.add_argument("--max-show", type=int, default=10,
@@ -221,7 +231,7 @@ def main():
             print(f"[missing] {new}")
             nbad += 1
             continue
-        res = compare_files(ref, new, args.ulps, args.strict)
+        res = compare_files(ref, new, args.ulps, args.strict, args.abs_tol)
         tag = ("DIFF" if res["failed"] else
                "note" if res["text_diffs"] else "ok")
         print(f"[{tag:^4}] {ref.name}: {summary(res, args.ulps)}")

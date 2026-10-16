@@ -123,7 +123,7 @@ if [ "$FORMAT" -eq 0 ]; then
 else
   echo "Base vs working tree, one thread: every number must be identical"
   python3 "$REPO/tests/compare_outputs.py" --ref-dir "$WORKDIR/base" \
-    --out-dir "$WORKDIR/new" --ulps 0 || FAIL=1
+    --out-dir "$WORKDIR/new" --ulps 0 --abs-tol 0 || FAIL=1
   echo
   echo "Every number of each output, in order (any layout):"
   python3 "$REPO/tests/compare_numbers.py" --old-dir "$WORKDIR/base" \
