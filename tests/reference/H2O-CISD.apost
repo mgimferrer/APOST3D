@@ -1,0 +1,673 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : CASSCF
+  Number of atoms                         : 3
+  Number of basis functions               : 7
+  Primitive gaussians                     : 21
+  Spin density                            : read from the .fchk
+  CAS active electrons                    : 10
+  CAS active orbitals                     : 7
+  CAS spin-orbitals                       : 14
+  Alpha / beta electrons                  : 5 / 5
+  SCF energy (au)                         :     -75.0118731696
+
+  Note: closed-shell correlated wavefunction: its local spins come from electron correlation
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
+  Local spin                              : SPIN
+  Fragments                               : 2 (see # FRAGMENTS)
+
+  # ENPART
+  Functional                              : CASSCF
+  Atom-pair threshold (bond order)        : 0 (THREBOD 0: every atom pair)
+  Two-electron grid                       : 40 x 146 (# GRID)
+  Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
+  Other options                           : CORRELATION
+
+  # FRAGMENTS (2 fragments)
+  Fragment  1 :   1
+  Fragment  2 :   2   3
+
+  # DM
+  Density matrices                        : 2-RDM
+  Source                                  : pySCF
+  1-RDM file                              : H2O-CISD.dm1
+  2-RDM file                              : H2O-CISD.dm2
+
+  --------------------
+    NATURAL ORBITALS
+  --------------------
+
+  Occupation numbers (>1.0e-6):
+     2.00000   1.99849   1.99803   1.97806   1.97504   0.02548   0.02490
+
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 150
+  Angular points                          : 590
+  r0 (bohr)                               : 0.500
+  Grid points                             : 265500
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   2 : subdivision 27, ratio  2.93701
+  Atom pair   1 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   3 : subdivision 27, ratio  2.93701
+
+  Sum of atomic overlaps, largest error   : 8.23E-08 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 0.08 s
+  TIMING WALL :: Atomic definition                                 0.02 s
+
+  ---------------------------------
+    POST-HARTREE-FOCK CALCULATION
+  ---------------------------------
+
+  Spin-orbitals (total / active / core)   : 14 / 7 / 0
+  Core spin-orbitals (occupation 1)       : 0
+  1-RDM, largest idempotency error        : 0.01257777
+  Density matrices P and Ps               : built from the 1-RDM
+  P, largest difference from the .fchk    : 0.00000001
+  2-RDM, core orbitals added              : 0
+  2-RDM, active orbitals                  : 7
+  2-RDM, orbitals in total                : 7
+  2-RDM, elements read                    : 777
+  2-RDM trace, core orbitals              : 0.00000000
+  2-RDM trace, active orbitals            : 90.00000000
+  2-RDM trace / N(N-1)                    : 90.00000000 / 90
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  O     8.744899    8.335830
+    2  H     0.627551    0.832085
+    3  H     0.627551    0.832085
+  -------------------------------
+  Total     10.000000   10.000000
+
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          8.744899    8.335830
+    2          1.255101    1.664170
+  ---------------------------------
+  Total       10.000000   10.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  O    -0.744899   -0.335830
+    2  H     0.372449    0.167915
+    3  H     0.372449    0.167915
+  -------------------------------
+  Total      0.000000    0.000000
+
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1         -0.744899   -0.335830
+    2          0.744899    0.335830
+  ---------------------------------
+  Total        0.000000    0.000000
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     7.849829    0.834144    0.834144
+    2  H     0.834144    0.183563    0.015195
+    3  H     0.834144    0.015195    0.183563
+  -------------------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1  O     1.790139
+    2  H     0.887975
+    3  H     0.887975
+  -------------------
+
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          1.790139
+    2          1.775950
+  ---------------------
+  Total        3.566089
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1  O     1.668288
+    2  H     0.849339
+    3  H     0.849339
+  -------------------
+
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          1.668288
+    2          1.698679
+  ---------------------
+  Total        3.366967
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1  O     0.121851
+    2  H     0.038635
+    3  H     0.038635
+  -------------------
+
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          0.121851
+    2          0.077271
+  ---------------------
+  Total        0.199121
+
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          7.849829    1.668288
+    2          1.668288    0.382322
+  ---------------------------------
+  Total (diagonal and one triangle)       :       9.900439
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  -----------------------------
+    DOING LOCAL SPIN ANALYSIS
+  -----------------------------
+
+  Wavefunction                            : correlated (1- and 2-RDM)
+
+  -----------------------------
+    BOND ORDER MATRIX (1-RDM)
+  -----------------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     7.849829    0.834144    0.834144
+    2  H     0.834144    0.183563    0.015195
+    3  H     0.834144    0.015195    0.183563
+  -------------------------------------------
+
+  -------------------------
+    NEW BOND ORDER MATRIX
+  -------------------------
+
+  From the natural orbitals, I. Mayer, Chem. Phys. Lett. 2012, 554, 83
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     7.901288    0.843611    0.843611
+    2  H     0.843611    0.198019    0.015453
+    3  H     0.843611    0.015453    0.198019
+  -------------------------------------------
+  Total (diagonal and one triangle)       :      10.000000
+
+  ------------------------
+    LI/DI MATRIX (2-RDM)
+  ------------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     8.012728    0.732171    0.732171
+    2  H     0.732171    0.235901    0.051129
+    3  H     0.732171    0.051129    0.235901
+  -------------------------------------------
+  Total (diagonal and one triangle)       :      10.000000
+
+  --------------------------
+    FRAGMENT LI/DI (2-RDM)
+  --------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          8.012728    1.464342
+    2          1.464342    0.522930
+  ---------------------------------
+  Total (diagonal and one triangle)       :      10.000000
+
+  ----------------------------------
+    EFFECTIVELY UNPAIRED ELECTRONS
+  ----------------------------------
+
+  Atom           TFVC
+  -------------------
+    1  O     0.121851
+    2  H     0.038635
+    3  H     0.038635
+  -------------------
+  Total unpaired electrons N_D            :       0.199122
+
+  -------------------------------
+    FRAGMENT UNPAIRED ELECTRONS
+  -------------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          0.121851
+    2          0.077271
+  ---------------------
+  Total        0.199122
+
+  -----------------------------
+    S^2 DECOMPOSITION (a=3/4)
+  -----------------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     0.038264   -0.019132   -0.019132
+    2  H    -0.019132    0.028049   -0.008917
+    3  H    -0.019132   -0.008917    0.028049
+  -------------------------------------------
+  Total <S^2>                             :       0.000000
+
+  --------------------------------------
+    FRAGMENT S^2 DECOMPOSITION (a=3/4)
+  --------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          0.038264   -0.038264
+    2         -0.038264    0.038264
+  ---------------------------------
+  Total (all elements)                    :       0.000000
+
+  TIMING CPU  :: Local spin analysis                               0.00 s
+  TIMING WALL :: Local spin analysis                               0.00 s
+
+  --------------------------------
+    ENERGY PARTITIONING (ENPART)
+  --------------------------------
+
+  Wavefunction                            : CASSCF, restricted
+  Atomic definition                       : TFVC (real space)
+
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
+
+  ------------------------------------- 
+   POST-HARTREE-FOCK ONE-ELECTRON PART  
+  ------------------------------------- 
+
+  ----------------------------- 
+   ELECTRON-NUCLEAR ATTRACTION  
+  ----------------------------- 
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O  -180.504959   -7.025499   -7.025499
+    2  H    -7.025499   -0.953272   -0.402537
+    3  H    -7.025499   -0.402537   -0.953272
+  -------------------------------------------
+  Electron-nuclei energy:   -196.8650386
+  Integration error (kcal/mol):     0.00
+
+
+  -------------------------------------------------
+    FRAGMENT ANALYSIS: Electron-nuclei attraction
+  -------------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1       -180.504959  -14.050999
+    2        -14.050999   -2.309081
+  ---------------------------------
+  Total (diagonal and one triangle)       :    -196.865039
+  ---------------- 
+   KINETIC ENERGY  
+  ---------------- 
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O    73.629008    0.000000    0.000000
+    2  H     0.000000    0.497746    0.000000
+    3  H     0.000000    0.000000    0.497746
+  -------------------------------------------
+  Kinetic energy:     74.6245002
+  Integration error (kcal/mol):     0.00
+
+
+  -------------------------------------
+    FRAGMENT ANALYSIS: Kinetic energy
+  -------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         73.629008    0.000000
+    2          0.000000    0.995492
+  ---------------------------------
+  Total (diagonal and one triangle)       :      74.624500
+  --------------------------- 
+   NUCLEAR-NUCLEAR REPULSION  
+  --------------------------- 
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     0.000000    4.420052    4.420052
+    2  H     4.420052    0.000000    0.349430
+    3  H     4.420052    0.349430    0.000000
+  -------------------------------------------
+  Nuclear repulsion energy:      9.1895338
+
+  TIMING CPU  :: ENPART one-electron terms                         0.07 s
+  TIMING WALL :: ENPART one-electron terms                         0.02 s
+
+  ---------------------
+    TWO-ELECTRON GRID
+  ---------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  Grid points                             : 17520
+
+  ------------------------------------- 
+   POST-HARTREE-FOCK TWO-ELECTRON PART  
+  ------------------------------------- 
+
+  Rotating for angles:   0.000000   0.162000
+
+  --------------------------------------------
+    COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
+  --------------------------------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O    41.692715    2.509526    2.509526
+    2  H     2.509526    0.196874    0.117308
+    3  H     2.509526    0.117308    0.196874
+  -------------------------------------------
+  Coulomb energy:     47.2228227
+
+  -------------------------------------
+    FRAGMENT ANALYSIS: Coulomb energy
+  -------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         41.692715    5.019051
+    2          5.019051    0.511056
+  ---------------------------------
+  Total (diagonal and one triangle)       :      47.222823
+
+  TIMING CPU  :: Coulomb energy                                    0.24 s
+  TIMING WALL :: Coulomb energy                                    0.04 s
+
+  ------------------------------------------------------------------ 
+   EVALUATING POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION INTEGRALS  
+  ------------------------------------------------------------------ 
+
+  Two-el integrations for     28 MO pairs
+  Threshold for atom pair calculation:   0.000000
+  Skipping diatomic exchange integrals for            0
+
+  ---------------------------------------------------------- 
+   POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS  
+  ---------------------------------------------------------- 
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O    -8.462150   -0.237637   -0.237637
+    2  H    -0.237637   -0.119229   -0.007137
+    3  H    -0.237637   -0.007137   -0.119229
+  -------------------------------------------
+  Post-Hartree-Fock exchange-correlation energy:     -9.1830173
+
+  TIMING CPU  :: PHF Exc energy                                    4.75 s
+  TIMING WALL :: PHF Exc energy                                    4.75 s
+
+  --------------------------------------------------------- 
+   EVALUATING POST-HARTREE-FOCK-TYPE CORRELATION INTEGRALS  
+  --------------------------------------------------------- 
+
+  Two-el integrations for     28 MO pairs
+  Threshold for atom pair calculation:   0.000000
+  Skipping diatomic exchange integrals for            0
+
+  ---------------------------------------------- 
+   POST-HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  
+  ---------------------------------------------- 
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O    -8.359670   -0.258804   -0.258804
+    2  H    -0.258804   -0.093849   -0.002143
+    3  H    -0.258804   -0.002143   -0.093849
+  -------------------------------------------
+  Post-Hartree-Fock exchange energy:     -9.0671176
+
+  ------------------------------------------------- 
+   POST-HARTREE-FOCK-TYPE CORRELATION ENERGY TERMS  
+  ------------------------------------------------- 
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O    -0.102480    0.021167    0.021167
+    2  H     0.021167   -0.025380   -0.004994
+    3  H     0.021167   -0.004994   -0.025380
+  -------------------------------------------
+  Post-Hartree-Fock correlation energy:     -0.1158997
+
+  TIMING CPU  :: PHF Ex & Ec energy                                4.73 s
+  TIMING WALL :: PHF Ex & Ec energy                                4.74 s
+
+  Total two-electron part (coul+exc):     38.0398054
+  Integration error (kcal/mol):     0.42
+
+  Max error accepted on the two-electron part (kcal/mol):   100.00
+
+  ------------------------------------------------- 
+   FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS  
+  ------------------------------------------------- 
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O   -73.645385   -0.333559   -0.333559
+    2  H    -0.333559   -0.377881    0.057065
+    3  H    -0.333559    0.057065   -0.377881
+  -------------------------------------------
+  Total integrated energy  :    -75.0111992
+  Total energy in Fchk file:    -75.0118732
+  Integration error (au):      0.0006740
+  Integration error (kcal/mol):     0.42
+
+  -------------------------------------------
+    FRAGMENT ANALYSIS: Energy Decomposition
+  -------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1        -73.645385   -0.667117
+    2         -0.667117   -0.698696
+  ---------------------------------
+  Total (diagonal and one triangle)       :     -75.011199
+  TIMING CPU  :: ENPART two-electron terms                         9.74 s
+  TIMING WALL :: ENPART two-electron terms                         9.53 s
+
+  ...Normal Termination of APOST-3D...
