@@ -152,8 +152,8 @@
     "job_name": "NaBH3--UHF-DOINT",
     "input_file": "NaBH3--UHF-DOINT.inp",
     "wavefunction_file": "NaBH3--UHF-DOINT.fchk",
-    "date": "2026-10-16T18:04:52+02:00",
-    "id": "2026-10-16T18:04:52+02:00/83f0",
+    "date": "2026-10-16T20:02:54+02:00",
+    "id": "2026-10-16T20:02:54+02:00/6be8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

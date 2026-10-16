@@ -142,7 +142,9 @@
   -----------------------------
 
   Atomic definition                       : MULLIKEN (Hilbert space)
-  Atomic overlap matrices (DOINT) written: one .int file per atom, listed in NaBH3--UHF-DOINTmul.files
+  Atomic overlap files (.int)             : 5 (one per atom)
+  List of the .int files                  : NaBH3--UHF-DOINTmul.files
+  Sum of the overlaps, largest deviation  :       0.000000
 
   ------------------------
     ELECTRON POPULATIONS

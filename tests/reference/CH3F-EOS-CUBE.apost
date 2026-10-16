@@ -366,24 +366,23 @@
   Fit (%)    99.85    98.39    94.70    94.66    86.47    33.80    33.77    49.15
   Left out by the cutoff (net)            :        0.00012
   Left out by the cutoff (gross)          :        0.00039
-  Generating cube files for eff-AOs  1 to  8 of atom/fragment   1
-  Size of cube (x,y,z):  28  28  28
-  Normalization from cube:  0.7216
 
-  Normalization from cube:  0.9780
+  Cube files, fragment 1
+  Grid points (x, y, z)                   : 28 x 28 x 28
 
-  Normalization from cube:  1.0008
-
-  Normalization from cube:  1.0008
-
-  Normalization from cube:  1.0004
-
-  Normalization from cube:  0.9974
-
-  Normalization from cube:  1.0030
-
-  Normalization from cube:  1.0043
-
+    EFO   Net occ.   Norm in cube   File
+  ---------------------------------------------------------------
+      1     1.0000         0.7216   CH3F-EOS-CUBE_tfvc_FR1_1.cube
+      2     0.9981         0.9780   CH3F-EOS-CUBE_tfvc_FR1_2.cube
+      3     0.9735         1.0008   CH3F-EOS-CUBE_tfvc_FR1_3.cube
+      4     0.9735         1.0008   CH3F-EOS-CUBE_tfvc_FR1_4.cube
+      5     0.7830         1.0004   CH3F-EOS-CUBE_tfvc_FR1_5.cube
+      6     0.0271         0.9974   CH3F-EOS-CUBE_tfvc_FR1_6.cube
+      7     0.0269         1.0030   CH3F-EOS-CUBE_tfvc_FR1_7.cube
+      8     0.0133         1.0043   CH3F-EOS-CUBE_tfvc_FR1_8.cube
+  ---------------------------------------------------------------
+  WARNING: 1 cube file(s) with a norm below 0.9; in # CUBE, raise RADIUS_SCALE
+  (box too small) or lower SPACING (grid too coarse)
 
   Fragment 2
   Net occupation                          :        4.07404
@@ -393,22 +392,22 @@
   Fit (%)    99.26    94.24    88.88    88.87    69.87    60.26    60.44
   Left out by the cutoff (net)            :        0.00083
   Left out by the cutoff (gross)          :        0.00150
-  Generating cube files for eff-AOs  1 to  7 of atom/fragment   2
-  Size of cube (x,y,z):  20  23  24
-  Normalization from cube:  0.9763
 
-  Normalization from cube:  0.9388
+  Cube files, fragment 2
+  Grid points (x, y, z)                   : 20 x 23 x 24
 
-  Normalization from cube:  0.9271
-
-  Normalization from cube:  0.9201
-
-  Normalization from cube:  0.9715
-
-  Normalization from cube:  0.8703
-
-  Normalization from cube:  0.8803
-
+    EFO   Net occ.   Norm in cube   File
+  ---------------------------------------------------------------
+      1     0.9993         0.9763   CH3F-EOS-CUBE_tfvc_FR2_1.cube
+      2     0.9763         0.9388   CH3F-EOS-CUBE_tfvc_FR2_2.cube
+      3     0.9518         0.9271   CH3F-EOS-CUBE_tfvc_FR2_3.cube
+      4     0.9513         0.9201   CH3F-EOS-CUBE_tfvc_FR2_4.cube
+      5     0.1596         0.9715   CH3F-EOS-CUBE_tfvc_FR2_5.cube
+      6     0.0179         0.8703   CH3F-EOS-CUBE_tfvc_FR2_6.cube
+      7     0.0178         0.8803   CH3F-EOS-CUBE_tfvc_FR2_7.cube
+  ---------------------------------------------------------------
+  WARNING: 2 cube file(s) with a norm below 0.9; in # CUBE, raise RADIUS_SCALE
+  (box too small) or lower SPACING (grid too coarse)
 
   ------------------------
     EOS, ALPHA ELECTRONS
@@ -442,8 +441,8 @@
   Total             0.00
   Overall reliability index R (%)         :        100.000
 
-  TIMING CPU  :: EFFAO computation                                 0.47 s
-  TIMING WALL :: EFFAO computation                                 0.14 s
+  TIMING CPU  :: EFFAO computation                                 0.44 s
+  TIMING WALL :: EFFAO computation                                 0.13 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

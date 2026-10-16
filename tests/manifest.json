@@ -2396,12 +2396,12 @@
         {
           "label": "Negative-EFO cube generated (paired channel, frag 2 only)",
           "type": "present",
-          "pattern": "    PAIRED DENSITY[\\s\\S]*Generating cube files for eff-AOs\\s+1 to\\s+1 of atom/fragment\\s+2[\\s\\S]*UNPAIRED DENSITY"
+          "pattern": "    PAIRED DENSITY[\\s\\S]*Cube files, fragment 2 \\(negative paired EFOs\\)[\\s\\S]*UNPAIRED DENSITY"
         },
         {
           "label": "Negative-EFO cube normalization",
-          "section": "Generating cube files for eff-AOs",
-          "pattern": "Normalization from cube:\\s+([-+]?\\d+\\.\\d+)",
+          "section": "\\(negative paired EFOs\\)",
+          "pattern": "\\n\\s+1\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)\\s+\\S+\\.cube",
           "ref": 0.3024,
           "tol_abs": 0.001
         },
@@ -3485,18 +3485,20 @@
     },
     {
       "name": "H2O-DOINT",
-      "description": "Water, RKS (the H2O-SVWN wavefunction), TFVC: DOINT writes one .int file per atom (restricted, lower triangle) and the .files list; the sum of the atomic overlap matrices is the identity.",
+      "description": "Water, RKS (the H2O-SVWN wavefunction), TFVC: DOINT writes one .int file per atom (restricted, lower triangle) and the .files list; the sum of the atomic overlap matrices is the identity. CUBE without an EFO analysis: warning, no cube file.",
       "tags": [
         "dft",
         "rks",
         "tfvc",
-        "doint"
+        "doint",
+        "cube"
       ],
       "timeout": 300,
       "extra_input_files": [],
       "keywords": [
         "TFVC",
-        "DOINT"
+        "DOINT",
+        "CUBE"
       ],
       "checks": [
         {
@@ -3524,9 +3526,26 @@
           "count": 1
         },
         {
+          "label": "Largest deviation of the summed overlaps from the identity",
+          "pattern": "Sum of the overlaps, largest deviation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.000103,
+          "tol_abs": 2e-05
+        },
+        {
           "label": "Atomic overlaps add up to the identity",
           "type": "absent",
-          "pattern": "Dev\\. from"
+          "pattern": "WARNING: the atomic overlap matrices"
+        },
+        {
+          "label": "CUBE without an EFO analysis: warning",
+          "type": "present",
+          "pattern": "WARNING: no cube file is written"
+        },
+        {
+          "label": "No cube file",
+          "type": "files",
+          "glob": "*.cube",
+          "count": 0
         }
       ]
     },
@@ -3573,7 +3592,7 @@
         {
           "label": "Atomic overlaps add up to the identity",
           "type": "absent",
-          "pattern": "Dev\\. from"
+          "pattern": "WARNING: the atomic overlap matrices"
         }
       ]
     },
@@ -3604,7 +3623,7 @@
         },
         {
           "label": "Natural orbitals used",
-          "pattern": "Using\\s+(\\d+)\\s+natural orbitals",
+          "pattern": "Natural orbitals in the \\.int files\\s*:\\s*(\\d+)",
           "ref": 3,
           "tol_abs": 0.5
         },
@@ -3623,7 +3642,7 @@
         {
           "label": "Atomic overlaps add up to the identity",
           "type": "absent",
-          "pattern": "Dev\\. from"
+          "pattern": "WARNING: the atomic overlap matrices"
         }
       ]
     },
@@ -3669,17 +3688,17 @@
         },
         {
           "label": "Fragment 1, EFO 2 cube normalization",
-          "pattern": "Normalization from cube:\\s*([-+]?\\d+\\.\\d+)",
-          "match_index": 2,
+          "pattern": "\\n\\s+2\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)\\s+\\S+\\.cube",
           "ref": 0.978,
-          "tol_abs": 0.001
+          "tol_abs": 0.001,
+          "section": "Cube files, fragment 1\\n"
         },
         {
           "label": "Fragment 2, EFO 1 cube normalization",
-          "pattern": "Normalization from cube:\\s*([-+]?\\d+\\.\\d+)",
-          "match_index": 9,
+          "pattern": "\\n\\s+1\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)\\s+\\S+\\.cube",
           "ref": 0.9763,
-          "tol_abs": 0.001
+          "tol_abs": 0.001,
+          "section": "Cube files, fragment 2\\n"
         },
         {
           "label": "F oxidation state",
@@ -3694,6 +3713,11 @@
           "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.0,
           "tol_abs": 0.05
+        },
+        {
+          "label": "Norm below 0.9 warning",
+          "type": "present",
+          "pattern": "WARNING: 1 cube file\\(s\\) with a norm below 0\\.9"
         }
       ]
     }

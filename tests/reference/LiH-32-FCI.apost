@@ -354,8 +354,8 @@
   Fit (%)    99.41    84.59
   Left out by the cutoff (net)            :       -0.00394
   Left out by the cutoff (gross)          :       -0.00456
-   No eff-AOs in the occupation range
 
+  Cube files, fragment 1: no EFO in the MAX_OCC/MIN_OCC range
 
   Fragment 2
   Net occupation                          :        1.05137
@@ -365,12 +365,18 @@
   Fit (%)    93.01    33.07
   Left out by the cutoff (net)            :       -0.09431
   Left out by the cutoff (gross)          :       -0.10682
-   No eff-AOs in the occupation range
 
-  Generating cube files for eff-AOs  1 to  1 of atom/fragment   2
-  Size of cube (x,y,z):  10  10  10
-  Normalization from cube:  0.3024
+  Cube files, fragment 2: no EFO in the MAX_OCC/MIN_OCC range
 
+  Cube files, fragment 2 (negative paired EFOs)
+  Grid points (x, y, z)                   : 10 x 10 x 10
+
+    EFO   Net occ.   Norm in cube   File
+  -----------------------------------------------------------------------
+      1    -0.0856         0.3024   LiH-32-FCI_tfvc_paired_neg_FR2_1.cube
+  -----------------------------------------------------------------------
+  WARNING: 1 cube file(s) with a norm below 0.9; in # CUBE, raise RADIUS_SCALE
+  (box too small) or lower SPACING (grid too coarse)
 
   --------------------
     UNPAIRED DENSITY
@@ -387,8 +393,8 @@
              37.26
   Left out by the cutoff (net)            :        0.00009
   Left out by the cutoff (gross)          :        0.00017
-   No eff-AOs in the occupation range
 
+  Cube files, fragment 1: no EFO in the MAX_OCC/MIN_OCC range
 
   Fragment 2
   Net occupation                          :        0.60346
@@ -401,8 +407,8 @@
              64.56
   Left out by the cutoff (net)            :        0.00025
   Left out by the cutoff (gross)          :        0.00030
-   No eff-AOs in the occupation range
 
+  Cube files, fragment 2: no EFO in the MAX_OCC/MIN_OCC range
 
   ----------------------------
     GEOS ELECTRON ASSIGNMENT

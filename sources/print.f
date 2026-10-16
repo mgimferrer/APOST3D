@@ -330,7 +330,14 @@
       end if
       if(iqchem.eq.1) call print_value('Wavefunction source','QCHEM')
       if(imokit.eq.1) call print_value('Wavefunction source','MOKIT')
-      if(icube.eq.1) call print_value('Cube files','CUBE (see # CUBE)')
+      if(icube.eq.1) then
+        call print_value('Cube files','CUBE (see # CUBE)')
+        if(ieffao.eq.0) then
+          write(*,'(2x,a)') 'WARNING: no cube file is written: no'//
+     +      ' analysis in # METHOD makes EFOs (EFFAO, UEFFAO,'
+          write(*,'(2x,a)') 'EFFAO-U, EOS, GEOS)'
+        end if
+      end if
       if(iaccur.eq.1) call print_value('Output precision',
      +  'FULLPRECISION (13 decimals)')
       if(iverbose.eq.1) call print_value('Output detail',
@@ -1394,6 +1401,7 @@
 !! ********************************************************************* !!
       subroutine print_int(nbas,nat0,sat,name)
       use elements_mod
+      use output_mod
       use basis_set
       use ao_matrices
       implicit real*8(a-h,o-z)
@@ -1408,6 +1416,7 @@
       character name*60
 
       character nameaim*256,charnu*2,atnum*12,ext*4,namefiles*256
+      character*40 cval
       logical lfound
 
       allocatable c3(:,:),c2(:,:),csave(:,:),scr(:,:)
@@ -1439,7 +1448,6 @@
 
       if(inato.eq.1) then
         if(icas.eq.1) ndim=norb
-        write(*,'(2x,a,1x,i0,1x,a)') 'Using',ndim,'natural orbitals'
         do i=1,igr
           do j=1,ndim
             scr(i,j)=c_no(i,j)
@@ -1671,36 +1679,33 @@
         close(naim)
       end do
       close(naim3)
-      write(*,'(2x,a,a)') 'Atomic overlap matrices (DOINT) written: '//
-     +  'one .int file per atom, listed in ',trim(namefiles)
+      write(cval,'(i0,a)') icuat,' (one per atom)'
+      call print_value('Atomic overlap files (.int)',trim(cval))
+      call print_value('List of the .int files',trim(namefiles))
+      if(inato.eq.1) call print_value('Natural orbitals in the .int files',
+     +  nwrit)
 
-
+!! with every atom, the atomic overlap matrices add up to the identity: !!
+!! largest deviation on the diagonal, off it, and asymmetry             !!
       if(icuat.eq.nat) then
-!! check for orthogonality of the MOs -- sum of all atomic overlap    !!
-!! matrices (csave) should equal the identity.                         !!
-        xmax=1.0d-2
-        xmaxd=1.0d-3
-        xmaxns=1.0d-4
+        devd=0.0d0
+        devo=0.0d0
+        devs=0.0d0
         do i=1,nwrit
-          do j=i,nwrit
-            if(i.eq.j) then
-              xx=abs(csave(i,i)-1.0d0)
-              if(xx.gt.xmax) then
-                write(*,'(2x,a,f10.6,i3)') 'Dev. from normalization ',xx,i
-              end if
-            else
-              xx=abs(csave(i,j))
-              if(xx.gt.xmaxd) then
-                write(*,'(2x,a,f10.6,2i3)') 'Dev. from orth. in occ. set:',xx,
-     1      i,j
-              end if
-              xx=abs(csave(i,j)-csave(j,i))
-              if(xx.gt.xmaxns) then
-                write(*,'(2x,a,f10.6,2i3)') 'Dev. from hermiticity',xx,i,j
-              end if
-            end if
+          devd=max(devd,abs(csave(i,i)-1.0d0))
+          do j=i+1,nwrit
+            devo=max(devo,abs(csave(i,j)),abs(csave(j,i)))
+            devs=max(devs,abs(csave(i,j)-csave(j,i)))
           end do
         end do
+        call print_value('Sum of the overlaps, largest deviation',
+     +    max(devd,devo),6)
+        if(devd.gt.1.0d-2.or.devo.gt.1.0d-3.or.devs.gt.1.0d-4) then
+          write(*,'(2x,a)') 'WARNING: the atomic overlap matrices do'//
+     +      ' not add up to the identity (diagonal, off-diagonal,'
+          write(*,'(2x,a,3es10.2,a)') 'asymmetry:',devd,devo,devs,
+     +      '); check the integration grid'
+        end if
       end if
       deallocate(c3,scr,c2,csave)
 
@@ -1727,6 +1732,7 @@
 !! ********************************************************************** !!
       subroutine cubegen_new(ifrag,icase)
       use elements_mod
+      use output_mod
       use ao_matrices
       use integration_grid
       use effao_mod, only: p0,p0net,p0gro,ip0 !! replaces common /effao/ -- see modules.f90 !!
@@ -1742,10 +1748,12 @@
       common /filename/name
 
       character*30 name2
-      character nameaim*256,charnu*2,atnu*12,charnu1*12
+      character nameaim*256,charnu*2,atnu*12,charnu1*12,cwho*20
+      character*40 cval
+      character*256, allocatable :: cfile(:)
 
       dimension pgrid(maxgrid,3),igrid(3),xgrid(3,3)
-      allocatable c0(:,:),xyz(:,:,:)
+      allocatable c0(:,:),xyz(:,:,:),xnrm(:)
 
       ihirsh=iopt(6)
       imulli= Iopt(5)
@@ -1789,15 +1797,20 @@
         end do
       end if
 
+      write(atnu,'(i0)')ifrag
+      if(idofr.eq.0) then
+        cwho='atom '//trim(atnu)//' ('//
+     +    trim(element_symbol(iznuc(ifrag)))//')'
+      else
+        cwho='fragment '//trim(atnu)
+      end if
       if(imaxeff.gt.imineff) then
-        write(*,*) '  No eff-AOs in the occupation range'
-        write(*,*)
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Cube files, '//trim(cwho)//
+     +    ': no EFO in the MAX_OCC/MIN_OCC range'
         deallocate(c0)
         return
       end if
-
-      write(*,22)'Generating cube files for eff-AOs',imaxeff,' to',imineff,' of atom/fragment ',ifrag
-22    format (2x,a33,i3,a3,i3,a18,i3)
 
       if (imulli.eq.1) then
         name2="mulliken"
@@ -1856,8 +1869,8 @@
       end do
 
 !! now the grid !!
-      write(*,'(2x,a21,3i4)')'Size of cube (x,y,z):',(igrid(i),i=1,3)
       allocate ( xyz(igrid(1),igrid(2),igrid(3)))
+      allocate(xnrm(imaxeff:imineff),cfile(imaxeff:imineff))
 
       do ivec=imaxeff,imineff
 
@@ -1906,8 +1919,7 @@
           end do
         end do
 !$OMP END PARALLEL DO
-        write(*,'(2x,a25,f7.4)') 'Normalization from cube: ',x0*xmesh**3
-        write(*,*)
+        xnrm(ivec)=x0*xmesh**3
 
 !! output !!
 
@@ -1917,7 +1929,6 @@
         else
           charnu="FR"
         end if
-        write(atnu,'(i0)')ifrag
         write(charnu1,'(i0)')ivec
         if(icase.ne.2) then
           nameaim=trim(name)//"_"//trim(name2)//"_"//trim(charnu)//
@@ -1927,19 +1938,14 @@
      +   trim(atnu)//"_"//trim(charnu1)//"beta"
         end if
         nameaim=trim(nameaim)//".cube"
+        cfile(ivec)=nameaim
 
         open(44,file=nameaim,status="unknown")
         rewind(44)
-        write(44,*)'Cube generated with APOST-3D code '
-        if(idofr.eq.0) then
-          write(44,41) trim(name),trim(name2),' EFFAO',ivec," for atom",
-     + element_symbol(iznuc(ifrag)),"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
-     + p0net(ivec,ifrag)
-        else
-          write(44,44) trim(name),trim(name2),' EFFAO',ivec," for frag",
-     + ifrag,"Gross Occ.",p0gro(ivec,ifrag),"Net Occ.",
-     + p0net(ivec,ifrag)
-        end if
+        write(44,'(a)') 'Cube generated by APOST-3D'
+        write(44,'(a,1x,a,a,i0,a,a,a,f8.4,a,f8.4)') trim(name),
+     +    trim(name2),' EFO ',ivec,' of ',trim(cwho),': gross occ.',
+     +    p0gro(ivec,ifrag),', net occ.',p0net(ivec,ifrag)
         write(44,42) nat,(pgrid(1,j),j=1,3)
         do i=1,3
           write(44,42) igrid(i),(xgrid(i,j),j=1,3)
@@ -1954,8 +1960,42 @@
         end do
         close(44)
       end do
-41    format(a,1x,a,a7,i3,a9,a2,a11,f8.4,a9,f8.4)
-44    format(a,1x,a,a7,i3,a9,i2,a11,f8.4,a9,f8.4)
+
+!! one table per call: occupation, norm captured by the box, file      !!
+      write(*,'(a)') ''
+      if(icase.eq.5) then
+        write(*,'(2x,a)') 'Cube files, '//trim(cwho)//
+     +    ' (negative paired EFOs)'
+      else
+        write(*,'(2x,a)') 'Cube files, '//trim(cwho)
+      end if
+      write(cval,'(i0,a,i0,a,i0)') igrid(1),' x ',igrid(2),' x ',
+     +  igrid(3)
+      call print_value('Grid points (x, y, z)',trim(cval))
+      write(*,'(a)') ''
+      lmax=4
+      do ivec=imaxeff,imineff
+        lmax=max(lmax,len_trim(cfile(ivec)))
+      end do
+      lrule=34+lmax
+      write(*,'(2x,a)') '  EFO   Net occ.   Norm in cube   File'
+      write(*,'(2x,a)') repeat('-',lrule)
+      nlow=0
+      do ivec=imaxeff,imineff
+        write(*,'(2x,i5,f11.4,f15.4,3x,a)') ivec,p0net(ivec,ifrag),
+     +    xnrm(ivec),trim(cfile(ivec))
+        if(xnrm(ivec).lt.0.9d0) nlow=nlow+1
+      end do
+      write(*,'(2x,a)') repeat('-',lrule)
+!! each EFO has norm 1 over all space, so the cube holds the share     !!
+!! given in the table                                                  !!
+      if(nlow.gt.0) then
+        write(*,'(2x,a,i0,a)') 'WARNING: ',nlow,' cube file(s) with a'//
+     +    ' norm below 0.9; in # CUBE, raise RADIUS_SCALE'
+        write(*,'(2x,a)') '(box too small) or lower SPACING (grid too'//
+     +    ' coarse)'
+      end if
+      deallocate(xnrm,cfile)
 42    format(i5,3f12.6)
 43    format(i5,4f12.6)
 40    format(6e13.5)
