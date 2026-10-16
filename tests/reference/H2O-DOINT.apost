@@ -115,9 +115,18 @@
   # METHOD
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
   Atomic overlaps (ESI-3D, FCALC)         : DOINT (one .int file per atom)
+  Cube files                              : CUBE (see # CUBE)
+  WARNING: no cube file is written: no analysis in # METHOD makes EFOs (EFFAO, UEFFAO,
+  EFFAO-U, EOS, GEOS)
+
+  # CUBE
+  Largest net occupation                  : 1.000 (MAX_OCC 1000)
+  Smallest net occupation                 : 0.000 (MIN_OCC 0)
+  Grid spacing (bohr)                     : 0.250
+  Radius scale                            : 2.000
 
   TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -150,7 +159,9 @@
   -----------------------------
 
   Atomic definition                       : TFVC (real space)
-  Atomic overlap matrices (DOINT) written: one .int file per atom, listed in H2O-DOINTfuz.files
+  Atomic overlap files (.int)             : 3 (one per atom)
+  List of the .int files                  : H2O-DOINTfuz.files
+  Sum of the overlaps, largest deviation  :       0.000103
 
   ------------------------
     ELECTRON POPULATIONS

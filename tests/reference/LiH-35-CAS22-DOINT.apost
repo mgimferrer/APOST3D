@@ -183,8 +183,10 @@
   -----------------------------
 
   Atomic definition                       : TFVC (real space)
-  Using 3 natural orbitals
-  Atomic overlap matrices (DOINT) written: one .int file per atom, listed in LiH-35-CAS22-DOINTfuz.files
+  Atomic overlap files (.int)             : 2 (one per atom)
+  List of the .int files                  : LiH-35-CAS22-DOINTfuz.files
+  Natural orbitals in the .int files      : 3
+  Sum of the overlaps, largest deviation  :       0.000021
 
   ------------------------
     ELECTRON POPULATIONS

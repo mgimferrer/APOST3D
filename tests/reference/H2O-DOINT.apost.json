@@ -16,7 +16,7 @@
     "energy_au": -7.6050588586699121E+001
   },
   "input": {
-    "text": "# METHOD\nTFVC\nDOINT\n#\n",
+    "text": "# METHOD\nTFVC\nDOINT\nCUBE\n#\n# CUBE\n#\n",
     "atomic_definition": {
       "keyword": "TFVC",
       "name": "Topological fuzzy Voronoi cells",
@@ -166,8 +166,8 @@
     "job_name": "H2O-DOINT",
     "input_file": "H2O-DOINT.inp",
     "wavefunction_file": "H2O-DOINT.fchk",
-    "date": "2026-10-16T18:04:52+02:00",
-    "id": "2026-10-16T18:04:52+02:00/a870",
+    "date": "2026-10-16T20:02:54+02:00",
+    "id": "2026-10-16T20:02:54+02:00/7728",
     "threads": 8,
     "status": "normal",
     "stop_message": null
