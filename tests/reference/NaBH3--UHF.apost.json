@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -336,7 +336,7 @@
       },
       "reliability_percent": 8.9767722520896953E+001,
       "orbital_file": "NaBH3--UHF-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T10:28:41+02:00/fbb0"
+      "orbital_file_id": "2026-10-16T17:11:36+02:00/1a40"
     }
   },
   "index": [
@@ -631,8 +631,8 @@
     "job_name": "NaBH3--UHF",
     "input_file": "NaBH3--UHF.inp",
     "wavefunction_file": "NaBH3--UHF.fchk",
-    "date": "2026-10-16T10:28:41+02:00",
-    "id": "2026-10-16T10:28:41+02:00/fbb0",
+    "date": "2026-10-16T17:11:36+02:00",
+    "id": "2026-10-16T17:11:36+02:00/1a40",
     "threads": 8,
     "status": "normal",
     "stop_message": null

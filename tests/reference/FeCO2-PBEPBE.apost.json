@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -330,7 +330,7 @@
       },
       "reliability_percent": 9.6597626845481372E+001,
       "orbital_file": "FeCO2-PBEPBE-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T10:28:28+02:00/4230"
+      "orbital_file_id": "2026-10-16T17:11:15+02:00/91d0"
     }
   },
   "index": [
@@ -618,8 +618,8 @@
     "job_name": "FeCO2-PBEPBE",
     "input_file": "FeCO2-PBEPBE.inp",
     "wavefunction_file": "FeCO2-PBEPBE.fchk",
-    "date": "2026-10-16T10:28:28+02:00",
-    "id": "2026-10-16T10:28:28+02:00/4230",
+    "date": "2026-10-16T17:11:15+02:00",
+    "id": "2026-10-16T17:11:15+02:00/91d0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

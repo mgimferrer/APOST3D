@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.11",
+  "schema_version": "0.12",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -165,6 +165,7 @@
       },
       "total_energy": -2.9723165249992070E+002,
       "reference_energy": -2.9723153165073740E+002,
+      "field_energy": null,
       "integration_error": -1.2084918330401706E-004,
       "integration_error_kcal": -7.5834022675430421E-002,
       "atomic_energies": {
@@ -460,8 +461,8 @@
     "job_name": "HI-ECP-G16",
     "input_file": "HI-ECP-G16.inp",
     "wavefunction_file": "HI-ECP-G16.fchk",
-    "date": "2026-10-16T10:29:02+02:00",
-    "id": "2026-10-16T10:29:02+02:00/6c38",
+    "date": "2026-10-16T17:12:10+02:00",
+    "id": "2026-10-16T17:12:10+02:00/9b50",
     "threads": 8,
     "status": "normal",
     "stop_message": null

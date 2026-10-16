@@ -852,6 +852,12 @@
         call json_index('total_energy','scalar','Total energy (IQA)',
      +    'au',ndec,' ',.true.,' ')
         call json_value('reference_energy',escf)
+!! a field run: integration_error = total + field_energy - reference !!
+        if(ifield.eq.1) then
+          call json_value('field_energy',edip)
+        else
+          call json_null('field_energy')
+        end if
         call json_value('integration_error',err)
         call json_index('integration_error','scalar','Integration '//
      +    'error of the total energy','au',ndec,' ',.true.,' ')
