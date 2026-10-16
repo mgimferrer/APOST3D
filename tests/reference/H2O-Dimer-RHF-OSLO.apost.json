@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.10",
+  "schema_version": "0.11",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -426,7 +426,7 @@
         "electrons": [1.0000000000000000E+001, 1.0000000000000000E+001]
       },
       "orbital_file": "H2O-Dimer-RHF-OSLO-OSLOs.fchk",
-      "orbital_file_id": "2026-10-15T16:38:07+02:00/c980"
+      "orbital_file_id": "2026-10-16T10:28:37+02:00/e690"
     }
   },
   "index": [
@@ -934,8 +934,8 @@
     "job_name": "H2O-Dimer-RHF-OSLO",
     "input_file": "H2O-Dimer-RHF-OSLO.inp",
     "wavefunction_file": "H2O-Dimer-RHF-OSLO.fchk",
-    "date": "2026-10-15T16:38:07+02:00",
-    "id": "2026-10-15T16:38:07+02:00/c980",
+    "date": "2026-10-16T10:28:37+02:00",
+    "id": "2026-10-16T10:28:37+02:00/e690",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.10",
+  "schema_version": "0.11",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -243,7 +243,7 @@
         "electrons": [2.0000000000000000E+001, 1.0000000000000000E+001, 1.0000000000000000E+001, 1.0000000000000000E+001, 1.0000000000000000E+001]
       },
       "orbital_file": "FeO4-2-OSLOs.fchk",
-      "orbital_file_id": "2026-10-15T16:37:54+02:00/81d0"
+      "orbital_file_id": "2026-10-16T10:28:28+02:00/1618"
     }
   },
   "index": [
@@ -476,8 +476,8 @@
     "job_name": "FeO4-2",
     "input_file": "FeO4-2.inp",
     "wavefunction_file": "FeO4-2.fchk",
-    "date": "2026-10-15T16:37:54+02:00",
-    "id": "2026-10-15T16:37:54+02:00/81d0",
+    "date": "2026-10-16T10:28:28+02:00",
+    "id": "2026-10-16T10:28:28+02:00/1618",
     "threads": 8,
     "status": "normal",
     "stop_message": null

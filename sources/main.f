@@ -929,24 +929,28 @@ c      iopt(200) =
         if(iverbose.eq.0) write(*,'(2x,a)')
      +    'VERBOSE 1 in # METHOD also prints the intermediate matrices.'
 
-!! results file: enpart block of HF and KS-DFT (closed after the     !!
-!! two-electron part); the external-field terms stay out of it       !!
-        if(iposthf.eq.0) then
-          call json_begin_object('enpart')
-          if(ihf.eq.1) then
-            call json_value('wavefunction','Hartree-Fock')
-          else
-            call json_value('wavefunction','KS-DFT')
-          end if
-          if(kop.eq.1) then
-            call json_value('formalism','unrestricted')
-          else
-            call json_value('formalism','restricted')
-          end if
+!! results file: the enpart block (closed after the two-electron    !!
+!! part); the external-field terms stay out of it                    !!
+        call json_begin_object('enpart')
+        if(icas.eq.1) then
+          call json_value('wavefunction','CASSCF')
+        else if(icisd.eq.1) then
+          call json_value('wavefunction','CISD')
+        else if(ihf.eq.1) then
+          call json_value('wavefunction','Hartree-Fock')
+        else
+          call json_value('wavefunction','KS-DFT')
+        end if
+        if(kop.eq.1) then
+          call json_value('formalism','unrestricted')
+        else
+          call json_value('formalism','restricted')
         end if
 
 !! One-electron part: CASSCF and CI WFs !!
         if(iposthf.eq.1) then
+          call json_null('functional')
+          call json_enpart_pairs()
           call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
           call cpu_time(time2)
           call get_wall_time(wtime2)
@@ -1099,6 +1103,8 @@ c      iopt(200) =
      +  wtime2-wtime)
           time=time2
           wtime=wtime2
+!! closes the enpart block of the results file !!
+          call json_end()
 
 !! DFT and HF WFs !!
         else
