@@ -461,13 +461,9 @@
   the whole A-B pair term off it; its total adds the diagonal and one
   triangle. Energies in au.
 
-  ------------------------------------- 
-   POST-HARTREE-FOCK ONE-ELECTRON PART  
-  ------------------------------------- 
-
-  ----------------------------- 
-   ELECTRON-NUCLEAR ATTRACTION  
-  ----------------------------- 
+  -------------------------------
+    ELECTRON-NUCLEAR ATTRACTION
+  -------------------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -476,13 +472,12 @@
     2  H    -6.996539   -0.940795   -0.395515
     3  H    -6.996539   -0.395515   -0.940795
   -------------------------------------------
-  Electron-nuclei energy:   -196.9033039
-  Integration error (kcal/mol):     0.00
+  Electron-nuclear attraction (au)        :    -196.9033039
+  Integration error (kcal/mol)            :           0.00
 
-
-  -------------------------------------------------
-    FRAGMENT ANALYSIS: Electron-nuclei attraction
-  -------------------------------------------------
+  ----------------------------------------
+    FRAGMENT ELECTRON-NUCLEAR ATTRACTION
+  ----------------------------------------
 
   ---------------------------------
                       1           2
@@ -491,35 +486,36 @@
     2        -13.993079   -2.277105
   ---------------------------------
   Total (diagonal and one triangle)       :    -196.903304
-  ---------------- 
-   KINETIC ENERGY  
-  ---------------- 
 
-  -------------------------------------------
-                 1  O        2  H        3  H
-  -------------------------------------------
-    1  O    73.654795    0.000000    0.000000
-    2  H     0.000000    0.491698    0.000000
-    3  H     0.000000    0.000000    0.491698
-  -------------------------------------------
-  Kinetic energy:     74.6381922
-  Integration error (kcal/mol):     0.00
+  ------------------
+    KINETIC ENERGY
+  ------------------
 
+  One-center terms only: the kinetic energy has no pair terms.
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Kinetic energy
-  -------------------------------------
+  Atom        Kinetic
+  -------------------
+    1  O    73.654795
+    2  H     0.491698
+    3  H     0.491698
+  -------------------
+  Kinetic energy (au)                     :      74.6381922
+  Integration error (kcal/mol)            :           0.00
 
-  ---------------------------------
-                      1           2
-  ---------------------------------
-    1         73.654795    0.000000
-    2          0.000000    0.983397
-  ---------------------------------
-  Total (diagonal and one triangle)       :      74.638192
-  --------------------------- 
-   NUCLEAR-NUCLEAR REPULSION  
-  --------------------------- 
+  ---------------------------
+    FRAGMENT KINETIC ENERGY
+  ---------------------------
+
+  Frag.         Kinetic
+  ---------------------
+    1         73.654795
+    2          0.983397
+  ---------------------
+  Total       74.638192
+
+  -----------------------------
+    NUCLEAR-NUCLEAR REPULSION
+  -----------------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -528,10 +524,22 @@
     2  H     4.420052    0.000000    0.349430
     3  H     4.420052    0.349430    0.000000
   -------------------------------------------
-  Nuclear repulsion energy:      9.1895338
+  Nuclear-nuclear repulsion (au)          :       9.1895338
 
-  TIMING CPU  :: ENPART one-electron terms                         0.07 s
-  TIMING WALL :: ENPART one-electron terms                         0.02 s
+  --------------------------------------
+    FRAGMENT NUCLEAR-NUCLEAR REPULSION
+  --------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          0.000000    8.840103
+    2          8.840103    0.349430
+  ---------------------------------
+  Total (diagonal and one triangle)       :       9.189534
+
+  TIMING CPU  :: ENPART one-electron terms                         0.08 s
+  TIMING WALL :: ENPART one-electron terms                         0.01 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -540,16 +548,38 @@
   Radial points                           : 40
   Angular points                          : 146
   Grid points                             : 17520
+  Pairs integrated (exchange-correlation) : 3
+  Pairs from the multipolar expansion     : 0
 
-  ------------------------------------- 
-   POST-HARTREE-FOCK TWO-ELECTRON PART  
-  ------------------------------------- 
+  TIMING CPU  :: ENPART Coulomb                                    0.24 s
+  TIMING WALL :: ENPART Coulomb                                    0.04 s
+  TIMING CPU  :: ENPART exchange-correlation                       5.75 s
+  TIMING WALL :: ENPART exchange-correlation                       0.76 s
+  TIMING CPU  :: ENPART exchange and correlation                   5.75 s
+  TIMING WALL :: ENPART exchange and correlation                   0.74 s
 
-  Rotating for angles:   0.000000   0.162000
+  ----------------------------------
+    TWO-ELECTRON INTEGRATION ERROR
+  ----------------------------------
 
-  --------------------------------------------
-    COULOMB (ELECTRON-ELECTRON) ENERGY TERMS
-  --------------------------------------------
+  Electron-electron energy (au)           :      38.0679218
+  Integration error (kcal/mol)            :           0.57
+  Tolerance (kcal/mol)                    :           0.25
+  Zero-error correction                   : applied to the one-center terms
+  Error on the rotated grid (kcal/mol)    :          -2.89
+  Damping parameter                       :       0.8344415
+  Corrected electron-electron energy (au) :      38.0670068
+  Corrected integration error (kcal/mol)  :           0.00
+
+  The one-center Coulomb and exchange-correlation terms of the matrices
+  below are the corrected ones; the pair terms do not change.
+
+  TIMING CPU  :: ENPART zero-error correction                      2.98 s
+  TIMING WALL :: ENPART zero-error correction                      0.40 s
+
+  ----------------------------------------------------
+    COULOMB ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  ----------------------------------------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -558,11 +588,11 @@
     2  H     2.471232    0.191156    0.113280
     3  H     2.471232    0.113280    0.191156
   -------------------------------------------
-  Coulomb energy:     47.2502565
+  Coulomb energy (au)                     :      47.2502565
 
-  -------------------------------------
-    FRAGMENT ANALYSIS: Coulomb energy
-  -------------------------------------
+  -------------------------------------------------------------
+    FRAGMENT COULOMB ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  -------------------------------------------------------------
 
   ---------------------------------
                       1           2
@@ -572,20 +602,11 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      47.250257
 
-  TIMING CPU  :: Coulomb energy                                    0.24 s
-  TIMING WALL :: Coulomb energy                                    0.04 s
+  -----------------------------------------------------------------
+    EXCHANGE-CORRELATION ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  -----------------------------------------------------------------
 
-  ------------------------------------------------------------------ 
-   EVALUATING POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION INTEGRALS  
-  ------------------------------------------------------------------ 
-
-  Two-el integrations for     28 MO pairs
-  Threshold for atom pair calculation:   0.000000
-  Skipping diatomic exchange integrals for            0
-
-  ---------------------------------------------------------- 
-   POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS  
-  ---------------------------------------------------------- 
+  From the cumulant of the 2-RDM.
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -594,22 +615,25 @@
     2  H    -0.234089   -0.117366   -0.007153
     3  H    -0.234089   -0.007153   -0.117366
   -------------------------------------------
-  Post-Hartree-Fock exchange-correlation energy:     -9.1823347
+  Exchange-correlation energy (au)        :      -9.1823347
 
-  TIMING CPU  :: PHF Exc energy                                    4.74 s
-  TIMING WALL :: PHF Exc energy                                    4.75 s
+  --------------------------------------------------------------------------
+    FRAGMENT EXCHANGE-CORRELATION ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  --------------------------------------------------------------------------
 
-  --------------------------------------------------------- 
-   EVALUATING POST-HARTREE-FOCK-TYPE CORRELATION INTEGRALS  
-  --------------------------------------------------------- 
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -8.472272   -0.468177
+    2         -0.468177   -0.241886
+  ---------------------------------
+  Total (diagonal and one triangle)       :      -9.182335
 
-  Two-el integrations for     28 MO pairs
-  Threshold for atom pair calculation:   0.000000
-  Skipping diatomic exchange integrals for            0
+  -----------------------------------------------------
+    EXCHANGE ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  -----------------------------------------------------
 
-  ---------------------------------------------- 
-   POST-HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  
-  ---------------------------------------------- 
+  The exchange part of the exchange-correlation.
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -618,11 +642,25 @@
     2  H    -0.255870   -0.091226   -0.002033
     3  H    -0.255870   -0.002033   -0.091226
   -------------------------------------------
-  Post-Hartree-Fock exchange energy:     -9.0707708
+  Exchange energy (au)                    :      -9.0707708
 
-  ------------------------------------------------- 
-   POST-HARTREE-FOCK-TYPE CORRELATION ENERGY TERMS  
-  ------------------------------------------------- 
+  --------------------------------------------------------------
+    FRAGMENT EXCHANGE ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  --------------------------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -8.374546   -0.511740
+    2         -0.511740   -0.184485
+  ---------------------------------
+  Total (diagonal and one triangle)       :      -9.070771
+
+  --------------------------------------------------------
+    CORRELATION ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  --------------------------------------------------------
+
+  Exchange-correlation minus exchange.
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -631,29 +669,23 @@
     2  H     0.021782   -0.026141   -0.005120
     3  H     0.021782   -0.005120   -0.026141
   -------------------------------------------
-  Post-Hartree-Fock correlation energy:     -0.1115639
+  Correlation energy (au)                 :      -0.1115639
 
-  TIMING CPU  :: PHF Ex & Ec energy                                4.73 s
-  TIMING WALL :: PHF Ex & Ec energy                                4.73 s
+  -----------------------------------------------------------------
+    FRAGMENT CORRELATION ENERGY, BEFORE THE ZERO-ERROR CORRECTION
+  -----------------------------------------------------------------
 
-  Total two-electron part (coul+exc):     38.0679218
-  Integration error (kcal/mol):     0.57
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1         -0.097726    0.043563
+    2          0.043563   -0.057401
+  ---------------------------------
+  Total (diagonal and one triangle)       :      -0.111564
 
-  Max error accepted on the two-electron part (kcal/mol):     0.25
-
-  Zero-error strategy applied: the INTERPOLATED tables below replace
-  the ones above (only their one-center terms change).
-  The separate exchange and correlation tables are not interpolated.
-  Rotating for angles:   0.000000   0.182000
-  Skipping diatomic exchange integrals for        17520
-
-  New error after rotation:    -2.89
-  Damping parameter:      0.8344415
-
-
-  ------------------------------------------------------- 
-   INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  
-  ------------------------------------------------------- 
+  ------------------
+    COULOMB ENERGY
+  ------------------
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -662,12 +694,11 @@
     2  H     2.471232    0.191144    0.113280
     3  H     2.471232    0.113280    0.191144
   -------------------------------------------
-  Coulomb energy:     47.2483739
+  Coulomb energy (au)                     :      47.2483739
 
-
-  -------------------------------------
-    FRAGMENT ANALYSIS: Coulomb energy
-  -------------------------------------
+  ---------------------------
+    FRAGMENT COULOMB ENERGY
+  ---------------------------
 
   ---------------------------------
                       1           2
@@ -676,9 +707,12 @@
     2          4.942465    0.495568
   ---------------------------------
   Total (diagonal and one triangle)       :      47.248374
-  ----------------------------------------------------------------------- 
-   INTERPOLATED POST-HARTREE-FOCK-TYPE EXCHANGE-CORRELATION ENERGY TERMS  
-  ----------------------------------------------------------------------- 
+
+  -------------------------------
+    EXCHANGE-CORRELATION ENERGY
+  -------------------------------
+
+  From the cumulant of the 2-RDM.
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -687,12 +721,11 @@
     2  H    -0.234089   -0.117359   -0.007153
     3  H    -0.234089   -0.007153   -0.117359
   -------------------------------------------
-  Post-Hartree-Fock exchange-correlation energy:     -9.1813671
+  Exchange-correlation energy (au)        :      -9.1813671
 
-
-  ---------------------------------------------------------------
-    FRAGMENT ANALYSIS: Final Exchange-Correlation Decomposition
-  ---------------------------------------------------------------
+  ----------------------------------------
+    FRAGMENT EXCHANGE-CORRELATION ENERGY
+  ----------------------------------------
 
   ---------------------------------
                       1           2
@@ -701,11 +734,16 @@
     2         -0.468177   -0.241871
   ---------------------------------
   Total (diagonal and one triangle)       :      -9.181367
-  Total two-electron part (coul+exc):     38.0670068
-  Integration error (kcal/mol):     0.00
-  ------------------------------------------------- 
-   FUZZY ATOMS Post-Hartree-Fock ENERGY COMPONENTS  
-  ------------------------------------------------- 
+
+  CORRELATION: the zero-error correction applies to the exchange-correlation
+  as a whole, so exchange and correlation are given separately only before
+  it (VERBOSE 1).
+
+  ---------------------------
+    IQA ENERGY TERMS (TFVC)
+  ---------------------------
+
+  Self-energies on the diagonal, interaction energies off it.
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -714,14 +752,14 @@
     2  H    -0.339344   -0.375311    0.060043
     3  H    -0.339344    0.060043   -0.375311
   -------------------------------------------
-  Total integrated energy  :    -75.0085711
-  Total energy in Fchk file:    -75.0085689
-  Integration error (au):     -0.0000023
-  Integration error (kcal/mol):     0.00
+  Total energy (au)                       :     -75.0085711
+  Energy in the .fchk file (au)           :     -75.0085689
+  Integration error (au)                  :      -0.0000023
+  Integration error (kcal/mol)            :           0.00
 
-  -------------------------------------------
-    FRAGMENT ANALYSIS: Energy Decomposition
-  -------------------------------------------
+  ------------------------------------
+    FRAGMENT IQA ENERGY TERMS (TFVC)
+  ------------------------------------
 
   ---------------------------------
                       1           2
@@ -730,7 +768,62 @@
     2         -0.678688   -0.690580
   ---------------------------------
   Total (diagonal and one triangle)       :     -75.008571
-  TIMING CPU  :: ENPART two-electron terms                        12.18 s
-  TIMING WALL :: ENPART two-electron terms                        11.97 s
+
+  -------------------
+    ATOMIC ENERGIES
+  -------------------
+
+  Additive energy = self-energy + half of each interaction energy of the atom;
+  the additive energies add up to the total energy.
+
+  Atom    Self-energy    Additive
+  -------------------------------
+    1  O   -73.639303  -73.978647
+    2  H    -0.375311   -0.514962
+    3  H    -0.375311   -0.514962
+  -------------------------------
+  Total    -74.389926  -75.008571
+
+  ----------------------------
+    FRAGMENT ATOMIC ENERGIES
+  ----------------------------
+
+  Frag.     Self-energy    Additive
+  ---------------------------------
+    1        -73.639303  -73.978647
+    2         -0.690580   -1.029924
+  ---------------------------------
+  Total      -74.329883  -75.008571
+
+  ----------------------------------
+    CLASSICAL INTERACTION ENERGIES
+  ----------------------------------
+
+  Electron-nuclear + nuclear-nuclear + Coulomb part of each interaction;
+  the rest of it is the exchange-correlation part. No self terms.
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     0.000000   -0.105255   -0.105255
+    2  H    -0.105255    0.000000    0.067196
+    3  H    -0.105255    0.067196    0.000000
+  -------------------------------------------
+  Classical interaction energy (au)       :      -0.1433151
+
+  -------------------------------------------
+    FRAGMENT CLASSICAL INTERACTION ENERGIES
+  -------------------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          0.000000   -0.210511
+    2         -0.210511    0.067196
+  ---------------------------------
+  Total (diagonal and one triangle)       :      -0.143315
+
+  TIMING CPU  :: ENPART two-electron terms                        14.74 s
+  TIMING WALL :: ENPART two-electron terms                         1.94 s
 
   ...Normal Termination of APOST-3D...
