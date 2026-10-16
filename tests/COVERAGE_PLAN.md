@@ -61,15 +61,15 @@ Don't write tests expecting these to work:
 | **Populations / bond orders** (always computed) | ✅ all TFVC tests | ① | ① (needs `densoutput`) | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` | ✅ `NaBH3--UHF-DAVIDSON` | ① | ② |
 | **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped) | ① | ① | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ✅ `NaBH3--UHF-DAVIDSON` | ① | stop |
 | **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI`, `CH3F-EFFAO-U` (EFFAO-U alone) | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
-| **CUBE** | ✅ `LiH-32-FCI` (`NEG_EFOS` only) | ② | ② | ② | ② | ≈dup | ② | ② |
+| **CUBE** | ✅ `CH3F-EOS-CUBE`, `LiH-32-FCI` (`NEG_EFOS`) | ② | ② | ② | ② | ≈dup | ② | ② |
 | **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2`, `CH3F-pySCF` (pySCF `.fchk`), `H2O-Dimer-RHF-OSLO` (after ENPART), `H2-T-OSLO` (no beta electrons) | ② | ② | ① (`# OSLO MULLIKEN`) | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ① (`# OSLO NAO-BASIS`) | not an OSLO option |
 | **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `HI-ECP-pySCF` (pseudopotential), `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22` | ② | ② | ② | ② | ≈dup | ② | ② |
 | **PCA** | ② | ② | ② | ✅ `NaBH3--UHF` | ② | ② | ② | ② |
 | **LOBA** (`loba.f`) | ① | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **EDAIQA** | ① (needs two extra `.fchk`) | ② | ② | ? | ? | ? | ? | ? |
-| **POLAR** | ① | ② | ② | ? | ? | ? | ? | ? |
-| **DOINT** | ① | ② | ② | ② | ② | ② | ② | ② |
+| **POLAR** | ✅ `H2O-RHF-FIELD`, `H2O-T-UB3LYP-FIELD` | ② | ② | ? | ? | ? | ? | ? |
+| **DOINT** | ✅ `H2O-DOINT` | ② | ② | ✅ `NaBH3--UHF-DOINT` | ② | ② | ② | ② |
 | **SCATT-FACT**, **TOPOLOGY** | ② | ② | ② | ? | ? | ? | ? | ? |
 
 Still untested regardless of scheme:
@@ -79,8 +79,7 @@ Still untested regardless of scheme:
   functional keywords other than `SVWN`/`BLYP`/`B3LYP` and `EXC_FUNCTIONAL`
   (all keywords were checked ad hoc against Gaussian 16 wavefunctions,
   2026-10-01; `LIBRARY` + `EX_/EC_FUNCTIONAL` covered by `H2O-T-BLYP`),
-  `CISD`,
-  `CORRELATION`, `ANALYTIC`.
+  `CISD` (pySCF CISD is read as `CASSCF`), `ANALYTIC`.
 
 ---
 
@@ -88,14 +87,13 @@ Still untested regardless of scheme:
 
 1. **`BECKE-RHO`**: a core real-space scheme with no test and no external
    files needed. EOS or populations on an existing `.fchk` is enough.
-2. **`LOBA`** (TFVC + `DOFRAGS`) and **`POLAR`**: each blocks its own
-   file's cleanup pass.
+2. **`LOBA`** (TFVC + `DOFRAGS`): it blocks its file's cleanup pass.
 3. **`# OSLO MULLIKEN` / `NAO-BASIS`**: one extra line in a copy of an
    existing OSLO input (`NAO-BASIS` also needs the `.nao` file).
 4. **Interfaces** (`ORCA`, `MOKIT`, `DM/ORCA`): need wavefunctions from
    those programs.
 5. **`HIRSH`/`HIRSH-IT`**: as soon as `densoutput` files are available.
-6. **`EDAIQA`**, **`DOINT`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
+6. **`EDAIQA`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
    urgency.
 
 Prefer reusing an `.fchk` already in `tests/inputs/` when the

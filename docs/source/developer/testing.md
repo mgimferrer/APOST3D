@@ -214,6 +214,18 @@ A manifest check looks like:
 `present` or `absent`; `section` restricts the search to the output after
 that marker; `match_index` (1-based) picks one of several matches.
 
+Two more types check the files a run writes, in place of the output:
+
+```json
+{"label": "One .int file per atom", "type": "files", "glob": "*.int", "count": 3}
+{"label": "Cube files", "type": "cube_files", "glob": "*.cube", "count": 15}
+```
+
+`files` passes when exactly `count` files match `glob`. `cube_files` also
+reads every matching file and checks the cube layout: the extra line of
+orbital indices only with a negative atom count, then exactly one value
+per grid point.
+
 A test must exit with code 0. A test of an expected stop declares the
 code of the stop in its entry, next to `timeout`: `"expected_rc": 1` (the
 code of every `STOP`).

@@ -3476,6 +3476,164 @@
           "tol_abs": 0.02
         }
       ]
+    },
+    {
+      "name": "H2O-DOINT",
+      "description": "Water, RKS (the H2O-SVWN wavefunction), TFVC: DOINT writes one .int file per atom (restricted, lower triangle) and the .files list; the sum of the atomic overlap matrices is the identity.",
+      "tags": [
+        "dft",
+        "rks",
+        "tfvc",
+        "doint"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "DOINT"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "O TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.175867,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "One .int file per atom",
+          "type": "files",
+          "glob": "*.int",
+          "count": 3
+        },
+        {
+          "label": "List of the .int files",
+          "type": "files",
+          "glob": "*.files",
+          "count": 1
+        },
+        {
+          "label": "Atomic overlaps add up to the identity",
+          "type": "absent",
+          "pattern": "Dev\\. from"
+        }
+      ]
+    },
+    {
+      "name": "NaBH3--UHF-DOINT",
+      "description": "NaBH3-, UHF, Mulliken atoms: DOINT for an unrestricted wavefunction (alpha and beta blocks, whole matrices for Mulliken).",
+      "tags": [
+        "hf",
+        "uhf",
+        "mulliken",
+        "doint"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "MULLI",
+        "DOINT"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Na Mulliken atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.344363,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "One .int file per atom",
+          "type": "files",
+          "glob": "*.int",
+          "count": 5
+        },
+        {
+          "label": "List of the .int files",
+          "type": "files",
+          "glob": "*.files",
+          "count": 1
+        },
+        {
+          "label": "Atomic overlaps add up to the identity",
+          "type": "absent",
+          "pattern": "Dev\\. from"
+        }
+      ]
+    },
+    {
+      "name": "CH3F-EOS-CUBE",
+      "description": "Fluoromethane, RKS, TFVC: EOS with fragments F | CH3 and a cube file for every EFO with net occupation below 1 (default box and spacing).",
+      "tags": [
+        "dft",
+        "rks",
+        "tfvc",
+        "eos",
+        "effao",
+        "fragments",
+        "cube"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS",
+        "CUBE",
+        "CUBE/MAX_OCC",
+        "CUBE/MIN_OCC"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Cube files written",
+          "type": "files",
+          "glob": "*.cube",
+          "count": 15
+        },
+        {
+          "label": "Fragment 1, EFO 2 cube normalization",
+          "pattern": "Normalization from cube:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 2,
+          "ref": 0.8977,
+          "tol_abs": 0.001
+        },
+        {
+          "label": "Fragment 2, EFO 1 cube normalization",
+          "pattern": "Normalization from cube:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 9,
+          "ref": 0.8984,
+          "tol_abs": 0.001
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        }
+      ]
     }
   ]
 }
