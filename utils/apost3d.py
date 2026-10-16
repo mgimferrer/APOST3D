@@ -13,9 +13,11 @@ write_fchk(mol, obj, name, overlap=None, myhf=None)
         wrappers included);
       - CASSCF/CASCI on RHF/ROHF orbitals;
       - FCI (pass the mean-field object it started from as myhf);
+      - RCISD, closed shells, no frozen orbitals (written like FCI, as a
+        CAS with every orbital active: use CASSCF in # ENPART);
       - RCCSD, closed shells (its unrelaxed 1-RDM).
     Correlated wavefunctions on UHF orbitals (UHF-based CASSCF or FCI,
-    UCCSD) are refused: APOST-3D takes the alpha and beta densities of a
+    UCISD, UCCSD) are refused: APOST-3D takes the alpha and beta densities of a
     correlated wavefunction from the RDMs in one set of orbitals.
     overlap (the AO overlap matrix) is optional; it is computed when not
     given. Pseudopotentials are supported. An empirical dispersion energy
@@ -24,15 +26,15 @@ write_fchk(mol, obj, name, overlap=None, myhf=None)
 
 write_dm12(mol, mycas, name)
     Writes the spin-resolved 1-RDM (name.dm1) and the spinless 2-RDM
-    (name.dm2) of a CASSCF/CASCI or FCI calculation on RHF orbitals, for
-    SPIN and ENPART (# DM block, pySCF). For RCCSD only name.dm1 is written.
+    (name.dm2) of a CASSCF/CASCI, FCI or RCISD calculation on RHF orbitals,
+    for SPIN and ENPART (# DM block, pySCF). For RCCSD only name.dm1 is written.
 
 Errors raise Apost3dError with the reason; no partial file is left behind.
 Tested with pySCF 2.7 and 2.14.
 """
 
 import numpy as np
-from pyscf import scf, dft, mcscf, fci, cc
+from pyscf import scf, dft, mcscf, fci, cc, ci
 
 
 class Apost3dError(Exception):
@@ -128,6 +130,19 @@ def _ss_scf(mf):
         return s * (s + 1)
 
 
+def _check_rcisd(obj):
+    """RCISD on a closed-shell RHF reference, all orbitals correlated."""
+    if isinstance(obj, ci.ucisd.UCISD):
+        raise Apost3dError('UCISD: ' + _UNRESTRICTED_CORRELATED)
+    if getattr(obj, 'ci', None) is None:
+        raise Apost3dError('run the CISD calculation first')
+    if obj.frozen:
+        raise Apost3dError('CISD with frozen orbitals: not available '
+                           '(APOST-3D needs the RDMs of every orbital)')
+    if obj.mol.spin != 0:
+        raise Apost3dError('CISD of an open shell: not available')
+
+
 def _wavefunction(mol, obj, myhf):
     """Kind, reference SCF, AO alpha/beta densities, orbitals, energies."""
     w = {'cas': None, 'rohf': 0}
@@ -170,6 +185,21 @@ def _wavefunction(mol, obj, myhf):
         w['cas'] = (int(sum(nelec)) if not np.isscalar(nelec)
                     else int(nelec), int(norb))
         w['ss'] = float(fci.spin_op.spin_square0(obj.ci, norb, nelec)[0])
+        w['e_tot'] = obj.e_tot
+
+    elif isinstance(obj, ci.cisd.CISD):
+        _check_rcisd(obj)
+        w['ref'] = obj._scf
+        rdm = obj.make_rdm1()
+        w['kind'] = 'cisd'
+        w['mo'] = [obj.mo_coeff]
+        da = db = 0.5 * _ao(obj.mo_coeff, rdm)
+        w['moe'] = None
+        # a CAS with every orbital active, as FCI: APOST-3D reads the
+        # full-space RDMs through its CASSCF route
+        w['header'] = 'CASSCF'
+        w['cas'] = (int(mol.nelectron), int(obj.nmo))
+        w['ss'] = 0.0
         w['e_tot'] = obj.e_tot
 
     elif isinstance(obj, cc.ccsd.CCSDBase):
@@ -432,6 +462,15 @@ def write_dm12(mol, mycas, name):
         dm2 = mycas.make_rdm2(mycas.ci, ncas, nelecas)
         head = 'fci spin resolved rdm1 for  %s electrons in %d orbitals' \
             % (_nel(nelecas), ncas)
+    elif isinstance(mycas, ci.cisd.CISD):
+        _check_rcisd(mycas)
+        ncas = int(mycas.nmo)
+        nelecas = mol.nelec
+        d = 0.5 * mycas.make_rdm1()
+        dm1s = (d, d)
+        dm2 = mycas.make_rdm2()
+        head = 'cisd spin resolved rdm1 for  %s electrons in %d orbitals' \
+            % (_nel(nelecas), ncas)
     elif isinstance(mycas, cc.ccsd.CCSDBase):
         if isinstance(mycas, cc.uccsd.UCCSD):
             raise Apost3dError('write_dm12: UCCSD has different alpha and '
@@ -441,8 +480,8 @@ def write_dm12(mol, mycas, name):
         dm1s, dm2, nelecas = (d, d), None, None
         head = 'ccsd spin resolved rdm1 for  %d orbitals' % ncas
     else:
-        raise Apost3dError('write_dm12: CASSCF/CASCI, FCI or CCSD objects '
-                           'only (not %s)' % type(mycas).__name__)
+        raise Apost3dError('write_dm12: CASSCF/CASCI, FCI, CISD or CCSD '
+                           'objects only (not %s)' % type(mycas).__name__)
 
     with open(name + '.dm1', 'w') as f:
         f.write(head + '\n')

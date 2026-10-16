@@ -326,7 +326,8 @@ program, not a full development history — see `git log` for that.
 - **`utils/apost3d.py` rewritten** — works with current pySCF (2.7 to 2.14
   checked; before, only up to 2.7) and writes basis sets with g functions,
   single atoms, linearly dependent bases, CASCI, the RDMs of FCI and
-  closed-shell CCSD. An empirical dispersion energy (D3/D4) is removed
+  closed-shell CCSD, and closed-shell CISD (with its RDMs, read as a CAS
+  with every orbital active). An empirical dispersion energy (D3/D4) is removed
   from the reference energies for ENPART. Correlated wavefunctions on UHF
   orbitals, which APOST-3D cannot analyse correctly, are refused with a
   message, as is any other unsupported case, without leaving a partial

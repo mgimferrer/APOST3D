@@ -12,8 +12,8 @@ Give exactly one of: `HF`, a predefined functional keyword, `LIBRARY`
 | Keyword | Description |
 | ------- | ----------- |
 | `HF` | Hartree-Fock energy |
-| `CASSCF` | CASSCF energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
-| `CISD` | CISD energy. Requires the `.dm1` and `.dm2` files in a `# DM` block |
+| `CASSCF` | CASSCF energy. Requires the `.dm1` and `.dm2` files in a `# DM` block. Also for FCI and CISD wavefunctions from pySCF, which `apost3d.py` writes as a CAS with every orbital active |
+| `CISD` | CISD energy, from RDM files of other programs (not checked in version 5; for pySCF use `CASSCF`). Requires the `.dm1` and `.dm2` files in a `# DM` block |
 | `LIBRARY` | Any supported functional, given by its [libxc](https://libxc.gitlab.io/functionals/) ids (see below) |
 
 ### Predefined functionals
