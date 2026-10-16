@@ -194,7 +194,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | Reliability index R(%) | `0.02` |
 | OSLO FOLI values | `2e-4` |
 | `Fit (%)`, `Recovered (%)` | `0.05` |
-| `Normalization from cube` | `1e-3` |
+| `Norm in cube` | `1e-3` |
 
 A manifest check looks like:
 

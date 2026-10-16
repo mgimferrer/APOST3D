@@ -122,4 +122,13 @@ orders between their atoms (see [Fragments](../guide/fragments.md)).
 $\mathbf S^A$ in the molecular-orbital basis, in the `.int` format of
 AIMPAC, so that other programs (e.g. ESI-3D, for aromaticity indices)
 can use the atoms of APOST-3D. See [Output files](../guide/output.md) for
-the file names.
+the file names. The basis is that of the occupied orbitals (alpha, then
+beta, for an unrestricted wavefunction) or, for a correlated
+wavefunction, of the natural orbitals.
+
+The output gives the number of files, the file that lists them, the
+number of natural orbitals (correlated wavefunctions) and, when every
+atom is included, the largest deviation of the summed matrices from the
+identity. They add up to the identity up to the integration error; a
+warning (above 0.01 on the diagonal, 0.001 off it) points to the
+integration grid.

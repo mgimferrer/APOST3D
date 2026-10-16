@@ -100,9 +100,20 @@ same isovalue can be used for both.
 
 **Box size.** The box encloses the fragment's atoms plus a margin
 (`RADIUS_SCALE` times the covalent radius of the outermost atom on each
-side). For each file the output prints `Normalization from cube`, which
-approaches 1 (real-space schemes) when the box holds the whole orbital.
-Small fragments, especially single H atoms, get small boxes that cut
-diffuse orbitals: for the H atom of stretched LiH, the normalization is
-0.29 with the default `RADIUS_SCALE 2` and 0.99 with `RADIUS_SCALE 12`.
-Larger boxes make larger files; a coarser `SPACING` compensates.
+side). For each fragment, the output lists the files written with each
+orbital's net occupation and its `Norm in cube`, the integral of the
+squared cube values. Each effective orbital has norm 1 over all space (in
+real space, the orbital times the fragment's weight), so `Norm in cube`
+is the share of the orbital inside the box. Below 0.9 the output warns,
+for one of two reasons:
+
+- the box cuts the orbital: raise `RADIUS_SCALE`. Small fragments,
+  especially single H atoms, get small boxes that cut diffuse orbitals:
+  for the H atom of stretched LiH, the norm is 0.30 with the default
+  `RADIUS_SCALE 2` and 0.99 with `RADIUS_SCALE 12`;
+- the grid is too coarse for a compact orbital, typically a core
+  orbital (0.72 for the C 1s of CH3F at the default spacing): lower
+  `SPACING`. A coarse grid can also give a norm slightly above 1.
+
+Larger boxes and finer grids make larger files. The files follow the
+standard cube layout (positive atom count, no orbital-index line).
