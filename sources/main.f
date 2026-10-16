@@ -691,7 +691,6 @@ c      iopt(200) =
 !! Population analysis !!
       call population_density(sat)
 
-!       write(*,*) 'idoint',idoint
       if(idoint.eq.1)  call print_int(ndim,nat,sat,namepat)
 
       call population_print_charges()
