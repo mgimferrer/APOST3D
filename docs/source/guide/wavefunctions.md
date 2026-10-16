@@ -128,6 +128,22 @@ apost.write_fchk(mol, cisolver, 'HF-FCI', mf.get_ovlp(), myhf=mf)
 apost.write_dm12(mol, cisolver, 'HF-FCI')               # HF-FCI.dm1, .dm2
 ```
 
+**CISD** (closed shells, no frozen orbitals): written like FCI, as a CAS
+with every orbital active, so APOST-3D reads it with `CASSCF` in
+`# ENPART` (the output also says CASSCF):
+
+```python
+from pyscf import ci
+
+myci = ci.CISD(mf)
+myci.kernel()
+apost.write_fchk(mol, myci, 'HF-CISD', mf.get_ovlp())
+apost.write_dm12(mol, myci, 'HF-CISD')                  # HF-CISD.dm1, .dm2
+```
+
+CISD is variational, so its RDMs give back its energy and ENPART's energy
+check applies, as for CASSCF and FCI.
+
 The last argument of `write_fchk`, the overlap matrix, can be left out.
 
 The `.fchk` file of a closed-shell CASSCF or FCI wavefunction is enough for
@@ -153,6 +169,8 @@ pySCF
 - **SCF**: RHF, UHF, ROHF, RKS, UKS and ROKS, also with density fitting.
 - **CASSCF/CASCI and FCI** on RHF or ROHF orbitals, with `write_dm12` for
   the RDMs.
+- **CISD** for closed shells (`ci.CISD` on RHF, no frozen orbitals), with
+  `write_dm12` for the RDMs; read with `CASSCF` in `# ENPART`.
 - **CCSD** for closed shells (`cc.CCSD` on RHF): its unrelaxed 1-RDM.
   `write_dm12` writes only the `.dm1` file: there is no CCSD 2-RDM, so no
   SPIN or ENPART.
@@ -163,7 +181,7 @@ pySCF
   energy only), with a note printed.
 
 Correlated wavefunctions built on UHF orbitals (UHF-based CASSCF or FCI,
-UCCSD) are refused with a message: APOST-3D takes the alpha and beta
+UCISD, UCCSD) are refused with a message: APOST-3D takes the alpha and beta
 densities of a correlated wavefunction from the RDMs, written in one set
 of orbitals, so their spin-resolved analyses would be wrong. Use an RHF-
 or ROHF-based CASSCF or FCI for open shells. Any other problem (an object

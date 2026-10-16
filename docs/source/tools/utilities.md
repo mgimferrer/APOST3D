@@ -101,11 +101,11 @@ wavefunctions it takes in
 [Preparing the wavefunction](../guide/wavefunctions.md#pyscf):
 
 - `write_fchk(mol, obj, name, overlap=None, myhf=None)` writes
-  `name.fchk` from a pySCF SCF, CASSCF/CASCI, FCI or CCSD object, with the
+  `name.fchk` from a pySCF SCF, CASSCF/CASCI, FCI, CISD or CCSD object, with the
   reference energies needed by ENPART; for FCI, pass the underlying
   mean-field object as `myhf`.
 - `write_dm12(mol, mycas, name)` writes the 1- and 2-RDMs of a
-  CASSCF/CASCI or FCI calculation to `name.dm1` and `name.dm2`.
+  CASSCF/CASCI, FCI or CISD calculation to `name.dm1` and `name.dm2`.
 
 ## Other programs
 
