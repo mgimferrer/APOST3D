@@ -9,7 +9,10 @@ grid.
 ## Fragment populations
 
 Scheme used for the fragment populations that enter the FOLI. Give at
-most one; without any, the real-space scheme of `# METHOD` is used.
+most one; without any, the real-space scheme of `# METHOD` is used. An
+orbital whose population on a fragment is 10⁻⁵ or less (Mulliken
+populations can be slightly negative) is not a candidate of that
+fragment.
 
 | Keyword | Scheme |
 | ------- | ------ |

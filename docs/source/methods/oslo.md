@@ -35,7 +35,9 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
 
    A FOLI of 1 means an orbital entirely on fragment F; 2 means an orbital
    shared equally between two fragments; larger values mean more
-   delocalization, or an orbital centered on F but mostly elsewhere.
+   delocalization, or an orbital centered on F but mostly elsewhere. An
+   orbital with a population on F of 10⁻⁵ or less is not a candidate of
+   F (Mulliken populations can even be slightly negative).
 3. **Iterative selection.** Among the candidates of all fragments, the one
    with the lowest FOLI is selected, together with every other candidate
    within the tolerance (0.001 by default) of it. The selected orbitals
