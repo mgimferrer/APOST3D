@@ -1,0 +1,415 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RBP86)
+  Number of atoms                         : 5
+  Number of basis functions               : 43
+  Primitive gaussians                     : 71
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 9
+  SCF energy (au)                         :    -139.6281885899
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : BECKE-RHO (radii from the density)
+  Overlap populations                     : OPOP
+  Oxidation states                        : EOS (effective oxidation states)
+  Fragments                               : 2 (see # FRAGMENTS)
+
+  # FRAGMENTS (2 fragments)
+  Fragment  1 :   2
+  Fragment  2 :   1   3   4   5
+
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 29200
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : subdivision 24, ratio  0.52207
+  Atom pair   1 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   3 : subdivision 19, ratio  1.76243
+  Atom pair   1 -   4 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   4 : subdivision 19, ratio  1.76243
+  Atom pair   1 -   5 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   5 : subdivision 19, ratio  1.76243
+  Atom pair   2 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   3 : subdivision 12, ratio  1.04499
+  Atom pair   2 -   4 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   4 : subdivision 12, ratio  1.04499
+  Atom pair   2 -   5 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   5 : subdivision 12, ratio  1.04499
+
+  Sum of atomic overlaps, largest error   : 1.36E-03 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 0.07 s
+  TIMING WALL :: Atomic definition                                 0.01 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : BECKE-RHO (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom      Becke-rho    Mulliken
+  -------------------------------
+    1  C     5.108484    5.845837
+    2  F     9.758062    9.259127
+    3  H     1.044749    0.965021
+    4  H     1.044820    0.965037
+    5  H     1.044870    0.964978
+  -------------------------------
+  Total     18.000984   18.000000
+
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
+
+  Frag.       Becke-rho    Mulliken
+  ---------------------------------
+    1          9.758062    9.259127
+    2          8.242923    8.740873
+  ---------------------------------
+  Total       18.000984   18.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom      Becke-rho    Mulliken
+  -------------------------------
+    1  C     0.891516    0.154163
+    2  F    -0.758062   -0.259127
+    3  H    -0.044749    0.034979
+    4  H    -0.044820    0.034963
+    5  H    -0.044870    0.035022
+  -------------------------------
+  Total     -0.000984    0.000000
+
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
+
+  Frag.       Becke-rho    Mulliken
+  ---------------------------------
+    1         -0.758062   -0.259127
+    2          0.757077    0.259127
+  ---------------------------------
+  Total       -0.000984    0.000000
+
+  -----------------------------
+    OVERLAP POPULATION MATRIX
+  -----------------------------
+
+  -------------------------------------------------------------------
+                 1  C        2  F        3  H        4  H        5  H
+  -------------------------------------------------------------------
+    1  C     4.700233    0.102314    0.101549    0.102183    0.102204
+    2  F     0.102314    9.630119    0.008174    0.008173    0.008420
+    3  H     0.101549    0.008174    0.932917    0.001004    0.001005
+    4  H     0.102183    0.008173    0.001004    0.933055    0.001021
+    5  H     0.102204    0.008420    0.001005    0.001021    0.932965
+  -------------------------------------------------------------------
+
+  --------------------------------
+    FRAGMENT OVERLAP POPULATIONS
+  --------------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          9.630119    0.127081
+    2          0.127081    8.117102
+  ---------------------------------
+  Total (all elements)                    :      18.001383
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------------------------------
+                 1  C        2  F        3  H        4  H        5  H
+  -------------------------------------------------------------------
+    1  C     3.339538    0.808272    0.909764    0.909952    0.910726
+    2  F     0.808272    9.177594    0.117714    0.117647    0.117553
+    3  H     0.909764    0.117714    0.483194    0.047857    0.047829
+    4  H     0.909952    0.117647    0.047857    0.483232    0.047831
+    5  H     0.910726    0.117553    0.047829    0.047831    0.483266
+  -------------------------------------------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom      Becke-rho
+  -------------------
+    1  C     3.537891
+    2  F     1.160935
+    3  H     1.123109
+    4  H     1.123176
+    5  H     1.123209
+  -------------------
+
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
+
+  Frag.       Becke-rho
+  ---------------------
+    1          1.160935
+    2          6.907385
+  ---------------------
+  Total        8.068320
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom      Becke-rho
+  -------------------
+    1  C     3.538714
+    2  F     1.161185
+    3  H     1.123164
+    4  H     1.123288
+    5  H     1.123939
+  -------------------
+
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
+
+  Frag.       Becke-rho
+  ---------------------
+    1          1.161185
+    2          6.909105
+  ---------------------
+  Total        8.070290
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom      Becke-rho
+  -------------------
+    1  C    -0.000822
+    2  F    -0.000251
+    3  H    -0.000055
+    4  H    -0.000112
+    5  H    -0.000730
+  -------------------
+
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
+
+  Frag.       Becke-rho
+  ---------------------
+    1         -0.000251
+    2         -0.001720
+  ---------------------
+  Total       -0.001970
+
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          9.177594    1.161185
+    2          1.161185    7.663190
+  ---------------------------------
+  Total (diagonal and one triangle)       :      18.001969
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
+
+  Atomic definition                       : BECKE-RHO (real space)
+  Densities                               : alpha (beta equal to alpha)
+  EFO occupation cutoff                   :        0.00100
+
+  -----------------
+    ALPHA DENSITY
+  -----------------
+
+  Fragment 1
+  Net occupation                          :        4.81467
+  Net       1.0000   0.9983   0.9755   0.9754   0.7912   0.0299   0.0297   0.0147
+  Gross occupation                        :        4.87864
+  Gross     1.0000   0.9987   0.9792   0.9793   0.8181   0.0414   0.0414   0.0205
+  Fit (%)    99.86    98.46    94.82    94.79    86.13    33.91    34.03    48.28
+  Left out by the cutoff (net)            :        0.00013
+  Left out by the cutoff (gross)          :        0.00039
+
+  Fragment 2
+  Net occupation                          :        4.05838
+  Net       0.9993   0.9744   0.9480   0.9475   0.1553   0.0169   0.0169
+  Gross occupation                        :        4.12017
+  Gross     0.9996   0.9796   0.9590   0.9586   0.1819   0.0207   0.0207
+  Fit (%)    99.23    93.83    88.31    88.33    68.49    60.05    60.16
+  Left out by the cutoff (net)            :        0.00075
+  Left out by the cutoff (gross)          :        0.00129
+
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
+
+  EFOs in the assignment                  : 15
+  Electron assignment                     : integer
+
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       5.00      0.818         0.041
+      2       4.00      0.959         0.182
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
+
+  ----------------
+    BETA DENSITY
+  ----------------
+
+  The beta density equals the alpha one: the beta electrons are assigned as the alpha ones
+
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
+  Frag.  Oxidation state
+  ----------------------
+      1            -1.00
+      2             1.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :        100.000
+
+  TIMING CPU  :: EFFAO computation                                 0.06 s
+  TIMING WALL :: EFFAO computation                                 0.01 s
+  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.00 s
+
+  ...Normal Termination of APOST-3D...

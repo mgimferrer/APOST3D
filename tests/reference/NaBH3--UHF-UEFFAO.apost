@@ -1,0 +1,383 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Unrestricted
+  Calculation type                        : Hartree-Fock
+  Number of atoms                         : 5
+  Number of basis functions               : 47
+  Primitive gaussians                     : 125
+  Spin density                            : read from the .fchk
+  Alpha / beta electrons                  : 10 / 10
+  SCF energy (au)                         :    -188.2484755980
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Effective atomic orbitals               : UEFFAO
+
+  --------------------
+    NATURAL ORBITALS
+  --------------------
+
+  Occupation numbers (>1.0e-6):
+     2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   1.99960   1.99960
+     1.99722   1.36193   0.63807   0.00278   0.00040   0.00040   0.00000   0.00000
+     0.00000
+
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 29200
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : subdivision 25, ratio  0.73611
+  Atom pair   2 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   3 : subdivision 14, ratio  0.70358
+  Atom pair   2 -   4 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   4 : subdivision 14, ratio  0.70358
+  Atom pair   2 -   5 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   5 : subdivision 14, ratio  0.70358
+
+  Sum of atomic overlaps, largest error   : 1.59E-03 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 0.09 s
+  TIMING WALL :: Atomic definition                                 0.01 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Na    11.144482   11.344363
+    2  B     3.104877    5.266761
+    3  H     1.917051    1.129626
+    4  H     1.916784    1.129626
+    5  H     1.916784    1.129626
+  -------------------------------
+  Total     19.999978   20.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Na    -0.144482   -0.344363
+    2  B     1.895123   -0.266761
+    3  H    -0.917051   -0.129626
+    4  H    -0.916784   -0.129626
+    5  H    -0.916784   -0.129626
+  -------------------------------
+  Total     -0.999978   -1.000000
+
+  --------------------
+    SPIN POPULATIONS
+  --------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Na    -0.736960   -0.719596
+    2  B     0.318231    0.941932
+    3  H     0.139593   -0.074112
+    4  H     0.139463   -0.074112
+    5  H     0.139463   -0.074112
+  -------------------------------
+  Total     -0.000209    0.000000
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------------------------------
+                 1 Na        2  B        3  H        4  H        5  H
+  -------------------------------------------------------------------
+    1 Na    10.897522    0.133521    0.120062    0.120132    0.120132
+    2  B     0.133521    2.187685    0.566819    0.567027    0.567027
+    3  H     0.120062    0.566819    1.328483    0.245005    0.245005
+    4  H     0.120132    0.567027    0.245005    1.328310    0.244913
+    5  H     0.120132    0.567027    0.245005    0.244913    1.328310
+  -------------------------------------------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1 Na     1.284702
+    2  B     1.913281
+    3  H     1.208136
+    4  H     1.207916
+    5  H     1.207916
+  -------------------
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1 Na     0.493848
+    2  B     1.834395
+    3  H     1.176892
+    4  H     1.177078
+    5  H     1.177078
+  -------------------
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1 Na     0.790854
+    2  B     0.078887
+    3  H     0.031244
+    4  H     0.030838
+    5  H     0.030838
+  -------------------
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
+
+  Atomic definition                       : TFVC (real space)
+  Densities                               : alpha and beta separately
+  EFO occupation cutoff                   :        0.00100
+
+  -----------------
+    ALPHA DENSITY
+  -----------------
+
+  Fragment 1
+  Net occupation                          :        5.16575
+  Net       1.0000   1.0000   0.9993   0.9993   0.9957   0.1653   0.0025   0.0025
+            0.0012
+  Gross occupation                        :        5.20376
+  Gross     1.0000   1.0000   0.9996   0.9996   0.9974   0.1979   0.0038   0.0038
+            0.0017
+  Fit (%)    99.99    99.65    99.07    99.07    97.64    54.94    41.40    40.99
+             52.66
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
+
+  Fragment 2
+  Net occupation                          :        1.52092
+  Net       0.9931   0.2249   0.1412   0.0811   0.0807
+  Gross occupation                        :        1.70923
+  Gross     0.9958   0.2927   0.1948   0.1131   0.1129
+  Fit (%)    97.27    60.04    55.92    55.79    55.93
+  Left out by the cutoff (net)            :        0.00059
+  Left out by the cutoff (gross)          :        0.00232
+
+  Fragment 3
+  Net occupation                          :        0.93061
+  Net       0.7528   0.1377   0.0309   0.0093
+  Gross occupation                        :        1.02662
+  Gross     0.7936   0.1744   0.0441   0.0145
+  Fit (%)    84.04    45.80    54.23    40.39
+  Left out by the cutoff (net)            :        0.00055
+  Left out by the cutoff (gross)          :        0.00170
+
+  Fragment 4
+  Net occupation                          :        0.93002
+  Net       0.7527   0.1370   0.0311   0.0093
+  Gross occupation                        :        1.02642
+  Gross     0.7936   0.1743   0.0440   0.0145
+  Fit (%)    84.08    45.92    54.30    40.31
+  Left out by the cutoff (net)            :        0.00055
+  Left out by the cutoff (gross)          :        0.00170
+
+  Fragment 5
+  Net occupation                          :        0.93002
+  Net       0.7527   0.1370   0.0311   0.0093
+  Gross occupation                        :        1.02642
+  Gross     0.7936   0.1743   0.0440   0.0145
+  Fit (%)    84.08    45.92    54.30    40.31
+  Left out by the cutoff (net)            :        0.00055
+  Left out by the cutoff (gross)          :        0.00170
+
+  ----------------
+    BETA DENSITY
+  ----------------
+
+  Fragment 1
+  Net occupation                          :        5.91534
+  Net       1.0000   1.0000   0.9993   0.9993   0.9954   0.9147   0.0027   0.0020
+            0.0020
+  Gross occupation                        :        5.94072
+  Gross     1.0000   1.0000   0.9996   0.9996   0.9973   0.9340   0.0042   0.0031
+            0.0031
+  Fit (%)    99.99    99.67    99.08    99.08    97.62    86.39    42.51    40.45
+             40.09
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
+
+  Fragment 2
+  Net occupation                          :        1.27759
+  Net       0.9931   0.1324   0.0754   0.0750   0.0017
+  Gross occupation                        :        1.39193
+  Gross     0.9958   0.1816   0.1057   0.1055   0.0034
+  Fit (%)    97.27    58.25    55.88    56.02    37.69
+  Left out by the cutoff (net)            :        0.00034
+  Left out by the cutoff (gross)          :        0.00139
+
+  Fragment 3
+  Net occupation                          :        0.82470
+  Net       0.7760   0.0275   0.0141   0.0071
+  Gross occupation                        :        0.88702
+  Gross     0.8145   0.0396   0.0214   0.0115
+  Fit (%)    85.00    54.36    33.33    39.50
+  Left out by the cutoff (net)            :        0.00055
+  Left out by the cutoff (gross)          :        0.00171
+
+  Fragment 4
+  Net occupation                          :        0.82484
+  Net       0.7759   0.0277   0.0142   0.0071
+  Gross occupation                        :        0.88695
+  Gross     0.8145   0.0395   0.0215   0.0115
+  Fit (%)    85.03    54.41    33.28    39.34
+  Left out by the cutoff (net)            :        0.00056
+  Left out by the cutoff (gross)          :        0.00171
+
+  Fragment 5
+  Net occupation                          :        0.82484
+  Net       0.7759   0.0277   0.0142   0.0071
+  Gross occupation                        :        0.88695
+  Gross     0.8145   0.0395   0.0215   0.0115
+  Fit (%)    85.03    54.41    33.28    39.34
+  Left out by the cutoff (net)            :        0.00056
+  Left out by the cutoff (gross)          :        0.00171
+
+  TIMING CPU  :: EFFAO computation                                 0.29 s
+  TIMING WALL :: EFFAO computation                                 0.06 s
+  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.00 s
+
+  ...Normal Termination of APOST-3D...
