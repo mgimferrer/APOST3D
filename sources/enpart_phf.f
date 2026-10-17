@@ -839,7 +839,7 @@
           dy0=pcoord(ifut,2)
           dz0=pcoord(ifut,3)
 
-!! SAME CENTER !!
+!! same centre !!
 
           f3=ZERO
           do jfut=iatps*(icenter-1)+1,iatps*icenter
@@ -857,7 +857,7 @@
           end do
           efrow(icenter)=efrow(icenter)+f3
 
-!! PAIRS OF CENTERS !!
+!! pairs of centres !!
 
           do jcenter=icenter+1,nat
             bx0=bo(icenter,jcenter)

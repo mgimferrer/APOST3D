@@ -1,108 +1,26 @@
-c-----------------------------------------------------------------------------
-c                                                                                  
-c                        Program APOST-3D, Version 5
-c                                 22-09-2026
-c                       --------------------------------                           
-c                                                                                  
-c        Real-space and Hilbert-space tools for wave function analysis             
-c                                                                                  
-c        Available atomic definitions:                                             
-c        ----------------------------                                              
-c                                                                                  
-c        Real space:                                                               
-c          Becke, J. Chem. Phys. 88 2547 1988                                      
-c          Hirshfeld, Theor. Chim. Acta 44  129 1977                               
-c          Hirshfeld-Iterative, J Chem Phys 126 144111 2007                        
-c          Topological fuzzy Voronoi cells (TFVC), J Chem Phys 139 071103 2013    
-c          QTAIM, J. Comput. Chem 30 1082 2009                                     
-c                                                                                  
-c        Hilbert-space : Mulliken, Lowdin, Davidson-Lowdin                         
-c                                                                                  
-c                                                                                  
-c        Calculating:                                                              
-c        ------------                                                              
-c                                                                                  
-c          A) Atomic and overlap populations, bond orders and valences            
-c             I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004	      
-c                                                                                  
-c          B) Hartree-Fock molecular energy decomposition                          
-c             P. Salvador, M. Duran, I.Mayer, J. Chem. Phys. 115 1153-1157 2001    
-c             P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004          
-c                                                                                  
-c          C) KS-DFT molecular energy decomposition                                
-c             P. Salvador, I. Mayer, J. Chem. Phys. 126 234113 2007	              
-c             M. Gimferrer, P. Salvador, J. Chem. Phys. 158 234105 2023
-c                                                                                  
-c          D) Molecular energy decomposition for CAS/DMRG wavefunctions            
-c                                                                                  
-c          E) Effective atomic orbitals:                                           
-c             I. Mayer, J. Phys. Chem. 100 6249 1996                               
-c             I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009             
-c             E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013              
-c                                                                                  
-c          F) Local spin analysis                                                  
-c             E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012   
-c             E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012 
-c                                                                                  
-c          G) Effective Oxidation states analysis                                  
-c             E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015   
-c
-c          H) Oxidation states from localized orbitals
-c             M. Gimferrer, G. Comas-Vila, P. Salvador, Molecules 25 234 2020
-c             M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
-c             M. Gimferrer et al., J. Chem. Theor. Comput. 18 309-322 2022
-c
-c          I) Decomposition of EDA quantities into one- and two-center IQA terms
-c             M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
-c
-c          J) Origin-independent decomposition of static polarizabilities
-c             M. Montilla, et al., J. Chem. Theory Comput. 17, 1098-1105 2021
-c                                                                                  
-c                                                                                  
-c        Cite this program as:                                                     
-C        ---------------------                                                     
-c          P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer 
-c          J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187                     
-c                                                                                  
-c      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
-c                                                                                  
-c----------------------------------------------------------------------------------
-c      The program has been written by using parts of the program APOST by         
-c      I. Mayer and A. Hamza, Budapest, 2000-2003.                                 
-C                                                                                  
-c      The numerical integration utilizes the subroutines for Lebedev              
-c      quadrature downloaded from CCL. The appropriate reference is:               
-c      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of the   
-c      131st algebraic order of accuracy" Doklady Mathematics, 59 477-481 1999.    
-c                                                                                  
-C      The program makes use of libxc library when necessary, using the F90        
-c      interfaces provided by the authors.                                         
-c                     (see http://www.tddft.org/programs/libxc)                     
-c                                                                                  
-c      We are extremely grateful for the possibility of using these routines!      
-c
-c      -----------------------------------------------------------------------------c
-
-!! **************************************************************** !!
-!! PROGRAM APOST-3D -- MAIN ENTRY POINT / DRIVER                    !!
-!! single unnamed main program, no PROGRAM statement, no internal   !!
-!! subroutines -- this file is the program itself. Runs             !!
-!! sequentially in five phases:                                     !!
-!!   1) argument/file processing -- opens .fchk/.inp                !!
-!!   2) .inp keyword parsing -- delegated to read_input() (see that !!
-!!      file), filling input_options_mod's ~70 flags                !!
-!!   3) cross-keyword validation                                    !!
-!!   4) iopt(200) -- each local flag copied into its own hardcoded  !!
-!!      iopt(N) slot, read back by every analysis routine           !!
-!!   5) setup (Hilbert-space sat matrix or real-space integration   !!
-!!      grid) then sequential dispatch per requested analysis:      !!
-!!      population/local spin/POLAR/PCA/EFFAO-EOS/LOBA/ENPART       !!
-!!      (one- then two-electron)/OSLO/X-ray scattering              !!
-!! population/bond-order/PCA analysis are delegated to pop.f        !!
-!! (population_density/population_print_charges/                    !!
-!! population_print_overlap/bond_order_analysis/pca_analysis) --    !!
-!! this is the final shape of the main.f/pop.f/read_input.f split.  !!
-!! **************************************************************** !!
+!! ----------------------------------------------------------------------
+!! APOST-3D, version 5: real-space and Hilbert-space tools for wave
+!! function analysis. P. Salvador, E. Ramos-Cordoba, M. Montilla,
+!! L. Pujal and M. Gimferrer, J. Chem. Phys. 2024, 160, 172502.
+!! The analyses and their papers are listed in the banner (kiir,
+!! print.f) and on the citations page of the documentation.
+!! Contact: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+!!
+!! Written using parts of the program APOST by I. Mayer and A. Hamza
+!! (Budapest, 2000-2003). The angular quadrature is the Lebedev-Laikov
+!! code from CCL (V. I. Lebedev and D. N. Laikov, Doklady Mathematics
+!! 59, 477, 1999); the exchange-correlation functionals come from libxc
+!! (https://libxc.gitlab.io). We are grateful for these routines.
+!!
+!! The main program, in five steps:
+!!   1) the job name, the .inp and .fchk files and the results file
+!!   2) the keywords of the .inp (read_input, read_input.f)
+!!   3) checks of keyword combinations
+!!   4) iopt(200): the flags read by the analysis routines
+!!   5) the atomic definition (Hilbert-space matrices or the real-space
+!!      grid), then each requested analysis in turn: populations, local
+!!      spin, PCA, EFOs/EOS/GEOS, LOBA, ENPART, OSLO, X-ray scattering
+!! ----------------------------------------------------------------------
 
       use basis_set
       use ao_matrices
@@ -180,7 +98,7 @@ c      -------------------------------------------------------------------------
       write(*,'(a)') ''
       call print_value('OpenMP threads',omp_get_max_threads())
 
-!! the grid is set in # GRID, no longer on the command line !!
+!! the grid is set in # GRID; a second argument stops with a message !!
       CALL GETARG(2,cgridarg)
       if(cgridarg.ne."") then
         write(*,'(2x,a)') 'The integration grid is no longer given on '//
@@ -278,14 +196,13 @@ c      -------------------------------------------------------------------------
      +    'determinant has no local spins'
         ispin=0
       end if
-!! ENPART is real-space only: these used to skip it silently and carry on !!
+!! ENPART needs a real-space atomic definition !!
       if(imulli.ne.0.and.ienpart.ne.0)
      +  call apost_stop('ENPART needs a real-space AIM (e.g. TFVC)')
       if(iqtaim.ne.0.and.ienpart.ne.0) call apost_stop('Cant do ENPART with QTAIM')
       if(ieos.eq.1.and.idoat.eq.1) call apost_stop('Cant do EOS with DOATOMS')
-!! GEOS/EFFAO-U (ieffao=3) only exist on the real-space fragment path    !!
-!! (effao3d_u): Hilbert-space runs used to skip them silently, and       !!
-!! DOATOMS ran the alpha/beta UEFFAO analysis in their place             !!
+!! GEOS/EFFAO-U (ieffao=3) exist only on the real-space fragment path   !!
+!! (effao3d_u), not with Hilbert-space atoms or DOATOMS                  !!
       if(ieffao.eq.3.and.imulli.ne.0)
      +  call apost_stop('GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)')
       if(ieffao.eq.3.and.idoat.eq.1) call apost_stop('Cant do GEOS/EFFAO-U with DOATOMS')
@@ -318,21 +235,20 @@ c      -------------------------------------------------------------------------
      +    'its local spins come from electron correlation'
       end if
 
-!! Start of iopt listing. Full 1-200 listing so unused slots are   !!
-!! visible at a glance -- iopt(200). Commented lines are genuinely !!
-!!unused slots.                                                    !!
+!! iopt(1..200), every slot listed: a commented line is a free slot,  !!
+!! ready for a new option                                             !!
       iopt(1) = idoint
-c      iopt(2) =
-c      iopt(3) =
+!      iopt(2) =
+!      iopt(3) =
       iopt(4) = idono
       iopt(5) = imulli
       iopt(6) = ihirsh
       iopt(7) = iallpo
       iopt(8) = iopop
-c      iopt(9) =   !! ndens0, set above in read_input() !!
-c      iopt(10) =
+!      iopt(9) =   !! ndens0, set in read_input() !!
+!      iopt(10) =
 
-c      iopt(11) =
+!      iopt(11) =
       iopt(12) = ieffao
       iopt(13) = icube
       iopt(14) = ibcp
@@ -340,7 +256,7 @@ c      iopt(11) =
       iopt(16) = iqtaim
       iopt(17) = ienpart
       iopt(18) = ihf
-c      iopt(19) =
+!      iopt(19) =
       iopt(20) = iexact
 
       iopt(21) = ihomo
@@ -349,14 +265,14 @@ c      iopt(19) =
       iopt(24) = ieffthr
       iopt(25) = istiff
       iopt(26) = icorr
-c      iopt(27) =
+!      iopt(27) =
       iopt(28) = ipca
-c      iopt(29) =
-c      iopt(30) =
+!      iopt(29) =
+!      iopt(30) =
 
       iopt(31) = inewbec
-c      iopt(32) =
-c      iopt(33) =
+!      iopt(32) =
+!      iopt(33) =
       iopt(34) = ilaplacian
       iopt(35) = istep
       iopt(36) = inna
@@ -369,180 +285,180 @@ c      iopt(33) =
       iopt(42) = kcubthr
       iopt(43) = iorca
       iopt(44) = ithrebod
-!      iopt(45) = ifinegrid
+!      iopt(45) =
       iopt(46) = ipolar
       iopt(47) = ifield
       iopt(48) = iradmat
-      iopt(49) = ielcount !MMO- NCTAIM
-c      iopt(50) =
+      iopt(49) = ielcount
+!      iopt(50) =
 
-c      iopt(51) =
-c      iopt(52) =
-c      iopt(53) =
-c      iopt(54) =
-c      iopt(55) =   !! itype/jtype, set below in ENPART dispatch (dynamic) !!
+!      iopt(51) =
+!      iopt(52) =
+!      iopt(53) =
+!      iopt(54) =
+!      iopt(55) =   !! functional family, set in the ENPART dispatch !!
       iopt(56) = idftdm1
       iopt(57) = id_func_dm1 !! dft_dm1.f's own functional-ID read (ifunc=Iopt(57)) !!
-c      iopt(58) =
+!      iopt(58) =
       iopt(59) = iecorr
       iopt(60) = id_xcfunc
 
       iopt(61) = id_xfunc
       iopt(62) = id_cfunc
       iopt(63) = inatorb_dm1 !! dft_dm1.f's own NATORB read !!
-c      iopt(64) =
-c      iopt(65) =   !! iposthf, set above in DEPENDENCIES & TO DO !!
-c      iopt(66) =
-c      iopt(67) =
-c      iopt(68) =
-c      iopt(69) =
-c      iopt(70) =
+!      iopt(64) =
+!      iopt(65) =   !! iposthf, set above with the keyword checks !!
+!      iopt(66) =
+!      iopt(67) =
+!      iopt(68) =
+!      iopt(69) =
+!      iopt(70) =
 
-c      iopt(71) =
-c      iopt(72) =
-c      iopt(73) =
-c      iopt(74) =
-c      iopt(75) =
-c      iopt(76) =
-c      iopt(77) =
-c      iopt(78) =
+!      iopt(71) =
+!      iopt(72) =
+!      iopt(73) =
+!      iopt(74) =
+!      iopt(75) =
+!      iopt(76) =
+!      iopt(77) =
+!      iopt(78) =
       iopt(79) = imokit !! MG: Temporarily !!
-c      iopt(80) =
+!      iopt(80) =
 
-c      iopt(81) =
-c      iopt(82) =
-c      iopt(83) =
-c      iopt(84) =
-c      iopt(85) =
-c      iopt(86) =
+!      iopt(81) =
+!      iopt(82) =
+!      iopt(83) =
+!      iopt(84) =
+!      iopt(85) =
+!      iopt(86) =
       iopt(87) = ipyscf
       iopt(88) = inopop
-c      iopt(89) =
+!      iopt(89) =
       iopt(90) = ieoscent
 
       iopt(91) = ianalytical
-c      iopt(92) =
-c      iopt(93) =
-c      iopt(94) =
+!      iopt(92) =
+!      iopt(93) =
+!      iopt(94) =
       iopt(95) = iqchem
       iopt(96) = ifolitol
-c      iopt(97) =
+!      iopt(97) =
       iopt(98) = ioslofchk
       iopt(99) = iloba
-c      iopt(100) =
+!      iopt(100) =
 
-c      iopt(101) =
-c      iopt(102) =
-c      iopt(103) =
-c      iopt(104) =
-c      iopt(105) =
-c      iopt(106) =
-c      iopt(107) =
-c      iopt(108) =
-c      iopt(109) =
-c      iopt(110) =
+!      iopt(101) =
+!      iopt(102) =
+!      iopt(103) =
+!      iopt(104) =
+!      iopt(105) =
+!      iopt(106) =
+!      iopt(107) =
+!      iopt(108) =
+!      iopt(109) =
+!      iopt(110) =
 
-c      iopt(111) =
-c      iopt(112) =
-c      iopt(113) =
-c      iopt(114) =
-c      iopt(115) =
-c      iopt(116) =
-c      iopt(117) =
-c      iopt(118) =
-c      iopt(119) =
-c      iopt(120) =
+!      iopt(111) =
+!      iopt(112) =
+!      iopt(113) =
+!      iopt(114) =
+!      iopt(115) =
+!      iopt(116) =
+!      iopt(117) =
+!      iopt(118) =
+!      iopt(119) =
+!      iopt(120) =
 
-c      iopt(121) =
-c      iopt(122) =
-c      iopt(123) =
-c      iopt(124) =
-c      iopt(125) =
-c      iopt(126) =
-c      iopt(127) =
-c      iopt(128) =
-c      iopt(129) =
-c      iopt(130) =
+!      iopt(121) =
+!      iopt(122) =
+!      iopt(123) =
+!      iopt(124) =
+!      iopt(125) =
+!      iopt(126) =
+!      iopt(127) =
+!      iopt(128) =
+!      iopt(129) =
+!      iopt(130) =
 
-c      iopt(131) =
-c      iopt(132) =
-c      iopt(133) =
-c      iopt(134) =
-c      iopt(135) =
-c      iopt(136) =
-c      iopt(137) =
-c      iopt(138) =
-c      iopt(139) =
-c      iopt(140) =
+!      iopt(131) =
+!      iopt(132) =
+!      iopt(133) =
+!      iopt(134) =
+!      iopt(135) =
+!      iopt(136) =
+!      iopt(137) =
+!      iopt(138) =
+!      iopt(139) =
+!      iopt(140) =
 
-c      iopt(141) =
-c      iopt(142) =
-c      iopt(143) =
-c      iopt(144) =
-c      iopt(145) =
-c      iopt(146) =
-c      iopt(147) =
-c      iopt(148) =
-c      iopt(149) =
-c      iopt(150) =
+!      iopt(141) =
+!      iopt(142) =
+!      iopt(143) =
+!      iopt(144) =
+!      iopt(145) =
+!      iopt(146) =
+!      iopt(147) =
+!      iopt(148) =
+!      iopt(149) =
+!      iopt(150) =
 
-c      iopt(151) =
-c      iopt(152) =
-c      iopt(153) =
-c      iopt(154) =
-c      iopt(155) =
-c      iopt(156) =
-c      iopt(157) =
-c      iopt(158) =
-c      iopt(159) =
-c      iopt(160) =
+!      iopt(151) =
+!      iopt(152) =
+!      iopt(153) =
+!      iopt(154) =
+!      iopt(155) =
+!      iopt(156) =
+!      iopt(157) =
+!      iopt(158) =
+!      iopt(159) =
+!      iopt(160) =
 
-c      iopt(161) =
-c      iopt(162) =
-c      iopt(163) =
-c      iopt(164) =
-c      iopt(165) =
-c      iopt(166) =
-c      iopt(167) =
-c      iopt(168) =
-c      iopt(169) =
-c      iopt(170) =
+!      iopt(161) =
+!      iopt(162) =
+!      iopt(163) =
+!      iopt(164) =
+!      iopt(165) =
+!      iopt(166) =
+!      iopt(167) =
+!      iopt(168) =
+!      iopt(169) =
+!      iopt(170) =
 
-c      iopt(171) =
-c      iopt(172) =
-c      iopt(173) =
-c      iopt(174) =
-c      iopt(175) =
-c      iopt(176) =
-c      iopt(177) =
-c      iopt(178) =
-c      iopt(179) =
-c      iopt(180) =
+!      iopt(171) =
+!      iopt(172) =
+!      iopt(173) =
+!      iopt(174) =
+!      iopt(175) =
+!      iopt(176) =
+!      iopt(177) =
+!      iopt(178) =
+!      iopt(179) =
+!      iopt(180) =
 
-c      iopt(181) =
-c      iopt(182) =
-c      iopt(183) =
-c      iopt(184) =
-c      iopt(185) =
-c      iopt(186) =
-c      iopt(187) =
-c      iopt(188) =
-c      iopt(189) =
-c      iopt(190) =
+!      iopt(181) =
+!      iopt(182) =
+!      iopt(183) =
+!      iopt(184) =
+!      iopt(185) =
+!      iopt(186) =
+!      iopt(187) =
+!      iopt(188) =
+!      iopt(189) =
+!      iopt(190) =
 
-c      iopt(191) =
-c      iopt(192) =
-c      iopt(193) =
-c      iopt(194) =
-c      iopt(195) =
-c      iopt(196) =
-c      iopt(197) =
-c      iopt(198) =
-c      iopt(199) =
-c      iopt(200) =
+!      iopt(191) =
+!      iopt(192) =
+!      iopt(193) =
+!      iopt(194) =
+!      iopt(195) =
+!      iopt(196) =
+!      iopt(197) =
+!      iopt(198) =
+!      iopt(199) =
+!      iopt(200) =
 !! End of iop listing !!
 
-!! digested echo of the .inp file -- every flag above is now final !!
+!! input summary: every flag is final here !!
       call print_input_summary()
 
 !! Natural orbitals from P-matrix in .fchk !!
@@ -1055,11 +971,8 @@ c      iopt(200) =
         nang=nang22
         rr00=rr0022
 
-!! Analytical case -- only step up to the 70/434 default when the user   !!
-!! hasn't configured # GRID themselves (igrid2e.eq.0); this               !!
-!! used to unconditionally overwrite nrad/nang, silently discarding an   !!
-!! explicit # GRID (and, since the plain default grew to 150/590, this   !!
-!! was a downgrade in that case, not the increase the message claims).   !!
+!! ANALYTIC: the 70/434 two-electron grid, unless # GRID sets one     !!
+!! (igrid2e=1)                                                        !!
         if(ianalytical.eq.1.and.igrid2e.eq.0) then
           write(*,'(2x,a)') 'ANALYTIC: two-electron grid raised to 70 x 434'//
      +      ' (the two-electron part is a one-electron integral)'
@@ -1125,7 +1038,7 @@ c      iopt(200) =
       end if
 !! end of energy decomposition !!
 
-!! DFT-DM1 approximate one-particle RDM1 (formerly HIRAO internally).    !!
+!! DFT-DM1 approximate one-particle RDM1.                                !!
 !! Runs standalone, own dedicated grid reusing the two-electron-type      !!
 !! RADIAL_2E/ANGULAR_2E of # GRID (read_input.f's read_grid); dft_dm1     !!
 !! builds its own rotated second grid internally.                        !!

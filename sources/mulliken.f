@@ -238,7 +238,6 @@
 !! purpose: builds the per-atom NAO-basis "overlap" matrix sat(:,:,i)    !!
 !!   from an externally-generated NAO-to-AO transform, read from         !!
 !!   <jobname>.nao (produced by NBO's `$NBO AONAO=W $END` keyword).      !!
-!!   Zero active-test coverage (NAO-BASIS keyword untested).             !!
 !! arguments:                                                            !!
 !!   sat (out) -- per-atom AO overlap matrix                             !!
 !! author:                                                                !!
@@ -246,7 +245,7 @@
       subroutine tonao(sat)
       use basis_set
       use output_mod
-      use nao_mod, only: unao,ssnao !! replaces common /nao/ -- see modules.f90 !!
+      use nao_mod, only: unao,ssnao
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /filename/ name0

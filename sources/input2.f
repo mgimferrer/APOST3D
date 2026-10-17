@@ -129,7 +129,7 @@
       igr=nbasis
       nat=natoms
 
-      call build_ao_matrices(igr) !MMO- WIP!
+      call build_ao_matrices(igr)
 
 !! EFO and natural-AO arrays, sized now that igr and nat are known    !!
       call allocate_effao(igr,nat)

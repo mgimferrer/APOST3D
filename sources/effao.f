@@ -870,7 +870,7 @@
       use ao_matrices
       use effao_mod, only: p0,p0net,p0gro,ip0,p0coef
       use nao_mod, only: unao,ssnao
-      use input_options_mod, only: ieos !! replaces common /nao/ -- see modules.f90 !!
+      use input_options_mod, only: ieos
 
       implicit real*8(A-H,O-Z)
 

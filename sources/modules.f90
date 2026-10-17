@@ -11,10 +11,9 @@
 !!                         Lebedev th/ph/w, radial wr/xr)                 !!
 !!                         CONTAINS build_integration_grid                !!
 !!   effao_mod         -- effective-AO population matrices (p0/p0net/     !!
-!!                         p0gro/ip0), replaces legacy common /effao/     !!
+!!                         p0gro/ip0)                                     !!
 !!                         CONTAINS allocate_effao                        !!
-!!   nao_mod           -- natural-AO matrices (unao/ssnao), replaces      !!
-!!                         legacy common /nao/                            !!
+!!   nao_mod           -- natural-AO matrices (unao/ssnao)                 !!
 !!                         CONTAINS allocate_nao                          !!
 !!   version_mod       -- version number and date (banner, results file)  !!
 !!   elements_mod      -- element symbols for atom labels                 !!
@@ -24,17 +23,6 @@
 !!                         CONTAINS get_wall_time, print_timer            !!
 !!   input_options_mod -- ~70 .inp keyword flags parsed by read_input()   !!
 !!                         data only, no CONTAINS                         !!
-!!                                                                        !!
-!! Worth a look next:                                                     !!
-!!   - basis_set/ao_matrices/integration_grid's own top-of-module         !!
-!!     variable-doc comments are still old-style single-`!`, not          !!
-!!     converted to `!! !!`. Some are openly uncertain about what the     !!
-!!     array holds: ao_matrices has "pa/pb(igr,igr) -> density matrix     !!
-!!     only for alpha/beta spinorbitals?" and "occ_no(igr,igr) -> ?";     !!
-!!     integration_grid has several "probably ..." guesses for th/ph/w.   !!
-!!   - a stray `!!MMO- MODULE TESTING STARTS HERE.` marker sits right     !!
-!!     before the ao_matrices module statement -- reads like leftover     !!
-!!     development scaffolding rather than real documentation.            !!
 !! ********************************************************************** !!
 
 !! ----------------------------------------------------------------------
@@ -127,7 +115,7 @@
 ! coefpb(numprim,nbasis) primitive contraction coeff of basis functions
 ! nprimbas(numprim,mmax) list of primitives contributing to each basis function 
 ! iptoat(numprim) atom to which each primitive belongs
-!MMO- iptob_cartesian(numprim) -> orbital to which each primitive belongs
+! iptob_cartesian(numprim) -> basis function to which each primitive belongs
 ! s(nbasis,nbasis) AO overlap matrix
 ! coord(3,natoms) atomic coordinates 
 ! ihold(nbasis) atom to which each basis function belongs
@@ -375,7 +363,7 @@
          do k=1,mult(mssh(i))
            numprim=numprim+1
            coefpb(numprim,nbasis+k)=coefp(numprim)*xnorm(numprim)
-           iptob_cartesian(numprim)=nbasis+k !MMO- ptob map for cartesian
+           iptob_cartesian(numprim)=nbasis+k ! primitive-to-function map (Cartesian)
          end do
        else if (mssh(i).eq.-2) then ! mapping for pure 5d
          coefpb(numprim+1,nbasis+1)=coefp(numprim+1)*xnorm(numprim+1)*(-0.5d0)
@@ -573,12 +561,12 @@
 ! c(igr,igr) -> alpha MO coefficients
 ! p(igr,igr) -> density matrix
 ! cb(igr,igr) -> beta MO coefficients
-! pa(igr,igr) -> density matrix only for alpha spinorbitals?
-! pb(igr,igr) -> density matrix only for beta spinorbitals?
+! pa(igr,igr) -> alpha density matrix
+! pb(igr,igr) -> beta density matrix
 ! ps(igr,igr) -> spin density matrix (pa-pb)
-! c_no(igr,igr) -> c for Natural Orbitals?
+! c_no(igr,igr) -> natural orbital coefficients
 ! occ_no(igr,igr) -> natural orbital occupation values
-! Note: igr is number is basis functions
+! igr is the number of basis functions
 
    CONTAINS
 
@@ -623,7 +611,7 @@
 ! rr00 -> nuclear distance at which half of the radial points have been distributed
 ! th(nang) -> theta: angular coordinate for a given angular plane of points
 ! ph(nang) -> phi: angular coordinate for a given angular plane of points
-! w(nang) -> probably mathematical weight of each angular plane?
+! w(nang) -> Lebedev weight of each angular point
 ! wr(nrad) -> mathematical weight of a given radial surface
 ! xr(nrad) -> distance from grid center to a given radial surface
 
@@ -663,10 +651,8 @@
    if(nang_in.gt.0) nang=nang_in
 
 !! Rotation angles... they are zero for one-el part, just to be consistent !!
-!! written as a literal, not the ZERO symbol -- this module-CONTAINS      !!
-!! subroutine can't include parameter.h (see do_overlap above), and ZERO  !!
-!! is not declared here, so it was silently an untyped uninitialized      !!
-!! variable, not the constant 0.0d0 (found 2026-08-20).                   !!
+!! written as literals: a module subroutine can't include parameter.h  !!
+!! (see do_overlap), so ZERO is not defined here                         !!
    pha=0.0d0
    phb=0.0d0
 
@@ -1447,8 +1433,7 @@
 !! module: input_options_mod                                             !!
 !! purpose: holds the .inp keyword flags parsed by read_input() (see     !!
 !! read_input.f) that main.f's own control flow (validation, iopt(200)   !!
-!! population, dispatch) reads directly -- replaces what used to be      !!
-!! plain implicitly-typed locals in main.f. Flags already carried by     !!
+!! population, dispatch) reads directly. Flags already carried by       !!
 !! an existing COMMON block (icas, ibcp, aerf, iaccur, nrad22, etc.)     !!
 !! are NOT duplicated here -- see main.f's own COMMON declarations.      !!
 !! author: MGimf                                                         !!
@@ -1497,7 +1482,7 @@
               ithrebod,iexact,ihomo,idek,iionic,ianalytical, &
               igrid2e,irot2e
 
-!! DFT-DM1 (approximate one-particle RDM1, formerly HIRAO internally) !!
+!! DFT-DM1 (approximate one-particle RDM1) !!
    integer :: idftdm1,id_func_dm1,inatorb_dm1
 
 !! NLOP / static field !!

@@ -1288,8 +1288,17 @@
      +  xleftg,5)
       end
 
-!! ---- !!
-!! one value per EFO, 8 per line, the label on the first line only     !!
+!! ----------------------------------------------------------------------
+!! subroutine: print_efo_row
+!! Prints one row of an EFO block: one value per EFO, 8 per line, the
+!! label on the first line only.
+!! arguments:
+!!   clabel (in)  row label (7 characters shown)
+!!   v      (in)  (n) values
+!!   n      (in)  number of EFOs
+!!   ndec   (in)  decimals
+!! author: MGimf
+!! ----------------------------------------------------------------------
       subroutine print_efo_row(clabel,v,n,ndec)
       implicit real*8(a-h,o-z)
       character*(*) clabel
@@ -1527,11 +1536,9 @@
         write(naim,*)''
         write(naim,'(A25,A4,i5)')' INTEGRATION IS OVER ATOM',element_symbol(iznuc(jat)),
      1  jat
-      !write(naim2) element_symbol(iznuc(jat)),jat
         write(naim,'(a27)') ' RESULTS OF THE INTEGRATION'
         write(naim,'(a17,e21.14,a14,e21.14)')'              N  ',
      1   qat(jat,1),'    NET CHARGE',zn(jat)-qat(jat,1)
-        !write(naim2) qat(jjat,1)
         write(naim,*)'             G'
         write(naim,'(a17,e21.14,a17,e21.14)')'              K  ',BK,
      1  '        E(ATOM)  ',AE

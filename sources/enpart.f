@@ -1,5 +1,5 @@
 !! ********************************************************** !!
-!! IQA/ENPART ENERGY PARTITIONING SUBROUTINES                 !!
+!! IQA energy partitioning (ENPART)                           !!
 !! one-electron part:                                         !!
 !!   numint_one      -- RHF/RKS                               !!
 !!   numint_one_uhf  -- UHF/UKS                               !!
