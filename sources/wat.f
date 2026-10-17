@@ -868,8 +868,7 @@
      +  1.500, 1.500,1.500/ 
       RR(x,y,z)=dsqrt(x**2+y**2+z**2)
 
-!! optional per-run override: read empirical radii from radius.inp if     !!
-!! present (MG: Hungarian original read "fill in atomic radii sensibly") !!
+!! optional override: the empirical radii of radius.inp, when present !!
       open(unit=20,file="radius.inp",STATUS="OLD",err=100)
       read(20,*,end=100) nn
       write(*,'(a)') ''

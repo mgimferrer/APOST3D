@@ -9,6 +9,15 @@
 !!   angle     -- cosine of the angle between two vectors                 !!
 !! *********************************************************************** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: gpoints
+!! Value and gradient of every basis function at the point (x,y,z).
+!! arguments:
+!!   x,y,z             (in)   the point (bohr)
+!!   gxchp,gychp,gzchp (out)  (igr) x, y, z derivatives
+!!   aochp             (out)  (igr) values
+!! author:
+!! ----------------------------------------------------------------------
       subroutine gpoints(x,y,z,gxchp,gychp,gzchp,aochp)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
@@ -29,14 +38,33 @@
       return
       end
 
-!! gxfunct/gyfunct/gzfunct: thin wrappers around drho_xyz (dft_dm1.f)   !!
+!! ***** !!
 
+!! ----------------------------------------------------------------------
+!! functions: gxfunct, gyfunct, gzfunct
+!! x, y and z derivative at (x,y,z) of the basis function selected in
+!! common /actual_bf/, through drho_xyz (dft_dm1.f).
+!! arguments:
+!!   x,y,z (in)  the point (bohr)
+!! author:
+!! ----------------------------------------------------------------------
       function gxfunct(x,y,z)
       IMPLICIT REAL*8(A-H,O-Z)
       gxfunct=drho_xyz(x,y,z,1)
       return
       end
 
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! function: aofunct
+!! Value of basis function iact at the point (x,y,z): its contracted
+!! Cartesian Gaussian primitives (basis_set).
+!! arguments:
+!!   iact  (in)  basis function
+!!   x,y,z (in)  the point (bohr)
+!! author:
+!! ----------------------------------------------------------------------
       function aofunct(iact,x,y,z)
       use basis_set
       IMPLICIT REAL*8(A-H,O-Z)
@@ -64,18 +92,33 @@
       
       return
       end
+
+!! ---- !!
       function gyfunct(x,y,z)
       IMPLICIT REAL*8(A-H,O-Z)
       gyfunct=drho_xyz(x,y,z,2)
       return
       end
 
+!! ---- !!
       function gzfunct(x,y,z)
       IMPLICIT REAL*8(A-H,O-Z)
       gzfunct=drho_xyz(x,y,z,3)
       return
       end
 
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: atsphere
+!! OS-CENTROID: the trust-sphere radius of each atom. Its radial shells
+!! (beyond 0.15 bohr) are scanned from the last one; the radius is the
+!! shell just before the first one where, at some angular point, the
+!! density gradient deviates more than 45 degrees from the direction to
+!! the nucleus.
+!! arguments: none (grid and geometry via COMMON, radii in /nna/)
+!! author:
+!! ----------------------------------------------------------------------
       subroutine atsphere()
       use basis_set
       implicit real*8 (a-h,o-z)
@@ -117,6 +160,15 @@
       end do 
       end 
 
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! function: angle
+!! Cosine of the angle between the vectors (x,y,z) and (xx,yy,zz).
+!! arguments:
+!!   x,y,z, xx,yy,zz (in)  the two vectors
+!! author:
+!! ----------------------------------------------------------------------
        function angle(x,y,z,xx,yy,zz)
        implicit none
        double precision x,y,z,xx,yy,zz

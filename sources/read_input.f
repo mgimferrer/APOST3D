@@ -43,8 +43,8 @@
         call apost_stop(' # METHOD block not found')
       end if
 
-!! keywords and blocks renamed in version 5 (no blanks or hyphens      !!
-!! inside a name): the old spellings stop instead of being ignored      !!
+!! renamed keywords and blocks (no blanks or hyphens inside a name):  !!
+!! the old spellings stop instead of being ignored                    !!
       call renamed_block("# DFT-DM1","# DFTDM1")
       call renamed_block("# DFT-DM1 FUNCTIONAL","# DFTDM1_FUNCTIONAL")
       call renamed_block("# ATOM PAIRS DEFINITION",
@@ -114,7 +114,7 @@
       call readreal("# METHOD","ERF_PROF",aerf,6.266d0,1)
       if(ierf.eq.1)  istiff=0
 
-!! ERC: QTAIM input module !!
+!! QTAIM (stops in main.f: not available in this version) !!
       call readchar("# METHOD","QTAIM",iqtaim)
 !! plain Becke atoms (fixed empirical radii) only on request !!
       call readchar("# METHOD","BECKE",ibecke)
@@ -144,7 +144,7 @@
       call readchar("# METHOD","DOINT",idoint)
       call readchar("# METHOD","PCA",ipca)
       call readchar("# METHOD","LAPLACIAN",ilaplacian)
-      call readchar("# METHOD","ELCOUNT",ielcount) !MMO- NCTAIM
+      call readchar("# METHOD","ELCOUNT",ielcount)
       call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)
       call readreal("# METHOD","RHO_CALC_RAD",Rmax,0.0d0,1) ! fixed: was 0 (integer), must be REAL*8
       call readchar("# METHOD","NOPOPU",inopop)
@@ -196,11 +196,7 @@
       if(iueos.eq.1) then
         iopop=1
         ieffao=3
-!! readchar matches by substring, so the "EOS" scan just above also        !!
-!! matched this GEOS line (pre-existing issue, same as EFFAO/EFFAO-U/UEFFAO !!
-!! below -- harmless there since ieffao gets overwritten either way, but   !!
-!! ieos/iueos are separate flags with their own downstream consumers, so   !!
-!! undo that false positive here.                                          !!
+!! with both EOS and GEOS in # METHOD, GEOS is done !!
         ieos=0
         call readreal("# METHOD","EOS_THRESH",xthresh,2.5d-3,1)
       end if
@@ -285,18 +281,14 @@
 !! end of ENPART options !!
       end if
 
-!! DFT-DM1 approximate one-particle RDM1 for UHF/UKS-DFT (formerly       !!
-!! referred to internally as HIRAO). Runs standalone (no ENPART          !!
-!! required), on the two-electron grid of # GRID (read_grid).            !!
+!! DFT-DM1 approximate one-particle RDM1 for UHF/UKS-DFT. Runs alone   !!
+!! (no ENPART needed), on the two-electron grid of # GRID (read_grid)   !!
       idftdm1=0
       id_func_dm1=0
       call readchar("# METHOD","DFTDM1",idftdm1)
       if(idftdm1.eq.1) then
-!! DFT-DM1 is DFT-functional-only -- dft_dm1.f's RDM1 construction reads !!
-!! the local exchange-energy density straight out of libxc, which has no !!
-!! meaning for HF (no functional to evaluate); an old ifunc=999 HF        !!
-!! placeholder branch existed in dft_dm1.f but was never a real          !!
-!! implementation, and was removed 2026-08-30.                           !!
+!! DFT-DM1 needs a functional: its RDM1 is built from the local         !!
+!! exchange-energy density of libxc, which HF doesn't have              !!
         call readchar("# DFTDM1_FUNCTIONAL","LIBRARY",ilib)
         if(ilib.eq.1) then
           call readint("# DFTDM1_FUNCTIONAL","EX_FUNCTIONAL",id_func_dm1,0,1)
@@ -330,8 +322,6 @@
       call readchar("# METHOD","POLAR",ipolar )
       if(ipolar.eq.1) then
         iaccur=1
-!! MMO: the old $name.scr raw-output-for-post-processing path was       !!
-!! removed, no longer used here                                         !!
       end if
 
 !! a static field in the .fchk ends the WAVEFUNCTION SUMMARY !!
@@ -509,9 +499,8 @@
           call apost_stop(' # OSLO block not found')
         end if
 
-!! MG: by default requires the TFVC AIM in # METHOD (numerical           !!
-!! integration), but one can ask for OSLOs using Hilbert-space AIMs      !!
-!! instead -- the Hilbert-space cases follow                             !!
+!! the spreads always use the real-space atoms of # METHOD; the        !!
+!! fragment populations can come from a Hilbert-space scheme instead   !!
 
         ilow2=0
         call readchar("# OSLO","MULLIKEN",ii)
@@ -551,8 +540,8 @@
 
       end if
 
-!! to print .fchk files from QCHEM or MOKIT -- MG: their fchk format is  !!
-!! different from Gaussian's                                             !!
+!! .fchk files from Q-Chem or MOKIT: their layout differs from        !!
+!! Gaussian's, which matters for the .fchk files the program writes    !!
       iqchem=0
       call readchar("# METHOD","QCHEM",iqchem)
       imokit=0

@@ -1,5 +1,5 @@
 !! ************************************************************************** !!
-!! KS-DFT EXCHANGE-CORRELATION ENERGY PARTITIONING SUBROUTINES                !!
+!! KS-DFT exchange-correlation energy partitioning (ENPART)                   !!
 !! RKS (closed-shell):                                                        !!
 !!   numint_dft      -- BODEN approximation + "exact" one-center XC term      !!
 !!   xc              -- XC energy density at each grid point, via libxc       !!

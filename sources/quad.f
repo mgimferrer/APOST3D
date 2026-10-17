@@ -42,7 +42,7 @@
          XR(i)=R*(Xr(i)+1.0d0)/(1.0d0-Xr(i))
        end do
 
-!! LEBEDEV-LAIKOV ANGULAR PART !!
+!! Lebedev-Laikov angular part !!
        if(npoints.eq.6)     CALL LD0006(X,Y,Z,W,N)
        if(npoints.eq.14)    CALL LD0014(X,Y,Z,W,N)
        if(npoints.eq.26)    CALL LD0026(X,Y,Z,W,N)
@@ -81,21 +81,20 @@
 
        end
 
-c###############################################################
+!! ***** !!
 
-
+!! ----------------------------------------------------------------------
+!! subroutine: LEGZO
+!! Zeros of the Legendre polynomial P_n(x) in [-1,1] and the weights of
+!! the Gauss-Legendre quadrature of order n (S. Zhang and J. Jin,
+!! Computation of Special Functions, Wiley 1996). Kept as published.
+!! arguments:
+!!   n (in)   order of the Legendre polynomial
+!!   x (out)  (n) zeros
+!!   w (out)  (n) weights
+!! author: S. Zhang, J. Jin
+!! ----------------------------------------------------------------------
         SUBROUTINE LEGZO(N,X,W)
-C
-C       =========================================================
-C       Purpose : Compute the zeros of Legendre polynomial Pn(x)
-C                 in the interval [-1,1], and the corresponding
-C                 weighting coefficients for Gauss-Legendre
-C                 integration
-C       Input :   n    --- Order of the Legendre polynomial
-C       Output:   X(n) --- Zeros of the Legendre polynomial
-C                 W(n) --- Corresponding weighting coefficients
-C       =========================================================
-C
         IMPLICIT DOUBLE PRECISION (A-H,O-Z)
         DIMENSION X(N),W(N)
         N0=(N+1)/2
