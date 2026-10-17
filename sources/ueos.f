@@ -487,7 +487,6 @@
       dimension nlo(maxfrag),ncount(maxfrag)
       dimension npool(2)
       allocatable :: xnegnet_pool(:),xneggro_pool(:),neg_frg(:),neg_slot(:)
-      logical lfound
       character*60 cval
 
 !! pool every fragment's EFOs into one list per channel (1=paired,      !!
@@ -617,7 +616,7 @@
 !! function (nindep, fewer than igr with linear dependencies), so the   !!
 !! paired channel keeps the last nneg of those slots for the negative   !!
 !! EFOs pooled above, after the positive ones that fit before them.     !!
-      nindep=min(igr,int_locate(15,"Number of independ",lfound))
+      nindep=nindep_fchk(igr)
       poolcoef=ZERO
       do icase=1,2
         nwin=nindep

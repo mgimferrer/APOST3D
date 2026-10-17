@@ -1405,8 +1405,8 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common/exchg/exch(maxat,maxat),xmix
 
-      character*120 name_ref
-      character*80 name_func
+      character*1024 name_ref
+      character*128 name_func
       character*100 cbuf
       character*20 ckind,cfam,clab
 

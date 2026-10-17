@@ -490,7 +490,7 @@
       integer, allocatable :: ifr(:),icol(:)
       real*8, allocatable :: xn(:),xf(:)
       logical, allocatable :: lcol(:),lok(:)
-      logical lreal,lfound
+      logical lreal
 
 
       if(idobeta.eq.0.and.icase.eq.2) then
@@ -764,7 +764,7 @@
      +  .false.,' ')
       deallocate(lok)
 !! the .fchk file holds the first min(igr, independent functions) EFOs !!
-      ncolf=min(igr,int_locate(15,"Number of independ",lfound))
+      ncolf=nindep_fchk(igr)
       allocate(ifr(iorb),icol(iorb),xn(iorb),xf(iorb),lcol(iorb))
       do jj=1,iorb
         ifr(jj)=iorbat(jj,icase)

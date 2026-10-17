@@ -1415,7 +1415,6 @@
 
       character nameaim*256,charnu*2,atnum*12,ext*4,namefiles*256
       character*40 cval
-      logical lfound
 
       allocatable c3(:,:),c2(:,:),csave(:,:),scr(:,:)
 
@@ -1427,10 +1426,8 @@
       inato=0
       if(icorr.eq.1.or.icas.eq.1.or.icisd.eq.1) inato=1
 
-!! independent-function count from the .fchk (unit 15); one per basis  !!
-!! function when the file doesn't give it                               !!
-      ndim=int_locate(15,"Number of independ",lfound)
-      if(.not.lfound) ndim=igr
+!! independent-function count from the .fchk !!
+      ndim=nindep_fchk(igr)
 
       allocate( c3(2*igr,2*igr),csave(2*igr,2*igr))
       allocate( c2(igr,igr),scr(igr,igr))
@@ -2128,7 +2125,7 @@
       allocatable :: energ(:)
 
       iqchem   = iopt(95)
-      indepigr = int_locate(15,"Number of independ",ilog)
+      indepigr = nindep_fchk(igr)
       norb     = igr*indepigr
 
 !! fake orbital energies: gross occupation of each pooled EFO, already   !!
@@ -2247,7 +2244,7 @@
       allocatable :: energ_a(:),energ_b(:)
 
       iqchem   = iopt(95)
-      indepigr = int_locate(15,"Number of independ",ilog)
+      indepigr = nindep_fchk(igr)
       norb     = igr*indepigr
 
 !! fake orbital energies: gross occupation of each pooled EFO, already   !!
@@ -2387,7 +2384,7 @@
       allocatable :: energ_a(:),energ_b(:)
 
       iqchem   = iopt(95)
-      indepigr = int_locate(15,"Number of independ",ilog)
+      indepigr = nindep_fchk(igr)
       norb     = igr*indepigr
 
 !! fake orbital energies: gross occupation of each pooled EFO, already   !!
