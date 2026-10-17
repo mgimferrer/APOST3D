@@ -128,100 +128,100 @@
       character(len=80) :: vline
 
       write(*,'(a)') '  ------------------------------------------------------------------------------'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '                     ___    ____  ____  ___________   _____ ____'
       write(*,'(a)') '                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \'
       write(*,'(a)') '                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /'
       write(*,'(a)') '                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /'
       write(*,'(a)') '                 /_/  |_/_/    \____//____//_/     /____/_____/'
-      write(*,*)
+      write(*,'(a)') ''
       vline=repeat(' ',24)//'Version '//version_number//'   --   '//
      +  version_date
       write(*,'(a)') trim(vline)
       write(*,'(a)') '                         --------------------------------'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      Real-space and Hilbert-space tools for wave function analysis'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      Documentation: https://apost3d.readthedocs.io'
       write(*,'(a)') '      Source code & issue tracker: https://github.com/mgimferrer/APOST3D'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      Cite this program as:'
       write(*,'(a)') '      ---------------------'
       write(*,'(a)') '        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer'
       write(*,'(a)') '        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      Available atomic definitions:'
       write(*,'(a)') '      ----------------------------'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      Real space:'
       write(*,'(a)') '        Becke, J. Chem. Phys. 88 2547 1988'
       write(*,'(a)') '        Hirshfeld, Theor. Chim. Acta 44 129 1977'
       write(*,'(a)') '        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007'
       write(*,'(a)') '        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic'
       write(*,'(a)') '        orbitals (NAO)'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      Analyses and their references:'
       write(*,'(a)') '      ------------------------------'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        A) Atomic and overlap populations, bond orders and valences'
       write(*,'(a)') '           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        B) Hartree-Fock molecular energy decomposition'
       write(*,'(a)') '           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001'
       write(*,'(a)') '           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        C) KS-DFT molecular energy decomposition'
       write(*,'(a)') '           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007'
       write(*,'(a)') '           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        D) Molecular energy decomposition for CASSCF/CISD wavefunctions'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        E) Effective atomic orbitals'
       write(*,'(a)') '           I. Mayer, J. Phys. Chem. 100 6249 1996'
       write(*,'(a)') '           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009'
       write(*,'(a)') '           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013'
       write(*,'(a)') '           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        F) Local spin analysis'
       write(*,'(a)') '           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012'
       write(*,'(a)') '           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        G) Effective oxidation states analysis'
       write(*,'(a)') '           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015'
       write(*,'(a)') '           M. Gimferrer and P. Salvador, manuscript in preparation, 2026'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        H) Oxidation states from localized orbitals'
       write(*,'(a)') '           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020'
       write(*,'(a)') '           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020'
       write(*,'(a)') '           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        I) Decomposition of EDA quantities into one- and two-center IQA terms'
       write(*,'(a)') '           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023'
       write(*,'(a)') '           (under reimplementation in version 5)'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '        J) Origin-independent decomposition of static polarizabilities'
       write(*,'(a)') '           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '  ------------------------------------------------------------------------------'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      The program has been written by using parts of the program APOST by'
       write(*,'(a)') '      I. Mayer and A. Hamza, Budapest, 2000-2003.'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      The numerical integration utilizes the subroutines for Lebedev'
       write(*,'(a)') '      quadrature downloaded from CCL. The appropriate reference is:'
       write(*,'(a)') '      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of'
       write(*,'(a)') '      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481'
       write(*,'(a)') '      1999.'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      The program uses the libxc library when necessary, through the'
       write(*,'(a)') '      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '      We are extremely grateful for the possibility of using these routines!'
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(a)') '  ------------------------------------------------------------------------------'
       END SUBROUTINE kiir
 
@@ -360,7 +360,7 @@
 !! # ENPART -- only if ENPART itself is active                       !!
 !! ----------------------------------------------------------------- !!
       if(ienpart.eq.1) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') '# ENPART'
         if(ihf.eq.1) then
           cval='HF'
@@ -414,7 +414,7 @@
 !! # QTAIM -- only if QTAIM is active                                !!
 !! ----------------------------------------------------------------- !!
       if(iqtaim.ge.1) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') '# QTAIM'
         call print_value('Convergence step',istep)
         call print_value('Non-nuclear attractors',inna)
@@ -428,7 +428,7 @@
 !! times 1000 in the input                                           !!
 !! ----------------------------------------------------------------- !!
       if(icube.eq.1) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') '# CUBE'
         write(cnum,'(i0)') jcubthr
         write(cval,'(f6.3)') real(jcubthr)/1000.0d0
@@ -455,7 +455,7 @@
 !! # OSLO -- only if OSLO is active; FOLI_TOLERANCE n means 10**(-n)  !!
 !! ----------------------------------------------------------------- !!
       if(ioslo.eq.1) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') '# OSLO'
         if(ilow2.eq.1) cval='MULLIKEN (Hilbert space)'
         if(ilow2.eq.2) cval='LOWDIN (Hilbert space)'
@@ -495,7 +495,7 @@
 !! onto aligned continuation lines                                   !!
 !! ----------------------------------------------------------------- !!
       if(idofr.eq.1) then
-        write(*,*)
+        write(*,'(a)') ''
         write(cval,'(a,i0,a)') '# FRAGMENTS (',icufr,' fragments)'
         write(*,'(2x,a)') trim(cval)
         do i=1,icufr
@@ -508,7 +508,7 @@
 !! # ATOMS -- only if DOATOMS is active                              !!
 !! ----------------------------------------------------------------- !!
       if(idoat.eq.1) then
-        write(*,*)
+        write(*,'(a)') ''
         write(cval,'(a,i0,a)') '# ATOMS (',icuat,' selected)'
         write(*,'(2x,a)') trim(cval)
         write(*,'(2x,20i4)') (iatlist(i),i=1,icuat)
@@ -518,7 +518,7 @@
 !! # DM -- only if correlated-wavefunction density matrices are read  !!
 !! ----------------------------------------------------------------- !!
       if(icorr.ne.0) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') '# DM'
         write(cval,'(i0,a)') icorr,'-RDM'
         call print_value('Density matrices',trim(cval))
@@ -789,7 +789,7 @@
       NMIN=1
       NNMAX=3
       PRINT *,'_________________X___________________Y__________________Z__________'
-      write(*,*)
+      write(*,'(a)') ''
       DO I=1,N
         if(iaccur.eq.0) then
           PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
@@ -858,7 +858,7 @@
       do j0=1,N,6
         j1=min(N,j0+5)
         ncol=j1-j0+1
-        if(j0.gt.1) write(*,*)
+        if(j0.gt.1) write(*,'(a)') ''
         write(fmthdr,'(a,i0,a,i0,a)') '(9x,',ncol,'(',iw-6,
      +    'x,i3,1x,a2))'
         write(*,'(2x,a)') repeat('-',7+iw*ncol)
@@ -903,7 +903,7 @@
       do j0=1,N,6
         j1=min(N,j0+5)
         ncol=j1-j0+1
-        if(j0.gt.1) write(*,*)
+        if(j0.gt.1) write(*,'(a)') ''
         write(fmthdr,'(a,i0,a,i0,a)') '(11x,',ncol,'i',iw,')'
         write(*,'(2x,a)') repeat('-',9+iw*ncol)
         write(*,fmthdr) (j,j=j0,j1)

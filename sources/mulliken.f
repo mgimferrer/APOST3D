@@ -245,6 +245,7 @@
 !! ********************************************************************* !!
       subroutine tonao(sat)
       use basis_set
+      use output_mod
       use nao_mod, only: unao,ssnao !! replaces common /nao/ -- see modules.f90 !!
       implicit real*8(a-h,o-z)
       include 'parameter.h'
@@ -253,8 +254,9 @@
       dimension sat(nbasis,nbasis,natoms)
 
       name3=trim(name0)//'.nao'
-      open(33,file=name3,status='old')
-      write(*,*) 'Reading NAO to AO matrix'
+      open(33,file=name3,status='old',iostat=ios)
+      if(ios.ne.0) call apost_stop('NAO-BASIS needs the NBO file '//
+     +  trim(name3)//' (AONAO=W), not found')
       read(33,*)
       read(33,*)
       read(33,*)
@@ -262,7 +264,7 @@
         read(33,*) (unao(i,j),i=1,nbasis)
       enddo
       close(33)
-      write(*,*) 'NAO to AO matrix read'
+      call print_value('NAO transformation read from',trim(name3))
       do nu=1,nbasis
         do mu=1,nbasis
           ssnao(nu,mu)=0.0d0
