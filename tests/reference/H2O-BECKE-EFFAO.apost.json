@@ -1,0 +1,267 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.12",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 24,
+    "n_electrons": 10,
+    "n_alpha": 5,
+    "n_beta": 5,
+    "energy_au": -7.6050588586699121E+001
+  },
+  "input": {
+    "text": "# METHOD\nBECKE\nEFFAO\n#\n",
+    "atomic_definition": {
+      "keyword": "BECKE",
+      "name": "Becke, fixed empirical radii",
+      "short_name": "Becke",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 3,
+    "atomic_numbers": [8, 1, 1],
+    "symbols": ["O", "H", "H"],
+    "nuclear_charges": [8.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [1.3793907500000000E-017, 1.3793907500000000E-017, 2.2527160600000001E-001],
+      [2.0841838200000000E-016, 1.4349389699999999E+000, -9.0108642299999997E-001],
+      [-4.9449898299999999E-016, -1.4349389699999999E+000, -9.0108642299999997E-001]
+    ]
+  },
+  "fragments": [],
+  "analyses": {
+    "populations": {
+      "scheme": "BECKE",
+      "atoms": {
+        "electrons": [8.4494667900702787E+000, 7.7493485513597027E-001, 7.7493485513597038E-001],
+        "charges": [-4.4946679007027868E-001, 2.2506514486402973E-001, 2.2506514486402962E-001]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [8.2981443761290237E+000, 8.5092781586127919E-001, 8.5092781586127919E-001],
+          "charges": [-2.9814437612902367E-001, 1.4907218413872081E-001, 1.4907218413872081E-001]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "BECKE",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [7.4052717880473908E+000, 1.0436982827932955E+000, 1.0436982827932952E+000],
+            [1.0436982827932955E+000, 2.3287157124404778E-001, 4.0261817619060239E-002],
+            [1.0436982827932952E+000, 4.0261817619060239E-002, 2.3287157124404778E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [2.0883900040457757E+000, 1.0841265677838450E+000, 1.0841265677838452E+000],
+        "valence_bonded": [2.0873965655865909E+000, 1.0839601004123558E+000, 1.0839601004123556E+000],
+        "valence_free": [9.9343845918475893E-004, 1.6646737148917623E-004, 1.6646737148962032E-004]
+      }
+    },
+    "effao": {
+      "scheme": "BECKE",
+      "total": {
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 13,
+          "columns": [
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "fit_percent",
+              "title": "Fit",
+              "unit": "%",
+              "decimals": 2,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragments": [
+              [1],
+              [1],
+              [1],
+              [1],
+              [1],
+              [2],
+              [2],
+              [2],
+              [2],
+              [3],
+              [3],
+              [3],
+              [3]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
+            "net": [1.9999828762613323E+000, 1.9522307099616756E+000, 1.8668941798535952E+000, 1.2626066384315289E+000, 1.1601192672849598E+000, 6.0339923923704852E-001, 3.6404542054890118E-002, 2.5016368304016809E-002, 6.2059038441666121E-003, 6.0339923923704786E-001, 3.6404542054890111E-002, 2.5016368304016833E-002, 6.2059038441666927E-003],
+            "gross": [1.9999874060314424E+000, 1.9626713682753127E+000, 1.8970579600111452E+000, 1.3500957577937691E+000, 1.2396542982200043E+000, 6.7928605817550214E-001, 5.1443098439676357E-002, 3.5373881881772810E-002, 8.8275410697148272E-003, 6.7928605817550269E-001, 5.1443098439676246E-002, 3.5373881881772727E-002, 8.8275410697149313E-003],
+            "fit_percent": [9.9825244541338449E+001, 9.5315288022951137E+001, 9.1638173594608176E+001, 8.2151934151113267E+001, 8.2216466936537273E+001, 7.6398204059899570E+001, 5.9062917982639249E+001, 5.8162838573207367E+001, 5.3742552670078261E+001, 7.6398204059899484E+001, 5.9062917982639199E+001, 5.8162838573207168E+001, 5.3742552670078261E+001]
+          }
+        }
+      }
+    }
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Becke)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Becke)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (Becke)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (Becke)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (Becke)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (Becke)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "effao.total.efos",
+      "analysis": "effao",
+      "spin": "total",
+      "path": "/analyses/effao/total/efos",
+      "kind": "table",
+      "title": "EFOs, total (Becke)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    }
+  ],
+  "run": {
+    "job_name": "H2O-BECKE-EFFAO",
+    "input_file": "H2O-BECKE-EFFAO.inp",
+    "wavefunction_file": "H2O-BECKE-EFFAO.fchk",
+    "date": "2026-10-17T12:21:10+02:00",
+    "id": "2026-10-17T12:21:10+02:00/cdb0",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

@@ -3720,6 +3720,173 @@
           "pattern": "WARNING: 1 cube file\\(s\\) with a norm below 0\\.9"
         }
       ]
+    },
+    {
+      "name": "CH3F-BECKE-RHO-EOS",
+      "description": "Fluoromethane, RKS (the CH3F-EOS-LOWDIN wavefunction), Becke atoms with radii from the density (BECKE-RHO): populations and EOS with fragments F | CH3.",
+      "tags": [
+        "dft",
+        "rks",
+        "becke-rho",
+        "eos",
+        "effao",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "BECKE-RHO",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C Becke-rho atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.891516,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "F Becke-rho atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.758062,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "EOS alpha net occupation, fragment 1 (F)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 4.81467,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 100.0,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "H2O-BECKE-EFFAO",
+      "description": "Water, RKS (the H2O-SVWN wavefunction), Becke atoms with fixed radii (BECKE): populations and EFFAO of the total density, one fragment per atom (no DOFRAGS).",
+      "tags": [
+        "dft",
+        "rks",
+        "becke",
+        "effao"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "BECKE",
+        "EFFAO"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "O Becke atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.449467,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "EFFAO net occupation, O",
+          "section": "EFFECTIVE FRAGMENT ORBITALS",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 8.24183,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "EFFAO net occupation, H",
+          "section": "EFFECTIVE FRAGMENT ORBITALS",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.67103,
+          "tol_abs": 0.0002
+        }
+      ]
+    },
+    {
+      "name": "NaBH3--UHF-UEFFAO",
+      "description": "NaBH3-, UHF, TFVC: UEFFAO (EFOs of the alpha and beta densities) per atom, without EOS.",
+      "tags": [
+        "hf",
+        "uhf",
+        "tfvc",
+        "effao"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "UEFFAO"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Alpha net occupation, Na",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 5.16575,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Alpha net occupation, B",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 1.52092,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Beta net occupation, Na",
+          "section": "BETA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 5.91534,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Beta net occupation, B",
+          "section": "BETA DENSITY",
+          "pattern": "Fragment 2\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 1.27759,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "No oxidation states without EOS",
+          "type": "absent",
+          "pattern": "OXIDATION STATES"
+        }
+      ]
     }
   ]
 }
