@@ -35,7 +35,6 @@
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      dimension dm1(igr,igr)
 
       allocatable :: s0(:,:),sm(:,:),splus(:,:)
 

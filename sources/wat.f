@@ -192,7 +192,7 @@
 
 !! O(nat^2) atom pairs, each doing a handful of O(igr^2) functxyz() density        !!
 !! evaluations -- a one-time setup cost, not currently parallelized (not worth it) !!
-      do 100 iatom=1,nat-1
+      do iatom=1,nat-1
         do 100 jatom=iatom+1,nat
 
           cnote=' '
@@ -360,7 +360,8 @@
           if(ri.ge.0.90d0.or.ri.le.0.10) write(*,'(2x,a)')
      +      'WARNING: large polarization for this atom pair, please check'
 
-  100 continue
+  100   continue
+      end do
       if(iradmat.eq.1) then
         open(unit=45,file='radmat.inp')
         write(45,*) nat

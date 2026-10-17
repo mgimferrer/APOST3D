@@ -285,7 +285,14 @@
             else
               deloc(ifrg,ii)=100.0d0 !! Absurt value, avoids problems !!
             end if
-            foli(ifrg,ii)=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
+!! an orbital with fragment population at most 1e-5 (Mulliken ones can  !!
+!! be slightly negative) is no candidate: FOLI values above 100 are     !!
+!! never selected                                                       !!
+            if(frgpop(ifrg,ii).gt.1.0d-5) then
+              foli(ifrg,ii)=dsqrt(deloc(ifrg,ii)/frgpop(ifrg,ii))
+            else
+              foli(ifrg,ii)=1.0d10
+            end if
           end do
 
 !! candidate orbitals of this fragment !!
@@ -1100,7 +1107,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /filename/name0
 
-      logical lunres,lfound
+      logical lunres
       character*80 line
       character*60 name0,name1
       character*20 ctype
@@ -1109,7 +1116,7 @@
       dimension foli_a(*),foli_b(*)
       allocatable :: ea(:),eb(:)
 
-      indepigr = int_locate(15,"Number of independ",lfound)
+      indepigr = nindep_fchk(igr)
       norb     = igr*indepigr
       norbt    = igr*(igr+1)/2
       ALLOCATE(ea(indepigr),eb(indepigr))
@@ -1269,9 +1276,8 @@
       integer, allocatable :: ifr(:),icol(:)
       real*8, allocatable :: xs(:)
       logical, allocatable :: lcol(:)
-      logical lfound
 
-      ncolf=min(igr,int_locate(15,"Number of independ",lfound))
+      ncolf=nindep_fchk(igr)
       xsum=ZERO
       do k=1,nel
         xsum=xsum+foli(k)

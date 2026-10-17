@@ -135,7 +135,7 @@
       call allocate_effao(igr,nat)
       call allocate_nao(igr)
 
-      igr0=int_locate(15,"Number of independ",ilog)
+      igr0=nindep_fchk(igr)
       if(igr.ne.igr0) write(*,'(2x,a)')
      +  'WARNING: some basis functions were removed (linear dependency)'
 
@@ -544,9 +544,7 @@
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension dm2(norb,norb,norb,norb)
       dimension dm1(nspinorb,nspinorb)
-      character*80 line
       real*8 vvv
-      logical ilog
 
       dm2=0.0d0
 
@@ -659,7 +657,6 @@
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension dm2(norb,norb,norb,norb)
       dimension dm1(nspinorb,nspinorb)
-      character*80 line
       logical ilog
 
       thres = 1.0d-8
@@ -1243,6 +1240,28 @@
       end if
 99    int_locate=0
 2     continue
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! function: nindep_fchk
+!! Number of independent basis functions in the .fchk (unit 15): fewer
+!! than igr when the program that wrote it removed linear dependencies,
+!! igr when the file doesn't give it.
+!! arguments:
+!!   igr (in)  number of basis functions
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      integer function nindep_fchk(igr)
+      implicit none
+      integer, intent(in) :: igr
+      integer int_locate,n
+      logical lfound
+
+      n=int_locate(15,"Number of independ",lfound)
+      nindep_fchk=igr
+      if(lfound) nindep_fchk=min(igr,n)
       end
 
 !! ***** !!

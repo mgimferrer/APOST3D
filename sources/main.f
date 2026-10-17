@@ -147,20 +147,11 @@ c      -------------------------------------------------------------------------
       character*20 cakey,caspace
       character*60 caname
       character*12 cashort
-!! for testing !!
-      dimension xhess(3,3)
 
       allocatable wp(:),omp(:),omp2(:,:),chp(:,:),pcoord(:,:),rho(:)
       allocatable ibaspoint(:)
-      allocatable sss(:,:),sssi(:,:)
       allocatable sat(:,:,:)
       allocatable dm1(:,:),dm2(:,:,:,:)
-
-!! TO CHANGE !!
-      allocatable orbpop(:)
-      allocatable rho_orb(:,:)
-      allocatable rho_at(:,:)
-!! !!
 
 
       call cpu_time(time)

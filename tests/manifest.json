@@ -3887,6 +3887,62 @@
           "pattern": "OXIDATION STATES"
         }
       ]
+    },
+    {
+      "name": "CH3F-OSLO-MULLIKEN",
+      "description": "Fluoromethane, RKS (the CH3F wavefunction), TFVC spreads with Mulliken fragment populations (# OSLO MULLIKEN), fragments F | CH3: orbitals with a negative Mulliken population are no candidates.",
+      "tags": [
+        "dft",
+        "rks",
+        "oslo",
+        "mulliken",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS",
+        "OSLO/MULLIKEN"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Mulliken fragment populations",
+          "type": "present",
+          "pattern": "Fragment populations\\s*:\\s*MULLIKEN"
+        },
+        {
+          "label": "No NaN FOLI value",
+          "type": "absent",
+          "pattern": "NaN"
+        },
+        {
+          "label": "Sum of the FOLI values",
+          "pattern": "Sum of the FOLI values\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 9.66526,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        }
+      ]
     }
   ]
 }

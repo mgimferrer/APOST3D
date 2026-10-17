@@ -982,7 +982,6 @@
 
       implicit real*8(a-h,o-z)
 
-      integer external OMP_GET_NUM_PROCS
 
       include 'parameter.h'
       parameter (maxpass=5)
@@ -1893,7 +1892,6 @@
 
       implicit real*8(a-h,o-z)
 
-      integer external OMP_GET_NUM_PROCS
 
       include 'parameter.h'
       parameter(maxpass=5)
@@ -3291,7 +3289,6 @@ c  energetics
 
       IMPLICIT REAL*8(A-H,O-Z)
 
-      integer external OMP_GET_NUM_PROCS
 
       include 'parameter.h'
 
