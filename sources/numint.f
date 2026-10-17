@@ -540,7 +540,7 @@
         end do
       end do
       write(cdev,'(es9.2)') dmax
-      write(*,*)
+      write(*,'(a)') ''
       call print_value('Sum of atomic overlaps, largest error',
      +  trim(adjustl(cdev))//' (from the analytic overlap S)')
       if(dmax.gt.1.0d-1) write(*,'(2x,a)') 'WARNING: the grid integrates '//

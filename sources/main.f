@@ -177,7 +177,7 @@ c      -------------------------------------------------------------------------
 
 !! print version info and the thread count of this run !!
       call kiir()
-      write(*,*)
+      write(*,'(a)') ''
       call print_value('OpenMP threads',omp_get_max_threads())
 
 !! the grid is set in # GRID, no longer on the command line !!
@@ -273,7 +273,7 @@ c      -------------------------------------------------------------------------
 !! restricted wavefunction, where Local Spin still doesn't make sense   !!
 !! (confirmed: produces nonsense u_A/N_D values, not a trivial zero).   !!
       if(ispin.eq.1.and.kop.eq.0.and.iposthf.eq.0)  then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') 'Note: SPIN skipped: a closed-shell single '//
      +    'determinant has no local spins'
         ispin=0
@@ -313,7 +313,7 @@ c      -------------------------------------------------------------------------
       end if
 
       if(kop.eq.0.and.ispin.eq.1) then
-        write(*,*)
+        write(*,'(a)') ''
         write(*,'(2x,a)') 'Note: closed-shell correlated wavefunction: '//
      +    'its local spins come from electron correlation'
       end if
@@ -548,7 +548,7 @@ c      iopt(200) =
 !! Natural orbitals from P-matrix in .fchk !!
       if (idono.eq.1) call gennatural()
 
-      write(*,*)
+      write(*,'(a)') ''
       call cpu_time(time2)
       call get_wall_time(wtime2)
       call print_timer('Initialization',time2-time,wtime2-wtime)
@@ -631,7 +631,8 @@ c      iopt(200) =
 
 !! OS from localized MOs (centroids) !!
         if(ieoscent.eq.1) then
-          write(*,*) 'Doing OS from centroids of localized orbitals...'
+          write(*,'(2x,a)') 'Oxidation states from the centroids of '//
+     +      'localized orbitals (OS-CENTROID)'
           call eos_centroid(itotps,chp,wp,omp,pcoord)
 !! normal end of this path: flush so stdout keeps its order, exit 0 !!
           call json_close('normal','')
@@ -648,7 +649,7 @@ c      iopt(200) =
 
 !! atomic-domain partition time, covers both branches above (Hilbert    !!
 !! and real-space).                                                     !!
-      write(*,*)
+      write(*,'(a)') ''
       call cpu_time(time2)
       call get_wall_time(wtime2)
       call print_timer('Atomic definition',time2-time,wtime2-wtime)
@@ -697,7 +698,7 @@ c      iopt(200) =
 !! Bond orders and valences !!
       call bond_order_analysis(sat)
 
-      write(*,*)
+      write(*,'(a)') ''
       call cpu_time(time2)
       call get_wall_time(wtime2)
       call print_timer('Population analysis',time2-time,wtime2-wtime)
@@ -867,7 +868,7 @@ c      iopt(200) =
         end if
         if(ieffao.ne.3.and.idoat.eq.0) call json_end()
 
-        write(*,*)
+        write(*,'(a)') ''
         call cpu_time(time2)
         call get_wall_time(wtime2)
         call print_timer('EFFAO computation',(time2-time)-xeos_cpu,(wtime2-wtime)-xeos_wall)
@@ -881,10 +882,8 @@ c      iopt(200) =
         call print_box('DOING LOCALIZED ORBITAL BONDING ANALYSIS (LOBA)')
 
 !! Hilbert-space !!
-        if(imulli.gt.0) then
-          write(*,*) " LOBA NOT IMPLEMENTED FOR HILBERT-SPACE "
-          call apost_stop('')
-        end if
+        if(imulli.gt.0) call apost_stop('LOBA needs a real-space '//
+     +    'atomic definition')
 
 !! Real-space !!
         if(imulli.eq.0) call eos_loba(sat)
@@ -944,7 +943,7 @@ c      iopt(200) =
           call numint_one_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto)
           call cpu_time(time2)
           call get_wall_time(wtime2)
-          write(*,*)
+          write(*,'(a)') ''
           call print_timer('ENPART one-electron terms',time2-time,
      +  wtime2-wtime)
           time=time2
@@ -993,7 +992,7 @@ c      iopt(200) =
             call numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
             call cpu_time(time2)
             call get_wall_time(wtime2)
-            write(*,*)
+            write(*,'(a)') ''
             call print_timer('ENPART one-electron terms',time2-time,
      +  wtime2-wtime)
             time=time2
@@ -1008,7 +1007,7 @@ c      iopt(200) =
               end if
               call cpu_time(time2)
               call get_wall_time(wtime2)
-              write(*,*)
+              write(*,'(a)') ''
               call print_timer('ENPART DFT exchange-correlation',
      +  time2-time,wtime2-wtime)
               time=time2
@@ -1022,7 +1021,7 @@ c      iopt(200) =
             call numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
             call cpu_time(time2)
             call get_wall_time(wtime2)
-            write(*,*)
+            write(*,'(a)') ''
             call print_timer('ENPART one-electron terms',time2-time,
      +  wtime2-wtime)
             time=time2
@@ -1033,7 +1032,7 @@ c      iopt(200) =
               call numint_dft_uks(ndim,itotps,wp,omp,omp2,chp,pcoord,eto)
               call cpu_time(time2)
               call get_wall_time(wtime2)
-              write(*,*)
+              write(*,'(a)') ''
               call print_timer('ENPART DFT exchange-correlation',
      +  time2-time,wtime2-wtime)
               time=time2
@@ -1088,7 +1087,7 @@ c      iopt(200) =
           call numint_two_rphf(ndim,itotps,wp,omp2,pcoord,chp,rho,eto,dm1,dm2)
           call cpu_time(time2)
           call get_wall_time(wtime2)
-          write(*,*)
+          write(*,'(a)') ''
           call print_timer('ENPART two-electron terms',time2-time,
      +  wtime2-wtime)
           time=time2
@@ -1107,7 +1106,7 @@ c      iopt(200) =
           else
             call numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
           end if
-          write(*,*)
+          write(*,'(a)') ''
           call cpu_time(time2)
           call get_wall_time(wtime2)
           call print_timer('ENPART two-electron terms',time2-time,
@@ -1208,7 +1207,7 @@ c      iopt(200) =
           call uwf_iterative_oslo(sat,itotps,wp,omp2,chp,pcoord)
         end if
 
-        write(*,*)
+        write(*,'(a)') ''
         call cpu_time(time2)
         call get_wall_time(wtime2)
         call print_timer('OSLO analysis',time2-time,wtime2-wtime)
@@ -1222,7 +1221,7 @@ c      iopt(200) =
 
 !! End printing... !!
       call json_close('normal','')
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(2x,a)') '...Normal Termination of APOST-3D...'
 
       end

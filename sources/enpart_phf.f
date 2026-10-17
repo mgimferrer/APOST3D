@@ -377,7 +377,7 @@
       call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
-      write(*,*)
+      write(*,'(a)') ''
       call print_timer('ENPART Coulomb',xtime2-xtime,wxtime2-wxtime)
       xtime=xtime2
       wxtime=wxtime2
@@ -591,7 +591,7 @@
       evee=coulen+exch_corr
       twoelerr=(evee-evee0)*tokcal
       call enpart_ee_tail(err1,err2,phabest,evee,twoelerr,.true.)
-      write(*,*)
+      write(*,'(a)') ''
       call cpu_time(xtime2)
       call get_wall_time(wxtime2)
       call print_timer('ENPART zero-error correction',xtime2-xtime,

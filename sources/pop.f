@@ -407,7 +407,7 @@
           sum=sum+rindex(iat,ibt)
         enddo
       enddo
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(2x,a,f10.5)') 'Sum check <S^2> = ',sum
 
       deallocate(tt,tts)
@@ -1034,7 +1034,7 @@
 
       call print_box('"FUZZY ATOMS" PCA EIGENVECTORS')
       call mprint2(scr,nat,nat)
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(2x,a)') 'Eigenvalues:'
       write(*,'(2x,8f10.4)') (pca(i,i),i=1,nat)
 

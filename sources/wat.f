@@ -183,12 +183,12 @@
             achi(j,i)=1.0d0/achi(i,j)
           end do
         end do
-        write(*,*)'Atomic radii matrix read from radmat.inp'
+        write(*,'(2x,a)') 'Atomic radii read from radmat.inp'
         go to 101
       end if
 
       write(*,'(2x,a)') 'Using density along atom pairs to set atomic radii'
-      write(*,*)
+      write(*,'(a)') ''
 
 !! O(nat^2) atom pairs, each doing a handful of O(igr^2) functxyz() density        !!
 !! evaluations -- a one-time setup cost, not currently parallelized (not worth it) !!
@@ -397,7 +397,8 @@
       dist=dsqrt((xabs-coord(1,icenter))**2+(yabs-coord(2,icenter))**2+(zabs-coord(3,icenter))**2)
 
       x1=splint(ipos,istate, nrad2 , dist)
-      if(x1.lt.0) write(*,*) 'error in splint ',x1,ipos,istate,nrad2
+      if(x1.lt.0) write(*,'(2x,a,es12.4)') 'WARNING: negative '//
+     +  'free-atom density from densoutput:',x1
 
       x0=0.0d0
       if(x1.gt.toler) then
@@ -454,8 +455,9 @@
       y=a*ya(ipos,istate,klo)+b*ya(ipos,istate,khi)+((a**3-a)*
      1  y2a(ipos,istate,klo)+(b**3-b)*y2a(ipos,istate,khi))*(h**2)/6.
 
-      if(y.lt.-1.0d-3) write(*,*) 'Large negative
-     1  atomic density',y,xa(khi),xa(klo),khi,klo
+      if(y.lt.-1.0d-3) write(*,'(2x,a,es12.4,a,2f10.5)') 'WARNING: '//
+     +  'large negative free-atom density',y,' between r =',xa(klo),
+     +  xa(khi)
       if(y.lt.0.0d0) y=0.0d0
       splint=y
 
@@ -669,6 +671,7 @@
 !! ********************************************************************** !!
       SUBROUTINE wathirshit3(rho,iatps,wp,whi,nat,iiter)
       use integration_grid
+      use output_mod
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /iops/iopt(200)
@@ -706,6 +709,10 @@
 !! self-consistency loop: recompute atomic populations from the current   !!
 !! weights, then recompute the weights from the new populations          !!
       isumcheck=0
+      write(*,'(a)') ''
+      write(*,'(2x,a)') 'Iterative Hirshfeld populations'
+      write(*,'(2x,a)') 'Iter.  Largest change  Total population'
+      write(*,'(2x,a)') repeat('-',38)
       DO WHILE (isumcheck<nat.and.nconv.lt.40)
         nconv=nconv+1
         isumcheck=0
@@ -718,10 +725,12 @@
           pop(ii)=xx    
 
           if(zn(ii)-pop(ii).ge.2.0d0) then
-            write(*,*) 'Atomic charge exceeds 2.0 for atom ',ii
+            write(*,'(2x,a,i0,a)') 'WARNING: charge of atom ',ii,
+     +        ' above +2, set to +2'
             pop(ii)=zn(ii)-2.0d0
           ELSE if(zn(ii)-pop(ii).le.-2.0d0) then
-            write(*,*) 'Atomic charge exceeds -2.0 for atom ',ii
+            write(*,'(2x,a,i0,a)') 'WARNING: charge of atom ',ii,
+     +        ' below -2, set to -2'
             pop(ii)=zn(ii)+2.0d0
           end if
         
@@ -738,13 +747,11 @@
           if(error(ii).eq.0.0d0) call apost_stop('Absolute convergence unlikely.')
           if(error(ii).gt.xmaxerr) xmaxerr=error(ii)
         END DO
-        write(*,*) 'Iteration :',nconv,' Max err: ',xmaxerr
         xxp=0.0d0
         do ii=1,nat
-          write(*,'(2x,i3,2x,2f10.5)') ii, znpop(ii),error(ii)
           xxp=xxp+znpop(ii)
         end do
-        write(*,*) 'Tot. Pop. ',xxp
+        write(*,'(2x,i5,f16.6,f18.6)') nconv,xmaxerr,xxp
 
         ifut=0
         DO icenter=1, nat
@@ -771,13 +778,13 @@
       END DO
 !! end of self-consistency loop !!
 
-      write(*,*) 'Iterative Hirshfeld Populations Converged '
-      write(*,*) '  Atom       Charge     '
-      write(*,*) '------------------------'
-      do ii=1,nat
-        write(*,'(2x,i3,2x,f10.5)') ii, zn(ii)-znpop(ii)
-      end do
-      write(*,*) '------------------------'
+      write(*,'(2x,a)') repeat('-',38)
+      if(isumcheck.lt.nat) then
+        write(*,'(2x,a,i0,a)') 'WARNING: not converged in ',nconv,
+     +    ' iterations (largest change above 0.0005)'
+      else
+        call print_value('Converged after (iterations)',nconv)
+      end if
 
       if(iradmat.eq.1) then
         open(unit=45,file='hirshit.pop')
@@ -791,7 +798,8 @@
         read(45,*) nat0
         if(nat0.ne.nat) call apost_stop('inconsistency reading hirshit.pop')
         read(45,*) (pop(i),i=1,nat)
-        write(*,*)'Hirshfeld-Iterative atomic populations read from hirshit.pop'
+        write(*,'(2x,a)') 'Iterative Hirshfeld populations read from '//
+     +    'hirshit.pop'
         close(45)
       end if
 
@@ -864,14 +872,14 @@
 !! present (MG: Hungarian original read "fill in atomic radii sensibly") !!
       open(unit=20,file="radius.inp",STATUS="OLD",err=100)
       read(20,*,end=100) nn
-      write(*,*)
+      write(*,'(a)') ''
       write(*,'(2x,a)') 'Empirical radii read from radius.inp'
       do i=1,nn
         read(20,*) inn,xnn
         write(*,'(2x,a,1x,i3,2x,a,1x,f6.3)') 'Atomic number:',inn,'radius:',xnn
         atrad(inn)=xnn
       end do
-      write(*,*)
+      write(*,'(a)') ''
  100  continue
 
       do inn=1,92
