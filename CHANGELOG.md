@@ -268,6 +268,16 @@ program, not a full development history — see `git log` for that.
 - **`.int` files of atoms with an ECP** — the `NET CHARGE` written by
   `DOINT` uses the nuclear charge left by the pseudopotential (it counted
   the core electrons the ECP replaces as a positive charge).
+- **OSLO with Mulliken populations** — `# OSLO MULLIKEN` gave NaN FOLI
+  values for orbitals with a slightly negative Mulliken population on a
+  fragment, and selected them. An orbital whose population on a fragment
+  is 10⁻⁵ or less is now not a candidate of that fragment.
+- **libxc references** — functional names and references are printed in
+  full (they were cut at 80 and 120 characters).
+- **Missing `.nao` file** — `NAO-BASIS` without the `jobname.nao` file
+  stops with a message (it ended with a runtime error).
+- **Iterative Hirshfeld** — a run that does not converge in 40 iterations
+  now says so; the iterations are printed as one table.
 - **Cube file layout** — cube files no longer carry a line of orbital
   indices after the atoms. The cube format has that line only with a
   negative atom count, so strict readers (ASE, VMD) shifted the data by
