@@ -6,6 +6,11 @@ definition. More complete inputs, with their outputs, are the test
 cases in `tests/inputs/` and `tests/reference/` of the repository (see
 [Running the test suite](../developer/testing.md#active-test-cases)).
 
+Each example says which wavefunction of `tests/inputs/` it runs on. To
+try it, copy that file (and the other files named) into an empty folder
+under one job name, e.g. `mol.fchk`, save the input as `mol.inp`, and run
+`$APOST3D_PATH/apost3d mol`.
+
 ## Example 1 - EOS with NAO atoms and cube files
 
 ```text
@@ -33,6 +38,10 @@ needs the file `jobname.nao`, see
 files of the effective fragment orbitals with net occupations between 0.3
 and 0.7. Fragment 1 is atom 1; fragment 2 all the other atoms.
 
+Try it on `CH3F-NAO.fchk` with `CH3F-NAO.nao` (copied as `mol.nao`): the
+fragments are C and FH₃, with oxidation states −2 and +2 and six cube
+files.
+
 ## Example 2 - ENPART with a functional given by libxc ids and a custom grid
 
 ```text
@@ -44,7 +53,7 @@ DOFRAGS
 # ENPART
 LIBRARY
 EX_FUNCTIONAL 106
-EC_FUNCTIONAL 132
+EC_FUNCTIONAL 131
 THREBOD -1
 #
 # FRAGMENTS
@@ -60,10 +69,14 @@ ANGULAR_2E 590
 ```
 
 Energy partitioning of a KS-DFT wavefunction. The libxc ids 106 (B88
-exchange) and 132 (P86 correlation) make up BP86, so the `BP86` keyword
-gives the same result. `THREBOD -1` computes the exchange-correlation term
+exchange) and 131 (LYP correlation) make up BLYP, so the `BLYP` keyword
+gives the same result; the functional must be the one of the
+wavefunction. `THREBOD -1` computes the exchange-correlation term
 of every atom pair. The optional `# GRID` block here
 repeats the default two-electron grid. See [ENPART](../methods/enpart.md).
+
+Try it on `H2O-T-BLYP.fchk` (triplet water, UKS BLYP; under a minute on 8
+threads): the fragments are O and H₂.
 
 ## Example 3 - Local spin of a correlated wavefunction from pySCF
 
@@ -84,6 +97,10 @@ Local spin analysis of a CASSCF wavefunction. The 1- and 2-RDM files,
 written by `utils/apost3d.py` together with the `.fchk` file (see
 [Preparing the wavefunction](../guide/wavefunctions.md#pyscf)), are given
 in the `# DM` block. See [SPIN](../methods/spin.md).
+
+Try it on `LiH-35-CAS22.fchk` with `LiH-35-CAS22.dm1` and
+`LiH-35-CAS22.dm2` (copied as `mol.dm1` and `mol.dm2`): LiH at 3.5 Å,
+CASSCF(2,2).
 
 ## Example 4 - OSLO oxidation states
 
@@ -115,6 +132,9 @@ Löwdin atoms (`LOWDIN` in `# OSLO`). `PRINT_NONORTHO` also writes the
 OSLOs before orthogonalization to a second `.fchk` file. See
 [OSLO](../methods/oslo.md).
 
+Try it on `FeCN5NO3--UBLYP-t2.fchk`: the fragments are Fe, one CN and the
+rest, with oxidation states +2, −1 and −4.
+
 ## Example 5 - EOS and local spin together
 
 ```text
@@ -128,14 +148,16 @@ DOFRAGS
 2
 1
 1
-5
-2 3 4 5 6
+-1
 #
 ```
 
 Effective oxidation states and local spins of an open-shell single
-determinant, with two fragments: atom 1, and atoms 2 to 6. For a
+determinant, with two fragments: atom 1, and the remaining atoms. For a
 correlated wavefunction, add `DM 2` and a `# DM` block as in Example 3.
+
+Try it on `NaBH3--UHF.fchk` (NaBH₃⁻, UHF): the fragments are Na and BH₃,
+with oxidation states 0 and −1.
 
 ## Example 6 - GEOS with cube files of the negative-occupation orbitals
 
@@ -161,8 +183,8 @@ RADIUS_SCALE 12.0
 ```
 
 Generalized effective oxidation states of LiH at 3.2 Å, from a pySCF
-FCI/cc-pVTZ `.fchk` file (the files are `tests/inputs/LiH-32-FCI.*` in
-the repository), with Li and H as fragments.
+FCI/cc-pVTZ `.fchk` file, with Li and H as fragments. Try it on
+`LiH-32-FCI.fchk`.
 
 `MAX_OCC 0` / `MIN_OCC 0` select none of the regular orbitals, so the only
 cube files written are those requested by `NEG_EFOS`: one per paired
