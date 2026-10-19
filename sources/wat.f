@@ -766,7 +766,7 @@
         do ii=1,nat
           xxp=xxp+znpop(ii)
         end do
-        write(*,'(2x,i5,f16.6,f18.6)') nconv,xmaxerr,xxp
+        write(*,'(2x,i5,es16.2,f18.6)') nconv,xmaxerr,xxp
 
         ifut=0
         DO icenter=1, nat
