@@ -667,7 +667,7 @@
 !! ********************************************************************** !!
 !! subroutine: wathirshit3                                                !!
 !! purpose: Hirshfeld-Iterative population cycle -- when iiter=1 (and not !!
-!! reading a cached radmat.inp), iterates atomic populations pop(:) to    !!
+!! reading a cached hirshit.pop), iterates atomic populations pop(:) to   !!
 !! self-consistency (each pop(i) driven by the current per-atom weights   !!
 !! whi via wathirsh2()) until every atom's population change drops below  !!
 !! tolerance, then recomputes whi at the converged populations; can       !!
@@ -821,10 +821,8 @@
 
 
 !! recompute the weights for every atom at the converged populations.    !!
-!! independent per grid point/atom pair -- a candidate for OMP, but this  !!
-!! whole Hirshfeld-Iterative path has zero test coverage (no active test  !!
-!! exercises HIRSH-IT), so left serial for now, same reasoning as         !!
-!! prenumint's untested Hirshfeld branch (see numint.f)                   !!
+!! independent per grid point/atom pair: a candidate for OMP, as is the  !!
+!! weight update inside the cycle (both serial for now)                  !!
       ifut=0
       DO icenter=1, nat
         do k =1,nrad
