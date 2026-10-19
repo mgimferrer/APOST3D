@@ -4054,35 +4054,35 @@
         {
           "label": "Iterations to convergence",
           "pattern": "Converged after \\(iterations\\)\\s*:\\s*(\\d+)",
-          "ref": 13.0,
+          "ref": 32.0,
           "tol_abs": 0.5
         },
         {
           "label": "C Hirshfeld-I atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.001593,
+          "ref": 0.000867,
           "tol_abs": 2e-05
         },
         {
           "label": "F Hirshfeld-I atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.169633,
+          "ref": -0.169489,
           "tol_abs": 2e-05
         },
         {
           "label": "H3 Hirshfeld-I atomic charge",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 0.05598,
+          "ref": 0.056174,
           "tol_abs": 2e-05
         },
         {
           "label": "EOS alpha net occupation, fragment 1 (F)",
           "section": "ALPHA DENSITY",
           "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 4.36708,
+          "ref": 4.36699,
           "tol_abs": 0.0002
         },
         {
@@ -4102,7 +4102,7 @@
         {
           "label": "Overall reliability index R(%)",
           "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 87.188,
+          "ref": 87.184,
           "tol_abs": 0.02
         }
       ]

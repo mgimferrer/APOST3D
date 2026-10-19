@@ -703,7 +703,11 @@
       DO ii=1, nat
         znpop(ii)=zn(ii)
       END DO
-      toler=1.0d-8
+!! converged when no population changes by more than toler between two  !!
+!! iterations; each iteration cuts the change by about a quarter, so the  !!
+!! populations are then within a few toler of the fixed point            !!
+      toler=1.0d-6
+      maxit=100
       nconv=0
 
 !! self-consistency loop: recompute atomic populations from the current   !!
@@ -713,7 +717,7 @@
       write(*,'(2x,a)') 'Iterative Hirshfeld populations'
       write(*,'(2x,a)') 'Iter.  Largest change  Total population'
       write(*,'(2x,a)') repeat('-',38)
-      DO WHILE (isumcheck<nat.and.nconv.lt.40)
+      DO WHILE (isumcheck<nat.and.nconv.lt.maxit)
         nconv=nconv+1
         isumcheck=0
         xmaxerr=0.0d0
@@ -743,7 +747,7 @@
           charge(ii) = zn(ii)-pop(ii)
           error(ii)=abs(znpop(ii)-pop(ii))
           znpop(ii)=pop(ii)
-          IF (error(ii)<0.0005d0) isumcheck=isumcheck+1
+          IF (error(ii)<toler) isumcheck=isumcheck+1
           if(error(ii).eq.0.0d0) call apost_stop('Absolute convergence unlikely.')
           if(error(ii).gt.xmaxerr) xmaxerr=error(ii)
         END DO
@@ -780,8 +784,9 @@
 
       write(*,'(2x,a)') repeat('-',38)
       if(isumcheck.lt.nat) then
-        write(*,'(2x,a,i0,a)') 'WARNING: not converged in ',nconv,
-     +    ' iterations (largest change above 0.0005)'
+        write(*,'(2x,a,i0,a,es8.1,a)') 'WARNING: not converged in ',
+     +    nconv,' iterations (largest change above',toler,'); the '//
+     +    'populations of the last iteration are used'
       else
         call print_value('Converged after (iterations)',nconv)
       end if
