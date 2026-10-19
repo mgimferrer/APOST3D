@@ -204,8 +204,9 @@ RADIUS_SCALE 12.0
 ## Checking the result
 
 - R(%) is read as in [EOS](eos.md#how-it-works), per density and overall.
-- `RMSD of the electron assignment` is the root-mean-square deviation
-  between the assigned and the actual EFO occupations: the smaller, the
-  closer the electron distribution is to the integer assignment.
+- `RMSD of the electron assignment` is the square root of the sum, over
+  all EFOs, of the squared differences between the assigned and the
+  actual occupations, divided by the number of electrons: the smaller,
+  the closer the electron distribution is to the integer assignment.
 - For negative paired EFOs, `Recovered (%)` tells how faithfully the
   orbital in the `.fchk` file represents them.

@@ -48,12 +48,12 @@ E. Ramos-Cordoba, V. Postils and P. Salvador, *J. Chem. Theory Comput.*,
    the bond is highly covalent and the result may depend on the
    wavefunction and the atomic definition, so look at the frontier EFOs
    and compare with other descriptors.
-5. **Near-degenerate frontier EFOs.** If EFOs of different fragments are
-   within 0.0025 of the last occupied one, the electron(s) are shared
-   among them, the program prints `Electron assignment : fractional` and
-   a `WARNING` line saying how many electrons are shared by how many
-   EFOs, and the oxidation states become fractional (e.g. two
-   equivalent ligands sharing one electron get −1.5 each).
+5. **Near-degenerate frontier EFOs.** If EFOs are within 0.0025 of the
+   last occupied one, the electron(s) are shared evenly among them: the
+   program prints `Electron assignment : fractional` and a `WARNING` line
+   saying how many electrons are shared by how many EFOs. When these EFOs
+   belong to different fragments, the oxidation states become fractional
+   (e.g. two equivalent ligands sharing one electron get −1.5 each).
 
 For a closed-shell wavefunction the beta assignment is the same as the
 alpha one, so only the alpha EFOs are computed.
@@ -61,11 +61,13 @@ alpha one, so only the alpha EFOs are computed.
 ## Requirements and input
 
 - Any atomic definition. Real-space schemes (`TFVC` recommended) give the
-  most robust results and also write the EFOs to a `.fchk` file; Mulliken,
-  Löwdin and NAO are available too (see [Atoms in molecules](../guide/aim.md)).
+  most robust results; Mulliken, Löwdin, Löwdin-Davidson and NAO are
+  available too (see [Atoms in molecules](../guide/aim.md)). Every scheme
+  writes the EFOs to a `.fchk` file.
 - Any wavefunction: restricted or unrestricted single determinants, and
-  correlated wavefunctions (their alpha and beta densities, from the
-  `.fchk` file or from the 1-RDM in a [`# DM` block](../input/dm.md)).
+  correlated wavefunctions. For a closed-shell correlated wavefunction the
+  `.fchk` file is enough; for an open-shell one the alpha and beta
+  densities come from the 1-RDM in a [`# DM` block](../input/dm.md).
 - Fragments are required (`DOFRAGS` and a
   [`# FRAGMENTS` block](../input/fragments.md)), with every atom in exactly
   one of them; the run stops otherwise. For one oxidation state per atom,
@@ -102,8 +104,8 @@ densities instead, is designed for these cases.
 
 The excerpts come from the FeCO₂²⁺ complex, closed-shell RKS PBE, TFVC,
 with Fe as fragment 1 and the two CO ligands as fragments 2 and 3 (test
-`FeCO2-PBEPBE`, input above). The run first prints the EFOs of each
-fragment ([EFFAO](effao.md)), then the assignment for each spin:
+`FeCO2-PBEPBE`, input above). For each spin, the run prints the EFOs of
+each fragment ([EFFAO](effao.md)), then the assignment:
 
 % source: tests/reference/FeCO2-PBEPBE.apost
 ```text

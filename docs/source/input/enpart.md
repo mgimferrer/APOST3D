@@ -60,10 +60,9 @@ and/or `EC_FUNCTIONAL`, never both kinds together:
 | `EX_FUNCTIONAL` *n* | libxc id of the exchange functional |
 | `EC_FUNCTIONAL` *n* | libxc id of the correlation functional |
 
-LDA, GGA and global-hybrid GGA
-functionals are supported. Meta-GGAs (not yet), range-separated hybrids
-and VV10 functionals stop the run with a message, as does an invalid id.
-The functional must be the one used to compute the wavefunction.
+Which functional families are supported is listed in
+[ENPART](../methods/enpart.md#choosing-the-functional); an unsupported
+family or an invalid id stops the run with a message.
 
 ## Options
 
@@ -71,7 +70,7 @@ The functional must be the one used to compute the wavefunction.
 | ------- | ----- | ------- | ----------- |
 | `THREBOD` | integer *n* | 50 | Bond-order threshold for the two-center terms, *n*/10000 (default 0.005). For pairs of atoms with a smaller bond order, the exchange-correlation integration (6-D exchange, or BODEN for KS-DFT) is skipped and the pair's whole exchange-correlation term is estimated by a multipolar expansion (see [ENPART](../methods/enpart.md)). Any *n* below 1 (e.g. `THREBOD -1`) computes every pair. |
 | `TWOELTOLER` | real | 0.25 | Two-electron integration error (kcal/mol) above which the zero-error strategy is applied; `0.00` always applies it. Needs the reference energies in the `.fchk` file. |
-| `CORRELATION` | | off | Correlated wavefunctions only: decompose exchange and correlation separately (by default they are decomposed together). The zero-error interpolation still acts on their sum only; the separate exchange and correlation tables are left as integrated. |
+| `CORRELATION` | | off | Correlated wavefunctions only: decompose exchange and correlation separately (by default they are decomposed together). The zero-error correction acts on their sum only: when it is applied, only the corrected exchange-correlation is printed (see [ENPART](../methods/enpart.md#correlated-wavefunctions)). |
 | `ANALYTIC` | | off | Semianalytical integration of the one-center two-electron terms (under development, slow). |
 
 The reference energies needed by the integration-error checks and the

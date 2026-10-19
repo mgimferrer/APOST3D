@@ -26,9 +26,10 @@ boxes):
 | Subsection | `print_subbox('TITLE')` | a part of a section (a spin channel, an iteration, a table) |
 | Caption | a plain line, sentence case | the title of a single table or list |
 
-- Section and subsection titles are in capitals; `print_box` and
-  `print_subbox` print their own empty lines before and after, so the
-  caller adds none.
+- Section and subsection titles are in capitals. `print_box` prints an
+  empty line before and after the box; `print_subbox` prints the same box
+  without the empty line before, for a heading that directly follows
+  another one. The caller adds none.
 - Two headings never follow each other directly with the same level:
   the second one is a subsection.
 
@@ -38,10 +39,12 @@ A single value is printed as `label (unit) : value`, with the label
 padded to 40 characters so that the colons of neighbouring lines line
 up:
 
+% source: tests/reference/H2O-Dimer-RHF.apost
 ```text
-  Electron-nuclear attraction (au)        :   -194.5024157
-  Kinetic energy (au)                     :     75.8390458
-  Integration error (kcal/mol)            :      0.00
+  Electron-nuclear attraction (au)        :    -434.8233244
+  Integration error (kcal/mol)            :           0.00
+  ...
+  Kinetic energy (au)                     :     151.9545478
 ```
 
 - The unit is given for every quantity that has one: `(au)` for
@@ -80,13 +83,14 @@ give them (the SCF energy of the `.fchk` keeps its 10 decimals).
 
 ## Tables
 
+% source: tests/reference/CH3F-NAO.apost
 ```text
   Frag.  Electrons  Last occ.  First unocc.
   -----------------------------------------
-      1      12.00      0.837         0.321
-      2       3.00      0.512             -
+      1       5.00      0.720             -
+      2       4.00      1.000         0.280
   -----------------------------------------
-  Reliability index R (%)                 :     96.598
+  Reliability index R (%)                 :         94.026
 ```
 
 - A header line, a rule, the rows, a closing rule. Rules are exactly as

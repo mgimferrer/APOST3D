@@ -26,9 +26,9 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
 
 ## How it works
 
-1. **One-electron terms.** Kinetic energy (one-center only),
-   electron-nuclear attraction and nuclear repulsion are integrated on the
-   main (one-electron) grid.
+1. **One-electron terms.** Kinetic energy (one-center only) and
+   electron-nuclear attraction are integrated on the main (one-electron)
+   grid; the nuclear repulsion is exact.
 2. **Coulomb term.** The classical electron-electron repulsion is a 6-D
    integral, computed numerically. For the one-center terms the second
    electron's coordinates use a copy of the grid rotated by a small
@@ -58,9 +58,12 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    density is that of the (Kohn-Sham) determinant; for CASSCF/CISD, the
    one built from the RDMs. For a hybrid functional, the (1 − *a*) share
    appears in the DFT part and the *a* share, *a* being the
-   exact-exchange fraction, with the HF-type exchange. The one-center
-   terms are adjusted so that the total exchange-correlation energy does
-   not change.
+   exact-exchange fraction, with the HF-type exchange. For the DFT part,
+   the self terms are then built as usual (the functional within the atom
+   minus half of each pair term), so its total does not change; for the
+   exchange (Hartree-Fock, the exact-exchange share of hybrids) and for
+   correlated wavefunctions, the multipolar estimate replaces the pair
+   term and the one-center terms are not changed.
 
    The default threshold, a bond order of 0.005, was chosen for a good
    accuracy/cost ratio; `THREBOD -1` computes every pair.
@@ -93,9 +96,11 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
   electron-nuclear terms. With Gaussian the matrix carries a small
   rounding error, see
   [get_energy_g16](../tools/utilities.md#get_energy_g16-and-get_energy).
-- Only the **electronic energy** is decomposed: wavefunctions from
-  calculations with an empirical dispersion correction (e.g. Grimme's
-  GD3) cannot be decomposed directly.
+- Only the **electronic energy** is decomposed: Gaussian wavefunctions
+  from calculations with an empirical dispersion correction (e.g.
+  Grimme's GD3) cannot be decomposed directly. For pySCF, `apost3d.py`
+  removes the dispersion energy from the reference electron-electron
+  energy (see [Preparing the wavefunction](../guide/wavefunctions.md)).
 
 ```text
 # METHOD
@@ -113,15 +118,11 @@ The full keyword list is in [Block section # ENPART](../input/enpart.md).
 
 ### Choosing the functional
 
-The functional must be the one used to compute the wavefunction. Give it
-with a predefined keyword (`SVWN`, `BLYP`, `BP86`, `PBE`, `B3LYP`,
-`B3PW91`, `B3P86`, `PBE0`, `BHANDHLYP`, ...), or with `LIBRARY` and its
-[libxc](https://libxc.gitlab.io/functionals/) identifiers: either
-`EXC_FUNCTIONAL` alone (a combined exchange-correlation functional), or
-`EX_FUNCTIONAL` and/or `EC_FUNCTIONAL` (separate exchange and correlation
-parts), never both kinds together. Each predefined keyword was checked to
-reproduce the Gaussian 16 functional of the same name; the full list,
-with libxc ids, is in [Block section # ENPART](../input/enpart.md).
+The functional must be the one used to compute the wavefunction. It is
+given with a predefined keyword (`B3LYP`, `PBE0`, ...) or with `LIBRARY`
+and its [libxc](https://libxc.gitlab.io/functionals/) identifiers; the
+keywords, their libxc ids and how to give a functional by its ids are in
+[Block section # ENPART](../input/enpart.md).
 
 | Functional family | Supported |
 |---|---|
@@ -137,13 +138,11 @@ computed.
 ```{admonition} Same name, different functional
 :class: warning
 
-Programs do not agree on what some names mean: ORCA's and Turbomole's
-B3LYP is not Gaussian's (libxc 475 instead of 402, about 23 kcal/mol
-apart for water), and libxc's own "B3P86" (403) is not Gaussian's either
-(the `B3P86` keyword uses 315). A mismatched functional is not always
-obvious in the output, because the zero-error strategy can absorb it into
-the one-center terms (see *Checking the result* below). Details in
-[Block section # ENPART](../input/enpart.md).
+Programs do not agree on what some names mean (ORCA's B3LYP, for
+example, is not Gaussian's): see the list in
+[Block section # ENPART](../input/enpart.md). A mismatched functional is
+not always obvious in the output, because the zero-error strategy can
+absorb it into the one-center terms (see *Checking the result* below).
 ```
 
 ## Reading the output
@@ -177,7 +176,8 @@ references.
 **One-electron terms.** `ELECTRON-NUCLEAR ATTRACTION` and
 `NUCLEAR-NUCLEAR REPULSION` are matrices; `KINETIC ENERGY` is a column
 per atom, since the kinetic energy has no pair terms. With reference
-energies in the `.fchk`, each total is followed by its integration error:
+energies in the `.fchk`, the electron-nuclear and kinetic totals are
+followed by their integration errors:
 
 % source: tests/reference/H2O-SVWN.apost
 ```text
@@ -349,8 +349,9 @@ decimals):
 ```
 
 - The field interaction energy follows Gaussian's convention,
-  *E* = +**μ**·**F** (the energy goes down when the dipole points along
-  the field), and equals the molecular dipole times the field.
+  *E* = +**μ**·**F**, with **F** the field vector of the `.fchk` file
+  (printed above): the energy goes down when the dipole points against
+  that vector. It equals the molecular dipole times the field.
 - It is **not** part of the IQA terms: the IQA matrices decompose the
   energy without it, and the energy check of `IQA ENERGY TERMS` adds it
   to their total before comparing with the energy of the `.fchk` (which
@@ -403,10 +404,11 @@ separately, so:
   construction, even if the functional does not match the wavefunction.
 - The informative numbers are the one-electron integration errors, the
   two-electron error **before** the zero-error strategy (the first
-  `Integration error` of `TWO-ELECTRON INTEGRATION ERROR`, a few kcal/mol
-  at most with sensible grids), and the damping parameter (about 1.2 to
-  1.4 in the tests, with the 40 × 146 two-electron grid). A much larger error or damping parameter
-  points to a functional that does not match the wavefunction.
+  `Integration error` of `TWO-ELECTRON INTEGRATION ERROR`: about −3 to
+  +6 kcal/mol in the tests with the 40 × 146 two-electron grid, more for
+  heavy atoms), and the damping parameter (0.1 to 1.5 in the tests). An
+  error of tens or hundreds of kcal/mol points to a functional that does
+  not match the wavefunction.
 - Without reference energies, the final integration error is the raw
   numerical error and depends strongly on the two-electron grid,
   especially for heavier atoms.
@@ -418,7 +420,8 @@ separately, so:
 - **Two-electron grid**: 150 × 590 by default, set with `RADIAL_2E` and
   `ANGULAR_2E` in the optional `# GRID` block (see
   [Block section # GRID](../input/grid.md)); the rotation angles of the
-  grid are chosen by the program for the angular grid.
+  grid are chosen by the program for 146 and 590 angular points, and
+  other sizes use the 590 angles, with a warning.
 - The 6-D two-electron integrations dominate the cost, which grows with
   the square of the number of points per atom: 40 × 146 is much cheaper
   than 150 × 590 and, with the zero-error strategy, useful for tests and

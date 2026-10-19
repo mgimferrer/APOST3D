@@ -14,10 +14,8 @@ keywords you want to change.
 The defaults of the one-electron grid are enough for populations, bond
 orders and effective orbitals with `TFVC` (see
 [Running a calculation](../guide/running.md#integration-grid)). The
-two-electron grid sets both the accuracy and the cost of ENPART, which
-grows with the square of its points per atom: the default 150 × 590 gives
-publication-quality two-electron terms; 40 × 146 is much cheaper, for
-tests and larger systems (see [ENPART](../methods/enpart.md#grids-and-cost)).
+two-electron grid sets both the accuracy and the cost of ENPART (see
+[ENPART](../methods/enpart.md#grids-and-cost)).
 
 Example, a finer one-electron grid for a population analysis:
 

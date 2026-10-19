@@ -47,9 +47,11 @@ fragments.
 
 The excerpts come from fluoromethane, RKS, TFVC (test `CH3F`). The
 section starts with the atomic definition used
-(`Atomic definition : TFVC (real space)`). Each table has a column named
-after it (`TFVC` here, `Lowdin`, `Hirshfeld`, ... in other runs) and, for
-comparison, the Mulliken value; a Mulliken run prints a single column:
+(`Atomic definition : TFVC (real space)`). The population, charge and
+spin tables have a column named after it (`TFVC` here, `Lowdin`,
+`Hirshfeld`, ... in other runs) and, for comparison, the Mulliken value;
+the other tables, and every table of a Mulliken run, have a single
+column:
 
 % source: tests/reference/CH3F.apost
 ```text
@@ -71,8 +73,9 @@ comparison, the Mulliken value; a Mulliken run prints a single column:
 The sum of the real-space populations differs from the number of electrons
 by the numerical integration error (here 0.0005). `TOTAL ATOMIC CHARGES`
 follows in the same layout, and `SPIN POPULATIONS` for open-shell
-wavefunctions. With `EOS` or `GEOS`, the overlap populations between
-atoms are also printed (`OVERLAP POPULATION MATRIX`).
+wavefunctions. With `EOS` or `GEOS` and a real-space or Mulliken atomic
+definition, the overlap populations between atoms are also printed
+(`OVERLAP POPULATION MATRIX`).
 
 % source: tests/reference/CH3F.apost
 ```text
@@ -100,8 +103,9 @@ Then `TOTAL VALENCES` ($V_A$, 3.56 for carbon), `VALENCES USED IN BONDS`
 ($V^B_A$) and `FREE VALENCES` ($F_A$, zero up to the integration error in
 this closed-shell molecule).
 
-With `DOFRAGS`, every table is followed by its fragment version
-(`FRAGMENT ELECTRON POPULATIONS`, `FRAGMENT BOND ORDERS`, ...), where the populations and charges are summed over the atoms of each
+With `DOFRAGS`, every table has its fragment version
+(`FRAGMENT ELECTRON POPULATIONS`, ...; `FRAGMENT BOND ORDERS` comes last,
+after the valences), where the populations and charges are summed over the atoms of each
 fragment and the bond order between two fragments is the sum of the bond
 orders between their atoms (see [Fragments](../guide/fragments.md)).
 

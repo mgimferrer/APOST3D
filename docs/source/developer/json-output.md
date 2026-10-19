@@ -17,10 +17,11 @@ This page is the reference for its content.
   written as `<job>.apost.json.tmp` and renamed when complete, so a file
   named `<job>.apost.json` is always complete and valid JSON. A results
   file left from an earlier run with the same name is removed first.
-- A run that stops on an error (a `STOP` line at the end of the output)
-  still completes its file, with `run.status` set to `"stopped"` and the
-  message in `run.stop_message`; it holds the blocks written before the
-  stop.
+- A run that stops on an error (usually a `STOP` line at the end of the
+  output) still completes its file, with `run.status` set to `"stopped"`
+  and the message in `run.stop_message`; it holds the blocks written
+  before the stop. A run that stops while reading the input has no
+  `input`, `molecule`, `fragments` or `analyses`.
 - A run that stops before the files are opened (missing input or
   wavefunction file) writes no results file.
 
@@ -28,9 +29,10 @@ This page is the reference for its content.
 
 - Atom and fragment numbers are 1-based, in the order of the `.fchk`
   file, as in the text output.
-- Units are part of the key: `_au` (hartree), `_bohr`, `_kcal_mol`,
-  `_percent`. No suffix means dimensionless (electrons, bond orders,
-  oxidation states).
+- Units are part of the key: `_au` (hartree), `_bohr`, `_kcal`
+  (kcal/mol), `_percent`. The energies of the `enpart` block are in au
+  without a suffix. Other keys without a suffix are dimensionless
+  (electrons, bond orders, oxidation states).
 - Reals are written with 17 significant digits, which read back as the
   same double-precision value the program computed, whatever the
   `FULLPRECISION` setting of the text output. A value that is not
@@ -65,7 +67,7 @@ This page is the reference for its content.
 | `method` | as in the output: `"Hartree-Fock"`, `"KS-DFT"`, `"CASSCF"`, ... |
 | `n_basis_functions` | number of basis functions |
 | `n_electrons`, `n_alpha`, `n_beta` | electron counts (valence electrons only with an ECP) |
-| `energy_au` | the `SCF Energy` field of the `.fchk` file (for a correlated wavefunction, the energy of its reference SCF, not the correlated total energy), or `null` when the file has none. Any change of this definition will be announced in the release notes. |
+| `energy_au` | the `SCF Energy` field of the `.fchk` file, or `null` when the file has none. For a correlated Gaussian calculation it is the energy of the reference SCF; the `.fchk` files written by `utils/apost3d.py` (pySCF) store the energy of the method itself there. Any change of this definition will be announced in the release notes. |
 
 ### `input`
 
@@ -171,7 +173,7 @@ Written by every run.
 | `scheme` | as in `populations` |
 | `atoms` | `matrix`: bond orders (localization index on the diagonal); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free` |
 | `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle) and the three valences summed per fragment (only with fragments) |
-| `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS, GEOS) |
+| `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS, GEOS and PCA, except with Lowdin, Lowdin-Davidson or NAO atoms) |
 
 ### `local_spin`
 
@@ -201,8 +203,9 @@ Written with `EFFAO` or `UEFFAO` without `EOS`, and with `EFFAO-U`.
 
 The `efos` table has one row per EFO above the occupation cutoff,
 fragment by fragment: `fragments`, `shares`, `net` (net occupation) and, in real
-space, `gross` (gross occupation) and `fit_percent` (how closely the EFO
-written to a `.fchk` file reproduces the fragment-weighted orbital).
+space, `gross` (gross occupation) and, except for `EFFAO-U`,
+`fit_percent` (how closely the EFO written to a `.fchk` file reproduces
+the fragment-weighted orbital).
 EFFAO writes no orbital file, so these tables have no `fchk_column`
 and their EFOs cannot be drawn from the results file.
 
@@ -290,7 +293,7 @@ energy, needed to check the total.
 | `pair_threshold`, `multipolar_pairs` | the `THREBOD` bond order, and the atom pairs below it (a list of `[A, B]`, 1-based), whose exchange-correlation term comes from the multipolar expansion |
 | `electron_nuclear`, `kinetic`, `nuclear_repulsion` | one-electron terms (below); `kinetic` is a diagonal matrix |
 | `xc_dft` | KS-DFT: the DFT part of the exchange-correlation (for a hybrid, without the exact exchange) |
-| `two_electron_integration` | `energy` and `error_kcal` on the first grid, `tolerance_kcal`, `zero_error_correction` (`"applied"`, `"not needed"` or `"no reference energy"`), and when applied `rotated_grid_error_kcal`, `damping`, `corrected_energy`, `corrected_error_kcal` (`null` otherwise) |
+| `two_electron_integration` | `energy` and `error_kcal` on the first grid, `tolerance_kcal`, `zero_error_correction` (`"applied"`, `"not needed"` or `"no reference energy"`), and when applied `rotated_grid_error_kcal`, `damping`, `corrected_energy`, `corrected_error_kcal` (`null` otherwise); `error_kcal` and `tolerance_kcal` are `null` with `"no reference energy"` |
 | `coulomb` | the Coulomb term |
 | `exact_exchange_share` | hybrid functionals: the HF-type exchange multiplied by the exact-exchange fraction, as it enters the energy |
 | `xc` | the final exchange-correlation term: the exchange for Hartree-Fock, `xc_dft` for a pure functional, `xc_dft` + `exact_exchange_share` for a hybrid, the cumulant term for a correlated wavefunction |
@@ -325,8 +328,8 @@ entry per quantity, in the order they are written:
 | `kind` | `scalar` (one number, e.g. `local_spin.total_s2`), `atom_vector`, `atom_matrix`, `fragment_vector`, `fragment_matrix` or `table` |
 | `title` | a name for a menu, with the atomic definition (`"Atomic charges (TFVC)"`) |
 | `unit` | `"au"`, `"%"`, ... or `null` for a dimensionless quantity |
-| `decimals` | decimals the text output prints (6, or 13 with `FULLPRECISION`): a default for display; `null` for a table, whose columns give their own |
-| `signed` | `true` when the values can be negative by nature (charges, spin populations, the <S^2> decomposition, and Mulliken bond orders and overlap populations): a diverging colour scale centred on zero suits them; `false` when they are not (populations, bond orders, valences), even if a value comes out slightly negative from the numerical integration |
+| `decimals` | decimals the text output prints for it (2 to 7; 13 for the 6- and 7-decimal values with `FULLPRECISION`): a default for display; `null` for a table, whose columns give their own |
+| `signed` | `true` when the values can be negative by nature (charges, spin populations, the <S^2> decomposition, energies, oxidation states, the occupations of negative EFOs, and Mulliken bond orders and overlap populations): a diverging colour scale centred on zero suits them; `false` when they are not (populations, bond orders, valences), even if a value comes out slightly negative from the numerical integration |
 
 `index` is always present (empty when the run stopped before any
 analysis).

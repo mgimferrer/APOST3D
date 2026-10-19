@@ -102,11 +102,12 @@ cd $APOST3D_PATH
 make test
 ```
 
-This runs 17 complete calculations and compares every number they print
-with stored reference outputs. It takes a few minutes and should end with
+This runs every test of the suite (54 calculations at present) and
+compares every number they print with stored reference outputs. It takes
+a few minutes and should end with
 
 ```text
-  17 PASSED   (...s total)
+  54 PASSED   (...s total)
 ```
 
 If a test fails, the output says which values differ; see
@@ -116,7 +117,8 @@ You are ready: continue with the [tutorial](tutorial.md).
 
 ## Build options
 
-`make_compile.sh` accepts these options (the same names work with `make`):
+`make_compile.sh` accepts these options (`ARCH` and `clean` work the same
+with `make`, where the number of compile jobs is set with `-j`):
 
 | Option | Effect |
 |---|---|
@@ -155,8 +157,8 @@ bash make_compile.sh
 
 **An existing libxc.** If libxc is already installed (a distribution
 package, conda, Homebrew's `libxc`), the script finds it through
-`pkg-config` and does not build its own. It must be libxc 7, built with the
-same gfortran; if an installed copy gives build errors, build the bundled
+`pkg-config` and does not build its own. It must be libxc 7.0 or newer, built
+with the same gfortran; if an installed copy gives build errors, build the bundled
 one with `bash compile_libxc.sh` and point at it with
 `LIBXC_DIR=$APOST3D_PATH/libxc-7.1.2`. To use a specific copy:
 

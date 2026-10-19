@@ -73,6 +73,8 @@ one clear cause:
   - `--threads N`: also runs the new build with N threads and shows the
     differences against one thread (a parallel region may change the last
     printed digit by summing in another order).
+  - The results files (`.apost.json`) are compared too: identical values,
+    or within `compare_json.py`'s tolerance with `--format`.
 - `python3 tests/lint.py <files>` lists what in those files does not
   follow the conventions yet (comments, list-directed writes, headers,
   OpenMP comments, compiler warnings). It is a helper for reviewing a

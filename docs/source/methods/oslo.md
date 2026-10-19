@@ -19,8 +19,8 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
 
 1. **Fragment-centered localization.** For each fragment F, the occupied
    orbitals are combined into orbitals of minimal radial spread around a
-   reference point $\mathbf R_F$, the fragment's center of nuclear charge
-   (printed under `Charge centre R_F of each fragment`, in Å). This is a
+   reference point $\mathbf R_F$, the center of the fragment's atoms
+   weighted by their atomic numbers (printed under `Charge centre R_F of each fragment`, in Å). This is a
    single diagonalization of the spread matrix
    $L^F_{ij} = \int \psi_i(\mathbf r)\,|\mathbf r-\mathbf R_F|^2\,\psi_j(\mathbf r)\,d\mathbf r$
    in the occupied space: no iterations, no multiple minima. For an atom,
@@ -54,9 +54,9 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
    restricted calculation, one per spin orbital in an unrestricted one) to
    the fragment it was localized on; a shared orbital gives each fragment
    its share. The oxidation state of a fragment is the sum of the nuclear
-   charges of its atoms minus its electrons, so a shared orbital gives
-   fractional oxidation states (a covalent, or homolytic, assignment of
-   that bond).
+   charges of its atoms minus its electrons. A pair shared half and half
+   gives one electron to each fragment (a homolytic assignment of that
+   bond); unequal shares give fractional oxidation states.
 
 For an unrestricted wavefunction the procedure is done separately for the
 alpha and the beta orbitals.
@@ -210,8 +210,9 @@ the same FOLI (2.00115). It is one orbital, shared:
 ```
 
 Each CH₃ gets one electron of the C–C pair, and both oxidation states are
-0.00, followed by the line `Fractional values: orbitals shared between
-fragments (see the iterations)` when a value is fractional.
+0.00. The line `Fractional values: orbitals shared between fragments (see
+the iterations)` follows whenever an orbital is shared, even when the
+oxidation states come out whole.
 
 ## Close alternatives and branching
 
@@ -242,7 +243,7 @@ input line that follows the alternative (H2 triplet at 0.60 Å, test
 
 This is not checked when only one orbital is left: every candidate is
 then that orbital, and the Δ-FOLI already tells how clear its assignment
-is.
+is. It is not checked in a branching iteration either.
 
 **Branching.** `BRANCH_ITERATION n` in [`# OSLO`](../input/oslo.md)
 selects, at iteration n, the orbitals at the next FOLI value instead of

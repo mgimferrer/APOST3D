@@ -34,7 +34,7 @@ Each test is checked in three ways:
   say how the run ended, and match `tests/reference/<name>.apost.json`
   (`tests/compare_json.py`: same structure, text and integers, reals
   within a relative 1e-9 or an absolute 1e-8 au, 6.3e-6 for values in
-  kcal/mol; the thread count is ignored). See
+  kcal/mol; the thread count, date and run id are ignored). See
   [Results file (JSON)](json-output.md).
 
 The full-output comparison has two levels:
@@ -49,21 +49,22 @@ break it, a changed number does. `make test-strict` is for the same code
 on another machine or compiler, or before a release.
 
 ```text
-  [15/17]  H2O-SVWN                       dft enpart tfvc rks lda functional-keyword
+  [29/54]  H2O-SVWN                       dft enpart tfvc rks lda functional-keyword
            (0s)
            ✓  Normal Termination                     found in output
            ✓  Total KS-DFT energy (au)               got -76.05056   ref -76.05056   Δ 0.0e+00   [abs 2e-06]
            ...
-           ✓  Full output vs reference               362 numbers agree (largest deviation 0 of 5 last-digit units)
-           PASSED  (9/9 checks)
+           ✓  Full output vs reference               335 numbers agree (largest deviation 0 of 5 last-digit units)
+           ✓  Results file vs reference              same values
+           PASSED  (11/11 checks)
   ...
-  17 PASSED   (129s total)
+  54 PASSED   (68s total)
 ```
 
 A failing full-output check lists the lines that differ:
 
 ```text
-           ✗  Full output vs reference               1 line(s) differ
+           ✗  Full output vs reference               1 number(s) changed on 1 line(s)
                   in 'IQA ENERGY TERMS (TFVC)':
                     ref   443: 1  O   -74.525625   -0.529237   -0.529236
                     new   443: 1  O   -74.525615   -0.529236   -0.529236   <- -74.525625 -> -74.525615 (off by 10 in the last digit)
@@ -103,8 +104,9 @@ machine.
 After an intended change of the output, rewrite the references with
 `make update-ref` and commit them together with the code change. Do this
 for wording and layout changes too: a number that changes on a reworded
-line can only be reported as a wording difference. `make update-ref` only
-writes the `.apost` files and skips a test whose manifest checks fail. If
+line can only be reported as a wording difference. `make update-ref`
+writes the `.apost` and `.apost.json` references (not the manifest
+values) and skips a test whose manifest checks fail. If
 manifest values must change as well, review the change and run
 `python3 tests/run_tests.py --update-ref --update-manifest`, which writes
 them at full printed precision.
@@ -158,11 +160,25 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2-S-EOS` | H2 singlet, UKS from pySCF: EOS with one electron per channel shared between the two atoms (fractional assignment) | `dft eos effao tfvc uks fragments` |
 | `CH3F-GEOS` | Fluoromethane, RKS: GEOS on a closed shell, same oxidation states as EOS | `dft geos effao tfvc rks fragments` |
 | `LiH-32-FCI-LINDEP` | LiH at 3.2 Å, pySCF FCI/aug-cc-pVDZ with one near-linear dependency removed: GEOS with a negative paired EFO in a basis with fewer independent functions than basis functions | `fci geos effao tfvc pyscf fragments negative-efo lindep` |
+| `H2O-DOINT` | Water, RKS (the H2O-SVWN wavefunction), TFVC: DOINT writes one `.int` file per atom (lower triangle) and the `.files` list, whose matrices add up to the identity; `CUBE` without an EFO analysis (warning, no cube file) | `dft rks tfvc doint cube` |
+| `NaBH3--UHF-DOINT` | NaBH₃⁻, UHF, Mulliken atoms: DOINT for an unrestricted wavefunction (alpha and beta blocks, whole matrices) | `hf uhf mulliken doint` |
+| `LiH-35-CAS22-DOINT` | LiH at 3.5 Å, CASSCF(2,2) with `# DM PYSCF`, TFVC: DOINT in the natural-orbital basis | `casscf pyscf tfvc doint` |
+| `CH3F-EOS-CUBE` | Fluoromethane, RKS, TFVC: EOS with fragments F and CH₃, a cube file for every EFO with net occupation below 1 | `dft rks tfvc eos effao fragments cube` |
+| `CH3F-BECKE-RHO-EOS` | Fluoromethane, RKS, Becke atoms with radii from the density (`BECKE-RHO`): populations and EOS with fragments F and CH₃ | `dft rks becke-rho eos effao fragments` |
+| `H2O-BECKE-EFFAO` | Water, RKS, Becke atoms with fixed radii (`BECKE`): populations and EFFAO per atom | `dft rks becke effao` |
+| `NaBH3--UHF-UEFFAO` | NaBH₃⁻, UHF, TFVC: UEFFAO per atom, without EOS | `hf uhf tfvc effao` |
+| `CH3F-OSLO-MULLIKEN` | Fluoromethane, RKS: OSLO with Mulliken fragment populations (`# OSLO MULLIKEN`); orbitals with a negative Mulliken population are no candidates | `dft rks oslo mulliken fragments` |
+| `CH3F-HIRSH` | Fluoromethane, G16 RKS B3LYP/6-31G(d) with Cartesian d: Hirshfeld atoms from `densoutput` (`gen_hirsh`, same level), populations and EOS with fragments F and CH₃ | `dft rks hirsh eos effao fragments` |
+| `CH3F-HIRSH-IT` | The same, iterative Hirshfeld atoms: the iteration table, populations and EOS | `dft rks hirsh-it eos effao fragments` |
+| `CH3F-NAO` | The same wavefunction, NAO atoms from the NBO `AONAO=W` file: the charges are NBO's natural charges; EOS with fragments F and CH₃ | `dft rks nao eos effao fragments` |
+| `H2O-NAO-pVDZ` | Water, G16 RKS B3LYP/cc-pVDZ (spherical d), NAO atoms: the charges are NBO's natural charges | `dft rks nao` |
+| `CH3F-OSLO-NAO` | The CH3F-HIRSH wavefunction: OSLO with NAO fragment populations (`# OSLO NAO-BASIS`) | `dft rks oslo nao fragments` |
 
 ## Adding a test
 
-1. Place `SystemName.fchk` and `SystemName.inp` (and any other file the
-   input needs) in `tests/inputs/`.
+1. Place `SystemName.fchk` and `SystemName.inp` in `tests/inputs/`. Any
+   other file the input needs goes there too, listed in the entry's
+   `extra_input_files` (step 3): the runner copies only those.
 2. Run it once in a scratch folder (not in `tests/inputs`, which must
    not collect output files) and check the output:
    ```bash
@@ -179,8 +195,9 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 5. Write the reference output:
    `python3 tests/run_tests.py --filter SystemName --update-ref`.
 6. Commit the inputs, the reference output and the manifest entry
-   together, and add any newly covered keyword to `tests/keywords.json`
-   (`make coverage` shows the keyword coverage).
+   together. List the keywords the test covers in the entry's
+   `keywords` (`make coverage` counts only those) and add a new keyword
+   to `tests/keywords.json`.
 
 | Quantity | `tol_abs` |
 |---|---|

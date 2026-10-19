@@ -103,8 +103,8 @@ pySCF
 reads the 2-RDM for another analysis (e.g. ENPART) also prints it.
 
 For a restricted closed-shell single determinant, `SPIN` only prints
-`No Local Spin Analysis needed for Restricted SD WFs` and is otherwise
-ignored.
+`Note: SPIN skipped: a closed-shell single determinant has no local
+spins` and is otherwise ignored.
 
 ## Reading the output
 

@@ -12,9 +12,13 @@ Install `make` (see [Installation](installation.md)), then rerun the
 script.
 
 **`gfortran >= 10 is required`**
-Install a newer compiler (`sudo apt install gfortran-12`, `brew install
-gcc`, or `module load` a newer GCC on a cluster), then run
-`bash make_compile.sh` again; it rebuilds everything automatically.
+Install a newer compiler and make it the `gfortran` of the `PATH`: `brew
+install gcc`, `module load` a newer GCC on a cluster, or on Ubuntu
+`sudo apt install gfortran-12` followed by `sudo update-alternatives
+--install /usr/bin/gfortran gfortran /usr/bin/gfortran-12 100` (the
+package alone installs only `gfortran-12`, and the scripts call
+`gfortran`). Then run `bash make_compile.sh` again; it rebuilds everything
+automatically.
 
 **`could not link against OpenBLAS`** (or `cannot find -lopenblas`)
 OpenBLAS is not installed, or is somewhere the script doesn't look.
@@ -33,8 +37,9 @@ message gives; the script then uses it.
 
 **`ERROR: the libxc in LIBXC_DIR (...) cannot be used: <reason>`**
 The libxc that `LIBXC_DIR` points to has no Fortran interface, its Fortran
-modules were written by another gfortran version, or it is older than
-7.0. Point `LIBXC_DIR` at a libxc 7 (or newer) built with the same
+modules were written by another gfortran version, it is older than 7.0, or
+a test program does not link against it or does not run (a shared libxc
+not on `LD_LIBRARY_PATH`). Point `LIBXC_DIR` at a libxc 7 (or newer) built with the same
 gfortran, or unset it (`unset LIBXC_DIR`) to let the script build its own.
 
 **`libxc: the one found by pkg-config (<version>) cannot be used: ... Using the bundled copy instead.`**
@@ -108,8 +113,8 @@ can't be read, e.g. a real number for an integer keyword.
 **`Required section # CUBE not found in input file`**
 `CUBE` is set but there is no `# CUBE` block (it may be empty).
 
-**`MIN_OCC cannot be larger than MAX_OCC`**, or a stop about a negative
-`MAX_OCC`/`MIN_OCC`
+**`MIN_OCC cannot be larger than MAX_OCC`**, or **`MAX_OCC/MIN_OCC must be
+>= 0 (occupation x 1000).`**
 See [# CUBE](input/cube.md).
 
 **`STOP EOS, GEOS and OSLO need fragments (DOFRAGS)`**
@@ -165,9 +170,11 @@ of the molecule in the working directory; build it with
 [`gen_hirsh`](tools/utilities.md). A `gen_hirsh` run that stopped leaves
 an incomplete one.
 
-**A runtime error opening `jobname.nao`**
-`NAO-BASIS` needs the NAO transformation file; see
-[Preparing the wavefunction](guide/wavefunctions.md#gaussian).
+**`STOP NAO-BASIS needs the NBO file jobname.nao (AONAO=W), not found`**, **`STOP jobname.nao is not an NAO file`**, **`STOP jobname.nao does not match the basis`**
+`NAO-BASIS` needs the NAO transformation of the same calculation (see
+[Preparing the wavefunction](guide/wavefunctions.md#gaussian)); the line
+above the stop says what is wrong. See also
+[Atoms in molecules](guide/aim.md#hilbert-space-schemes).
 
 **`STOP This version can not do QTAIM`**
 QTAIM is not available; use `TFVC`, which gives very similar results.
@@ -205,7 +212,7 @@ the `.fchk` of the correlated calculation (CASSCF, FCI, CI) they come from.
 OSLO needs a single determinant (HF or KS-DFT). For correlated
 wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
 
-**`No Local Spin Analysis needed for Restricted SD WFs`**
+**`Note: SPIN skipped: a closed-shell single determinant has no local spins`**
 Not an error: the local spins of a closed-shell restricted determinant are
 all zero, so `SPIN` is skipped.
 
@@ -222,8 +229,8 @@ Meta-GGA functionals (TPSS, M06-2X, ...) can't be decomposed yet. The run
 stops before any energy is computed. See [ENPART](methods/enpart.md) for
 the supported functionals.
 
-**`STOP RANGE-SEPARATED HYBRID NOT SUPPORTED`** / **`STOP VV10 FUNCTIONAL
-NOT SUPPORTED`**
+**`STOP RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp`** / **`STOP VV10
+FUNCTIONAL NOT SUPPORTED. REVISE inp`**
 Range-separated hybrids (CAM-B3LYP, ωB97X, LC-ωPBE, HSE, ...) and
 functionals with VV10 nonlocal correlation are not supported. Only
 global hybrids are.
@@ -247,8 +254,9 @@ a libxc functional. The list of ids is at
 Give either `EXC_FUNCTIONAL` alone, or `EX_FUNCTIONAL` and/or
 `EC_FUNCTIONAL`.
 
-**`STOP MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART`** / **`STOP GIVE
-EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART`**
+**`STOP MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART. REVISE inp`** /
+**`STOP GIVE EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART. REVISE
+inp`**
 Give one functional only: one predefined keyword, or `LIBRARY` with its
 ids.
 

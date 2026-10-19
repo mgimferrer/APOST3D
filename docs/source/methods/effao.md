@@ -5,8 +5,9 @@ the orbitals, with their occupations, that describe the part of the
 electron density belonging to that atom. For a group of atoms (a ligand,
 a metal center, a molecule in a complex) they are called **effective
 fragment orbitals** (EFOs). They need no reference state, Lewis structure
-or threshold, they don't depend on the basis set, and they work for any
-wavefunction, from Hartree-Fock and KS-DFT to CASSCF.
+or threshold, and they work for any wavefunction, from Hartree-Fock and
+KS-DFT to CASSCF; with a real-space atomic definition they hardly depend
+on the basis set.
 
 Two properties make them useful:
 
@@ -71,7 +72,7 @@ Three variants differ in the density that is analyzed:
 |---|---|---|
 | `EFFAO` | Total density | 0 to 2 |
 | `UEFFAO` | Alpha and beta densities, separately | 0 to 1 |
-| `EFFAO-U` | Paired and unpaired densities, separately (the orbitals of [GEOS](geos.md), without its oxidation states). Real-space schemes only | 0 to 2 (paired), 0 to 1 (unpaired) |
+| `EFFAO-U` | Paired and unpaired densities, separately (the orbitals of [GEOS](geos.md), without its oxidation states; occupation cutoff 0.0001, no `Fit (%)`). Real-space schemes only | up to 2 (paired, can be slightly negative, see [GEOS](geos.md)), 0 to 1 (unpaired) |
 
 For a closed-shell wavefunction, `UEFFAO` computes the alpha orbitals
 only, since the beta ones are the same.
@@ -135,8 +136,8 @@ density:
 - `Left out by the cutoff` is what the listed EFOs miss of the fragment's
   net and gross (alpha) population: the occupations of the EFOs below
   0.001. Small values mean the listed EFOs describe the fragment's density
-  well. With Mulliken, Löwdin or NAO atoms only the net value is printed.
-- `Fit (%)` (real-space schemes) measures how well each EFO can be
+  well. With a Hilbert-space scheme only the net value is printed.
+- `Fit (%)` (real-space schemes, not `EFFAO-U`) measures how well each EFO can be
   written in terms of the basis functions, which is how `EOS` and `GEOS`
   write them to a `.fchk` file (see
   [Visualizing orbitals](../guide/visualization.md)).
@@ -148,7 +149,8 @@ occupations after it (0.84 and 0.32 as gross occupations). Where that gap falls,
 ligands, is what the [EOS](eos.md) analysis turns into an oxidation
 state.
 
-With `MULLIKEN`, `LOWDIN` or `NAO-BASIS` only one set of occupations is
+With a Hilbert-space scheme (`MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`,
+`NAO-BASIS`) only one set of occupations is
 printed (there is no separate gross occupation and no `Fit (%)`). Mulliken
 occupations can slightly exceed 1.
 

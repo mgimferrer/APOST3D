@@ -72,9 +72,10 @@ Every routine has a header directly above its first line:
 ## Errors
 
 - An error stops with `call apost_stop('message')` (`print.f`): it
-  prints `STOP message` as the last line of the output, flushes it, and
-  ends with exit code 1. Use `''` when the reason was printed just
-  before. Never a bare `stop` or `error stop`.
+  closes the results file (`run.status` `"stopped"`), prints
+  `STOP message` as the last line of the output, flushes it, and ends
+  with exit code 1. Use `''` when the reason was printed just before:
+  then no `STOP` line is printed. Never a bare `stop` or `error stop`.
 - A normal early end (nothing left to do) is `flush(6)` followed by
   `stop`.
 
@@ -97,13 +98,16 @@ them.
 - A per-thread accumulator written in an inner loop into a shared array
   causes false sharing: accumulate in a private scalar and write the
   shared array once per outer iteration.
-- gfortran's `collapse` rejects inner loop bounds that depend on an outer
-  index: use fixed bounds and compute the index inside the loop.
+- gfortran's `collapse` accepts an inner bound linear in the outer index
+  (`do j=i,n`) but fails on others (`do j=1,n(i)`, an internal compiler
+  error in gfortran 16): use fixed bounds and compute the index inside
+  the loop.
 - A `COMMON` block must be `threadprivate` in every file that declares it
   or in none (GNU `ld` refuses to link a mismatch). Declaring each block
   in one include file avoids the problem.
 - After a crash in parallel code, rebuild with
-  `make apost3d OPTFLAGS="-g -O0 -fbounds-check"` and run with one thread
+  `make clean && make apost3d OPTFLAGS="-g -O0 -fbounds-check"` (the
+  objects don't depend on the flags) and run with one thread
   before reading an optimized backtrace.
 - Check every change to a parallel region with `tests/verify_change.sh`
   ([Testing a change](cleanup-protocol.md#testing-a-change)).
