@@ -21,8 +21,14 @@ recommended. How to choose is explained in
 | `LOWDIN-DAVIDSON` | Löwdin-Davidson | Hilbert space |
 | `NAO-BASIS` | Natural atomic orbitals (needs a `jobname.nao` file) | Hilbert space |
 
-`QTAIM` is not available in this version: the run stops if it is
-requested.
+`MULLI` is accepted as `MULLIKEN`. `QTAIM` is not available in this
+version: the run stops if it is requested.
+
+The empirical atomic radii (used by `BECKE`, by `TFVC` and `BECKE-RHO`
+for distant atom pairs, and for the box of the cube files) can be
+replaced by those of a file `radius.inp` in the working folder: the
+number of entries, then one line per element with its atomic number and
+radius in Å. The output says when the file was read.
 
 ## Analyses
 
@@ -34,11 +40,11 @@ number of the following can be added:
 | `EFFAO` | [Effective atomic/fragment orbitals](../methods/effao.md) of the total density | |
 | `UEFFAO` | Effective atomic/fragment orbitals of the alpha and beta densities | |
 | `EFFAO-U` | Effective atomic/fragment orbitals of the paired and unpaired densities | real-space scheme |
-| `EOS` | [Effective oxidation states](../methods/eos.md) | |
-| `GEOS` | [Generalized effective oxidation states](../methods/geos.md) | real-space scheme |
+| `EOS` | [Effective oxidation states](../methods/eos.md) | `DOFRAGS` |
+| `GEOS` | [Generalized effective oxidation states](../methods/geos.md) | real-space scheme, `DOFRAGS` |
 | `OSLO` | [Oxidation states from localized orbitals](../methods/oslo.md) | real-space scheme, `DOFRAGS`, a `# OSLO` block; single determinant |
 | `SPIN` | [Local spin analysis](../methods/spin.md) | `DM 2` for correlated wavefunctions |
-| `ENPART` | [Energy partitioning](../methods/enpart.md) (IQA) | real-space scheme, a `# ENPART` block |
+| `ENPART` | [Energy partitioning](../methods/enpart.md) (IQA) | real-space scheme, a `# ENPART` block; `DM 2` for correlated wavefunctions |
 
 ## Options
 
@@ -47,7 +53,7 @@ number of the following can be added:
 | `DOFRAGS` | | off | Group atoms into fragments, defined in a [`# FRAGMENTS`](fragments.md) block. Without it, every atom is a fragment. |
 | `CUBE` | | off | Write cube files of effective orbitals, selected in a [`# CUBE`](cube.md) block. |
 | `DM` | 1 or 2 | 0 | Read the 1-RDM (`DM 1`) or the 1- and 2-RDMs (`DM 2`) of a correlated wavefunction from the files of a [`# DM`](dm.md) block. `DM 2` also switches on `SPIN`. |
-| `DENS` | integer *n* | 1 | Use the *n*-th density of the `.fchk` file (1 is the SCF density; e.g. 2 for an MP2 or CI density that Gaussian writes after it with `density=current`). The output lists the densities found. Restricted wavefunctions only: with an unrestricted or ROHF one the run stops. Q-Chem files work differently, see [Q-Chem](../guide/wavefunctions.md#q-chem). |
-| `QCHEM` | | off | The `.fchk` file comes from Q-Chem. Needed for the `.fchk` files that the program writes (OSLO, EOS, GEOS orbitals), which follow the layout of the input file. |
+| `DENS` | integer *n* | 1 | Use the *n*-th density of the `.fchk` file (1 is the SCF density; e.g. 2 for an MP2 or CI density that Gaussian writes after it with `density=current`). With *n* above 1 the output lists the densities found, and the wavefunction must be restricted: with an unrestricted or ROHF one the run stops. Q-Chem files work differently, see [Q-Chem](../guide/wavefunctions.md#q-chem). |
+| `QCHEM` | | off | The `.fchk` file comes from Q-Chem. Needed for the `.fchk` files of EOS and GEOS orbitals, which follow the layout of the input file (OSLO's `.fchk` file works without it). |
 | `DOINT` | | off | Write the atomic overlap matrices in the MO basis, one `.int` file per atom (AIMPAC format), for external programs such as ESI-3D. See [Output files](../guide/output.md). |
-| `VERBOSE` | 0 or 1 | 0 | Output detail. `VERBOSE 1` also prints the intermediate matrices of the analyses (for now only [ENPART](../methods/enpart.md#more-detail-verbose-1)), for checks and development; the results are the same. |
+| `VERBOSE` | 0 or 1 | 0 | Output detail (a bare `VERBOSE` stops: give 0 or 1). `VERBOSE 1` also prints the intermediate matrices of the analyses (for now only [ENPART](../methods/enpart.md#more-detail-verbose-1)), for checks and development; the results are the same. |

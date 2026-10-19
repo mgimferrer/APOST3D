@@ -14,7 +14,8 @@ All results are printed to the standard output, normally saved with
    understood them. **Check it first when a result looks unexpected**: an
    analysis or option missing there was not read (`TWOELTOLER` is shown
    in the ENPART part instead);
-4. the integration grid and the atomic definition (real-space schemes);
+4. the natural orbitals (open-shell and correlated wavefunctions), the
+   integration grid (real-space schemes) and the atomic definition;
 5. the [population analysis](../methods/population.md);
 6. the requested analyses, each with its own page in *Analysis methods*;
 7. `...Normal Termination of APOST-3D...`.
@@ -67,7 +68,7 @@ Written into the working directory, depending on the keywords:
 | File | Written by | Contents |
 |---|---|---|
 | `<jobname>.apost.json` | every run | Machine-readable results, for programs such as the APOST3Dview visualizer ([Results file](../developer/json-output.md)) |
-| `<jobname>-OSLOs.fchk`, `<jobname>-OSLOs-preortho.fchk` | `OSLO` | OSLOs as orbitals ([Visualizing orbitals](visualization.md)) |
+| `<jobname>-OSLOs.fchk` (and `<jobname>-OSLOs-preortho.fchk` with `PRINT_NONORTHO`) | `OSLO` | OSLOs as orbitals ([Visualizing orbitals](visualization.md)) |
 | `<jobname>-EOS-EFOs.fchk` | `EOS` | Effective fragment orbitals as orbitals |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired and unpaired effective fragment orbitals |
 | `<jobname>_<scheme>..._<i>.cube` | `CUBE` | One cube file per selected effective orbital |

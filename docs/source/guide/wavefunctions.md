@@ -16,7 +16,7 @@ for up to 3000 basis functions and 350 atoms.
 | Analysis | Extra requirement |
 |---|---|
 | All, single determinant (HF, KS-DFT) | none |
-| All, correlated wavefunction (CASSCF, CISD, ...) | the density of the correlated wavefunction in the `.fchk` file (natural orbitals are computed from it) |
+| All except OSLO, correlated wavefunction (CASSCF, CISD, ...) | the density of the correlated wavefunction in the `.fchk` file (natural orbitals are computed from it) |
 | `SPIN`, `ENPART` with a correlated wavefunction | the 1- and 2-RDM files, in a [`# DM` block](../input/dm.md) |
 | `ENPART` | the reference energies appended to the `.fchk` file (recommended; see below) |
 | `NAO-BASIS` | the NAO transformation file `jobname.nao` |
@@ -54,8 +54,8 @@ select them with `DENS 2` in `# METHOD` (restricted wavefunctions).
 
 Ask Q-Chem for the formatted checkpoint file with `GUI = 2` in the
 `$rem` section, and add
-`QCHEM` to `# METHOD` when the analysis writes `.fchk` files of orbitals
-(OSLO, EOS, GEOS).
+`QCHEM` to `# METHOD` when EOS or GEOS write their `.fchk` file of
+orbitals (OSLO's works without it).
 
 **Correlated densities**: in a gradient job (`JOBTYPE force` or `opt`)
 with a correlated method such as MP2, Q-Chem writes the relaxed

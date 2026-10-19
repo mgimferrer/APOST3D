@@ -16,9 +16,10 @@ cube files show an effective orbital exactly as the program computes it.
 :class: tip
 
 [APOST3Dview](https://github.com/mgimferrer/APOST3Dview), the companion
-viewer of APOST-3D, opens `.fchk`, cube, `.molden` and `.xyz` files and
-draws orbitals directly from the wavefunction. It is under development:
-more features, such as reading the APOST-3D output itself, will come soon.
+viewer of APOST-3D, opens the results file `<jobname>.apost.json`
+together with its `.fchk` file and shows the computed values on the
+molecule; it also opens cube, `.molden` and `.xyz` files and draws
+orbitals directly from the wavefunction. It is under development.
 ```
 
 ## Orbital `.fchk` files
@@ -59,8 +60,8 @@ values:
 
 | EFO net occupation | Typical `Fit (%)` |
 |---|---|
-| ≳ 0.9 | 98–99.9 |
-| 0.4–0.8 | 84–95 |
+| ≳ 0.9 | 86–99.9 (mostly above 94) |
+| 0.4–0.8 | 82–99 |
 | 0.05–0.1 | 60–80 |
 | below ~0.01 | often ≤ 50 |
 
@@ -130,7 +131,7 @@ for one of two reasons:
   for the H atom of stretched LiH, the norm is 0.30 with the default
   `RADIUS_SCALE 2` and 0.99 with `RADIUS_SCALE 12`;
 - the grid is too coarse for a compact orbital, typically a core
-  orbital (0.72 for the C 1s of CH3F at the default spacing): lower
+  orbital (0.72 for the F 1s of CH3F at the default spacing): lower
   `SPACING`. A coarse grid can also give a norm slightly above 1.
 
 Larger boxes and finer grids make larger files. The files follow the

@@ -10,7 +10,7 @@ says so in a warning.
 
 | Keyword | Value | Default | Description |
 | ------- | ----- | ------- | ----------- |
-| `MAX_OCC` | integer *n* ≥ 0 | 1000 | Upper bound of the net occupation, *n*/1000. The default leaves out fully occupied orbitals. |
+| `MAX_OCC` | integer *n* ≥ 0 | 1000 | Upper bound of the net occupation, *n*/1000 (an orbital is written when its occupation is below it). The default 1000 keeps practically every orbital, core ones included; lower it (e.g. `MAX_OCC 950`) to leave out the fully occupied ones. |
 | `MIN_OCC` | integer *n* ≥ 0 | 0 | Lower bound of the net occupation, *n*/1000. |
 | `SPACING` | real | 0.25 | Distance between grid points, in bohr. |
 | `RADIUS_SCALE` | real | 2.0 | Padding around the fragment's atoms, in units of the covalent radius of the outermost atom on each side. Larger values give bigger boxes. |
