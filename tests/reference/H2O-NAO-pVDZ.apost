@@ -124,6 +124,7 @@
 
   Hilbert-space atoms                     : NAO basis
   NAO transformation read from            : H2O-NAO-pVDZ.nao
+  NAO orthonormality, largest error       : 4.51E-09 (from the analytic overlap S)
 
   TIMING CPU  :: Atomic definition                                 0.00 s
   TIMING WALL :: Atomic definition                                 0.00 s

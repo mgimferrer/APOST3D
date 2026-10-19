@@ -128,7 +128,7 @@
   Fragment  2 :   1   3   4   5
 
   TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -323,6 +323,7 @@
   ---------------------------------------------------
 
   NAO transformation read from            : CH3F-OSLO-NAO.nao
+  NAO orthonormality, largest error       : 6.62E-09 (from the analytic overlap S)
   Atomic definition (spreads)             : TFVC (real space)
   Fragment populations                    : NAO-BASIS (Hilbert space)
   FOLI tolerance                          :        0.00100
@@ -637,6 +638,6 @@
   Total             0.00
 
   TIMING CPU  :: OSLO analysis                                     0.03 s
-  TIMING WALL :: OSLO analysis                                     0.03 s
+  TIMING WALL :: OSLO analysis                                     0.02 s
 
   ...Normal Termination of APOST-3D...

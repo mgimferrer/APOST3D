@@ -250,19 +250,35 @@
       include 'parameter.h'
       common /filename/ name0
       character*60 name0,name3
+      character*80 line
+      character*12 cdev
       dimension sat(nbasis,nbasis,natoms)
 
       name3=trim(name0)//'.nao'
       open(33,file=name3,status='old',iostat=ios)
       if(ios.ne.0) call apost_stop('NAO-BASIS needs the NBO file '//
      +  trim(name3)//' (AONAO=W), not found')
-      read(33,*)
-      read(33,*)
-      read(33,*)
+
+!! title, the matrix name and a rule, then one NAO (all its AO !!
+!! coefficients) after the other                                 !!
+      read(33,'(a)',iostat=ios) line
+      if(ios.eq.0) read(33,'(a)',iostat=ios) line
+      if(ios.ne.0.or.index(adjustl(line),'NAOs in the AO basis').ne.1)
+     +  then
+        write(*,'(2x,a)') 'The second line of '//trim(name3)//' must '//
+     +    'read "NAOs in the AO basis:" (NBO keyword AONAO=W)'
+        call apost_stop(' '//trim(name3)//' is not an NAO file')
+      end if
+      read(33,'(a)',iostat=ios) line
       do j=1,nbasis
-        read(33,*) (unao(i,j),i=1,nbasis)
+        if(ios.eq.0) read(33,*,iostat=ios) (unao(i,j),i=1,nbasis)
       enddo
       close(33)
+      if(ios.ne.0) then
+        write(*,'(2x,a,i0,a,i0,a)') trim(name3)//' must hold ',nbasis,
+     +    ' x ',nbasis,' numbers, one NAO per basis function'
+        call apost_stop(' '//trim(name3)//' does not match the basis')
+      end if
       call print_value('NAO transformation read from',trim(name3))
       do nu=1,nbasis
         do mu=1,nbasis
@@ -272,6 +288,28 @@
           enddo
         enddo
       enddo
+
+!! the NAOs must be orthonormal in the basis of the .fchk: catches a file !!
+!! of another basis set or molecule                                       !!
+      dmax=0.0d0
+      do i=1,nbasis
+        do j=1,nbasis
+          x=0.0d0
+          do mu=1,nbasis
+            x=x+ssnao(i,mu)*unao(mu,j)
+          enddo
+          if(i.eq.j) x=x-1.0d0
+          dmax=max(dmax,abs(x))
+        enddo
+      enddo
+      write(cdev,'(es9.2)') dmax
+      call print_value('NAO orthonormality, largest error',
+     +  trim(adjustl(cdev))//' (from the analytic overlap S)')
+      if(dmax.gt.1.0d-5) then
+        write(*,'(2x,a)') 'The NAOs of '//trim(name3)//' are not '//
+     +    'orthonormal: the file belongs to another basis set or molecule'
+        call apost_stop(' '//trim(name3)//' does not match the basis')
+      end if
 
       do i=1,natoms
         do nu=1,nbasis
