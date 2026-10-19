@@ -138,13 +138,9 @@
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Reading atomic densities from densoutput
-  Matched element H  in densoutput
-  Set zeroes in spline for species 1 3
-  Set zeroes in spline for species 1 5
-  Matched element C  in densoutput
-  Matched element O  in densoutput
-  Matched element F  in densoutput
+  Free-atom densities read from           : densoutput
+  densoutput title                        : B3LYP/6-31G(d) atomic densities (H, C, O, F)
+  Elements used                           : H C F
 
   Sum of atomic overlaps, largest error   : 7.72E-04 (from the analytic overlap S)
 
@@ -398,7 +394,7 @@
   Total             0.00
   Overall reliability index R (%)         :         86.312
 
-  TIMING CPU  :: EFFAO computation                                 0.05 s
+  TIMING CPU  :: EFFAO computation                                 0.04 s
   TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

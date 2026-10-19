@@ -391,7 +391,6 @@
       END DO
 
       else
-      write(*,'(2x,a,2(1x,i0))') 'Set zeroes in spline for species',iat,ich
 
       do k=n-1,1,-1
         y2(iat,ich,k)=0.0d0                                

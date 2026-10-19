@@ -138,17 +138,13 @@
     SETTING ATOMIC DEFINITION
   -----------------------------
 
-  Reading atomic densities from densoutput
-  Matched element H  in densoutput
-  Set zeroes in spline for species 1 3
-  Set zeroes in spline for species 1 5
-  Matched element C  in densoutput
-  Matched element O  in densoutput
-  Matched element F  in densoutput
+  Free-atom densities read from           : densoutput
+  densoutput title                        : B3LYP/6-31G(d) atomic densities (H, C, O, F)
+  Elements used                           : H C F
 
   Iterative Hirshfeld populations
   Iter.  Largest change  Total population
-  --------------------------------------
+  ---------------------------------------
       1        0.142071         18.000391
       2        0.026883         18.000387
       3        0.007257         18.000386
@@ -181,13 +177,13 @@
      30        0.000002         18.000384
      31        0.000001         18.000384
      32        0.000001         18.000384
-  --------------------------------------
-  Converged after (iterations)            : 32
+  ---------------------------------------
+  Iterations to convergence               : 32
 
   Sum of atomic overlaps, largest error   : 7.64E-04 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.27 s
-  TIMING WALL :: Atomic definition                                 0.23 s
+  TIMING CPU  :: Atomic definition                                 0.24 s
+  TIMING WALL :: Atomic definition                                 0.19 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -436,7 +432,7 @@
   Total             0.00
   Overall reliability index R (%)         :         87.184
 
-  TIMING CPU  :: EFFAO computation                                 0.05 s
+  TIMING CPU  :: EFFAO computation                                 0.04 s
   TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

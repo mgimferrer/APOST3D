@@ -397,8 +397,6 @@
       dist=dsqrt((xabs-coord(1,icenter))**2+(yabs-coord(2,icenter))**2+(zabs-coord(3,icenter))**2)
 
       x1=splint(ipos,istate, nrad2 , dist)
-      if(x1.lt.0) write(*,'(2x,a,es12.4)') 'WARNING: negative '//
-     +  'free-atom density from densoutput:',x1
 
       x0=0.0d0
       if(x1.gt.toler) then
@@ -435,6 +433,9 @@
       DOUBLE PRECISION x,y
       INTEGER k,khi,klo
       DOUBLE PRECISION a,b,h
+      logical lwarned
+      save lwarned
+      data lwarned /.false./
       klo=1
       khi=n
 
@@ -455,9 +456,16 @@
       y=a*ya(ipos,istate,klo)+b*ya(ipos,istate,khi)+((a**3-a)*
      1  y2a(ipos,istate,klo)+(b**3-b)*y2a(ipos,istate,khi))*(h**2)/6.
 
-      if(y.lt.-1.0d-3) write(*,'(2x,a,es12.4,a,2f10.5)') 'WARNING: '//
-     +  'large negative free-atom density',y,' between r =',xa(klo),
-     +  xa(khi)
+!! warned once per run: splint runs inside the OMP grid loops !!
+      if(y.lt.-1.0d-3) then
+!$OMP CRITICAL (splint_warning)
+        if(.not.lwarned) write(*,'(2x,a,es10.2,a,f9.5,a,f9.5,a)')
+     +    'WARNING: spline of a free-atom density gives',y,
+     +    ' between r =',xa(klo),' and',xa(khi),
+     +    ' bohr (set to 0); check densoutput'
+        lwarned=.true.
+!$OMP END CRITICAL (splint_warning)
+      end if
       if(y.lt.0.0d0) y=0.0d0
       splint=y
 
@@ -718,7 +726,7 @@
       write(*,'(a)') ''
       write(*,'(2x,a)') 'Iterative Hirshfeld populations'
       write(*,'(2x,a)') 'Iter.  Largest change  Total population'
-      write(*,'(2x,a)') repeat('-',38)
+      write(*,'(2x,a)') repeat('-',39)
       DO WHILE (isumcheck<nat.and.nconv.lt.maxit)
         nconv=nconv+1
         isumcheck=0
@@ -785,13 +793,13 @@
       END DO
 !! end of self-consistency loop !!
 
-      write(*,'(2x,a)') repeat('-',38)
+      write(*,'(2x,a)') repeat('-',39)
       if(isumcheck.lt.nat) then
         write(*,'(2x,a,i0,a,es8.1,a)') 'WARNING: not converged in ',
      +    nconv,' iterations (largest change above',toler,'); the '//
      +    'populations of the last iteration are used'
       else
-        call print_value('Converged after (iterations)',nconv)
+        call print_value('Iterations to convergence',nconv)
       end if
 
       if(iradmat.eq.1) then
@@ -923,6 +931,7 @@
 !! ********************************************************************** !!
       subroutine makeatdens
       use elements_mod
+      use output_mod
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /hirsh/y2(50,5,150),radial(50,5,150),xr2(150),ieq(maxat),nrad0,nat0,pop(maxat)
@@ -931,10 +940,8 @@
       character*2 atname
       character*4 atname2
       character*80 line
-      logical lexist
-
-    
-      write(*,'(2x,a)') 'Reading atomic densities from densoutput'
+      character*200 cused
+      logical lexist,lused
 
 !! the file must exist (an OPEN without status='old' would create it   !!
 !! empty), and its sizes must fit the /hirsh/ arrays                   !!
@@ -947,6 +954,9 @@
       end if
       OPEN (UNIT=51, FILE="densoutput", STATUS='OLD')
       read(51,'(a80)',end=90,err=90) line
+      call print_value('Free-atom densities read from','densoutput')
+      call print_value('densoutput title',trim(adjustl(line)))
+      cused=''
       read(51,*,end=90,err=90) nat0,nrad0
       if(nrad0.gt.size(xr2).or.nat0.gt.size(radial,1)) then
         write(*,'(2x,a,i0,a,i0,a)') 'densoutput: at most ',
@@ -967,13 +977,15 @@
         do j=1,92
           write(atname2,'(a4)') element_label(j)
           if(index(atname2,atname).ne.0) then
-            write(*,'(2x,a,1x,a2,a)') 'Matched element',atname,' in densoutput'
             ipos=j
+            lused=.false.
             do i=1,nat
               if(iznuc(i).eq.ipos) then
                 ieq(i)=iat
+                lused=.true.
               end if
             end do
+            if(lused) cused=trim(cused)//' '//trim(adjustl(element_symbol(j)))
             go to 10
           end if
         end do
@@ -982,11 +994,18 @@
         DO ich=1, nch, 1
           READ (51,*,end=90,err=90)  icharge,imult
           READ (51,*,end=90,err=90) (radial(iat, ich, io),io=1,nrad0)
+!! H+ and H2+ have no electrons: their zero density is expected !!
+          if(all(radial(iat,ich,1:nrad0).eq.0.0d0).and.
+     +      .not.(atname.eq.'H'.and.icharge.gt.0))
+     +      write(*,'(2x,a,a,1x,sp,i0,ss,a)') 'WARNING: densoutput: '//
+     +      'zero density for ',trim(atname),icharge,'; rebuild it '//
+     +      'with utils/gen_hirsh'
           CALL spline(iat,ich,nrad0,-10.0d0,0.0d0)
         END DO
       END DO
 
       CLOSE(51)
+      call print_value('Elements used',trim(adjustl(cused)))
       go to 100
 
 90    write(*,'(2x,a)') 'densoutput is incomplete or not in the '//

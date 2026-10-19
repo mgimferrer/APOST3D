@@ -4053,7 +4053,7 @@
         },
         {
           "label": "Iterations to convergence",
-          "pattern": "Converged after \\(iterations\\)\\s*:\\s*(\\d+)",
+          "pattern": "Iterations to convergence\\s*:\\s*(\\d+)",
           "ref": 32.0,
           "tol_abs": 0.5
         },
