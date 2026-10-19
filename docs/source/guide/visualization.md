@@ -68,9 +68,27 @@ The measure is strict: 84% still reproduces about 97% of the orbital's
 squared norm. The limit comes from the basis set of the original
 calculation (a larger one improves it), not from the integration grid.
 All numbers in the output are computed from the exact EFOs, never from
-the approximation. With Mulliken or Löwdin, `EOS` writes no `.fchk` file
-(`LOWDIN` and `NAO-BASIS` write the orbitals as text instead, see
-[EOS](../methods/eos.md#files-written)).
+the approximation.
+
+**What the surfaces show.** An effective fragment orbital is not zero
+outside its fragment: the fragment's weight function goes from 1 to 0
+gradually, so the orbital keeps a small part on the neighboring atoms
+(a few percent of its squared norm). A surface that reaches onto a
+neighbor is therefore part of the orbital itself. The approximation in
+the `.fchk` file follows it closely when `Fit (%)` is about 80 or more:
+it puts at most about 3% more of its norm outside the fragment, and at an
+isovalue of 0.075 it shows the lobes of the exact cube file and no others
+(for a diffuse orbital its surface can be somewhat smaller). It shows
+lobes that the exact orbital doesn't have:
+
+- for weakly occupied orbitals, with `Fit (%)` below about 60;
+- at small isovalues (0.03 and below), where the small differences
+  between the two become visible.
+
+To see the exact shape of such an orbital, write its cube file (`CUBE` in
+`# METHOD`, see [Cube files](#cube-files)): it holds the exact orbital
+times the fragment's weight, on the same scale as the `.fchk` orbital, so
+the same isovalue can be used for both.
 
 ## Cube files
 
