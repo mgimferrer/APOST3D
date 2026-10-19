@@ -63,6 +63,42 @@ warning and a larger [`# GRID`](../input/grid.md) is advisable).
 The integration grid is described in
 [Running a calculation](running.md#integration-grid).
 
+For `HIRSH` and `HIRSH-IT`, the output names the free-atom densities it
+read and the elements of the molecule found in them; `HIRSH-IT` then
+prints its iterations:
+
+% source: tests/reference/CH3F-HIRSH-IT.apost
+```text
+  Free-atom densities read from           : densoutput
+  densoutput title                        : B3LYP/6-31G(d) atomic densities (H, C, O, F)
+  Elements used                           : H C F
+
+  Iterative Hirshfeld populations
+  Iter.  Largest change  Total population
+  ---------------------------------------
+      1        1.42E-01         18.000391
+      2        2.69E-02         18.000387
+  ...
+     31        1.17E-06         18.000384
+     32        8.49E-07         18.000384
+  ---------------------------------------
+  Iterations to convergence               : 32
+```
+
+Each iteration integrates the atomic populations with the current
+weights, then builds new weights from free-atom densities interpolated
+between the two charge states of `densoutput` around each population
+(the first iteration gives the plain Hirshfeld populations). `Largest
+change` is the largest change of an atomic population from the previous
+iteration, and `Total population` their sum, which differs from the
+number of electrons only by the integration error. The populations are
+converged when no change is above 10⁻⁶; Hirshfeld-I converges slowly
+(each iteration removes about a quarter of the change), so this can take
+a few tens of iterations, and after 100 the output warns and uses the last
+populations. `densoutput` holds the charges −2 to +2: an atom that goes
+beyond them keeps the free-atom density of the last state, with a
+warning.
+
 ## Hilbert-space schemes
 
 | Keyword | Scheme |
@@ -71,6 +107,23 @@ The integration grid is described in
 | `LOWDIN` | **Löwdin.** Basis functions orthogonalized symmetrically. Less basis-dependent than Mulliken, but still not reliable for extended basis sets. |
 | `LOWDIN-DAVIDSON` | **Löwdin-Davidson.** Orthogonalization that first preserves the atomic character within each atom. |
 | `NAO-BASIS` | **Natural atomic orbitals** from the NBO program, the most robust of the Hilbert-space options. Needs the transformation in a `jobname.nao` file (see [Preparing the wavefunction](wavefunctions.md#gaussian)). |
+
+`NAO-BASIS` gives the natural populations of NBO (the `Summary of Natural
+Population Analysis` of the Gaussian output), with Cartesian and
+spherical basis functions. The output checks the `.nao` file against the
+wavefunction:
+
+% source: tests/reference/CH3F-NAO.apost
+```text
+  Hilbert-space atoms                     : NAO basis
+  NAO transformation read from            : CH3F-NAO.nao
+  NAO orthonormality, largest error       : 6.62E-09 (from the analytic overlap S)
+```
+
+The NAOs must be orthonormal in the basis set of the `.fchk` file: an
+error above 10⁻⁵ means the `.nao` file comes from another calculation,
+and the run stops. It also stops when the file is too short for the basis
+set or is not an NAO file (another NBO matrix).
 
 ## Which analyses work with which scheme
 

@@ -43,7 +43,8 @@ $APOST3D_PATH/utils/get_energy mol.log >> mol.fchk        # Gaussian 09 (to be r
 **For NAO-BASIS**, the transformation to natural atomic orbitals comes
 from the NBO program: add `pop=(full,nboread)` to the route section and
 the line `$NBO AONAO=W $END` at the end of the input file. NBO writes the
-matrix to `FILE.33`; rename it to `mol.nao`.
+matrix to `FILE.33`; rename it to `mol.nao` before the next calculation in
+the same folder, which would overwrite it.
 
 **Correlated densities** (MP2, CI, ...): Gaussian writes them after the SCF
 density in the `.fchk` file when the calculation uses `density=current`;

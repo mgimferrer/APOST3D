@@ -274,10 +274,21 @@ program, not a full development history — see `git log` for that.
   is 10⁻⁵ or less is now not a candidate of that fragment.
 - **libxc references** — functional names and references are printed in
   full (they were cut at 80 and 120 characters).
-- **Missing `.nao` file** — `NAO-BASIS` without the `jobname.nao` file
-  stops with a message (it ended with a runtime error).
-- **Iterative Hirshfeld** — a run that does not converge in 40 iterations
-  now says so; the iterations are printed as one table.
+- **`.nao` file** — `NAO-BASIS` without the `jobname.nao` file stops with
+  a message (it ended with a runtime error). The file is now checked
+  against the wavefunction: its second line must read `NAOs in the AO
+  basis:`, it must hold the whole matrix of the basis set, and the NAOs
+  must be orthonormal in that basis (the largest error is printed; above
+  10⁻⁵ the run stops). The file of another calculation used to end in a
+  runtime error (smaller basis set) or give meaningless populations with
+  a normal termination (larger basis set).
+- **Iterative Hirshfeld** — the populations are converged to 10⁻⁶ (was
+  5×10⁻⁴, which left the charges up to 7×10⁻⁴ from their converged
+  values; CH3F takes 32 iterations instead of 13, at most 100 instead of
+  40), and a run that does not converge says so. An atom whose charge goes
+  beyond ±2, the last charge state of `densoutput`, no longer stops the
+  run ("Absolute convergence unlikely"): its free-atom density is held at
+  that state, with one warning. The iterations are printed as one table.
 - **Cube file layout** — cube files no longer carry a line of orbital
   indices after the atoms. The cube format has that line only with a
   negative atom count, so strict readers (ASE, VMD) shifted the data by
