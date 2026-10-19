@@ -1,0 +1,571 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.12",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 36,
+    "n_electrons": 18,
+    "n_alpha": 9,
+    "n_beta": 9,
+    "energy_au": -1.3973340090377860E+002
+  },
+  "input": {
+    "text": "# METHOD\nHIRSH\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n2\n-1\n#\n",
+    "atomic_definition": {
+      "keyword": "HIRSH",
+      "name": "Hirshfeld",
+      "short_name": "Hirshfeld",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [6, 9, 1, 1, 1],
+    "symbols": ["C", "F", "H", "H", "H"],
+    "nuclear_charges": [6.0000000000000000E+000, 9.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-1.1837362000000000E+000, -1.7045329600000000E-004, -4.6166009199999999E-005],
+      [1.4254071699999999E+000, 1.2564788999999999E-004, -1.4569788399999999E-005],
+      [-1.9095055700000001E+000, 1.1177286099999999E+000, -1.6271658400000000E+000],
+      [-1.9089952699999999E+000, 8.5088943900000003E-001, 1.7814404699999999E+000],
+      [-1.9077465300000001E+000, -1.9687261599999999E+000, -1.5386645199999999E-001]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [2]
+    },
+    {
+      "id": 2,
+      "atoms": [1, 3, 4, 5]
+    }
+  ],
+  "analyses": {
+    "populations": {
+      "scheme": "HIRSH",
+      "atoms": {
+        "electrons": [5.9653677403275438E+000, 9.1420707818974787E+000, 9.6425643589026921E-001, 9.6434293929202997E-001, 9.6435355637796172E-001],
+        "charges": [3.4632259672456200E-002, -1.4207078189747868E-001, 3.5743564109730785E-002, 3.5657060707970034E-002, 3.5646443622038282E-002]
+      },
+      "fragments": {
+        "electrons": [9.1420707818974787E+000, 8.8583206718878049E+000],
+        "charges": [-1.4207078189747868E-001, 1.4167932811219530E-001]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [6.1168621367277192E+000, 9.3044835101265466E+000, 8.5956758480520956E-001, 8.5957361436622304E-001, 8.5951315286834395E-001],
+          "charges": [-1.1686213672771917E-001, -3.0448351012654662E-001, 1.4043241519479044E-001, 1.4042638563377696E-001, 1.4048684713165605E-001]
+        },
+        "fragments": {
+          "electrons": [9.3044835101265466E+000, 8.6955164887674954E+000],
+          "charges": [-3.0448351012654662E-001, 3.0448351123250428E-001]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "HIRSH",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [3.8116696162851271E+000, 1.4103078842813737E+000, 9.6571781236494814E-001, 9.6550925598502901E-001, 9.6592621152611313E-001],
+            [1.4103078842813737E+000, 8.2732977688097957E+000, 1.0930889752507056E-001, 1.0927382219676685E-001, 1.0922000736829993E-001],
+            [9.6571781236494814E-001, 1.0930889752507056E-001, 3.4698482906290717E-001, 7.9931714224598688E-002, 7.9741945501200534E-002],
+            [9.6550925598502901E-001, 1.0927382219676685E-001, 7.9931714224598688E-002, 3.4706558476453558E-001, 7.9868463799876013E-002],
+            [9.6592621152611313E-001, 1.0922000736829993E-001, 7.9741945501200534E-002, 7.9868463799876013E-002, 3.4696123365640857E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [4.3073962480848333E+000, 1.7375460261753659E+000, 1.2345432136547241E+000, 1.2345547090549887E+000, 1.2347846454431064E+000],
+        "valence_bonded": [4.3074611641574645E+000, 1.7381106113715108E+000, 1.2347003696158179E+000, 1.2345832562062706E+000, 1.2347566281954896E+000],
+        "valence_free": [-6.4916072631149291E-005, -5.6458519614488445E-004, -1.5715596109378005E-004, -2.8547151281976824E-005, 2.8017247616807239E-005]
+      },
+      "fragments": {
+        "matrix": {
+          "values": [
+            [8.2732977688097957E+000, 1.7381106113715110E+000],
+            [1.7381106113715110E+000, 7.9893766671707427E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 1.8000785047352050E+001,
+          "total_rule": "diagonal and one triangle"
+        },
+        "valence_total": [1.7375460261753659E+000, 8.0112788162376525E+000],
+        "valence_bonded": [1.7381106113715108E+000, 8.0115014181750421E+000],
+        "valence_free": [-5.6458519614488445E-004, -2.2260193739009893E-004]
+      },
+      "overlap_populations": {
+        "atoms": {
+          "matrix": {
+            "values": [
+              [4.6108803251803634E+000, 3.8792749612018379E-001, 3.2215853352965262E-001, 3.2220321507330318E-001, 3.2219817041759985E-001],
+              [3.8792749612018379E-001, 8.7088525527974543E+000, 1.5192777608860061E-002, 1.5208512030661127E-002, 1.5227638964350556E-002],
+              [3.2215853352965262E-001, 1.5192777608860061E-002, 5.9245446793116185E-001, 1.7234555274691248E-002, 1.7199117875315958E-002],
+              [3.2220321507330318E-001, 1.5208512030661127E-002, 1.7234555274691248E-002, 5.9246988354807806E-001, 1.7213883243521428E-002],
+              [3.2219817041759985E-001, 1.5227638964350556E-002, 1.7199117875315958E-002, 1.7213883243521428E-002, 5.9238248569605079E-001]
+            ],
+            "symmetric": true,
+            "diagonal": "self overlap population",
+            "off_diagonal": "overlap population"
+          }
+        },
+        "fragments": {
+          "matrix": {
+            "values": [
+              [8.7088525527974543E+000, 4.3355642472405553E-001],
+              [4.3355642472405553E-001, 8.4246021131838233E+000]
+            ],
+            "symmetric": true,
+            "diagonal": "self overlap population",
+            "off_diagonal": "overlap population",
+            "total": 1.8000567515429388E+001,
+            "total_rule": "all elements"
+          }
+        }
+      }
+    },
+    "eos": {
+      "scheme": "HIRSH",
+      "alpha": {
+        "reliability_percent": 8.6312126378662626E+001,
+        "assignment": "integer",
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [6.8107512057187369E-001, 9.7710754622337259E-001],
+            "first_unoccupied": [2.2944048039432407E-002, 3.1795385678524746E-001]
+          }
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 16,
+          "fchk_orbitals": "alpha",
+          "columns": [
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "fit_percent",
+              "title": "Fit",
+              "unit": "%",
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragments": [
+              [1],
+              [2],
+              [2],
+              [1],
+              [2],
+              [2],
+              [1],
+              [1],
+              [1],
+              [2],
+              [2],
+              [2],
+              [1],
+              [1],
+              [2],
+              [1]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
+            "net": [9.9836280216715612E-001, 9.9600394140213289E-001, 9.7906065817738530E-001, 9.6609277294383533E-001, 9.6198672644435312E-001, 9.6144521762589419E-001, 8.8717425704390651E-001, 8.8715811799981481E-001, 5.9720730132106470E-001, 2.3621651473653626E-001, 3.5895743408332653E-002, 3.5904175465573548E-002, 7.3791411657280195E-003, 7.3778227080073932E-003, 4.7261117909953654E-003, 3.6022242820941126E-003],
+            "gross": [9.9917701589103236E-001, 9.9803848693356789E-001, 9.8719281902011513E-001, 9.7943459777405173E-001, 9.7719555199610508E-001, 9.7710754622337259E-001, 9.2534681020717846E-001, 9.2533175433700077E-001, 6.8107512057187369E-001, 3.1795385678524746E-001, 7.5028140691140208E-002, 7.4974305358406906E-002, 2.2944048039432407E-002, 2.2942571419405963E-002, 2.1403690781870963E-002, 1.2811078648259039E-002],
+            "fit_percent": [9.9880581007639208E+001, 9.9652345055741449E+001, 9.8891776350719525E+001, 9.8570498428858059E+001, 9.6554471553573805E+001, 9.6551033983400714E+001, 9.3249055266027639E+001, 9.3250204995598622E+001, 9.3359313841798809E+001, 8.9518530329057299E+001, 6.6804742568309166E+001, 6.6822274284516070E+001, 6.2230996471795962E+001, 6.2228678879024187E+001, 7.8278231896798971E+001, 8.2725318967494260E+001],
+            "electrons": [1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            "fchk_column": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+          }
+        }
+      },
+      "beta": {
+        "same_as_alpha": true
+      },
+      "fragments": {
+        "oxidation_states": [-1.0000000000000000E+000, 1.0000000000000000E+000],
+        "electrons_alpha": [5.0000000000000000E+000, 4.0000000000000000E+000],
+        "electrons_beta": [5.0000000000000000E+000, 4.0000000000000000E+000]
+      },
+      "reliability_percent": 8.6312126378662626E+001,
+      "orbital_file": "CH3F-HIRSH-EOS-EFOs.fchk",
+      "orbital_file_id": "2026-10-19T16:41:12+02:00/12d8"
+    }
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/matrix",
+      "kind": "fragment_matrix",
+      "title": "Fragment bond orders (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_total",
+      "kind": "fragment_vector",
+      "title": "Fragment total valences (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_bonded",
+      "kind": "fragment_vector",
+      "title": "Fragment valences used in bonds (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_free",
+      "kind": "fragment_vector",
+      "title": "Fragment free valences (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.overlap_populations.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/overlap_populations/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Overlap populations (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.overlap_populations.fragments.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/overlap_populations/fragments/matrix",
+      "kind": "fragment_matrix",
+      "title": "Fragment overlap populations (Hirshfeld)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.reliability_percent",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, alpha (Hirshfeld)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.frontier",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/frontier",
+      "kind": "table",
+      "title": "EOS frontier EFOs, alpha (Hirshfeld)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.efos",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/efos",
+      "kind": "table",
+      "title": "EFOs, alpha (Hirshfeld)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.oxidation_states",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "EOS oxidation states (Hirshfeld)",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "eos.fragments.electrons_alpha",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/fragments/electrons_alpha",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, alpha (Hirshfeld)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.electrons_beta",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/fragments/electrons_beta",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, beta (Hirshfeld)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.reliability_percent",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R (Hirshfeld)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    }
+  ],
+  "run": {
+    "job_name": "CH3F-HIRSH",
+    "input_file": "CH3F-HIRSH.inp",
+    "wavefunction_file": "CH3F-HIRSH.fchk",
+    "date": "2026-10-19T16:41:12+02:00",
+    "id": "2026-10-19T16:41:12+02:00/12d8",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

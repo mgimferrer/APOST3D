@@ -3943,6 +3943,340 @@
           "tol_abs": 0.05
         }
       ]
+    },
+    {
+      "name": "CH3F-HIRSH",
+      "description": "Fluoromethane, G16 RKS B3LYP/6-31G(d) with Cartesian d, Hirshfeld atoms from the free-atom densities in densoutput (gen_hirsh, same level): populations and EOS with fragments F | CH3.",
+      "tags": [
+        "dft",
+        "rks",
+        "hirsh",
+        "eos",
+        "effao",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "densoutput"
+      ],
+      "keywords": [
+        "HIRSH",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C Hirshfeld atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.034632,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "F Hirshfeld atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.142071,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H3 Hirshfeld atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.035744,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "EOS alpha net occupation, fragment 1 (F)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 4.35435,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 86.312,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "CH3F-HIRSH-IT",
+      "description": "Fluoromethane (the CH3F-HIRSH wavefunction and densoutput), iterative Hirshfeld atoms: the iteration table, populations and EOS with fragments F | CH3.",
+      "tags": [
+        "dft",
+        "rks",
+        "hirsh-it",
+        "eos",
+        "effao",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "densoutput"
+      ],
+      "keywords": [
+        "HIRSH-IT",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Iterations converged",
+          "type": "absent",
+          "pattern": "not converged"
+        },
+        {
+          "label": "Iterations to convergence",
+          "pattern": "Converged after \\(iterations\\)\\s*:\\s*(\\d+)",
+          "ref": 13.0,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "C Hirshfeld-I atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.001593,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "F Hirshfeld-I atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.169633,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H3 Hirshfeld-I atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.05598,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "EOS alpha net occupation, fragment 1 (F)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 4.36708,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 87.188,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "CH3F-NAO",
+      "description": "Fluoromethane (the CH3F-HIRSH wavefunction, Cartesian d), NAO atoms from the NBO AONAO=W file: the charges are NBO's natural charges (C -0.19041, F -0.37269, H 0.18769); EOS with fragments F | CH3.",
+      "tags": [
+        "dft",
+        "rks",
+        "nao",
+        "eos",
+        "effao",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "CH3F-NAO.nao"
+      ],
+      "keywords": [
+        "NAO-BASIS",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C NAO atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.190406,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "F NAO atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.372695,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H3 NAO atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "3\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.18769,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "EOS alpha net occupation, fragment 1 (F)",
+          "section": "ALPHA DENSITY",
+          "pattern": "Fragment 1\\s*\\n\\s*Net occupation\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 4.68594,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 94.026,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "H2O-NAO-pVDZ",
+      "description": "Water, G16 RKS B3LYP/cc-pVDZ (spherical d), NAO atoms from the NBO AONAO=W file: the charges are NBO's natural charges (O -0.88774, H 0.44387).",
+      "tags": [
+        "dft",
+        "rks",
+        "nao"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "H2O-NAO-pVDZ.nao"
+      ],
+      "keywords": [
+        "NAO-BASIS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "O NAO atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.887744,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H2 NAO atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+H\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.443872,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "CH3F-OSLO-NAO",
+      "description": "Fluoromethane (the CH3F-HIRSH wavefunction), TFVC spreads with NAO fragment populations (# OSLO NAO-BASIS), fragments F | CH3.",
+      "tags": [
+        "dft",
+        "rks",
+        "oslo",
+        "nao",
+        "fragments"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "CH3F-OSLO-NAO.nao"
+      ],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS",
+        "OSLO/NAO-BASIS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "NAO fragment populations",
+          "type": "present",
+          "pattern": "Fragment populations\\s*:\\s*NAO-BASIS"
+        },
+        {
+          "label": "No NaN FOLI value",
+          "type": "absent",
+          "pattern": "NaN"
+        },
+        {
+          "label": "Sum of the FOLI values",
+          "pattern": "Sum of the FOLI values\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 9.62403,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "F oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH3 oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        }
+      ]
     }
   ]
 }

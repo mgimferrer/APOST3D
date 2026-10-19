@@ -1,0 +1,355 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RB3LYP)
+  Number of atoms                         : 5
+  Number of basis functions               : 36
+  Primitive gaussians                     : 68
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 9
+  SCF energy (au)                         :    -139.7334009038
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : NAO-BASIS (Hilbert space)
+  Oxidation states                        : EOS (effective oxidation states)
+  Fragments                               : 2 (see # FRAGMENTS)
+
+  # FRAGMENTS (2 fragments)
+  Fragment  1 :   2
+  Fragment  2 :   1   3   4   5
+
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Hilbert-space atoms                     : NAO basis
+  NAO transformation read from            : CH3F-NAO.nao
+
+  TIMING CPU  :: Atomic definition                                 0.00 s
+  TIMING WALL :: Atomic definition                                 0.00 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : NAO-BASIS (Hilbert space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom            NAO    Mulliken
+  -------------------------------
+    1  C     6.190406    6.116862
+    2  F     9.372695    9.304484
+    3  H     0.812310    0.859568
+    4  H     0.812314    0.859574
+    5  H     0.812276    0.859513
+  -------------------------------
+  Total     18.000000   18.000000
+
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
+
+  Frag.             NAO    Mulliken
+  ---------------------------------
+    1          9.372695    9.304484
+    2          8.627305    8.695516
+  ---------------------------------
+  Total       18.000000   18.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom            NAO    Mulliken
+  -------------------------------
+    1  C    -0.190406   -0.116862
+    2  F    -0.372695   -0.304484
+    3  H     0.187690    0.140432
+    4  H     0.187686    0.140426
+    5  H     0.187724    0.140487
+  -------------------------------
+  Total      0.000000    0.000000
+
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
+
+  Frag.             NAO    Mulliken
+  ---------------------------------
+    1         -0.372695   -0.304484
+    2          0.372695    0.304484
+  ---------------------------------
+  Total        0.000000    0.000000
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------------------------------
+                 1  C        2  F        3  H        4  H        5  H
+  -------------------------------------------------------------------
+    1  C     4.346278    0.866696    0.940508    0.940517    0.940534
+    2  F     0.866696    8.901403    0.025311    0.025304    0.025273
+    3  H     0.940508    0.025311    0.328989    0.000413    0.000410
+    4  H     0.940517    0.025304    0.000413    0.328992    0.000410
+    5  H     0.940534    0.025273    0.000410    0.000410    0.328962
+  -------------------------------------------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom            NAO
+  -------------------
+    1  C     3.688255
+    2  F     0.942584
+    3  H     0.966642
+    4  H     0.966644
+    5  H     0.966627
+  -------------------
+
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
+
+  Frag.             NAO
+  ---------------------
+    1          0.942584
+    2          6.588168
+  ---------------------
+  Total        7.530752
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom            NAO
+  -------------------
+    1  C     3.688255
+    2  F     0.942584
+    3  H     0.966642
+    4  H     0.966644
+    5  H     0.966627
+  -------------------
+
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
+
+  Frag.             NAO
+  ---------------------
+    1          0.942584
+    2          6.588168
+  ---------------------
+  Total        7.530752
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom            NAO
+  -------------------
+    1  C     0.000000
+    2  F     0.000000
+    3  H     0.000000
+    4  H     0.000000
+    5  H     0.000000
+  -------------------
+
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
+
+  Frag.             NAO
+  ---------------------
+    1          0.000000
+    2          0.000000
+  ---------------------
+  Total        0.000000
+
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          8.901403    0.942584
+    2          0.942584    8.156013
+  ---------------------------------
+  Total (diagonal and one triangle)       :      18.000000
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
+
+  Atomic definition                       : NAO-BASIS (Hilbert space)
+  Densities                               : alpha (beta equal to alpha)
+  EFO occupation cutoff                   :        0.00100
+
+  -----------------
+    ALPHA DENSITY
+  -----------------
+
+  Fragment 1
+  Net occupation                          :        4.68594
+  Net       1.0000   0.9972   0.9843   0.9843   0.7201
+  Left out by the cutoff (net)            :        0.00041
+
+  Fragment 2
+  Net occupation                          :        4.31365
+  Net       1.0000   1.0000   0.9998   0.9998   0.2799   0.0157   0.0157   0.0028
+  Left out by the cutoff (net)            :        0.00001
+
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
+
+  EFOs in the assignment                  : 13
+  Electron assignment                     : integer
+
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       5.00      0.720             -
+      2       4.00      1.000         0.280
+  -----------------------------------------
+  Reliability index R (%)                 :         94.026
+
+  ----------------
+    BETA DENSITY
+  ----------------
+
+  The beta density equals the alpha one: the beta electrons are assigned as the alpha ones
+
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
+  Frag.  Oxidation state
+  ----------------------
+      1            -1.00
+      2             1.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :         94.026
+
+  TIMING CPU  :: EFFAO computation                                 0.00 s
+  TIMING WALL :: EFFAO computation                                 0.00 s
+  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.00 s
+
+  ...Normal Termination of APOST-3D...

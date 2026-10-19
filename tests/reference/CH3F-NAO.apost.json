@@ -1,0 +1,498 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.12",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 36,
+    "n_electrons": 18,
+    "n_alpha": 9,
+    "n_beta": 9,
+    "energy_au": -1.3973340090377860E+002
+  },
+  "input": {
+    "text": "# METHOD\nNAO-BASIS\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n2\n-1\n#\n",
+    "atomic_definition": {
+      "keyword": "NAO-BASIS",
+      "name": "Natural atomic orbitals",
+      "short_name": "NAO",
+      "space": "hilbert",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [6, 9, 1, 1, 1],
+    "symbols": ["C", "F", "H", "H", "H"],
+    "nuclear_charges": [6.0000000000000000E+000, 9.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-1.1837362000000000E+000, -1.7045329600000000E-004, -4.6166009199999999E-005],
+      [1.4254071699999999E+000, 1.2564788999999999E-004, -1.4569788399999999E-005],
+      [-1.9095055700000001E+000, 1.1177286099999999E+000, -1.6271658400000000E+000],
+      [-1.9089952699999999E+000, 8.5088943900000003E-001, 1.7814404699999999E+000],
+      [-1.9077465300000001E+000, -1.9687261599999999E+000, -1.5386645199999999E-001]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [2]
+    },
+    {
+      "id": 2,
+      "atoms": [1, 3, 4, 5]
+    }
+  ],
+  "analyses": {
+    "populations": {
+      "scheme": "NAO-BASIS",
+      "atoms": {
+        "electrons": [6.1904057919769002E+000, 9.3726946189732789E+000, 8.1231027169751469E-001, 8.1231374390472388E-001, 8.1227556794196376E-001],
+        "charges": [-1.9040579197690022E-001, -3.7269461897327893E-001, 1.8768972830248531E-001, 1.8768625609527612E-001, 1.8772443205803624E-001]
+      },
+      "fragments": {
+        "electrons": [9.3726946189732789E+000, 8.6273053755211020E+000],
+        "charges": [-3.7269461897327893E-001, 3.7269462447889745E-001]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [6.1168621367277192E+000, 9.3044835101265466E+000, 8.5956758480520956E-001, 8.5957361436622304E-001, 8.5951315286834395E-001],
+          "charges": [-1.1686213672771917E-001, -3.0448351012654662E-001, 1.4043241519479044E-001, 1.4042638563377696E-001, 1.4048684713165605E-001]
+        },
+        "fragments": {
+          "electrons": [9.3044835101265466E+000, 8.6955164887674954E+000],
+          "charges": [-3.0448351012654662E-001, 3.0448351123250428E-001]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "NAO-BASIS",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [4.3462784066299882E+000, 8.6669569563202342E-001, 9.4050810461475176E-001, 9.4051717458814821E-001, 9.4053379997842046E-001],
+            [8.6669569563202342E-001, 8.9014025364229052E+000, 2.5311461768339111E-002, 2.5303725523032519E-002, 2.5273258906007130E-002],
+            [9.4050810461475176E-001, 2.5311461768339111E-002, 3.2898908389273218E-001, 4.1266824399250940E-004, 4.1014259140684283E-004],
+            [9.4051717458814821E-001, 2.5303725523032519E-002, 4.1266824399250940E-004, 3.2899189404834656E-001, 4.1013167185477786E-004],
+            [9.4053379997842046E-001, 2.5273258906007130E-002, 4.1014259140684283E-004, 4.1013167185477786E-004, 3.2896190446820484E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [3.6882547706938240E+000, 9.4258416510074738E-001, 9.6664237560956501E-001, 9.6664369971275466E-001, 9.6662732694751785E-001],
+        "valence_bonded": [3.6882547748133439E+000, 9.4258414182940220E-001, 9.6664237721849022E-001, 9.6664370002702804E-001, 9.6662733314768923E-001],
+        "valence_free": [-4.1195198363652707E-009, 2.3271345184205927E-008, -1.6089252152795552E-009, -3.1427338509359970E-010, -6.2001713763137900E-009]
+      },
+      "fragments": {
+        "matrix": {
+          "values": [
+            [8.9014025364229052E+000, 9.4258414182940220E-001],
+            [9.4258414182940220E-001, 8.1560133107278467E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 1.7999999988980154E+001,
+          "total_rule": "diagonal and one triangle"
+        },
+        "valence_total": [9.4258416510074738E-001, 6.5881681729636616E+000],
+        "valence_bonded": [9.4258414182940220E-001, 6.5881681852065510E+000],
+        "valence_free": [2.3271345184205927E-008, -1.2242889813052216E-008]
+      }
+    },
+    "eos": {
+      "scheme": "NAO-BASIS",
+      "alpha": {
+        "reliability_percent": 9.4026068371783680E+001,
+        "assignment": "integer",
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 2,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [7.2013034070315096E-001, 9.9980618402502330E-001],
+            "first_unoccupied": [null, 2.7986965698531419E-001]
+          }
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 13,
+          "fchk_orbitals": "alpha",
+          "columns": [
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragments": [
+              [2],
+              [1],
+              [2],
+              [2],
+              [2],
+              [1],
+              [1],
+              [1],
+              [1],
+              [2],
+              [2],
+              [2],
+              [2]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
+            "net": [9.9999656877979737E-001, 9.9999455482826183E-001, 9.9998064284198973E-001, 9.9980623745685748E-001, 9.9980618402502330E-001, 9.9719405290164520E-001, 9.8431883583711122E-001, 9.8429915457766737E-001, 7.2013034070315096E-001, 2.7986965698531419E-001, 1.5700843937338206E-002, 1.5681163801261819E-002, 2.8059458898502662E-003],
+            "electrons": [1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            "fchk_column": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+          }
+        }
+      },
+      "beta": {
+        "same_as_alpha": true
+      },
+      "fragments": {
+        "oxidation_states": [-1.0000000000000000E+000, 1.0000000000000000E+000],
+        "electrons_alpha": [5.0000000000000000E+000, 4.0000000000000000E+000],
+        "electrons_beta": [5.0000000000000000E+000, 4.0000000000000000E+000]
+      },
+      "reliability_percent": 9.4026068371783680E+001,
+      "orbital_file": "CH3F-NAO-EOS-EFOs.fchk",
+      "orbital_file_id": "2026-10-19T16:41:12+02:00/f250"
+    }
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/matrix",
+      "kind": "fragment_matrix",
+      "title": "Fragment bond orders (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_total",
+      "kind": "fragment_vector",
+      "title": "Fragment total valences (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_bonded",
+      "kind": "fragment_vector",
+      "title": "Fragment valences used in bonds (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_free",
+      "kind": "fragment_vector",
+      "title": "Fragment free valences (NAO)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.reliability_percent",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, alpha (NAO)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.frontier",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/frontier",
+      "kind": "table",
+      "title": "EOS frontier EFOs, alpha (NAO)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.efos",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/efos",
+      "kind": "table",
+      "title": "EFOs, alpha (NAO)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.oxidation_states",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "EOS oxidation states (NAO)",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "eos.fragments.electrons_alpha",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/fragments/electrons_alpha",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, alpha (NAO)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.electrons_beta",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/fragments/electrons_beta",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, beta (NAO)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.reliability_percent",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R (NAO)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    }
+  ],
+  "run": {
+    "job_name": "CH3F-NAO",
+    "input_file": "CH3F-NAO.inp",
+    "wavefunction_file": "CH3F-NAO.fchk",
+    "date": "2026-10-19T16:41:12+02:00",
+    "id": "2026-10-19T16:41:12+02:00/f250",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

@@ -25,8 +25,9 @@ not do QTAIM`). There is nothing to test until it is revived.
 Real-space (numerical integration, `wat.f`/`numint.f`): `TFVC`,
 `BECKE-RHO`, `BECKE` (fixed radii, tested by `H2O-BECKE-EFFAO`), `HIRSH`,
 `HIRSH-IT`. `HIRSH`/`HIRSH-IT` need an external
-atomic-density file, `densoutput`, in the working directory; none exists in
-the repository yet, which blocks their tests.
+atomic-density file, `densoutput`, in the working directory: the one in
+`tests/inputs/` (H, C, O, F at B3LYP/6-31G(d) with Cartesian d) fits only
+wavefunctions at that level.
 
 Hilbert-space (basis-set overlap, `mulliken.f`/`util.f`): `MULLI`,
 `LOWDIN`, `LOWDIN-DAVIDSON` (`tolow`, its own `davidson_lowdin` basis for
@@ -59,11 +60,11 @@ Don't write tests expecting these to work:
 
 | Tool | TFVC | BECKE-RHO | HIRSH / HIRSH-IT | MULLI | LOWDIN | LOWDIN-DAVIDSON | NAO-BASIS | LOWDIN-W |
 |---|---|---|---|---|---|---|---|---|
-| **Populations / bond orders** (always computed) | ✅ all TFVC tests | ✅ `CH3F-BECKE-RHO-EOS` | ① (needs `densoutput`) | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` | ✅ `NaBH3--UHF-DAVIDSON` | ① | ② |
-| **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped), `NaBH3--UHF-UEFFAO` (UEFFAO per atom) | ✅ `CH3F-BECKE-RHO-EOS` | ① | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ✅ `NaBH3--UHF-DAVIDSON` | ① | stop |
+| **Populations / bond orders** (always computed) | ✅ all TFVC tests | ✅ `CH3F-BECKE-RHO-EOS` | ✅ `CH3F-HIRSH`, `CH3F-HIRSH-IT` | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` | ✅ `NaBH3--UHF-DAVIDSON` | ✅ `CH3F-NAO` (Cartesian d), `H2O-NAO-pVDZ` (spherical d) | ② |
+| **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped), `NaBH3--UHF-UEFFAO` (UEFFAO per atom) | ✅ `CH3F-BECKE-RHO-EOS` | ✅ `CH3F-HIRSH`, `CH3F-HIRSH-IT` | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ✅ `NaBH3--UHF-DAVIDSON` | ✅ `CH3F-NAO` | stop |
 | **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI`, `CH3F-EFFAO-U` (EFFAO-U alone) | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **CUBE** | ✅ `CH3F-EOS-CUBE`, `LiH-32-FCI` (`NEG_EFOS`) | ② | ② | ② | ② | ≈dup | ② | ② |
-| **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2`, `CH3F-pySCF` (pySCF `.fchk`), `H2O-Dimer-RHF-OSLO` (after ENPART), `H2-T-OSLO` (no beta electrons) | ② | ② | ✅ `CH3F-OSLO-MULLIKEN` | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ① (`# OSLO NAO-BASIS`) | not an OSLO option |
+| **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2`, `CH3F-pySCF` (pySCF `.fchk`), `H2O-Dimer-RHF-OSLO` (after ENPART), `H2-T-OSLO` (no beta electrons) | ② | ② | ✅ `CH3F-OSLO-MULLIKEN` | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ✅ `CH3F-OSLO-NAO` (`# OSLO NAO-BASIS`) | not an OSLO option |
 | **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `HI-ECP-pySCF` (pseudopotential), `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22` | ② | ② | ② | ② | ≈dup | ② | ② |
 | **PCA** | ② | ② | ② | ✅ `NaBH3--UHF` | ② | ② | ② | ② |
@@ -87,12 +88,9 @@ Still untested regardless of scheme:
 ## Recommended order
 
 1. **`LOBA`** (TFVC + `DOFRAGS`): it blocks its file's cleanup pass.
-2. **`# OSLO NAO-BASIS`**: one extra line in a copy of an existing OSLO
-   input, plus the `.nao` file (cluster run pending).
-3. **Interfaces** (`ORCA`, `MOKIT`, `DM/ORCA`): need wavefunctions from
+2. **Interfaces** (`ORCA`, `MOKIT`, `DM/ORCA`): need wavefunctions from
    those programs.
-4. **`HIRSH`/`HIRSH-IT`**: as soon as `densoutput` files are available.
-5. **`EDAIQA`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
+3. **`EDAIQA`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
    urgency.
 
 Prefer reusing an `.fchk` already in `tests/inputs/` when the
