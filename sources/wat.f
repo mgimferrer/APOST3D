@@ -682,6 +682,7 @@
       double precision, dimension(nat) :: change
       double precision, dimension(nat) :: charge
       double precision, dimension(nat) :: error
+      logical, dimension(nat) :: lclamp
       dimension ipollas(0:6)
       double precision, dimension(nat*iatps) :: rho
       double precision, dimension(nat*iatps,nat) :: whi
@@ -702,6 +703,7 @@
 !! initialize the population-tracking array with the neutral-atom charges !!
       DO ii=1, nat
         znpop(ii)=zn(ii)
+        lclamp(ii)=.false.
       END DO
 !! converged when no population changes by more than toler between two  !!
 !! iterations; each iteration cuts the change by about a quarter, so the  !!
@@ -728,14 +730,16 @@
           END DO
           pop(ii)=xx    
 
-          if(zn(ii)-pop(ii).ge.2.0d0) then
-            write(*,'(2x,a,i0,a)') 'WARNING: charge of atom ',ii,
-     +        ' above +2, set to +2'
-            pop(ii)=zn(ii)-2.0d0
-          ELSE if(zn(ii)-pop(ii).le.-2.0d0) then
-            write(*,'(2x,a,i0,a)') 'WARNING: charge of atom ',ii,
-     +        ' below -2, set to -2'
-            pop(ii)=zn(ii)+2.0d0
+!! densoutput holds the charge states -2 to +2 only: beyond them the     !!
+!! atom's free-atom density is held at the last state (its population no !!
+!! longer changes, so it counts as converged); one warning per atom      !!
+          if(abs(zn(ii)-pop(ii)).ge.2.0d0) then
+            if(.not.lclamp(ii)) write(*,'(2x,a,i0,a,a,a)')
+     +        'WARNING: atom ',ii,' beyond charge ',
+     +        merge('+2','-2',zn(ii)-pop(ii).gt.0.0d0),
+     +        ', its free-atom density is held at that state'
+            lclamp(ii)=.true.
+            pop(ii)=zn(ii)-sign(2.0d0,zn(ii)-pop(ii))
           end if
         
         END DO
@@ -748,7 +752,6 @@
           error(ii)=abs(znpop(ii)-pop(ii))
           znpop(ii)=pop(ii)
           IF (error(ii)<toler) isumcheck=isumcheck+1
-          if(error(ii).eq.0.0d0) call apost_stop('Absolute convergence unlikely.')
           if(error(ii).gt.xmaxerr) xmaxerr=error(ii)
         END DO
         xxp=0.0d0
