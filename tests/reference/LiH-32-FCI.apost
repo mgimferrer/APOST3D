@@ -127,7 +127,7 @@
   Smallest net occupation                 : 0.000 (MIN_OCC 0)
   Grid spacing (bohr)                     : 0.250
   Radius scale                            : 2.000
-  Negative-occupation EFO cubes           : net occupation <= -0.025 (NEG_EFOS 25, GEOS paired only)
+  Negative-occupation EFO cubes           : net occupation <= -0.025 (NEG_EFOS 25, paired EFOs of GEOS and EFFAO-U)
 
   # FRAGMENTS (2 fragments)
   Fragment  1 :   1
@@ -467,7 +467,7 @@
   Total             0.00
   Overall reliability index R (%)         :         96.638
 
-  TIMING CPU  :: EFFAO computation                                 0.05 s
+  TIMING CPU  :: EFFAO computation                                 0.06 s
   TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

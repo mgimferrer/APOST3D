@@ -447,7 +447,7 @@
           write(cval,'(f7.3)') -real(inegcubthr)/1000.0d0
           call print_value('Negative-occupation EFO cubes',
      +      'net occupation <= '//trim(adjustl(cval))//' (NEG_EFOS '//
-     +      trim(cnum)//', GEOS paired only)')
+     +      trim(cnum)//', paired EFOs of GEOS and EFFAO-U)')
         end if
       end if
 
