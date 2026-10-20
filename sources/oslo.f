@@ -555,15 +555,16 @@
 
 !! 5) Close alternative: a next OSLO with an overlap of nearly 1 with   !!
 !! the selected ones (it is nearly one of them, found from another      !!
-!! fragment), with a small delta-FOLI. Not evaluated with one orbital   !!
-!! left (every candidate is then that orbital)                          !!
+!! fragment), with a small delta-FOLI. Not evaluated when the selection !!
+!! takes every orbital left: every candidate then lies in the selected  !!
+!! space (overlap 1 by construction), and the delta-FOLI tells the rest !!
         write(*,'(a)') ''
         if(lbranch) then
           write(*,'(2x,a)') 'Close alternatives: not checked in a '//
      +      'branching iteration'
-        else if(nleft.eq.1) then
-          write(*,'(2x,a)') 'Close alternatives: not checked, one '//
-     +      'orbital left'
+        else if(nel-nnelect.eq.0) then
+          write(*,'(2x,a)') 'Close alternatives: not checked, no '//
+     +      'orbital left after this selection'
         else if(jjfrg.eq.0) then
           write(*,'(2x,a)') 'Close alternatives: no other candidate'
         else

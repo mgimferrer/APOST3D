@@ -623,7 +623,7 @@
     },
     {
       "name": "H2-T-OSLO-CLOSE",
-      "description": "H2 triplet at 0.60 Å, UKS B3LYP from pySCF, one fragment per atom: in the alpha channel the next OSLOs overlap fully with the selected ones and the delta-FOLI is 0.29926, so the close-alternative warning suggests BRANCH_ALPHA 1.",
+      "description": "H2 triplet at 0.60 Å, UKS B3LYP from pySCF, one fragment per atom: in the alpha channel the first selection takes both orbitals (delta-FOLI 0.29926), so the close-alternative check is skipped: every next OSLO lies in the selected space. The genuine warning is tested by C3H7F-OSLO-CLOSE.",
       "tags": [
         "dft",
         "oslo",
@@ -631,8 +631,7 @@
         "uks",
         "fragments",
         "openshell",
-        "pyscf",
-        "branching"
+        "pyscf"
       ],
       "timeout": 300,
       "extra_input_files": [],
@@ -648,26 +647,20 @@
           "pattern": "Normal Termination"
         },
         {
-          "label": "Largest overlap with the selected OSLOs (alpha)",
-          "pattern": "Largest overlap with the selected OSLOs\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 1.0,
-          "tol_abs": 0.0002
-        },
-        {
           "label": "delta-FOLI (alpha)",
           "pattern": "Delta-FOLI\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 0.29926,
           "tol_abs": 0.0002
         },
         {
-          "label": "Close-alternative warning",
+          "label": "Close-alternative check skipped (no orbital left)",
           "type": "present",
-          "pattern": "WARNING: close alternative selection"
+          "pattern": "Close alternatives: not checked, no orbital left after this selection"
         },
         {
-          "label": "Suggested branching line",
-          "type": "present",
-          "pattern": "add to # OSLO\\s+BRANCH_ALPHA 1\\s"
+          "label": "No close-alternative warning",
+          "type": "absent",
+          "pattern": "WARNING: close alternative"
         },
         {
           "label": "Fragment 1 OSLO oxidation state",

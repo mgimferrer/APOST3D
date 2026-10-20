@@ -1394,13 +1394,7 @@
   Delta-FOLI                              :        1.81589
   Orbitals left to assign                 : 0
 
-  Next OSLOs against the selected ones
-  Orb.  Frag.      FOLI    Overlap
-  --------------------------------
-     3      1   3.43455    1.00000
-     4      1   3.43455    1.00000
-  --------------------------------
-  Largest overlap with the selected OSLOs :        1.00000
+  Close alternatives: not checked, no orbital left after this selection
 
   Sum of the FOLI values                  :       35.30348
 
@@ -1544,7 +1538,7 @@
   ----------------------
   Total            -2.00
 
-  TIMING CPU  :: OSLO analysis                                     1.46 s
-  TIMING WALL :: OSLO analysis                                     1.30 s
+  TIMING CPU  :: OSLO analysis                                     1.48 s
+  TIMING WALL :: OSLO analysis                                     1.31 s
 
   ...Normal Termination of APOST-3D...

@@ -193,7 +193,7 @@
       },
       "orbital_file": "C2H6-OSLO-2CH3-OSLOs.fchk",
       "orbital_file_preortho": "C2H6-OSLO-2CH3-OSLOs-preortho.fchk",
-      "orbital_file_id": "2026-10-16T17:11:13+02:00/99f8"
+      "orbital_file_id": "2026-10-20T11:08:04+02:00/6108"
     }
   },
   "index": [
@@ -426,8 +426,8 @@
     "job_name": "C2H6-OSLO-2CH3",
     "input_file": "C2H6-OSLO-2CH3.inp",
     "wavefunction_file": "C2H6-OSLO-2CH3.fchk",
-    "date": "2026-10-16T17:11:13+02:00",
-    "id": "2026-10-16T17:11:13+02:00/99f8",
+    "date": "2026-10-20T11:08:04+02:00",
+    "id": "2026-10-20T11:08:04+02:00/6108",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -377,18 +377,7 @@
   Delta-FOLI                              :        0.29926
   Orbitals left to assign                 : 0
 
-  Next OSLOs against the selected ones
-  Orb.  Frag.      FOLI    Overlap
-  --------------------------------
-     1      1   2.14466    1.00000
-     1      2   2.14466    1.00000
-  --------------------------------
-  Largest overlap with the selected OSLOs :        1.00000
-  WARNING: close alternative selection. The next OSLO is nearly one of the
-  selected ones, and its FOLI value is within 0.5 of theirs: an alternative
-  assignment is possible. To follow it, add to # OSLO
-    BRANCH_ALPHA 1
-  and compare the sums of FOLI values of both runs.
+  Close alternatives: not checked, no orbital left after this selection
 
   Sum of the FOLI values                  :        3.69080
 

@@ -384,7 +384,7 @@
   ---------------
   Orbitals left to assign                 : 0
 
-  Close alternatives: not checked, one orbital left
+  Close alternatives: not checked, no orbital left after this selection
 
   Sum of the FOLI values                  :        1.99999
 
@@ -430,7 +430,7 @@
   ---------------
   Orbitals left to assign                 : 0
 
-  Close alternatives: not checked, one orbital left
+  Close alternatives: not checked, no orbital left after this selection
 
   Sum of the FOLI values                  :        1.99999
   Branching at iteration 2: not reached, not applied

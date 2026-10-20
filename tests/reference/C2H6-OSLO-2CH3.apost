@@ -162,8 +162,8 @@
 
   Sum of atomic overlaps, largest error   : 2.63E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 1.16 s
-  TIMING WALL :: Atomic definition                                 0.17 s
+  TIMING CPU  :: Atomic definition                                 1.23 s
+  TIMING WALL :: Atomic definition                                 0.18 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -558,7 +558,7 @@
   ---------------
   Orbitals left to assign                 : 0
 
-  Close alternatives: not checked, one orbital left
+  Close alternatives: not checked, no orbital left after this selection
 
   Sum of the FOLI values                  :       10.21367
 
@@ -609,6 +609,6 @@
   Fractional values: orbitals shared between fragments (see the iterations)
 
   TIMING CPU  :: OSLO analysis                                     0.68 s
-  TIMING WALL :: OSLO analysis                                     0.65 s
+  TIMING WALL :: OSLO analysis                                     0.66 s
 
   ...Normal Termination of APOST-3D...

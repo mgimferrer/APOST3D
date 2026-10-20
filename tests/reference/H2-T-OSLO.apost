@@ -376,13 +376,7 @@
   Delta-FOLI                              :        0.57153
   Orbitals left to assign                 : 0
 
-  Next OSLOs against the selected ones
-  Orb.  Frag.      FOLI    Overlap
-  --------------------------------
-     1      1   2.27173    1.00000
-     1      2   2.27173    1.00000
-  --------------------------------
-  Largest overlap with the selected OSLOs :        1.00000
+  Close alternatives: not checked, no orbital left after this selection
 
   Sum of the FOLI values                  :        3.40040
 

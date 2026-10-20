@@ -136,7 +136,7 @@
   Fragment  2 :   4   5   6
 
   TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -166,7 +166,7 @@
 
   Sum of atomic overlaps, largest error   : 7.67E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 1.86 s
+  TIMING CPU  :: Atomic definition                                 1.89 s
   TIMING WALL :: Atomic definition                                 0.28 s
 
   -----------------------------
@@ -431,8 +431,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      36.664228
 
-  TIMING CPU  :: ENPART one-electron terms                         0.79 s
-  TIMING WALL :: ENPART one-electron terms                         0.11 s
+  TIMING CPU  :: ENPART one-electron terms                         0.80 s
+  TIMING WALL :: ENPART one-electron terms                         0.12 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -444,10 +444,10 @@
   Pairs integrated (exact exchange)       : 9
   Pairs from the multipolar expansion     : 6
 
-  TIMING CPU  :: ENPART Coulomb                                    0.91 s
-  TIMING WALL :: ENPART Coulomb                                    0.14 s
-  TIMING CPU  :: ENPART exact exchange                            12.50 s
-  TIMING WALL :: ENPART exact exchange                             1.66 s
+  TIMING CPU  :: ENPART Coulomb                                    0.92 s
+  TIMING WALL :: ENPART Coulomb                                    0.15 s
+  TIMING CPU  :: ENPART exact exchange                            12.62 s
+  TIMING WALL :: ENPART exact exchange                             1.65 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -465,8 +465,8 @@
   The one-center Coulomb and exchange terms of the matrices below
   are the corrected ones; the pair terms do not change.
 
-  TIMING CPU  :: ENPART zero-error correction                      5.29 s
-  TIMING WALL :: ENPART zero-error correction                      0.74 s
+  TIMING CPU  :: ENPART zero-error correction                      5.36 s
+  TIMING WALL :: ENPART zero-error correction                      0.73 s
 
   ----------------------------------------------------
     COULOMB ENERGY, BEFORE THE ZERO-ERROR CORRECTION
@@ -673,8 +673,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      -1.272703
 
-  TIMING CPU  :: ENPART two-electron terms                        18.89 s
-  TIMING WALL :: ENPART two-electron terms                         2.57 s
+  TIMING CPU  :: ENPART two-electron terms                        19.10 s
+  TIMING WALL :: ENPART two-electron terms                         2.56 s
 
   ---------------------------------------------------
     OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
@@ -905,7 +905,7 @@
   Delta-FOLI                              :        8.20878
   Orbitals left to assign                 : 0
 
-  Close alternatives: not checked, one orbital left
+  Close alternatives: not checked, no orbital left after this selection
 
   Sum of the FOLI values                  :       10.05325
 
@@ -954,7 +954,7 @@
   ----------------------
   Total             0.00
 
-  TIMING CPU  :: OSLO analysis                                     0.69 s
-  TIMING WALL :: OSLO analysis                                     0.68 s
+  TIMING CPU  :: OSLO analysis                                     0.70 s
+  TIMING WALL :: OSLO analysis                                     0.70 s
 
   ...Normal Termination of APOST-3D...
