@@ -218,10 +218,8 @@
 !! Local spin analysis of a single-determinant wavefunction: effectively
 !! unpaired electrons of each atom and the a=3/4 decomposition of <S^2>
 !! into atomic and diatomic terms (E. Ramos-Cordoba et al., J. Chem.
-!! Theory Comput. 2012, 8, 1270), and the "DAVIDSON SPIN DEC." matrix,
-!! meant as the Clark-Davidson decomposition of the same paper but whose
-!! formula does not match it yet (under review). spincorr (corr.f) does
-!! the same for correlated wavefunctions.
+!! Theory Comput. 2012, 8, 1270). spincorr (corr.f) does the same for
+!! correlated wavefunctions.
 !! arguments:
 !!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
 !! author:
@@ -334,81 +332,6 @@
       if(idofr.eq.1) call group_by_frag_mat(0,
      +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
       call json_local_spin(.false.,xnd,sum,xlsa,xlsa,0.d0,0.d0)
-
-!! "DAVIDSON SPIN DEC." matrix (meant as Clark-Davidson, formula under   !!
-!! review, see the header) -- rindex is safely reused here, xlsa already !!
-!! holds the a=3/4 result saved above. P*S^A products first, then the Ps !!
-!! correction (open-shell only).                                         !!
-      do iat=1,natoms
-        do mu=1,nbasis
-          do nu=1,nbasis
-            x=0.d0
-            do itau=1,nbasis
-              x=x+p(mu,itau)*sat(itau,nu,iat)
-            enddo
-            tt(mu,nu,iat)=x
-          enddo
-        enddo
-      enddo
-
-      do iat=1,natoms
-        xx0=0.d0
-        do ibt=1,natoms
-          x=0.d0
-          do mu=1,nbasis
-            do nu=1,nbasis
-              x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-            enddo
-          enddo
-          if(iat.ne.ibt) then
-            rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
-            xx0=xx0+x
-          endif
-        enddo
-        rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
-      enddo
-
-      if(kop.ne.0) then
-        do iat=1,natoms
-          do mu=1,nbasis
-            do nu=1,nbasis
-              x=0.d0
-              do itau=1,nbasis
-                x=x+ps(mu,itau)*sat(itau,nu,iat)
-              enddo
-              tt(mu,nu,iat)=x
-            enddo
-          enddo
-        enddo
-
-        do iat=1,natoms
-          xx0=0.d0
-          do ibt=1,natoms
-            x=0.d0
-            do mu=1,nbasis
-              do nu=1,nbasis
-                x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-              enddo
-            enddo
-            if(iat.ne.ibt) then
-              rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
-              xx0=xx0+x
-            endif
-          enddo
-          rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
-        enddo
-      endif
-
-      call print_box('"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX')
-      call mprint(rindex,natoms,maxat)
-      sum=0.0d0
-      do iat=1,natoms
-        do ibt=1,natoms
-          sum=sum+rindex(iat,ibt)
-        enddo
-      enddo
-      write(*,'(a)') ''
-      write(*,'(2x,a,f10.5)') 'Sum check <S^2> = ',sum
 
       deallocate(tt,tts)
 

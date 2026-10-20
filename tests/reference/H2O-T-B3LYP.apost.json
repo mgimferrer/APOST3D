@@ -1029,8 +1029,8 @@
     "job_name": "H2O-T-B3LYP",
     "input_file": "H2O-T-B3LYP.inp",
     "wavefunction_file": "H2O-T-B3LYP.fchk",
-    "date": "2026-10-16T17:10:55+02:00",
-    "id": "2026-10-16T17:10:55+02:00/d508",
+    "date": "2026-10-20T23:10:33+02:00",
+    "id": "2026-10-20T23:10:33+02:00/0a18",
     "threads": 8,
     "status": "normal",
     "stop_message": null

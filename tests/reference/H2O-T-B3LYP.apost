@@ -161,8 +161,8 @@
 
   Sum of atomic overlaps, largest error   : 9.40E-07 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.93 s
-  TIMING WALL :: Atomic definition                                 0.14 s
+  TIMING CPU  :: Atomic definition                                 0.95 s
+  TIMING WALL :: Atomic definition                                 0.15 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -388,20 +388,6 @@
   ---------------------------------
   Total (all elements)                    :       2.005241
 
-  -------------------------------------------
-    "FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX
-  -------------------------------------------
-
-  -------------------------------------------
-                 1  O        2  H        3  H
-  -------------------------------------------
-    1  O     1.609933   -0.174365   -0.174365
-    2  H    -0.174365    0.597705   -0.051322
-    3  H    -0.174365   -0.051322    0.597705
-  -------------------------------------------
-
-  Sum check <S^2> =    2.00524
-
   --------------------------------
     ENERGY PARTITIONING (ENPART)
   --------------------------------
@@ -500,8 +486,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :       7.285080
 
-  TIMING CPU  :: ENPART one-electron terms                         0.43 s
-  TIMING WALL :: ENPART one-electron terms                         0.06 s
+  TIMING CPU  :: ENPART one-electron terms                         0.45 s
+  TIMING WALL :: ENPART one-electron terms                         0.07 s
 
   ------------------------------------
     DFT EXCHANGE-CORRELATION (BODEN)
@@ -623,8 +609,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      -7.402975
 
-  TIMING CPU  :: ENPART DFT exchange-correlation                   1.67 s
-  TIMING WALL :: ENPART DFT exchange-correlation                   0.33 s
+  TIMING CPU  :: ENPART DFT exchange-correlation                   1.70 s
+  TIMING WALL :: ENPART DFT exchange-correlation                   0.34 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -634,10 +620,10 @@
   Angular points                          : 146
   Grid points                             : 17520
 
-  TIMING CPU  :: ENPART Coulomb                                    0.27 s
-  TIMING WALL :: ENPART Coulomb                                    0.06 s
-  TIMING CPU  :: ENPART exact exchange                             4.17 s
-  TIMING WALL :: ENPART exact exchange                             0.58 s
+  TIMING CPU  :: ENPART Coulomb                                    0.25 s
+  TIMING WALL :: ENPART Coulomb                                    0.04 s
+  TIMING CPU  :: ENPART exact exchange                             4.00 s
+  TIMING WALL :: ENPART exact exchange                             0.53 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -655,8 +641,8 @@
   The one-center Coulomb and exchange terms of the matrices below
   are the corrected ones; the pair terms do not change.
 
-  TIMING CPU  :: ENPART zero-error correction                      2.55 s
-  TIMING WALL :: ENPART zero-error correction                      0.36 s
+  TIMING CPU  :: ENPART zero-error correction                      2.54 s
+  TIMING WALL :: ENPART zero-error correction                      0.35 s
 
   ----------------------------------------------------
     COULOMB ENERGY, BEFORE THE ZERO-ERROR CORRECTION
@@ -958,7 +944,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      -0.101567
 
-  TIMING CPU  :: ENPART two-electron terms                         7.09 s
-  TIMING WALL :: ENPART two-electron terms                         1.01 s
+  TIMING CPU  :: ENPART two-electron terms                         6.88 s
+  TIMING WALL :: ENPART two-electron terms                         0.94 s
 
   ...Normal Termination of APOST-3D...
