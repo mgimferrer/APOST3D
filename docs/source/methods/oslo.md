@@ -224,26 +224,42 @@ with the selected orbitals: 1 means it is one of them (or a combination
 of them) found from another fragment, 0 a different orbital. If an
 overlap is above 0.9 and the Δ-FOLI is below 0.5, two fragments
 compete for the same orbitals, and the program prints a warning with the
-input line that follows the alternative (H2 triplet at 0.60 Å, test
-`H2-T-OSLO-CLOSE`):
+input line that follows the alternative. In 1-fluoropropane with the
+fragments CH₃, CH₂, CH₂ and F (test `C3H7F-OSLO-CLOSE`), iteration 13
+selects the CH₃–CH₂ bond for CH₃, while CH₂ finds the same bond with a
+FOLI value only 0.075 higher, and the other C–C bond is still left:
 
-% source: tests/reference/H2-T-OSLO-CLOSE.apost
+% source: tests/reference/C3H7F-OSLO-CLOSE.apost
 ```text
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
+     2      1   2.03103
+  ---------------------
+  OSLOs selected                          : 1
+  Delta-FOLI                              :        0.07500
+  Orbitals left to assign                 : 1
+
   Next OSLOs against the selected ones
   Orb.  Frag.      FOLI    Overlap
   --------------------------------
-     1      1   2.14466    1.00000
-     1      2   2.14466    1.00000
+     1      2   2.10602    0.99955
   --------------------------------
-  Largest overlap with the selected OSLOs :        1.00000
+  Largest overlap with the selected OSLOs :        0.99955
   WARNING: close alternative selection. The next OSLO is nearly one of the
   ...
-    BRANCH_ALPHA 1
+    BRANCH_ITERATION 13
 ```
 
-This is not checked when only one orbital is left: every candidate is
-then that orbital, and the Δ-FOLI already tells how clear its assignment
-is. It is not checked in a branching iteration either.
+Following it (`BRANCH_ITERATION 13`) gives the bond to CH₂: the oxidation
+states of CH₃ and that CH₂ become +1 and −2 instead of −1 and 0, with a
+sum of FOLI values of 20.089 instead of 20.020: the first assignment
+gives the better localized OSLOs, by a small margin.
+
+The check is skipped when the selection takes every orbital still left:
+every candidate then lies in the space of the selected orbitals (an
+overlap of 1 by construction), and the Δ-FOLI already tells how clear the
+assignment is. It is not checked in a branching iteration either.
 
 **Branching.** `BRANCH_ITERATION n` in [`# OSLO`](../input/oslo.md)
 selects, at iteration n, the orbitals at the next FOLI value instead of

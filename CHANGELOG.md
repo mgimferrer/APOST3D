@@ -268,6 +268,13 @@ program, not a full development history — see `git log` for that.
 - **`.int` files of atoms with an ECP** — the `NET CHARGE` written by
   `DOINT` uses the nuclear charge left by the pseudopotential (it counted
   the core electrons the ECP replaces as a positive charge).
+- **OSLO close-alternative warning** — no longer printed when the
+  selection takes every orbital still left: every candidate then lies in
+  the selected space, so the overlap was 1 by construction and the
+  warning fired without a real alternative (e.g. an H2 triplet whose
+  suggested branch gives the same oxidation states). The output says
+  `Close alternatives: not checked, no orbital left after this
+  selection`.
 - **OSLO with Mulliken populations** — `# OSLO MULLIKEN` gave NaN FOLI
   values for orbitals with a slightly negative Mulliken population on a
   fragment, and selected them. An orbital whose population on a fragment

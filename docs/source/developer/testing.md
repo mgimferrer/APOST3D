@@ -128,7 +128,8 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2-T-OSLO` | H2 triplet, UKS B3LYP from pySCF: fragment OSLO with no beta electrons and more linear-dependency candidates than electrons | `dft oslo tfvc uks fragments openshell pyscf` |
 | `C2H6-OSLO-2CH3` | Ethane, RKS B3LYP, two CH₃ fragments: the C–C bond, found from both, is shared half and half (oxidation states 0/0) | `dft oslo tfvc rks fragments shared` |
 | `H2-S-OSLO` | H2 singlet, UKS B3LYP from pySCF: the orbital of each spin channel shared between the two atoms; `BRANCH_ALPHA`/`BRANCH_BETA` reported as not applicable | `dft oslo tfvc uks fragments pyscf shared branching` |
-| `H2-T-OSLO-CLOSE` | H2 triplet at 0.60 Å, UKS B3LYP from pySCF: the next OSLOs overlap fully with the selected ones with a Δ-FOLI of 0.30, so the close-alternative warning suggests `BRANCH_ALPHA 1` | `dft oslo tfvc uks fragments openshell pyscf branching` |
+| `H2-T-OSLO-CLOSE` | H2 triplet at 0.60 Å, UKS B3LYP from pySCF: the first selection takes both alpha orbitals (Δ-FOLI 0.30), so the close-alternative check is skipped | `dft oslo tfvc uks fragments openshell pyscf` |
+| `C3H7F-OSLO-CLOSE` | 1-Fluoropropane, RKS B3LYP/6-31G* from pySCF, fragments CH₃, CH₂, CH₂ and F: the CH₃–CH₂ bond is found from both sides (overlap 0.99955, Δ-FOLI 0.075) with an orbital still left, so the close-alternative warning suggests `BRANCH_ITERATION 13` | `dft oslo tfvc rks fragments pyscf branching` |
 | `CH3F-OSLO-BRANCH` | Fluoromethane, RKS: `BRANCH_ITERATION 6` gives the C–F bond to CH₃ (+1/−1), with a higher sum of FOLI values | `dft oslo tfvc rks fragments branching` |
 | `FeCO2-PBEPBE` | FeCO2 complex (charge +2), RKS PBE: TFVC, fragment EOS with per-EFO occupations | `dft eos effao tfvc rks fragments` |
 | `FeO4-2` | Ferrate(VI), RKS, Q-Chem `.fchk`: TFVC, fragment OSLO | `dft oslo tfvc rks fragments qchem` |
