@@ -4332,6 +4332,165 @@
           "tol_abs": 0.05
         }
       ]
+    },
+    {
+      "name": "CH2-T-CAS66",
+      "description": "CH2 triplet, ROHF-based CASSCF(6,6) / 6-31G (Cartesian), pySCF with # DM PYSCF (DM 2): exchange-only bond orders from the 1-RDM, including its spin density, Mayer's bond orders from the natural orbitals, the exchange-correlation bond orders (DI) and the correlated local spin analysis.",
+      "tags": [
+        "casscf",
+        "dm",
+        "pyscf",
+        "spin",
+        "tfvc",
+        "openshell"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "CH2-T-CAS66.dm1",
+        "CH2-T-CAS66.dm2"
+      ],
+      "keywords": [
+        "TFVC",
+        "DM/PYSCF",
+        "SPIN"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C-H exchange-only bond order",
+          "section": "EXCHANGE-ONLY BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.070058,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C free valence",
+          "section": "FREE VALENCES",
+          "pattern": "1  C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.710379,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C-H new bond order (natural orbitals)",
+          "section": "NEW BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.068674,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C-H exchange-correlation bond order (DI)",
+          "section": "EXCHANGE-CORRELATION BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.955645,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C effectively unpaired electrons",
+          "section": "EFFECTIVELY UNPAIRED ELECTRONS",
+          "pattern": "1  C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.890383,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Total <S^2>",
+          "pattern": "Total <S\\^2>\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 1.999989,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "No closed-shell note for a triplet",
+          "type": "absent",
+          "pattern": "closed-shell correlated wavefunction"
+        }
+      ]
+    },
+    {
+      "name": "CH2-T-CAS66-DM1",
+      "description": "Same CH2 triplet CASSCF(6,6) with the 1-RDM only (DM 1): exchange-only and natural-orbital bond orders in the population analysis, no local spin.",
+      "tags": [
+        "casscf",
+        "dm",
+        "pyscf",
+        "tfvc",
+        "openshell"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "CH2-T-CAS66-DM1.dm1"
+      ],
+      "keywords": [
+        "TFVC",
+        "DM/PYSCF"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C-H exchange-only bond order",
+          "section": "EXCHANGE-ONLY BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.070058,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C-H new bond order (natural orbitals)",
+          "section": "NEW BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.068674,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "No local spin analysis",
+          "type": "absent",
+          "pattern": "LOCAL SPIN ANALYSIS"
+        }
+      ]
+    },
+    {
+      "name": "CH2-T-CAS66-NODM",
+      "description": "Same CH2 triplet CASSCF(6,6) without # DM: charges from the .fchk density, no bond orders or valences (a note asks for the 1-RDM).",
+      "tags": [
+        "casscf",
+        "pyscf",
+        "tfvc",
+        "openshell"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1  C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.107411,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Note on the missing bond orders",
+          "type": "present",
+          "pattern": "Note: no bond orders or valences"
+        },
+        {
+          "label": "No bond order matrix",
+          "type": "absent",
+          "pattern": "BOND ORDER MATRIX"
+        }
+      ]
     }
   ]
 }
