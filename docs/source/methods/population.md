@@ -109,6 +109,25 @@ after the valences), where the populations and charges are summed over the atoms
 fragment and the bond order between two fragments is the sum of the bond
 orders between their atoms (see [Fragments](../guide/fragments.md)).
 
+**Correlated wavefunctions.** With a [`# DM` block](../input/dm.md)
+(`DM 1` or `DM 2`), $\mathbf P$ and $\mathbf P^s$ are those of the 1-RDM
+and the matrix is titled `EXCHANGE-ONLY BOND ORDER MATRIX`. After the
+valences, `NEW BOND ORDER MATRIX` gives the bond orders from the natural
+orbitals (I. Mayer's definition for correlated wavefunctions),
+
+$$
+B_{AB} = \sum_{ij} \left(n_i n_j + \sqrt{u_i u_j}\right) S^A_{ij} S^B_{ji},
+\qquad u_i = 2n_i - n_i^2,
+$$
+
+with $n_i$ the occupations of the natural orbitals and $\mathbf S^A$ in
+their basis; its total (diagonal and one triangle) is the number of
+electrons. With `DM 2`, the [local spin analysis](spin.md) adds the
+exchange-correlation bond orders from the 2-RDM. Without `# DM`, the bond
+orders come from the density of the `.fchk` file, which is right for a
+singlet only: for any other spin state of a correlated wavefunction the
+bond orders and valences are not printed, and a note asks for the 1-RDM.
+
 ## Checking the result
 
 - With a real-space scheme, the sum of the populations should equal the

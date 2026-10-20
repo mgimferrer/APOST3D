@@ -166,13 +166,14 @@ Written by every run (the population analysis is always done).
 
 ### `bond_orders`
 
-Written by every run.
+Written by every run, except for a non-singlet correlated wavefunction
+without `# DM` (no bond orders printed).
 
 | Key | Content |
 |---|---|
 | `scheme` | as in `populations` |
-| `atoms` | `matrix`: bond orders (localization index on the diagonal); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free` |
-| `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle) and the three valences summed per fragment (only with fragments) |
+| `atoms` | `matrix`: bond orders (localization index on the diagonal; with `# DM`, the exchange-only bond orders of the 1-RDM); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free`; with `# DM` also `new_bond_orders` (bond orders from the natural orbitals, I. Mayer's definition) with its total |
+| `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle), the three valences summed per fragment and, with `# DM`, `new_bond_orders` (only with fragments) |
 | `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS and GEOS, except with Lowdin, Lowdin-Davidson or NAO atoms) |
 
 ### `local_spin`
@@ -186,11 +187,8 @@ a correlated wavefunction.
 | `wavefunction` | `"single determinant"` or `"correlated"` |
 | `total_unpaired_electrons` | number of effectively unpaired electrons N_D |
 | `total_s2` | total of the <S^2> decomposition |
-| `atoms` | `unpaired_electrons` (one value per atom) and `s2`, the a=3/4 decomposition of <S^2> (atomic terms on the diagonal, diatomic ones off it); for a correlated wavefunction also `new_bond_orders` (bond orders from the natural orbitals, I. Mayer's definition) and `li_di` (localization and delocalization indices from the 2-RDM), both with their totals |
-| `fragments` | `unpaired_electrons`, `s2` and, for a correlated wavefunction, `li_di`, per fragment (only with fragments) |
-
-The bond orders from the 1-RDM that a correlated local spin analysis
-prints again are those of `bond_orders`.
+| `atoms` | `unpaired_electrons` (one value per atom) and `s2`, the a=3/4 decomposition of <S^2> (atomic terms on the diagonal, diatomic ones off it); for a correlated wavefunction also `xc_bond_orders` (exchange-correlation bond orders from the 2-RDM: delocalization indices, localization indices on the diagonal) with its total |
+| `fragments` | `unpaired_electrons`, `s2` and, for a correlated wavefunction, `xc_bond_orders`, per fragment (only with fragments) |
 
 ### `effao`
 
@@ -342,7 +340,8 @@ the major number. Version 0.x is the draft that becomes 1.0 with
 APOST-3D 5.0; while it is a draft a key may still be renamed with only a
 minor increase (0.8 replaced the `fragment` column of the EFO tables by
 `fragments` and `shares`; 0.13 renamed `recovered_percent` of
-`negative_efos` to `fit_percent`).
+`negative_efos` to `fit_percent`; 0.14 moved `new_bond_orders` from
+`local_spin` to `bond_orders` and renamed `li_di` to `xc_bond_orders`).
 
 ## Checking a change
 

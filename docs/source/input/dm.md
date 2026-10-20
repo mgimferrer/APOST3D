@@ -29,4 +29,7 @@ pySCF
   (CASSCF, FCI, CI): with a single-determinant `.fchk` the run stops. With pySCF, `utils/apost3d.py` writes the three
   files together (see [Preparing the wavefunction](../guide/wavefunctions.md)).
 - The 1-RDM replaces the density of the `.fchk` file in every analysis.
+- A correlated wavefunction that is not a singlet needs at least `DM 1`
+  for its spin populations, bond orders and valences: without it they are
+  not printed.
 - `DM 2` also switches on the [local spin analysis](../methods/spin.md).

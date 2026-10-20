@@ -316,6 +316,16 @@ program, not a full development history — see `git log` for that.
   spin-density term with the wrong sign. It is no longer printed; the
   local spin analysis (effectively unpaired electrons and the a=3/4
   decomposition of ⟨S²⟩) is unchanged.
+- **Bond orders of correlated wavefunctions** — with `# DM`, the
+  population analysis prints the exchange-only bond orders of the 1-RDM
+  (`EXCHANGE-ONLY BOND ORDER MATRIX`), now with its spin-density term
+  (missing for non-singlets), and the bond orders from the natural
+  orbitals (`NEW BOND ORDER MATRIX`, before printed only by `SPIN`). The
+  local spin analysis no longer repeats the 1-RDM matrix; its LI/DI
+  matrix is now `EXCHANGE-CORRELATION BOND ORDER MATRIX (DI)`. Without
+  `# DM`, a non-singlet correlated wavefunction gets no bond orders or
+  valences (they lacked the spin density), with a note. A non-singlet no
+  longer gets the note "closed-shell correlated wavefunction".
 
 ### Others
 

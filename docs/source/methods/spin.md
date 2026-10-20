@@ -157,12 +157,11 @@ contamination of the UKS determinant (it matches the `S**2` value of the
 `.fchk` file).
 
 **Correlated wavefunction.** For LiH at 3.5 Å, CASSCF(2,2) (test
-`LiH-35-CAS22`), the section first prints three matrices: the bond orders
-from the 1-RDM (`BOND ORDER MATRIX (1-RDM)`, the same as in the population
-analysis), the bond orders from the natural orbitals
-(`NEW BOND ORDER MATRIX`, I. Mayer's definition for correlated
-wavefunctions) and the localization and delocalization indices from the
-2-RDM (`LI/DI MATRIX (2-RDM)`). Then:
+`LiH-35-CAS22`), the section first prints the exchange-correlation bond
+orders from the 2-RDM (`EXCHANGE-CORRELATION BOND ORDER MATRIX (DI)`: the
+delocalization indices, with the localization indices on the diagonal).
+The bond orders from the 1-RDM and from the natural orbitals are in the
+[population analysis](population.md). Then:
 
 % source: tests/reference/LiH-35-CAS22.apost
 ```text
@@ -195,7 +194,7 @@ equilibrium distance the same analysis gives small local spins.
 With `DOFRAGS`, `FRAGMENT UNPAIRED ELECTRONS` and
 `FRAGMENT S^2 DECOMPOSITION (a=3/4)` follow their atom tables, with the
 same quantities summed over the atoms of each fragment (and, for a
-correlated wavefunction, `FRAGMENT LI/DI (2-RDM)`).
+correlated wavefunction, `FRAGMENT EXCHANGE-CORRELATION BOND ORDERS (DI)`).
 
 ## Checking the result
 
