@@ -67,7 +67,6 @@ Don't write tests expecting these to work:
 | **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2`, `CH3F-pySCF` (pySCF `.fchk`), `H2O-Dimer-RHF-OSLO` (after ENPART), `H2-T-OSLO` (no beta electrons), `C3H7F-OSLO-CLOSE` (close-alternative warning) | ② | ② | ✅ `CH3F-OSLO-MULLIKEN` | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ✅ `CH3F-OSLO-NAO` (`# OSLO NAO-BASIS`) | not an OSLO option |
 | **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `HI-ECP-pySCF` (pseudopotential), `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22` | ② | ② | ② | ② | ≈dup | ② | ② |
-| **PCA** | ② | ② | ② | ✅ `NaBH3--UHF` | ② | ② | ② | ② |
 | **LOBA** (`loba.f`) | ① | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **EDAIQA** | ① (needs two extra `.fchk`) | ② | ② | ? | ? | ? | ? | ? |
 | **POLAR** | ✅ `H2O-RHF-FIELD`, `H2O-T-UB3LYP-FIELD` | ② | ② | ? | ? | ? | ? | ? |

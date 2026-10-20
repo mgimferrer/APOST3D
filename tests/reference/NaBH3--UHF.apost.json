@@ -16,7 +16,7 @@
     "energy_au": -1.8824847559800841E+002
   },
   "input": {
-    "text": "# METHOD\nMULLI\nPCA\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
+    "text": "# METHOD\nMULLI\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
     "atomic_definition": {
       "keyword": "MULLIKEN",
       "name": "Mulliken",
@@ -336,7 +336,7 @@
       },
       "reliability_percent": 8.9767722520896953E+001,
       "orbital_file": "NaBH3--UHF-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T17:11:36+02:00/1a40"
+      "orbital_file_id": "2026-10-20T23:07:41+02:00/9d98"
     }
   },
   "index": [
@@ -631,8 +631,8 @@
     "job_name": "NaBH3--UHF",
     "input_file": "NaBH3--UHF.inp",
     "wavefunction_file": "NaBH3--UHF.fchk",
-    "date": "2026-10-16T17:11:36+02:00",
-    "id": "2026-10-16T17:11:36+02:00/1a40",
+    "date": "2026-10-20T23:07:41+02:00",
+    "id": "2026-10-20T23:07:41+02:00/9d98",
     "threads": 8,
     "status": "normal",
     "stop_message": null

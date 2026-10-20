@@ -1435,12 +1435,11 @@
     },
     {
       "name": "NaBH3--UHF",
-      "description": "NaBH3 anion, UHF — MULLI (Mulliken atoms), PCA and EOS in one run, 2 fragments.",
+      "description": "NaBH3 anion, UHF — MULLI (Mulliken atoms) and EOS in one run, 2 fragments.",
       "tags": [
         "hf",
         "uhf",
         "mulliken",
-        "pca",
         "eos",
         "fragments"
       ],
@@ -1448,7 +1447,6 @@
       "extra_input_files": [],
       "keywords": [
         "MULLI",
-        "PCA",
         "EOS",
         "DOFRAGS"
       ],
@@ -1470,34 +1468,6 @@
           "section": "SPIN POPULATIONS",
           "pattern": "2\\s+B\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.941932,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "PCA covariance matrix Na diagonal",
-          "section": "COVARIANCE MATRIX",
-          "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 5.631461,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "PCA eigenvector 1, Na component",
-          "section": "PCA EIGENVECTORS",
-          "pattern": "1 Na\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.999883,
-          "tol_abs": 2e-05
-        },
-        {
-          "label": "PCA eigenvalue 1",
-          "section": "Eigenvalues:",
-          "pattern": "([-+]?\\d+\\.\\d+)",
-          "ref": 5.6323,
-          "tol_abs": 0.002
-        },
-        {
-          "label": "PC 1 sum check",
-          "section": "PCA SUM CHECKS",
-          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 63.895144,
           "tol_abs": 2e-05
         },
         {

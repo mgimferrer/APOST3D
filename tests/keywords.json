@@ -71,8 +71,6 @@
      "description": "Perform explicit numerical integration diagnostics",                                      "priority": "low"},
     {"id": "ELCOUNT",         "key": "ELCOUNT",           "section": "# METHOD",   "category": "analysis",
      "description": "Electron counting (NCTAIM scheme)",                                                       "priority": "low"},
-    {"id": "PCA",             "key": "PCA",               "section": "# METHOD",   "category": "analysis",
-     "description": "Principal component analysis of orbital contributions",                                   "priority": "low"},
 
     {"id": "ENPART",          "key": "ENPART",            "section": "# METHOD",   "category": "energy",
      "description": "Molecular energy decomposition into one- and two-center IQA terms",                      "priority": "high"},
