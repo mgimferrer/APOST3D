@@ -120,7 +120,7 @@
   EFFAO-U, EOS, GEOS)
 
   # CUBE
-  Largest net occupation                  : 1.000 (MAX_OCC 1000)
+  Largest net occupation                  : no limit (MAX_OCC 1000)
   Smallest net occupation                 : 0.000 (MIN_OCC 0)
   Grid spacing (bohr)                     : 0.250
   Radius scale                            : 2.000

@@ -432,6 +432,7 @@
         write(*,'(2x,a)') '# CUBE'
         write(cnum,'(i0)') jcubthr
         write(cval,'(f6.3)') real(jcubthr)/1000.0d0
+        if(jcubthr.ge.1000) cval='no limit'
         call print_value('Largest net occupation',
      +    trim(adjustl(cval))//' (MAX_OCC '//trim(cnum)//')')
         write(cnum,'(i0)') kcubthr
@@ -1769,7 +1770,8 @@
 !! EFOs to plot: icase=5 plots every staged EFO; otherwise the first EFO !!
 !! with net occ. < MAX_OCC/1000 through the last with net occ. >         !!
 !! MIN_OCC/1000 (doubled for occupations up to 2), both scans capped to  !!
-!! this fragment's own 1..imaxo EFOs                                     !!
+!! this fragment's own 1..imaxo EFOs. MAX_OCC >= 1000 sets no upper      !!
+!! limit (a net occupation can exceed 1 or 2 in its last digits).        !!
       if(icase.eq.5) then
         imaxeff=1
         imineff=imaxo
@@ -1777,7 +1779,7 @@
         xmaxeff=float(jcubthr)*1.0d-3
         if (icase.eq.0.or.icase.eq.3) xmaxeff=2.0d0*xmaxeff
         imaxeff=1
-        do while(imaxeff.le.imaxo)
+        do while(imaxeff.le.imaxo.and.jcubthr.lt.1000)
           if(p0net(imaxeff,ifrag).lt.xmaxeff) exit
           imaxeff=imaxeff+1
         end do
