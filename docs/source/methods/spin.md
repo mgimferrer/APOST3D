@@ -156,9 +156,6 @@ wavefunction: 2.005241 here, slightly above the exact 2 because of the spin
 contamination of the UKS determinant (it matches the `S**2` value of the
 `.fchk` file).
 
-A second matrix, `"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX`, follows. It is
-under revision: use the $a=3/4$ matrix above.
-
 **Correlated wavefunction.** For LiH at 3.5 Å, CASSCF(2,2) (test
 `LiH-35-CAS22`), the section first prints three matrices: the bond orders
 from the 1-RDM (`BOND ORDER MATRIX (1-RDM)`, the same as in the population

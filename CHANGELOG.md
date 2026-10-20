@@ -311,6 +311,11 @@ program, not a full development history — see `git log` for that.
   to the identity covers exactly the orbitals written: for correlated
   wavefunctions it printed false deviations. The output now gives the
   largest deviation, with a warning when it is too large.
+- **Davidson spin matrix removed** — the `"FUZZY ATOMS" DAVIDSON SPIN DEC.
+  MATRIX` printed by `SPIN` for open-shell single determinants had the
+  spin-density term with the wrong sign. It is no longer printed; the
+  local spin analysis (effectively unpaired electrons and the a=3/4
+  decomposition of ⟨S²⟩) is unchanged.
 
 ### Others
 
