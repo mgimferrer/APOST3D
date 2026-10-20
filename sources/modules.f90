@@ -1453,7 +1453,7 @@
    integer :: iqtaim,istep,inna,imaxdist,iscreening,ipath
 
 !! miscellaneous / integration control !!
-   integer :: iopop,idoint,ipca,ilaplacian,ielcount, &
+   integer :: iopop,idoint,ilaplacian,ielcount, &
               iatdens,inopop
 !! VERBOSE (# METHOD): 0 (default) prints the final results only, 1 also  !!
 !! the intermediate matrices (for now only ENPART uses it)                 !!

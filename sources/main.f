@@ -19,7 +19,7 @@
 !!   4) iopt(200): the flags read by the analysis routines
 !!   5) the atomic definition (Hilbert-space matrices or the real-space
 !!      grid), then each requested analysis in turn: populations, local
-!!      spin, PCA, EFOs/EOS/GEOS, LOBA, ENPART, OSLO, X-ray scattering
+!!      spin, EFOs/EOS/GEOS, LOBA, ENPART, OSLO, X-ray scattering
 !! ----------------------------------------------------------------------
 
       use basis_set
@@ -183,7 +183,6 @@
       end if
       if(iqtaim.eq.1) call apost_stop('This version can not do QTAIM')
 
-      if (ipca.eq.1.and.iqtaim.ne.1) iopop=1
       if(imulli.gt.1.or.iqtaim.eq.1) iopop=0
       if(ihirsh.ne.0.and.idoat.eq.1) call apost_stop('Cant do HIRSH with DOATOMS')
 !! gated on the real restricted-SD condition directly, not on idono --  !!
@@ -266,7 +265,7 @@
       iopt(25) = istiff
       iopt(26) = icorr
 !      iopt(27) =
-      iopt(28) = ipca
+!      iopt(28) =
 !      iopt(29) =
 !      iopt(30) =
 
@@ -644,9 +643,6 @@
 
 !! Nonlinear optical properties (POLAR) !!
       if(ipolar.ne.0) call polar(itotps,nat,wp,omp,omp2,pcoord,rho)
-
-!! PCA analysis -- needs DI already populated (bond_order_analysis above) !!
-      if(ipca.eq.1) call pca_analysis()
 
 !! EFFAO part                                                          !!
 !! ieffao: 0 nothing, 1 eff-AOs, 2 spin-resolved eff-AOs (a must for   !!

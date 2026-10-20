@@ -142,7 +142,6 @@
 !! miscellaneous options !!
       call readchar("# METHOD","OPOP",iopop)
       call readchar("# METHOD","DOINT",idoint)
-      call readchar("# METHOD","PCA",ipca)
       call readchar("# METHOD","LAPLACIAN",ilaplacian)
       call readchar("# METHOD","ELCOUNT",ielcount)
       call readint("# METHOD","RHO_CALC_AT",iatdens,0,1)

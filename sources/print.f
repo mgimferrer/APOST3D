@@ -314,8 +314,6 @@
      +  'SCATT-FACT')
       if(ilaplacian.eq.1) call print_value('Density Laplacian',
      +  'LAPLACIAN')
-      if(ipca.eq.1) call print_value('Principal component analysis',
-     +  'PCA')
       if(idoint.eq.1) call print_value('Atomic overlaps (ESI-3D, FCALC)',
      +  'DOINT (one .int file per atom)')
       if(ielcount.eq.1) call print_value('Electron counting (NCTAIM)',
