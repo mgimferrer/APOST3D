@@ -173,7 +173,7 @@ Written by every run.
 | `scheme` | as in `populations` |
 | `atoms` | `matrix`: bond orders (localization index on the diagonal); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free` |
 | `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle) and the three valences summed per fragment (only with fragments) |
-| `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS, GEOS and PCA, except with Lowdin, Lowdin-Davidson or NAO atoms) |
+| `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS and GEOS, except with Lowdin, Lowdin-Davidson or NAO atoms) |
 
 ### `local_spin`
 

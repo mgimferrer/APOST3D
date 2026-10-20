@@ -142,7 +142,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `HI-ECP-G16` | Same molecule from Gaussian 16, energies and ECP matrix appended by `get_energy_g16`: ENPART (HF), the ECP matrix printed with 6 significant digits leaves −0.08 kcal/mol in the E-N reference | `hf enpart tfvc rhf gaussian ecp` |
 | `H2O-Dimer-RHF-OSLO` | Same water dimer: ENPART and fragment OSLO in one input (OSLO after the energy decomposition), `VERBOSE 1` | `hf enpart oslo tfvc rhf fragments verbose` |
 | `FeCN5NO3--UBLYP` | [Fe(CN)₅NO]³⁻ doublet, UKS BLYP: LOWDIN, EFFAO, EOS, 7 fragments | `dft lowdin effao eos uks fragments openshell` |
-| `NaBH3--UHF` | NaBH3 anion, UHF: MULLIKEN, EOS | `hf uhf mulliken pca eos fragments` |
+| `NaBH3--UHF` | NaBH3 anion, UHF: MULLIKEN, EOS | `hf uhf mulliken eos fragments` |
 | `NaBH3--UHF-DAVIDSON` | Same wavefunction: LOWDIN-DAVIDSON, EFOs in the Davidson-Löwdin basis, EOS | `hf uhf lowdin eos effao fragments openshell` |
 | `FeCN5NO3--UBLYP-t2` | Same complex, UKS BLYP: TFVC + unrestricted OSLO with LOWDIN fragment populations, 7 fragments | `dft oslo lowdin tfvc uks fragments openshell` |
 | `LiH-35-CAS22` | LiH, CASSCF(2,2) from pySCF (`pySCF` in `# DM`): ENPART (CASSCF), every pair computed, and correlated local spin | `hf enpart casscf dm pyscf spin tfvc` |
