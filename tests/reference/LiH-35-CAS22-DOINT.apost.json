@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.13",
+  "schema_version": "0.14",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -64,7 +64,18 @@
         },
         "valence_total": [9.4682544279538394E-001, 1.1329218720590926E+000],
         "valence_bonded": [3.3897018387130268E-001, 3.3897018387130268E-001],
-        "valence_free": [6.0785525892408132E-001, 7.9395168818778994E-001]
+        "valence_free": [6.0785525892408132E-001, 7.9395168818778994E-001],
+        "new_bond_orders": {
+          "values": [
+            [2.5478383845624228E+000, 4.2412311543285541E-001],
+            [4.2412311543285541E-001, 1.0281032740019929E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 4.0000647739972717E+000,
+          "total_rule": "diagonal and one triangle"
+        }
       }
     },
     "local_spin": {
@@ -83,26 +94,15 @@
           "diagonal": "local spin",
           "off_diagonal": "spin coupling"
         },
-        "new_bond_orders": {
+        "xc_bond_orders": {
           "values": [
-            [2.5478383845624228E+000, 4.2412311543285541E-001],
-            [4.2412311543285541E-001, 1.0281032740019929E+000]
-          ],
-          "symmetric": true,
-          "diagonal": "localization index",
-          "off_diagonal": "bond order",
-          "total": 4.0000647739972708E+000,
-          "total_rule": "diagonal and one triangle"
-        },
-        "li_di": {
-          "values": [
-            [2.5685864123664821E+000, 3.8263565287599499E-001],
+            [2.5685864123664826E+000, 3.8263565287599499E-001],
             [3.8263565287599499E-001, 1.0488427086108238E+000]
           ],
           "symmetric": true,
           "diagonal": "localization index",
           "off_diagonal": "delocalization index",
-          "total": 4.0000647738533006E+000,
+          "total": 4.0000647738533015E+000,
           "total_rule": "diagonal and one triangle"
         }
       }
@@ -161,7 +161,7 @@
       "spin": null,
       "path": "/analyses/bond_orders/atoms/matrix",
       "kind": "atom_matrix",
-      "title": "Bond orders (TFVC)",
+      "title": "Exchange-only bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -195,6 +195,17 @@
       "path": "/analyses/bond_orders/atoms/valence_free",
       "kind": "atom_vector",
       "title": "Free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.new_bond_orders",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/new_bond_orders",
+      "kind": "atom_matrix",
+      "title": "New bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -244,23 +255,12 @@
       "signed": true
     },
     {
-      "id": "local_spin.atoms.new_bond_orders",
+      "id": "local_spin.atoms.xc_bond_orders",
       "analysis": "local_spin",
       "spin": null,
-      "path": "/analyses/local_spin/atoms/new_bond_orders",
+      "path": "/analyses/local_spin/atoms/xc_bond_orders",
       "kind": "atom_matrix",
-      "title": "New bond orders (TFVC)",
-      "unit": null,
-      "decimals": 6,
-      "signed": false
-    },
-    {
-      "id": "local_spin.atoms.li_di",
-      "analysis": "local_spin",
-      "spin": null,
-      "path": "/analyses/local_spin/atoms/li_di",
-      "kind": "atom_matrix",
-      "title": "LI/DI from the 2-RDM (TFVC)",
+      "title": "Exchange-correlation bond orders, DI (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -270,8 +270,8 @@
     "job_name": "LiH-35-CAS22-DOINT",
     "input_file": "LiH-35-CAS22-DOINT.inp",
     "wavefunction_file": "LiH-35-CAS22-DOINT.fchk",
-    "date": "2026-10-16T20:02:54+02:00",
-    "id": "2026-10-16T20:02:54+02:00/1d18",
+    "date": "2026-10-20T23:18:37+02:00",
+    "id": "2026-10-20T23:18:37+02:00/9060",
     "threads": 8,
     "status": "normal",
     "stop_message": null

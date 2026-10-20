@@ -4,6 +4,8 @@
 !! with the localization index on the diagonal, and the total, bonded
 !! and free valences of each atom (I. Mayer, P. Salvador, Chem. Phys.
 !! Lett. 2004, 383, 368). Works for any atomic definition: sat holds it.
+!! With # DM, P and Ps come from the 1-RDM (dm1input): these are the
+!! exchange-only bond orders of the correlated wavefunction.
 !! Prints the matrix and the three valence tables.
 !! arguments:
 !!   sat (in)   (nbasis,nbasis,natoms) atomic overlap matrices S^A
@@ -13,6 +15,7 @@
       subroutine fborder(sat,val)
       use basis_set
       use ao_matrices
+      use input_options_mod, only: icorr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -55,8 +58,9 @@
         diag(iat)=rindex(iat,iat)
       enddo
 
-!! Ps contribution (open-shell only) !!
-      if(kop.ne.0) then
+!! Ps contribution: open-shell single determinant, or the 1-RDM of a !!
+!! correlated wavefunction (zero for a singlet)                      !!
+      if(kop.ne.0.or.icorr.ne.0) then
         do iat=1,natoms
           do mu=1,nbasis
             do nu=1,nbasis
@@ -100,7 +104,13 @@
         rindex(i,i)=0.d0
       enddo
 
-      call print_box('BOND ORDER MATRIX')
+      if(icorr.ne.0) then
+        call print_box('EXCHANGE-ONLY BOND ORDER MATRIX')
+        write(*,'(2x,a)') 'From the 1-RDM'
+        write(*,'(a)') ''
+      else
+        call print_box('BOND ORDER MATRIX')
+      end if
       call mprint2(bo,natoms,maxat)
 
 !! valence numbers !!
@@ -331,7 +341,7 @@
       enddo
       if(idofr.eq.1) call group_by_frag_mat(0,
      +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
-      call json_local_spin(.false.,xnd,sum,xlsa,xlsa,0.d0,0.d0)
+      call json_local_spin(.false.,xnd,sum,xlsa,0.d0)
 
       deallocate(tt,tts)
 
@@ -716,34 +726,67 @@
 !! ----------------------------------------------------------------------
 !! subroutine: bond_order_analysis
 !! Bond orders and valences (fborder), the fragment bond orders with
-!! DOFRAGS, and their block in the results file.
+!! DOFRAGS, and their block in the results file. With # DM (correlated
+!! wavefunction) they are the exchange-only bond orders of the 1-RDM,
+!! followed by Mayer's bond orders from the natural orbitals
+!! (bond_orders_no, corr.f). A non-singlet correlated wavefunction
+!! without # DM has no Ps of its own: no bond orders, with a note.
 !! arguments:
 !!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
 !! author: MGimf
 !! ----------------------------------------------------------------------
       subroutine bond_order_analysis(sat)
       use basis_set, only: natoms,nbasis
-      use input_options_mod, only: idofr
+      use input_options_mod, only: idofr,icorr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       dimension sat(nbasis,nbasis,natoms),val(maxat,3)
+      dimension bonew(maxat,maxat)
 
+      iposthf = iopt(65)
+
+      if(iposthf.eq.1.and.icorr.eq.0.and.
+     +  (nalf.ne.nb.or.icass.eq.1)) then
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Note: no bond orders or valences: for a '//
+     +    'non-singlet correlated wavefunction'
+        write(*,'(2x,a)') 'they need its 1-RDM (DM 1 and the # DM '//
+     +    'block)'
+        return
+      end if
+
+      xbonew=0.d0
       call fborder(sat,val)
-      if(idofr.eq.1) call group_by_frag_mat(1,'FRAGMENT BOND ORDERS',bo)
-      call json_bond_orders(val)
+      if(icorr.ne.0) then
+        if(idofr.eq.1) call group_by_frag_mat(1,
+     +    'FRAGMENT EXCHANGE-ONLY BOND ORDERS',bo)
+        call bond_orders_no(sat,bonew,xbonew)
+      else
+        if(idofr.eq.1) call group_by_frag_mat(1,'FRAGMENT BOND ORDERS',
+     +    bo)
+      end if
+      call json_bond_orders(val,icorr.ne.0,bonew,xbonew)
       end
 
 !! ----------------------------------------------------------------------
 !! subroutine: json_bond_orders
 !! Writes the bond_orders block of the results file: the bond order
-!! matrix and the valences of the atoms and fragments, and the overlap
-!! populations with OPOP.
+!! matrix and the valences of the atoms and fragments, Mayer's bond
+!! orders from the natural orbitals for a correlated wavefunction, and
+!! the overlap populations with OPOP.
 !! arguments:
-!!   val (in)  (maxat,3) total, bonded and free valences (fborder)
+!!   val    (in)  (maxat,3) total, bonded and free valences (fborder)
+!!   lcorr  (in)  logical, correlated wavefunction with # DM: the matrix
+!!                holds the exchange-only bond orders of the 1-RDM
+!!   bonew  (in)  (maxat,maxat) Mayer's bond orders (lcorr only)
+!!   xbonew (in)  their total, diagonal and one triangle (lcorr only)
 !! author: MGimf
 !! ----------------------------------------------------------------------
-      subroutine json_bond_orders(val)
+      subroutine json_bond_orders(val,lcorr,bonew,xbonew)
       use input_options_mod, only: idofr,iopop,imulli
       use json_mod
       implicit real*8(a-h,o-z)
@@ -751,7 +794,9 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /printout/iaccur
-      dimension val(maxat,3)
+      dimension val(maxat,3),bonew(maxat,maxat)
+      logical lcorr
+      character*40 cbo,cfbo
       character*20 ckey,cspace
       character*60 cname
       character*12 cshort
@@ -774,19 +819,33 @@
 !! Mulliken bond orders and overlap populations can be negative !!
       lsignop=imulli.eq.1
 
+      cbo='Bond orders'
+      cfbo='Fragment bond orders'
+      if(lcorr) then
+        cbo='Exchange-only bond orders'
+        cfbo='Fragment exchange-only bond orders'
+      end if
+
       call json_begin_object('bond_orders')
       call json_value('scheme',trim(ckey))
       call json_begin_object('atoms')
       call json_atom_matrix('matrix',bo,.true.,'localization index',
      +  'bond order',-1,0.d0)
       call json_index('matrix','atom_matrix',
-     +  'Bond orders ('//trim(cshort)//')',' ',ndec,' ',lsignop,' ')
+     +  trim(cbo)//' ('//trim(cshort)//')',' ',ndec,' ',lsignop,' ')
       do k=1,3
         call json_vector(trim(cval(k)),val(1:nat,k),nat)
         call json_index(trim(cval(k)),'atom_vector',
      +    trim(tval(k))//' ('//trim(cshort)//')',' ',ndec,' ',.false.,
      +    ' ')
       end do
+      if(lcorr) then
+        call json_atom_matrix('new_bond_orders',bonew,.true.,
+     +    'localization index','bond order',1,xbonew)
+        call json_index('new_bond_orders','atom_matrix',
+     +    'New bond orders ('//trim(cshort)//')',' ',ndec,' ',.false.,
+     +    ' ')
+      end if
       call json_end()
 
       if(idofr.eq.1) then
@@ -794,14 +853,20 @@
         call json_frag_matrix('matrix',1,bo,.true.,
      +    'localization index','bond order')
         call json_index('matrix','fragment_matrix',
-     +    'Fragment bond orders ('//trim(cshort)//')',' ',ndec,' ',
-     +    lsignop,' ')
+     +    trim(cfbo)//' ('//trim(cshort)//')',' ',ndec,' ',lsignop,' ')
         do k=1,3
           call json_frag_vector(trim(cval(k)),val(1,k))
           call json_index(trim(cval(k)),'fragment_vector',
      +      trim(tfrag(k))//' ('//trim(cshort)//')',' ',ndec,' ',
      +      .false.,' ')
         end do
+        if(lcorr) then
+          call json_frag_matrix('new_bond_orders',1,bonew,.true.,
+     +      'localization index','bond order')
+          call json_index('new_bond_orders','fragment_matrix',
+     +      'Fragment new bond orders ('//trim(cshort)//')',' ',ndec,
+     +      ' ',.false.,' ')
+        end if
         call json_end()
       end if
 
@@ -832,18 +897,17 @@
 !! subroutine: json_local_spin
 !! Writes the local_spin block of the results file: effectively unpaired
 !! electrons and the <S^2> decomposition of the atoms and fragments
-!! (/localspin/), with, for a correlated wavefunction, Mayer's bond
-!! orders from the natural orbitals and the LI/DI matrix from the 2-RDM.
+!! (/localspin/), with, for a correlated wavefunction, the
+!! exchange-correlation bond orders (LI/DI) from the 2-RDM.
 !! arguments:
 !!   lcorr (in)  logical, correlated wavefunction (spincorr)
 !!   xnd   (in)  total number of effectively unpaired electrons
 !!   xs2   (in)  total <S^2> of the decomposition
-!!   bonew (in)  (maxat,maxat) Mayer's bond orders (lcorr only)
 !!   di2   (in)  (maxat,maxat) LI/DI matrix (lcorr only)
-!!   xbonew,xdi (in)  their totals, diagonal and one triangle
+!!   xdi   (in)  its total, diagonal and one triangle (lcorr only)
 !! author: MGimf
 !! ----------------------------------------------------------------------
-      subroutine json_local_spin(lcorr,xnd,xs2,bonew,di2,xbonew,xdi)
+      subroutine json_local_spin(lcorr,xnd,xs2,di2,xdi)
       use input_options_mod, only: idofr
       use json_mod
       implicit real*8(a-h,o-z)
@@ -851,7 +915,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /localspin/ xlsa(maxat,maxat),ua(maxat)
       common /printout/iaccur
-      dimension bonew(maxat,maxat),di2(maxat,maxat)
+      dimension di2(maxat,maxat)
       logical lcorr
       character*20 ckey,cspace
       character*60 cname
@@ -887,16 +951,11 @@
      +  'S^2 decomposition ('//trim(cshort)//')',' ',ndec,' ',.true.,
      +  ' ')
       if(lcorr) then
-        call json_atom_matrix('new_bond_orders',bonew,.true.,
-     +    'localization index','bond order',1,xbonew)
-        call json_index('new_bond_orders','atom_matrix',
-     +    'New bond orders ('//trim(cshort)//')',' ',ndec,' ',.false.,
-     +    ' ')
-        call json_atom_matrix('li_di',di2,.true.,'localization index',
-     +    'delocalization index',1,xdi)
-        call json_index('li_di','atom_matrix',
-     +    'LI/DI from the 2-RDM ('//trim(cshort)//')',' ',ndec,' ',
-     +    .false.,' ')
+        call json_atom_matrix('xc_bond_orders',di2,.true.,
+     +    'localization index','delocalization index',1,xdi)
+        call json_index('xc_bond_orders','atom_matrix',
+     +    'Exchange-correlation bond orders, DI ('//trim(cshort)//')',
+     +    ' ',ndec,' ',.false.,' ')
       end if
       call json_end()
 
@@ -912,11 +971,11 @@
      +    'Fragment S^2 decomposition ('//trim(cshort)//')',' ',ndec,
      +    ' ',.true.,' ')
         if(lcorr) then
-          call json_frag_matrix('li_di',1,di2,.true.,
+          call json_frag_matrix('xc_bond_orders',1,di2,.true.,
      +      'localization index','delocalization index')
-          call json_index('li_di','fragment_matrix',
-     +      'Fragment LI/DI from the 2-RDM ('//trim(cshort)//')',' ',
-     +      ndec,' ',.false.,' ')
+          call json_index('xc_bond_orders','fragment_matrix',
+     +      'Fragment exchange-correlation bond orders, DI ('//
+     +      trim(cshort)//')',' ',ndec,' ',.false.,' ')
         end if
         call json_end()
       end if

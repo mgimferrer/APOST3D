@@ -164,7 +164,7 @@
 
   Sum of atomic overlaps, largest error   : 6.76E-10 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.10 s
+  TIMING CPU  :: Atomic definition                                 0.09 s
   TIMING WALL :: Atomic definition                                 0.02 s
 
   ---------------------------------
@@ -212,9 +212,11 @@
   -------------------------------
   Total      0.000000    0.000000
 
-  ---------------------
-    BOND ORDER MATRIX
-  ---------------------
+  -----------------------------------
+    EXCHANGE-ONLY BOND ORDER MATRIX
+  -----------------------------------
+
+  From the 1-RDM
 
   -------------------------------
                  1 Li        2  H
@@ -255,26 +257,6 @@
     2  H     0.793956
   -------------------
 
-  TIMING CPU  :: Population analysis                               0.00 s
-  TIMING WALL :: Population analysis                               0.00 s
-
-  -----------------------------
-    DOING LOCAL SPIN ANALYSIS
-  -----------------------------
-
-  Wavefunction                            : correlated (1- and 2-RDM)
-
-  -----------------------------
-    BOND ORDER MATRIX (1-RDM)
-  -----------------------------
-
-  -------------------------------
-                 1 Li        2  H
-  -------------------------------
-    1 Li     2.286457    0.338941
-    2  H     0.338941    0.673683
-  -------------------------------
-
   -------------------------
     NEW BOND ORDER MATRIX
   -------------------------
@@ -289,9 +271,20 @@
   -------------------------------
   Total (diagonal and one triangle)       :       4.000000
 
-  ------------------------
-    LI/DI MATRIX (2-RDM)
-  ------------------------
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  -----------------------------
+    DOING LOCAL SPIN ANALYSIS
+  -----------------------------
+
+  Wavefunction                            : correlated (1- and 2-RDM)
+
+  -----------------------------------------------
+    EXCHANGE-CORRELATION BOND ORDER MATRIX (DI)
+  -----------------------------------------------
+
+  From the 2-RDM: delocalization indices, localization indices on the diagonal
 
   -------------------------------
                  1 Li        2  H
@@ -391,7 +384,7 @@
   Pairs integrated (exchange-correlation) : 1
   Pairs from the multipolar expansion     : 0
 
-  TIMING CPU  :: ENPART Coulomb                                    0.13 s
+  TIMING CPU  :: ENPART Coulomb                                    0.12 s
   TIMING WALL :: ENPART Coulomb                                    0.02 s
   TIMING CPU  :: ENPART exchange-correlation                       0.62 s
   TIMING WALL :: ENPART exchange-correlation                       0.08 s
@@ -488,7 +481,7 @@
   -------------------------------
   Classical interaction energy (au)       :      -0.0112771
 
-  TIMING CPU  :: ENPART two-electron terms                         1.26 s
+  TIMING CPU  :: ENPART two-electron terms                         1.24 s
   TIMING WALL :: ENPART two-electron terms                         0.18 s
 
   ...Normal Termination of APOST-3D...

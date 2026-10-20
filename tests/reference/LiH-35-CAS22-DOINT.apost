@@ -210,9 +210,11 @@
   -------------------------------
   Total     -0.000032    0.000000
 
-  ---------------------
-    BOND ORDER MATRIX
-  ---------------------
+  -----------------------------------
+    EXCHANGE-ONLY BOND ORDER MATRIX
+  -----------------------------------
+
+  From the 1-RDM
 
   -------------------------------
                  1 Li        2  H
@@ -253,26 +255,6 @@
     2  H     0.793952
   -------------------
 
-  TIMING CPU  :: Population analysis                               0.00 s
-  TIMING WALL :: Population analysis                               0.00 s
-
-  -----------------------------
-    DOING LOCAL SPIN ANALYSIS
-  -----------------------------
-
-  Wavefunction                            : correlated (1- and 2-RDM)
-
-  -----------------------------
-    BOND ORDER MATRIX (1-RDM)
-  -----------------------------
-
-  -------------------------------
-                 1 Li        2  H
-  -------------------------------
-    1 Li     2.286467    0.338970
-    2  H     0.338970    0.673692
-  -------------------------------
-
   -------------------------
     NEW BOND ORDER MATRIX
   -------------------------
@@ -287,9 +269,20 @@
   -------------------------------
   Total (diagonal and one triangle)       :       4.000065
 
-  ------------------------
-    LI/DI MATRIX (2-RDM)
-  ------------------------
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  -----------------------------
+    DOING LOCAL SPIN ANALYSIS
+  -----------------------------
+
+  Wavefunction                            : correlated (1- and 2-RDM)
+
+  -----------------------------------------------
+    EXCHANGE-CORRELATION BOND ORDER MATRIX (DI)
+  -----------------------------------------------
+
+  From the 2-RDM: delocalization indices, localization indices on the diagonal
 
   -------------------------------
                  1 Li        2  H

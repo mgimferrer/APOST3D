@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.13",
+  "schema_version": "0.14",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -83,7 +83,19 @@
         },
         "valence_total": [1.7691216980226230E+000, 8.7885527439931432E-001, 8.7885527439961608E-001],
         "valence_bonded": [1.6511137599264947E+000, 8.4002690291135729E-001, 8.4002690291329263E-001],
-        "valence_free": [1.1800793809612831E-001, 3.8828371487957036E-002, 3.8828371486323454E-002]
+        "valence_free": [1.1800793809612831E-001, 3.8828371487957036E-002, 3.8828371486323454E-002],
+        "new_bond_orders": {
+          "values": [
+            [7.9299775607659333E+000, 8.3525872217442287E-001, 8.3525872217636665E-001],
+            [8.3525872217442287E-001, 1.9240360343444882E-001, 1.4698003394523906E-002],
+            [8.3525872217636665E-001, 1.4698003394523906E-002, 1.9240360343467580E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 1.0000000215380371E+001,
+          "total_rule": "diagonal and one triangle"
+        }
       },
       "fragments": {
         "matrix": {
@@ -99,7 +111,18 @@
         },
         "valence_total": [1.7691216980226230E+000, 1.7577105487989304E+000],
         "valence_bonded": [1.6511137599264947E+000, 1.6800538058246499E+000],
-        "valence_free": [1.1800793809612831E-001, 7.7656742974280490E-002]
+        "valence_free": [1.1800793809612831E-001, 7.7656742974280490E-002],
+        "new_bond_orders": {
+          "values": [
+            [7.9299775607659333E+000, 1.6705174443507895E+000],
+            [1.6705174443507895E+000, 3.9950521026364849E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 1.0000000215380371E+001,
+          "total_rule": "diagonal and one triangle"
+        }
       }
     },
     "local_spin": {
@@ -119,28 +142,16 @@
           "diagonal": "local spin",
           "off_diagonal": "spin coupling"
         },
-        "new_bond_orders": {
+        "xc_bond_orders": {
           "values": [
-            [7.9299775607659333E+000, 8.3525872217442287E-001, 8.3525872217636665E-001],
-            [8.3525872217442287E-001, 1.9240360343444882E-001, 1.4698003394523906E-002],
-            [8.3525872217636665E-001, 1.4698003394523906E-002, 1.9240360343467580E-001]
-          ],
-          "symmetric": true,
-          "diagonal": "localization index",
-          "off_diagonal": "bond order",
-          "total": 1.0000000215380371E+001,
-          "total_rule": "diagonal and one triangle"
-        },
-        "li_di": {
-          "values": [
-            [8.0453275699019677E+000, 7.1990869888002762E-001, 7.1990869888196418E-001],
-            [7.1990869888002762E-001, 2.3173102944460727E-001, 5.1393188826937594E-002],
-            [7.1990869888196418E-001, 5.1393188826937594E-002, 2.3173102944487578E-001]
+            [8.0453275699019642E+000, 7.1990869888002784E-001, 7.1990869888196374E-001],
+            [7.1990869888002784E-001, 2.3173102944460733E-001, 5.1393188826937594E-002],
+            [7.1990869888196374E-001, 5.1393188826937594E-002, 2.3173102944487572E-001]
           ],
           "symmetric": true,
           "diagonal": "localization index",
           "off_diagonal": "delocalization index",
-          "total": 1.0000000215380380E+001,
+          "total": 1.0000000215380375E+001,
           "total_rule": "diagonal and one triangle"
         }
       },
@@ -157,15 +168,15 @@
           "total": -7.9682260095692570E-009,
           "total_rule": "all elements"
         },
-        "li_di": {
+        "xc_bond_orders": {
           "values": [
-            [8.0453275699019677E+000, 1.4398173977619919E+000],
-            [1.4398173977619919E+000, 5.1485524771642066E-001]
+            [8.0453275699019642E+000, 1.4398173977619915E+000],
+            [1.4398173977619915E+000, 5.1485524771642066E-001]
           ],
           "symmetric": true,
           "diagonal": "localization index",
           "off_diagonal": "delocalization index",
-          "total": 1.0000000215380380E+001,
+          "total": 1.0000000215380377E+001,
           "total_rule": "diagonal and one triangle"
         }
       }
@@ -291,25 +302,25 @@
       "xc": {
         "atoms": {
           "values": [
-            [-8.4713192754779545E+000, -2.3408853962021950E-001, -2.3408853962083478E-001],
+            [-8.4713192754779563E+000, -2.3408853962021950E-001, -2.3408853962083478E-001],
             [-2.3408853962021950E-001, -1.1735879065252698E-001, -7.1531951701125562E-003],
-            [-2.3408853962083478E-001, -7.1531951701125562E-003, -1.1735879065266448E-001]
+            [-2.3408853962083478E-001, -7.1531951701125562E-003, -1.1735879065266450E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -9.1813671311943139E+000,
+          "total": -9.1813671311943157E+000,
           "total_rule": "diagonal and one triangle"
         },
         "fragments": {
           "values": [
-            [-8.4713192754779545E+000, -4.6817707924105428E-001],
+            [-8.4713192754779563E+000, -4.6817707924105428E-001],
             [-4.6817707924105428E-001, -2.4187077647530403E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -9.1813671311943121E+000,
+          "total": -9.1813671311943139E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
@@ -318,7 +329,7 @@
           "values": [
             [-7.3639302878703688E+001, -3.3934391690165500E-001, -3.3934391690262600E-001],
             [-3.3934391690165500E-001, -3.7531146626903211E-001, 6.0042504682485252E-002],
-            [-3.3934391690262600E-001, 6.0042504682485252E-002, -3.7531146626948114E-001]
+            [-3.3934391690262600E-001, 6.0042504682485252E-002, -3.7531146626948120E-001]
           ],
           "symmetric": true,
           "diagonal": "self-energy",
@@ -329,7 +340,7 @@
         "fragments": {
           "values": [
             [-7.3639302878703688E+001, -6.7868783380428099E-001],
-            [-6.7868783380428099E-001, -6.9058042785602802E-001]
+            [-6.7868783380428099E-001, -6.9058042785602813E-001]
           ],
           "symmetric": true,
           "diagonal": "self-energy",
@@ -345,11 +356,11 @@
       "integration_error_kcal": -1.4292335059986952E-003,
       "atomic_energies": {
         "atoms": {
-          "self_energy": [-7.3639302878703688E+001, -3.7531146626903211E-001, -3.7531146626948114E-001],
+          "self_energy": [-7.3639302878703688E+001, -3.7531146626903211E-001, -3.7531146626948120E-001],
           "additive_energy": [-7.3978646795605826E+001, -5.1496217237861697E-001, -5.1496217237955155E-001]
         },
         "fragments": {
-          "self_energy": [-7.3639302878703688E+001, -6.9058042785602802E-001],
+          "self_energy": [-7.3639302878703688E+001, -6.9058042785602813E-001],
           "additive_energy": [-7.3978646795605826E+001, -1.0299243447581685E+000]
         }
       },
@@ -479,7 +490,7 @@
       "spin": null,
       "path": "/analyses/bond_orders/atoms/matrix",
       "kind": "atom_matrix",
-      "title": "Bond orders (TFVC)",
+      "title": "Exchange-only bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -518,12 +529,23 @@
       "signed": false
     },
     {
+      "id": "bond_orders.atoms.new_bond_orders",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/new_bond_orders",
+      "kind": "atom_matrix",
+      "title": "New bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
       "id": "bond_orders.fragments.matrix",
       "analysis": "bond_orders",
       "spin": null,
       "path": "/analyses/bond_orders/fragments/matrix",
       "kind": "fragment_matrix",
-      "title": "Fragment bond orders (TFVC)",
+      "title": "Fragment exchange-only bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -557,6 +579,17 @@
       "path": "/analyses/bond_orders/fragments/valence_free",
       "kind": "fragment_vector",
       "title": "Fragment free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.new_bond_orders",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/new_bond_orders",
+      "kind": "fragment_matrix",
+      "title": "Fragment new bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -606,23 +639,12 @@
       "signed": true
     },
     {
-      "id": "local_spin.atoms.new_bond_orders",
+      "id": "local_spin.atoms.xc_bond_orders",
       "analysis": "local_spin",
       "spin": null,
-      "path": "/analyses/local_spin/atoms/new_bond_orders",
+      "path": "/analyses/local_spin/atoms/xc_bond_orders",
       "kind": "atom_matrix",
-      "title": "New bond orders (TFVC)",
-      "unit": null,
-      "decimals": 6,
-      "signed": false
-    },
-    {
-      "id": "local_spin.atoms.li_di",
-      "analysis": "local_spin",
-      "spin": null,
-      "path": "/analyses/local_spin/atoms/li_di",
-      "kind": "atom_matrix",
-      "title": "LI/DI from the 2-RDM (TFVC)",
+      "title": "Exchange-correlation bond orders, DI (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -650,12 +672,12 @@
       "signed": true
     },
     {
-      "id": "local_spin.fragments.li_di",
+      "id": "local_spin.fragments.xc_bond_orders",
       "analysis": "local_spin",
       "spin": null,
-      "path": "/analyses/local_spin/fragments/li_di",
+      "path": "/analyses/local_spin/fragments/xc_bond_orders",
       "kind": "fragment_matrix",
-      "title": "Fragment LI/DI from the 2-RDM (TFVC)",
+      "title": "Fragment exchange-correlation bond orders, DI (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -940,8 +962,8 @@
     "job_name": "H2O-CAS44",
     "input_file": "H2O-CAS44.inp",
     "wavefunction_file": "H2O-CAS44.fchk",
-    "date": "2026-10-16T17:11:54+02:00",
-    "id": "2026-10-16T17:11:54+02:00/b648",
+    "date": "2026-10-20T23:18:37+02:00",
+    "id": "2026-10-20T23:18:37+02:00/d128",
     "threads": 8,
     "status": "normal",
     "stop_message": null

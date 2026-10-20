@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.13",
+  "schema_version": "0.14",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -64,7 +64,18 @@
         },
         "valence_total": [9.4682308821172878E-001, 1.1328970066148820E+000],
         "valence_bonded": [3.3894067797669131E-001, 3.3894067797669131E-001],
-        "valence_free": [6.0788241023503753E-001, 7.9395632863819077E-001]
+        "valence_free": [6.0788241023503753E-001, 7.9395632863819077E-001],
+        "new_bond_orders": {
+          "values": [
+            [2.5478285933264360E+000, 4.2407947726680367E-001],
+            [4.2407947726680367E-001, 1.0280919294476401E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 4.0000000000408793E+000,
+          "total_rule": "diagonal and one triangle"
+        }
       }
     },
     "local_spin": {
@@ -83,26 +94,15 @@
           "diagonal": "local spin",
           "off_diagonal": "spin coupling"
         },
-        "new_bond_orders": {
+        "xc_bond_orders": {
           "values": [
-            [2.5478285933264360E+000, 4.2407947726680367E-001],
-            [4.2407947726680367E-001, 1.0280919294476401E+000]
-          ],
-          "symmetric": true,
-          "diagonal": "localization index",
-          "off_diagonal": "bond order",
-          "total": 4.0000000000408793E+000,
-          "total_rule": "diagonal and one triangle"
-        },
-        "li_di": {
-          "values": [
-            [2.5685683761294005E+000, 3.8259991130338694E-001],
-            [3.8259991130338694E-001, 1.0488317126080926E+000]
+            [2.5685683761293996E+000, 3.8259991130338677E-001],
+            [3.8259991130338677E-001, 1.0488317126080924E+000]
           ],
           "symmetric": true,
           "diagonal": "localization index",
           "off_diagonal": "delocalization index",
-          "total": 4.0000000000408802E+000,
+          "total": 4.0000000000408784E+000,
           "total_rule": "diagonal and one triangle"
         }
       }
@@ -159,59 +159,59 @@
         "error_kcal": -8.6759367908699619E-002,
         "tolerance_kcal": 0.0000000000000000E+000,
         "zero_error_correction": "applied",
-        "rotated_grid_error_kcal": -4.3463718011259311E-001,
-        "damping": 1.2493960950227241E+000,
-        "corrected_energy": 2.7366696762023137E+000,
-        "corrected_error_kcal": -8.3601072731198658E-013
+        "rotated_grid_error_kcal": -4.3463718011262797E-001,
+        "damping": 1.2493960950226992E+000,
+        "corrected_energy": 2.7366696762023142E+000,
+        "corrected_error_kcal": -5.5734048487465768E-013
       },
       "coulomb": {
         "atoms": {
           "values": [
-            [3.8836444230148692E+000, 5.3461010336990411E-001],
-            [5.3461010336990411E-001, 4.0133879094437425E-001]
+            [3.8836444230148701E+000, 5.3461010336990411E-001],
+            [5.3461010336990411E-001, 4.0133879094437436E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": 4.8195933173291472E+000,
+          "total": 4.8195933173291481E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
       "xc": {
         "atoms": {
           "values": [
-            [-1.7325736550621567E+000, -3.4137160178897535E-002],
-            [-3.4137160178897535E-002, -3.1621282588577931E-001]
+            [-1.7325736550621569E+000, -3.4137160178897535E-002],
+            [-3.4137160178897535E-002, -3.1621282588577937E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -2.0829236411268335E+000,
+          "total": -2.0829236411268339E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
       "total": {
         "atoms": {
           "values": [
-            [-7.3916124024026599E+000, -4.5414304209036443E-002],
-            [-4.5414304209036443E-002, -5.0411808225058408E-001]
+            [-7.3916124024026590E+000, -4.5414304209036443E-002],
+            [-4.5414304209036443E-002, -5.0411808225058397E-001]
           ],
           "symmetric": true,
           "diagonal": "self-energy",
           "off_diagonal": "interaction energy",
-          "total": -7.9411447888622808E+000,
+          "total": -7.9411447888622799E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
-      "total_energy": -7.9411447888622808E+000,
+      "total_energy": -7.9411447888622799E+000,
       "reference_energy": -7.9411447875807788E+000,
       "field_energy": null,
-      "integration_error": -1.2815020156153878E-009,
-      "integration_error_kcal": -8.0415481721800570E-007,
+      "integration_error": -1.2815011274369681E-009,
+      "integration_error_kcal": -8.0415425987752089E-007,
       "atomic_energies": {
         "atoms": {
-          "self_energy": [-7.3916124024026599E+000, -5.0411808225058408E-001],
-          "additive_energy": [-7.4143195545071778E+000, -5.2682523435510231E-001]
+          "self_energy": [-7.3916124024026590E+000, -5.0411808225058397E-001],
+          "additive_energy": [-7.4143195545071769E+000, -5.2682523435510220E-001]
         }
       },
       "classical_interaction": {
@@ -282,7 +282,7 @@
       "spin": null,
       "path": "/analyses/bond_orders/atoms/matrix",
       "kind": "atom_matrix",
-      "title": "Bond orders (TFVC)",
+      "title": "Exchange-only bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -316,6 +316,17 @@
       "path": "/analyses/bond_orders/atoms/valence_free",
       "kind": "atom_vector",
       "title": "Free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.new_bond_orders",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/new_bond_orders",
+      "kind": "atom_matrix",
+      "title": "New bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -365,23 +376,12 @@
       "signed": true
     },
     {
-      "id": "local_spin.atoms.new_bond_orders",
+      "id": "local_spin.atoms.xc_bond_orders",
       "analysis": "local_spin",
       "spin": null,
-      "path": "/analyses/local_spin/atoms/new_bond_orders",
+      "path": "/analyses/local_spin/atoms/xc_bond_orders",
       "kind": "atom_matrix",
-      "title": "New bond orders (TFVC)",
-      "unit": null,
-      "decimals": 6,
-      "signed": false
-    },
-    {
-      "id": "local_spin.atoms.li_di",
-      "analysis": "local_spin",
-      "spin": null,
-      "path": "/analyses/local_spin/atoms/li_di",
-      "kind": "atom_matrix",
-      "title": "LI/DI from the 2-RDM (TFVC)",
+      "title": "Exchange-correlation bond orders, DI (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -567,8 +567,8 @@
     "job_name": "LiH-35-CAS22",
     "input_file": "LiH-35-CAS22.inp",
     "wavefunction_file": "LiH-35-CAS22.fchk",
-    "date": "2026-10-16T17:11:54+02:00",
-    "id": "2026-10-16T17:11:54+02:00/8ce8",
+    "date": "2026-10-20T23:18:37+02:00",
+    "id": "2026-10-20T23:18:37+02:00/96d0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

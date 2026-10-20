@@ -173,7 +173,7 @@
 
   Sum of atomic overlaps, largest error   : 8.23E-08 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.10 s
+  TIMING CPU  :: Atomic definition                                 0.08 s
   TIMING WALL :: Atomic definition                                 0.02 s
 
   ---------------------------------
@@ -245,9 +245,11 @@
   ---------------------------------
   Total        0.000000    0.000000
 
-  ---------------------
-    BOND ORDER MATRIX
-  ---------------------
+  -----------------------------------
+    EXCHANGE-ONLY BOND ORDER MATRIX
+  -----------------------------------
+
+  From the 1-RDM
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -325,9 +327,9 @@
   ---------------------
   Total        0.199121
 
-  ------------------------
-    FRAGMENT BOND ORDERS
-  ------------------------
+  --------------------------------------
+    FRAGMENT EXCHANGE-ONLY BOND ORDERS
+  --------------------------------------
 
   ---------------------------------
                       1           2
@@ -336,27 +338,6 @@
     2          1.668288    0.382322
   ---------------------------------
   Total (diagonal and one triangle)       :       9.900439
-
-  TIMING CPU  :: Population analysis                               0.00 s
-  TIMING WALL :: Population analysis                               0.00 s
-
-  -----------------------------
-    DOING LOCAL SPIN ANALYSIS
-  -----------------------------
-
-  Wavefunction                            : correlated (1- and 2-RDM)
-
-  -----------------------------
-    BOND ORDER MATRIX (1-RDM)
-  -----------------------------
-
-  -------------------------------------------
-                 1  O        2  H        3  H
-  -------------------------------------------
-    1  O     7.849829    0.834144    0.834144
-    2  H     0.834144    0.183563    0.015195
-    3  H     0.834144    0.015195    0.183563
-  -------------------------------------------
 
   -------------------------
     NEW BOND ORDER MATRIX
@@ -373,9 +354,32 @@
   -------------------------------------------
   Total (diagonal and one triangle)       :      10.000000
 
-  ------------------------
-    LI/DI MATRIX (2-RDM)
-  ------------------------
+  ----------------------------
+    FRAGMENT NEW BOND ORDERS
+  ----------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          7.901288    1.687222
+    2          1.687222    0.411490
+  ---------------------------------
+  Total (diagonal and one triangle)       :      10.000000
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  -----------------------------
+    DOING LOCAL SPIN ANALYSIS
+  -----------------------------
+
+  Wavefunction                            : correlated (1- and 2-RDM)
+
+  -----------------------------------------------
+    EXCHANGE-CORRELATION BOND ORDER MATRIX (DI)
+  -----------------------------------------------
+
+  From the 2-RDM: delocalization indices, localization indices on the diagonal
 
   -------------------------------------------
                  1  O        2  H        3  H
@@ -386,9 +390,9 @@
   -------------------------------------------
   Total (diagonal and one triangle)       :      10.000000
 
-  --------------------------
-    FRAGMENT LI/DI (2-RDM)
-  --------------------------
+  --------------------------------------------------
+    FRAGMENT EXCHANGE-CORRELATION BOND ORDERS (DI)
+  --------------------------------------------------
 
   ---------------------------------
                       1           2
@@ -538,8 +542,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :       9.189534
 
-  TIMING CPU  :: ENPART one-electron terms                         0.09 s
-  TIMING WALL :: ENPART one-electron terms                         0.03 s
+  TIMING CPU  :: ENPART one-electron terms                         0.08 s
+  TIMING WALL :: ENPART one-electron terms                         0.01 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -551,12 +555,12 @@
   Pairs integrated (exchange-correlation) : 3
   Pairs from the multipolar expansion     : 0
 
-  TIMING CPU  :: ENPART Coulomb                                    0.29 s
-  TIMING WALL :: ENPART Coulomb                                    0.06 s
-  TIMING CPU  :: ENPART exchange-correlation                       5.76 s
-  TIMING WALL :: ENPART exchange-correlation                       0.74 s
-  TIMING CPU  :: ENPART exchange and correlation                   5.76 s
-  TIMING WALL :: ENPART exchange and correlation                   0.75 s
+  TIMING CPU  :: ENPART Coulomb                                    0.25 s
+  TIMING WALL :: ENPART Coulomb                                    0.04 s
+  TIMING CPU  :: ENPART exchange-correlation                       5.73 s
+  TIMING WALL :: ENPART exchange-correlation                       0.77 s
+  TIMING CPU  :: ENPART exchange and correlation                   5.75 s
+  TIMING WALL :: ENPART exchange and correlation                   0.77 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -757,7 +761,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      -0.127642
 
-  TIMING CPU  :: ENPART two-electron terms                        11.83 s
-  TIMING WALL :: ENPART two-electron terms                         1.57 s
+  TIMING CPU  :: ENPART two-electron terms                        11.75 s
+  TIMING WALL :: ENPART two-electron terms                         1.58 s
 
   ...Normal Termination of APOST-3D...

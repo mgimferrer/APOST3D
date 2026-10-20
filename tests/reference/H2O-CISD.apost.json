@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.13",
+  "schema_version": "0.14",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -83,7 +83,19 @@
         },
         "valence_total": [1.7901390999045432E+000, 8.8797482642217296E-001, 8.8797482642217318E-001],
         "valence_bonded": [1.6682884149682273E+000, 8.4933949520048779E-001, 8.4933949520048735E-001],
-        "valence_free": [1.2185068493631590E-001, 3.8635331221685165E-002, 3.8635331221685831E-002]
+        "valence_free": [1.2185068493631590E-001, 3.8635331221685165E-002, 3.8635331221685831E-002],
+        "new_bond_orders": {
+          "values": [
+            [7.9012880603331199E+000, 8.4361092052101527E-001, 8.4361092052101505E-001],
+            [8.4361092052101527E-001, 1.9801881253976381E-001, 1.5452701992951783E-002],
+            [8.4361092052101505E-001, 1.5452701992951783E-002, 1.9801881253976378E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 1.0000000228447632E+001,
+          "total_rule": "diagonal and one triangle"
+        }
       },
       "fragments": {
         "matrix": {
@@ -99,7 +111,18 @@
         },
         "valence_total": [1.7901390999045432E+000, 1.7759496528443461E+000],
         "valence_bonded": [1.6682884149682273E+000, 1.6986789904009751E+000],
-        "valence_free": [1.2185068493631590E-001, 7.7270662443370997E-002]
+        "valence_free": [1.2185068493631590E-001, 7.7270662443370997E-002],
+        "new_bond_orders": {
+          "values": [
+            [7.9012880603331199E+000, 1.6872218410420303E+000],
+            [1.6872218410420303E+000, 4.1149032707247934E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 1.0000000228447629E+001,
+          "total_rule": "diagonal and one triangle"
+        }
       }
     },
     "local_spin": {
@@ -119,23 +142,11 @@
           "diagonal": "local spin",
           "off_diagonal": "spin coupling"
         },
-        "new_bond_orders": {
+        "xc_bond_orders": {
           "values": [
-            [7.9012880603331199E+000, 8.4361092052101527E-001, 8.4361092052101505E-001],
-            [8.4361092052101527E-001, 1.9801881253976381E-001, 1.5452701992951783E-002],
-            [8.4361092052101505E-001, 1.5452701992951783E-002, 1.9801881253976378E-001]
-          ],
-          "symmetric": true,
-          "diagonal": "localization index",
-          "off_diagonal": "bond order",
-          "total": 1.0000000228447632E+001,
-          "total_rule": "diagonal and one triangle"
-        },
-        "li_di": {
-          "values": [
-            [8.0127280132591405E+000, 7.3217095251026976E-001, 7.3217095251026831E-001],
-            [7.3217095251026976E-001, 2.3590063110889067E-001, 5.1129047950174429E-002],
-            [7.3217095251026831E-001, 5.1129047950174429E-002, 2.3590063110889081E-001]
+            [8.0127280132591441E+000, 7.3217095251026931E-001, 7.3217095251026787E-001],
+            [7.3217095251026931E-001, 2.3590063110889062E-001, 5.1129047950174429E-002],
+            [7.3217095251026787E-001, 5.1129047950174429E-002, 2.3590063110889070E-001]
           ],
           "symmetric": true,
           "diagonal": "localization index",
@@ -157,15 +168,15 @@
           "total": -8.4181086754120393E-009,
           "total_rule": "all elements"
         },
-        "li_di": {
+        "xc_bond_orders": {
           "values": [
-            [8.0127280132591405E+000, 1.4643419050205382E+000],
-            [1.4643419050205382E+000, 5.2293031016795588E-001]
+            [8.0127280132591441E+000, 1.4643419050205373E+000],
+            [1.4643419050205373E+000, 5.2293031016795577E-001]
           ],
           "symmetric": true,
           "diagonal": "localization index",
           "off_diagonal": "delocalization index",
-          "total": 1.0000000228447634E+001,
+          "total": 1.0000000228447638E+001,
           "total_rule": "diagonal and one triangle"
         }
       }
@@ -291,34 +302,34 @@
       "xc": {
         "atoms": {
           "values": [
-            [-8.4621496229925981E+000, -2.3763659348865490E-001, -2.3763659348865440E-001],
-            [-2.3763659348865490E-001, -1.1922890399530317E-001, -7.1366903236482126E-003],
-            [-2.3763659348865440E-001, -7.1366903236482126E-003, -1.1922890399530309E-001]
+            [-8.4621496229925999E+000, -2.3763659348865493E-001, -2.3763659348865440E-001],
+            [-2.3763659348865493E-001, -1.1922890399530316E-001, -7.1366903236482118E-003],
+            [-2.3763659348865440E-001, -7.1366903236482118E-003, -1.1922890399530309E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -9.1830173082841622E+000,
+          "total": -9.1830173082841640E+000,
           "total_rule": "diagonal and one triangle"
         },
         "fragments": {
           "values": [
-            [-8.4621496229925981E+000, -4.7527318697730930E-001],
-            [-4.7527318697730930E-001, -2.4559449831425448E-001]
+            [-8.4621496229925999E+000, -4.7527318697730936E-001],
+            [-4.7527318697730936E-001, -2.4559449831425445E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -9.1830173082841622E+000,
+          "total": -9.1830173082841640E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
       "exchange": {
         "atoms": {
           "values": [
-            [-8.3596701220681489E+000, -2.5880357375298779E-001, -2.5880357375298768E-001],
-            [-2.5880357375298779E-001, -9.3848801911149068E-002, -2.1427684127802616E-003],
-            [-2.5880357375298768E-001, -2.1427684127802616E-003, -9.3848801911149041E-002]
+            [-8.3596701220681489E+000, -2.5880357375298779E-001, -2.5880357375298774E-001],
+            [-2.5880357375298779E-001, -9.3848801911149068E-002, -2.1427684127802620E-003],
+            [-2.5880357375298774E-001, -2.1427684127802620E-003, -9.3848801911149041E-002]
           ],
           "symmetric": true,
           "diagonal": "self term",
@@ -328,8 +339,8 @@
         },
         "fragments": {
           "values": [
-            [-8.3596701220681489E+000, -5.1760714750597547E-001],
-            [-5.1760714750597547E-001, -1.8984037223507838E-001]
+            [-8.3596701220681489E+000, -5.1760714750597558E-001],
+            [-5.1760714750597558E-001, -1.8984037223507838E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
@@ -341,33 +352,33 @@
       "correlation": {
         "atoms": {
           "values": [
-            [-1.0247950092444924E-001, 2.1166980264332891E-002, 2.1166980264333279E-002],
-            [2.1166980264332891E-002, -2.5380102084154102E-002, -4.9939219108679506E-003],
-            [2.1166980264333279E-002, -4.9939219108679506E-003, -2.5380102084154046E-002]
+            [-1.0247950092445102E-001, 2.1166980264332863E-002, 2.1166980264333335E-002],
+            [2.1166980264332863E-002, -2.5380102084154088E-002, -4.9939219108679498E-003],
+            [2.1166980264333335E-002, -4.9939219108679498E-003, -2.5380102084154046E-002]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -1.1589966647495917E-001,
+          "total": -1.1589966647496090E-001,
           "total_rule": "diagonal and one triangle"
         },
         "fragments": {
           "values": [
-            [-1.0247950092444924E-001, 4.2333960528666170E-002],
-            [4.2333960528666170E-002, -5.5754126079176097E-002]
+            [-1.0247950092445102E-001, 4.2333960528666198E-002],
+            [4.2333960528666198E-002, -5.5754126079176083E-002]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -1.1589966647495917E-001,
+          "total": -1.1589966647496089E-001,
           "total_rule": "diagonal and one triangle"
         }
       },
       "total": {
         "atoms": {
           "values": [
-            [-7.3645385434695655E+001, -3.3355867410233536E-001, -3.3355867410233264E-001],
-            [-3.3355867410233536E-001, -3.7788089612025205E-001, 5.7065358849983573E-002],
+            [-7.3645385434695655E+001, -3.3355867410233542E-001, -3.3355867410233264E-001],
+            [-3.3355867410233542E-001, -3.7788089612025205E-001, 5.7065358849983573E-002],
             [-3.3355867410233264E-001, 5.7065358849983573E-002, -3.7788089612025200E-001]
           ],
           "symmetric": true,
@@ -378,8 +389,8 @@
         },
         "fragments": {
           "values": [
-            [-7.3645385434695655E+001, -6.6711734820466795E-001],
-            [-6.6711734820466795E-001, -6.9869643339052045E-001]
+            [-7.3645385434695655E+001, -6.6711734820466806E-001],
+            [-6.6711734820466806E-001, -6.9869643339052045E-001]
           ],
           "symmetric": true,
           "diagonal": "self-energy",
@@ -406,25 +417,25 @@
       "classical_interaction": {
         "atoms": {
           "values": [
-            [0.0000000000000000E+000, -9.5922080613680460E-002, -9.5922080613678240E-002],
-            [-9.5922080613680460E-002, 0.0000000000000000E+000, 6.4202049173631787E-002],
+            [0.0000000000000000E+000, -9.5922080613680488E-002, -9.5922080613678240E-002],
+            [-9.5922080613680488E-002, 0.0000000000000000E+000, 6.4202049173631787E-002],
             [-9.5922080613678240E-002, 6.4202049173631787E-002, 0.0000000000000000E+000]
           ],
           "symmetric": true,
           "diagonal": "none",
           "off_diagonal": "classical interaction energy",
-          "total": -1.2764211205372691E-001,
+          "total": -1.2764211205372694E-001,
           "total_rule": "diagonal and one triangle"
         },
         "fragments": {
           "values": [
-            [0.0000000000000000E+000, -1.9184416122735870E-001],
-            [-1.9184416122735870E-001, 6.4202049173631787E-002]
+            [0.0000000000000000E+000, -1.9184416122735873E-001],
+            [-1.9184416122735873E-001, 6.4202049173631787E-002]
           ],
           "symmetric": true,
           "diagonal": "none",
           "off_diagonal": "classical interaction energy",
-          "total": -1.2764211205372691E-001,
+          "total": -1.2764211205372694E-001,
           "total_rule": "diagonal and one triangle"
         }
       }
@@ -529,7 +540,7 @@
       "spin": null,
       "path": "/analyses/bond_orders/atoms/matrix",
       "kind": "atom_matrix",
-      "title": "Bond orders (TFVC)",
+      "title": "Exchange-only bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -568,12 +579,23 @@
       "signed": false
     },
     {
+      "id": "bond_orders.atoms.new_bond_orders",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/new_bond_orders",
+      "kind": "atom_matrix",
+      "title": "New bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
       "id": "bond_orders.fragments.matrix",
       "analysis": "bond_orders",
       "spin": null,
       "path": "/analyses/bond_orders/fragments/matrix",
       "kind": "fragment_matrix",
-      "title": "Fragment bond orders (TFVC)",
+      "title": "Fragment exchange-only bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -607,6 +629,17 @@
       "path": "/analyses/bond_orders/fragments/valence_free",
       "kind": "fragment_vector",
       "title": "Fragment free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.new_bond_orders",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/new_bond_orders",
+      "kind": "fragment_matrix",
+      "title": "Fragment new bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -656,23 +689,12 @@
       "signed": true
     },
     {
-      "id": "local_spin.atoms.new_bond_orders",
+      "id": "local_spin.atoms.xc_bond_orders",
       "analysis": "local_spin",
       "spin": null,
-      "path": "/analyses/local_spin/atoms/new_bond_orders",
+      "path": "/analyses/local_spin/atoms/xc_bond_orders",
       "kind": "atom_matrix",
-      "title": "New bond orders (TFVC)",
-      "unit": null,
-      "decimals": 6,
-      "signed": false
-    },
-    {
-      "id": "local_spin.atoms.li_di",
-      "analysis": "local_spin",
-      "spin": null,
-      "path": "/analyses/local_spin/atoms/li_di",
-      "kind": "atom_matrix",
-      "title": "LI/DI from the 2-RDM (TFVC)",
+      "title": "Exchange-correlation bond orders, DI (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -700,12 +722,12 @@
       "signed": true
     },
     {
-      "id": "local_spin.fragments.li_di",
+      "id": "local_spin.fragments.xc_bond_orders",
       "analysis": "local_spin",
       "spin": null,
-      "path": "/analyses/local_spin/fragments/li_di",
+      "path": "/analyses/local_spin/fragments/xc_bond_orders",
       "kind": "fragment_matrix",
-      "title": "Fragment LI/DI from the 2-RDM (TFVC)",
+      "title": "Fragment exchange-correlation bond orders, DI (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -1023,8 +1045,8 @@
     "job_name": "H2O-CISD",
     "input_file": "H2O-CISD.inp",
     "wavefunction_file": "H2O-CISD.fchk",
-    "date": "2026-10-16T17:11:57+02:00",
-    "id": "2026-10-16T17:11:57+02:00/a6e8",
+    "date": "2026-10-20T23:18:39+02:00",
+    "id": "2026-10-20T23:18:39+02:00/c1b8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

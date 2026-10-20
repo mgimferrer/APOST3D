@@ -228,7 +228,7 @@
      +    'wavefunction')
       end if
 
-      if(kop.eq.0.and.ispin.eq.1) then
+      if(kop.eq.0.and.ispin.eq.1.and.nalf.eq.nb.and.icass.eq.0) then
         write(*,'(a)') ''
         write(*,'(2x,a)') 'Note: closed-shell correlated wavefunction: '//
      +    'its local spins come from electron correlation'
