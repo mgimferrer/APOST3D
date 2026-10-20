@@ -4277,6 +4277,98 @@
           "tol_abs": 0.05
         }
       ]
+    },
+    {
+      "name": "C3H7F-OSLO-CLOSE",
+      "description": "1-Fluoropropane, RKS B3LYP/6-31G* from pySCF (z-matrix geometry), one fragment per carbon with its hydrogens, and F: at iteration 13 the CH3-CH2 bond is found from both sides (overlap 0.99955, delta-FOLI 0.075) while the other C-C bond is still left, so the close-alternative warning suggests BRANCH_ITERATION 13 (which gives CH3 +1, CH2 -2).",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "rks",
+        "fragments",
+        "pyscf",
+        "branching"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Orbitals left after the selection (iteration 13)",
+          "section": "ITERATION 13\\n",
+          "pattern": "Orbitals left to assign\\s*:\\s*(\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "Largest overlap with the selected OSLOs (iteration 13)",
+          "section": "ITERATION 13\\n",
+          "pattern": "Largest overlap with the selected OSLOs\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.99955,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "delta-FOLI (iteration 13)",
+          "section": "ITERATION 13\\n",
+          "pattern": "Delta-FOLI\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.075,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Close-alternative warning",
+          "type": "present",
+          "pattern": "WARNING: close alternative selection"
+        },
+        {
+          "label": "Suggested branching line",
+          "type": "present",
+          "pattern": "add to # OSLO\\s+BRANCH_ITERATION 13\\s"
+        },
+        {
+          "label": "Sum of the FOLI values",
+          "pattern": "Sum of the FOLI values\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 20.02012,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "CH3 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH2 OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "CH2F carbon OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "3\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "F OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "4\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        }
+      ]
     }
   ]
 }
