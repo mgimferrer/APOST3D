@@ -43,7 +43,8 @@ program, not a full development history — see `git log` for that.
   cube files.
 - **New cube-file options** — `SPACING`/`RADIUS_SCALE` keywords under
   `# CUBE` for finer control over the generated grid, backed by one
-  unified, faster cube-generation routine.
+  unified, faster cube-generation routine. `MAX_OCC 1000` (the default)
+  sets no upper limit, so fully occupied orbitals always get a cube file.
 - **GEOS negative paired EFOs** — paired EFOs with a clearly negative net
   occupation are reported, left out of the electron assignment and
   exported to the `.fchk` file; `# CUBE NEG_EFOS` writes their cube files.

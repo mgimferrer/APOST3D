@@ -82,7 +82,8 @@ isovalue of 0.075 it shows the lobes of the exact cube file and no others
 (for a diffuse orbital its surface can be somewhat smaller). It shows
 lobes that the exact orbital doesn't have:
 
-- for weakly occupied orbitals, with `Fit (%)` below about 60;
+- for weakly occupied orbitals: small extra lobes with `Fit (%)` between
+  about 60 and 80, clear ones below about 60;
 - at small isovalues (0.03 and below), where the small differences
   between the two become visible.
 
