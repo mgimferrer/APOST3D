@@ -195,7 +195,7 @@ large enough for the diffuse orbital on H. Here there is one:
 ```text
   WARNING: 1 paired EFO(s) with net occupation below -0.0250 left out of the assignment
 
-  Frag.  Net occ.  Gross occ.  Recovered (%)
+  Frag.  Net occ.  Gross occ.        Fit (%)
   ------------------------------------------
       2   -0.0856     -0.0978          84.36
   ------------------------------------------

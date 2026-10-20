@@ -239,7 +239,7 @@ place of the alpha and beta electrons:
 |---|---|
 | `scheme` | as in `populations` |
 | `paired`, `unpaired` | `reliability_percent`, `frontier` and `efos` as in `eos`. The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals; `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
-| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `recovered_percent` (how closely the orbital in the file reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
+| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `fit_percent` (as in the EFO tables: how closely the orbital in the file reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
 | `fragments` | `oxidation_states`, `electrons_paired`, `electrons_unpaired` |
 | `reliability_percent` | the overall R |
 | `rmsd` | root-mean-square deviation between the pooled occupations and the electrons assigned to them |
@@ -341,7 +341,8 @@ minor number; a renamed or removed key, or a change of meaning, increases
 the major number. Version 0.x is the draft that becomes 1.0 with
 APOST-3D 5.0; while it is a draft a key may still be renamed with only a
 minor increase (0.8 replaced the `fragment` column of the EFO tables by
-`fragments` and `shares`).
+`fragments` and `shares`; 0.13 renamed `recovered_percent` of
+`negative_efos` to `fit_percent`).
 
 ## Checking a change
 

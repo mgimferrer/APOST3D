@@ -210,7 +210,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | EOS last occupied / first unoccupied occupation | `2e-3` |
 | Reliability index R(%) | `0.02` |
 | OSLO FOLI values | `2e-4` |
-| `Fit (%)`, `Recovered (%)` | `0.05` |
+| `Fit (%)` | `0.05` |
 | `Norm in cube` | `1e-3` |
 
 A manifest check looks like:

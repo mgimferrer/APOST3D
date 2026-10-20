@@ -55,7 +55,7 @@ can't be written exactly in terms of the basis functions, which is all a
 `.fchk` file can hold. The file contains its best basis-set
 approximation, and the `Fit (%)` row printed under each fragment's
 occupations in the main output gives its quality, 100 × (1 − ‖difference‖
-/ ‖orbital‖) (`Recovered (%)` for the negative GEOS orbitals). Typical
+/ ‖orbital‖), also for the negative GEOS orbitals. Typical
 values:
 
 | EFO net occupation | Typical `Fit (%)` |

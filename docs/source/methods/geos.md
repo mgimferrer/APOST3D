@@ -111,7 +111,7 @@ start of the assignment section:
 ```text
   WARNING: 1 paired EFO(s) with net occupation below -0.0250 left out of the assignment
 
-  Frag.  Net occ.  Gross occ.  Recovered (%)
+  Frag.  Net occ.  Gross occ.        Fit (%)
   ------------------------------------------
       2   -0.0856     -0.0978          84.36
   ------------------------------------------
@@ -173,7 +173,7 @@ for the general layout and the meaning of `Fit (%)`):
 
 In the LiH example, the negative EFO of the H atom is the last Alpha
 orbital, with "orbital energy" −0.0978 (its gross occupation), and its
-`Recovered (%)` of 84.36 is the `Fit (%)` of that orbital.
+`Fit (%)` of 84.36 is the quality of that orbital's fit.
 
 ## Cube files
 
@@ -208,5 +208,5 @@ RADIUS_SCALE 12.0
   all EFOs, of the squared differences between the assigned and the
   actual occupations, divided by the number of electrons: the smaller,
   the closer the electron distribution is to the integer assignment.
-- For negative paired EFOs, `Recovered (%)` tells how faithfully the
+- For negative paired EFOs, `Fit (%)` tells how faithfully the
   orbital in the `.fchk` file represents them.
