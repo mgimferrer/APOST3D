@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.12",
+  "schema_version": "0.13",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -391,8 +391,8 @@
             "signed": true
           },
           {
-            "key": "recovered_percent",
-            "title": "Recovered",
+            "key": "fit_percent",
+            "title": "Fit",
             "unit": "%",
             "decimals": 2,
             "signed": false
@@ -410,7 +410,7 @@
           "shares": [],
           "net": [],
           "gross": [],
-          "recovered_percent": [],
+          "fit_percent": [],
           "fchk_column": []
         }
       },

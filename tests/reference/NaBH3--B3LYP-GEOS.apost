@@ -157,7 +157,7 @@
   Sum of atomic overlaps, largest error   : 2.80E-03 (from the analytic overlap S)
 
   TIMING CPU  :: Atomic definition                                 0.68 s
-  TIMING WALL :: Atomic definition                                 0.11 s
+  TIMING WALL :: Atomic definition                                 0.10 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -432,7 +432,7 @@
   EFOs in the assignment                  : 27
   WARNING: 2 paired EFO(s) with net occupation below -0.0250 left out of the assignment
 
-  Frag.  Net occ.  Gross occ.  Recovered (%)
+  Frag.  Net occ.  Gross occ.        Fit (%)
   ------------------------------------------
       2   -0.0277     -0.0358          74.04
       1   -0.0378     -0.0428          80.97
@@ -484,8 +484,8 @@
   Total            -1.00
   Overall reliability index R (%)         :         80.734
 
-  TIMING CPU  :: EFFAO computation                                 1.21 s
-  TIMING WALL :: EFFAO computation                                 0.29 s
+  TIMING CPU  :: EFFAO computation                                 1.16 s
+  TIMING WALL :: EFFAO computation                                 0.27 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

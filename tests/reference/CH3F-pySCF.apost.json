@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.12",
+  "schema_version": "0.13",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",

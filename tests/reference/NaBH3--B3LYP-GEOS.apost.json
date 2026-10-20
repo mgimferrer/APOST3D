@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.12",
+  "schema_version": "0.13",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -417,8 +417,8 @@
             "signed": true
           },
           {
-            "key": "recovered_percent",
-            "title": "Recovered",
+            "key": "fit_percent",
+            "title": "Fit",
             "unit": "%",
             "decimals": 2,
             "signed": false
@@ -442,7 +442,7 @@
           ],
           "net": [-2.7694102348842949E-002, -3.7815399586108314E-002],
           "gross": [-3.5809434473899560E-002, -4.2834278630680976E-002],
-          "recovered_percent": [7.4035222934507033E+001, 8.0974215861935775E+001],
+          "fit_percent": [7.4035222934507033E+001, 8.0974215861935775E+001],
           "fchk_column": [164, 165]
         }
       },

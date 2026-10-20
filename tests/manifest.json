@@ -2218,7 +2218,7 @@
           "tol_abs": 0.002
         },
         {
-          "label": "Negative EFO (frag 1) % recovered",
+          "label": "Negative EFO (frag 1) fit (%)",
           "section": "left out of the assignment",
           "pattern": "\\n\\s*1\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([\\d.]+)",
           "ref": 80.97,
@@ -2228,7 +2228,7 @@
     },
     {
       "name": "LiH-32-FCI",
-      "description": "LiH at 3.2 Å, pySCF FCI / cc-pVTZ (restricted .fchk, fractional natural orbitals) — TFVC, GEOS with 2 fragments: a negative paired EFO (report, % recovered), per-EFO FIT %, CUBE NEG_EFOS.",
+      "description": "LiH at 3.2 Å, pySCF FCI / cc-pVTZ (restricted .fchk, fractional natural orbitals) — TFVC, GEOS with 2 fragments: a negative paired EFO (report and its fit), per-EFO fit (%), CUBE NEG_EFOS.",
       "tags": [
         "fci",
         "geos",
@@ -2382,7 +2382,7 @@
           "tol_abs": 0.002
         },
         {
-          "label": "Negative EFO (frag 2) % recovered",
+          "label": "Negative EFO (frag 2) fit (%)",
           "section": "left out of the assignment",
           "pattern": "\\n\\s*2\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([\\d.]+)",
           "ref": 84.36,

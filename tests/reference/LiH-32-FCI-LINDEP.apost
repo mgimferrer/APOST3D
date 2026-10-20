@@ -388,7 +388,7 @@
   EFOs in the assignment                  : 18
   WARNING: 1 paired EFO(s) with net occupation below -0.0250 left out of the assignment
 
-  Frag.  Net occ.  Gross occ.  Recovered (%)
+  Frag.  Net occ.  Gross occ.        Fit (%)
   ------------------------------------------
       2   -0.0859     -0.0976          75.61
   ------------------------------------------

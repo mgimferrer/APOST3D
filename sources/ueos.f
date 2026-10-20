@@ -601,7 +601,7 @@
      +    'EFO(s) with net occupation below ',xminocc_neg,
      +    ' left out of the assignment'
         write(*,'(a)') ''
-        write(*,'(2x,a)') 'Frag.  Net occ.  Gross occ.  Recovered (%)'
+        write(*,'(2x,a)') 'Frag.  Net occ.  Gross occ.        Fit (%)'
         write(*,'(2x,a)') repeat('-',42)
         do ii=1,nneg
           write(*,'(2x,i5,f10.4,f12.4,f15.2)') neg_frg(ii),
@@ -934,7 +934,7 @@
       call json_column('shares','Fragment shares',' ',5,.false.)
       call json_column('net','Net occupation',' ',4,.true.)
       call json_column('gross','Gross occupation',' ',4,.true.)
-      call json_column('recovered_percent','Recovered','%',2,.false.)
+      call json_column('fit_percent','Fit','%',2,.false.)
       call json_column('fchk_column','Column in the .fchk file',' ',0,
      +  .false.)
       call json_end()
@@ -951,7 +951,7 @@
       call json_end()
       call json_vector('net',xn,nneg)
       call json_vector('gross',xg,nneg)
-      call json_vector('recovered_percent',xf,nneg)
+      call json_vector('fit_percent',xf,nneg)
       call json_vector('fchk_column',icol,nneg)
       call json_end()
       call json_end()
