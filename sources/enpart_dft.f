@@ -1716,7 +1716,7 @@
 
       character*1024 name_ref
       character*128 name_func
-      character*100 cbuf
+      character*256 cbuf
       character*20 ckind,cfam,clab
 
       if(kop.ne.1) call xc_f03_func_init(xc_func,id_func,XC_UNPOLARIZED,ierr)
