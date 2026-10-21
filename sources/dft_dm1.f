@@ -255,7 +255,8 @@
               fbob=TWO*fbob
             end if
             exch_hf(icenter,jcenter)=-(f3+f3b)/TWO
-            bondorder(icenter,jcenter)=fbo+fbob
+            !! check this part... see if adds to N !!
+            bondorder(icenter,jcenter)=(fbo+fbob)/TWO
           end do
         end do
 
