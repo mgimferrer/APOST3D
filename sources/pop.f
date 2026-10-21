@@ -840,10 +840,10 @@
      +    ' ')
       end do
       if(lcorr) then
-        call json_atom_matrix('new_bond_orders',bonew,.true.,
+        call json_atom_matrix('improved_bond_orders',bonew,.true.,
      +    'localization index','bond order',1,xbonew)
-        call json_index('new_bond_orders','atom_matrix',
-     +    'New bond orders ('//trim(cshort)//')',' ',ndec,' ',.false.,
+        call json_index('improved_bond_orders','atom_matrix',
+     +    'Improved bond orders ('//trim(cshort)//')',' ',ndec,' ',.false.,
      +    ' ')
       end if
       call json_end()
@@ -861,10 +861,10 @@
      +      .false.,' ')
         end do
         if(lcorr) then
-          call json_frag_matrix('new_bond_orders',1,bonew,.true.,
+          call json_frag_matrix('improved_bond_orders',1,bonew,.true.,
      +      'localization index','bond order')
-          call json_index('new_bond_orders','fragment_matrix',
-     +      'Fragment new bond orders ('//trim(cshort)//')',' ',ndec,
+          call json_index('improved_bond_orders','fragment_matrix',
+     +      'Fragment improved bond orders ('//trim(cshort)//')',' ',ndec,
      +      ' ',.false.,' ')
         end if
         call json_end()

@@ -84,7 +84,7 @@
         "valence_total": [1.7901390999045432E+000, 8.8797482642217296E-001, 8.8797482642217318E-001],
         "valence_bonded": [1.6682884149682273E+000, 8.4933949520048779E-001, 8.4933949520048735E-001],
         "valence_free": [1.2185068493631590E-001, 3.8635331221685165E-002, 3.8635331221685831E-002],
-        "new_bond_orders": {
+        "improved_bond_orders": {
           "values": [
             [7.9012880603331199E+000, 8.4361092052101527E-001, 8.4361092052101505E-001],
             [8.4361092052101527E-001, 1.9801881253976381E-001, 1.5452701992951783E-002],
@@ -112,7 +112,7 @@
         "valence_total": [1.7901390999045432E+000, 1.7759496528443461E+000],
         "valence_bonded": [1.6682884149682273E+000, 1.6986789904009751E+000],
         "valence_free": [1.2185068493631590E-001, 7.7270662443370997E-002],
-        "new_bond_orders": {
+        "improved_bond_orders": {
           "values": [
             [7.9012880603331199E+000, 1.6872218410420303E+000],
             [1.6872218410420303E+000, 4.1149032707247934E-001]
@@ -579,12 +579,12 @@
       "signed": false
     },
     {
-      "id": "bond_orders.atoms.new_bond_orders",
+      "id": "bond_orders.atoms.improved_bond_orders",
       "analysis": "bond_orders",
       "spin": null,
-      "path": "/analyses/bond_orders/atoms/new_bond_orders",
+      "path": "/analyses/bond_orders/atoms/improved_bond_orders",
       "kind": "atom_matrix",
-      "title": "New bond orders (TFVC)",
+      "title": "Improved bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false
@@ -634,12 +634,12 @@
       "signed": false
     },
     {
-      "id": "bond_orders.fragments.new_bond_orders",
+      "id": "bond_orders.fragments.improved_bond_orders",
       "analysis": "bond_orders",
       "spin": null,
-      "path": "/analyses/bond_orders/fragments/new_bond_orders",
+      "path": "/analyses/bond_orders/fragments/improved_bond_orders",
       "kind": "fragment_matrix",
-      "title": "Fragment new bond orders (TFVC)",
+      "title": "Fragment improved bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false

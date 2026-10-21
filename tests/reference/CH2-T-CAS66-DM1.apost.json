@@ -69,7 +69,7 @@
         "valence_total": [3.8504950407878935E+000, 1.1745865686192616E+000, 1.1745865686192616E+000],
         "valence_bonded": [2.1401159904983640E+000, 1.1257952500444082E+000, 1.1257952500444062E+000],
         "valence_free": [1.7103790502895295E+000, 4.8791318574853415E-002, 4.8791318574855413E-002],
-        "new_bond_orders": {
+        "improved_bond_orders": {
           "values": [
             [4.8239577464177401E+000, 1.0686736202239160E+000, 1.0686736202239140E+000],
             [1.0686736202239160E+000, 4.9164813830744442E-001, 5.5585185865137596E-002],
@@ -199,12 +199,12 @@
       "signed": false
     },
     {
-      "id": "bond_orders.atoms.new_bond_orders",
+      "id": "bond_orders.atoms.improved_bond_orders",
       "analysis": "bond_orders",
       "spin": null,
-      "path": "/analyses/bond_orders/atoms/new_bond_orders",
+      "path": "/analyses/bond_orders/atoms/improved_bond_orders",
       "kind": "atom_matrix",
-      "title": "New bond orders (TFVC)",
+      "title": "Improved bond orders (TFVC)",
       "unit": null,
       "decimals": 6,
       "signed": false

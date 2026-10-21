@@ -4363,7 +4363,7 @@
     },
     {
       "name": "CH2-T-CAS66",
-      "description": "CH2 triplet, ROHF-based CASSCF(6,6) / 6-31G (Cartesian), pySCF with # DM PYSCF (DM 2): exchange-only bond orders from the 1-RDM, including its spin density, Mayer's bond orders from the natural orbitals, the exchange-correlation bond orders (DI) and the correlated local spin analysis.",
+      "description": "CH2 triplet, ROHF-based CASSCF(6,6) / 6-31G (Cartesian), pySCF with # DM PYSCF (DM 2): exchange-only bond orders from the 1-RDM, including its spin density, Mayer's improved bond orders from the natural orbitals, the exchange-correlation bond orders (DI) and the correlated local spin analysis.",
       "tags": [
         "casscf",
         "dm",
@@ -4403,8 +4403,8 @@
           "tol_abs": 2e-05
         },
         {
-          "label": "C-H new bond order (natural orbitals)",
-          "section": "NEW BOND ORDER MATRIX",
+          "label": "C-H improved bond order (natural orbitals)",
+          "section": "IMPROVED BOND ORDER MATRIX",
           "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.068674,
           "tol_abs": 2e-05
@@ -4438,7 +4438,7 @@
     },
     {
       "name": "CH2-T-CAS66-DM1",
-      "description": "Same CH2 triplet CASSCF(6,6) with the 1-RDM only (DM 1): exchange-only and natural-orbital bond orders in the population analysis, no local spin.",
+      "description": "Same CH2 triplet CASSCF(6,6) with the 1-RDM only (DM 1): exchange-only and improved bond orders in the population analysis, no local spin.",
       "tags": [
         "casscf",
         "dm",
@@ -4468,8 +4468,8 @@
           "tol_abs": 2e-05
         },
         {
-          "label": "C-H new bond order (natural orbitals)",
-          "section": "NEW BOND ORDER MATRIX",
+          "label": "C-H improved bond order (natural orbitals)",
+          "section": "IMPROVED BOND ORDER MATRIX",
           "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
           "ref": 1.068674,
           "tol_abs": 2e-05

@@ -222,8 +222,8 @@
 
 !! ----------------------------------------------------------------------
 !! subroutine: bond_orders_no
-!! Bond orders of a correlated wavefunction from its natural orbitals,
-!! I. Mayer, Chem. Phys. Lett. 2012, 554, 83:
+!! Mayer's improved bond orders of a correlated wavefunction, from its
+!! natural orbitals (I. Mayer, Chem. Phys. Lett. 2012, 554, 83):
 !!   B_AB = sum_ij [n_i n_j + sqrt(u_i u_j)] S^A_ij S^B_ji,  u = 2n - n^2
 !! (S^A in the natural-orbital basis, half of it on the diagonal), per
 !! atom and per fragment. Needs the natural orbitals of the 1-RDM
@@ -313,13 +313,13 @@
 
       ndec=6
       if(iaccur.ne.0) ndec=13
-      call print_box('NEW BOND ORDER MATRIX')
+      call print_box('IMPROVED BOND ORDER MATRIX')
       write(*,'(2x,a)') 'From the natural orbitals, I. Mayer, '//
      +  'Chem. Phys. Lett. 2012, 554, 83'
       write(*,'(a)') ''
       call mprint2(bonew,nat,maxat)
       call print_value('Total (diagonal and one triangle)',xbonew,ndec)
       if(idofr.eq.1) call group_by_frag_mat(1,
-     +  'FRAGMENT NEW BOND ORDERS',bonew)
+     +  'FRAGMENT IMPROVED BOND ORDERS',bonew)
 
       end

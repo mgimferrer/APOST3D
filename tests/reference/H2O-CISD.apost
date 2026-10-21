@@ -339,9 +339,9 @@
   ---------------------------------
   Total (diagonal and one triangle)       :       9.900439
 
-  -------------------------
-    NEW BOND ORDER MATRIX
-  -------------------------
+  ------------------------------
+    IMPROVED BOND ORDER MATRIX
+  ------------------------------
 
   From the natural orbitals, I. Mayer, Chem. Phys. Lett. 2012, 554, 83
 
@@ -354,9 +354,9 @@
   -------------------------------------------
   Total (diagonal and one triangle)       :      10.000000
 
-  ----------------------------
-    FRAGMENT NEW BOND ORDERS
-  ----------------------------
+  ---------------------------------
+    FRAGMENT IMPROVED BOND ORDERS
+  ---------------------------------
 
   ---------------------------------
                       1           2
@@ -557,10 +557,10 @@
 
   TIMING CPU  :: ENPART Coulomb                                    0.25 s
   TIMING WALL :: ENPART Coulomb                                    0.04 s
-  TIMING CPU  :: ENPART exchange-correlation                       5.73 s
-  TIMING WALL :: ENPART exchange-correlation                       0.77 s
-  TIMING CPU  :: ENPART exchange and correlation                   5.75 s
-  TIMING WALL :: ENPART exchange and correlation                   0.77 s
+  TIMING CPU  :: ENPART exchange-correlation                       5.75 s
+  TIMING WALL :: ENPART exchange-correlation                       0.74 s
+  TIMING CPU  :: ENPART exchange and correlation                   5.74 s
+  TIMING WALL :: ENPART exchange and correlation                   0.74 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -761,7 +761,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      -0.127642
 
-  TIMING CPU  :: ENPART two-electron terms                        11.75 s
-  TIMING WALL :: ENPART two-electron terms                         1.58 s
+  TIMING CPU  :: ENPART two-electron terms                        11.76 s
+  TIMING WALL :: ENPART two-electron terms                         1.53 s
 
   ...Normal Termination of APOST-3D...
