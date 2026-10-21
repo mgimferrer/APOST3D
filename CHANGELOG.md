@@ -326,6 +326,16 @@ program, not a full development history — see `git log` for that.
   `# DM`, a non-singlet correlated wavefunction gets no bond orders or
   valences (they lacked the spin density), with a note. A non-singlet no
   longer gets the note "closed-shell correlated wavefunction".
+- **POLAR field energies** — the "intrinsic" dipole energies used the
+  origin-dependent atomic dipoles (so they already gave the whole
+  **μ**·**F**) and the charge-transfer term was added on top, counting it
+  twice (water RHF in a 0.005 au field: −0.0109182 au instead of
+  **μ**·**F** = −0.0041738 au). The intrinsic terms now use the intrinsic
+  dipoles, each atom also gets its charge-transfer term, and the total is
+  **μ**·**F**. The POLAR output now has the program's layout (tables with
+  totals, the bond charges, a molecular dipole summary, a note for
+  charged molecules), and POLAR with a Hilbert-space atomic definition
+  stops (its dipoles need real-space atoms).
 
 ### Others
 

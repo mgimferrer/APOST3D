@@ -25,6 +25,7 @@ On top of it, one or more analyses can be requested in the same run:
 | [Oxidation states from localized orbitals](methods/oslo.md) | `OSLO` | Fragment-localized orbitals (OSLOs) and the oxidation states they imply |
 | [Local spin](methods/spin.md) | `SPIN` | Atomic and diatomic contributions to ⟨*S*²⟩ |
 | [Energy partitioning](methods/enpart.md) | `ENPART` | The molecular energy split into atomic self-energies and interatomic interactions (IQA), for HF, KS-DFT and CASSCF/CISD |
+| [Dipole moment decomposition](methods/polar.md) | `POLAR` | Intrinsic and charge-transfer atomic dipoles, origin independent, for static polarizabilities by finite fields |
 
 Atoms can be grouped into [fragments](guide/fragments.md) (ligands, metal
 centers, molecules) for any of these analyses.
@@ -77,6 +78,7 @@ methods/geos
 methods/oslo
 methods/spin
 methods/enpart
+methods/polar
 ```
 
 ```{toctree}

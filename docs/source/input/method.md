@@ -45,6 +45,7 @@ number of the following can be added:
 | `OSLO` | [Oxidation states from localized orbitals](../methods/oslo.md) | real-space scheme, `DOFRAGS`, a `# OSLO` block; single determinant |
 | `SPIN` | [Local spin analysis](../methods/spin.md) | `DM 2` for correlated wavefunctions |
 | `ENPART` | [Energy partitioning](../methods/enpart.md) (IQA) | real-space scheme, a `# ENPART` block; `DM 2` for correlated wavefunctions |
+| `POLAR` | [Dipole moment decomposition](../methods/polar.md) | real-space scheme; HF or KS-DFT |
 
 ## Options
 
