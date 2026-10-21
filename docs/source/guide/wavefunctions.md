@@ -48,7 +48,8 @@ the same folder, which would overwrite it.
 
 **Correlated densities** (MP2, CI, ...): Gaussian writes them after the SCF
 density in the `.fchk` file when the calculation uses `density=current`;
-select them with `DENS 2` in `# METHOD` (restricted wavefunctions).
+select them with `DENS 2` in `# METHOD` (restricted wavefunctions; ENPART
+and OSLO stop with it, see [`DENS`](../input/method.md#options)).
 
 ## Q-Chem
 
@@ -61,8 +62,11 @@ orbitals (OSLO's works without it).
 with a correlated method such as MP2, Q-Chem writes the relaxed
 correlated density in place of the SCF one, so the default `DENS 1`
 analyses that density, while the orbitals in the file are still the SCF
-ones. The other density blocks Q-Chem writes are not read, so `DENS 2`
-does not apply to Q-Chem files.
+ones. ENPART and OSLO also use those orbitals, so their results are not
+meaningful for such a file; APOST-3D can't tell it from an SCF one, so it
+doesn't stop. This only concerns correlated gradient jobs: for the usual
+HF and DFT files every analysis works as usual. The other density blocks
+Q-Chem writes are not read, so `DENS 2` does not apply to Q-Chem files.
 
 ## pySCF
 

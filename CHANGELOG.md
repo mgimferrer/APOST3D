@@ -244,7 +244,9 @@ program, not a full development history — see `git log` for that.
 - **`DENS n`** — densities are now counted the same way in Gaussian,
   Q-Chem and pySCF files (with Q-Chem files `DENS 2` read the third
   density), the output lists them, and an unrestricted or ROHF
-  wavefunction stops instead of silently using the SCF density.
+  wavefunction stops instead of silently using the SCF density. ENPART
+  and OSLO with `DENS` above 1 also stop: they used the SCF orbitals
+  together with the correlated density.
 - **Integration grids are checked** — an angular number of points that is
   not a Lebedev grid, or a radial one outside 1–500, now stops the run. In
   `# GRID` it used to give wrong ENPART numbers, hidden by the zero-error

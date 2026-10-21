@@ -125,6 +125,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `CH3F-pySCF` | Fluoromethane, RKS B3LYP from pySCF (`utils/apost3d.py`): TFVC, fragment OSLO and its `.fchk` export | `dft oslo tfvc rks fragments pyscf` |
 | `HF-G-pySCF` | Hydrogen fluoride, RHF from pySCF with cc-pVQZ (g shells) on F: TFVC; the Mulliken charges equal pySCF's, which checks the order and normalization of every shell type | `hf tfvc rhf pyscf g-functions` |
 | `H2O-MP2-DENS2` | Water, RMP2 from Gaussian 16 with `density=current`: `DENS 2` analyses the MP2 density (TFVC); the Mulliken charges equal Gaussian's own | `h2o tfvc rmp2 dens gaussian` |
+| `H2O-MP2-DENS2-ENPART` | Same file: ENPART with `DENS 2` must stop (the orbitals belong to the SCF density) | `h2o rmp2 dens gaussian expected-stop` |
 | `H2-T-OSLO` | H2 triplet, UKS B3LYP from pySCF: fragment OSLO with no beta electrons and more linear-dependency candidates than electrons | `dft oslo tfvc uks fragments openshell pyscf` |
 | `C2H6-OSLO-2CH3` | Ethane, RKS B3LYP, two CH₃ fragments: the C–C bond, found from both, is shared half and half (oxidation states 0/0) | `dft oslo tfvc rks fragments shared` |
 | `H2-S-OSLO` | H2 singlet, UKS B3LYP from pySCF: the orbital of each spin channel shared between the two atoms; `BRANCH_ALPHA`/`BRANCH_BETA` reported as not applicable | `dft oslo tfvc uks fragments pyscf shared branching` |
