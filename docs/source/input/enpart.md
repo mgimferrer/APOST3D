@@ -32,6 +32,7 @@ Each keyword reproduces the Gaussian 16 functional of the same name (checked on 
 | `B3P86` | Gaussian's B3P86 | 315 |
 | `PBE0` (or `PBE1PBE`) | PBE0 | 406 |
 | `BHANDHLYP` | Gaussian's BHandHLYP (50% HF exchange, B88, LYP) | 436 |
+| `M062X` | M06-2X (hybrid meta-GGA, 54% HF exchange) | 450 + 236 |
 
 ```{admonition} Same name, different functional
 :class: warning

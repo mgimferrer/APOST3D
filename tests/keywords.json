@@ -99,6 +99,8 @@
      "description": "PBE0, alias PBE1PBE (libxc 406)",                                                         "priority": "low"},
     {"id": "ENPART/BHANDHLYP","key": "BHANDHLYP",         "section": "# ENPART",   "category": "energy",
      "description": "BHandHLYP (libxc 436)",                                                                   "priority": "low"},
+    {"id": "ENPART/M062X",    "key": "M062X",             "section": "# ENPART",   "category": "energy",
+     "description": "M06-2X, hybrid meta-GGA (libxc 450 + 236)",                                               "priority": "medium"},
     {"id": "ENPART/CASSCF",   "key": "CASSCF",            "section": "# ENPART",   "category": "energy",
      "description": "CASSCF/DMRG energy decomposition using external 1- and 2-RDMs",                        "priority": "high"},
     {"id": "ENPART/CISD",     "key": "CISD",              "section": "# ENPART",   "category": "energy",

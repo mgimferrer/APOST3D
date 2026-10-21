@@ -52,8 +52,8 @@ program, not a full development history — see `git log` for that.
   cube files, with a per-EFO `FIT %` telling how closely.
 - **Predefined functional keywords for ENPART** — `SVWN`, `SVWN5`, `BLYP`,
   `BP86`, `PBE` (or `PBEPBE`), `B3LYP`, `B3PW91`, `B3P86`, `PBE0` (or
-  `PBE1PBE`) and `BHANDHLYP`, each checked to reproduce the Gaussian 16
-  functional of the same name. Any other supported functional can be
+  `PBE1PBE`), `BHANDHLYP` and `M062X`, each checked to reproduce the
+  Gaussian 16 functional of the same name. Any other supported functional can be
   given by its libxc ids (`LIBRARY` with `EXC_FUNCTIONAL`, or
   `EX_FUNCTIONAL`/`EC_FUNCTIONAL`).
 - **Meta-GGA functionals in ENPART** — meta-GGAs and their global hybrids

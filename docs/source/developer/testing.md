@@ -158,6 +158,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2O-WB97X` | Water, ωB97X (libxc id 464): range-separated hybrids are not supported, ENPART must stop with a message | `dft enpart tfvc rks expected-stop` |
 | `H2O-SVWN` | Water, Gaussian 16 SVWN: predefined functional keyword, LDA family | `dft enpart tfvc rks lda functional-keyword` |
 | `H2O-BHANDHLYP-pySCF` | Water, pySCF RKS BHandHLYP: the `BHANDHLYP` keyword, whose long libxc name is printed in full | `dft enpart tfvc rks hybrid functional-keyword pyscf` |
+| `H2O-M062X` | Water, Gaussian 16 M06-2X: the `M062X` keyword, a hybrid meta-GGA at the default `THREBOD` | `dft enpart tfvc rks meta-gga hybrid functional-keyword` |
 | `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, BLYP / B3LYP at the default `THREBOD`: 7 weak pairs by the multipolar expansion; B3LYP also with two water fragments | `dft enpart tfvc rks threbod multipolar` (B3LYP: also `hybrid fragments`) |
 | `H2-TWO-AIM` | H2 with two atomic definitions in `# METHOD`: the run must stop while reading the input | `input expected-stop` |
 | `CH3F-EOS-LOWDIN` | Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS, beta assigned as alpha | `dft eos effao lowdin rks fragments` |
