@@ -181,6 +181,13 @@
      +    'wavefunction: the .fchk must be a CASSCF, FCI or CI one'
         call apost_stop(' DM needs a correlated-wavefunction .fchk')
       end if
+!! DENS n replaces the density only: the orbitals stay the SCF ones !!
+      if(ndens0.gt.1.and.(ienpart.eq.1.or.ioslo.eq.1)) then
+        write(*,'(2x,a)') 'DENS above 1: ENPART and OSLO use the '//
+     +    'orbitals of the .fchk file, which belong to the SCF density;'
+        write(*,'(2x,a)') 'use DENS 1 for them'
+        call apost_stop(' DENS above 1 with ENPART or OSLO')
+      end if
       if(iqtaim.eq.1) call apost_stop('This version can not do QTAIM')
 
       if(imulli.gt.1.or.iqtaim.eq.1) iopop=0
