@@ -1481,6 +1481,9 @@
    integer :: ienpart,ihf,id_xcfunc,id_xfunc,id_cfunc,iecorr, &
               ithrebod,iexact,ihomo,idek,iionic,ianalytical, &
               igrid2e,irot2e
+!! TAU_BODEN (# ENPART, exploration, meta-GGA only): the pair tau of the  !!
+!! BODEN term -- 1 kernel, 2 von Weizsacker, 3 2*wA*wB*tau (tauboden)     !!
+   integer :: itauboden
 
 !! DFT-DM1 (approximate one-particle RDM1) !!
    integer :: idftdm1,id_func_dm1,inatorb_dm1

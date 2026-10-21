@@ -3,18 +3,22 @@
 !! RKS (closed-shell):                                                        !!
 !!   numint_dft      -- BODEN approximation + "exact" one-center XC term      !!
 !!   xc              -- XC energy density at each grid point, via libxc       !!
-!!   sigma           -- density-gradient contraction, GGA/hybrid-GGA only     !!
-!!   grdrho          -- MO gradient at each grid point, GGA/hybrid-GGA only   !!
-!!   grdboden        -- BODEN gradient for one atom pair, GGA/hybrid-GGA only !!
+!!   sigma           -- density-gradient contraction, GGA and meta-GGA only   !!
+!!   grdrho          -- MO gradient at each grid point, GGA and meta-GGA only !!
+!!   grdboden        -- BODEN gradient for one atom pair, GGA and meta-GGA    !!
+!!   tauboden        -- BODEN tau for one atom pair, meta-GGA only            !!
 !! UKS (open-shell):                                                          !!
 !!   numint_dft_uks  -- UKS twin of numint_dft                                !!
 !!   xc_uks          -- UKS twin of xc                                        !!
 !!   sigma_uks       -- UKS twin of sigma                                     !!
 !!   ugrdrho         -- UKS twin of grdrho                                    !!
 !!   grdboden_uks    -- UKS twin of grdboden                                  !!
+!!   tauboden_uks    -- UKS twin of tauboden                                  !!
 !! shared, authored PSalse, MGimf.:                                           !!
 !!   func_info_print -- functional identification/classification, called once !!
 !!                      by main.f before dispatching to either half above     !!
+!! exploration of the meta-GGA pair tau (TAU_BODEN), to be reduced to one:    !!
+!!   tau_diagnostics(_uks), print_tau_diagnostics                             !!
 !! ************************************************************************** !!
 
 !! ***** !!
@@ -155,7 +159,7 @@
       use ao_matrices
       use integration_grid
       use output_mod, only: print_value
-      use input_options_mod, only: iverbose
+      use input_options_mod, only: iverbose,itauboden
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -174,20 +178,19 @@
       allocatable :: ocm(:,:)
 
       allocatable :: chp2(:,:),scr(:),scrx(:,:)
-      allocatable :: scr_a(:),rho_a(:),scr2(:),scr_tau(:)
+      allocatable :: scr_a(:),rho_a(:),scr2(:),scr_tau(:),tau_ab(:)
       allocatable :: sab(:,:,:),chpd(:,:,:)
+      dimension clipab(maxat,maxat),zab(maxat,maxat)
 
       ithrebod =  Iopt(44)
       itype    =  Iopt(55)
       iatps    =  nang*nrad
 
-!! meta-GGA already stops in func_info_print; kept here because the BODEN !!
-!! loop below has no tau analog yet (unlike sigma, it doesn't follow from  !!
-!! the bond-order-density kernel -- see grdboden).                         !!
-      if(itype.eq.3) call apost_stop(' META-GGA atom-pair (BODEN) XC decomposition not yet implemented ')
-
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
       ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps),scr_tau(itotps))
+      ALLOCATE(tau_ab(itotps))
+      clipab=ZERO
+      zab=ZERO
       ALLOCATE(sab(nocc,nocc,nat),chpd(itotps,nocc,3))
       ALLOCATE(scrx(igr,nocc))
 
@@ -334,12 +337,16 @@
      +        jatom,x1
 
 !! BODEN gradient, for GGA functionals -- scr_a: BODEN for this atom pair, !!
-!! scr: sigma BODEN, scr2: XC functional value. Unreachable for meta-GGA   !!
-!! today (see the itype.eq.3 guard above) -- scr_tau here is the whole-    !!
-!! molecule tau, not a real BODEN analog, passed only to keep xc's call    !!
-!! shape uniform with the exact one-center call below. !!
+!! scr: sigma BODEN, tau_ab: tau BODEN (meta-GGA), scr2: XC functional   !!
+!! value. tau_ab is only read by xc for meta-GGA functionals.            !!
             if(itype.gt.1) call grdboden(itotps,omp2,chp2,chpd,scr,iatom,jatom,sab)
-            call xc(itotps,scr_a,scr,scr_tau,scr2)
+            if(itype.eq.3) then
+              call tauboden(itotps,omp2,chpd,scr_a,scr,scr_tau,tau_ab,
+     +          iatom,jatom,sab)
+              call tau_diagnostics(itotps,wp,omp,scr_a,scr,tau_ab,
+     +          clipab(iatom,jatom),zab(iatom,jatom))
+            end if
+            call xc(itotps,scr_a,scr,tau_ab,scr2)
 
             x1=ZERO
 !! xc energy of the pair on the grid: x1 is a reduction, nothing else !!
@@ -357,6 +364,7 @@
         end do
       end do
       if(iverbose.eq.1) write(*,'(2x,a)') repeat('-',21)
+      if(itype.eq.3) call print_tau_diagnostics(threbod,clipab,zab)
 
       exchen=ZERO
       do ii=1,nat
@@ -462,7 +470,7 @@
         end do
       end do
       etot=xtot
-      DEALLOCATE(chp2,scr,scr_a,rho_a,scr2,scr_tau,sab,chpd,scrx)
+      DEALLOCATE(chp2,scr,scr_a,rho_a,scr2,scr_tau,sab,chpd,scrx,tau_ab)
       end
 
 !! ***** !!
@@ -910,7 +918,7 @@
       use ao_matrices
       use integration_grid
       use output_mod, only: print_value
-      use input_options_mod, only: iverbose
+      use input_options_mod, only: iverbose,itauboden
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -929,16 +937,12 @@
       dimension exch2(maxat,maxat),Excmp(maxat,maxat),Excmpb(maxat,maxat)
       allocatable :: chp2(:,:),chp3(:,:),rho(:,:),scrall(:,:),scr2(:)
       allocatable :: chpd(:,:,:),sab(:,:,:),sab2(:,:,:),scr_bod(:,:)
-      allocatable :: chpbd(:,:,:),tau(:,:)
+      allocatable :: chpbd(:,:,:),tau(:,:),tau_ab(:,:)
+      dimension clipab(maxat,maxat),zab(maxat,maxat)
 
       ithrebod = Iopt(44)
       itype    = Iopt(55)
       iatps    = nang*nrad
-
-!! meta-GGA already stops in func_info_print; kept here because the BODEN !!
-!! loop below has no tau analog yet (unlike sigma, it doesn't follow from  !!
-!! the bond-order-density kernel -- see grdboden_uks).                     !!
-      if(itype.eq.3) call apost_stop(' META-GGA atom-pair (BODEN) XC decomposition not yet implemented ')
 
       if(ithrebod.lt.1) then
         threbod=ZERO
@@ -949,7 +953,9 @@
       ALLOCATE(chp2(itotps,nalf),rho(2,itotps),scr_bod(2,itotps))
       ALLOCATE(chpd(itotps,nalf,3),chpbd(itotps,nb,3),sab2(nb,nb,nat))
       ALLOCATE(scrall(3,itotps),chp3(itotps,nb),sab(nalf,nalf,nat))
-      ALLOCATE(scr2(itotps),tau(2,itotps))
+      ALLOCATE(scr2(itotps),tau(2,itotps),tau_ab(2,itotps))
+      clipab=ZERO
+      zab=ZERO
 
       exch2=ZERO
 
@@ -1137,12 +1143,16 @@
             if(iverbose.eq.1) write(*,'(2x,i3,a2,i3,f13.7)') iatom,' -',
      +        jatom,xx+xxb
 
-!! BODEN gradient, for unrestricted GGA functionals. Unreachable for       !!
-!! meta-GGA today (see the itype.eq.3 guard above) -- tau here is the      !!
-!! whole-molecule tau, not a real BODEN analog, passed only to keep        !!
-!! xc_uks's call shape uniform with the exact one-center call below. !!
+!! BODEN gradient, for unrestricted GGA functionals; tau BODEN for      !!
+!! meta-GGA functionals (tau_ab, only read by xc_uks for meta-GGAs).     !!
             if(itype.gt.1) call grdboden_uks(itotps,chp2,chp3,omp2,chpd,chpbd,scrall,iatom,jatom,sab,sab2)
-            call xc_uks(itotps,scr_bod,scrall,tau,scr2)
+            if(itype.eq.3) then
+              call tauboden_uks(itotps,omp2,chpd,chpbd,scr_bod,scrall,
+     +          tau,tau_ab,iatom,jatom,sab,sab2)
+              call tau_diagnostics_uks(itotps,wp,omp,scr_bod,scrall,
+     +          tau_ab,clipab(iatom,jatom),zab(iatom,jatom))
+            end if
+            call xc_uks(itotps,scr_bod,scrall,tau_ab,scr2)
             x1=ZERO
 !! xc energy of the pair on the grid: x1 is a reduction, nothing else !!
 !! is written                                                         !!
@@ -1159,6 +1169,7 @@
         end do
       end do
       if(iverbose.eq.1) write(*,'(2x,a)') repeat('-',21)
+      if(itype.eq.3) call print_tau_diagnostics(threbod,clipab,zab)
 
       exchen=ZERO
       do ii=1,nat
@@ -1267,6 +1278,7 @@
         end do
       end do
       DEALLOCATE(chp2,rho,scr_bod,chpd,chpbd,sab2,scrall,chp3,sab,scr2,tau)
+      DEALLOCATE(tau_ab)
       end
 
 !! ***** !!
@@ -1349,6 +1361,304 @@
 !! ***** !!
 
 !! *********************************************************************** !!
+!! subroutine: tauboden                                                    !!
+!! purpose: kinetic energy density (tau) of the bond-order density (BODEN) !!
+!!   for one atom pair, at each grid point -- tau input for the meta-GGA   !!
+!!   XC evaluation in numint_dft's BODEN loop. EXPLORATION: TAU_BODEN      !!
+!!   (# ENPART) chooses the definition, to be reduced to one:              !!
+!!   1 kernel: tau_AB = sum_ij K_ij grad(phi_i).grad(phi_j), the tau of    !!
+!!     the same frozen-weight kernel K_ij = S^B_ij w_A + S^A_ij w_B that   !!
+!!     gives the BODEN and grdboden's sigma (closed shell: 2 x 1/2);       !!
+!!   2 von Weizsacker: tau_AB = sigma_AB/(8 rho_AB);                        !!
+!!   3 weights: tau_AB = 2 w_A w_B tau (A-B plus B-A).                      !!
+!!   See tauboden_uks for open-shell.                                      !!
+!! arguments:                                                              !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   omp2   (in)  -- atomic weight of each point for every atom            !!
+!!   chpd   (in)  -- MO gradient at each grid point (from grdrho)          !!
+!!   rhoab  (in)  -- BODEN of the pair at each grid point                  !!
+!!   sigab  (in)  -- sigma BODEN of the pair (from grdboden)               !!
+!!   taumol (in)  -- molecular tau at each grid point                      !!
+!!   tauab  (out) -- tau BODEN of the pair at each grid point              !!
+!!   iat,kat (in) -- the atom pair                                         !!
+!!   sab    (in)  -- per-atom MO overlap matrix (from numint_dft)          !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
+      subroutine tauboden(itotps,omp2,chpd,rhoab,sigab,taumol,tauab,
+     +  iat,kat,sab)
+      use input_options_mod, only: itauboden
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      dimension chpd(itotps,nocc,3),omp2(itotps,nat)
+      dimension rhoab(itotps),sigab(itotps),taumol(itotps),tauab(itotps)
+      dimension sab(nocc,nocc,nat)
+
+      select case(itauboden)
+      case(1)
+!! parallel over irun: each iteration only reads its own omp2(irun,:)/  !!
+!! chpd(irun,:,:) and writes its own tauab(irun). K is symmetric, so    !!
+!! the off-diagonal ij terms are counted twice.                          !!
+!$OMP PARALLEL DO PRIVATE(irun,w1,w2,xx,ii,jj,gab,dd)
+        do irun=1,itotps
+          w1=omp2(irun,iat)
+          w2=omp2(irun,kat)
+          xx=ZERO
+          do ii=1,nocc
+            do jj=ii,nocc
+              gab=sab(ii,jj,iat)*w2+sab(ii,jj,kat)*w1
+              dd=chpd(irun,ii,1)*chpd(irun,jj,1)
+     +          +chpd(irun,ii,2)*chpd(irun,jj,2)
+     +          +chpd(irun,ii,3)*chpd(irun,jj,3)
+              if(ii.ne.jj) dd=TWO*dd
+              xx=xx+gab*dd
+            end do
+          end do
+          tauab(irun)=xx
+        end do
+!$OMP END PARALLEL DO
+      case(2)
+        do irun=1,itotps
+          tauab(irun)=ZERO
+          if(rhoab(irun).gt.ZERO) tauab(irun)=sigab(irun)/(8.0d0*rhoab(irun))
+        end do
+      case(3)
+        do irun=1,itotps
+          tauab(irun)=TWO*omp2(irun,iat)*omp2(irun,kat)*taumol(irun)
+        end do
+      end select
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: tauboden_uks                                                !!
+!! purpose: UKS twin of tauboden, tau BODEN per spin (order alpha, beta):  !!
+!!   1 kernel: tau^s_AB = 1/2 sum_ij K^s_ij grad(phi^s_i).grad(phi^s_j);   !!
+!!   2 von Weizsacker: tau^s_AB = sigma^ss_AB/(8 rho^s_AB);                 !!
+!!   3 weights: tau^s_AB = 2 w_A w_B tau^s.                                 !!
+!! arguments:                                                              !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   omp2   (in)  -- atomic weight of each point for every atom            !!
+!!   chpd   (in)  -- alpha MO gradient at each grid point (from ugrdrho)   !!
+!!   chpbd  (in)  -- beta MO gradient at each grid point (from ugrdrho)    !!
+!!   rhoab  (in)  -- BODEN of the pair, alpha then beta                    !!
+!!   sigab  (in)  -- sigma BODEN of the pair (from grdboden_uks)           !!
+!!   taumol (in)  -- molecular tau, alpha then beta                        !!
+!!   tauab  (out) -- tau BODEN of the pair, alpha then beta                !!
+!!   iat,kat (in) -- the atom pair                                         !!
+!!   sab    (in)  -- per-atom alpha MO overlap matrix                      !!
+!!   sab2   (in)  -- per-atom beta MO overlap matrix                       !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
+      subroutine tauboden_uks(itotps,omp2,chpd,chpbd,rhoab,sigab,taumol,
+     +  tauab,iat,kat,sab,sab2)
+      use input_options_mod, only: itauboden
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      dimension chpd(itotps,nalf,3),chpbd(itotps,nb,3),omp2(itotps,nat)
+      dimension rhoab(2,itotps),sigab(3,itotps),taumol(2,itotps)
+      dimension tauab(2,itotps)
+      dimension sab(nalf,nalf,nat),sab2(nb,nb,nat)
+
+      select case(itauboden)
+      case(1)
+!! parallel over irun: each iteration only reads its own omp2(irun,:)/  !!
+!! chpd(irun,:,:)/chpbd(irun,:,:) and writes its own tauab(:,irun).     !!
+!$OMP PARALLEL DO PRIVATE(irun,w1,w2,xa,xb,ii,jj,gab,dd)
+        do irun=1,itotps
+          w1=omp2(irun,iat)
+          w2=omp2(irun,kat)
+          xa=ZERO
+          do ii=1,nalf
+            do jj=ii,nalf
+              gab=sab(ii,jj,iat)*w2+sab(ii,jj,kat)*w1
+              dd=chpd(irun,ii,1)*chpd(irun,jj,1)
+     +          +chpd(irun,ii,2)*chpd(irun,jj,2)
+     +          +chpd(irun,ii,3)*chpd(irun,jj,3)
+              if(ii.ne.jj) dd=TWO*dd
+              xa=xa+gab*dd
+            end do
+          end do
+          xb=ZERO
+          do ii=1,nb
+            do jj=ii,nb
+              gab=sab2(ii,jj,iat)*w2+sab2(ii,jj,kat)*w1
+              dd=chpbd(irun,ii,1)*chpbd(irun,jj,1)
+     +          +chpbd(irun,ii,2)*chpbd(irun,jj,2)
+     +          +chpbd(irun,ii,3)*chpbd(irun,jj,3)
+              if(ii.ne.jj) dd=TWO*dd
+              xb=xb+gab*dd
+            end do
+          end do
+          tauab(1,irun)=HALF*xa
+          tauab(2,irun)=HALF*xb
+        end do
+!$OMP END PARALLEL DO
+      case(2)
+        do irun=1,itotps
+          tauab(1,irun)=ZERO
+          tauab(2,irun)=ZERO
+!! no density cutoff: tau=0 at a point libxc still evaluates gives NaN !!
+!! in its polarized TPSS correlation                                    !!
+          if(rhoab(1,irun).gt.ZERO)
+     +      tauab(1,irun)=sigab(1,irun)/(8.0d0*rhoab(1,irun))
+          if(rhoab(2,irun).gt.ZERO)
+     +      tauab(2,irun)=sigab(3,irun)/(8.0d0*rhoab(2,irun))
+        end do
+      case(3)
+        do irun=1,itotps
+          tauab(1,irun)=TWO*omp2(irun,iat)*omp2(irun,kat)*taumol(1,irun)
+          tauab(2,irun)=TWO*omp2(irun,iat)*omp2(irun,kat)*taumol(2,irun)
+        end do
+      end select
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: tau_diagnostics                                             !!
+!! purpose: EXPLORATION. For one atom pair: the share of the BODEN (in %)  !!
+!!   at points where sigma_AB > 8 rho_AB tau_AB, which libxc clips to the  !!
+!!   bound (Fermi-hole curvature), and the BODEN-weighted mean of          !!
+!!   z = tau_W/tau as libxc sees it (min(z,1)). See tau_diagnostics_uks.   !!
+!! arguments:                                                              !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   wp     (in)  -- integration weight of each grid point                 !!
+!!   omp    (in)  -- weight of each grid point for its own atom            !!
+!!   rhoab  (in)  -- BODEN of the pair                                     !!
+!!   sigab  (in)  -- sigma BODEN of the pair                               !!
+!!   tauab  (in)  -- tau BODEN of the pair                                 !!
+!!   clip   (out) -- clipped share of the BODEN, %                         !!
+!!   zmean  (out) -- BODEN-weighted mean of min(tau_W/tau,1)               !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
+      subroutine tau_diagnostics(itotps,wp,omp,rhoab,sigab,tauab,clip,
+     +  zmean)
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      dimension wp(itotps),omp(itotps)
+      dimension rhoab(itotps),sigab(itotps),tauab(itotps)
+
+      den=ZERO
+      xc1=ZERO
+      xz=ZERO
+!! parallel over irun: reductions only !!
+!$OMP PARALLEL DO PRIVATE(irun,ww,z) REDUCTION(+:den,xc1,xz)
+      do irun=1,itotps
+        if(rhoab(irun).gt.1.0d-12) then
+          ww=wp(irun)*omp(irun)*rhoab(irun)
+          den=den+ww
+          if(sigab(irun).gt.8.0d0*rhoab(irun)*tauab(irun)*(ONE+1.0d-10)) then
+            xc1=xc1+ww
+            z=ONE
+          else
+            z=sigab(irun)/(8.0d0*rhoab(irun)*tauab(irun))
+          end if
+          xz=xz+ww*z
+        end if
+      end do
+!$OMP END PARALLEL DO
+      clip=ZERO
+      zmean=ZERO
+      if(den.gt.ZERO) then
+        clip=100.0d0*xc1/den
+        zmean=xz/den
+      end if
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: tau_diagnostics_uks                                         !!
+!! purpose: UKS twin of tau_diagnostics, both spins pooled (each point     !!
+!!   and spin weighted by its BODEN).                                      !!
+!! arguments: as tau_diagnostics, with rhoab/tauab (alpha, beta) and       !!
+!!   sigab (up-up, up-down, down-down)                                     !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
+      subroutine tau_diagnostics_uks(itotps,wp,omp,rhoab,sigab,tauab,
+     +  clip,zmean)
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      dimension wp(itotps),omp(itotps)
+      dimension rhoab(2,itotps),sigab(3,itotps),tauab(2,itotps)
+
+      den=ZERO
+      xc1=ZERO
+      xz=ZERO
+!! parallel over irun: reductions only !!
+!$OMP PARALLEL DO PRIVATE(irun,is,ww,ss,z) REDUCTION(+:den,xc1,xz)
+      do irun=1,itotps
+        do is=1,2
+          if(rhoab(is,irun).gt.1.0d-12) then
+            ww=wp(irun)*omp(irun)*rhoab(is,irun)
+            ss=sigab(2*is-1,irun)
+            den=den+ww
+            if(ss.gt.8.0d0*rhoab(is,irun)*tauab(is,irun)*(ONE+1.0d-10)) then
+              xc1=xc1+ww
+              z=ONE
+            else
+              z=ss/(8.0d0*rhoab(is,irun)*tauab(is,irun))
+            end if
+            xz=xz+ww*z
+          end if
+        end do
+      end do
+!$OMP END PARALLEL DO
+      clip=ZERO
+      zmean=ZERO
+      if(den.gt.ZERO) then
+        clip=100.0d0*xc1/den
+        zmean=xz/den
+      end if
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: print_tau_diagnostics                                       !!
+!! purpose: EXPLORATION. Prints, for every BODEN pair, the clipped share   !!
+!!   and the mean tau_W/tau from tau_diagnostics(_uks).                    !!
+!! arguments:                                                              !!
+!!   threbod (in) -- bond-order threshold of the BODEN pairs               !!
+!!   clipab  (in) -- clipped share of each pair's BODEN, %                 !!
+!!   zab     (in) -- BODEN-weighted mean of min(tau_W/tau,1) of each pair  !!
+!! author: MGimf.                                                          !!
+!! *********************************************************************** !!
+      subroutine print_tau_diagnostics(threbod,clipab,zab)
+      use input_options_mod, only: itauboden
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      dimension clipab(maxat,maxat),zab(maxat,maxat)
+      character*40 cname(3)
+      data cname /'kernel (sum K_ij grad phi_i.grad phi_j)',
+     +  'von Weizsacker (sigma/8rho)','weights (2 w_A w_B tau)'/
+
+      write(*,'(a)') ''
+      write(*,'(2x,a,i0,a,a)') 'Pair tau (TAU_BODEN ',itauboden,'): ',
+     +  trim(cname(itauboden))
+      write(*,'(2x,a)') 'Clipped: share of the BODEN where sigma > 8 rho tau'//
+     +  ' (libxc clips sigma).'
+      write(*,'(2x,a)') '<z>: BODEN-weighted mean of min(tau_W/tau,1).'
+      write(*,'(a)') ''
+      write(*,'(2x,a)') 'Atom pair   Clipped (%)       <z>'
+      write(*,'(2x,a)') repeat('-',34)
+      do iatom=1,nat
+        do jatom=iatom+1,nat
+          if(bo(iatom,jatom).ge.threbod) write(*,'(2x,i3,a2,i3,f14.4,f10.4)')
+     +      iatom,' -',jatom,clipab(iatom,jatom),zab(iatom,jatom)
+        end do
+      end do
+      write(*,'(2x,a)') repeat('-',34)
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
 !! subroutine: print_skipped_pairs                                         !!
 !! purpose: explains, under the pair counts of the DFT part, where the xc  !!
 !!   term of the atom pairs below the THREBOD threshold comes from.        !!
@@ -1378,9 +1688,8 @@
 !! purpose: prints one component of the DENSITY FUNCTIONAL section (libxc  !!
 !!   name and id, kind, family, exact-exchange fraction, references) via   !!
 !!   libxc's own info query functions, and classifies the functional into  !!
-!!   itype (1 LDA, 2 GGA) for the caller's gradient-calculation dispatch.  !!
-!!   Stops cleanly on anything else (invalid id, meta-GGA, range-separated,!!
-!!   VV10...).                                                             !!
+!!   itype (1 LDA, 2 GGA, 3 meta-GGA) for the caller's dispatch. Stops    !!
+!!   cleanly on anything else (invalid id, range-separated, VV10...).      !!
 !! arguments:                                                              !!
 !!   id_func (in)  -- libxc functional id (from iopt, read by the caller)  !!
 !!   itype   (out) -- functional family classification, see above          !!
@@ -1453,8 +1762,11 @@
       case(XC_FAMILY_HYB_GGA)
         cfam='hybrid GGA'
         itype=2
-      case(XC_FAMILY_MGGA,XC_FAMILY_HYB_MGGA)
+      case(XC_FAMILY_MGGA)
         cfam='meta-GGA'
+        itype=3
+      case(XC_FAMILY_HYB_MGGA)
+        cfam='hybrid meta-GGA'
         itype=3
       case default
         cfam='other'
@@ -1471,7 +1783,7 @@
       call print_value('Kind',trim(ckind))
       call print_value('Family',trim(cfam))
 !! for a range-separated hybrid this would be the long-range fraction only. !!
-      if(itype.eq.2.and.xmix.gt.ZERO.and.irsh.eq.0)
+      if(itype.ge.2.and.xmix.gt.ZERO.and.irsh.eq.0)
      +  call print_value('Exact-exchange fraction',xmix,3)
 
 !! xc_f03_func_info_get_references uses lookahead semantics: the call that !!
@@ -1500,17 +1812,9 @@
       ikind=xc_f03_func_info_get_kind(xc_info)
       call xc_f03_func_end(xc_func)
 
-!! meta-GGA: tau is wired into the one-center term and DFT-DM1, but the  !!
-!! BODEN atom-pair term still has no tau analog (under discussion).       !!
-      if(itype.eq.3) then
-        write(*,'(a)') ''
-        write(*,'(2x,a)') 'Meta-GGA functionals are not supported yet (implementation'
-        write(*,'(2x,a)') 'in progress). Use an LDA, GGA or global-hybrid GGA functional.'
-        call apost_stop('META-GGA FUNCTIONALS NOT YET SUPPORTED')
-      end if
       if(itype.lt.0) then
         write(*,'(a)') ''
-        write(*,'(2x,a)') 'Only LDA, GGA and global-hybrid GGA functionals are supported.'
+        write(*,'(2x,a)') 'Only LDA, GGA, meta-GGA and their global hybrids are supported.'
         call apost_stop('UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp')
       end if
       if(ikind.eq.XC_KINETIC) then

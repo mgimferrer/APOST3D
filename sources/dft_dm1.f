@@ -64,6 +64,8 @@
       write(*,'(2x,a,1x,i0)')   'Number of angular points per radial :',nang
       write(*,'(2x,a,1x,f6.3)') 'Gauss-Legendre R0 parameter         :',rr00
       call func_info_print(ifunc,itype,0)
+!! the tau path of DFT-DM1 (sigma_uks_xyz) has never been validated !!
+      if(itype.eq.3) call apost_stop('META-GGA FUNCTIONALS NOT SUPPORTED BY DFT-DM1. REVISE inp')
 
 !! GENERATING SECOND GRID (ROTATED) FOR NUMERICAL INTEGRATION !!
 !! chp: value of AO jj at point ii (first grid); chppha: same, second grid !!

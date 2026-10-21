@@ -274,6 +274,10 @@
         call readchar("# ENPART","DEKIN",idek)
         call readchar("# ENPART","IONIC",iionic)
         call readreal("# ENPART","TWOELTOLER",twoeltoler,0.25d0,1)
+!! exploration of the meta-GGA pair tau, see tauboden (enpart_dft.f) !!
+        call readint("# ENPART","TAU_BODEN",itauboden,1,1)
+        if(itauboden.lt.1.or.itauboden.gt.3)
+     +    call apost_stop("TAU_BODEN MUST BE 1, 2 OR 3. REVISE inp")
         call readchar("# ENPART","ANALYTIC",ianalytical)
 
 
