@@ -214,7 +214,7 @@ Written with `EOS`.
 | Key | Content |
 |---|---|
 | `scheme` | as in `populations` |
-| `alpha` | `reliability_percent` (R of the channel), `assignment` (`"integer"`, or `"fractional"` when electrons are shared among EFOs of equal occupation at the frontier), `frontier` (table per fragment: `last_occupied`, `first_unoccupied`, the gross occupations of its last occupied and first unoccupied EFOs, `null` when it has none), `efos` (below) |
+| `alpha` | `reliability_percent` (R of the channel), `assignment` (`"integer"`, or `"fractional"` when electrons are shared among EFOs of equal occupation at the frontier), `frontier` (table per fragment: `last_occupied`, `first_unoccupied`, the gross occupations of its last occupied and first unoccupied EFOs, `null` when it has none), `frontier_efos` (the EFOs that set R, below), `efos` (below) |
 | `beta` | as `alpha`; or `{"same_as_alpha": true}` when the beta density equals the alpha one (closed shell), or `{"no_electrons": true}` |
 | `fragments` | `oxidation_states`, `electrons_alpha`, `electrons_beta` |
 | `reliability_percent` | the overall R, the smaller of the two channels |
@@ -228,6 +228,26 @@ to that EFO: 1, 0 or a fraction) and `fchk_column` (its orbital in the
 file, `null` past the last one when the basis has linear dependencies).
 For a closed shell, the file has only alpha orbitals.
 
+`frontier_efos` gives the frontier EFOs of the whole channel, the ones
+that set its R, as two lists, `last_occupied` and `first_unoccupied`.
+Each item is an object with `efo_row` (1-based row of the channel's
+`efos` table, so its `fchk_column` follows), `fragment` and `occupation`
+(gross occupation, as in `frontier`). R compares the fragments' frontier
+EFOs of the `frontier` table: λ_LO is the smallest last occupied
+occupation, λ_FU the largest first unoccupied occupation of the other
+fragments (an EFO of the fragment that gives λ_LO does not count:
+moving an electron inside a fragment does not change its oxidation
+state). `last_occupied` lists the fragments' last occupied EFOs within
+`EOS_THRESH` (default 0.0025) of λ_LO, `first_unoccupied` the first
+unoccupied EFOs of the other fragments within `EOS_THRESH` of λ_FU, so
+that degenerate EFOs (equivalent fragments) all appear. With λ_LO the
+smallest occupation of `last_occupied` and λ_FU the largest of
+`first_unoccupied`, R = 100 min(1, λ_LO − λ_FU + 0.5) gives
+`reliability_percent`. An empty list means R took its default: λ_LO = 1
+(no fragment has an occupied EFO), λ_FU = 0 (no other fragment has an
+unoccupied EFO, e.g. H2 with one EFO per atom, each holding half an
+electron).
+
 ### `geos`
 
 Written with `GEOS`. As `eos`, with the paired and unpaired densities in
@@ -236,7 +256,7 @@ place of the alpha and beta electrons:
 | Key | Content |
 |---|---|
 | `scheme` | as in `populations` |
-| `paired`, `unpaired` | `reliability_percent`, `frontier` and `efos` as in `eos`. The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals; `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
+| `paired`, `unpaired` | `reliability_percent`, `frontier`, `frontier_efos` and `efos` as in `eos` (for `paired`, occupations run from 0 to 2: λ_LO = 2 when `last_occupied` is empty, and R = 100 min(1, (λ_LO − λ_FU)/2 + 0.5)). The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals; `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
 | `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `fit_percent` (as in the EFO tables: how closely the orbital in the file reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
 | `fragments` | `oxidation_states`, `electrons_paired`, `electrons_unpaired` |
 | `reliability_percent` | the overall R |
