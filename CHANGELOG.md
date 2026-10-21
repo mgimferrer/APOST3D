@@ -56,6 +56,11 @@ program, not a full development history — see `git log` for that.
   functional of the same name. Any other supported functional can be
   given by its libxc ids (`LIBRARY` with `EXC_FUNCTIONAL`, or
   `EX_FUNCTIONAL`/`EC_FUNCTIONAL`).
+- **Meta-GGA functionals in ENPART** — meta-GGAs and their global hybrids
+  (TPSS, M06-2X, ...), restricted and unrestricted. The pair terms take
+  the kinetic energy density of the bond order density, built like its
+  gradient. The total exchange-correlation energy reproduces pySCF's to
+  0.02 kcal/mol.
 
 ### Changes to ENPART that affect inputs or results
 
@@ -72,10 +77,9 @@ program, not a full development history — see `git log` for that.
   `TWOELTOLER 0.00` restores the old behaviour.
 - **`LDA` keyword removed** — it meant Slater exchange only. Use `SVWN` or
   `SVWN5`, or `LIBRARY` with `EX_FUNCTIONAL 1` for exchange only.
-- **Clear stops instead of wrong numbers** — meta-GGA functionals (not
-  yet supported), range-separated hybrids, VV10 functionals, invalid libxc
-  ids, and ENPART with a Hilbert-space atom definition (`MULLIKEN`, `LOWDIN`)
-  now stop with a message before any energy is computed. So do ENPART of a
+- **Clear stops instead of wrong numbers** — range-separated hybrids,
+  VV10 functionals, invalid libxc ids, and ENPART with a Hilbert-space
+  atom definition (`MULLIKEN`, `LOWDIN`) now stop with a message before any energy is computed. So do ENPART of a
   correlated (CASSCF/CISD) wavefunction computed in an electric field, and
   `POLAR` with a correlated wavefunction, whose untested code was removed.
 - **Clearer output** — the section starts with the wavefunction, the

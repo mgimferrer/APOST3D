@@ -10,7 +10,7 @@ real-space atoms (e.g. `TFVC`):
 Each interaction energy collects the nuclear repulsion, the two
 electron-nuclear attractions, the classical (Coulomb) electron repulsion
 and the exchange-correlation (xc) energy between the two atoms. It works for
-Hartree-Fock, Kohn-Sham DFT (LDA, GGA and global-hybrid GGA functionals)
+Hartree-Fock, Kohn-Sham DFT (LDA, GGA, meta-GGA and global-hybrid functionals)
 and correlated (CASSCF/CISD) wavefunctions.
 
 ```{admonition} Cite
@@ -39,7 +39,9 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    - **KS-DFT**: the one-center terms come from the functional's energy
      density integrated within each atom ("exact" one-center terms). The
      interatomic terms come from evaluating the functional on the **bond
-     order density** (BODEN) of each atom pair. The one-center terms are
+     order density** (BODEN) of each atom pair; for a meta-GGA, the
+     kinetic energy density of the pair is built from the same
+     orbital products as the BODEN and its gradient. The one-center terms are
      then rearranged so that all terms add up exactly to the KS-DFT
      exchange-correlation energy. For a global hybrid, the exact-exchange
      fraction is computed as in Hartree-Fock and added in the
@@ -128,7 +130,7 @@ keywords, their libxc ids and how to give a functional by its ids are in
 |---|---|
 | LDA, GGA | yes |
 | Global hybrid GGA (B3LYP, PBE0, ...) | yes |
-| Meta-GGA and hybrid meta-GGA (TPSS, M06-2X, ...) | not yet (implementation in progress) |
+| Meta-GGA and hybrid meta-GGA (TPSS, M06-2X, ...) | yes |
 | Range-separated hybrids (CAM-B3LYP, ωB97X, LC-ωPBE, HSE, ...) | no |
 | Functionals with VV10 nonlocal correlation | no |
 

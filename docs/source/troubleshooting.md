@@ -224,11 +224,6 @@ oxidation states); see [EOS](methods/eos.md).
 
 ### ENPART
 
-**`STOP META-GGA FUNCTIONALS NOT YET SUPPORTED`**
-Meta-GGA functionals (TPSS, M06-2X, ...) can't be decomposed yet. The run
-stops before any energy is computed. See [ENPART](methods/enpart.md) for
-the supported functionals.
-
 **`STOP RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp`** / **`STOP VV10
 FUNCTIONAL NOT SUPPORTED. REVISE inp`**
 Range-separated hybrids (CAM-B3LYP, ωB97X, LC-ωPBE, HSE, ...) and
@@ -243,7 +238,7 @@ global hybrids are.
 
 **`STOP UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp`**, **`STOP KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp`**
 The libxc id is not an exchange-correlation functional of a supported
-family (LDA, GGA, global-hybrid GGA).
+family (LDA, GGA, meta-GGA and their global hybrids).
 
 **`STOP INVALID LIBXC FUNCTIONAL ID. REVISE inp`**
 The id given with `EXC_FUNCTIONAL`/`EX_FUNCTIONAL`/`EC_FUNCTIONAL` is not
