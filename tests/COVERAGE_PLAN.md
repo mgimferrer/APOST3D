@@ -44,10 +44,10 @@ Don't write tests expecting these to work:
 - `GEOS`/`EFFAO-U` + any Hilbert-space scheme, or + `DOATOMS`: stop
   (since `cfc0d47`; before, the first was silently skipped and the second
   ran UEFFAO instead).
-- `ENPART` + any Hilbert-space scheme: ENPART is switched off with a
-  warning.
+- `ENPART` + any Hilbert-space scheme: stop.
 - `LOBA` + any Hilbert-space scheme: stop.
 - `OSLO` on a multireference (CASSCF/CISD/FCI) wavefunction: stop.
+- `ENPART`/`OSLO` + `DENS` above 1: stop (`H2O-MP2-DENS2-ENPART`).
 - `QTAIM`: stop, see above.
 
 ---

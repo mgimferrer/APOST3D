@@ -1,0 +1,52 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.14",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "Moller-Plesset PT",
+    "n_basis_functions": 24,
+    "n_electrons": 10,
+    "n_alpha": 5,
+    "n_beta": 5,
+    "energy_au": -7.6026772053395206E+001
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nENPART\nDENS 2\n#\n# ENPART\nHF\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "short_name": "TFVC",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 3,
+    "atomic_numbers": [8, 1, 1],
+    "symbols": ["O", "H", "H"],
+    "nuclear_charges": [8.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [1.3573058900000000E-017, 1.3573058900000000E-017, 2.2166487400000001E-001],
+      [2.0855994400000000E-016, 1.4309006200000001E+000, -8.8665949799999999E-001],
+      [-4.9237920200000001E-016, -1.4309006200000001E+000, -8.8665949799999999E-001]
+    ]
+  },
+  "fragments": [],
+  "analyses": {},
+  "index": [],
+  "run": {
+    "job_name": "H2O-MP2-DENS2-ENPART",
+    "input_file": "H2O-MP2-DENS2-ENPART.inp",
+    "wavefunction_file": "H2O-MP2-DENS2-ENPART.fchk",
+    "date": "2026-10-21T15:29:33+02:00",
+    "id": "2026-10-21T15:29:33+02:00/efa0",
+    "threads": 8,
+    "status": "stopped",
+    "stop_message": "DENS above 1 with ENPART or OSLO"
+  }
+}

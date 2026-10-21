@@ -3331,6 +3331,40 @@
       ]
     },
     {
+      "name": "H2O-MP2-DENS2-ENPART",
+      "description": "Water, RMP2/cc-pVDZ from Gaussian 16 (density=current): ENPART with DENS 2 must stop, since the orbitals of the .fchk belong to the SCF density.",
+      "tags": [
+        "h2o",
+        "rmp2",
+        "dens",
+        "gaussian",
+        "expected-stop"
+      ],
+      "expected_rc": 1,
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "DENS"
+      ],
+      "checks": [
+        {
+          "label": "Message names ENPART and OSLO",
+          "type": "present",
+          "pattern": "DENS above 1: ENPART and OSLO use the orbitals of the \\.fchk file"
+        },
+        {
+          "label": "Stop line",
+          "type": "present",
+          "pattern": "STOP\\s+DENS above 1 with ENPART or OSLO"
+        },
+        {
+          "label": "No energy partitioning",
+          "type": "absent",
+          "pattern": "KINETIC ENERGY"
+        }
+      ]
+    },
+    {
       "name": "H2-TWO-AIM",
       "description": "H2 (pySCF UKS singlet) with two atomic definitions in # METHOD (TFVC and HIRSH): the run must stop while reading the input.",
       "tags": [
