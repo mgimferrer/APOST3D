@@ -248,7 +248,8 @@
 !!   jfu    (in)  (nfr) pooled row of each fragment's first unoccupied
 !!                EFO, 0 when it has none
 !!   xfu    (in)  (nfr) its gross occupation
-!!   ilast  (in)  fragment of xlast, 0 when R used the default
+!!   ilast  (in)  fragment of xlast (the first of fragments within 1e-8
+!!                of it), 0 when R used the default
 !!   xlast  (in)  last occupied occupation used in R
 !!   xfirst (in)  first unoccupied occupation used in R
 !!   thres  (in)  occupation difference below which EFOs are degenerate
@@ -770,6 +771,13 @@
           end if
         end if
       end do
+!! equivalent fragments (within 1.0d-8, as in the sort above) tie: ilast !!
+!! is the first of them, the same on every machine                       !!
+      if(ilast.gt.0) then
+        do i=icufr,1,-1
+          if(ilo(i).eq.1.and.xlo(i).le.xlast+1.0d-8) ilast=i
+        end do
+      end if
 
 !! xfirst: best (largest) "first unoccupied EFO" occupation among the     !!
 !! other fragments -- how close the runner-up comes to being occupied.    !!

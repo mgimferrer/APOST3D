@@ -830,6 +830,13 @@
             end if
           end if
         end do
+!! equivalent fragments (within 1.0d-8, as in the pooled sort) tie:    !!
+!! ilast is the first of them, the same on every machine               !!
+        if(ilast.gt.0) then
+          do ifrg=icufr,1,-1
+            if(ilo(ifrg).eq.1.and.xlo(ifrg).le.xlast+1.0d-8) ilast=ifrg
+          end do
+        end if
 
         xfirst=ZERO
         do ifrg=1,icufr
