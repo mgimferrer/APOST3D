@@ -343,8 +343,8 @@
             if(itype.eq.3) then
               call tauboden(itotps,omp2,chpd,scr_a,scr,scr_tau,tau_ab,
      +          iatom,jatom,sab)
-              call tau_diagnostics(itotps,wp,omp,scr_a,scr,tau_ab,
-     +          clipab(iatom,jatom),zab(iatom,jatom))
+              if(iverbose.eq.1) call tau_diagnostics(itotps,wp,omp,
+     +          scr_a,scr,tau_ab,clipab(iatom,jatom),zab(iatom,jatom))
             end if
             call xc(itotps,scr_a,scr,tau_ab,scr2)
 
@@ -364,7 +364,8 @@
         end do
       end do
       if(iverbose.eq.1) write(*,'(2x,a)') repeat('-',21)
-      if(itype.eq.3) call print_tau_diagnostics(threbod,clipab,zab)
+      if(itype.eq.3.and.iverbose.eq.1)
+     +  call print_tau_diagnostics(threbod,clipab,zab)
 
       exchen=ZERO
       do ii=1,nat
@@ -1149,8 +1150,8 @@
             if(itype.eq.3) then
               call tauboden_uks(itotps,omp2,chpd,chpbd,scr_bod,scrall,
      +          tau,tau_ab,iatom,jatom,sab,sab2)
-              call tau_diagnostics_uks(itotps,wp,omp,scr_bod,scrall,
-     +          tau_ab,clipab(iatom,jatom),zab(iatom,jatom))
+              if(iverbose.eq.1) call tau_diagnostics_uks(itotps,wp,omp,
+     +          scr_bod,scrall,tau_ab,clipab(iatom,jatom),zab(iatom,jatom))
             end if
             call xc_uks(itotps,scr_bod,scrall,tau_ab,scr2)
             x1=ZERO
@@ -1169,7 +1170,8 @@
         end do
       end do
       if(iverbose.eq.1) write(*,'(2x,a)') repeat('-',21)
-      if(itype.eq.3) call print_tau_diagnostics(threbod,clipab,zab)
+      if(itype.eq.3.and.iverbose.eq.1)
+     +  call print_tau_diagnostics(threbod,clipab,zab)
 
       exchen=ZERO
       do ii=1,nat
