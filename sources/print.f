@@ -15,7 +15,6 @@
 !!   apost_stop          -- "STOP <msg>" as the last output line, exit 1   !!
 !! Per-atom vector/matrix printers (no border):                            !!
 !!   VPRINT               -- per-atom vector or 2-column matrix            !!
-!!   MPRINT_NLOP           -- per-atom 3-column (X/Y/Z) matrix             !!
 !!   MPRINT                -- N x N matrix, chunked 6 columns at a time    !!
 !! Bordered N x N atom-pair matrix printer, the style used throughout      !!
 !! ENPART:                                                                 !!
@@ -309,7 +308,8 @@
       if(ienpart.eq.1) call print_value('Energy decomposition',
      +  'ENPART (IQA terms, see # ENPART)')
       if(ispin.eq.1) call print_value('Local spin','SPIN')
-      if(ipolar.eq.1) call print_value('Static polarizability','POLAR')
+      if(ipolar.eq.1) call print_value('Dipole moment decomposition',
+     +  'POLAR')
       if(iscattfact.eq.1) call print_value('X-ray scattering factors',
      +  'SCATT-FACT')
       if(ilaplacian.eq.1) call print_value('Density Laplacian',
@@ -763,43 +763,6 @@
       END
 
 !! ***** !!
-
-!! ********************************************************************* !!
-!! subroutine: MPRINT_NLOP                                               !!
-!! purpose: unbordered print of a per-atom 3-column (X/Y/Z) matrix, with !!
-!!   its own column header line -- used for dipole/charge-transfer       !!
-!!   component tables in enpart.f.                                       !!
-!! arguments:                                                            !!
-!!   H    (in) -- data (ndim,3)                                          !!
-!!   N    (in) -- number of atoms actually printed                       !!
-!!   ndim (in) -- H's declared leading dimension                         !!
-!! author:                                                               !!
-!! ********************************************************************* !!
-      SUBROUTINE MPRINT_NLOP(H,N,ndim)
-      use elements_mod
-      IMPLICIT REAL*8 (A-H,O-Z)
-      include 'parameter.h'
-      integer, intent(in) :: ndim
-      common /printout/iaccur
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      DIMENSION H(NDIM,3)
-
-
-      NMIN=1
-      NNMAX=3
-      PRINT *,'_________________X___________________Y__________________Z__________'
-      write(*,'(a)') ''
-      DO I=1,N
-        if(iaccur.eq.0) then
-          PRINT 62,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-        else
-          PRINT 63,I,element_label(iznuc(i)),(H(I,J),J=NMIN,NNMAX)
-        end if
-      end do
-      RETURN
-   62 FORMAT(1X,I3,A4,6F12.6)
-   63 FORMAT(1X,I3,A4,3F20.13)
-      END
 
 !! ----------------------------------------------------------------------
 !! subroutine: MPRINT

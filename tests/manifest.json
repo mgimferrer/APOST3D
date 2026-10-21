@@ -1197,9 +1197,23 @@
         },
         {
           "label": "POLAR total dipole, z (au)",
-          "pattern": "Total dipole moment: \\s*\\n.*\\n\\s*\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
+          "section": "MOLECULAR DIPOLE MOMENT",
+          "pattern": "Total\\s+\\S+\\s+\\S+\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.834757259269764,
           "tol_abs": 2e-05
+        },
+        {
+          "label": "POLAR intrinsic dipoles in the field, total (au)",
+          "section": "FIELD ENERGY OF THE ATOMIC DIPOLES",
+          "pattern": "Total\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0025706664947,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "POLAR field energy of the dipole, mu.F (au)",
+          "pattern": "Field energy of the dipole, mu\\.F \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.0041737862963,
+          "tol_abs": 2e-06
         }
       ]
     },
@@ -1272,9 +1286,23 @@
         },
         {
           "label": "POLAR total dipole, x (au)",
-          "pattern": "Total dipole moment: \\s*\\n.*\\n\\s*([-+]?\\d+\\.\\d+)",
+          "section": "MOLECULAR DIPOLE MOMENT",
+          "pattern": "Total\\s+([-+]?\\d+\\.\\d+)",
           "ref": -0.29008882764155,
           "tol_abs": 2e-05
+        },
+        {
+          "label": "POLAR intrinsic dipoles in the field, total (au)",
+          "section": "FIELD ENERGY OF THE ATOMIC DIPOLES",
+          "pattern": "Total\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.0009607184552,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "POLAR field energy of the dipole, mu.F (au)",
+          "pattern": "Field energy of the dipole, mu\\.F \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.0014504441382,
+          "tol_abs": 2e-06
         }
       ]
     },

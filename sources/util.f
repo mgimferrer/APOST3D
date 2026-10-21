@@ -506,7 +506,6 @@ c pivoting
 c  final pivotin
 c compatibilidad del sistema
        if (Abs(A(i,i)).lt.1e-15)then
-        write(*,*) 'sistema no comp. determinat'
         ilog=.false.
         return
        end if

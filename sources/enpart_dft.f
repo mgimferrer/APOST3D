@@ -429,7 +429,7 @@
      +  'In the atom: the functional integrated within the atom. Self'//
      +  ' term: the same',
      +  'minus half of each pair term of the atom (the diagonal below).',
-     +  2,xoc,'In the atom','Self term',.true.)
+     +  2,xoc,'In the atom','Self term',' ',.true.)
 
       exchen=ZERO
       do ii=1,nat
@@ -1234,7 +1234,7 @@
      +  'In the atom: the functional integrated within the atom. Self'//
      +  ' term: the same',
      +  'minus half of each pair term of the atom (the diagonal below).',
-     +  2,xoc,'In the atom','Self term',.true.)
+     +  2,xoc,'In the atom','Self term',' ',.true.)
 
       exchen=ZERO
       do ii=1,nat

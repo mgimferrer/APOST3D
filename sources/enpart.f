@@ -242,7 +242,7 @@
       end do
       call enpart_atom_table('KINETIC ENERGY','One-center terms only:'//
      +  ' the kinetic energy has no pair terms.',' ',1,tkin,'Kinetic',
-     +  ' ',.false.)
+     +  ' ',' ',.false.)
       call print_value('Kinetic energy',ekinen,ndec,'au')
       lref=ekin0.ne.ZERO
       errk=ZERO
@@ -307,7 +307,7 @@
         call enpart_atom_table('FIELD INTERACTION PER ATOM','Intrinsic'//
      +    ' dipole term (origin independent) and charge-transfer',
      +    'term (origin dependent) of each atom.',2,fdip,'Dipole',
-     +    'Charge tr.',.true.)
+     +    'Charge tr.',' ',.true.)
         if(idofr.eq.1) call group_by_frag_vec(2,
      +    'FRAGMENT FIELD INTERACTION',fdip,'Dipole','Charge tr.')
       end if
@@ -379,25 +379,26 @@
 
 !! ----------------------------------------------------------------------
 !! subroutine: enpart_atom_table
-!! Prints a per-atom ENPART table (one or two columns) under its own
-!! title, with optional caption lines and Total row.
+!! Prints a per-atom ENPART or POLAR table (one to three columns) under
+!! its own title, with optional caption lines and Total row.
 !! arguments:
 !!   title     (in)  section title
 !!   cap1,cap2 (in)  caption lines, ' ' for none
-!!   ncol      (in)  number of columns (1 or 2)
+!!   ncol      (in)  number of columns (1 to 3)
 !!   arr       (in)  (maxat,ncol) values
-!!   h1,h2     (in)  column headings (h2 unused when ncol=1)
+!!   h1,h2,h3  (in)  column headings (those beyond ncol unused)
 !!   ltot      (in)  logical, print a Total row (column sums)
 !! author: MGimf
 !! ----------------------------------------------------------------------
-      subroutine enpart_atom_table(title,cap1,cap2,ncol,arr,h1,h2,ltot)
+      subroutine enpart_atom_table(title,cap1,cap2,ncol,arr,h1,h2,h3,
+     +  ltot)
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /printout/iaccur
-      character*(*) title,cap1,cap2,h1,h2
+      character*(*) title,cap1,cap2,h1,h2,h3
       logical ltot
-      dimension arr(maxat,ncol),tot(2)
+      dimension arr(maxat,ncol),tot(3)
       character*30 fmthdr,fmttot
 
 !! atom label 7 characters wide, as in vprint; value columns 12 wide    !!
@@ -419,7 +420,9 @@
         if(len_trim(cap2).gt.0) write(*,'(2x,a)') trim(cap2)
         write(*,'(a)') ''
       end if
-      if(ncol.eq.2) then
+      if(ncol.eq.3) then
+        write(*,fmthdr) 'Atom   ',trim(h1),trim(h2),trim(h3)
+      else if(ncol.eq.2) then
         write(*,fmthdr) 'Atom   ',trim(h1),trim(h2)
       else
         write(*,fmthdr) 'Atom   ',trim(h1)
@@ -876,7 +879,7 @@
       call enpart_atom_table('ATOMIC ENERGIES','Additive energy = self-'//
      +  'energy + half of each interaction energy of the atom;',
      +  'the additive energies add up to the total energy.',2,arr,
-     +  'Self-energy','Additive',.true.)
+     +  'Self-energy','Additive',' ',.true.)
       if(ifield.eq.1) write(*,'(2x,a)')
      +  'The field interaction energy is not included.'
       ndv=6
@@ -1793,7 +1796,7 @@
       end do
       call enpart_atom_table('KINETIC ENERGY','One-center terms only:'//
      +  ' the kinetic energy has no pair terms.',' ',1,tkin,'Kinetic',
-     +  ' ',.false.)
+     +  ' ',' ',.false.)
       call print_value('Kinetic energy',ekinen,ndec,'au')
       lref=ekin0.ne.ZERO
       errk=ZERO
@@ -1857,7 +1860,7 @@
         call enpart_atom_table('FIELD INTERACTION PER ATOM','Intrinsic'//
      +    ' dipole term (origin independent) and charge-transfer',
      +    'term (origin dependent) of each atom.',2,fdip,'Dipole',
-     +    'Charge tr.',.true.)
+     +    'Charge tr.',' ',.true.)
         if(idofr.eq.1) call group_by_frag_vec(2,
      +    'FRAGMENT FIELD INTERACTION',fdip,'Dipole','Charge tr.')
       end if
@@ -2575,352 +2578,389 @@
 
 !! ***** !!
 
-      subroutine polar(itotps,nat0,wp,omp,omp2,pcoord,rho)
+!! ----------------------------------------------------------------------
+!! subroutine: polar
+!! POLAR: decomposition of the dipole moment into atomic contributions,
+!! the basis of the origin-independent decomposition of static
+!! polarizabilities by finite fields (M. Montilla, J. M. Luis and
+!! P. Salvador, J. Chem. Theory Comput. 2021, 17, 1098). With the atomic
+!! weights w_A, N_A = int w_A rho and q_A = Z_A - N_A (au throughout):
+!!   dipat_A  = Z_A R_A - int w_A rho r   origin-dependent atomic dipole,
+!!                                        sum over A = molecular dipole
+!!   dipint_A = -int w_A rho (r - R_A)    intrinsic (origin-independent)
+!!   dipat_A  = dipint_A + q_A R_A
+!! The charge-transfer part, sum_A q_A R_A, is split into origin-
+!! independent atomic terms with Keith's bond charges, generalized to
+!! overlapping atoms: Q(A|B) = -Q(B|A) for neighbor atoms A and B, with
+!! sum_B Q(A|B) = q_A (charges renormalized to the number of electrons,
+!! so that they add up to zero), and
+!!   dipct_A = sum_B Q(A|B) (R_A - R_B)/2.
+!! Two atoms are neighbors when no other atom is closer to the midpoint
+!! of A-B than half the A-B distance. Rings give more bond charges than
+!! independent equations: ichi.inp then removes bonds and adds, for each
+!! ring, the equation sum of Q around the ring = 0.
+!! With an external field F in the .fchk, also the field energies of the
+!! intrinsic and charge-transfer dipoles of each atom, mu_A.F.
+!! arguments:
+!!   itotps (in)  total number of grid points
+!!   nat0   (in)  number of atoms (second dimension of omp2)
+!!   wp     (in)  integration weight of each grid point
+!!   omp2   (in)  (itotps,nat0) atomic weight of each point
+!!   pcoord (in)  (itotps,3) coordinates of each point
+!!   rho    (in)  electron density at each point
+!! main local arrays (component k = x, y, z):
+!!   dipat(maxat,3)   origin-dependent atomic dipoles
+!!   dipint(maxat,3)  intrinsic atomic dipoles
+!!   dipct(maxat,3)   charge-transfer atomic dipoles (bond charges)
+!!   dipmol(3)        molecular dipole, sum of dipat
+!!   dipinttot(3)     sum of dipint
+!!   dipcttot(3)      sum of dipct
+!!   dipctq(3)        sum_A q_A R_A, charges as integrated
+!!   efld(maxat,2)    field energies of dipint and dipct of each atom
+!!   ibond(nat,nat)   1 (A<B) or -1 (A>B) for neighbor atoms, else 0
+!!   qbond(nq)        bond charges Q(A|B) of the nq neighbor pairs A<B
+!! author: MMontilla (charge-transfer split)
+!! ----------------------------------------------------------------------
+      subroutine polar(itotps,nat0,wp,omp2,pcoord,rho)
       use integration_grid
+      use elements_mod
+      use output_mod, only: print_value
       IMPLICIT REAL*8(A-H,O-Z)
       integer, intent(in) :: itotps,nat0
       include 'parameter.h'
-      parameter (maxbonds=300)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /atomrad/atr(maxat),dist(maxat,maxat)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /iops/iopt(200)
-      common/actual/iact,jat,icenter
-      common/efield/field(4),edipole
+      common /efield/field(4),edipole
       common /qat/qat(maxat,2),qsat(maxat,2)
+      common /printout/iaccur
       dimension wp(itotps),pcoord(itotps,3),rho(itotps)
-      dimension omp(itotps),omp2(itotps,nat0)
-      dimension dipint(maxat,3)
-      dimension eint(maxat),dip(maxat,3),dipct(3),diptot(3)         
-c MM
-      dimension itracker(maxbonds),jtracker(maxbonds)
-      real*8 MAT
-      dimension MAT(maxbonds,maxbonds+1),ichi(maxat,maxat)
-      dimension csolv(maxbonds),qqnorm(maxat),ct(maxat,3)
-      dimension scr(3),iringatoms(20)
-      integer unique_qij,B(maxat,maxat)
+      dimension omp2(itotps,nat0)
+      dimension dipat(maxat,3),dipint(maxat,3),dipct(maxat,3)
+      dimension dipmol(3),dipinttot(3),dipcttot(3),dipctq(3)
+      dimension efld(maxat,2),qqnorm(maxat)
+      integer, allocatable :: ibond(:,:),itracker(:),jtracker(:)
+      integer, allocatable :: iringatoms(:)
+      allocatable amat(:,:),qbond(:)
       logical ilog
-c
+      character*80 line
+      character*40 cfld,fmtrow,fmthdr
+      character*17 clab
 
-      idofr   =   iopt(40)
-      ifield  =   iopt(47)
-
-      ipoints=itotps
+      ifield=iopt(47)
       iatps=nang*nrad
+      if(iaccur.eq.0) then
+        iw=12
+        ndec=6
+      else
+        iw=20
+        ndec=13
+      end if
 
-      do i=1,3
-        dipct(i)=0.0d0
+!! atomic dipoles, from the points of each atom's own grid !!
+      do k=1,3
+        dipctq(k)=ZERO
+      end do
+      do iat=1,nat
+        x=ZERO
+        y=ZERO
+        z=ZERO
+        pop=ZERO
+        do ip=iatps*(iat-1)+1,iatps*iat
+          x=x+wp(ip)*omp2(ip,iat)*rho(ip)*pcoord(ip,1)
+          y=y+wp(ip)*omp2(ip,iat)*rho(ip)*pcoord(ip,2)
+          z=z+wp(ip)*omp2(ip,iat)*rho(ip)*pcoord(ip,3)
+          pop=pop+wp(ip)*omp2(ip,iat)*rho(ip)
+        end do
+        dipat(iat,1)=-x+zn(iat)*coord(1,iat)
+        dipat(iat,2)=-y+zn(iat)*coord(2,iat)
+        dipat(iat,3)=-z+zn(iat)*coord(3,iat)
+        dipint(iat,1)=-x+pop*coord(1,iat)
+        dipint(iat,2)=-y+pop*coord(2,iat)
+        dipint(iat,3)=-z+pop*coord(3,iat)
+        do k=1,3
+          dipctq(k)=dipctq(k)+(zn(iat)-pop)*coord(k,iat)
+        end do
+      end do
+      do k=1,3
+        dipmol(k)=ZERO
+        dipinttot(k)=ZERO
+        do iat=1,nat
+          dipmol(k)=dipmol(k)+dipat(iat,k)
+          dipinttot(k)=dipinttot(k)+dipint(iat,k)
+        end do
       end do
 
+      call enpart_atom_table('ORIGIN-DEPENDENT ATOMIC DIPOLES',
+     +  'Z_A R_A minus the electronic dipole of the atom (au); they '//
+     +  'add up to the',
+     +  'dipole moment of the molecule.',3,dipat,'X','Y','Z',.true.)
+      call enpart_atom_table('INTRINSIC ATOMIC DIPOLES',
+     +  'Electronic dipole of the atom with respect to its nucleus '//
+     +  '(au), origin',
+     +  'independent.',3,dipint,'X','Y','Z',.true.)
 
-       write(*,*)
-       print *,' --------------------------------------'
-       print *,'       DIPOLE MOMENT DECOMPOSITION'
-       print *,' --------------------------------------'
-       write(*,*)
-       xtot=0.0d0
-       do icenter=1,nat
-        x=0.0d0
-        y=0.0d0
-        z=0.0d0
-        zztop=0.0d0
-        do ifut=iatps*(icenter-1)+1,iatps*icenter
-         distx=pcoord(ifut,1)
-         disty=pcoord(ifut,2)
-         distz=pcoord(ifut,3)
-         x=x+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distx
-         y=y+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*disty
-         z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
-         zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
+!! neighbor atoms: no third atom closer to the midpoint of A-B than !!
+!! half the A-B distance                                             !!
+      allocate(ibond(nat,nat))
+      do iat=1,nat
+        do jat=1,nat
+          ibond(iat,jat)=0
         end do
-        dip(icenter,1)=-x+zn(icenter)*coord(1,icenter)    
-        dip(icenter,2)=-y+zn(icenter)*coord(2,icenter)    
-        dip(icenter,3)=-z+zn(icenter)*coord(3,icenter)    
-        dipint(icenter,1)=-x+zztop*coord(1,icenter)    
-        dipint(icenter,2)=-y+zztop*coord(2,icenter)    
-        dipint(icenter,3)=-z+zztop*coord(3,icenter)    
-        do j=1,3
-         dipct(j)=dipct(j)+(zn(icenter)-zztop)*coord(j,icenter)    
+      end do
+      do iat=1,nat-1
+        do jat=iat+1,nat
+          ibond(iat,jat)=1
+          xm=(coord(1,jat)+coord(1,iat))/TWO
+          ym=(coord(2,jat)+coord(2,iat))/TWO
+          zm=(coord(3,jat)+coord(3,iat))/TWO
+          disth=dist(iat,jat)/TWO
+          do kat=1,nat
+            if(kat.ne.iat.and.kat.ne.jat) then
+              xdist=dsqrt((xm-coord(1,kat))**2+(ym-coord(2,kat))**2+
+     +          (zm-coord(3,kat))**2)
+              if(xdist.lt.disth) then
+                ibond(iat,jat)=0
+                exit
+              end if
+            end if
+          end do
+          ibond(jat,iat)=-ibond(iat,jat)
         end do
-       enddo
-       write(*,*)
-       write(*,*) 'Origin-dependent atomic dipole moments'
-       call mprint_nlop(dip,nat,maxat)
-       write(*,*)
-       write(*,*) 'Total dipole moment: '
-       do j=1,3  
-        diptot(j)=0.0d0
-        do i=1,nat
-         diptot(j)=diptot(j)+dip(i,j)
+      end do
+
+      nq=0
+      do iat=1,nat-1
+        do jat=iat+1,nat
+          nq=nq+ibond(iat,jat)
         end do
-       end do
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (diptot(i),i=1,3)
-       write(*,*)
-C
-       write(*,*)
-       write(*,*) 'Intrinsic atomic dipole moments'
-       call mprint_nlop(dipint,nat,maxat)
-       write(*,*)
-       write(*,*) 'Total intrinsic dipole moment: '
-       do j=1,3  
-        diptot(j)=0.0d0
-        do i=1,nat
-         diptot(j)=diptot(j)+dipint(i,j)
+      end do
+
+      call print_box('BOND CHARGES')
+      call print_value('Neighbor atom pairs',nq)
+
+!! nq bond charges, nat-1 independent charge equations: each ring of !!
+!! neighbors needs one more equation, read from ichi.inp             !!
+      nring=nq-nat+1
+      if(nring.ne.0) then
+        write(*,'(2x,a,i0,a)') 'The neighbor pairs form rings: ',nring,
+     +  ' more equation(s) needed, read from ichi.inp'
+        open(45,file='ichi.inp',status='old',iostat=ios)
+        if(ios.ne.0) then
+          write(*,'(2x,a)') 'Neighbor atoms (1: A<B, -1: A>B):'
+          do iat=1,nat
+            write(*,'(2x,40i3)') (ibond(iat,jat),jat=1,nat)
+          end do
+          call apost_stop('POLAR: ichi.inp is needed for a molecule '//
+     +      'with rings')
+        end if
+        read(45,'(a80)') line
+        read(45,*) n
+        if(n.lt.0) then
+          do k=1,-n
+            read(45,*) i,j
+            if(ibond(i,j).ne.0) nq=nq-1
+            ibond(i,j)=0
+            ibond(j,i)=0
+            write(*,'(2x,a,i0,a,i0)') 'Pair removed (ichi.inp): ',i,
+     +        ' - ',j
+          end do
+        end if
+      end if
+
+      allocate(itracker(max(nq,1)),jtracker(max(nq,1)))
+      l=0
+      do iat=1,nat-1
+        do jat=iat+1,nat
+          if(ibond(iat,jat).eq.1) then
+            l=l+1
+            itracker(l)=iat
+            jtracker(l)=jat
+          end if
         end do
-       end do
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (diptot(i),i=1,3)
-       write(*,*)
-C
-C Generalized Keith algorithm to decompose the charge-transfer term
-C Code by MMontilla
+      end do
 
-C Recalculating geometrical connectivities 
-C in case TFVC is not used
-
-       do iatom=1,nat-1
-         do jatom=iatom+1,nat
-           ichi(iatom,jatom)=1
-           rijx2=(coord(1,jatom)+coord(1,iatom))/2.0d0
-           rijy2=(coord(2,jatom)+coord(2,iatom))/2.0d0
-           rijz2=(coord(3,jatom)+coord(3,iatom))/2.0d0
-           disth=dist(iatom,jatom)/2.0d0
-           do ii=1,nat
-             if(ii.ne.iatom.and.ii.ne.jatom) then
-               xdist=sqrt((rijx2-coord(1,ii))**2+(rijy2-coord(2,ii))**2+(rijz2-coord(3,ii))**2)
-               if(xdist.lt.disth) then
-                 ichi(iatom,jatom)=0
-                 go to 123
-               end if
-             end if
-           end do
-123        continue
-         end do
-       end do
-
-       do i=1,nat
-         do j=i,nat
-           B(i,j)=ichi(i,j)
-           B(j,i)=-B(i,j)
-         end do
-       end do
-
-C Finding unique q_ij contributions, aka Q(A|B) contributions.
-       unique_qij=0
-       do i=1,Nat
-         do j=i+1,Nat
-           unique_qij=unique_qij+B(i,j)
-         end do
-       end do
-       write(*,*) 'Unique Q(A|B) contributions found:',unique_qij
-
-C Initializing coeff. matrix.
-       do i=1,unique_qij
-         do j=1,unique_qij
-           MAT(i,j)=0.0d0
-         end do
-       end do
-
-C Checking for lack of equations (unique_qij=number of unknowns;nat-1=number of independent equations
-C ;excess unknowns require additional equations)
-       iexcess=unique_qij-nat+1
-       if(iexcess.ne.0) then 
-         write(*,*) 'WARNING, CYCLIC CONNECTIVITY.'
-         write(*,*) 'Will need ',iexcess,'additional equations.'
-         write(*,*)
-
-         open(45,FILE="ichi.inp",status="old",iostat=ii)
-         if(ii.ne.0) then
-           write(*,*) 'Printing connectivity matrix:'
-           do i=1,nat
-             write(*,'(40i2)') (b(i,j),j=1,nat)
-           end do
-           call apost_stop('error in polar, ichi.inp file is needed')
-         end if
-         read(45,'(a80)') 
-         read(45,*) N
-
-C Introducing (-N) modifications on the connectiviy matrix.
-         if(N.lt.0) then
-           write(*,*) 'Removing ',abs(N),' bonds.'
-           do k=1,abs(N)
-             read(45,*) i,j
-             B(i,j)=0
-             B(j,i)=0
-             unique_qij=unique_qij-1
-             write(*,*) 'Removed bond between atoms',i,j            
-           end do
-         end if
-       end if
-
-C Labeling the unique q_ij, or Q(A|B), contributions.
-       l=1
-       do i=1,Nat
-         do j=i+1,Nat
-           if(B(i,j).eq.1.0) then
-             itracker(l)=i
-             jtracker(l)=j
-             write(*,*) 'Tracker pair ',l,':',i,j
-             l=l+1
-           end if
-         end do
-       end do
-       if(l-1.ne.unique_qij) call apost_stop('problem in polar')
-C End of modifications. Final connectiviy matrix.
-
-C Additional equations for rings if needed. The same iexcess check is performed here,
-C  because the loop is never needed if iexcess is 0.
-       iextra=0
-       if(iexcess.ne.0) then 
-         read(45,*) N
-         if(N.ne.0) then
-           write(*,*) 'Reading ',N,'additional ring equations.'
-           do ii=1,N
-             read(45,*) iringsize
-             read(45,*) (iringatoms(k),k=1,iringsize)
-             iextra=iextra+1
-             do i=1,iringsize-1
-               j=i+1
-               do m=1,unique_qij
-                 if(iringatoms(i).eq.itracker(m).and.iringatoms(j).eq.jtracker(m)) then
-                   Mat(iextra,m)=1.0d0
-                 else if(iringatoms(j).eq.itracker(m).and.iringatoms(i).eq.jtracker(m)) then
-                   Mat(iextra,m)=-1.0d0
-                 end if
-               end do
-             end do
-C Particular case (connectivity between last and first atoms in the ring). 
-             i=iringsize
-             j=1
-             do m=1,unique_qij
-               if(iringatoms(i).eq.itracker(m).and.iringatoms(j).eq.jtracker(m)) then
-                 Mat(iextra,m)=1.0d0
-               else if(iringatoms(j).eq.itracker(m).and.iringatoms(i).eq.jtracker(m)) then
-                 Mat(iextra,m)=-1.0d0
-               end if
-             end do
-C Condition for cycles. 
-             Mat(iextra,unique_qij+1)=0.0d0
-           end do
-         end if
-       end if
-C End reading.
-121    if(iexcess.ne.0) close(45)
-
-C Building the matrix of coefficients.
-       do i=1,Nat
-         do j=1,Nat
-           if(B(i,j).eq.1.or.B(i,j).eq.-1) then
-             do m=1,unique_qij
-               if(i.eq.itracker(m).and.j.eq.jtracker(m).or.j.eq.itracker(m).and.i.eq.jtracker(m)) then
-                 Mat(i+iextra,m)=B(i,j)
-               end if
-             end do
-           end if
-         end do
-       end do
-
-       if(iextra+nat-1.ne.unique_qij) call apost_stop('problem building coeff matrix in polar')
-
-c renormalizing atomic populations
-        xx=0.0d0
-        do i=1,nat
-         xx=xx+qat(i,1)
+!! the equations: one row per ring first, then one per atom; the last !!
+!! atom's row is not used (it follows from the others)                !!
+!! solvesystem takes A(ndim,ndim+1) with the right-hand side in column !!
+!! nq+1; ndim = nq+1 rows hold the ring rows and every atom row         !!
+      allocate(amat(nq+1,nq+2),qbond(nq+1))
+      do i=1,nq+1
+        do j=1,nq+2
+          amat(i,j)=ZERO
         end do
-        do i=1,nat
-         qqnorm(i)=zn(i)-qat(i,1)*(nalf+nb)/xx
+      end do
+      iextra=0
+      if(nring.ne.0) then
+        read(45,*) n
+        allocate(iringatoms(nat))
+        do ii=1,n
+          read(45,*) iringsize
+          read(45,*) (iringatoms(k),k=1,iringsize)
+          iextra=iextra+1
+          if(iextra+nat-1.gt.nq) call apost_stop('POLAR: more ring '//
+     +      'equations in ichi.inp than rings')
+          do i=1,iringsize
+            ia=iringatoms(i)
+            ja=iringatoms(mod(i,iringsize)+1)
+            do m=1,nq
+              if(ia.eq.itracker(m).and.ja.eq.jtracker(m))
+     +          amat(iextra,m)=ONE
+              if(ja.eq.itracker(m).and.ia.eq.jtracker(m))
+     +          amat(iextra,m)=-ONE
+            end do
+          end do
         end do
-        
-        do i=1,nat       
-          Mat(i+iextra,unique_qij+1)=qqnorm(i)
+        deallocate(iringatoms)
+        close(45)
+      end if
+      if(iextra+nat-1.ne.nq) call apost_stop('POLAR: the bond charges '//
+     +  'and their equations do not match (check ichi.inp)')
+
+      xx=ZERO
+      do iat=1,nat
+        xx=xx+qat(iat,1)
+      end do
+      do iat=1,nat
+        qqnorm(iat)=zn(iat)-qat(iat,1)*(nalf+nb)/xx
+        amat(iat+iextra,nq+1)=qqnorm(iat)
+        do m=1,nq
+          if(itracker(m).eq.iat.or.jtracker(m).eq.iat) then
+            jat=itracker(m)+jtracker(m)-iat
+            amat(iat+iextra,m)=dble(ibond(iat,jat))
+          end if
         end do
+      end do
+      call solvesystem(nq,nq+1,amat,qbond,ilog)
+      if(.not.ilog) call apost_stop('POLAR: no unique solution for the '//
+     +  'bond charges (check ichi.inp)')
 
-        write(*,*) 'Echoing matrix of coefficients.'
-        do i=1,Nat
-            write(*,'(8f10.6)') (Mat(i,j),j=1,unique_qij+1)
+      do iat=1,nat
+        do k=1,3
+          dipct(iat,k)=ZERO
         end do
-
-        call SOLVESYSTEM(unique_qij,maxbonds,MAT,csolv,ilog)
-        if(ilog.eqv..false.) call apost_stop('error in polar, CT decomposition')
-
-
-C Echoing the solutions of the system of equations, for testing purposes.
-c        do i=1,unique_qij
-c            write(*,*) 'Unkown number',i,'is',csolv(i)
-c        end do
-
-C Final calculations.
-       do i=1,nat
-         do j=1,3
-           CT(i,j)=0.0d0
-           scr(j)=0.0d0
-         end do
-       end do
-
-       do i=1,Nat
-         do j=1,Nat
-           if(B(i,j).NE.0) then
-             Rabx=(coord(1,i)-coord(1,j))/2.0d0
-             Raby=(coord(2,i)-coord(2,j))/2.0d0
-             Rabz=(coord(3,i)-coord(3,j))/2.0d0
-             do m=1,unique_qij
-               if(i.eq.itracker(m).and.j.eq.jtracker(m).or.j.eq.itracker(m).and.i.eq.jtracker(m)) l=m
-             end do
-             CT(i,1)=CT(i,1)+B(i,j)*csolv(l)*Rabx
-             CT(i,2)=CT(i,2)+B(i,j)*csolv(l)*Raby
-             CT(i,3)=CT(i,3)+B(i,j)*csolv(l)*Rabz
-           end if
-         end do
-       end do
-
-C Echoing final Keith results.
-       write(*,*)
-       write(*,*) 'Charge-transfer atomic dipole moments (renormalized charges):'
-       call mprint_nlop(ct,nat,maxat)
-       write(*,*)
-       write(*,*) 'Total CT dipole moment (renormalized charges):'
-        do i=1,Nat
-         do j=1,3
-          scr(j)=scr(j)+CT(i,j)
-         end do
+      end do
+      do iat=1,nat
+        do jat=1,nat
+          if(ibond(iat,jat).ne.0) then
+            do m=1,nq
+              if((iat.eq.itracker(m).and.jat.eq.jtracker(m)).or.
+     +          (jat.eq.itracker(m).and.iat.eq.jtracker(m))) l=m
+            end do
+            do k=1,3
+              r=(coord(k,iat)-coord(k,jat))/TWO
+              dipct(iat,k)=dipct(iat,k)+ibond(iat,jat)*qbond(l)*r
+            end do
+          end if
         end do
-        write(*,'(3f24.15)') (scr(i),i=1,3)
-       write(*,*)
-       write(*,*) 'Total CT dipole moment (unscaled charges):'
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (dipct(i),i=1,3)
+      end do
+      do k=1,3
+        dipcttot(k)=ZERO
+        do iat=1,nat
+          dipcttot(k)=dipcttot(k)+dipct(iat,k)
+        end do
+      end do
 
-C PSS
-       write(*,*)
-       write(*,*) 'Total dipole moment:'
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (dipct(i)+diptot(i),i=1,3)
-       write(*,*)
+!! bond charges and the charge-transfer dipoles !!
+      write(*,'(a)') ''
+      write(*,'(2x,a)') 'Bond charges Q(A|B) of the neighbor atoms: '//
+     +  'Q(A|B) = -Q(B|A),'
+      write(*,'(2x,a)') 'the charge of A is the sum of its Q(A|B), '//
+     +  'renormalized to the'
+      write(*,'(2x,a)') 'number of electrons.'
+      write(*,'(a)') ''
+      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
+      write(fmtrow,'(a,i0,a,i0,a)') '(2x,i3,a4,a3,i3,a4,f',iw,'.',
+     +  ndec,')'
+      clab='Atoms A - B'
+      write(*,fmthdr) clab,'Q(A|B)'
+      write(*,'(2x,a)') repeat('-',17+iw)
+      do m=1,nq
+        write(*,fmtrow) itracker(m),element_label(iznuc(itracker(m))),
+     +    ' - ',jtracker(m),element_label(iznuc(jtracker(m))),qbond(m)
+      end do
+      write(*,'(2x,a)') repeat('-',17+iw)
 
-c  energetics 
-       if(ifield.eq.1) then
-       dipen=0.0d0
-       do icenter=1,nat
-        eint(icenter)=dip(icenter,1)*field(2)+dip(icenter,2)*field(3)+dip(icenter,3)*field(4)  
-        dipen=dipen+eint(icenter)
-       end do
-       cten=cten+dipct(1)*field(2)+dipct(2)*field(3)+dipct(3)*field(4)
+      call enpart_atom_table('CHARGE-TRANSFER ATOMIC DIPOLES (BOND '//
+     +  'CHARGES)','Sum of Q(A|B) (R_A - R_B)/2 over the neighbors of '//
+     +  'the atom (au), origin',
+     +  'independent.',3,dipct,'X','Y','Z',.true.)
 
-       write(*,*) 'Intrinsic atomic dipole energy terms :'
-       do i=1,nat
-        write(*,'(a6,i4,f22.15)') 'Atom: ',i,eint(i)
-       end do
-       write(*,*)
-       write(*,*) 'Total Intrinsic dipole energy term :',dipen
+!! the molecular dipole: intrinsic + charge transfer (q_A R_A) !!
+      call print_box('MOLECULAR DIPOLE MOMENT')
+      write(*,'(2x,a)') 'Charge transfer: sum of q_A R_A, with the '//
+     +  'charges as integrated (au).'
+      write(*,'(a)') ''
+      write(fmthdr,'(a,i0,a)') '(2x,a,3a',iw,')'
+      write(fmtrow,'(a,i0,a,i0,a)') '(2x,a,3f',iw,'.',ndec,')'
+      clab=' '
+      write(*,fmthdr) clab,'X','Y','Z'
+      write(*,'(2x,a)') repeat('-',17+3*iw)
+      clab='Intrinsic'
+      write(*,fmtrow) clab,(dipinttot(k),k=1,3)
+      clab='Charge transfer'
+      write(*,fmtrow) clab,(dipctq(k),k=1,3)
+      write(*,'(2x,a)') repeat('-',17+3*iw)
+      clab='Total'
+      write(*,fmtrow) clab,(dipmol(k),k=1,3)
 
-       write(*,*) 'Total Charge-transfer  energy term :',cten
-       edipole=cten+dipen
-       write(*,*) 'Total dipole energy term :',edipole
+!! neutral molecule: the bond charges add up to the same charge-       !!
+!! transfer dipole, up to the renormalization of the charges (the      !!
+!! integration error). An ion leaves its charge out of the last atom's !!
+!! equation, the one not solved                                        !!
+      qnet=ZERO
+      do iat=1,nat
+        qnet=qnet+qqnorm(iat)
+      end do
+      if(abs(qnet).gt.1.0d-6) then
+        write(*,'(a)') ''
+        write(cfld,'(f8.2)') qnet
+        write(*,'(2x,a)') 'Charged molecule (charge '//
+     +    trim(adjustl(cfld))//'): the bond charges miss the charge of the'
+        write(*,'(2x,a)') 'molecule, so the charge-transfer dipoles do '//
+     +    'not add up to sum of q_A R_A;'
+        write(*,'(2x,a)') 'their differences between two fields '//
+     +    '(polarizabilities) are not affected.'
+      else
+        diff=ZERO
+        do k=1,3
+          diff=max(diff,abs(dipcttot(k)-dipctq(k)))
+        end do
+        if(diff.gt.1.0d-4) then
+          write(*,'(a)') ''
+          write(*,'(2x,a,es9.2,a)') 'WARNING: the charge-transfer '//
+     +      'dipoles of the bond charges differ by',diff,' au'
+          write(*,'(2x,a)') 'from sum of q_A R_A: check the '//
+     +      'integration grid (and ichi.inp).'
+        end if
+      end if
 
-       end if
+!! field energies mu_A.F of the intrinsic and charge-transfer dipoles !!
+      if(ifield.eq.1) then
+        do iat=1,nat
+          efld(iat,1)=dipint(iat,1)*field(2)+dipint(iat,2)*field(3)+
+     +      dipint(iat,3)*field(4)
+          efld(iat,2)=dipct(iat,1)*field(2)+dipct(iat,2)*field(3)+
+     +      dipct(iat,3)*field(4)
+        end do
+        efield=ZERO
+        do k=1,3
+          efield=efield+dipmol(k)*field(k+1)
+        end do
+        call enpart_atom_table('FIELD ENERGY OF THE ATOMIC DIPOLES',
+     +    'mu_A.F of the intrinsic and charge-transfer dipoles of '//
+     +    'each atom (au).',' ',2,efld,'Intrinsic','Charge tr.',' ',
+     +    .true.)
+        write(*,'(a)') ''
+        write(cfld,'(3f10.6)') field(2),field(3),field(4)
+        call print_value('Field x, y, z',trim(adjustl(cfld)),'au')
+        call print_value('Field energy of the dipole, mu.F',efield,
+     +    ndec,'au')
+      end if
 
-       end
+      deallocate(ibond,itracker,jtracker,amat,qbond)
+      end
 
 !! ***** !!
 

@@ -188,7 +188,7 @@
       end do
       call enpart_atom_table('KINETIC ENERGY','One-center terms only:'//
      +  ' the kinetic energy has no pair terms.',' ',1,tkin,'Kinetic',
-     +  ' ',.false.)
+     +  ' ',' ',.false.)
       call print_value('Kinetic energy',ekinen,ndec,'au')
       lref=ekin0.ne.ZERO
       errk=ZERO

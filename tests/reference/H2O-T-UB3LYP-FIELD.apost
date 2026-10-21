@@ -116,7 +116,7 @@
   # METHOD
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
   Energy decomposition                    : ENPART (IQA terms, see # ENPART)
-  Static polarizability                   : POLAR
+  Dipole moment decomposition             : POLAR
   Output precision                        : FULLPRECISION (13 decimals)
 
   # ENPART
@@ -254,68 +254,96 @@
   TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
+  -----------------------------------
+    ORIGIN-DEPENDENT ATOMIC DIPOLES
+  -----------------------------------
+
+  Z_A R_A minus the electronic dipole of the atom (au); they add up to the
+  dipole moment of the molecule.
+
+  Atom                      X                   Y                   Z
+  -------------------------------------------------------------------
+    1  O     -0.0991000468420    -0.0000000015066     0.5789281818340
+    2  H      0.3193763922613    -0.0000000001606    -0.1191065439530
+    3  H     -0.5103651730608    -0.0000000001204    -0.2478955773995
+  -------------------------------------------------------------------
+  Total      -0.2900888276415    -0.0000000017875     0.2119260604815
+
+  ----------------------------
+    INTRINSIC ATOMIC DIPOLES
+  ----------------------------
+
+  Electronic dipole of the atom with respect to its nucleus (au), origin
+  independent.
+
+  Atom                      X                   Y                   Z
+  -------------------------------------------------------------------
+    1  O     -0.0991000468420    -0.0000000015066     0.8039416735254
+    2  H     -0.3579125362014    -0.0000000001606     0.3005764535368
+    3  H      0.2648688920093    -0.0000000001204     0.2324792560167
+  -------------------------------------------------------------------
+  Total      -0.1921436910340    -0.0000000017875     1.3369973830789
+
+  ----------------
+    BOND CHARGES
+  ----------------
+
+  Neighbor atom pairs                     : 2
+
+  Bond charges Q(A|B) of the neighbor atoms: Q(A|B) = -Q(B|A),
+  the charge of A is the sum of its Q(A|B), renormalized to the
+  number of electrons.
+
+  Atoms A - B                    Q(A|B)
+  -------------------------------------
+    1  O  -   2  H     -0.4733302863510
+    1  O  -   3  H     -0.5417803085967
+  -------------------------------------
+
+  -------------------------------------------------
+    CHARGE-TRANSFER ATOMIC DIPOLES (BOND CHARGES)
+  -------------------------------------------------
+
+  Sum of Q(A|B) (R_A - R_B)/2 over the neighbors of the atom (au), origin
+  independent.
+
+  Atom                      X                   Y                   Z
+  -------------------------------------------------------------------
+    1  O     -0.0489725896352     0.0000000000000    -0.5625359063280
+    2  H      0.3386443001022     0.0000000000000    -0.2623017461843
+    3  H     -0.3876168897374     0.0000000000000    -0.3002341601437
+  -------------------------------------------------------------------
+  Total      -0.0979451792705     0.0000000000000    -1.1250718126560
+
+  ---------------------------
+    MOLECULAR DIPOLE MOMENT
+  ---------------------------
+
+  Charge transfer: sum of q_A R_A, with the charges as integrated (au).
+
+                                      X                   Y                   Z
+  -----------------------------------------------------------------------------
+  Intrinsic            -0.1921436910340    -0.0000000017875     1.3369973830789
+  Charge transfer      -0.0979451366075     0.0000000000000    -1.1250713225974
+  -----------------------------------------------------------------------------
+  Total                -0.2900888276415    -0.0000000017875     0.2119260604815
+
   --------------------------------------
-        DIPOLE MOMENT DECOMPOSITION
+    FIELD ENERGY OF THE ATOMIC DIPOLES
   --------------------------------------
 
+  mu_A.F of the intrinsic and charge-transfer dipoles of each atom (au).
 
- Origin-dependent atomic dipole moments
- _________________X___________________Y__________________Z__________
+  Atom              Intrinsic          Charge tr.
+  -----------------------------------------------
+    1  O     -0.0004955002342    -0.0002448629482
+    2  H     -0.0017895626810     0.0016932215005
+    3  H      0.0013243444600    -0.0019380844487
+  -----------------------------------------------
+  Total      -0.0009607184552    -0.0004897258964
 
-   1  O     -0.0991000468420    -0.0000000015066     0.5789281818340
-   2  H      0.3193763922613    -0.0000000001606    -0.1191065439530
-   3  H     -0.5103651730608    -0.0000000001204    -0.2478955773995
-
- Total dipole moment: 
-                X                   Y                      Z
-      -0.290088827641550      -0.000000001787521       0.211926060481515
-
-
- Intrinsic atomic dipole moments
- _________________X___________________Y__________________Z__________
-
-   1  O     -0.0991000468420    -0.0000000015066     0.8039416735254
-   2  H     -0.3579125362014    -0.0000000001606     0.3005764535368
-   3  H      0.2648688920093    -0.0000000001204     0.2324792560167
-
- Total intrinsic dipole moment: 
-                X                   Y                      Z
-      -0.192143691034021      -0.000000001787521       1.336997383078920
-
- Unique Q(A|B) contributions found:           2
- Tracker pair            1 :           1           2
- Tracker pair            2 :           1           3
- Echoing matrix of coefficients.
-  1.000000  1.000000 -1.015111
- -1.000000  0.000000  0.473330
-  0.000000 -1.000000  0.541780
-
- Charge-transfer atomic dipole moments (renormalized charges):
- _________________X___________________Y__________________Z__________
-
-   1  O     -0.0489725896352     0.0000000000000    -0.5625359063280
-   2  H      0.3386443001022     0.0000000000000    -0.2623017461843
-   3  H     -0.3876168897374     0.0000000000000    -0.3002341601437
-
- Total CT dipole moment (renormalized charges):
-      -0.097945179270471       0.000000000000000      -1.125071812655975
-
- Total CT dipole moment (unscaled charges):
-                X                   Y                      Z
-      -0.097945136607528       0.000000000000000      -1.125071322597405
-
- Total dipole moment:
-                X                   Y                      Z
-      -0.290088827641550      -0.000000001787521       0.211926060481515
-
- Intrinsic atomic dipole energy terms :
-Atom:    1    -0.000495500234210
-Atom:    2     0.001596881961306
-Atom:    3    -0.002551825865304
-
- Total Intrinsic dipole energy term :  -1.4504441382077477E-003
- Total Charge-transfer  energy term :  -4.8972568303764217E-004
- Total dipole energy term :  -1.9401698212453899E-003
+  Field x, y, z (au)                      : 0.005000  0.000000  0.000000
+  Field energy of the dipole, mu.F (au)   :      -0.0014504441382
 
   --------------------------------
     ENERGY PARTITIONING (ENPART)
@@ -450,7 +478,7 @@ Atom:    3    -0.002551825865304
   DFT exchange-correlation (au)           :      -7.4706647609790
 
   TIMING CPU  :: ENPART DFT exchange-correlation                   0.91 s
-  TIMING WALL :: ENPART DFT exchange-correlation                   0.26 s
+  TIMING WALL :: ENPART DFT exchange-correlation                   0.24 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -460,10 +488,10 @@ Atom:    3    -0.002551825865304
   Angular points                          : 146
   Grid points                             : 17520
 
-  TIMING CPU  :: ENPART Coulomb                                    0.25 s
+  TIMING CPU  :: ENPART Coulomb                                    0.24 s
   TIMING WALL :: ENPART Coulomb                                    0.04 s
   TIMING CPU  :: ENPART exact exchange                             4.78 s
-  TIMING WALL :: ENPART exact exchange                             0.65 s
+  TIMING WALL :: ENPART exact exchange                             0.63 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -482,7 +510,7 @@ Atom:    3    -0.002551825865304
   The one-center Coulomb and exchange terms of the matrices below
   are the corrected ones; the pair terms do not change.
 
-  TIMING CPU  :: ENPART zero-error correction                      2.48 s
+  TIMING CPU  :: ENPART zero-error correction                      2.49 s
   TIMING WALL :: ENPART zero-error correction                      0.34 s
 
   ------------------
@@ -581,6 +609,6 @@ Atom:    3    -0.002551825865304
   Classical interaction energy (au)       :      -0.4481612168780
 
   TIMING CPU  :: ENPART two-electron terms                         7.54 s
-  TIMING WALL :: ENPART two-electron terms                         1.03 s
+  TIMING WALL :: ENPART two-electron terms                         1.02 s
 
   ...Normal Termination of APOST-3D...

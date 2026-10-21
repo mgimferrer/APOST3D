@@ -198,6 +198,9 @@
 !! ENPART needs a real-space atomic definition !!
       if(imulli.ne.0.and.ienpart.ne.0)
      +  call apost_stop('ENPART needs a real-space AIM (e.g. TFVC)')
+!! POLAR integrates the atomic dipoles with the real-space weights !!
+      if(imulli.ne.0.and.ipolar.ne.0)
+     +  call apost_stop('POLAR needs a real-space AIM (e.g. TFVC)')
       if(iqtaim.ne.0.and.ienpart.ne.0) call apost_stop('Cant do ENPART with QTAIM')
       if(ieos.eq.1.and.idoat.eq.1) call apost_stop('Cant do EOS with DOATOMS')
 !! GEOS/EFFAO-U (ieffao=3) exist only on the real-space fragment path   !!
@@ -641,8 +644,8 @@
         wtime=wtime2
       end if
 
-!! Nonlinear optical properties (POLAR) !!
-      if(ipolar.ne.0) call polar(itotps,nat,wp,omp,omp2,pcoord,rho)
+!! Dipole moment decomposition (POLAR) !!
+      if(ipolar.ne.0) call polar(itotps,nat,wp,omp2,pcoord,rho)
 
 !! EFFAO part                                                          !!
 !! ieffao: 0 nothing, 1 eff-AOs, 2 spin-resolved eff-AOs (a must for   !!
