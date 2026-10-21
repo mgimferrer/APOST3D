@@ -8,7 +8,8 @@
 !!   ueffaomull_frag    -- Mulliken EFOs
 !!   ueffao3d           -- real-space EFOs of single atoms (DOATOMS)
 !!   eos_analysis       -- electron assignment and oxidation states
-!!   efo_json_open, json_efo_table, json_efo_channel -- the results file
+!!   efo_json_open, json_efo_table, json_efo_channel,
+!!   json_frontier_efos -- the results file
 !! ----------------------------------------------------------------------
 
 !! ***** !!
@@ -226,6 +227,69 @@
      +  lcol,trim(cspin),' ')
       call json_end()
       deallocate(ifr,xn,xg,xf,icol,lcol)
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_frontier_efos
+!! Writes the "frontier_efos" object of an EOS or GEOS channel: the EFOs
+!! that set the reliability index R, as rows of the channel's efos
+!! table. last_occupied: the last occupied EFOs of the fragments within
+!! thres of xlast (the smallest one); first_unoccupied: the first
+!! unoccupied EFOs of the fragments other than ilast within thres of
+!! xfirst (the largest one). A list is empty when R takes its default
+!! (no ilast, or xfirst zero).
+!! arguments:
+!!   nfr    (in)  number of fragments
+!!   jlo    (in)  (nfr) pooled row of each fragment's last occupied EFO,
+!!                0 when it has none
+!!   xlo    (in)  (nfr) its gross occupation
+!!   jfu    (in)  (nfr) pooled row of each fragment's first unoccupied
+!!                EFO, 0 when it has none
+!!   xfu    (in)  (nfr) its gross occupation
+!!   ilast  (in)  fragment of xlast, 0 when R used the default
+!!   xlast  (in)  last occupied occupation used in R
+!!   xfirst (in)  first unoccupied occupation used in R
+!!   thres  (in)  occupation difference below which EFOs are degenerate
+!!                (EOS_THRESH)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_frontier_efos(nfr,jlo,xlo,jfu,xfu,ilast,xlast,
+     +  xfirst,thres)
+      use json_mod
+      implicit real*8(a-h,o-z)
+      dimension jlo(nfr),xlo(nfr),jfu(nfr),xfu(nfr)
+
+      call json_begin_object('frontier_efos')
+      call json_begin_array('last_occupied')
+      if(ilast.gt.0) then
+        do i=1,nfr
+          if(jlo(i).gt.0.and.dabs(xlo(i)-xlast).lt.thres) then
+            call json_begin_object('')
+            call json_value('efo_row',jlo(i))
+            call json_value('fragment',i)
+            call json_value('occupation',xlo(i))
+            call json_end()
+          end if
+        end do
+      end if
+      call json_end()
+      call json_begin_array('first_unoccupied')
+      if(xfirst.gt.0.0d0) then
+        do i=1,nfr
+          if(i.ne.ilast.and.jfu(i).gt.0.and.
+     +      dabs(xfu(i)-xfirst).lt.thres) then
+            call json_begin_object('')
+            call json_value('efo_row',jfu(i))
+            call json_value('fragment',i)
+            call json_value('occupation',xfu(i))
+            call json_end()
+          end if
+        end do
+      end if
+      call json_end()
+      call json_end()
       end
 
 !! ***** !!
@@ -482,6 +546,7 @@
       character*12 cshort
       dimension iorbslot(nmax,2)
       dimension xlo(maxfrag),xfu(maxfrag),ilo(maxfrag),ifu(maxfrag)
+      dimension jlo(maxfrag),jfu(maxfrag)
       dimension nlo(maxfrag),ncount(maxfrag)
       allocatable :: occup2(:)
 !! alpha electrons of each fragment, kept for the results file !!
@@ -665,7 +730,8 @@
 !! frontier EFOs of each fragment: with nn its electrons rounded up, the  !!
 !! nn-th (last occupied, xlo) and (nn+1)-th (first unoccupied, xfu) of   !!
 !! its EFOs in gross order, i.e. as met in the pooled list, which is      !!
-!! sorted by gross occupation; ilo/ifu: 1 if that EFO exists              !!
+!! sorted by gross occupation; ilo/ifu: 1 if that EFO exists, jlo/jfu:    !!
+!! its row in the pooled list                                             !!
       do i=1,icufr
         nn=int(elec(i))
         if(elec(i)-nn.gt.thresh) nn=nn+1
@@ -673,6 +739,8 @@
         ncount(i)=0
         ilo(i)=0
         ifu(i)=0
+        jlo(i)=0
+        jfu(i)=0
         xlo(i)=ZERO
         xfu(i)=ZERO
       end do
@@ -682,9 +750,11 @@
         if(ncount(i).eq.nlo(i)) then
           xlo(i)=occup(ii,icase)
           ilo(i)=1
+          jlo(i)=ii
         else if(ncount(i).eq.nlo(i)+1) then
           xfu(i)=occup(ii,icase)
           ifu(i)=1
+          jfu(i)=ii
         end if
       end do
 
@@ -763,6 +833,8 @@
      +  trim(cspin)//' ('//trim(cshort)//')',' ',-1,trim(cspin),
      +  .false.,' ')
       deallocate(lok)
+      call json_frontier_efos(icufr,jlo,xlo,jfu,xfu,ilast,xlast,xfirst,
+     +  thres)
 !! the .fchk file holds the first min(igr, independent functions) EFOs !!
       ncolf=nindep_fchk(igr)
       allocate(ifr(iorb),icol(iorb),xn(iorb),xf(iorb),lcol(iorb))

@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -154,6 +154,22 @@
             "first_unoccupied": [1.4757482650234571E-001, 1.2810788137415264E-003]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 2,
+              "fragment": 2,
+              "occupation": 1.1039590817146219E+000
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 3,
+              "fragment": 1,
+              "occupation": 1.4757482650234571E-001
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 4,
@@ -255,6 +271,16 @@
             "last_occupied": [null, null],
             "first_unoccupied": [2.2263585155677593E-001, 4.2033790757183231E-001]
           }
+        },
+        "frontier_efos": {
+          "last_occupied": [],
+          "first_unoccupied": [
+            {
+              "efo_row": 1,
+              "fragment": 2,
+              "occupation": 4.2033790757183231E-001
+            }
+          ]
         },
         "efos": {
           "rows": "orbital",
@@ -421,7 +447,7 @@
       "reliability_percent": 9.7819212760613809E+001,
       "rmsd": 5.2124257757657033E-001,
       "orbital_file": "LiH-32-FCI-LINDEP-GEOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T17:12:11+02:00/31a8"
+      "orbital_file_id": "2026-10-21T21:14:25+02:00/7900"
     }
   },
   "index": [
@@ -764,8 +790,8 @@
     "job_name": "LiH-32-FCI-LINDEP",
     "input_file": "LiH-32-FCI-LINDEP.inp",
     "wavefunction_file": "LiH-32-FCI-LINDEP.fchk",
-    "date": "2026-10-16T17:12:11+02:00",
-    "id": "2026-10-16T17:12:11+02:00/31a8",
+    "date": "2026-10-21T21:14:25+02:00",
+    "id": "2026-10-21T21:14:25+02:00/7900",
     "threads": 8,
     "status": "normal",
     "stop_message": null

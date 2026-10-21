@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -135,6 +135,22 @@
             "first_unoccupied": [null, 2.7986965698531419E-001]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 9,
+              "fragment": 1,
+              "occupation": 7.2013034070315096E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 10,
+              "fragment": 2,
+              "occupation": 2.7986965698531419E-001
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 13,
@@ -223,7 +239,7 @@
       },
       "reliability_percent": 9.4026068371783680E+001,
       "orbital_file": "CH3F-NAO-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-19T16:47:58+02:00/2170"
+      "orbital_file_id": "2026-10-21T21:14:26+02:00/fd68"
     }
   },
   "index": [
@@ -489,8 +505,8 @@
     "job_name": "CH3F-NAO",
     "input_file": "CH3F-NAO.inp",
     "wavefunction_file": "CH3F-NAO.fchk",
-    "date": "2026-10-19T16:47:58+02:00",
-    "id": "2026-10-19T16:47:58+02:00/2170",
+    "date": "2026-10-21T21:14:26+02:00",
+    "id": "2026-10-21T21:14:26+02:00/fd68",
     "threads": 8,
     "status": "normal",
     "stop_message": null

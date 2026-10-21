@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -159,6 +159,21 @@
             "first_unoccupied": [null, null]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 1,
+              "fragment": 1,
+              "occupation": 5.0000097748482109E-001
+            },
+            {
+              "efo_row": 2,
+              "fragment": 2,
+              "occupation": 5.0000097748482142E-001
+            }
+          ],
+          "first_unoccupied": []
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 2,
@@ -258,6 +273,21 @@
             "first_unoccupied": [null, null]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 1,
+              "fragment": 1,
+              "occupation": 5.0000097693198287E-001
+            },
+            {
+              "efo_row": 2,
+              "fragment": 2,
+              "occupation": 5.0000097693198398E-001
+            }
+          ],
+          "first_unoccupied": []
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 2,
@@ -337,7 +367,7 @@
       },
       "reliability_percent": 1.0000000000000000E+002,
       "orbital_file": "H2-S-EOS-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T17:12:11+02:00/9be8"
+      "orbital_file_id": "2026-10-21T21:14:25+02:00/01d8"
     }
   },
   "index": [
@@ -704,8 +734,8 @@
     "job_name": "H2-S-EOS",
     "input_file": "H2-S-EOS.inp",
     "wavefunction_file": "H2-S-EOS.fchk",
-    "date": "2026-10-16T17:12:11+02:00",
-    "id": "2026-10-16T17:12:11+02:00/9be8",
+    "date": "2026-10-21T21:14:25+02:00",
+    "id": "2026-10-21T21:14:25+02:00/01d8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -164,6 +164,22 @@
             "first_unoccupied": [2.4454131806958854E-002, 3.1358880880139878E-001]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 9,
+              "fragment": 1,
+              "occupation": 6.8542651688743150E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 10,
+              "fragment": 2,
+              "occupation": 3.1358880880139878E-001
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 16,
@@ -274,7 +290,7 @@
       },
       "reliability_percent": 8.7183770808603285E+001,
       "orbital_file": "CH3F-HIRSH-IT-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-19T16:54:57+02:00/dee0"
+      "orbital_file_id": "2026-10-21T21:14:26+02:00/7540"
     }
   },
   "index": [
@@ -562,8 +578,8 @@
     "job_name": "CH3F-HIRSH-IT",
     "input_file": "CH3F-HIRSH-IT.inp",
     "wavefunction_file": "CH3F-HIRSH-IT.fchk",
-    "date": "2026-10-19T16:54:57+02:00",
-    "id": "2026-10-19T16:54:57+02:00/dee0",
+    "date": "2026-10-21T21:14:26+02:00",
+    "id": "2026-10-21T21:14:26+02:00/7540",
     "threads": 8,
     "status": "normal",
     "stop_message": null

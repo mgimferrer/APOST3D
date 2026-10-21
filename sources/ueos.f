@@ -452,6 +452,7 @@
 
       use output_mod, only: print_value
       use json_mod
+      use input_options_mod, only: xthresh
       implicit real*8(a-h,o-z)
       include 'parameter.h'
 
@@ -484,6 +485,7 @@
       allocatable :: tmp_elec_id(:,:)
       allocatable :: elec_frg_count(:,:)
       dimension xlo(maxfrag),xfu(maxfrag),ilo(maxfrag),ifu(maxfrag)
+      dimension jlo(maxfrag),jfu(maxfrag)
       dimension nlo(maxfrag),ncount(maxfrag)
       dimension npool(2)
       allocatable :: xnegnet_pool(:),xneggro_pool(:),neg_frg(:),neg_slot(:)
@@ -783,7 +785,8 @@
 !! last occupied / first unoccupied EFO gross occupation per fragment, !!
 !! as in effao.f's eos_analysis: with nn its occupied EFOs (pairs in    !!
 !! the paired density) rounded up, the nn-th (xlo) and (nn+1)-th (xfu)  !!
-!! of its EFOs in gross order, as met in the sorted pooled list         !!
+!! of its EFOs in gross order, as met in the sorted pooled list; jlo/  !!
+!! jfu: their rows in it                                                !!
         do ifrg=1,icufr
           if(icase.eq.1) then
             nn=INT(elec_frg_count(ifrg,icase))/2
@@ -797,6 +800,8 @@
           ncount(ifrg)=0
           ilo(ifrg)=0
           ifu(ifrg)=0
+          jlo(ifrg)=0
+          jfu(ifrg)=0
           xlo(ifrg)=ZERO
           xfu(ifrg)=ZERO
         end do
@@ -806,9 +811,11 @@
           if(ncount(ifrg).eq.nlo(ifrg)) then
             xlo(ifrg)=elec2(ii,icase)
             ilo(ifrg)=1
+            jlo(ifrg)=ii
           else if(ncount(ifrg).eq.nlo(ifrg)+1) then
             xfu(ifrg)=elec2(ii,icase)
             ifu(ifrg)=1
+            jfu(ifrg)=ii
           end if
         end do
 
@@ -878,6 +885,8 @@
      +    trim(cspin)//' ('//trim(cshort)//')',' ',-1,trim(cspin),
      +    .false.,' ')
         deallocate(lok)
+        call json_frontier_efos(icufr,jlo,xlo,jfu,xfu,ilast,xlast,
+     +    xfirst,xthresh)
         n=npool(icase)
         nwin=nindep
         if(icase.eq.1) nwin=nindep-nneg

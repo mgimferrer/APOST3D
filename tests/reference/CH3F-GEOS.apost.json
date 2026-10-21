@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -163,6 +163,22 @@
             "first_unoccupied": [7.6008375424697183E-002, 3.7667181254131704E-001]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 9,
+              "fragment": 1,
+              "occupation": 1.6232750059071157E+000
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 10,
+              "fragment": 2,
+              "occupation": 3.7667181254131704E-001
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 17,
@@ -290,6 +306,10 @@
             "last_occupied": [null, null],
             "first_unoccupied": [null, null]
           }
+        },
+        "frontier_efos": {
+          "last_occupied": [],
+          "first_unoccupied": []
         },
         "efos": {
           "rows": "orbital",
@@ -422,7 +442,7 @@
       "reliability_percent": 1.0000000000000000E+002,
       "rmsd": 1.3283311944212323E-001,
       "orbital_file": "CH3F-GEOS-GEOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T17:12:11+02:00/c708"
+      "orbital_file_id": "2026-10-21T21:14:25+02:00/78b8"
     }
   },
   "index": [
@@ -765,8 +785,8 @@
     "job_name": "CH3F-GEOS",
     "input_file": "CH3F-GEOS.inp",
     "wavefunction_file": "CH3F-GEOS.fchk",
-    "date": "2026-10-16T17:12:11+02:00",
-    "id": "2026-10-16T17:12:11+02:00/c708",
+    "date": "2026-10-21T21:14:25+02:00",
+    "id": "2026-10-21T21:14:25+02:00/78b8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

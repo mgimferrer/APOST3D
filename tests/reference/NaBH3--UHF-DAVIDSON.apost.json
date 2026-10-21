@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -139,6 +139,22 @@
             "first_unoccupied": [3.4143689602642313E-001, 9.4439659863887210E-003]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 10,
+              "fragment": 2,
+              "occupation": 6.5856310460829148E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 11,
+              "fragment": 1,
+              "occupation": 3.4143689602642313E-001
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 15,
@@ -248,6 +264,22 @@
             "first_unoccupied": [9.8985953923577577E-002, 3.7605275661158580E-002]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 10,
+              "fragment": 2,
+              "occupation": 9.0101404497715443E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 11,
+              "fragment": 1,
+              "occupation": 9.8985953923577577E-002
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 14,
@@ -335,7 +367,7 @@
       },
       "reliability_percent": 8.1712620858186824E+001,
       "orbital_file": "NaBH3--UHF-DAVIDSON-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T17:11:36+02:00/76e0"
+      "orbital_file_id": "2026-10-21T21:13:33+02:00/2ba0"
     }
   },
   "index": [
@@ -680,8 +712,8 @@
     "job_name": "NaBH3--UHF-DAVIDSON",
     "input_file": "NaBH3--UHF-DAVIDSON.inp",
     "wavefunction_file": "NaBH3--UHF-DAVIDSON.fchk",
-    "date": "2026-10-16T17:11:36+02:00",
-    "id": "2026-10-16T17:11:36+02:00/76e0",
+    "date": "2026-10-21T21:13:33+02:00",
+    "id": "2026-10-21T21:13:33+02:00/2ba0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

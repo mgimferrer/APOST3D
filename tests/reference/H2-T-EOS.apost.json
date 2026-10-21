@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -159,6 +159,27 @@
             "first_unoccupied": [1.5854651959273525E-001, 1.5854651959273466E-001]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 1,
+              "fragment": 1,
+              "occupation": 8.4143612781778787E-001
+            },
+            {
+              "efo_row": 2,
+              "fragment": 2,
+              "occupation": 8.4143612781778887E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 4,
+              "fragment": 2,
+              "occupation": 1.5854651959273466E-001
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 4,
@@ -245,7 +266,7 @@
       },
       "reliability_percent": 1.0000000000000000E+002,
       "orbital_file": "H2-T-EOS-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T17:12:11+02:00/8bf8"
+      "orbital_file_id": "2026-10-21T21:14:25+02:00/5e98"
     }
   },
   "index": [
@@ -579,8 +600,8 @@
     "job_name": "H2-T-EOS",
     "input_file": "H2-T-EOS.inp",
     "wavefunction_file": "H2-T-EOS.fchk",
-    "date": "2026-10-16T17:12:11+02:00",
-    "id": "2026-10-16T17:12:11+02:00/8bf8",
+    "date": "2026-10-21T21:14:25+02:00",
+    "id": "2026-10-21T21:14:25+02:00/5e98",
     "threads": 8,
     "status": "normal",
     "stop_message": null

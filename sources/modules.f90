@@ -977,7 +977,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.14')
+   call json_value('schema_version','0.15')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)

@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.14",
+  "schema_version": "0.15",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -179,6 +179,27 @@
             "last_occupied": [6.9371073909316849E-001, 6.7023508611989335E-001, 6.4998708837502361E-001, 6.7163567932108248E-001, 6.4997010319684978E-001, 6.7031163163181429E-001, 6.9291849471757061E-001],
             "first_unoccupied": [5.0516342196698583E-001, 3.8644081113791612E-002, 4.0808617303757462E-002, 3.4967780060091123E-002, 4.0816870040801222E-002, 3.8638857627327217E-002, 2.6478900534207583E-001]
           }
+        },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 54,
+              "fragment": 3,
+              "occupation": 6.4998708837502361E-001
+            },
+            {
+              "efo_row": 55,
+              "fragment": 5,
+              "occupation": 6.4997010319684978E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 56,
+              "fragment": 1,
+              "occupation": 5.0516342196698583E-001
+            }
+          ]
         },
         "efos": {
           "rows": "orbital",
@@ -459,6 +480,22 @@
             "first_unoccupied": [4.7154001506277493E-001, 4.0528760956880926E-002, 4.2685500507187800E-002, 3.3502981148292241E-002, 4.2694325824077874E-002, 4.0522825024905000E-002, 2.4068209192703469E-001]
           }
         },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 54,
+              "fragment": 4,
+              "occupation": 6.5082044225766333E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 55,
+              "fragment": 1,
+              "occupation": 4.7154001506277493E-001
+            }
+          ]
+        },
         "efos": {
           "rows": "orbital",
           "n_rows": 97,
@@ -712,7 +749,7 @@
       },
       "reliability_percent": 6.4480668122986401E+001,
       "orbital_file": "FeCN5NO3--UBLYP-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-16T17:11:35+02:00/8830"
+      "orbital_file_id": "2026-10-21T21:13:33+02:00/3e48"
     }
   },
   "index": [
@@ -1057,8 +1094,8 @@
     "job_name": "FeCN5NO3--UBLYP",
     "input_file": "FeCN5NO3--UBLYP.inp",
     "wavefunction_file": "FeCN5NO3--UBLYP.fchk",
-    "date": "2026-10-16T17:11:35+02:00",
-    "id": "2026-10-16T17:11:35+02:00/8830",
+    "date": "2026-10-21T21:13:33+02:00",
+    "id": "2026-10-21T21:13:33+02:00/3e48",
     "threads": 8,
     "status": "normal",
     "stop_message": null
