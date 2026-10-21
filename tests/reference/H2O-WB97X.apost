@@ -1,0 +1,257 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RTPSSTPSS)
+  Number of atoms                         : 3
+  Number of basis functions               : 24
+  Primitive gaussians                     : 47
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 5
+  SCF energy (au)                         :     -76.4235561694
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
+
+  # ENPART
+  Functional                              : libxc 464
+  Atom-pair threshold (bond order)        : 0.0050 (THREBOD 50)
+  Two-electron grid                       : 150 x 590 (default)
+  Rotation angles (two-electron grid)     : 0.169 / 0.170 (calibrated)
+
+  TIMING CPU  :: Initialization                                    0.00 s
+  TIMING WALL :: Initialization                                    0.00 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 150
+  Angular points                          : 590
+  r0 (bohr)                               : 0.500
+  Grid points                             : 265500
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   2 : subdivision 23, ratio  4.05051
+  Atom pair   1 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   3 : subdivision 23, ratio  4.05051
+
+  Sum of atomic overlaps, largest error   : 9.75E-06 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 0.26 s
+  TIMING WALL :: Atomic definition                                 0.06 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  O     9.120526    8.262353
+    2  H     0.439737    0.868824
+    3  H     0.439737    0.868824
+  -------------------------------
+  Total      9.999999   10.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  O    -1.120526   -0.262353
+    2  H     0.560263    0.131176
+    3  H     0.560263    0.131176
+  -------------------------------
+  Total      0.000001    0.000000
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     8.420928    0.699596    0.699596
+    2  H     0.699596    0.085460    0.008957
+    3  H     0.699596    0.008957    0.085460
+  -------------------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1  O     1.399194
+    2  H     0.708554
+    3  H     0.708554
+  -------------------
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1  O     1.399192
+    2  H     0.708554
+    3  H     0.708554
+  -------------------
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1  O     0.000002
+    2  H     0.000000
+    3  H     0.000000
+  -------------------
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  --------------------------------
+    ENERGY PARTITIONING (ENPART)
+  --------------------------------
+
+  Wavefunction                            : KS-DFT, restricted
+  Atomic definition                       : TFVC (real space)
+
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
+  VERBOSE 1 in # METHOD also prints the intermediate matrices.
+
+  ----------------------
+    DENSITY FUNCTIONAL
+  ----------------------
+
+  libxc functional                        : wB97X range-separated functional (libxc id 464)
+  Kind                                    : exchange-correlation
+  Family                                  : hybrid GGA
+  Reference [1]                           : J.-D. Chai and M. Head-Gordon,  J. Chem. Phys. 128, 084106 (2008)
+
+  Range-separated hybrids (CAM-B3LYP, wB97X, HSE, LC-...) are
+  not supported: only global hybrids are.
+STOP RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp

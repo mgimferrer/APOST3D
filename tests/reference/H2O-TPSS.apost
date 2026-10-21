@@ -148,8 +148,8 @@
 
   Sum of atomic overlaps, largest error   : 9.75E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.24 s
-  TIMING WALL :: Atomic definition                                 0.04 s
+  TIMING CPU  :: Atomic definition                                 0.29 s
+  TIMING WALL :: Atomic definition                                 0.10 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -253,6 +253,202 @@
   Reference [1]                           : J. Tao, J. P. Perdew, V. N. Staroverov, and G. E. Scuseria,  Phys. Rev. Lett. 91, 146401 (2003)
   Reference [2]                           : J. P. Perdew, J. Tao, V. N. Staroverov, and G. E. Scuseria,  J. Chem. Phys. 120, 6898 (2004)
 
-  Meta-GGA functionals are not supported yet (implementation
-  in progress). Use an LDA, GGA or global-hybrid GGA functional.
-STOP META-GGA FUNCTIONALS NOT YET SUPPORTED
+  libxc functional                        : Tao, Perdew, Staroverov & Scuseria (libxc id 202)
+  Kind                                    : exchange
+  Family                                  : meta-GGA
+  Reference [1]                           : J. Tao, J. P. Perdew, V. N. Staroverov, and G. E. Scuseria,  Phys. Rev. Lett. 91, 146401 (2003)
+  Reference [2]                           : J. P. Perdew, J. Tao, V. N. Staroverov, and G. E. Scuseria,  J. Chem. Phys. 120, 6898 (2004)
+
+  -------------------------------
+    ELECTRON-NUCLEAR ATTRACTION
+  -------------------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O  -184.469602   -6.480224   -6.480224
+    2  H    -6.480224   -0.705230   -0.276341
+    3  H    -6.480224   -0.276341   -0.705230
+  -------------------------------------------
+  Electron-nuclear attraction (au)        :    -199.1168508
+  Integration error (kcal/mol)            :           0.00
+
+  ------------------
+    KINETIC ENERGY
+  ------------------
+
+  One-center terms only: the kinetic energy has no pair terms.
+
+  Atom        Kinetic
+  -------------------
+    1  O    75.343360
+    2  H     0.356330
+    3  H     0.356330
+  -------------------
+  Kinetic energy (au)                     :      76.0560210
+  Integration error (kcal/mol)            :           0.00
+
+  -----------------------------
+    NUCLEAR-NUCLEAR REPULSION
+  -----------------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     0.000000    4.385467    4.385467
+    2  H     4.385467    0.000000    0.348447
+    3  H     4.385467    0.348447    0.000000
+  -------------------------------------------
+  Nuclear-nuclear repulsion (au)          :       9.1193799
+
+  TIMING CPU  :: ENPART one-electron terms                         0.20 s
+  TIMING WALL :: ENPART one-electron terms                         0.05 s
+
+  ------------------------------------
+    DFT EXCHANGE-CORRELATION (BODEN)
+  ------------------------------------
+
+  Pairs from the bond order density       : 3
+  Pairs from the multipolar expansion     : 0
+
+  Pair tau (TAU_BODEN 1): kernel (sum K_ij grad phi_i.grad phi_j)
+  Clipped: share of the BODEN where sigma > 8 rho tau (libxc clips sigma).
+  <z>: BODEN-weighted mean of min(tau_W/tau,1).
+
+  Atom pair   Clipped (%)       <z>
+  ----------------------------------
+    1 -  2        0.0000    0.8386
+    1 -  3        0.0000    0.8386
+    2 -  3        0.0000    0.7261
+  ----------------------------------
+
+  ------------------------------------
+    DFT EXCHANGE-CORRELATION BY ATOM
+  ------------------------------------
+
+  In the atom: the functional integrated within the atom. Self term: the same
+  minus half of each pair term of the atom (the diagonal below).
+
+  Atom    In the atom   Self term
+  -------------------------------
+    1  O    -9.040248   -8.843098
+    2  H    -0.163885   -0.064969
+    3  H    -0.163885   -0.064969
+  -------------------------------
+  Total     -9.368019   -8.973036
+
+  -----------------------------------
+    DFT EXCHANGE-CORRELATION ENERGY
+  -----------------------------------
+
+  The whole exchange-correlation energy (pure functional).
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O    -8.843098   -0.197151   -0.197151
+    2  H    -0.197151   -0.064969   -0.000681
+    3  H    -0.197151   -0.000681   -0.064969
+  -------------------------------------------
+  DFT exchange-correlation (au)           :      -9.3680189
+
+  TIMING CPU  :: ENPART DFT exchange-correlation                   1.11 s
+  TIMING WALL :: ENPART DFT exchange-correlation                   0.51 s
+
+  ---------------------
+    TWO-ELECTRON GRID
+  ---------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  Grid points                             : 17520
+
+  TIMING CPU  :: ENPART Coulomb                                    0.35 s
+  TIMING WALL :: ENPART Coulomb                                    0.07 s
+
+  ----------------------------------
+    TWO-ELECTRON INTEGRATION ERROR
+  ----------------------------------
+
+  Electron-electron energy (au)           :      37.5156565
+  Integration error (kcal/mol)            :          -1.41
+  Tolerance (kcal/mol)                    :           0.25
+  Zero-error correction                   : applied to the one-center terms
+  Error on the rotated grid (kcal/mol)    :          -8.63
+  Same-sign error on both grids: extrapolating, not interpolating
+  Damping parameter                       :       1.1955183
+  Corrected electron-electron energy (au) :      37.5179060
+  Corrected integration error (kcal/mol)  :           0.00
+
+  The one-center Coulomb and exchange terms of the matrices below
+  are the corrected ones; the pair terms do not change.
+
+  TIMING CPU  :: ENPART zero-error correction                      0.15 s
+  TIMING WALL :: ENPART zero-error correction                      0.06 s
+
+  ------------------
+    COULOMB ENERGY
+  ------------------
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O    43.059803    1.783704    1.783704
+    2  H     1.783704    0.101498    0.055719
+    3  H     1.783704    0.055719    0.101498
+  -------------------------------------------
+  Coulomb energy (au)                     :      46.8859250
+
+  ---------------------------
+    IQA ENERGY TERMS (TFVC)
+  ---------------------------
+
+  Self-energies on the diagonal, interaction energies off it.
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O   -74.909536   -0.508205   -0.508205
+    2  H    -0.508205   -0.312370    0.127144
+    3  H    -0.508205    0.127144   -0.312370
+  -------------------------------------------
+  Total energy (au)                       :     -76.4235439
+  Energy in the .fchk file (au)           :     -76.4235562
+  Integration error (au)                  :       0.0000123
+  Integration error (kcal/mol)            :           0.01
+
+  -------------------
+    ATOMIC ENERGIES
+  -------------------
+
+  Additive energy = self-energy + half of each interaction energy of the atom;
+  the additive energies add up to the total energy.
+
+  Atom    Self-energy    Additive
+  -------------------------------
+    1  O   -74.909536  -75.417742
+    2  H    -0.312370   -0.502901
+    3  H    -0.312370   -0.502901
+  -------------------------------
+  Total    -75.534277  -76.423544
+
+  ----------------------------------
+    CLASSICAL INTERACTION ENERGIES
+  ----------------------------------
+
+  Electron-nuclear + nuclear-nuclear + Coulomb part of each interaction;
+  the rest of it is the exchange-correlation part. No self terms.
+
+  -------------------------------------------
+                 1  O        2  H        3  H
+  -------------------------------------------
+    1  O     0.000000   -0.311054   -0.311054
+    2  H    -0.311054    0.000000    0.127825
+    3  H    -0.311054    0.127825    0.000000
+  -------------------------------------------
+  Classical interaction energy (au)       :      -0.4942833
+
+  TIMING CPU  :: ENPART two-electron terms                         0.54 s
+  TIMING WALL :: ENPART two-electron terms                         0.17 s
+
+  ...Normal Termination of APOST-3D...
