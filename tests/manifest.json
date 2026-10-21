@@ -2953,6 +2953,80 @@
       ]
     },
     {
+      "name": "H2O-M062X",
+      "description": "Water, RKS M06-2X / cc-pVDZ (Gaussian 16) — ENPART with the M062X keyword (libxc 450 + 236), a hybrid meta-GGA at the default THREBOD.",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "rks",
+        "meta-gga",
+        "hybrid",
+        "functional-keyword"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/M062X",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total KS-DFT energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -76.3887355,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 2.38e-05,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "DFT part of the XC energy, one-center exact (au)",
+          "pattern": "DFT exchange-correlation \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -4.4879056,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Electron-electron energy before the zero-error correction (au)",
+          "pattern": "Electron-electron energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 37.5313304,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "O-H BODEN XC term, DFT part (au)",
+          "section": "(?m)^    DFT EXCHANGE-CORRELATION ENERGY$",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.104801,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O IQA self-energy (au)",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -74.822307,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O-H IQA interaction (au)",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.558429,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
       "name": "H2O-Dimer-BLYP",
       "description": "Water dimer, RKS BLYP / cc-pVDZ (Gaussian 16) — ENPART at the default THREBOD (bond order 0.005): the 7 weakly bonded pairs take their whole xc from the multipolar expansion instead of BODEN.",
       "tags": [
