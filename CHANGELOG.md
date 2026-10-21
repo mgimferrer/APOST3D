@@ -320,7 +320,8 @@ program, not a full development history — see `git log` for that.
   population analysis prints the exchange-only bond orders of the 1-RDM
   (`EXCHANGE-ONLY BOND ORDER MATRIX`), now with its spin-density term
   (missing for non-singlets), and the bond orders from the natural
-  orbitals (`NEW BOND ORDER MATRIX`, before printed only by `SPIN`). The
+  orbitals (`IMPROVED BOND ORDER MATRIX`, I. Mayer's improved bond
+  orders, before printed only by `SPIN` as `NEW BOND ORDER MATRIX`). The
   local spin analysis no longer repeats the 1-RDM matrix; its LI/DI
   matrix is now `EXCHANGE-CORRELATION BOND ORDER MATRIX (DI)`. Without
   `# DM`, a non-singlet correlated wavefunction gets no bond orders or

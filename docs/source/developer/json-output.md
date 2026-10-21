@@ -172,8 +172,8 @@ without `# DM` (no bond orders printed).
 | Key | Content |
 |---|---|
 | `scheme` | as in `populations` |
-| `atoms` | `matrix`: bond orders (localization index on the diagonal; with `# DM`, the exchange-only bond orders of the 1-RDM); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free`; with `# DM` also `new_bond_orders` (bond orders from the natural orbitals, I. Mayer's definition) with its total |
-| `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle), the three valences summed per fragment and, with `# DM`, `new_bond_orders` (only with fragments) |
+| `atoms` | `matrix`: bond orders (localization index on the diagonal; with `# DM`, the exchange-only bond orders of the 1-RDM); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free`; with `# DM` also `improved_bond_orders` (I. Mayer's improved bond orders, from the natural orbitals) with its total |
+| `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle), the three valences summed per fragment and, with `# DM`, `improved_bond_orders` (only with fragments) |
 | `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS and GEOS, except with Lowdin, Lowdin-Davidson or NAO atoms) |
 
 ### `local_spin`
@@ -341,7 +341,7 @@ APOST-3D 5.0; while it is a draft a key may still be renamed with only a
 minor increase (0.8 replaced the `fragment` column of the EFO tables by
 `fragments` and `shares`; 0.13 renamed `recovered_percent` of
 `negative_efos` to `fit_percent`; 0.14 moved `new_bond_orders` from
-`local_spin` to `bond_orders` and renamed `li_di` to `xc_bond_orders`).
+`local_spin` to `bond_orders` as `improved_bond_orders` and renamed `li_di` to `xc_bond_orders`).
 
 ## Checking a change
 

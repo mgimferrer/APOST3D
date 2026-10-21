@@ -174,7 +174,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `CH3F-NAO` | The same wavefunction, NAO atoms from the NBO `AONAO=W` file: the charges are NBO's natural charges; EOS with fragments F and CH₃ | `dft rks nao eos effao fragments` |
 | `H2O-NAO-pVDZ` | Water, G16 RKS B3LYP/cc-pVDZ (spherical d), NAO atoms: the charges are NBO's natural charges | `dft rks nao` |
 | `CH3F-OSLO-NAO` | The CH3F-HIRSH wavefunction: OSLO with NAO fragment populations (`# OSLO NAO-BASIS`) | `dft rks oslo nao fragments` |
-| `CH2-T-CAS66` | CH₂ triplet, ROHF-based CASSCF(6,6)/6-31G from pySCF, `DM 2`: exchange-only bond orders of the 1-RDM (with its spin density), bond orders from the natural orbitals, exchange-correlation bond orders (DI) and correlated local spin | `casscf dm pyscf spin tfvc openshell` |
+| `CH2-T-CAS66` | CH₂ triplet, ROHF-based CASSCF(6,6)/6-31G from pySCF, `DM 2`: exchange-only bond orders of the 1-RDM (with its spin density), Mayer's improved bond orders, exchange-correlation bond orders (DI) and correlated local spin | `casscf dm pyscf spin tfvc openshell` |
 | `CH2-T-CAS66-DM1` | The same with `DM 1`: both bond-order matrices in the population analysis, no local spin | `casscf dm pyscf tfvc openshell` |
 | `CH2-T-CAS66-NODM` | The same without `# DM`: no bond orders or valences for a non-singlet, with a note | `casscf pyscf tfvc openshell` |
 

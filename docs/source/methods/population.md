@@ -112,8 +112,8 @@ orders between their atoms (see [Fragments](../guide/fragments.md)).
 **Correlated wavefunctions.** With a [`# DM` block](../input/dm.md)
 (`DM 1` or `DM 2`), $\mathbf P$ and $\mathbf P^s$ are those of the 1-RDM
 and the matrix is titled `EXCHANGE-ONLY BOND ORDER MATRIX`. After the
-valences, `NEW BOND ORDER MATRIX` gives the bond orders from the natural
-orbitals (I. Mayer's definition for correlated wavefunctions),
+valences, `IMPROVED BOND ORDER MATRIX` gives I. Mayer's improved bond
+orders for correlated wavefunctions, from the natural orbitals,
 
 $$
 B_{AB} = \sum_{ij} \left(n_i n_j + \sqrt{u_i u_j}\right) S^A_{ij} S^B_{ji},
