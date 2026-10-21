@@ -832,7 +832,7 @@
       use input_options_mod, only: cfuncname
       implicit none
       integer, intent(out) :: kfound,idxc,idx,idc
-      integer, parameter :: nkw=13
+      integer, parameter :: nkw=14
       character*10 kwname(nkw)
       integer kwxc(nkw),kwx(nkw),kwc(nkw)
       character*80 linea
@@ -842,10 +842,10 @@
 !! idx=-2 marks a keyword that is refused with a message (see below).    !!
 !! B3P86 is 315, not 403: 403 is ~100 kcal/mol off Gaussian's B3P86.     !!
       data kwname /'SVWN','SVWN5','BLYP','BP86','PBE','PBEPBE','B3LYP',
-     +  'B3PW91','B3P86','PBE0','PBE1PBE','BHANDHLYP','LDA'/
-      data kwxc /0,0,0,0,0,0,402,401,315,406,406,436,0/
-      data kwx  /1,1,106,106,101,101,0,0,0,0,0,0,-2/
-      data kwc  /8,7,131,132,130,130,0,0,0,0,0,0,0/
+     +  'B3PW91','B3P86','PBE0','PBE1PBE','BHANDHLYP','M062X','LDA'/
+      data kwxc /0,0,0,0,0,0,402,401,315,406,406,436,0,0/
+      data kwx  /1,1,106,106,101,101,0,0,0,0,0,0,450,-2/
+      data kwc  /8,7,131,132,130,130,0,0,0,0,0,0,236,0/
 
       kfound=0
       idxc=0
