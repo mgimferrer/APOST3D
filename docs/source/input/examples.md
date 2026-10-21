@@ -2,7 +2,8 @@
 
 Complete inputs for the most common analyses. Several analyses can be
 combined in the same input, as long as they use the same atomic
-definition. More complete inputs, with their outputs, are the test
+definition, with only one effective-orbital analysis per run (see
+[Analyses](method.md#analyses)). More complete inputs, with their outputs, are the test
 cases in `tests/inputs/` and `tests/reference/` of the repository (see
 [Running the test suite](../developer/testing.md#active-test-cases)).
 

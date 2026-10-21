@@ -47,6 +47,11 @@ number of the following can be added:
 | `ENPART` | [Energy partitioning](../methods/enpart.md) (IQA) | real-space scheme, a `# ENPART` block; `DM 2` for correlated wavefunctions |
 | `POLAR` | [Dipole moment decomposition](../methods/polar.md) | real-space scheme; HF or KS-DFT |
 
+Only one effective-orbital analysis (`EFFAO`, `UEFFAO`, `EFFAO-U`, `EOS`
+or `GEOS`) is done per run: with more than one, the run does the one
+lowest in the table (`GEOS` before `EOS`, `EOS` before the `EFFAO`
+kinds).
+
 ## Options
 
 | Keyword | Value | Default | Description |
