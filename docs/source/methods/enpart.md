@@ -372,6 +372,9 @@ checks and development (the results do not change):
   below `THREBOD`), `DFT EXCHANGE-CORRELATION, PAIR TERMS` and `DFT
   EXCHANGE-CORRELATION, ONE-CENTER TERMS` (the functional integrated
   within each atom, before half of each pair term is moved out of it);
+  for a meta-GGA, the share of each pair's BODEN where libxc limits the
+  density gradient by the kinetic energy density, and the mean
+  τ<sub>W</sub>/τ of the pair;
 - hybrid functionals: `HF-TYPE EXCHANGE, UNSCALED`, the full HF-type
   exchange before the exact-exchange fraction is applied;
 - when the zero-error correction is applied, the two-electron matrices
