@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.15",
+  "schema_version": "0.16",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -228,6 +228,15 @@
         }
       }
     }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 4.2631578947368434E+000, 4.2631578947368434E+000],
+      [2.3456790123456783E-001, 1.0000000000000000E+000, 1.0000000000000000E+000],
+      [2.3456790123456783E-001, 1.0000000000000000E+000, 1.0000000000000000E+000]
+    ]
   },
   "index": [
     {
@@ -512,8 +521,8 @@
     "job_name": "H2O-SVWN",
     "input_file": "H2O-SVWN.inp",
     "wavefunction_file": "H2O-SVWN.fchk",
-    "date": "2026-10-16T17:12:01+02:00",
-    "id": "2026-10-16T17:12:01+02:00/3750",
+    "date": "2026-10-22T16:40:14+02:00",
+    "id": "2026-10-22T16:40:14+02:00/fec8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

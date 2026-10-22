@@ -7,6 +7,8 @@
 !! TFVC atomic-radius setup (run once per job, before the grid is used):  !!
 !!   khi             -- picks each atom pair's TFVC radius-dividing point !!
 !!   prepar          -- Koga empirical atomic radii + distance matrix     !!
+!!   json_cell_weights -- profile, stiffness and radius ratios for the    !!
+!!                      results file                                      !!
 !! Hirshfeld / Hirshfeld-Iterative weight evaluators:                     !!
 !!   wathirsh        -- standard (non-iterative) Hirshfeld weight         !!
 !!   splint          -- cubic-spline lookup on a tabulated radial density !!
@@ -847,6 +849,50 @@
         END DO
       END DO
 
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: json_cell_weights                                         !!
+!! purpose: hands the cell functions of the Becke-type atomic weights    !!
+!! (BECKE, BECKE-RHO, TFVC) to the results file: the profile of sbecke   !!
+!! (Becke's size adjustment, or the TFVC one when inewbec=iopt(31)/=0),  !!
+!! the stiffness k=iopt(25) and the radius ratio chi(A,B) of every atom  !!
+!! pair exactly as pp() takes it (achi with ibcp=1, else the atomic-     !!
+!! radius ratio; 1 on the diagonal, unused), so that a reader can        !!
+!! rebuild w_A(r). Called once, after khi.                               !!
+!! arguments: none (atr/achi/iopt via COMMON)                            !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine json_cell_weights
+      use json_mod, only: json_atomic_weights
+      implicit real*8 (a-h,o-z)
+      include 'parameter.h'
+      common /atomrad/atr(maxat),dist(maxat,maxat)
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /achi/achi(maxat,maxat),ibcp
+      allocatable :: chi(:,:)
+
+      ALLOCATE(chi(nat,nat))
+      do i=1,nat
+        do j=1,nat
+          if(i.eq.j) then
+            chi(i,j)=ONE
+          else if(ibcp.eq.1) then
+            chi(i,j)=achi(i,j)
+          else
+            chi(i,j)=atr(i)/atr(j)
+          end if
+        end do
+      end do
+      if(iopt(31).eq.0) then
+        call json_atomic_weights('becke',iopt(25),chi,nat)
+      else
+        call json_atomic_weights('tfvc',iopt(25),chi,nat)
+      end if
+      DEALLOCATE(chi)
       end
 
 !! ***** !!

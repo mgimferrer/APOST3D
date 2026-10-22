@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.15",
+  "schema_version": "0.16",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -107,6 +107,14 @@
         }
       }
     }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 9.9600798403193613E-001],
+      [1.0040080160320641E+000, 1.0000000000000000E+000]
+    ]
   },
   "index": [
     {
@@ -270,8 +278,8 @@
     "job_name": "LiH-35-CAS22-DOINT",
     "input_file": "LiH-35-CAS22-DOINT.inp",
     "wavefunction_file": "LiH-35-CAS22-DOINT.fchk",
-    "date": "2026-10-20T23:18:37+02:00",
-    "id": "2026-10-20T23:18:37+02:00/9060",
+    "date": "2026-10-22T16:40:23+02:00",
+    "id": "2026-10-22T16:40:23+02:00/c878",
     "threads": 8,
     "status": "normal",
     "stop_message": null

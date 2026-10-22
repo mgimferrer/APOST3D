@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.15",
+  "schema_version": "0.16",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -84,6 +84,15 @@
         ]
       }
     }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 4.0505050505050519E+000, 4.0505050505050519E+000],
+      [2.4688279301745628E-001, 1.0000000000000000E+000, 1.0000000000000000E+000],
+      [2.4688279301745628E-001, 1.0000000000000000E+000, 1.0000000000000000E+000]
+    ]
   },
   "index": [
     {
@@ -181,8 +190,8 @@
     "job_name": "H2O-WB97X",
     "input_file": "H2O-WB97X.inp",
     "wavefunction_file": "H2O-WB97X.fchk",
-    "date": "2026-10-21T10:29:01+02:00",
-    "id": "2026-10-21T10:29:01+02:00/a650",
+    "date": "2026-10-22T16:40:14+02:00",
+    "id": "2026-10-22T16:40:14+02:00/73d0",
     "threads": 8,
     "status": "stopped",
     "stop_message": "RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp"

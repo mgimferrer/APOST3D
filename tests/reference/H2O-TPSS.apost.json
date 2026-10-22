@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.15",
+  "schema_version": "0.16",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -228,6 +228,15 @@
         }
       }
     }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 4.0505050505050519E+000, 4.0505050505050519E+000],
+      [2.4688279301745628E-001, 1.0000000000000000E+000, 1.0000000000000000E+000],
+      [2.4688279301745628E-001, 1.0000000000000000E+000, 1.0000000000000000E+000]
+    ]
   },
   "index": [
     {
@@ -512,8 +521,8 @@
     "job_name": "H2O-TPSS",
     "input_file": "H2O-TPSS.inp",
     "wavefunction_file": "H2O-TPSS.fchk",
-    "date": "2026-10-21T10:28:57+02:00",
-    "id": "2026-10-21T10:28:57+02:00/9a68",
+    "date": "2026-10-22T16:40:12+02:00",
+    "id": "2026-10-22T16:40:12+02:00/3e88",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -879,7 +879,7 @@
    public :: json_open, json_close, json_begin_object, json_begin_array, &
              json_end, json_value, json_null, json_vector, json_matrix, &
              json_index, json_is_open, json_vector_or_null, json_column, &
-             json_run_id
+             json_run_id, json_atomic_weights
 
    integer, parameter :: maxdepth=32
    integer :: iu=-1, depth=0
@@ -904,6 +904,12 @@
    end type index_entry
    type(index_entry), allocatable :: entries(:)
    integer :: nentries=0
+
+!! cell functions of the Becke-type atomic weights (json_atomic_weights), !!
+!! written by json_close; nweights=0: no such atomic definition          !!
+   character(len=8) :: weights_profile=' '
+   integer :: weights_stiffness=0, nweights=0
+   real*8, allocatable :: weights_chi(:,:)
 
    interface json_value
      module procedure value_real, value_int, value_logical, value_text
@@ -977,7 +983,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.15')
+   call json_value('schema_version','0.16')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)
@@ -986,7 +992,24 @@
    end subroutine json_open
 
 !! ---- !!
-!! close every open container, write the run block, rename the file    !!
+!! keep the cell functions of the Becke-type atomic weights (known only  !!
+!! after the analyses block is open): json_close writes them as the      !!
+!! top-level atomic_weights block                                        !!
+   subroutine json_atomic_weights(profile,k,chi,n)
+   character(len=*), intent(in) :: profile
+   integer, intent(in) :: k,n
+   real*8, intent(in) :: chi(n,n)
+   weights_profile=profile
+   weights_stiffness=k
+   nweights=n
+   if(allocated(weights_chi)) deallocate(weights_chi)
+   allocate(weights_chi(n,n))
+   weights_chi=chi
+   end subroutine json_atomic_weights
+
+!! ---- !!
+!! close every open container, write the atomic weights, the index and  !!
+!! the run block, rename the file                                       !!
    subroutine json_close(status,message)
    use omp_lib, only: omp_get_max_threads
    character(len=*), intent(in) :: status,message
@@ -994,6 +1017,14 @@
    do while(depth.gt.1)
      call json_end()
    end do
+   if(nweights.gt.0) then
+     call json_begin_object('atomic_weights')
+     call json_value('profile',trim(weights_profile))
+     call json_value('stiffness',weights_stiffness)
+     call json_matrix('radius_ratios',weights_chi,nweights,nweights, &
+                      nweights)
+     call json_end()
+   end if
    call write_index()
    call json_begin_object('run')
    call json_value('job_name',job_name)

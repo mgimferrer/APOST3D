@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.15",
+  "schema_version": "0.16",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -152,8 +152,8 @@
     "job_name": "NaBH3--UHF-DOINT",
     "input_file": "NaBH3--UHF-DOINT.inp",
     "wavefunction_file": "NaBH3--UHF-DOINT.fchk",
-    "date": "2026-10-16T20:02:54+02:00",
-    "id": "2026-10-16T20:02:54+02:00/6be8",
+    "date": "2026-10-22T16:40:23+02:00",
+    "id": "2026-10-22T16:40:23+02:00/0da0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

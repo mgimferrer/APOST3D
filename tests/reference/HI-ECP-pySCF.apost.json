@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.15",
+  "schema_version": "0.16",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -188,6 +188,14 @@
         }
       }
     }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 6.0771704180064312E-001],
+      [1.6455026455026456E+000, 1.0000000000000000E+000]
+    ]
   },
   "index": [
     {
@@ -461,8 +469,8 @@
     "job_name": "HI-ECP-pySCF",
     "input_file": "HI-ECP-pySCF.inp",
     "wavefunction_file": "HI-ECP-pySCF.fchk",
-    "date": "2026-10-16T17:12:08+02:00",
-    "id": "2026-10-16T17:12:08+02:00/36e0",
+    "date": "2026-10-22T16:40:21+02:00",
+    "id": "2026-10-22T16:40:21+02:00/54f8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

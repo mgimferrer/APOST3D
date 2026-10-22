@@ -549,6 +549,8 @@
           end if
         end if
         if(ibcp.eq.1) call khi()
+!! BECKE, BECKE-RHO and TFVC weights into the results file !!
+        if(ihirsh.eq.0.and.ierf.ne.1) call json_cell_weights()
         if(ihirsh.eq.1.or.ihirsh.eq.2.or.ielcount.eq.1) call makeatdens
  
         iiter=1
