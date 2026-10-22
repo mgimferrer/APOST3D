@@ -42,7 +42,7 @@ Don't write tests expecting these to work:
 
 - `HIRSH` + `DOATOMS`, `EOS` + `DOATOMS`: stop.
 - `GEOS`/`EFFAO-U` + any Hilbert-space scheme, or + `DOATOMS`: stop
-  (since `cfc0d47`; before, the first was silently skipped and the second
+  (since `f607504`; before, the first was silently skipped and the second
   ran UEFFAO instead).
 - `ENPART` + any Hilbert-space scheme: stop.
 - `LOBA` + any Hilbert-space scheme: stop.
