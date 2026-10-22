@@ -2393,7 +2393,7 @@
           "label": "Negative-EFO cube normalization",
           "section": "\\(negative paired EFOs\\)",
           "pattern": "\\n\\s+1\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)\\s+\\S+\\.cube",
-          "ref": 0.3024,
+          "ref": 0.93,
           "tol_abs": 0.001
         },
         {
@@ -4019,14 +4019,14 @@
         {
           "label": "Fragment 1, EFO 2 cube normalization",
           "pattern": "\\n\\s+2\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)\\s+\\S+\\.cube",
-          "ref": 0.978,
+          "ref": 1.1947,
           "tol_abs": 0.001,
           "section": "Cube files, fragment 1\\n"
         },
         {
           "label": "Fragment 2, EFO 1 cube normalization",
           "pattern": "\\n\\s+1\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)\\s+\\S+\\.cube",
-          "ref": 0.9763,
+          "ref": 0.9923,
           "tol_abs": 0.001,
           "section": "Cube files, fragment 2\\n"
         },
@@ -4045,9 +4045,9 @@
           "tol_abs": 0.05
         },
         {
-          "label": "Norm below 0.9 warning",
+          "label": "Norm above 1.1 warning (F cores on the coarse grid)",
           "type": "present",
-          "pattern": "WARNING: 1 cube file\\(s\\) with a norm below 0\\.9"
+          "pattern": "WARNING: 2 cube file\\(s\\) with a norm above 1\\.1"
         }
       ]
     },

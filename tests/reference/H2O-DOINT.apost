@@ -123,10 +123,10 @@
   Largest net occupation                  : no limit (MAX_OCC 1000)
   Smallest net occupation                 : 0.000 (MIN_OCC 0)
   Grid spacing (bohr)                     : 0.250
-  Radius scale                            : 2.000
+  Box margin (bohr)                       : 5.000
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -151,7 +151,7 @@
 
   Sum of atomic overlaps, largest error   : 2.91E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.02 s
+  TIMING CPU  :: Atomic definition                                 0.03 s
   TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------

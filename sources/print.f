@@ -35,7 +35,7 @@
 !! Cube-file generation (opt-in, # CUBE):                                  !!
 !!   cubegen_new            -- writes one Gaussian-style .cube file per      !!
 !!                             requested EFO of a fragment/atom, adaptive   !!
-!!                             grid sized from SPACING/RADIUS_SCALE          !!
+!!                             grid sized from SPACING/PADDING               !!
 !! *********************************************************************** !!
 
 !! ***** !!
@@ -439,8 +439,8 @@
      +    trim(adjustl(cval))//' (MIN_OCC '//trim(cnum)//')')
         write(cval,'(f8.3)') cubespacing
         call print_value('Grid spacing',trim(adjustl(cval)),'bohr')
-        write(cval,'(f8.3)') cuberadscale
-        call print_value('Radius scale',trim(adjustl(cval)))
+        write(cval,'(f8.3)') cubepadding
+        call print_value('Box margin',trim(adjustl(cval)),'bohr')
         if(inegefos.eq.1) then
           write(cnum,'(i0)') inegcubthr
           write(cval,'(f7.3)') -real(inegcubthr)/1000.0d0
@@ -1692,10 +1692,9 @@
       use ao_matrices
       use integration_grid
       use effao_mod, only: p0,p0net,p0gro,ip0
-      use input_options_mod, only: cubespacing,cuberadscale
+      use input_options_mod, only: cubespacing,cubepadding
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      common /atomrad/atr(maxat),dist(maxat,maxat)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
@@ -1795,26 +1794,19 @@
 
       xgrid=0.0d0
 
-!! box: the fragment's atoms plus RADIUS_SCALE times the covalent      !!
-!! radius of the outermost atom on each side, points SPACING apart     !!
+!! box: the fragment's atoms plus PADDING (bohr) on each side, points !!
+!! SPACING apart                                                       !!
       xmesh=cubespacing
-      rrmax=cuberadscale
       do i=1,3
         xmax=-1.0d8
         xmin=1.0d8
         do jatom=1,nfrlist(ifrag)
           iatom=ifrlist(jatom,ifrag)
-          if(coord(i,iatom).lt.xmin) then
-            xmin=coord(i,iatom)
-            iiatom=iatom
-          end if
-          if(coord(i,iatom).gt.xmax) then
-            xmax=coord(i,iatom)
-            iiiatom=iatom
-          end if
+          xmin=min(xmin,coord(i,iatom))
+          xmax=max(xmax,coord(i,iatom))
         end do
-        xmin=xmin-rrmax*atr(iiatom)
-        xmax=xmax+rrmax*atr(iiiatom)
+        xmin=xmin-cubepadding
+        xmax=xmax+cubepadding
         dist0=xmax-xmin
         xgrid(i,i)=xmesh
         igrid(i)=int(dist0/xmesh)+1
@@ -1935,19 +1927,27 @@
       write(*,'(2x,a)') '  EFO   Net occ.   Norm in cube   File'
       write(*,'(2x,a)') repeat('-',lrule)
       nlow=0
+      nhigh=0
       do ivec=imaxeff,imineff
         write(*,'(2x,i5,f11.4,f15.4,3x,a)') ivec,p0net(ivec,ifrag),
      +    xnrm(ivec),trim(cfile(ivec))
         if(xnrm(ivec).lt.0.9d0) nlow=nlow+1
+        if(xnrm(ivec).gt.1.1d0) nhigh=nhigh+1
       end do
       write(*,'(2x,a)') repeat('-',lrule)
 !! each EFO has norm 1 over all space, so the cube holds the share     !!
 !! given in the table                                                  !!
       if(nlow.gt.0) then
         write(*,'(2x,a,i0,a)') 'WARNING: ',nlow,' cube file(s) with a'//
-     +    ' norm below 0.9; in # CUBE, raise RADIUS_SCALE'
+     +    ' norm below 0.9; in # CUBE, raise PADDING'
         write(*,'(2x,a)') '(box too small) or lower SPACING (grid too'//
      +    ' coarse)'
+      end if
+!! a core orbital sampled on a coarse grid near its nucleus: the norm  !!
+!! can come out well above 1                                           !!
+      if(nhigh.gt.0) then
+        write(*,'(2x,a,i0,a)') 'WARNING: ',nhigh,' cube file(s) with a'//
+     +    ' norm above 1.1; in # CUBE, lower SPACING (grid too coarse)'
       end if
       deallocate(xnrm,cfile)
 42    format(i5,3f12.6)

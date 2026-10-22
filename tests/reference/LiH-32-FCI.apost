@@ -126,7 +126,7 @@
   Largest net occupation                  : 0.000 (MAX_OCC 0)
   Smallest net occupation                 : 0.000 (MIN_OCC 0)
   Grid spacing (bohr)                     : 0.250
-  Radius scale                            : 2.000
+  Box margin (bohr)                       : 5.000
   Negative-occupation EFO cubes           : net occupation <= -0.025 (NEG_EFOS 25, paired EFOs of GEOS and EFFAO-U)
 
   # FRAGMENTS (2 fragments)
@@ -143,8 +143,8 @@
      0.00001   0.00001   0.00001   0.00001   0.00001   0.00001   0.00001   0.00001
      0.00001   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -166,8 +166,8 @@
 
   Sum of atomic overlaps, largest error   : 5.92E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.03 s
-  TIMING WALL :: Atomic definition                                 0.00 s
+  TIMING CPU  :: Atomic definition                                 0.04 s
+  TIMING WALL :: Atomic definition                                 0.01 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -369,14 +369,12 @@
   Cube files, fragment 2: no EFO in the MAX_OCC/MIN_OCC range
 
   Cube files, fragment 2 (negative paired EFOs)
-  Grid points (x, y, z)                   : 10 x 10 x 10
+  Grid points (x, y, z)                   : 41 x 41 x 41
 
     EFO   Net occ.   Norm in cube   File
   -----------------------------------------------------------------------
-      1    -0.0856         0.3024   LiH-32-FCI_tfvc_paired_neg_FR2_1.cube
+      1    -0.0856         0.9300   LiH-32-FCI_tfvc_paired_neg_FR2_1.cube
   -----------------------------------------------------------------------
-  WARNING: 1 cube file(s) with a norm below 0.9; in # CUBE, raise RADIUS_SCALE
-  (box too small) or lower SPACING (grid too coarse)
 
   --------------------
     UNPAIRED DENSITY
@@ -467,8 +465,8 @@
   Total             0.00
   Overall reliability index R (%)         :         96.638
 
-  TIMING CPU  :: EFFAO computation                                 0.06 s
-  TIMING WALL :: EFFAO computation                                 0.01 s
+  TIMING CPU  :: EFFAO computation                                 0.17 s
+  TIMING WALL :: EFFAO computation                                 0.05 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

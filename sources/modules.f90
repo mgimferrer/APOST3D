@@ -1495,7 +1495,7 @@
    integer :: ieffao,ieffthr,icube,jcubthr,kcubthr,ieos,iueos,ieoscent, &
               iloba
    real*8  :: xthresh
-   real*8  :: cubespacing,cuberadscale !! # CUBE grid spacing (bohr) / atomic-radius padding scale !!
+   real*8  :: cubespacing,cubepadding !! # CUBE grid spacing / box margin beyond the atoms (bohr) !!
 !! # CUBE NEG_EFOS: cubes of GEOS paired EFOs with net occupation         !!
 !! <= -inegcubthr/1000 (flag + optional threshold, default 25)            !!
    integer :: inegefos,inegcubthr

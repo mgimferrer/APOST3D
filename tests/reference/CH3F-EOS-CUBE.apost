@@ -123,14 +123,14 @@
   Largest net occupation                  : no limit (MAX_OCC 1000)
   Smallest net occupation                 : 0.000 (MIN_OCC 0)
   Grid spacing (bohr)                     : 0.250
-  Radius scale                            : 2.000
+  Box margin (bohr)                       : 5.000
 
   # FRAGMENTS (2 fragments)
   Fragment  1 :   2
   Fragment  2 :   1   3   4   5
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -158,8 +158,8 @@
 
   Sum of atomic overlaps, largest error   : 1.14E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.07 s
-  TIMING WALL :: Atomic definition                                 0.01 s
+  TIMING CPU  :: Atomic definition                                 0.11 s
+  TIMING WALL :: Atomic definition                                 0.02 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -368,21 +368,20 @@
   Left out by the cutoff (gross)          :        0.00039
 
   Cube files, fragment 1
-  Grid points (x, y, z)                   : 28 x 28 x 28
+  Grid points (x, y, z)                   : 41 x 41 x 41
 
     EFO   Net occ.   Norm in cube   File
   ---------------------------------------------------------------
-      1     1.0000         0.7216   CH3F-EOS-CUBE_tfvc_FR1_1.cube
-      2     0.9981         0.9780   CH3F-EOS-CUBE_tfvc_FR1_2.cube
-      3     0.9735         1.0008   CH3F-EOS-CUBE_tfvc_FR1_3.cube
-      4     0.9735         1.0008   CH3F-EOS-CUBE_tfvc_FR1_4.cube
-      5     0.7830         1.0004   CH3F-EOS-CUBE_tfvc_FR1_5.cube
-      6     0.0271         0.9974   CH3F-EOS-CUBE_tfvc_FR1_6.cube
-      7     0.0269         1.0030   CH3F-EOS-CUBE_tfvc_FR1_7.cube
-      8     0.0133         1.0043   CH3F-EOS-CUBE_tfvc_FR1_8.cube
+      1     1.0000         3.2941   CH3F-EOS-CUBE_tfvc_FR1_1.cube
+      2     0.9981         1.1947   CH3F-EOS-CUBE_tfvc_FR1_2.cube
+      3     0.9735         0.9986   CH3F-EOS-CUBE_tfvc_FR1_3.cube
+      4     0.9735         0.9986   CH3F-EOS-CUBE_tfvc_FR1_4.cube
+      5     0.7830         1.0105   CH3F-EOS-CUBE_tfvc_FR1_5.cube
+      6     0.0271         1.0024   CH3F-EOS-CUBE_tfvc_FR1_6.cube
+      7     0.0269         1.0082   CH3F-EOS-CUBE_tfvc_FR1_7.cube
+      8     0.0133         1.0433   CH3F-EOS-CUBE_tfvc_FR1_8.cube
   ---------------------------------------------------------------
-  WARNING: 1 cube file(s) with a norm below 0.9; in # CUBE, raise RADIUS_SCALE
-  (box too small) or lower SPACING (grid too coarse)
+  WARNING: 2 cube file(s) with a norm above 1.1; in # CUBE, lower SPACING (grid too coarse)
 
   Fragment 2
   Net occupation                          :        4.07404
@@ -394,20 +393,18 @@
   Left out by the cutoff (gross)          :        0.00150
 
   Cube files, fragment 2
-  Grid points (x, y, z)                   : 20 x 23 x 24
+  Grid points (x, y, z)                   : 43 x 53 x 54
 
     EFO   Net occ.   Norm in cube   File
   ---------------------------------------------------------------
-      1     0.9993         0.9763   CH3F-EOS-CUBE_tfvc_FR2_1.cube
-      2     0.9763         0.9388   CH3F-EOS-CUBE_tfvc_FR2_2.cube
-      3     0.9518         0.9271   CH3F-EOS-CUBE_tfvc_FR2_3.cube
-      4     0.9513         0.9201   CH3F-EOS-CUBE_tfvc_FR2_4.cube
-      5     0.1596         0.9715   CH3F-EOS-CUBE_tfvc_FR2_5.cube
-      6     0.0179         0.8703   CH3F-EOS-CUBE_tfvc_FR2_6.cube
-      7     0.0178         0.8803   CH3F-EOS-CUBE_tfvc_FR2_7.cube
+      1     0.9993         0.9923   CH3F-EOS-CUBE_tfvc_FR2_1.cube
+      2     0.9763         0.9998   CH3F-EOS-CUBE_tfvc_FR2_2.cube
+      3     0.9518         0.9993   CH3F-EOS-CUBE_tfvc_FR2_3.cube
+      4     0.9513         0.9999   CH3F-EOS-CUBE_tfvc_FR2_4.cube
+      5     0.1596         0.9980   CH3F-EOS-CUBE_tfvc_FR2_5.cube
+      6     0.0179         0.9916   CH3F-EOS-CUBE_tfvc_FR2_6.cube
+      7     0.0178         0.9964   CH3F-EOS-CUBE_tfvc_FR2_7.cube
   ---------------------------------------------------------------
-  WARNING: 2 cube file(s) with a norm below 0.9; in # CUBE, raise RADIUS_SCALE
-  (box too small) or lower SPACING (grid too coarse)
 
   ------------------------
     EOS, ALPHA ELECTRONS
@@ -441,8 +438,8 @@
   Total             0.00
   Overall reliability index R (%)         :        100.000
 
-  TIMING CPU  :: EFFAO computation                                 0.31 s
-  TIMING WALL :: EFFAO computation                                 0.09 s
+  TIMING CPU  :: EFFAO computation                                 2.34 s
+  TIMING WALL :: EFFAO computation                                 0.68 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
