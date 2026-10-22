@@ -167,8 +167,6 @@
         call readint("# CUBE","MAX_OCC",jcubthr,1000,1)
         call readint("# CUBE","MIN_OCC",kcubthr,0,1)
         call readreal("# CUBE","SPACING",cubespacing,0.25d0,1)
-        call removed_keyword("# CUBE","RADIUS_SCALE",
-     +    'PADDING gives the box margin in bohr (default 5.0)')
         call readreal("# CUBE","PADDING",cubepadding,5.0d0,1)
         call readchar("# CUBE","NEG_EFOS",inegefos)
         if(inegefos.eq.1)
