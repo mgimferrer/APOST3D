@@ -13,7 +13,7 @@ says so in a warning.
 | `MAX_OCC` | integer *n* ≥ 0 | 1000 | Upper bound of the net occupation, *n*/1000 (an orbital is written when its occupation is below it). 1000 or more, the default, sets no upper limit: every orbital is written, core ones included. Lower it (e.g. `MAX_OCC 950`) to leave out the fully occupied ones. |
 | `MIN_OCC` | integer *n* ≥ 0 | 0 | Lower bound of the net occupation, *n*/1000. |
 | `SPACING` | real | 0.25 | Distance between grid points, in bohr. |
-| `RADIUS_SCALE` | real | 2.0 | Padding around the fragment's atoms, in units of the covalent radius of the outermost atom on each side. Larger values give bigger boxes. |
+| `PADDING` | real | 5.0 | Margin of the box beyond the fragment's outermost atoms on every side, in bohr. Larger values give bigger boxes and files. |
 | `NEG_EFOS` | integer *n* (optional) | 25 | `GEOS` and `EFFAO-U`: also write the paired orbitals with net occupation ≤ −*n*/1000, whatever `MAX_OCC`/`MIN_OCC` are (see [GEOS](../methods/geos.md)). |
 
 A cube file is written for every orbital of each fragment (or atom) and

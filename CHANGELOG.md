@@ -41,8 +41,8 @@ program, not a full development history — see `git log` for that.
   scheme) and GEOS, are written out to a standard `.fchk` file, so they
   can be viewed directly in any common orbital-viewer instead of only as
   cube files.
-- **New cube-file options** — `SPACING`/`RADIUS_SCALE` keywords under
-  `# CUBE` for finer control over the generated grid, backed by one
+- **New cube-file options** — `SPACING`/`PADDING` keywords under
+  `# CUBE` for the grid spacing and the box margin (in bohr), backed by one
   unified, faster cube-generation routine. `MAX_OCC 1000` (the default)
   sets no upper limit, so fully occupied orbitals always get a cube file.
 - **GEOS negative paired EFOs** — paired EFOs with a clearly negative net

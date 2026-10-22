@@ -188,16 +188,14 @@ With `CUBE` in `# METHOD` and a [`# CUBE` block](../input/cube.md):
   used for the output and the `.fchk`: a smaller value plots more EFOs,
   some of which then have no `.fchk` counterpart.
 
-For only the negative EFOs, use an empty occupation window, and a larger
-box (negative EFOs are diffuse, and the default box of a single H atom
-cuts them):
+For only the negative EFOs, use an empty occupation window. They are
+diffuse: if their `Norm in cube` is below 0.9, raise `PADDING`.
 
 ```text
 # CUBE
 MAX_OCC 0
 MIN_OCC 0
 NEG_EFOS 10
-RADIUS_SCALE 12.0
 #
 ```
 

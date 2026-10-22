@@ -179,7 +179,6 @@ CUBE
 MAX_OCC 0
 MIN_OCC 0
 NEG_EFOS
-RADIUS_SCALE 12.0
 #
 ```
 
@@ -189,8 +188,8 @@ FCI/cc-pVTZ `.fchk` file, with Li and H as fragments. Try it on
 
 `MAX_OCC 0` / `MIN_OCC 0` select none of the regular orbitals, so the only
 cube files written are those requested by `NEG_EFOS`: one per paired
-orbital with net occupation at or below −0.025 (the default), in a box
-large enough for the diffuse orbital on H. Here there is one:
+orbital with net occupation at or below −0.025 (the default). Here there
+is one:
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
