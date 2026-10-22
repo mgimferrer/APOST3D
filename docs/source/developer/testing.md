@@ -111,6 +111,14 @@ manifest values must change as well, review the change and run
 `python3 tests/run_tests.py --update-ref --update-manifest`, which writes
 them at full printed precision.
 
+A test with `"orbital_reference": true` in its manifest entry also keeps
+the orbital `.fchk` files of the same run (`-EOS-EFOs`, `-GEOS-EFOs`,
+`-OSLOs`, `-OSLOs-preortho`) in `tests/reference-orbitals/`, rewritten
+with its references. They pair with its `.apost.json` reference through
+the run id, as the APOST3Dview tests expect, so keep both from the same
+run: restoring one of them with `git checkout` means restoring both.
+These files are not compared with new runs.
+
 To check that a code change leaves the results unchanged (a refactor,
 an OpenMP region, a new output layout), `tests/verify_change.sh` builds
 a base commit and the working tree and compares their outputs at one
@@ -254,4 +262,6 @@ per grid point.
 
 A test must exit with code 0. A test of an expected stop declares the
 code of the stop in its entry, next to `timeout`: `"expected_rc": 1` (the
-code of every `STOP`).
+code of every `STOP`). `"orbital_reference": true` keeps the test's
+orbital files as references (see [Updating the
+references](#updating-the-references)).
