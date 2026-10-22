@@ -92,6 +92,16 @@ To see the exact shape of such an orbital, write its cube file (`CUBE` in
 times the fragment's weight, on the same scale as the `.fchk` orbital, so
 the same isovalue can be used for both.
 
+**In APOST3Dview.** With `BECKE`, `BECKE-RHO` or `TFVC` atoms,
+APOST3Dview multiplies each EOS and GEOS orbital of the `.fchk` file by
+its fragment's weight function, rebuilt from the results file. This
+removes the extra lobes that the fit puts on other fragments, and the
+surfaces look like those of the cube files. Near the fragment's boundary
+they come out somewhat weaker than in the cube file, and an orbital with
+a low `Fit (%)` stays approximate on its own fragment too: for those, the
+cube file remains the reference. Other programs show the orbital as
+stored in the file, extra lobes included.
+
 ## Cube files
 
 Selected in the [`# CUBE` block](../input/cube.md) by net occupation: by
