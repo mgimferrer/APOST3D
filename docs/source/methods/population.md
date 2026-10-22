@@ -147,7 +147,9 @@ AIMPAC, so that other programs (e.g. ESI-3D, for aromaticity indices)
 can use the atoms of APOST-3D. See [Output files](../guide/output.md) for
 the file names. The basis is that of the occupied orbitals (alpha, then
 beta, for an unrestricted wavefunction) or, for a correlated
-wavefunction, of the natural orbitals.
+wavefunction, of the natural orbitals. Remember that the `.int` files
+do not carry the occupation numbers: give the external program the ones
+printed in the `NATURAL ORBITALS` section of the output.
 
 The output gives the number of files, the file that lists them, the
 number of natural orbitals (correlated wavefunctions) and, when every
