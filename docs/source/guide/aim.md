@@ -105,7 +105,7 @@ warning.
 |---|---|
 | `MULLIKEN` | **Mulliken.** The original basis functions. Use only with small basis sets without diffuse functions. |
 | `LOWDIN` | **Löwdin.** Basis functions orthogonalized symmetrically. Less basis-dependent than Mulliken, but still not reliable for extended basis sets. |
-| `LOWDIN-DAVIDSON` | **Löwdin-Davidson.** Orthogonalization that first preserves the atomic character within each atom. |
+| `LOWDIN-DAVIDSON` | **Löwdin-Davidson.** Orthogonalization that first preserves the atomic character within each atom. Strongly basis-dependent (the charge of O in water goes from −0.27 with STO-3G to +0.84 with cc-pVTZ): meaningful only with small basis sets without diffuse functions; prefer a real-space definition. |
 | `NAO-BASIS` | **Natural atomic orbitals** from the NBO program, the most robust of the Hilbert-space options. Needs the transformation in a `jobname.nao` file (see [Preparing the wavefunction](wavefunctions.md#gaussian)). |
 
 `NAO-BASIS` gives the natural populations of NBO (the `Summary of Natural
