@@ -45,6 +45,9 @@ Options
   --exclude-tags LIST  Comma-separated tags; skip tests carrying any of these
                     (applied after --tags/--filter)
   --update-ref      Write each fresh output as the new tests/reference/<name>.apost
+                    (and .apost.json); a test with "orbital_reference": true
+                    also keeps its orbital .fchk files, from the same run, in
+                    tests/reference-orbitals/ (for the APOST3Dview CI)
   --update-manifest With --update-ref, also rewrite the manifest's ref values
                     from the fresh output (at full printed precision)
   --no-full         Skip the full-output comparison against tests/reference/
@@ -515,6 +518,14 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
         if json_file.exists():
             json_text = json_file.read_text(errors="replace")
             shutil.copy(json_file, output_dir / f"{name}.apost.json")
+        # orbital files of the same run, paired with its results file by
+        # the run id, kept for --update-ref
+        orbital_files = {}
+        if test.get("orbital_reference"):
+            for suffix in ORBITAL_SUFFIXES:
+                f = rundir / f"{name}{suffix}"
+                if f.exists():
+                    orbital_files[f.name] = f.read_bytes()
 
         # Evaluate all checks
         check_results = [
@@ -555,6 +566,7 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
             "checks":  check_results,
             "output":  output,
             "json_text": json_text,
+            "orbital_files": orbital_files,
         }
 
 
@@ -723,12 +735,18 @@ def write_html_report(results: list, path: Path):
 
 # ── update-ref mode ───────────────────────────────────────────────────────────
 
+# orbital .fchk files a run writes, <name><suffix>: EOS/EFFAO, GEOS, OSLO
+ORBITAL_SUFFIXES = ("-EOS-EFOs.fchk", "-GEOS-EFOs.fchk", "-OSLOs.fchk",
+                    "-OSLOs-preortho.fchk")
+
 
 def update_references(tests: list, results: list, ref_dir: Path,
                       manifest_path: Path, update_manifest: bool):
     """
     For all non-skipped test results:
-      1. Write the fresh output to tests/reference/<name>.apost
+      1. Write the fresh output to tests/reference/<name>.apost (and
+         .apost.json); with "orbital_reference", replace its orbital files
+         in tests/reference-orbitals/ by those of the same run
       2. Only with update_manifest: re-extract every float check value and
          write it to manifest.json at full printed precision. Only the tests
          that ran are touched; the rest of the manifest is kept as is.
@@ -763,6 +781,16 @@ def update_references(tests: list, results: list, ref_dir: Path,
         if r.get("json_text") is not None:
             (ref_dir / f"{name}.apost.json").write_text(r["json_text"],
                                                         encoding="utf-8")
+        if test.get("orbital_reference"):
+            orb_dir = ref_dir.parent / "reference-orbitals"
+            orb_dir.mkdir(exist_ok=True)
+            for suffix in ORBITAL_SUFFIXES:
+                (orb_dir / f"{name}{suffix}").unlink(missing_ok=True)
+            for fname, data in r.get("orbital_files", {}).items():
+                (orb_dir / fname).write_bytes(data)
+            print(f"  {SYM_PASS}  {name}: wrote "
+                  f"{len(r.get('orbital_files', {}))} orbital file(s) to "
+                  f"{orb_dir.name}/")
 
         if not update_manifest:
             continue

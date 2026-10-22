@@ -490,6 +490,7 @@
     },
     {
       "name": "C2H6-OSLO-2CH3",
+      "orbital_reference": true,
       "description": "Ethane, RKS B3LYP, two CH3 fragments: OSLO selects the C-C bond from both fragments in the last iteration (the same orbital), which is shared half and half, so both fragments get oxidation state 0.",
       "tags": [
         "dft",
@@ -564,6 +565,7 @@
     },
     {
       "name": "H2-S-OSLO",
+      "orbital_reference": true,
       "description": "H2 singlet, UKS B3LYP from pySCF, one fragment per atom: in each spin channel the only orbital is found from both fragments and shared half and half (oxidation states 0); BRANCH_ALPHA at an iteration with no other candidate and BRANCH_BETA at one never reached are reported, not applied.",
       "tags": [
         "dft",
@@ -740,6 +742,7 @@
     },
     {
       "name": "FeCO2-PBEPBE",
+      "orbital_reference": true,
       "description": "FeCO2 complex (charge +2, singlet), RKS PBE — TFVC, fragment EOS with per-EFO net/gross occupations.",
       "tags": [
         "dft",
@@ -1463,6 +1466,7 @@
     },
     {
       "name": "NaBH3--UHF",
+      "orbital_reference": true,
       "description": "NaBH3 anion, UHF — MULLI (Mulliken atoms) and EOS in one run, 2 fragments.",
       "tags": [
         "hf",
@@ -1619,6 +1623,7 @@
     },
     {
       "name": "FeCN5NO3--UBLYP-t2",
+      "orbital_reference": true,
       "description": "[Fe(CN)5NO]3− doublet, UKS BLYP — TFVC and unrestricted OSLO with LOWDIN as the # OSLO fragment population, 7 fragments.",
       "tags": [
         "dft",
@@ -2040,6 +2045,7 @@
     },
     {
       "name": "NaBH3--B3LYP-GEOS",
+      "orbital_reference": true,
       "description": "NaBH3 anion, broken-symmetry UKS B3LYP — TFVC, GEOS with 2 fragments, including two negative paired EFOs.",
       "tags": [
         "dft",
@@ -2219,6 +2225,7 @@
     },
     {
       "name": "LiH-32-FCI",
+      "orbital_reference": true,
       "description": "LiH at 3.2 Å, pySCF FCI / cc-pVTZ (restricted .fchk, fractional natural orbitals) — TFVC, GEOS with 2 fragments: a negative paired EFO (report and its fit), per-EFO fit (%), CUBE NEG_EFOS.",
       "tags": [
         "fci",
@@ -3654,6 +3661,7 @@
     },
     {
       "name": "H2-S-EOS",
+      "orbital_reference": true,
       "description": "H2 singlet (pySCF UKS, symmetric), TFVC, one H per fragment: pseudo-degenerate EOS, one electron per channel split 0.50/0.50.",
       "tags": [
         "dft",
@@ -3714,6 +3722,7 @@
     },
     {
       "name": "CH3F-GEOS",
+      "orbital_reference": true,
       "description": "Fluoromethane, RKS, TFVC: GEOS on a closed shell (empty unpaired density, no negative EFOs, single-channel EFO .fchk); the oxidation states equal the EOS ones (F -1, CH3 +1).",
       "tags": [
         "dft",
@@ -4053,6 +4062,7 @@
     },
     {
       "name": "CH3F-BECKE-RHO-EOS",
+      "orbital_reference": true,
       "description": "Fluoromethane, RKS (the CH3F-EOS-LOWDIN wavefunction), Becke atoms with radii from the density (BECKE-RHO): populations and EOS with fragments F | CH3.",
       "tags": [
         "dft",
