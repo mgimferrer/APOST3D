@@ -56,6 +56,7 @@ This page is the reference for its content.
 | `molecule` | atoms and geometry (below) |
 | `fragments` | the fragments of `# FRAGMENTS` (below) |
 | `analyses` | one object per analysis that was performed (below) |
+| `atomic_weights` | the weight functions of the BECKE, BECKE-RHO and TFVC atoms (below) |
 | `index` | one entry per quantity that can be shown on atoms, atom pairs, fragments or fragment pairs (below) |
 | `run` | how the run went (below) |
 
@@ -95,6 +96,41 @@ fragment only when no fragment analysis needs every atom (EOS, GEOS,
 OSLO and ENPART stop; the others warn in the output); `-1` on the last
 fragment of the input means "all remaining atoms", so it is written out
 as their list.
+
+### `atomic_weights`
+
+Written with the real-space atomic definitions `BECKE`, `BECKE-RHO` and
+`TFVC`; absent with Hilbert-space atoms, `HIRSH` and `HIRSH-IT`, and in a
+run that stops before its atoms are set up. With the coordinates of
+`molecule` it defines the weight w_A(r) of every atom, so a reader can
+rebuild the weight of a fragment, w_F = Σ_{A∈F} w_A, anywhere in space.
+
+| Key | Content |
+|---|---|
+| `profile` | `"becke"` (`BECKE`, `BECKE-RHO`) or `"tfvc"` (`TFVC`): the cell function below |
+| `stiffness` | k, the number of iterations of the cell function (`STIFFNESS`, default 4) |
+| `radius_ratios` | χ_AB for every atom pair: row A, column B; the diagonal (1) is not used. With `BECKE` the ratio of the atomic radii, with `BECKE-RHO` and `TFVC` the ratio APOST-3D sets from the density along the A–B axis |
+
+$$
+w_A(\mathbf r) = \frac{P_A(\mathbf r)}{\sum_B P_B(\mathbf r)}, \qquad
+P_A(\mathbf r) = \prod_{B \neq A} \tfrac12 \left(1 - f^{(k)}(\nu_{AB})\right), \qquad
+f(x) = \tfrac12\, x\,(3 - x^2)
+$$
+
+with f applied k times, the distances in bohr,
+μ_AB = (|r − R_A| − |r − R_B|) / |R_A − R_B| and χ = χ_AB:
+
+- `becke`: ν_AB = μ_AB + a (1 − μ_AB²), a = (1 − χ²) / (4χ), limited to
+  the range −½ to ½;
+- `tfvc`: ν_AB = (1 + μ_AB − χ (1 − μ_AB)) / (1 + μ_AB + χ (1 − μ_AB)).
+
+The orbitals of the EOS and GEOS `.fchk` files are basis-set fits of the
+real-space EFOs, each the EFO times its fragment's weight (see
+[Orbital `.fchk` files](../guide/visualization.md#orbital-fchk-files)); the fit puts small
+tails on the other fragments. Multiplied once more by w_F, an orbital
+loses those tails; it stays practically the same where w_F is close to 1
+and comes out somewhat weaker near the fragment's boundary than the cube
+file of the same EFO.
 
 ### `run`
 
