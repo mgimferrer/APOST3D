@@ -2,7 +2,7 @@
 
 APOST-3D reads the wavefunction from a **formatted checkpoint file**
 (`jobname.fchk`), the text format of Gaussian, also written by Q-Chem, by
-pySCF through the script shipped with APOST-3D, and by converters such as
+pySCF and ORCA through the scripts shipped with APOST-3D, and by converters such as
 [IOData](https://github.com/theochem/iodata) for other programs. This page
 explains how to produce it, and the extra data some analyses need.
 
@@ -192,3 +192,106 @@ of orbitals, so their spin-resolved analyses would be wrong. Use an RHF-
 or ROHF-based CASSCF or FCI for open shells. Any other problem (an object
 whose calculation has not been run, h functions) also stops with a
 message, and no file is written.
+
+## ORCA
+
+`utils/orca2fchk.py` writes the `.fchk` file from an ORCA 6 calculation
+(checked with ORCA 6.1.1), including the reference energies needed by
+ENPART and, for CASSCF, the 1- and 2-RDM files. It needs Python 3 with
+numpy, and ORCA's own converter `orca_2json`, so load ORCA first:
+
+```bash
+module load orca/6.1.1                       # or put orca_2json in the PATH
+python3 $APOST3D_PATH/utils/orca2fchk.py mol  # writes mol.fchk
+```
+
+It reads the files ORCA leaves in the folder of the calculation: `mol.gbw`,
+`mol.property.txt`, `mol.densities` and `mol.densitiesinfo`, and the output
+file `mol.out` (`--out` gives another name). Keep them until the
+conversion is done. `-o other.fchk` writes the file under another name
+(the RDM files of a CASSCF take the same name).
+
+```{admonition} Two programs, one input name
+:class: warning
+
+ORCA and APOST-3D both read their input from `jobname.inp`. Run APOST-3D
+under another name, e.g. `orca2fchk.py mol -o mol-ap.fchk` and the
+APOST-3D input `mol-ap.inp`, or in another folder.
+```
+
+**Single determinant** (HF or KS-DFT): an ordinary single point, with a
+tight SCF convergence so that the density and the reference energies
+match:
+
+```text
+! B3LYP def2-TZVP TightSCF
+%pal nprocs 8 end
+* xyz 0 1
+O   0.000000   0.000000   0.117300
+H   0.000000   0.757200  -0.469200
+H   0.000000  -0.757200  -0.469200
+*
+```
+
+For ENPART, name the functional by its libxc ids: ORCA's B3LYP (VWN5) is
+`LIBRARY` + `EXC_FUNCTIONAL 475`, not the `B3LYP` keyword (see
+[`# ENPART`](../input/enpart.md#wavefunction-and-functional));
+`orca2fchk.py` prints a reminder when it finds it.
+
+**CASSCF**: ORCA does not write the RDMs to a file, so `orca2fchk.py`
+builds them from the CI vector printed in the output, which must contain
+every determinant:
+
+```text
+! def2-TZVP TightSCF
+%casscf
+  nel  2
+  norb 2
+  mult 1
+  PrintWF det             # the CI vector in determinants
+  ci TPrintWF 1e-14 end   # ... all of them
+end
+* xyz 0 1
+Li  0.0  0.0  0.0
+H   0.0  0.0  1.6
+*
+```
+
+It writes `mol.fchk`, `mol.dm1` and `mol.dm2`; give the RDM files in the
+APOST-3D input, with `ORCA` as the program:
+
+```text
+# DM
+mol.dm1
+mol.dm2
+ORCA
+#
+```
+
+The RDMs are checked against the CASSCF density that ORCA writes, and the
+conversion stops if they differ. As with any CASSCF, check that ORCA's active
+orbitals are the intended ones; `%scf rotate {i, j, 90} end end` swaps
+two orbitals of the guess. As for pySCF, the `.fchk` file alone is
+enough for a closed-shell CASSCF in the population analysis, EFFAO, EOS
+and GEOS; SPIN, ENPART and open shells need the `# DM` block.
+
+**What `orca2fchk.py` takes:**
+
+| ORCA calculation | |
+|---|---|
+| RHF, UHF, ROHF, RKS, UKS, ROKS | yes |
+| CASSCF, one root | yes, with the `PrintWF det` lines above |
+| Basis sets | any, up to g functions; def2 and other pseudopotentials (the ECP matrix is written for ENPART) |
+| RI-J, RIJCOSX | yes (the energies written are ORCA's final ones) |
+| D3, D4 dispersion | yes; the dispersion energy is not part of ORCA's SCF energy, nor of the energies written |
+| CPCM solvent | yes; the energies written are those of the molecule without the solvent term (the density is still the polarized one), with a note |
+| MP2, CCSD, DLPNO, ... | only the SCF wavefunction is written, with a note |
+| State-averaged CASSCF, fractional occupations | no: stops with a message |
+| ZORA, DKH, X2C; external electric field; point charges (QM/MM) | no: stops with a message (only detected with the output file) |
+| h functions | no: stops with a message |
+
+`orca2fchk.py` checks its own result: it recomputes the overlap matrix of
+the basis it writes and compares it with ORCA's, which catches any change
+of ORCA's function order or sign convention in a future version, and the
+geometry of the property file is compared with that of the `.gbw` file.
+Any problem stops it with a message, and no file is written.

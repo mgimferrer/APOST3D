@@ -2,7 +2,7 @@
 
 The regression suite runs a set of complete calculations (RKS/UKS DFT, HF,
 CASSCF, FCI; population analysis, EFFAO, EOS, GEOS, OSLO, local spin,
-ENPART; Gaussian, Q-Chem and pySCF inputs) and compares their output with
+ENPART; Gaussian, Q-Chem, pySCF and ORCA inputs) and compares their output with
 stored references. It is the way to check a new build and the safety net
 when changing the code.
 
@@ -190,6 +190,17 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `CH2-T-CAS66` | CH₂ triplet, ROHF-based CASSCF(6,6)/6-31G from pySCF, `DM 2`: exchange-only bond orders of the 1-RDM (with its spin density), Mayer's improved bond orders, exchange-correlation bond orders (DI) and correlated local spin | `casscf dm pyscf spin tfvc openshell` |
 | `CH2-T-CAS66-DM1` | The same with `DM 1`: both bond-order matrices in the population analysis, no local spin | `casscf dm pyscf tfvc openshell` |
 | `CH2-T-CAS66-NODM` | The same without `# DM`: no bond orders or valences for a non-singlet, with a note | `casscf pyscf tfvc openshell` |
+| `HF-G-ORCA` | Hydrogen fluoride, RHF from ORCA 6 (`utils/orca2fchk.py`) with cc-pVQZ (g shells) on F, the geometry of `HF-G-pySCF`: TFVC; the Mulliken charges equal ORCA's, which checks the order and signs of every shell type | `hf tfvc rhf orca g-functions` |
+| `HI-ECP-ORCA` | Hydrogen iodide, RHF/def2-SVP from ORCA with the def2 pseudopotential on I: ENPART (HF), with the ECP matrix written by `orca2fchk.py` | `hf enpart tfvc rhf orca ecp` |
+| `H2O-B3LYP-CPCM-ORCA` | Water, RKS B3LYP-D3BJ with CPCM and RIJCOSX from ORCA: ENPART with ORCA's B3LYP (libxc 475); the reference energies leave out the solvent and dispersion terms | `dft enpart tfvc rks orca hybrid libxc-ids solvent` |
+| `OH-UKS-ORCA` | Hydroxyl radical, UKS B3LYP from ORCA: local spin and ENPART; Mulliken charges and spin populations equal ORCA's | `dft enpart spin tfvc uks openshell orca libxc-ids` |
+| `CH2-T-ROHF-ORCA` | CH₂ triplet, ROHF/def2-TZVP from ORCA: ENPART (HF); Mulliken charges and spin populations equal ORCA's | `hf enpart tfvc rohf openshell orca` |
+| `FeCl4-EOS-ORCA` | [FeCl₄]⁻ sextet, UKS B3LYP/def2-SVP from ORCA (3d metal, no pseudopotential): EOS with atomic fragments, Fe(+3), Cl(−1) | `dft eos effao tfvc uks openshell fragments orca transition-metal` |
+| `FeCl4-GEOS-ORCA` | The same wavefunction: GEOS, five unpaired electrons on Fe | `dft geos effao tfvc uks openshell fragments orca transition-metal` |
+| `PdCl4-EOS-ORCA` | [PdCl₄]²⁻, RKS B3LYP/def2-SVP from ORCA (4d metal with the def2 pseudopotential): EOS with atomic fragments, Pd(+2), Cl(−1) | `dft eos effao tfvc rks fragments orca transition-metal ecp` |
+| `PdCl4-GEOS-ORCA` | The same wavefunction: closed-shell GEOS | `dft geos effao tfvc rks fragments orca transition-metal ecp` |
+| `H2O-CAS44-ORCA` | The `H2O-CAS44` state from ORCA's CASSCF (`ORCA` in `# DM`, RDMs built by `orca2fchk.py`): the same post-HF ENPART | `casscf enpart tfvc orca dm fragments correlation verbose spin` |
+| `CH2-T-CAS66-ORCA` | The `CH2-T-CAS66` triplet from ORCA's CASSCF, `DM 2`: bond orders and correlated local spin | `casscf dm orca spin tfvc openshell` |
 
 ## Adding a test
 

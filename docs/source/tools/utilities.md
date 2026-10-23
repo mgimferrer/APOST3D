@@ -2,13 +2,14 @@
 
 `bash make_compile.sh` (or `make utils`) also builds a few helper
 programs into `$APOST3D_PATH/utils/`, which also holds the Python module
-`apost3d.py`.
+`apost3d.py` and the Python script `orca2fchk.py`.
 
 | Program | Purpose |
 |---|---|
 | `get_energy_g16`, `get_energy` | Append the reference energies of a Gaussian 16 / 09 calculation to its `.fchk` file (for ENPART) |
 | `gen_hirsh` | Build the free-atom densities file `densoutput` needed by `HIRSH` and `HIRSH-IT` |
 | `apost3d.py` | Write `.fchk` and RDM files from pySCF |
+| `orca2fchk.py` | Write `.fchk` and RDM files from ORCA 6 |
 | `eos_aom` | EOS from atomic overlap matrices computed by AIMAll or Multiwfn |
 | `wfn2fchk` | Older helper, see the end of this page |
 
@@ -106,6 +107,21 @@ wavefunctions it takes in
   mean-field object as `myhf`.
 - `write_dm12(mol, mycas, name)` writes the 1- and 2-RDMs of a
   CASSCF/CASCI, FCI or CISD calculation to `name.dm1` and `name.dm2`.
+
+## orca2fchk.py
+
+A Python script that writes `name.fchk` from an ORCA 6 calculation (HF,
+KS-DFT, CASSCF), with the reference energies needed by ENPART and, for
+CASSCF, the RDM files `name.dm1` and `name.dm2`:
+
+```bash
+module load orca/6.1.1                      # orca_2json must be in the PATH
+python3 $APOST3D_PATH/utils/orca2fchk.py name
+```
+
+The ORCA inputs it needs, the calculations it takes and the checks it
+makes are described in
+[Preparing the wavefunction](../guide/wavefunctions.md#orca).
 
 ## Other programs
 

@@ -62,6 +62,16 @@ program, not a full development history — see `git log` for that.
   gradient. The total exchange-correlation energy reproduces pySCF's to
   0.02 kcal/mol.
 
+- **ORCA wavefunctions** — the new script `utils/orca2fchk.py` writes
+  the `.fchk` file of an ORCA 6 calculation (RHF, UHF, ROHF, RKS, UKS,
+  ROKS and single-root CASSCF, with pseudopotentials) with the reference
+  energies for ENPART, and for CASSCF the 1- and 2-RDM files read with
+  `ORCA` in `# DM`. It checks the basis it writes against ORCA's overlap
+  matrix and the RDMs against ORCA's CASSCF density, and stops on the
+  calculations APOST-3D cannot analyse (relativistic Hamiltonians,
+  external fields, state-averaged CASSCF). See "Preparing the
+  wavefunction".
+
 ### Changes to ENPART that affect inputs or results
 
 - **Weakly bonded atom pairs in KS-DFT** — for pairs with a bond order

@@ -9,7 +9,7 @@ such wavefunctions. The block is read when `DM 1` (1-RDM only) or `DM 2`
 |---|---|
 | 1st line after `# DM` | File name of the 1-RDM (any name, with its extension) |
 | 2nd line (only with `DM 2`) | File name of the 2-RDM |
-| any later line | The program that wrote the files: `pySCF` (written by `utils/apost3d.py`) or `ORCA`. Without it, the files are read as binary files in the format of the DMn program. |
+| any later line | The program that wrote the files: `pySCF` (written by `utils/apost3d.py`) or `ORCA` (written by `utils/orca2fchk.py`). Without it, the files are read as binary files in the format of the DMn program. |
 
 ```text
 # METHOD
