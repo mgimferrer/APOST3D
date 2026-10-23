@@ -331,7 +331,7 @@
 !      iopt(76) =
 !      iopt(77) =
 !      iopt(78) =
-      iopt(79) = imokit !! MG: Temporarily !!
+!      iopt(79) =
 !      iopt(80) =
 
 !      iopt(81) =

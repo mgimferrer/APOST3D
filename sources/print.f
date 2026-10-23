@@ -327,7 +327,6 @@
         call print_value('Selected atoms',trim(cval))
       end if
       if(iqchem.eq.1) call print_value('Wavefunction source','QCHEM')
-      if(imokit.eq.1) call print_value('Wavefunction source','MOKIT')
       if(icube.eq.1) then
         call print_value('Cube files','CUBE (see # CUBE)')
         if(ieffao.eq.0) then
@@ -2116,7 +2115,7 @@
       call write_fchk_title(69,ctype)
       read(15,'(a80)') line
 
-!! standard/MOKIT .fchk layout: Alpha Orbital Energies precedes Alpha    !!
+!! standard .fchk layout: Alpha Orbital Energies precedes Alpha          !!
 !! MO coefficients. Q-Chem's is the other way around -- see uwf_effao_   !!
 !! orbprint's header for the same iqchem branch used by OSLO's own       !!
 !! printers.                                                             !!
@@ -2185,7 +2184,7 @@
 !!   otherwise run off the end of the file looking for. Q-Chem-format    !!
 !!   branch is still unverified by an active test (no unrestricted       !!
 !!   Q-Chem source in the suite), though structurally symmetric with the !!
-!!   standard/MOKIT branch now.                                          !!
+!!   standard branch now.                                                !!
 !! arguments:                                                            !!
 !!   pcoef_a (in) -- (igr,igr) pooled+sorted first-channel (-> Alpha)    !!
 !!                   EFO coefficients, zero-padded beyond the actual     !!
@@ -2241,7 +2240,7 @@
 
       if(iqchem.eq.0) then
 
-!! standard/MOKIT layout: both Orbital Energies blocks precede both MO   !!
+!! standard layout: both Orbital Energies blocks precede both MO         !!
 !! coefficient blocks.                                                   !!
         do while(index(line,"Alpha Orbital").eq.0)
           write(69,'(a80)') line
@@ -2381,7 +2380,7 @@
 
       if(iqchem.eq.0) then
 
-!! standard/MOKIT layout: Alpha Orbital Energies precedes Alpha MO      !!
+!! standard layout: Alpha Orbital Energies precedes Alpha MO            !!
 !! coefficients in the source -- insert the synthetic Beta block right  !!
 !! after each real Alpha one.                                           !!
         do while(index(line,"Alpha Orbital").eq.0)
@@ -2405,7 +2404,7 @@
 !! Q-Chem layout: Alpha MO coefficients precedes Alpha Orbital Energies !!
 !! in the source -- unverified, no restricted+Q-Chem+post-HF source     !!
 !! available to test against, but structurally symmetric with the       !!
-!! standard/MOKIT branch above.                                         !!
+!! standard branch above.                                               !!
         do while(index(line,"Alpha MO co").eq.0)
           write(69,'(a80)') line
           read(15,'(a80)') line

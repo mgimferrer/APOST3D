@@ -1535,7 +1535,7 @@
    integer :: nbranch(3),ibranchit(maxbranch,3)
 
 !! external .fchk sources !!
-   integer :: iqchem,imokit
+   integer :: iqchem
 
 !! X-ray scattering !!
    integer :: iscattfact

@@ -543,12 +543,10 @@
 
       end if
 
-!! .fchk files from Q-Chem or MOKIT: their layout differs from        !!
-!! Gaussian's, which matters for the .fchk files the program writes    !!
+!! .fchk files from Q-Chem: their layout differs from Gaussian's,      !!
+!! which matters for the .fchk files the program writes                 !!
       iqchem=0
       call readchar("# METHOD","QCHEM",iqchem)
-      imokit=0
-      call readchar("# METHOD","MOKIT",imokit)
 
 !! end of OSLO options !!
 
