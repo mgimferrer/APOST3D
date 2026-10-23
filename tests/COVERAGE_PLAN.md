@@ -74,10 +74,10 @@ Don't write tests expecting these to work:
 | **SCATT-FACT**, **TOPOLOGY** | ② | ② | ② | ? | ? | ? | ? | ? |
 
 Still untested regardless of scheme:
-- **Interfaces:** `MOKIT`, `WFN`, `DM/DMRG` (`QCHEM`, `DM/PYSCF` and
-  `DM/ORCA` are tested; ORCA wavefunctions come through
-  `utils/orca2fchk.py`, tested by the 11 `*-ORCA` tests, and need no
-  keyword).
+- **Interfaces:** `WFN`, `DM/DMRG` (`QCHEM`, `DM/PYSCF` and `DM/ORCA`
+  are tested; ORCA wavefunctions come through `utils/orca2fchk.py`,
+  tested by the 11 `*-ORCA` tests, and need no keyword, nor do MOKIT
+  files, which have the standard layout).
 - **Other keywords:** `OS-CENTROID`, `DOATOMS`, and the `ENPART`
   functional keywords other than `SVWN`/`BLYP`/`B3LYP` and `EXC_FUNCTIONAL`
   (all keywords were checked ad hoc against Gaussian 16 wavefunctions,
@@ -89,9 +89,7 @@ Still untested regardless of scheme:
 ## Recommended order
 
 1. **`LOBA`** (TFVC + `DOFRAGS`): it blocks its file's cleanup pass.
-2. **Interfaces** (`MOKIT`): need wavefunctions from
-   those programs.
-3. **`EDAIQA`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
+2. **`EDAIQA`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
    urgency.
 
 Prefer reusing an `.fchk` already in `tests/inputs/` when the

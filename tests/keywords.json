@@ -176,8 +176,6 @@
      "description": "Read 1-/2-RDM from DMRG (Block/StackBlock) formatted files",                           "priority": "medium"},
     {"id": "QCHEM",           "key": "QCHEM",             "section": "# METHOD",   "category": "interface",
      "description": "Read wavefunction from a Q-Chem formatted checkpoint file",                              "priority": "high"},
-    {"id": "MOKIT",           "key": "MOKIT",             "section": "# METHOD",   "category": "interface",
-     "description": "Read wavefunction from a MOKIT formatted checkpoint file",                               "priority": "high"},
     {"id": "WFN",             "key": "WFN",               "section": "# METHOD",   "category": "interface",
      "description": "Read wavefunction from a .wfn (AIM) formatted file",                                    "priority": "medium"},
     {"id": "DENS",            "key": "DENS",              "section": "# METHOD",   "category": "interface",
