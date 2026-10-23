@@ -1,0 +1,513 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.16",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "wavefunction": {
+    "formalism": "unrestricted",
+    "method": "Hartree-Fock",
+    "n_basis_functions": 43,
+    "n_electrons": 8,
+    "n_alpha": 5,
+    "n_beta": 3,
+    "energy_au": -3.8932721778276402E+001
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nHF\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "short_name": "TFVC",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 3,
+    "atomic_numbers": [6, 1, 1],
+    "symbols": ["C", "H", "H"],
+    "nuclear_charges": [6.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 1.9842124400000000E-001],
+      [0.0000000000000000E+000, 1.8651596900000000E+000, -5.9526373200000005E-001],
+      [0.0000000000000000E+000, -1.8651596900000000E+000, -5.9526373200000005E-001]
+    ]
+  },
+  "fragments": [],
+  "analyses": {
+    "populations": {
+      "scheme": "TFVC",
+      "atoms": {
+        "electrons": [6.0432308412363200E+000, 9.7838458108916793E-001, 9.7838458118435878E-001],
+        "charges": [-4.3230841236320039E-002, 2.1615418910832074E-002, 2.1615418815641219E-002],
+        "spin": [1.8097564000280528E+000, 9.5121800339435569E-002, 9.5121800370930404E-002]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [6.3065335269014744E+000, 8.4673323881222140E-001, 8.4673323881208529E-001],
+          "charges": [-3.0653352690147440E-001, 1.5326676118777860E-001, 1.5326676118791471E-001],
+          "spin": [1.9574902475071874E+000, 2.1254876566408707E-002, 2.1254876566357730E-002]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "TFVC",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [4.9549655180536423E+000, 1.0882653251882128E+000, 1.0882653249864513E+000],
+            [1.0882653251882128E+000, 4.0955751305509464E-001, 4.9388812587174799E-002],
+            [1.0882653249864513E+000, 4.9388812587174799E-002, 4.0955751312058969E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [3.8142471457204046E+000, 1.1422050605793674E+000, 1.1422050606417469E+000],
+        "valence_bonded": [2.1765306501746640E+000, 1.1376541377753877E+000, 1.1376541375736262E+000],
+        "valence_free": [1.6377164955457406E+000, 4.5509228039797289E-003, 4.5509230681206603E-003]
+      }
+    },
+    "enpart": {
+      "wavefunction": "Hartree-Fock",
+      "formalism": "unrestricted",
+      "functional": null,
+      "pair_threshold": 5.0000000000000001E-003,
+      "multipolar_pairs": [],
+      "electron_nuclear": {
+        "atoms": {
+          "values": [
+            [-8.9006647474678459E+001, -5.4563740724796252E+000, -5.4563740726464438E+000],
+            [-5.4563740724796252E+000, -1.2299217381310594E+000, -5.0522078265031900E-001],
+            [-5.4563740726464438E+000, -5.0522078265031900E-001, -1.2299217382080292E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": -1.0288445987879392E+002,
+          "total_rule": "diagonal and one triangle"
+        },
+        "integration_error_kcal": -1.3484188681684372E-005
+      },
+      "kinetic": {
+        "atoms": {
+          "values": [
+            [3.7744787727722425E+001, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 5.8718046395179235E-001, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 0.0000000000000000E+000, 5.8718046397577073E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 3.8919148655649984E+001,
+          "total_rule": "diagonal and one triangle"
+        },
+        "integration_error_kcal": -1.4311146416032443E-004
+      },
+      "nuclear_repulsion": {
+        "atoms": {
+          "values": [
+            [0.0000000000000000E+000, 2.9600295576502216E+000, 2.9600295576502216E+000],
+            [2.9600295576502216E+000, 0.0000000000000000E+000, 2.6807356103648156E-001],
+            [2.9600295576502216E+000, 2.6807356103648156E-001, 0.0000000000000000E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 6.1881326763369247E+000,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "two_electron_integration": {
+        "energy": 1.8843410320267388E+001,
+        "error_kcal": -6.5650733866047373E-001,
+        "tolerance_kcal": 2.5000000000000000E-001,
+        "zero_error_correction": "applied",
+        "rotated_grid_error_kcal": -1.9867372286013620E+000,
+        "damping": 1.4935292340255917E+000,
+        "corrected_energy": 1.8844456531096128E+001,
+        "corrected_error_kcal": -2.2293619394986307E-012
+      },
+      "coulomb": {
+        "atoms": {
+          "values": [
+            [1.8616493540967859E+001, 2.5344731591586300E+000, 2.5344731591579617E+000],
+            [2.5344731591586300E+000, 3.9336562466796587E-001, 2.3881563165137507E-001],
+            [2.5344731591579617E+000, 2.3881563165137507E-001, 3.9336562466775626E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": 2.4710986740271544E+001,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "xc": {
+        "atoms": {
+          "values": [
+            [-4.8651655913859200E+000, -3.1784875443687260E-001, -3.1784875443678029E-001],
+            [-3.1784875443687260E-001, -1.8002113946406256E-001, -5.6248299878232950E-003],
+            [-3.1784875443678029E-001, -5.6248299878232950E-003, -1.8002113946395795E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "self term",
+          "off_diagonal": "pair term",
+          "total": -5.8665302091754166E+000,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "total": {
+        "atoms": {
+          "values": [
+            [-3.7510531797374099E+001, -2.7972011010764625E-001, -2.7972011027504085E-001],
+            [-2.7972011010764625E-001, -4.2939678897536376E-001, -3.9564199502856740E-003],
+            [-2.7972011027504085E-001, -3.9564199502856740E-003, -4.2939678902846012E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "self-energy",
+          "off_diagonal": "interaction energy",
+          "total": -3.8932722015710894E+001,
+          "total_rule": "diagonal and one triangle"
+        }
+      },
+      "total_energy": -3.8932722015710894E+001,
+      "reference_energy": -3.8932721778276402E+001,
+      "field_energy": null,
+      "integration_error": -2.3743449162338948E-007,
+      "integration_error_kcal": -1.4899242286479648E-004,
+      "atomic_energies": {
+        "atoms": {
+          "self_energy": [-3.7510531797374099E+001, -4.2939678897536376E-001, -4.2939678902846012E-001],
+          "additive_energy": [-3.7790251907565441E+001, -5.7123505400432972E-001, -5.7123505414112341E-001]
+        }
+      },
+      "classical_interaction": {
+        "atoms": {
+          "values": [
+            [0.0000000000000000E+000, 3.8128644329226358E-002, 3.8128644161739444E-002],
+            [3.8128644329226358E-002, 0.0000000000000000E+000, 1.6684100375376210E-003],
+            [3.8128644161739444E-002, 1.6684100375376210E-003, 0.0000000000000000E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "none",
+          "off_diagonal": "classical interaction energy",
+          "total": 7.7925698528503423E-002,
+          "total_rule": "diagonal and one triangle"
+        }
+      }
+    }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 1.8735632183908049E+000, 1.8735632183908049E+000],
+      [5.3374233128834347E-001, 1.0000000000000000E+000, 1.0000000000000000E+000],
+      [5.3374233128834347E-001, 1.0000000000000000E+000, 1.0000000000000000E+000]
+    ]
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.atoms.spin",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/spin",
+      "kind": "atom_vector",
+      "title": "Spin populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.spin",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/spin",
+      "kind": "atom_vector",
+      "title": "Spin populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "enpart.electron_nuclear.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/electron_nuclear/atoms",
+      "kind": "atom_matrix",
+      "title": "Electron-nuclear attraction (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.electron_nuclear.integration_error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/electron_nuclear/integration_error_kcal",
+      "kind": "scalar",
+      "title": "Electron-nuclear attraction, integration error",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.kinetic.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/kinetic/atoms",
+      "kind": "atom_matrix",
+      "title": "Kinetic energy (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.kinetic.integration_error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/kinetic/integration_error_kcal",
+      "kind": "scalar",
+      "title": "Kinetic energy, integration error",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.nuclear_repulsion.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/nuclear_repulsion/atoms",
+      "kind": "atom_matrix",
+      "title": "Nuclear-nuclear repulsion (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.two_electron_integration.energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/two_electron_integration/energy",
+      "kind": "scalar",
+      "title": "Electron-electron energy, first grid",
+      "unit": "au",
+      "decimals": 7,
+      "signed": false
+    },
+    {
+      "id": "enpart.two_electron_integration.error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/two_electron_integration/error_kcal",
+      "kind": "scalar",
+      "title": "Two-electron integration error, first grid",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.two_electron_integration.corrected_error_kcal",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/two_electron_integration/corrected_error_kcal",
+      "kind": "scalar",
+      "title": "Two-electron integration error, corrected",
+      "unit": "kcal/mol",
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "enpart.coulomb.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/coulomb/atoms",
+      "kind": "atom_matrix",
+      "title": "Coulomb energy (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.xc.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/xc/atoms",
+      "kind": "atom_matrix",
+      "title": "Exchange energy (HF) (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.total.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/total/atoms",
+      "kind": "atom_matrix",
+      "title": "IQA energy terms (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.total_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/total_energy",
+      "kind": "scalar",
+      "title": "Total energy (IQA)",
+      "unit": "au",
+      "decimals": 7,
+      "signed": true
+    },
+    {
+      "id": "enpart.integration_error",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/integration_error",
+      "kind": "scalar",
+      "title": "Integration error of the total energy",
+      "unit": "au",
+      "decimals": 7,
+      "signed": true
+    },
+    {
+      "id": "enpart.atomic_energies.atoms.self_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/atomic_energies/atoms/self_energy",
+      "kind": "atom_vector",
+      "title": "Atomic self-energies",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.atomic_energies.atoms.additive_energy",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/atomic_energies/atoms/additive_energy",
+      "kind": "atom_vector",
+      "title": "Additive atomic energies",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "enpart.classical_interaction.atoms",
+      "analysis": "enpart",
+      "spin": null,
+      "path": "/analyses/enpart/classical_interaction/atoms",
+      "kind": "atom_matrix",
+      "title": "Classical interaction energies (TFVC)",
+      "unit": "au",
+      "decimals": 6,
+      "signed": true
+    }
+  ],
+  "run": {
+    "job_name": "CH2-T-ROHF-ORCA",
+    "input_file": "CH2-T-ROHF-ORCA.inp",
+    "wavefunction_file": "CH2-T-ROHF-ORCA.fchk",
+    "date": "2026-10-23T18:29:10+02:00",
+    "id": "2026-10-23T18:29:10+02:00/f422",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

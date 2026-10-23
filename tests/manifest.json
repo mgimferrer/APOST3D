@@ -4868,6 +4868,765 @@
           "pattern": "BOND ORDER MATRIX"
         }
       ]
+    },
+    {
+      "name": "HF-G-ORCA",
+      "description": "Hydrogen fluoride, RHF from ORCA 6.1.1 (utils/orca2fchk.py) with cc-pVQZ on F (pure g shells) and cc-pVDZ on H, the geometry of HF-G-pySCF: TFVC populations; the Mulliken charges equal ORCA's own, which checks the order and signs of every shell type (ORCA flips f and g functions with |m| of 3 or more).",
+      "tags": [
+        "hf",
+        "tfvc",
+        "rhf",
+        "orca",
+        "g-functions"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Basis functions (with g shells)",
+          "pattern": "Number of basis functions\\s*:\\s*(\\d+)",
+          "ref": 60.0,
+          "tol_abs": 0.5
+        },
+        {
+          "label": "F Mulliken charge (ORCA: -0.273823)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.273823,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "F TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+F\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.770826,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "HI-ECP-ORCA",
+      "description": "Hydrogen iodide, RHF/def2-SVP from ORCA 6.1.1 (utils/orca2fchk.py) with the def2 ECP on I, the geometry of HI-ECP-pySCF: ENPART (HF) with a 40 × 146 two-electron grid, the ECP matrix that orca2fchk.py computes (ORCA's nuclear-attraction matrix minus that of the core charges) added to the E-N terms.",
+      "tags": [
+        "hf",
+        "enpart",
+        "tfvc",
+        "rhf",
+        "orca",
+        "ecp"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/HF",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Pseudopotential energy (au)",
+          "pattern": "Pseudopotential energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 50.47784427,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Electron-nuclei energy incl. ECP (au)",
+          "pattern": "Electron-nuclear attraction \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -648.7483668,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "E-N integration error (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 1,
+          "ref": 0.0,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "Kinetic energy (au)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 114.2366644,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -297.231532,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -3e-07,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Two-electron error before the zero-error correction (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 3,
+          "ref": -13.71,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "I Mulliken charge (ORCA: -0.066457)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+I\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.066457,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "I TFVC atomic charge",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+I\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.352377,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "H2O-B3LYP-CPCM-ORCA",
+      "description": "Water, RKS B3LYP-D3BJ/def2-SVP with CPCM(water) and RIJCOSX from ORCA 6.1.1 (utils/orca2fchk.py): ENPART with ORCA's B3LYP (VWN5, libxc 475) and a 40 × 146 two-electron grid; the reference energies are those of the vacuum Hamiltonian, without the CPCM and dispersion terms, so the total energy closes.",
+      "tags": [
+        "dft",
+        "enpart",
+        "tfvc",
+        "rks",
+        "orca",
+        "hybrid",
+        "libxc-ids",
+        "solvent"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/LIBRARY",
+        "ENPART/EXC_FUNCTIONAL",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Kinetic energy (au)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 75.8351246,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -76.3200702,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 4.09e-05,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Two-electron error before the zero-error correction (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 3,
+          "ref": -3.36,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "O Mulliken charge (ORCA: -0.349262)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.349262,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "OH-UKS-ORCA",
+      "description": "Hydroxyl radical, UKS B3LYP/def2-SVP from ORCA 6.1.1 (utils/orca2fchk.py): single-determinant local spin and ENPART with ORCA's B3LYP (libxc 475), 40 × 146 two-electron grid; the Mulliken charges and spin populations equal ORCA's.",
+      "tags": [
+        "dft",
+        "enpart",
+        "spin",
+        "tfvc",
+        "uks",
+        "openshell",
+        "orca",
+        "libxc-ids"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "SPIN",
+        "ENPART",
+        "ENPART/LIBRARY",
+        "ENPART/EXC_FUNCTIONAL",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Kinetic energy (au)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 75.2608442,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -75.6340485,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -4.2e-06,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Two-electron error before the zero-error correction (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 3,
+          "ref": 1.12,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "O Mulliken charge (ORCA: -0.176764)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.176764,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "O Mulliken spin population (ORCA: 1.026658)",
+          "section": "SPIN POPULATIONS",
+          "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.026658,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "CH2-T-ROHF-ORCA",
+      "description": "CH2 triplet, ROHF/def2-TZVP from ORCA 6.1.1 (utils/orca2fchk.py, IROHF set): ENPART (HF) with a 40 × 146 two-electron grid; the Mulliken charges and spin populations equal ORCA's.",
+      "tags": [
+        "hf",
+        "enpart",
+        "tfvc",
+        "rohf",
+        "openshell",
+        "orca"
+      ],
+      "timeout": 600,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/HF",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Kinetic energy (au)",
+          "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 38.9191487,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -38.932722,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -2e-07,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Two-electron error before the zero-error correction (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 3,
+          "ref": -0.66,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "C Mulliken charge (ORCA: -0.306534)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.306534,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C Mulliken spin population (ORCA: 1.957490)",
+          "section": "SPIN POPULATIONS",
+          "pattern": "1\\s+C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.95749,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "FeCl4-EOS-ORCA",
+      "description": "[FeCl4]− sextet, UKS B3LYP/def2-SVP from ORCA 6.1.1 (utils/orca2fchk.py), a 3d metal without pseudopotential: TFVC, EOS with five atomic fragments, Fe(+3) and Cl(−1); the Mulliken charges and spin populations equal ORCA's.",
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "tfvc",
+        "uks",
+        "openshell",
+        "fragments",
+        "orca",
+        "transition-metal"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Fe Mulliken charge (ORCA: 0.592896)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+Fe\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.592896,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Fe Mulliken spin population (ORCA: 4.033869)",
+          "section": "SPIN POPULATIONS",
+          "pattern": "1\\s+Fe\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 4.033869,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Fe fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 3.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Cl fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 100.0,
+          "tol_abs": 0.02
+        },
+        {
+          "label": "EOS EFO .fchk file written",
+          "type": "files",
+          "glob": "*-EOS-EFOs.fchk",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "FeCl4-GEOS-ORCA",
+      "description": "The same [FeCl4]− sextet: GEOS with five atomic fragments, five unpaired electrons on Fe, Fe(+3) and Cl(−1).",
+      "tags": [
+        "dft",
+        "geos",
+        "effao",
+        "tfvc",
+        "uks",
+        "openshell",
+        "fragments",
+        "orca",
+        "transition-metal"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "GEOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Fe fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 3.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Cl fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 100.0,
+          "tol_abs": 0.02
+        },
+        {
+          "label": "Electronic assignment RMSD value",
+          "pattern": "RMSD of the electron assignment\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.16274,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "GEOS EFO .fchk file written",
+          "type": "files",
+          "glob": "*-GEOS-EFOs.fchk",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "PdCl4-EOS-ORCA",
+      "description": "[PdCl4]2−, RKS B3LYP/def2-SVP from ORCA 6.1.1 (utils/orca2fchk.py), a 4d metal with the def2 pseudopotential: TFVC, EOS with five atomic fragments, Pd(+2) and Cl(−1); the Mulliken charges equal ORCA's.",
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "tfvc",
+        "rks",
+        "fragments",
+        "orca",
+        "transition-metal",
+        "ecp"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Pd Mulliken charge (ORCA: -0.225564)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+Pd\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.225564,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Pd fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Cl fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 86.155,
+          "tol_abs": 0.02
+        },
+        {
+          "label": "EOS EFO .fchk file written",
+          "type": "files",
+          "glob": "*-EOS-EFOs.fchk",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "PdCl4-GEOS-ORCA",
+      "description": "The same [PdCl4]2−: closed-shell GEOS with five atomic fragments, Pd(+2) and Cl(−1).",
+      "tags": [
+        "dft",
+        "geos",
+        "effao",
+        "tfvc",
+        "rks",
+        "fragments",
+        "orca",
+        "transition-metal",
+        "ecp"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "GEOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Pd fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Cl fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 86.155,
+          "tol_abs": 0.02
+        },
+        {
+          "label": "Electronic assignment RMSD value",
+          "pattern": "RMSD of the electron assignment\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.14308,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "GEOS EFO .fchk file written",
+          "type": "files",
+          "glob": "*-GEOS-EFOs.fchk",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "name": "H2O-CAS44-ORCA",
+      "description": "Water, CASSCF(4,4)/STO-3G from ORCA 6.1.1 (utils/orca2fchk.py: .fchk and RDMs from the CI vector, ORCA in # DM), the state of H2O-CAS44 (O-H sigma active space): post-HF ENPART with all pairs, fragments O and H2, CORRELATION, VERBOSE 1; every number matches the pySCF test to 6e-6.",
+      "tags": [
+        "casscf",
+        "enpart",
+        "tfvc",
+        "orca",
+        "dm",
+        "fragments",
+        "correlation",
+        "verbose",
+        "spin"
+      ],
+      "timeout": 600,
+      "extra_input_files": [
+        "H2O-CAS44-ORCA.dm1",
+        "H2O-CAS44-ORCA.dm2"
+      ],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "DM/ORCA",
+        "DOFRAGS",
+        "VERBOSE",
+        "ENPART/CASSCF",
+        "ENPART/THREBOD",
+        "ENPART/CORRELATION",
+        "GRID/RADIAL_2E",
+        "GRID/ANGULAR_2E",
+        "SPIN"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Total integrated energy (au)",
+          "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -75.0085712,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Integration error (au)",
+          "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -2.3e-06,
+          "tol_abs": 2e-06
+        },
+        {
+          "label": "Two-electron error before the zero-error correction (kcal/mol)",
+          "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "match_index": 3,
+          "ref": 0.57,
+          "tol_abs": 0.01
+        },
+        {
+          "label": "Exchange-correlation after the correction (au)",
+          "pattern": "Exchange-correlation energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.181367,
+          "tol_abs": 2e-06,
+          "section": "(?m)^    EXCHANGE-CORRELATION ENERGY$"
+        },
+        {
+          "label": "Exchange, first grid (au)",
+          "pattern": "Exchange energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -9.0707704,
+          "tol_abs": 2e-06,
+          "section": "(?m)^    EXCHANGE ENERGY, BEFORE THE ZERO-ERROR CORRECTION$"
+        },
+        {
+          "label": "Correlation, first grid (au)",
+          "pattern": "Correlation energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": -0.1115642,
+          "tol_abs": 2e-06,
+          "section": "(?m)^    CORRELATION ENERGY, BEFORE THE ZERO-ERROR CORRECTION$"
+        },
+        {
+          "label": "O self-energy (au)",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
+          "pattern": "1\\s+O\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -73.639303,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "H-H interaction (au)",
+          "section": "(?m)^    IQA ENERGY TERMS \\(TFVC\\)$",
+          "pattern": "2\\s+H\\s+(?:[-+]?\\d+\\.\\d+\\s+){2}([-+]?\\d+\\.\\d+)",
+          "ref": 0.060042,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Fragment O-H2 interaction (au)",
+          "section": "(?m)^    FRAGMENT IQA ENERGY TERMS \\(TFVC\\)$",
+          "pattern": "1\\s+(?:[-+]?\\d+\\.\\d+\\s+){1}([-+]?\\d+\\.\\d+)",
+          "ref": -0.678688,
+          "tol_abs": 2e-05
+        }
+      ]
+    },
+    {
+      "name": "CH2-T-CAS66-ORCA",
+      "description": "CH2 triplet, CASSCF(6,6)/6-31G from ORCA 6.1.1 (utils/orca2fchk.py: .fchk and RDMs from the CI vector, ORCA in # DM), DM 2: exchange-only, improved and exchange-correlation bond orders and the correlated local spin, as CH2-T-CAS66.",
+      "tags": [
+        "casscf",
+        "dm",
+        "orca",
+        "spin",
+        "tfvc",
+        "openshell"
+      ],
+      "timeout": 300,
+      "extra_input_files": [
+        "CH2-T-CAS66-ORCA.dm1",
+        "CH2-T-CAS66-ORCA.dm2"
+      ],
+      "keywords": [
+        "TFVC",
+        "DM/ORCA",
+        "SPIN"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C-H exchange-only bond order",
+          "section": "EXCHANGE-ONLY BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.070068,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C free valence",
+          "section": "FREE VALENCES",
+          "pattern": "1  C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.710354,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C-H improved bond order (natural orbitals)",
+          "section": "IMPROVED BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.068683,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C-H exchange-correlation bond order (DI)",
+          "section": "EXCHANGE-CORRELATION BOND ORDER MATRIX",
+          "pattern": "1  C\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.955657,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "C effectively unpaired electrons",
+          "section": "EFFECTIVELY UNPAIRED ELECTRONS",
+          "pattern": "1  C\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.890364,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Total <S^2>",
+          "pattern": "Total <S\\^2>\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 1.999989,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "No closed-shell note for a triplet",
+          "type": "absent",
+          "pattern": "closed-shell correlated wavefunction"
+        }
+      ]
     }
   ]
 }

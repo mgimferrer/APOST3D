@@ -61,12 +61,12 @@ Don't write tests expecting these to work:
 | Tool | TFVC | BECKE-RHO | HIRSH / HIRSH-IT | MULLI | LOWDIN | LOWDIN-DAVIDSON | NAO-BASIS | LOWDIN-W |
 |---|---|---|---|---|---|---|---|---|
 | **Populations / bond orders** (always computed) | ✅ all TFVC tests | ✅ `CH3F-BECKE-RHO-EOS` | ✅ `CH3F-HIRSH`, `CH3F-HIRSH-IT` | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` | ✅ `NaBH3--UHF-DAVIDSON` | ✅ `CH3F-NAO` (Cartesian d), `H2O-NAO-pVDZ` (spherical d) | ② |
-| **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped), `NaBH3--UHF-UEFFAO` (UEFFAO per atom) | ✅ `CH3F-BECKE-RHO-EOS` | ✅ `CH3F-HIRSH`, `CH3F-HIRSH-IT` | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ✅ `NaBH3--UHF-DAVIDSON` | ✅ `CH3F-NAO` | stop |
-| **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI`, `CH3F-EFFAO-U` (EFFAO-U alone) | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **EFFAO / EOS** (`effao.f`) | ✅ `FeCO2-PBEPBE` (closed-shell, beta skipped), `NaBH3--UHF-UEFFAO` (UEFFAO per atom), `FeCl4-EOS-ORCA` (3d metal, UKS), `PdCl4-EOS-ORCA` (4d metal, ECP) | ✅ `CH3F-BECKE-RHO-EOS` | ✅ `CH3F-HIRSH`, `CH3F-HIRSH-IT` | ✅ `NaBH3--UHF` | ✅ `FeCN5NO3--UBLYP` (open-shell, both spins) | ✅ `NaBH3--UHF-DAVIDSON` | ✅ `CH3F-NAO` | stop |
+| **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI`, `CH3F-EFFAO-U` (EFFAO-U alone), `FeCl4-GEOS-ORCA` (3d metal, UKS), `PdCl4-GEOS-ORCA` (4d metal, ECP) | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **CUBE** | ✅ `CH3F-EOS-CUBE`, `LiH-32-FCI` (`NEG_EFOS`) | ② | ② | ② | ② | ≈dup | ② | ② |
 | **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2`, `CH3F-pySCF` (pySCF `.fchk`), `H2O-Dimer-RHF-OSLO` (after ENPART), `H2-T-OSLO` (no beta electrons), `C3H7F-OSLO-CLOSE` (close-alternative warning) | ② | ② | ✅ `CH3F-OSLO-MULLIKEN` | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ✅ `CH3F-OSLO-NAO` (`# OSLO NAO-BASIS`) | not an OSLO option |
-| **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `HI-ECP-pySCF` (pseudopotential), `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
-| **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22`, `CH2-T-CAS66` (triplet CASSCF) | ② | ② | ② | ② | ≈dup | ② | ② |
+| **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `HI-ECP-pySCF` (pseudopotential), `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP`; ORCA files: `HI-ECP-ORCA`, `H2O-B3LYP-CPCM-ORCA`, `OH-UKS-ORCA`, `CH2-T-ROHF-ORCA` (ROHF), `H2O-CAS44-ORCA` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22`, `CH2-T-CAS66` (triplet CASSCF), `OH-UKS-ORCA`, `CH2-T-CAS66-ORCA` (`DM/ORCA`) | ② | ② | ② | ② | ≈dup | ② | ② |
 | **LOBA** (`loba.f`) | ① | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **EDAIQA** | ① (needs two extra `.fchk`) | ② | ② | ? | ? | ? | ? | ? |
 | **POLAR** | ✅ `H2O-RHF-FIELD`, `H2O-T-UB3LYP-FIELD` | ② | ② | ? | ? | ? | ? | ? |
@@ -74,8 +74,10 @@ Don't write tests expecting these to work:
 | **SCATT-FACT**, **TOPOLOGY** | ② | ② | ② | ? | ? | ? | ? | ? |
 
 Still untested regardless of scheme:
-- **Interfaces:** `ORCA`, `MOKIT`, `WFN`, `DM/ORCA`, `DM/DMRG` (`QCHEM`
-  and `DM/PYSCF` are tested).
+- **Interfaces:** `MOKIT`, `WFN`, `DM/DMRG` (`QCHEM`, `DM/PYSCF` and
+  `DM/ORCA` are tested; ORCA wavefunctions come through
+  `utils/orca2fchk.py`, tested by the 11 `*-ORCA` tests, and need no
+  keyword).
 - **Other keywords:** `OS-CENTROID`, `DOATOMS`, and the `ENPART`
   functional keywords other than `SVWN`/`BLYP`/`B3LYP` and `EXC_FUNCTIONAL`
   (all keywords were checked ad hoc against Gaussian 16 wavefunctions,
@@ -87,7 +89,7 @@ Still untested regardless of scheme:
 ## Recommended order
 
 1. **`LOBA`** (TFVC + `DOFRAGS`): it blocks its file's cleanup pass.
-2. **Interfaces** (`ORCA`, `MOKIT`, `DM/ORCA`): need wavefunctions from
+2. **Interfaces** (`MOKIT`): need wavefunctions from
    those programs.
 3. **`EDAIQA`**, **`SCATT-FACT`**, **`TOPOLOGY`**: lower
    urgency.

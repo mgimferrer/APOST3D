@@ -1,0 +1,392 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : Hartree-Fock
+  Number of atoms                         : 2
+  Number of basis functions               : 31
+  Primitive gaussians                     : 74
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 13
+  SCF energy (au)                         :    -297.2315316633
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Energy decomposition                    : ENPART (IQA terms, see # ENPART)
+
+  # ENPART
+  Functional                              : HF
+  Atom-pair threshold (bond order)        : 0.0050 (THREBOD 50)
+  Two-electron grid                       : 40 x 146 (# GRID)
+  Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
+
+  TIMING CPU  :: Initialization                                    0.03 s
+  TIMING WALL :: Initialization                                    0.12 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 150
+  Angular points                          : 590
+  r0 (bohr)                               : 0.500
+  Grid points                             : 177000
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : 2 max / 2 min extrema; pseudopotential present; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   2 : subdivision 23, ratio  1.64550
+
+  Sum of atomic overlaps, largest error   : 6.81E-09 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 0.59 s
+  TIMING WALL :: Atomic definition                                 0.09 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  I    24.647623   25.066457
+    2  H     1.352377    0.933543
+  -------------------------------
+  Total     26.000000   26.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  I     0.352377   -0.066457
+    2  H    -0.352377    0.066457
+  -------------------------------
+  Total      0.000000    0.000000
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------
+                 1  I        2  H
+  -------------------------------
+    1  I    23.957292    1.380662
+    2  H     1.380662    0.662046
+  -------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1  I     1.380662
+    2  H     1.380662
+  -------------------
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1  I     1.380662
+    2  H     1.380662
+  -------------------
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1  I     0.000000
+    2  H     0.000000
+  -------------------
+
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  --------------------------------
+    ENERGY PARTITIONING (ENPART)
+  --------------------------------
+
+  Wavefunction                            : Hartree-Fock, restricted
+  Atomic definition                       : TFVC (real space)
+
+  Each matrix below holds the one-center (self) terms on the diagonal and
+  the whole A-B pair term off it; its total adds the diagonal and one
+  triangle. Energies in au.
+  VERBOSE 1 in # METHOD also prints the intermediate matrices.
+
+  Pseudopotential energy (au)             :      50.47784427
+
+  -------------------------------
+    ELECTRON-NUCLEAR ATTRACTION
+  -------------------------------
+
+  Includes the pseudopotential (ECP) energy of each atom on the diagonal.
+
+  -------------------------------
+                 1  I        2  H
+  -------------------------------
+    1  I  -628.376138  -19.030823
+    2  H   -19.030823   -1.341406
+  -------------------------------
+  Electron-nuclear attraction (au)        :    -648.7483668
+  Integration error (kcal/mol)            :           0.00
+
+  ------------------
+    KINETIC ENERGY
+  ------------------
+
+  One-center terms only: the kinetic energy has no pair terms.
+
+  Atom        Kinetic
+  -------------------
+    1  I   113.635882
+    2  H     0.600782
+  -------------------
+  Kinetic energy (au)                     :     114.2366644
+  Integration error (kcal/mol)            :           0.00
+
+  -----------------------------
+    NUCLEAR-NUCLEAR REPULSION
+  -----------------------------
+
+  -------------------------------
+                 1  I        2  H
+  -------------------------------
+    1  I     0.000000    8.222144
+    2  H     8.222144    0.000000
+  -------------------------------
+  Nuclear-nuclear repulsion (au)          :       8.2221444
+
+  TIMING CPU  :: ENPART one-electron terms                         0.74 s
+  TIMING WALL :: ENPART one-electron terms                         0.09 s
+
+  ---------------------
+    TWO-ELECTRON GRID
+  ---------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  Grid points                             : 11680
+  Pairs integrated (exact exchange)       : 1
+  Pairs from the multipolar expansion     : 0
+
+  TIMING CPU  :: ENPART Coulomb                                    0.31 s
+  TIMING WALL :: ENPART Coulomb                                    0.04 s
+  TIMING CPU  :: ENPART exact exchange                             7.60 s
+  TIMING WALL :: ENPART exact exchange                             0.95 s
+
+  ----------------------------------
+    TWO-ELECTRON INTEGRATION ERROR
+  ----------------------------------
+
+  Electron-electron energy (au)           :     229.0361803
+  Integration error (kcal/mol)            :         -13.71
+  Tolerance (kcal/mol)                    :           0.25
+  Zero-error correction                   : applied to the one-center terms
+  Error on the rotated grid (kcal/mol)    :         -43.50
+  Same-sign error on both grids: extrapolating, not interpolating
+  Damping parameter                       :       1.4600971
+  Corrected electron-electron energy (au) :     229.0580260
+  Corrected integration error (kcal/mol)  :           0.00
+
+  The one-center Coulomb and exchange terms of the matrices below
+  are the corrected ones; the pair terms do not change.
+
+  TIMING CPU  :: ENPART zero-error correction                      5.51 s
+  TIMING WALL :: ENPART zero-error correction                      0.76 s
+
+  ------------------
+    COULOMB ENERGY
+  ------------------
+
+  -------------------------------
+                 1  I        2  H
+  -------------------------------
+    1  I   239.279584   10.690184
+    2  H    10.690184    0.599208
+  -------------------------------
+  Coulomb energy (au)                     :     250.5689752
+
+  ----------------------------------
+    EXCHANGE ENERGY (HARTREE-FOCK)
+  ----------------------------------
+
+  -------------------------------
+                 1  I        2  H
+  -------------------------------
+    1  I   -20.953643   -0.310309
+    2  H    -0.310309   -0.246997
+  -------------------------------
+  Exchange energy (au)                    :     -21.5109492
+
+  ---------------------------
+    IQA ENERGY TERMS (TFVC)
+  ---------------------------
+
+  Self-energies on the diagonal, interaction energies off it.
+
+  -------------------------------
+                 1  I        2  H
+  -------------------------------
+    1  I  -296.414315   -0.428803
+    2  H    -0.428803   -0.388414
+  -------------------------------
+  Total energy (au)                       :    -297.2315320
+  Energy in the .fchk file (au)           :    -297.2315317
+  Integration error (au)                  :      -0.0000003
+  Integration error (kcal/mol)            :           0.00
+
+  -------------------
+    ATOMIC ENERGIES
+  -------------------
+
+  Additive energy = self-energy + half of each interaction energy of the atom;
+  the additive energies add up to the total energy.
+
+  Atom    Self-energy    Additive
+  -------------------------------
+    1  I  -296.414315 -296.628717
+    2  H    -0.388414   -0.602815
+  -------------------------------
+  Total   -296.802729 -297.231532
+
+  ----------------------------------
+    CLASSICAL INTERACTION ENERGIES
+  ----------------------------------
+
+  Electron-nuclear + nuclear-nuclear + Coulomb part of each interaction;
+  the rest of it is the exchange-correlation part. No self terms.
+
+  -------------------------------
+                 1  I        2  H
+  -------------------------------
+    1  I     0.000000   -0.118495
+    2  H    -0.118495    0.000000
+  -------------------------------
+  Classical interaction energy (au)       :      -0.1184948
+
+  TIMING CPU  :: ENPART two-electron terms                        13.50 s
+  TIMING WALL :: ENPART two-electron terms                         1.76 s
+
+  ...Normal Termination of APOST-3D...
