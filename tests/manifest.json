@@ -865,6 +865,12 @@
           "pattern": "Reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 96.598,
           "tol_abs": 0.02
+        },
+        {
+          "label": "Unweighted EOS EFO .fchk file written",
+          "type": "files",
+          "glob": "*-EOS-EFOs-unweighted.fchk",
+          "count": 1
         }
       ]
     },
@@ -2220,6 +2226,12 @@
           "pattern": "\\n\\s*1\\s+[-+]?\\d+\\.\\d+\\s+[-+]?\\d+\\.\\d+\\s+([\\d.]+)",
           "ref": 80.97,
           "tol_abs": 0.05
+        },
+        {
+          "label": "Unweighted GEOS EFO .fchk file written",
+          "type": "files",
+          "glob": "*-GEOS-EFOs-unweighted.fchk",
+          "count": 1
         }
       ]
     },
@@ -3603,6 +3615,11 @@
           "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 83.534,
           "tol_abs": 0.02
+        },
+        {
+          "label": "No unweighted EFO file with Hilbert-space atoms",
+          "type": "absent",
+          "pattern": "Unweighted EFO file"
         }
       ]
     },
@@ -4125,6 +4142,12 @@
           "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 100.0,
           "tol_abs": 0.02
+        },
+        {
+          "label": "Unweighted EOS EFO .fchk file written",
+          "type": "files",
+          "glob": "*-EOS-EFOs-unweighted.fchk",
+          "count": 1
         }
       ]
     },
@@ -4357,6 +4380,17 @@
           "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 86.312,
           "tol_abs": 0.02
+        },
+        {
+          "label": "No unweighted EFO .fchk file with Hirshfeld atoms",
+          "type": "files",
+          "glob": "*-unweighted.fchk",
+          "count": 0
+        },
+        {
+          "label": "Output says why",
+          "type": "present",
+          "pattern": "Unweighted EFO file \\(\\.fchk\\)\\s*:\\s*not written with Hirshfeld atoms"
         }
       ]
     },

@@ -736,8 +736,9 @@ def write_html_report(results: list, path: Path):
 # ── update-ref mode ───────────────────────────────────────────────────────────
 
 # orbital .fchk files a run writes, <name><suffix>: EOS/EFFAO, GEOS, OSLO
-ORBITAL_SUFFIXES = ("-EOS-EFOs.fchk", "-GEOS-EFOs.fchk", "-OSLOs.fchk",
-                    "-OSLOs-preortho.fchk")
+ORBITAL_SUFFIXES = ("-EOS-EFOs.fchk", "-GEOS-EFOs.fchk",
+                    "-EOS-EFOs-unweighted.fchk", "-GEOS-EFOs-unweighted.fchk",
+                    "-OSLOs.fchk", "-OSLOs-preortho.fchk")
 
 
 def update_references(tests: list, results: list, ref_dir: Path,
