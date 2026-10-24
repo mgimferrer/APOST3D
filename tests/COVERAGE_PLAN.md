@@ -65,7 +65,7 @@ Don't write tests expecting these to work:
 | **GEOS / EFFAO-U** (`ueos.f`) | ✅ `NaBH3--B3LYP-GEOS`, `LiH-32-FCI`, `CH3F-EFFAO-U` (EFFAO-U alone), `FeCl4-GEOS-ORCA` (3d metal, UKS), `PdCl4-GEOS-ORCA` (4d metal, ECP) | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **CUBE** | ✅ `CH3F-EOS-CUBE`, `LiH-32-FCI` (`NEG_EFOS`) | ② | ② | ② | ② | ≈dup | ② | ② |
 | **OSLO** (`oslo.f`) | ✅ `CH3F`, `FeO4-2`, `CH3F-pySCF` (pySCF `.fchk`), `H2O-Dimer-RHF-OSLO` (after ENPART), `H2-T-OSLO` (no beta electrons), `C3H7F-OSLO-CLOSE` (close-alternative warning) | ② | ② | ✅ `CH3F-OSLO-MULLIKEN` | ✅ `FeCN5NO3--UBLYP-t2` | ≈dup of LOWDIN | ✅ `CH3F-OSLO-NAO` (`# OSLO NAO-BASIS`) | not an OSLO option |
-| **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `HI-ECP-pySCF` (pseudopotential), `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP`; ORCA files: `HI-ECP-ORCA`, `H2O-B3LYP-CPCM-ORCA`, `OH-UKS-ORCA`, `CH2-T-ROHF-ORCA` (ROHF), `H2O-CAS44-ORCA` | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **ENPART** (`enpart.f`, `enpart_dft.f`) | ✅ `H2O-T-B3LYP`, `C2H6-B3LYP`, `H2O-Dimer-RHF`, `HI-ECP-pySCF` (pseudopotential), `LiH-35-CAS22`, `H2O-T-BLYP`, `H2O-SVWN`, `H2O-Dimer-BLYP`, `H2O-Dimer-B3LYP`; ORCA files: `HI-ECP-ORCA`, `H2O-B3LYP-CPCM-ORCA`, `OH-UKS-ORCA`, `CH2-T-ROHF-ORCA` (ROHF), `H2O-CAS44-ORCA`, `H2O-TPSSH-ORCA` (hybrid meta-GGA, libxc 457) | ① | ① | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **SPIN** (`corr.f`) | ✅ `H2O-T-B3LYP`, `LiH-35-CAS22`, `CH2-T-CAS66` (triplet CASSCF), `OH-UKS-ORCA`, `CH2-T-CAS66-ORCA` (`DM/ORCA`) | ② | ② | ② | ② | ≈dup | ② | ② |
 | **LOBA** (`loba.f`) | ① | ② | ② | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **EDAIQA** | ① (needs two extra `.fchk`) | ② | ② | ? | ? | ? | ? | ? |
@@ -80,7 +80,7 @@ reads as KS-DFT.
 Still untested regardless of scheme:
 - **Interfaces:** `WFN`, `DM/DMRG` (`QCHEM`, `DM/PYSCF` and `DM/ORCA`
   are tested; ORCA wavefunctions come through `utils/orca2fchk.py`,
-  tested by the 11 `*-ORCA` tests, and need no keyword).
+  tested by the 12 `*-ORCA` tests, and need no keyword).
 - **Other keywords:** `OS-CENTROID`, `DOATOMS`, and the `ENPART`
   functional keywords other than `SVWN`/`BLYP`/`B3LYP` and `EXC_FUNCTIONAL`
   (all keywords were checked ad hoc against Gaussian 16 wavefunctions,
