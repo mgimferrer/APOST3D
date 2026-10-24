@@ -171,6 +171,11 @@ for the general layout and the meaning of `Fit (%)`):
   input `.fchk` with a non-empty unpaired density, a Beta set is added.
 - **"Orbital energy"** of each orbital: its gross occupation.
 
+With `BECKE`, `BECKE-RHO` or `TFVC` atoms, GEOS also writes
+`<jobname>-GEOS-EFOs-unweighted.fchk`, with the same orbitals before the
+multiplication by the fragment's weight
+([The unweighted files](../guide/visualization.md#the-unweighted-files)).
+
 In the LiH example, the negative EFO of the H atom is the last Alpha
 orbital, with "orbital energy" −0.0978 (its gross occupation), and its
 `Fit (%)` of 84.36 is the quality of that orbital's fit.

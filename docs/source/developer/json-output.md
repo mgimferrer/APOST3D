@@ -69,6 +69,7 @@ This page is the reference for its content.
 | `n_basis_functions` | number of basis functions |
 | `n_electrons`, `n_alpha`, `n_beta` | electron counts (valence electrons only with an ECP) |
 | `energy_au` | the `SCF Energy` field of the `.fchk` file, or `null` when the file has none. For a correlated Gaussian calculation it is the energy of the reference SCF; the `.fchk` files written by `utils/apost3d.py` (pySCF) store the energy of the method itself there. Any change of this definition will be announced in the release notes. |
+| `density` | the density every analysis used: `fchk_block`, the header of its block in the `.fchk` file (`"Total SCF Density"`, or with `DENS` n the n-th block whose header starts with `Total` and names a `Density`, e.g. `"Total MP2 Density"`), `index` (n, 1 without `DENS`) and `source`: `"fchk"`, or `"dm1"` when the 1-RDM file of `# DM` replaces that density. `utils/apost3d.py` and `utils/orca2fchk.py` write the density of the method itself (e.g. CASSCF) in the `"Total SCF Density"` block |
 
 ### `input`
 
@@ -124,13 +125,14 @@ with f applied k times, the distances in bohr,
   the range −½ to ½;
 - `tfvc`: ν_AB = (1 + μ_AB − χ (1 − μ_AB)) / (1 + μ_AB + χ (1 − μ_AB)).
 
-The orbitals of the EOS and GEOS `.fchk` files are basis-set fits of the
-real-space EFOs, each the EFO times its fragment's weight (see
-[Orbital `.fchk` files](../guide/visualization.md#orbital-fchk-files)); the fit puts small
-tails on the other fragments. Multiplied once more by w_F, an orbital
-loses those tails; it stays practically the same where w_F is close to 1
-and comes out somewhat weaker near the fragment's boundary than the cube
-file of the same EFO.
+The orbitals of `orbital_file_unweighted` (eos, geos) are the EFOs
+before the multiplication by the weight of their fragment F: the EFO is
+w_F φ, the values of its cube file, point by point. Each φ is normalized
+so that ∫ (w_F φ)² = 1. The orbitals of `orbital_file` are basis-set
+fits of w_F φ (see
+[Orbital `.fchk` files](../guide/visualization.md#orbital-fchk-files)):
+they already contain the weight, approximately, and are not to be
+multiplied by w_F again.
 
 ### `run`
 
@@ -255,6 +257,7 @@ Written with `EOS`.
 | `fragments` | `oxidation_states`, `electrons_alpha`, `electrons_beta` |
 | `reliability_percent` | the overall R, the smaller of the two channels |
 | `orbital_file`, `orbital_file_id` | the `.fchk` file with the EFOs (in the same folder) and its id (see [Tables](#tables)) |
+| `orbital_file_unweighted` | with `BECKE`, `BECKE-RHO` and `TFVC` atoms only: the `.fchk` file with the same EFOs before the multiplication by the fragment's weight (see [`atomic_weights`](#atomic_weights)); same orbital columns and run id as `orbital_file`, so `fchk_column` labels both |
 
 The `efos` table of a channel lists every EFO of the assignment, sorted
 by gross occupation as they are assigned, which is also the order of the
@@ -298,6 +301,7 @@ place of the alpha and beta electrons:
 | `reliability_percent` | the overall R |
 | `rmsd` | root-mean-square deviation between the pooled occupations and the electrons assigned to them |
 | `orbital_file`, `orbital_file_id` | the `.fchk` file with the EFOs and its id |
+| `orbital_file_unweighted` | as in `eos` |
 
 To label the orbitals of `orbital_file`: alpha orbital k is the row with
 `fchk_column` k of a table with `fchk_orbitals` `"alpha"` (`paired.efos`

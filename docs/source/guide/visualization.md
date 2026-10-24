@@ -30,6 +30,7 @@ orbitals directly from the wavefunction. It is under development.
 | `<jobname>-OSLOs-preortho.fchk` | `OSLO` with `PRINT_NONORTHO` | The OSLOs before orthogonalization |
 | `<jobname>-EOS-EFOs.fchk` | `EOS` | Effective fragment orbitals: alpha in the Alpha set, beta in the Beta set (only alpha for closed shells) |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired orbitals in the Alpha set, unpaired ones in the Beta set (see [GEOS](../methods/geos.md#orbitals-in-the-fchk-file)) |
+| `<jobname>-EOS-EFOs-unweighted.fchk`, `<jobname>-GEOS-EFOs-unweighted.fchk` | `EOS`, `GEOS` with `BECKE`, `BECKE-RHO` or `TFVC` atoms | The same EFOs before the multiplication by the fragment's weight (see [below](#the-unweighted-files)) |
 
 Each file is a copy of the input `.fchk` whose molecular orbitals are
 replaced by the analysis orbitals; the geometry and basis set are
@@ -92,15 +93,31 @@ To see the exact shape of such an orbital, write its cube file (`CUBE` in
 times the fragment's weight, on the same scale as the `.fchk` orbital, so
 the same isovalue can be used for both.
 
+### The unweighted files
+
+With `BECKE`, `BECKE-RHO` or `TFVC` atoms, EOS and GEOS also write
+`<jobname>-EOS-EFOs-unweighted.fchk` (or `-GEOS-EFOs-unweighted.fchk`),
+with the same orbitals, in the same order, as the file above, but taken
+**before** the multiplication by the fragment's weight w_F. Each of
+these orbitals φ is a combination of basis functions, written exactly,
+and the effective fragment orbital is w_F × φ: the cube file of the same
+EFO holds exactly that product. On its own, φ is not the EFO (it is not
+cut to its fragment and can be large elsewhere), so the file is meant
+for programs that multiply each orbital by w_F themselves; the results
+file gives everything needed to rebuild w_F
+([`atomic_weights`](../developer/json-output.md#atomic_weights)). The
+output names both files at the end of EOS and GEOS.
+
+The unweighted file is not written with `HIRSH` and `HIRSH-IT`, whose
+weights the results file does not give (the output says so), nor with
+Hilbert-space schemes, whose EFOs are already exact in the first file.
+
 **In APOST3Dview.** With `BECKE`, `BECKE-RHO` or `TFVC` atoms,
-APOST3Dview multiplies each EOS and GEOS orbital of the `.fchk` file by
-its fragment's weight function, rebuilt from the results file. This
-removes the extra lobes that the fit puts on other fragments, and the
-surfaces look like those of the cube files. Near the fragment's boundary
-they come out somewhat weaker than in the cube file, and an orbital with
-a low `Fit (%)` stays approximate on its own fragment too: for those, the
-cube file remains the reference. Other programs show the orbital as
-stored in the file, extra lobes included.
+APOST3Dview reads the unweighted file and multiplies each orbital by its
+fragment's weight function, rebuilt from the results file, which
+reproduces the cube file of the orbital. With `HIRSH` and `HIRSH-IT` it
+shows the orbitals of the first file as stored, as other programs do,
+extra lobes included.
 
 ## Cube files
 

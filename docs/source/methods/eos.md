@@ -166,6 +166,10 @@ and a neutral NO still holds, but with significant covalency.
 - `<jobname>-EOS-EFOs.fchk`: the EFOs of all fragments as orbitals, for
   any viewer that reads `.fchk` files; see
   [Visualizing orbitals](../guide/visualization.md).
+- `<jobname>-EOS-EFOs-unweighted.fchk` with `BECKE`, `BECKE-RHO` or
+  `TFVC` atoms: the same EFOs before the multiplication by the fragment's
+  weight, for viewers that apply it themselves; see
+  [The unweighted files](../guide/visualization.md#the-unweighted-files).
 - Cube files of selected EFOs with `CUBE`.
 
 ## Checking the result

@@ -40,7 +40,10 @@ program, not a full development history — see `git log` for that.
   effective fragment orbitals (EFOs) from EOS (with any population
   scheme) and GEOS, are written out to a standard `.fchk` file, so they
   can be viewed directly in any common orbital-viewer instead of only as
-  cube files.
+  cube files. With `BECKE`, `BECKE-RHO` or `TFVC` atoms, EOS and GEOS
+  also write `<jobname>-EOS-EFOs-unweighted.fchk` (`-GEOS-`): the same
+  EFOs before the multiplication by the fragment's weight, exact in the
+  basis, for viewers that apply the weight themselves (APOST3Dview).
 - **New cube-file options** — `SPACING`/`PADDING` keywords under
   `# CUBE` for the grid spacing and the box margin (in bohr), backed by one
   unified, faster cube-generation routine. `MAX_OCC 1000` (the default)
