@@ -146,15 +146,6 @@ program, not a full development history — see `git log` for that.
   (expert override: `ROTATION_2E`), and `rr00` is now `R0_2E`; the old
   spellings stop with a message. `THRESH2`, which had no effect, is gone
   too. Defaults unchanged.
-- **`MOKIT` keyword removed** — it is no longer needed: `.fchk` files
-  written by MOKIT have the layout of Gaussian's and are read without
-  it. In version 4 it kept OSLO's `.fchk` export from searching for
-  blocks that MOKIT's files don't have; the orbital files are now written
-  by skipping each block of the input file by its size, which works for
-  any of them. An input that still has it is read like any unknown
-  keyword. For
-  ORCA, `utils/orca2fchk.py` also writes the reference energies of
-  ENPART, which MOKIT's files lack.
 - **Analyses not available in this version** — `EDAIQA`, `TOPOLOGY`,
   `DAFH`, `SHANNON`, `WFN` and `READINT` in `# METHOD`, and `DMRG` in
   `# DM`, were read but nothing was computed (the input summary still
