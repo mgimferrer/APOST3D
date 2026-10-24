@@ -54,6 +54,7 @@
       dimension clin(nmax**2)
       character*80 line,line2
       character*20 cform,ctype
+      character*30 cword
       character*200 cdens
       character*40 cdblock
       character*20 cnum
@@ -98,22 +99,42 @@
       end if
       call print_value('MO formalism',trim(cform))
 
-      if(index(line(11:25),"CASSCF").ne.0) then
+!! the method word: first word of the method field (columns 11-40),   !!
+!! cut at '-' (G16 RMP2-FC, RCCSD-FC) and without the R/U/RO prefix;  !!
+!! no wavefunction method below starts with R or U                    !!
+      cword=adjustl(line(11:40))
+      i=index(cword,' ')
+      if(i.gt.0) cword(i:)=' '
+      i=index(cword,'-')
+      if(i.gt.1) cword(i:)=' '
+      if(cword(1:2).eq.'RO') then
+        cword=cword(3:)
+      else if(cword(1:1).eq.'R'.or.cword(1:1).eq.'U') then
+        cword=cword(2:)
+      end if
+
+!! the whole word is compared, so functional names that contain HF,  !!
+!! MP or CI (M06HF, HFS, MPW1PW91, PBE1KCIS) are KS-DFT               !!
+      select case(cword)
+      case('CASSCF')
         icas=1
         ctype='CASSCF'
-      else if(index(line(11:25),"HF").ne.0) then
+      case('HF')
         ctype='Hartree-Fock'
-      else if(index(line(11:25),"MP").ne.0) then
-        ctype='Moller-Plesset PT'
-      else if(index(line(11:25),"CI").ne.0) then
+      case('CID','CIS','CISD','QCISD','QCISD(T)','QCISD(TQ)')
         icisd=1
         ctype='CI'
-      else if(index(line(11:25),"CCSD").ne.0) then
-        ctype='Coupled-cluster'
+      case('CCD','CCSD','CCSD(T)','BD','BD(T)')
         icisd=1
-      else
-        ctype='KS-DFT'
-      end if
+        ctype='Coupled-cluster'
+      case default
+        if(cword(1:2).eq.'MP'.and.
+     +     index('0123456789',cword(3:3)).ne.0) then
+          ctype='Moller-Plesset PT'
+        else
+          ctype='KS-DFT'
+        end if
+      end select
 !! a method name not recognised above is taken as a functional: the   !!
 !! method field of the .fchk is shown with it                         !!
       if(ctype.eq.'KS-DFT') then
