@@ -76,8 +76,7 @@ Don't write tests expecting these to work:
 Still untested regardless of scheme:
 - **Interfaces:** `WFN`, `DM/DMRG` (`QCHEM`, `DM/PYSCF` and `DM/ORCA`
   are tested; ORCA wavefunctions come through `utils/orca2fchk.py`,
-  tested by the 11 `*-ORCA` tests, and need no keyword, nor do MOKIT
-  files, which have the standard layout).
+  tested by the 11 `*-ORCA` tests, and need no keyword).
 - **Other keywords:** `OS-CENTROID`, `DOATOMS`, and the `ENPART`
   functional keywords other than `SVWN`/`BLYP`/`B3LYP` and `EXC_FUNCTIONAL`
   (all keywords were checked ad hoc against Gaussian 16 wavefunctions,
