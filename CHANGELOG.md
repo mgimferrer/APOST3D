@@ -363,6 +363,12 @@ program, not a full development history — see `git log` for that.
   totals, the bond charges, a molecular dipole summary, a note for
   charged molecules), and POLAR with a Hilbert-space atomic definition
   stops (its dipoles need real-space atoms).
+- **Calculation type of Kohn-Sham `.fchk` files** — the method in line 2
+  of the `.fchk` is now compared as a whole word. Functionals whose
+  Gaussian name contains HF, MP or CI (M06HF, HFS, mPW1PW91, the KCIS
+  functionals) were reported as Hartree-Fock, Møller-Plesset or CI, and
+  the KCIS ones took the path of correlated wavefunctions (natural
+  orbitals, correlated local spin); they now read as KS-DFT.
 
 ### Others
 
