@@ -1968,8 +1968,8 @@
 !!   ceil(nval/5) lines of 5 values each immediately after its header,   !!
 !!   regardless of which program wrote the file, so this is robust even  !!
 !!   when the source .fchk omits optional sections a marker search would !!
-!!   otherwise hang or run off the end of the file looking for (MOKIT/   !!
-!!   pySCF-written files routinely omit "Orthonormal basis", for one).   !!
+!!   otherwise hang or run off the end of the file looking for (pySCF-   !!
+!!   written files routinely omit "Orthonormal basis", for one).         !!
 !! arguments:                                                            !!
 !!   iunit (in)    -- unit number of the source .fchk, already           !!
 !!                    positioned right after the block's header line     !!
@@ -2179,7 +2179,7 @@
 !!   as OSLO's oslo_fchk_write (oslo.f), extended to also cover the     !!
 !!   Energies blocks and to skip past every original block by its known  !!
 !!   size (skip_fchk_orbblock) rather than searching for the next        !!
-!!   section's header -- robust to MOKIT/pySCF-written .fchk files that  !!
+!!   section's header -- robust to pySCF-written .fchk files that        !!
 !!   omit optional sections like "Orthonormal basis" a search would      !!
 !!   otherwise run off the end of the file looking for. Q-Chem-format    !!
 !!   branch is still unverified by an active test (no unrestricted       !!
