@@ -15,6 +15,11 @@ beforehand are read instead (name.json.conf: MOCoefficients, Basisset and
 1elIntegrals S, T, V).
 
 Wavefunctions: RHF, UHF, ROHF, RKS, UKS, ROKS, and single-root CASSCF.
+For RKS/UKS/ROKS the method field of the .fchk carries the R/U/RO prefix
+and the functional keyword of the ORCA input (from name.out), as Gaussian
+writes it: RB3LYP, UPBE0, RB3LYP/G; without one known keyword (custom
+%method functional, no output file) it is RKS/UKS/ROKS, with a note.
+APOST-3D does not read the name: give the functional in # ENPART.
 Pseudopotentials are supported (the ECP matrix is written for ENPART). The
 energies written are those of the vacuum Hamiltonian: a CPCM dielectric
 energy is left out, with a printed note; ORCA's SCF energy excludes an
@@ -61,6 +66,31 @@ BOHR = 0.529177210903       # Angstrom; ORCA 6's value (CODATA 2018)
 TESTED_MAJOR = 6
 
 _SHELL_L = {'s': 0, 'p': 1, 'd': 2, 'f': 3, 'g': 4, 'h': 5, 'i': 6}
+
+# density-functional keywords of ORCA's simple input, upper case, each one
+# run with ORCA 6.1.1 (accepted, DFT settings printed); the -3c composite
+# methods are left out on purpose
+_ORCA_FUNCTIONALS = frozenset('''
+    HFS LDA LSD VWN VWN3 VWN5 PWLDA XHF HFLDA LB94
+    BNULL BVWN BP BP86 BPW91 BLYP GP GLYP PW91 PBE BPBE REVPBE RPBE PWP
+    OLYP OPBE XLYP MPWPW MPWLYP PW86PBE RPW86PBE B97-D B97-D3 B97-D4
+    TPSS REVTPSS M06L SCANFUNC RSCAN R2SCAN B97M-V B97M-D3BJ B97M-D4
+    B1LYP B3LYP B3LYP/G B3LYP_G O3LYP X3LYP G1LYP G3LYP B1P B3P B3P86 G1P
+    G3P B1PW B1PW91 B3PW B3PW91 PW1PW MPW1PW MPW1LYP B1PBE B3PBE PWP1
+    PBE0 PW91_0 REVPBE0 REVPBE38 BHANDHLYP
+    TPSSH TPSS0 PW6B95 M06 M062X R2SCANH R2SCAN0 R2SCAN50
+    WB97 WB97X WB97X-D3 WB97X-D3BJ WB97X-V WB97X-D4 WB97X-D4REV WB97M-V
+    WB97M-D3BJ WB97M-D4 WB97M-D4REV CAM-B3LYP LC-BLYP LC-PBE WR2SCAN
+    B2PLYP B2GP-PLYP B2K-PLYP B2T-PLYP B2NC-PLYP MPW2PLYP PWPB95 DSD-BLYP
+    DSD-PBEP86 DSD-PBEB95 REVDSD-PBEP86-D4/2021 REVDOD-PBEP86-D4/2021
+    PBE0-DH PBE0-2 PBE-QIDH R2SCAN0-DH R2SCAN-CIDH R2SCAN-QIDH R2SCAN0-2
+    PR2SCAN50 PR2SCAN69 KPR2SCAN50 WPR2SCAN50 WB2PLYP WB2GP-PLYP WB97X-2
+'''.split())
+
+# wavefunction methods of APOST-3D's method-field rule (sources/input2.f,
+# subroutine input): every other method word reads as KS-DFT
+_WFN_METHODS = {'CASSCF', 'HF', 'CID', 'CIS', 'CISD', 'QCISD', 'QCISD(T)',
+                'QCISD(TQ)', 'CCD', 'CCSD', 'CCSD(T)', 'BD', 'BD(T)'}
 
 
 def _note(text):
@@ -187,7 +217,47 @@ def _orca_output(fil):
     if re.search(r'pointcharges|\bqmmm\b', echo, re.IGNORECASE):
         raise Orca2fchkError('external point charges (QM/MM): not '
                              'supported')
+    out['functional'], out['functional_why'] = _functional(echo)
     return out
+
+
+def _functional(echo):
+    """The density-functional keyword of the ORCA input (its ! lines and
+    %method Functional), or None and the reason."""
+    text = '\n'.join(line.split('#')[0] for line in echo.splitlines())
+    if re.search(r'\$new_job|%compound', text, re.IGNORECASE):
+        return None, 'input with several jobs'
+    words = []
+    for line in text.splitlines():
+        if line.strip().startswith('!'):
+            words += line.strip()[1:].upper().split()
+    for block in re.findall(r'%method\b(.*?)\bend\b', text,
+                            re.IGNORECASE | re.DOTALL):
+        if re.search(r'\b(exchange|correlation|ldaopt|scalhfx|scaldfx|'
+                     r'scaldfc|scalldac)\b', block, re.IGNORECASE):
+            return None, 'functional set in %method'
+        for value in re.findall(r'\bfunctional\s+"?([^\s"]+)', block,
+                                re.IGNORECASE):
+            if value.upper() not in _ORCA_FUNCTIONALS:
+                return None, 'functional %s set in %%method' % value
+            words.append(value.upper())
+    names = sorted({w for w in words if w in _ORCA_FUNCTIONALS})
+    if len(names) != 1:
+        return None, ('no known functional keyword in the input' if not names
+                      else 'several functional keywords (%s)'
+                      % ', '.join(names))
+    return names[0], None
+
+
+def _reads_as_wavefunction(word):
+    """True when APOST-3D reads the method word as a wavefunction method:
+    cut at '-', without the R/U/RO prefix, compared whole."""
+    w = word.split('-')[0] if word.find('-') > 0 else word
+    if w.startswith('RO'):
+        w = w[2:]
+    elif w[:1] in ('R', 'U'):
+        w = w[1:]
+    return w in _WFN_METHODS or (w[:2] == 'MP' and w[2:3].isdigit())
 
 
 #####################################################################
@@ -850,7 +920,20 @@ def convert(name, fchk=None, outfile=None):
     lower = lambda m: (m[np.ix_(perm, perm)] * sgn)[tril]
 
     if ks:
-        header = {'RHF': 'RKS', 'UHF': 'UKS', 'ROHF': 'ROKS'}[hftyp]
+        # the functional's name as Gaussian writes it (RB3LYP); RKS, UKS,
+        # ROKS when the input does not give one known keyword
+        prefix = {'RHF': 'R', 'UHF': 'U', 'ROHF': 'RO'}[hftyp]
+        header = prefix + 'KS'
+        func = out.get('functional')
+        if func is None:
+            _note('functional not identified (%s): method field %s in the '
+                  '.fchk' % (out.get('functional_why', 'no ORCA output'),
+                             header))
+        elif _reads_as_wavefunction(prefix + func):
+            _note('functional %s would read as a wavefunction method in '
+                  'APOST-3D: method field %s in the .fchk' % (func, header))
+        else:
+            header = prefix + func
         if out.get('xfun') == 'B88' and out.get('cfun') == 'LYP' and \
                 out.get('ldac', '').upper().startswith('VWN-5'):
             _note('ORCA\'s B3LYP/BLYP-type functional uses VWN5: in # ENPART '
@@ -866,7 +949,7 @@ def convert(name, fchk=None, outfile=None):
         with open(tmp, 'w') as f:
             f.write('Automatically generated by orca2fchk.py for job %s\n'
                     % os.path.basename(name))
-            # method in columns 11-25 (APOST-3D reads its flags there)
+            # method from column 11 (KS: the functional's name), basis after
             f.write('SP        %-15s %s\n' % (header, basis_name))
             _i(f, 'Number of atoms', len(zatom))
             _i(f, 'Charge', mol['Charge'])
