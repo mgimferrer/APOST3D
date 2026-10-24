@@ -75,8 +75,10 @@ program, not a full development history — see `git log` for that.
   `ORCA` in `# DM`. It checks the basis it writes against ORCA's overlap
   matrix and the RDMs against ORCA's CASSCF density, and stops on the
   calculations APOST-3D cannot analyse (relativistic Hamiltonians,
-  external fields, state-averaged CASSCF). See "Preparing the
-  wavefunction".
+  external fields, state-averaged CASSCF). For 19 ORCA functionals
+  (LDA, GGA, meta-GGA and global hybrids) the libxc ids that reproduce
+  ORCA's exchange-correlation energy in ENPART are listed, and the
+  script prints them. See "Preparing the wavefunction".
 
 ### Changes to ENPART that affect inputs or results
 

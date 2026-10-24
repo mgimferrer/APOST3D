@@ -39,8 +39,15 @@ Each keyword reproduces the Gaussian 16 functional of the same name (checked on 
 
 - The B3LYP of ORCA or Turbomole uses VWN5 instead of VWN-RPA: use
   `LIBRARY` + `EXC_FUNCTIONAL 475`, not the `B3LYP` keyword. For water the
-  two differ by about 23 kcal/mol. pySCF's `B3LYP` is Gaussian's (402,
-  checked with pySCF 2.14).
+  two differ by about 23 kcal/mol. pySCF's `B3LYP` and ORCA's `B3LYP/G`
+  are Gaussian's (402; checked with pySCF 2.14 and ORCA 6.1.1). The
+  libxc ids of other ORCA functionals are listed in
+  [Preparing the wavefunction](../guide/wavefunctions.md#orca).
+- ORCA's BP86 and B3P86 build P86 on PW92 local correlation, and ORCA's
+  X3LYP uses VWN5 where libxc's (id 411) uses VWN-RPA: no libxc id
+  reproduces them (for water, the closest P86, id 217, is 0.9 kcal/mol
+  off; X3LYP 16 kcal/mol). Use a Gaussian 16 or pySCF wavefunction for
+  them in ENPART.
 - The name in the `.fchk` (e.g. `RB3LYP`, also in the files of
   `apost3d.py` and `orca2fchk.py`) is the one of the program that made
   it, so the same name can mean different functionals. APOST-3D does not

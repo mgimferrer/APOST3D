@@ -222,7 +222,8 @@ conversion is done. `-o other.fchk` writes the file under another name
 
 ORCA wavefunctions are best used for the analyses of the density and the
 orbitals: populations, EFFAO, EOS, GEOS and OSLO. ENPART also works with
-them and was checked on small molecules (HF, B3LYP, UKS, CASSCF), but a
+them and was checked on small molecules (HF, CASSCF, and the
+functionals of the table below, restricted and unrestricted), but a
 Gaussian 16 or pySCF wavefunction remains the better-tested choice for
 ENPART.
 ```
@@ -249,10 +250,42 @@ H   0.000000  -0.757200  -0.469200
 *
 ```
 
-For ENPART, name the functional by its libxc ids: ORCA's B3LYP (VWN5) is
-`LIBRARY` + `EXC_FUNCTIONAL 475`, not the `B3LYP` keyword (see
-[`# ENPART`](../input/enpart.md#wavefunction-and-functional));
-`orca2fchk.py` prints a reminder when it finds it.
+For ENPART, name an ORCA functional by its libxc ids with `LIBRARY` (see
+[`# ENPART`](../input/enpart.md#wavefunction-and-functional)): the
+functional keywords of `# ENPART` reproduce Gaussian's functionals,
+which are not always ORCA's (ORCA's B3LYP is 475, not the `B3LYP`
+keyword). For the ORCA keywords below, ENPART's exchange-correlation
+energy equals ORCA's to 0.02 kcal/mol (water, def2-TZVP, ORCA 6.1.1;
+B3LYP, PBE0 and TPSSh also unrestricted), and `orca2fchk.py` prints the
+ids when it finds one of them:
+
+| ORCA keyword | `# ENPART` with `LIBRARY` |
+|---|---|
+| `LSD` | `EX_FUNCTIONAL 1`, `EC_FUNCTIONAL 7` |
+| `BLYP` | `EX_FUNCTIONAL 106`, `EC_FUNCTIONAL 131` |
+| `PBE` | `EX_FUNCTIONAL 101`, `EC_FUNCTIONAL 130` |
+| `revPBE` | `EX_FUNCTIONAL 102`, `EC_FUNCTIONAL 130` |
+| `TPSS` | `EX_FUNCTIONAL 202`, `EC_FUNCTIONAL 231` |
+| `r2SCAN` | `EX_FUNCTIONAL 497`, `EC_FUNCTIONAL 498` |
+| `M06L` | `EX_FUNCTIONAL 203`, `EC_FUNCTIONAL 233` |
+| `B3LYP` | `EXC_FUNCTIONAL 475` |
+| `B3LYP/G` | `EXC_FUNCTIONAL 402` (Gaussian's B3LYP) |
+| `PBE0` | `EXC_FUNCTIONAL 406` |
+| `B3PW91` | `EXC_FUNCTIONAL 401` |
+| `BHANDHLYP` | `EXC_FUNCTIONAL 436` |
+| `TPSSh` | `EXC_FUNCTIONAL 457` |
+| `TPSS0` | `EXC_FUNCTIONAL 396` |
+| `M06` | `EX_FUNCTIONAL 449`, `EC_FUNCTIONAL 235` |
+| `M062X` | `EX_FUNCTIONAL 450`, `EC_FUNCTIONAL 236` |
+| `PW6B95` | `EXC_FUNCTIONAL 451` |
+| `r2SCANh` | `EXC_FUNCTIONAL 659` |
+| `r2SCAN0` | `EXC_FUNCTIONAL 660` |
+
+ORCA's `BP86`, `B3P86` and `X3LYP` have no libxc equivalent (see "Same
+name, different functional" in
+[`# ENPART`](../input/enpart.md#predefined-functionals)): for ENPART use
+a Gaussian 16 or pySCF wavefunction. Range-separated and double-hybrid
+functionals are not supported by ENPART.
 
 The method field of the `.fchk` names the functional keyword of the ORCA
 input with the R/U/RO prefix, as Gaussian does: `RB3LYP`, `UTPSSH`. It
