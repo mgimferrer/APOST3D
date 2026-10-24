@@ -82,8 +82,12 @@ program, not a full development history — see `git log` for that.
   comes from the multipolar expansion, as it already did for HF and
   CASSCF, instead of from BODEN. The default threshold is lowered from
   0.01 to 0.005 (`THREBOD 50`, was 100); in every system checked, the
-  results stay within 0.04 kcal/mol of computing all pairs. Use
-  `THREBOD -1` to compute every pair.
+  results stay within 0.04 kcal/mol of computing all pairs. Where two
+  fragments are joined by many weak pairs, their interaction and self
+  terms can change much more, by equal and opposite amounts, since each
+  atom's self term gives up half of each of its pair terms (in ferrocene,
+  about 11 kcal/mol between the two rings). Use `THREBOD -1` to compute
+  every pair.
 - **Zero-error strategy only when needed** — the new default
   `TWOELTOLER 0.25` applies it only when the two-electron integration
   error exceeds 0.25 kcal/mol (it used to be applied always);
