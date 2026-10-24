@@ -5661,6 +5661,37 @@
           "pattern": "closed-shell correlated wavefunction"
         }
       ]
+    },
+    {
+      "name": "H2O-RM06HF-METHOD",
+      "description": "The H2O-M062X Gaussian 16 file with RM06HF in the method field (Mulliken only): a functional name containing HF reads as KS-DFT, not Hartree-Fock.",
+      "tags": [
+        "dft",
+        "rks",
+        "fchk-header"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "MULLI"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "RM06HF read as KS-DFT",
+          "type": "present",
+          "pattern": "Calculation type\\s*:\\s*KS-DFT, Kohn-Sham determinant \\(\\.fchk method: RM06HF\\)"
+        },
+        {
+          "label": "Not read as Hartree-Fock",
+          "type": "absent",
+          "pattern": "Calculation type\\s*:\\s*Hartree-Fock"
+        }
+      ]
     }
   ]
 }

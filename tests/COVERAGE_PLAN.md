@@ -73,6 +73,10 @@ Don't write tests expecting these to work:
 | **DOINT** | ✅ `H2O-DOINT` | ② | ② | ✅ `NaBH3--UHF-DOINT` | ② | ② | ② | ② |
 | **SCATT-FACT**, **TOPOLOGY** | ② | ② | ② | ? | ? | ? | ? | ? |
 
+The `.fchk` method field (line 2) is read as a whole word:
+`H2O-RM06HF-METHOD` checks that a functional name containing `HF`
+reads as KS-DFT.
+
 Still untested regardless of scheme:
 - **Interfaces:** `WFN`, `DM/DMRG` (`QCHEM`, `DM/PYSCF` and `DM/ORCA`
   are tested; ORCA wavefunctions come through `utils/orca2fchk.py`,
