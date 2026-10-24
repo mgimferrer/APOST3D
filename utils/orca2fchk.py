@@ -19,7 +19,9 @@ For RKS/UKS/ROKS the method field of the .fchk carries the R/U/RO prefix
 and the functional keyword of the ORCA input (from name.out), as Gaussian
 writes it: RB3LYP, UPBE0, RB3LYP/G; without one known keyword (custom
 %method functional, no output file) it is RKS/UKS/ROKS, with a note.
-APOST-3D does not read the name: give the functional in # ENPART.
+APOST-3D does not read the name: give the functional in # ENPART; for the
+ORCA functionals checked against ORCA's exchange-correlation energy a
+note gives their libxc ids (or says that libxc has no equivalent).
 Pseudopotentials are supported (the ECP matrix is written for ENPART). The
 energies written are those of the vacuum Hamiltonian: a CPCM dielectric
 energy is left out, with a printed note; ORCA's SCF energy excludes an
@@ -86,6 +88,38 @@ _ORCA_FUNCTIONALS = frozenset('''
     PBE0-DH PBE0-2 PBE-QIDH R2SCAN0-DH R2SCAN-CIDH R2SCAN-QIDH R2SCAN0-2
     PR2SCAN50 PR2SCAN69 KPR2SCAN50 WPR2SCAN50 WB2PLYP WB2GP-PLYP WB97X-2
 '''.split())
+
+# libxc ids of # ENPART (LIBRARY) for ORCA functionals: the exchange-
+# correlation energy of ENPART equals ORCA's E(XC) within 0.02 kcal/mol
+# (water, def2-TZVP, ORCA 6.1.1; B3LYP, PBE0, TPSSh also UKS)
+_ENPART_LIBXC = {
+    'LSD': 'EX_FUNCTIONAL 1 + EC_FUNCTIONAL 7',
+    'BLYP': 'EX_FUNCTIONAL 106 + EC_FUNCTIONAL 131',
+    'PBE': 'EX_FUNCTIONAL 101 + EC_FUNCTIONAL 130',
+    'REVPBE': 'EX_FUNCTIONAL 102 + EC_FUNCTIONAL 130',
+    'TPSS': 'EX_FUNCTIONAL 202 + EC_FUNCTIONAL 231',
+    'R2SCAN': 'EX_FUNCTIONAL 497 + EC_FUNCTIONAL 498',
+    'M06L': 'EX_FUNCTIONAL 203 + EC_FUNCTIONAL 233',
+    'B3LYP': 'EXC_FUNCTIONAL 475',
+    'B3LYP/G': 'EXC_FUNCTIONAL 402',
+    'B3LYP_G': 'EXC_FUNCTIONAL 402',
+    'PBE0': 'EXC_FUNCTIONAL 406',
+    'B3PW91': 'EXC_FUNCTIONAL 401',
+    'BHANDHLYP': 'EXC_FUNCTIONAL 436',
+    'TPSSH': 'EXC_FUNCTIONAL 457',
+    'TPSS0': 'EXC_FUNCTIONAL 396',
+    'M06': 'EX_FUNCTIONAL 449 + EC_FUNCTIONAL 235',
+    'M062X': 'EX_FUNCTIONAL 450 + EC_FUNCTIONAL 236',
+    'PW6B95': 'EXC_FUNCTIONAL 451',
+    'R2SCANH': 'EXC_FUNCTIONAL 659',
+    'R2SCAN0': 'EXC_FUNCTIONAL 660',
+}
+# ORCA functionals that no libxc id reproduces (same check)
+_ENPART_NO_LIBXC = {
+    'BP86': 'its P86 correlation is built on PW92',
+    'B3P86': 'its P86 correlation is built on PW92',
+    'X3LYP': 'its local correlation is VWN5, libxc\'s X3LYP has VWN-RPA',
+}
 
 # wavefunction methods of APOST-3D's method-field rule (sources/input2.f,
 # subroutine input): every other method word reads as KS-DFT
@@ -934,7 +968,16 @@ def convert(name, fchk=None, outfile=None):
                   'APOST-3D: method field %s in the .fchk' % (func, header))
         else:
             header = prefix + func
-        if out.get('xfun') == 'B88' and out.get('cfun') == 'LYP' and \
+        if func in _ENPART_LIBXC:
+            _note('# ENPART for ORCA\'s %s: LIBRARY + %s (its exchange-'
+                  'correlation energy checked against ORCA\'s)%s'
+                  % (func, _ENPART_LIBXC[func], ', not the B3LYP keyword'
+                     if func == 'B3LYP' else ''))
+        elif func in _ENPART_NO_LIBXC:
+            _note('ORCA\'s %s has no libxc equivalent (%s): for ENPART use a '
+                  'Gaussian 16 or pySCF wavefunction'
+                  % (func, _ENPART_NO_LIBXC[func]))
+        elif out.get('xfun') == 'B88' and out.get('cfun') == 'LYP' and \
                 out.get('ldac', '').upper().startswith('VWN-5'):
             _note('ORCA\'s B3LYP/BLYP-type functional uses VWN5: in # ENPART '
                   'use LIBRARY + EXC_FUNCTIONAL (B3LYP: 475), not B3LYP')
