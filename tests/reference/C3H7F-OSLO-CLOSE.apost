@@ -100,7 +100,7 @@
   ------------------------
 
   MO formalism                            : Restricted
-  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RKS)
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RB3LYP)
   Number of atoms                         : 11
   Number of basis functions               : 70
   Primitive gaussians                     : 140
