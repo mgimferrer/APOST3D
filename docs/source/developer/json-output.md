@@ -125,14 +125,16 @@ with f applied k times, the distances in bohr,
   the range −½ to ½;
 - `tfvc`: ν_AB = (1 + μ_AB − χ (1 − μ_AB)) / (1 + μ_AB + χ (1 − μ_AB)).
 
-The orbitals of `orbital_file_unweighted` (eos, geos) are the EFOs
-before the multiplication by the weight of their fragment F: the EFO is
-w_F φ, the values of its cube file, point by point. Each φ is normalized
-so that ∫ (w_F φ)² = 1. The orbitals of `orbital_file` are basis-set
-fits of w_F φ (see
-[Orbital `.fchk` files](../guide/visualization.md#orbital-fchk-files)):
-they already contain the weight, approximately, and are not to be
-multiplied by w_F again.
+With these atoms, the orbitals of `orbital_file` (eos, geos) are
+least-squares projections of the EFOs onto the basis set, an
+approximation, while the orbitals φ of `orbital_file_unweighted` times
+w_F, the weight of their fragment F, are the exact EFOs (see
+[Orbital `.fchk` files](../guide/visualization.md#orbital-fchk-files)).
+The orbitals φ are the EFOs before the multiplication by w_F: w_F φ are
+the values of the EFO's cube file, point by point, and each φ is
+normalized so that ∫ (w_F φ)² = 1. The orbitals of `orbital_file`
+already contain the weight, approximately, and are not to be multiplied
+by w_F again.
 
 ### `run`
 
@@ -296,7 +298,7 @@ place of the alpha and beta electrons:
 |---|---|
 | `scheme` | as in `populations` |
 | `paired`, `unpaired` | `reliability_percent`, `frontier`, `frontier_efos` and `efos` as in `eos` (for `paired`, occupations run from 0 to 2: λ_LO = 2 when `last_occupied` is empty, and R = 100 min(1, (λ_LO − λ_FU)/2 + 0.5)). The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals; `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
-| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `fit_percent` (as in the EFO tables: how closely the orbital in the file reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
+| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `fit_percent` (as in the EFO tables: how closely its projected orbital in `orbital_file` reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
 | `fragments` | `oxidation_states`, `electrons_paired`, `electrons_unpaired` |
 | `reliability_percent` | the overall R |
 | `rmsd` | root-mean-square deviation between the pooled occupations and the electrons assigned to them |

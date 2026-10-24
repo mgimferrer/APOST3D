@@ -44,6 +44,9 @@ program, not a full development history — see `git log` for that.
   also write `<jobname>-EOS-EFOs-unweighted.fchk` (`-GEOS-`): the same
   EFOs before the multiplication by the fragment's weight, exact in the
   basis, for viewers that apply the weight themselves (APOST3Dview).
+  With these atoms the EFOs of the first file are basis-set
+  approximations: the shape of an EFO is judged from its cube file or in
+  APOST3Dview.
 - **New cube-file options** — `SPACING`/`PADDING` keywords under
   `# CUBE` for the grid spacing and the box margin (in bohr), backed by one
   unified, faster cube-generation routine. `MAX_OCC 1000` (the default)

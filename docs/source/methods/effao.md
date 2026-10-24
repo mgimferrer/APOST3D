@@ -137,10 +137,12 @@ density:
   net and gross (alpha) population: the occupations of the EFOs below
   0.001. Small values mean the listed EFOs describe the fragment's density
   well. With a Hilbert-space scheme only the net value is printed.
-- `Fit (%)` (real-space schemes, not `EFFAO-U`) measures how well each EFO can be
-  written in terms of the basis functions, which is how `EOS` and `GEOS`
-  write them to a `.fchk` file (see
-  [Visualizing orbitals](../guide/visualization.md)).
+- `Fit (%)` (real-space schemes, not `EFFAO-U`) measures how well the
+  projected orbital, the EFO written in terms of the basis functions as
+  `EOS` and `GEOS` write it to `<jobname>-EOS-EFOs.fchk`
+  (`-GEOS-EFOs.fchk`), reproduces the EFO. It does not concern the cube
+  files or the unweighted `.fchk` file, which are both exact (see
+  [Visualizing orbitals](../guide/visualization.md#orbital-fchk-files)).
 
 Here the iron alpha EFOs show five core-like orbitals at 1.000, five
 more above 0.98 (the rest of the core and the 3d-type orbitals that keep

@@ -146,8 +146,10 @@ out (an iron orbital with occupation 0.321) are far apart. How this is
 computed is explained in [EOS](methods/eos.md).
 
 The run also wrote `feco2-EOS-EFOs.fchk`: open it in an orbital viewer
-(GaussView, Avogadro, IQmol, ...) to see the effective fragment orbitals;
-the "orbital energy" of each one is its occupation
+(GaussView, Avogadro, IQmol, ...) to browse the effective fragment
+orbitals; the "orbital energy" of each one is its occupation. With TFVC
+atoms these orbitals are basis-set approximations: for the exact shape
+of an orbital, use its cube file or APOST3Dview
 ([Visualizing orbitals](guide/visualization.md)).
 
 ## Next steps

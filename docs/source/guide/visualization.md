@@ -47,6 +47,31 @@ each (0 after the last OSLO). In the EFO files:
 - the densities in the file are the original ones, not built from the
   EFOs.
 
+```{admonition} The shape of an effective fragment orbital
+:class: important
+
+With a real-space scheme, judge the shape of an EFO from its cube file
+(`CUBE` in `# METHOD`) or, with `BECKE`, `BECKE-RHO` or `TFVC` atoms, in
+APOST3Dview: both show the exact orbital. The orbitals of
+`<jobname>-EOS-EFOs.fchk` and `<jobname>-GEOS-EFOs.fchk`, which any
+program can show, are their least-squares projections onto the basis
+set: close to the EFO on its own fragment, with small spurious tails on
+the other fragments, and only rough for weakly occupied EFOs, whose fit
+is poor. They should not be used to judge an EFO's shape.
+```
+
+**Which file holds what.** For an EFO of a real-space scheme, with w_F
+the weight function of its fragment:
+
+| File | Holds | Use it for |
+|---|---|---|
+| `<jobname>-EOS-EFOs.fchk`, `-GEOS-EFOs.fchk` | The projection of the EFO onto the basis set: an approximation, of quality `Fit (%)` | Programs that show the orbitals stored in a `.fchk` file; browsing all EFOs at once |
+| `<jobname>-EOS-EFOs-unweighted.fchk`, `-GEOS-EFOs-unweighted.fchk` (`BECKE`, `BECKE-RHO`, `TFVC`) | The basis-set vector φ, exact; the EFO is w_F × φ | APOST3Dview, which multiplies by w_F; programs that apply w_F themselves |
+| Cube files (`CUBE`) | w_F × φ on a grid: the EFO, exact | The shape of the EFO, in any program that reads cube files |
+
+With a Hilbert-space scheme the EFOs of the first file are exact, and no
+unweighted file is written.
+
 **How faithful the EFOs in the file are.** With a Hilbert-space scheme
 (`MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`, `NAO-BASIS`) the EFOs are
 combinations of basis functions and are written exactly. With a
@@ -56,7 +81,8 @@ can't be written exactly in terms of the basis functions, which is all a
 `.fchk` file can hold. The file contains its best basis-set
 approximation, and the `Fit (%)` row printed under each fragment's
 occupations in the main output gives its quality, 100 × (1 − ‖difference‖
-/ ‖orbital‖), also for the negative GEOS orbitals. Typical
+/ ‖orbital‖), also for the negative GEOS orbitals. `Fit (%)` concerns
+only this file: the cube files and the unweighted file are exact. Typical
 values:
 
 | EFO net occupation | Typical `Fit (%)` |
@@ -77,19 +103,35 @@ outside its fragment: the fragment's weight function goes from 1 to 0
 gradually, so the orbital keeps a small part on the neighboring atoms
 (a few percent of its squared norm). A surface that reaches onto a
 neighbor is therefore part of the orbital itself. The approximation in
-the `.fchk` file follows it closely when `Fit (%)` is about 80 or more:
-it puts at most about 3% more of its norm outside the fragment, and at an
+the `.fchk` file is close to it when `Fit (%)` is about 80 or more: it
+puts at most about 3% more of its norm outside the fragment, and at an
 isovalue of 0.075 it shows the lobes of the exact cube file and no others
-(for a diffuse orbital its surface can be somewhat smaller). It shows
-lobes that the exact orbital doesn't have:
+(for a diffuse orbital its surface can be somewhat smaller). Even then,
+its values differ from the exact ones by a few percent of the largest
+value, so the cube file or APOST3Dview remain the reference for the
+shape. It shows lobes that the exact orbital doesn't have:
 
 - for weakly occupied orbitals: small extra lobes with `Fit (%)` between
   about 60 and 80, clear ones below about 60;
 - at small isovalues (0.03 and below), where the small differences
   between the two become visible.
 
-To see the exact shape of such an orbital, write its cube file (`CUBE` in
-`# METHOD`, see [Cube files](#cube-files)): it holds the exact orbital
+Compared at every grid point with the cube files of the TFVC test
+calculations `CH3F-EOS-CUBE` (15 EFOs) and `LiH-32-FCI` (the negative
+paired EFO), as a fraction of the cube's largest value:
+
+| Orbital | Largest difference from the cube |
+|---|---|
+| w_F × φ, from the unweighted file | ≤ 2.9 × 10⁻⁵ (RMS ≤ 1.0 × 10⁻⁶): the cube's 5 printed digits |
+| `.fchk` orbital, `Fit (%)` 98–100 | 0.0001–0.003 |
+| `.fchk` orbital, `Fit (%)` 86–95 (well-fitted occupied EFOs) | 0.02–0.14 |
+| `.fchk` orbital, `Fit (%)` 34–60 (weakly occupied EFOs) | up to 0.62 |
+| `.fchk` orbital multiplied by w_F once more | up to 0.67 |
+
+To see the exact shape of an orbital, write its cube file (`CUBE` in
+`# METHOD`, see [Cube files](#cube-files)) or, with `BECKE`, `BECKE-RHO`
+or `TFVC` atoms, open the results file in APOST3Dview (see
+[below](#the-unweighted-files)). The cube file holds the exact orbital
 times the fragment's weight, on the same scale as the `.fchk` orbital, so
 the same isovalue can be used for both.
 

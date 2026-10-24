@@ -95,8 +95,10 @@ one entry per fragment:
 - The `Net` rows are the net occupations of the fragment's EFOs, and the
   `Gross` rows their gross occupations, 8 per line, in the same order.
   Paired occupations go up to 2, unpaired ones up to 1.
-- `Fit (%)` gives, for each EFO, how faithfully the orbital written to the
-  `.fchk` file reproduces it (see *Orbitals in the .fchk file* below).
+- `Fit (%)` gives, for each EFO, how faithfully the projected orbital
+  written to `<jobname>-GEOS-EFOs.fchk` reproduces it (see *Orbitals in
+  the .fchk file* below); the cube files and the unweighted file are
+  exact.
 - `Left out by the cutoff` is what the listed EFOs miss of the fragment's
   net and gross population in that density (see [EFFAO](effao.md)). In
   the paired density it can be negative, as here: the EFOs below the
@@ -212,4 +214,4 @@ NEG_EFOS 10
   actual occupations, divided by the number of electrons: the smaller,
   the closer the electron distribution is to the integer assignment.
 - For negative paired EFOs, `Fit (%)` tells how faithfully the
-  orbital in the `.fchk` file represents them.
+  orbital in `<jobname>-GEOS-EFOs.fchk` represents them.
