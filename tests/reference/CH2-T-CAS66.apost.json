@@ -13,7 +13,12 @@
     "n_electrons": 8,
     "n_alpha": 5,
     "n_beta": 3,
-    "energy_au": -3.8947460534308632E+001
+    "energy_au": -3.8947460534308632E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "dm1"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nDM 2\n#\n# DM\nCH2-T-CAS66.dm1\nCH2-T-CAS66.dm2\npySCF\n#\n",
@@ -309,8 +314,8 @@
     "job_name": "CH2-T-CAS66",
     "input_file": "CH2-T-CAS66.inp",
     "wavefunction_file": "CH2-T-CAS66.fchk",
-    "date": "2026-10-24T14:49:59+02:00",
-    "id": "2026-10-24T14:49:59+02:00/40b8",
+    "date": "2026-10-24T14:55:05+02:00",
+    "id": "2026-10-24T14:55:05+02:00/f910",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -13,7 +13,12 @@
     "n_electrons": 2,
     "n_alpha": 2,
     "n_beta": 0,
-    "energy_au": -7.7770354514569418E-001
+    "energy_au": -7.7770354514569418E-001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
@@ -266,7 +271,7 @@
       },
       "reliability_percent": 1.0000000000000000E+002,
       "orbital_file": "H2-T-EOS-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-24T14:49:57+02:00/5748",
+      "orbital_file_id": "2026-10-24T14:55:03+02:00/dc98",
       "orbital_file_unweighted": "H2-T-EOS-EOS-EFOs-unweighted.fchk"
     }
   },
@@ -609,8 +614,8 @@
     "job_name": "H2-T-EOS",
     "input_file": "H2-T-EOS.inp",
     "wavefunction_file": "H2-T-EOS.fchk",
-    "date": "2026-10-24T14:49:57+02:00",
-    "id": "2026-10-24T14:49:57+02:00/5748",
+    "date": "2026-10-24T14:55:03+02:00",
+    "id": "2026-10-24T14:55:03+02:00/dc98",
     "threads": 8,
     "status": "normal",
     "stop_message": null

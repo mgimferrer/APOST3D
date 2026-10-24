@@ -13,7 +13,12 @@
     "n_electrons": 18,
     "n_alpha": 9,
     "n_beta": 9,
-    "energy_au": -7.9865613377734434E+001
+    "energy_au": -7.9865613377734434E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nOSLO\nDOFRAGS\n#\n# OSLO\nFOLI_TOLERANCE 3\nPRINT_NONORTHO\n#\n# FRAGMENTS\n2\n4\n1 3 4 5\n-1\n#\n",
@@ -193,7 +198,7 @@
       },
       "orbital_file": "C2H6-OSLO-2CH3-OSLOs.fchk",
       "orbital_file_preortho": "C2H6-OSLO-2CH3-OSLOs-preortho.fchk",
-      "orbital_file_id": "2026-10-24T14:49:18+02:00/7ad8"
+      "orbital_file_id": "2026-10-24T14:54:22+02:00/6728"
     }
   },
   "atomic_weights": {
@@ -440,8 +445,8 @@
     "job_name": "C2H6-OSLO-2CH3",
     "input_file": "C2H6-OSLO-2CH3.inp",
     "wavefunction_file": "C2H6-OSLO-2CH3.fchk",
-    "date": "2026-10-24T14:49:18+02:00",
-    "id": "2026-10-24T14:49:18+02:00/7ad8",
+    "date": "2026-10-24T14:54:22+02:00",
+    "id": "2026-10-24T14:54:22+02:00/6728",
     "threads": 8,
     "status": "normal",
     "stop_message": null

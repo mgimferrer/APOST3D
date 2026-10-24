@@ -13,7 +13,12 @@
     "n_electrons": 10,
     "n_alpha": 5,
     "n_beta": 5,
-    "energy_au": -1.0006333060347870E+002
+    "energy_au": -1.0006333060347870E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\n#\n",
@@ -172,8 +177,8 @@
     "job_name": "HF-G-ORCA",
     "input_file": "HF-G-ORCA.inp",
     "wavefunction_file": "HF-G-ORCA.fchk",
-    "date": "2026-10-24T14:49:59+02:00",
-    "id": "2026-10-24T14:49:59+02:00/6890",
+    "date": "2026-10-24T14:55:05+02:00",
+    "id": "2026-10-24T14:55:05+02:00/1708",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -13,7 +13,12 @@
     "n_electrons": 8,
     "n_alpha": 5,
     "n_beta": 3,
-    "energy_au": -3.8947460534308632E+001
+    "energy_au": -3.8947460534308632E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\n#\n",
@@ -113,8 +118,8 @@
     "job_name": "CH2-T-CAS66-NODM",
     "input_file": "CH2-T-CAS66-NODM.inp",
     "wavefunction_file": "CH2-T-CAS66-NODM.fchk",
-    "date": "2026-10-24T14:49:59+02:00",
-    "id": "2026-10-24T14:49:59+02:00/4df8",
+    "date": "2026-10-24T14:55:05+02:00",
+    "id": "2026-10-24T14:55:05+02:00/ba98",
     "threads": 8,
     "status": "normal",
     "stop_message": null

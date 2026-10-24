@@ -13,7 +13,12 @@
     "n_electrons": 26,
     "n_alpha": 13,
     "n_beta": 13,
-    "energy_au": -2.9723153166331451E+002
+    "energy_au": -2.9723153166331451E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nHF\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
@@ -469,8 +474,8 @@
     "job_name": "HI-ECP-ORCA",
     "input_file": "HI-ECP-ORCA.inp",
     "wavefunction_file": "HI-ECP-ORCA.fchk",
-    "date": "2026-10-24T14:49:59+02:00",
-    "id": "2026-10-24T14:49:59+02:00/23f8",
+    "date": "2026-10-24T14:55:05+02:00",
+    "id": "2026-10-24T14:55:05+02:00/1a90",
     "threads": 8,
     "status": "normal",
     "stop_message": null

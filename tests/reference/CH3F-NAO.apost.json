@@ -13,7 +13,12 @@
     "n_electrons": 18,
     "n_alpha": 9,
     "n_beta": 9,
-    "energy_au": -1.3973340090377860E+002
+    "energy_au": -1.3973340090377860E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nNAO-BASIS\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n2\n-1\n#\n",
@@ -239,7 +244,7 @@
       },
       "reliability_percent": 9.4026068371783680E+001,
       "orbital_file": "CH3F-NAO-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-24T14:49:58+02:00/2028"
+      "orbital_file_id": "2026-10-24T14:55:04+02:00/e960"
     }
   },
   "index": [
@@ -505,8 +510,8 @@
     "job_name": "CH3F-NAO",
     "input_file": "CH3F-NAO.inp",
     "wavefunction_file": "CH3F-NAO.fchk",
-    "date": "2026-10-24T14:49:58+02:00",
-    "id": "2026-10-24T14:49:58+02:00/2028",
+    "date": "2026-10-24T14:55:04+02:00",
+    "id": "2026-10-24T14:55:04+02:00/e960",
     "threads": 8,
     "status": "normal",
     "stop_message": null

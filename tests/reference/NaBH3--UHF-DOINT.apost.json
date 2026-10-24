@@ -13,7 +13,12 @@
     "n_electrons": 20,
     "n_alpha": 10,
     "n_beta": 10,
-    "energy_au": -1.8824847559800841E+002
+    "energy_au": -1.8824847559800841E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nMULLIKEN\nDOINT\n#\n",
@@ -152,8 +157,8 @@
     "job_name": "NaBH3--UHF-DOINT",
     "input_file": "NaBH3--UHF-DOINT.inp",
     "wavefunction_file": "NaBH3--UHF-DOINT.fchk",
-    "date": "2026-10-24T14:49:57+02:00",
-    "id": "2026-10-24T14:49:57+02:00/fd08",
+    "date": "2026-10-24T14:55:03+02:00",
+    "id": "2026-10-24T14:55:03+02:00/f200",
     "threads": 8,
     "status": "normal",
     "stop_message": null

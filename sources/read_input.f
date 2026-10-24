@@ -61,6 +61,9 @@
 !! choose density from fchk file !!
       call readint("# METHOD","DENS",ndens0,1,1)
       iopt(9) = ndens0
+!! DM 1/2 replace the density by the 1-RDM file: the results file says !!
+!! so from input()                                                     !!
+      call readint("# METHOD","DM",icorr,0,1)
 
 !! processing fchk file !!
       call input()
@@ -208,7 +211,6 @@
 
 !! local spin and methods for correlated WFs !!
       call readchar("# METHOD","SPIN",ispin)
-      call readint("# METHOD","DM",icorr,0,1)
       if(icorr.eq.2) ispin=1
 
 !! energy decomposition options !!

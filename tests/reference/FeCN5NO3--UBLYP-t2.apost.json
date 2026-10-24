@@ -13,7 +13,12 @@
     "n_electrons": 109,
     "n_alpha": 55,
     "n_beta": 54,
-    "energy_au": -1.8571187471128401E+003
+    "energy_au": -1.8571187471128401E+003,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nOSLO\nDOFRAGS\n#\n# OSLO\nLOWDIN\nFOLI_TOLERANCE 3\nBRANCH_ITERATION 0\nPRINT_NONORTHO\n#\n# FRAGMENTS\n7\n1\n1\n2\n2 3\n2\n4 5\n2\n6 7\n2\n8 9\n2\n10 11\n-1\n#\n",
@@ -487,7 +492,7 @@
       },
       "orbital_file": "FeCN5NO3--UBLYP-t2-OSLOs.fchk",
       "orbital_file_preortho": "FeCN5NO3--UBLYP-t2-OSLOs-preortho.fchk",
-      "orbital_file_id": "2026-10-24T14:49:32+02:00/2418"
+      "orbital_file_id": "2026-10-24T14:54:37+02:00/0938"
     }
   },
   "atomic_weights": {
@@ -818,8 +823,8 @@
     "job_name": "FeCN5NO3--UBLYP-t2",
     "input_file": "FeCN5NO3--UBLYP-t2.inp",
     "wavefunction_file": "FeCN5NO3--UBLYP-t2.fchk",
-    "date": "2026-10-24T14:49:32+02:00",
-    "id": "2026-10-24T14:49:32+02:00/2418",
+    "date": "2026-10-24T14:54:37+02:00",
+    "id": "2026-10-24T14:54:37+02:00/0938",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -13,7 +13,12 @@
     "n_electrons": 10,
     "n_alpha": 5,
     "n_beta": 5,
-    "energy_au": -7.6030882620115591E+001
+    "energy_au": -7.6030882620115591E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nENPART\nPOLAR\n#\n# ENPART\nHF\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
@@ -479,8 +484,8 @@
     "job_name": "H2O-RHF-FIELD",
     "input_file": "H2O-RHF-FIELD.inp",
     "wavefunction_file": "H2O-RHF-FIELD.fchk",
-    "date": "2026-10-24T14:49:26+02:00",
-    "id": "2026-10-24T14:49:26+02:00/6f18",
+    "date": "2026-10-24T14:54:30+02:00",
+    "id": "2026-10-24T14:54:30+02:00/f070",
     "threads": 8,
     "status": "normal",
     "stop_message": null

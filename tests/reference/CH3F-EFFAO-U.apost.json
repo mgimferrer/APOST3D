@@ -13,7 +13,12 @@
     "n_electrons": 18,
     "n_alpha": 9,
     "n_beta": 9,
-    "energy_au": -1.3962818858985679E+002
+    "energy_au": -1.3962818858985679E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nEFFAO-U\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n2\n-1\n#\n# GRID\nRADIAL 40\nANGULAR 146\n#\n",
@@ -449,8 +454,8 @@
     "job_name": "CH3F-EFFAO-U",
     "input_file": "CH3F-EFFAO-U.inp",
     "wavefunction_file": "CH3F-EFFAO-U.fchk",
-    "date": "2026-10-24T14:49:46+02:00",
-    "id": "2026-10-24T14:49:46+02:00/dd88",
+    "date": "2026-10-24T14:54:51+02:00",
+    "id": "2026-10-24T14:54:51+02:00/9428",
     "threads": 8,
     "status": "normal",
     "stop_message": null

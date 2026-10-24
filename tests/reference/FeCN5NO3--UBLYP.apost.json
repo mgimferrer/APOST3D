@@ -13,7 +13,12 @@
     "n_electrons": 109,
     "n_alpha": 55,
     "n_beta": 54,
-    "energy_au": -1.8571187471128401E+003
+    "energy_au": -1.8571187471128401E+003,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nLOWDIN\nEFFAO\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n7\n1\n1\n2\n2 3\n2\n4 5\n2\n6 7\n2\n8 9\n2\n10 11\n-1\n#\n",
@@ -749,7 +754,7 @@
       },
       "reliability_percent": 6.4480668122986401E+001,
       "orbital_file": "FeCN5NO3--UBLYP-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-24T14:49:32+02:00/12f0"
+      "orbital_file_id": "2026-10-24T14:54:37+02:00/6410"
     }
   },
   "index": [
@@ -1094,8 +1099,8 @@
     "job_name": "FeCN5NO3--UBLYP",
     "input_file": "FeCN5NO3--UBLYP.inp",
     "wavefunction_file": "FeCN5NO3--UBLYP.fchk",
-    "date": "2026-10-24T14:49:32+02:00",
-    "id": "2026-10-24T14:49:32+02:00/12f0",
+    "date": "2026-10-24T14:54:37+02:00",
+    "id": "2026-10-24T14:54:37+02:00/6410",
     "threads": 8,
     "status": "normal",
     "stop_message": null

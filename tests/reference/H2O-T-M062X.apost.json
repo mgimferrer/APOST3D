@@ -13,7 +13,12 @@
     "n_electrons": 10,
     "n_alpha": 6,
     "n_beta": 4,
-    "energy_au": -7.6108434161462398E+001
+    "energy_au": -7.6108434161462398E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nLIBRARY\nEX_FUNCTIONAL 450\nEC_FUNCTIONAL 236\nTHREBOD -1\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
@@ -571,8 +576,8 @@
     "job_name": "H2O-T-M062X",
     "input_file": "H2O-T-M062X.inp",
     "wavefunction_file": "H2O-T-M062X.fchk",
-    "date": "2026-10-24T14:49:47+02:00",
-    "id": "2026-10-24T14:49:47+02:00/7198",
+    "date": "2026-10-24T14:54:52+02:00",
+    "id": "2026-10-24T14:54:52+02:00/d2d8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

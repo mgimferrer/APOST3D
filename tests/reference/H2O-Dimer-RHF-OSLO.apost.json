@@ -13,7 +13,12 @@
     "n_electrons": 20,
     "n_alpha": 10,
     "n_beta": 10,
-    "energy_au": -1.5206236833536570E+002
+    "energy_au": -1.5206236833536570E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nENPART\nDOFRAGS\nOSLO\nVERBOSE 1\n#\n# ENPART\nHF\nTHREBOD 10\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n# FRAGMENTS\n2\n3\n1 2 3\n-1\n#\n# OSLO\n#\n",
@@ -163,7 +168,7 @@
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": 1.5195454778155039E+002,
+          "total": 1.5195454778155042E+002,
           "total_rule": "diagonal and one triangle"
         },
         "fragments": {
@@ -177,7 +182,7 @@
           "total": 1.5195454778155042E+002,
           "total_rule": "diagonal and one triangle"
         },
-        "integration_error_kcal": -7.6937380769393710E-003
+        "integration_error_kcal": -7.6937380591044751E-003
       },
       "nuclear_repulsion": {
         "atoms": {
@@ -427,7 +432,7 @@
         "electrons": [1.0000000000000000E+001, 1.0000000000000000E+001]
       },
       "orbital_file": "H2O-Dimer-RHF-OSLO-OSLOs.fchk",
-      "orbital_file_id": "2026-10-24T14:49:28+02:00/16b0"
+      "orbital_file_id": "2026-10-24T14:54:33+02:00/2f70"
     }
   },
   "atomic_weights": {
@@ -947,8 +952,8 @@
     "job_name": "H2O-Dimer-RHF-OSLO",
     "input_file": "H2O-Dimer-RHF-OSLO.inp",
     "wavefunction_file": "H2O-Dimer-RHF-OSLO.fchk",
-    "date": "2026-10-24T14:49:28+02:00",
-    "id": "2026-10-24T14:49:28+02:00/16b0",
+    "date": "2026-10-24T14:54:33+02:00",
+    "id": "2026-10-24T14:54:33+02:00/2f70",
     "threads": 8,
     "status": "normal",
     "stop_message": null

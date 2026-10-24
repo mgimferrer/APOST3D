@@ -13,7 +13,12 @@
     "n_electrons": 4,
     "n_alpha": 2,
     "n_beta": 2,
-    "energy_au": -7.9411447875807788E+000
+    "energy_au": -7.9411447875807788E+000,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "dm1"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nDOINT\nDM 2\n#\n# DM\nLiH-35-CAS22-DOINT.dm1\nLiH-35-CAS22-DOINT.dm2\npySCF\n#\n",
@@ -278,8 +283,8 @@
     "job_name": "LiH-35-CAS22-DOINT",
     "input_file": "LiH-35-CAS22-DOINT.inp",
     "wavefunction_file": "LiH-35-CAS22-DOINT.fchk",
-    "date": "2026-10-24T14:49:57+02:00",
-    "id": "2026-10-24T14:49:57+02:00/6930",
+    "date": "2026-10-24T14:55:03+02:00",
+    "id": "2026-10-24T14:55:03+02:00/e2f8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

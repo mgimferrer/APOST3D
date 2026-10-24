@@ -43,6 +43,7 @@
       use nao_mod, only: allocate_nao
       use json_mod
       use output_mod, only: print_value
+      use input_options_mod, only: icorr
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
@@ -54,6 +55,7 @@
       character*80 line,line2
       character*20 cform,ctype
       character*200 cdens
+      character*40 cdblock
       character*20 cnum
       logical ilog,lescf
 
@@ -199,6 +201,7 @@
 !! reading P-matrix from fchk !!
       ntriang=int_locate(15,"otal SCF D",ilog)
       read(15,*)(clin(i),i=1,ntriang)
+      cdblock='Total SCF Density'
 
 !! DENS n: the n-th density of the .fchk, counting the blocks whose      !!
 !! header starts with "Total" and names a "Density" (the same rule for   !!
@@ -238,8 +241,9 @@
      +      ncou=ncou+1
         end do
         write(cnum,'(i0)') ndens0
+        cdblock=adjustl(line(1:40))
         call print_value('Density used',trim(cnum)//' ('//
-     +    trim(adjustl(line(1:40)))//')')
+     +    trim(cdblock)//')')
         read(15,*)(clin(i),i=1,ntriang)
       end if
 
@@ -349,6 +353,17 @@
       else
         call json_null('energy_au')
       end if
+!! the density analysed: its block in the .fchk (DENS), or the 1-RDM   !!
+!! file of # DM, which replaces it (dm1input)                          !!
+      call json_begin_object('density')
+      call json_value('fchk_block',trim(cdblock))
+      call json_value('index',max(ndens0,1))
+      if(icorr.ne.0) then
+        call json_value('source','dm1')
+      else
+        call json_value('source','fchk')
+      end if
+      call json_end()
       call json_end()
       end
 

@@ -13,7 +13,12 @@
     "n_electrons": 10,
     "n_alpha": 5,
     "n_beta": 5,
-    "energy_au": -7.6026772053395206E+001
+    "energy_au": -7.6026772053395206E+001,
+    "density": {
+      "fchk_block": "Total MP2 Density",
+      "index": 2,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nDENS 2\n#\n",
@@ -175,8 +180,8 @@
     "job_name": "H2O-MP2-DENS2",
     "input_file": "H2O-MP2-DENS2.inp",
     "wavefunction_file": "H2O-MP2-DENS2.fchk",
-    "date": "2026-10-24T14:49:57+02:00",
-    "id": "2026-10-24T14:49:57+02:00/d930",
+    "date": "2026-10-24T14:55:02+02:00",
+    "id": "2026-10-24T14:55:02+02:00/8c40",
     "threads": 8,
     "status": "normal",
     "stop_message": null

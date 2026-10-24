@@ -13,7 +13,12 @@
     "n_electrons": 10,
     "n_alpha": 6,
     "n_beta": 4,
-    "energy_au": -7.6148413288000540E+001
+    "energy_au": -7.6148413288000540E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nENPART\nPOLAR\n#\n# ENPART\nB3LYP\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n",
@@ -565,8 +570,8 @@
     "job_name": "H2O-T-UB3LYP-FIELD",
     "input_file": "H2O-T-UB3LYP-FIELD.inp",
     "wavefunction_file": "H2O-T-UB3LYP-FIELD.fchk",
-    "date": "2026-10-24T14:49:27+02:00",
-    "id": "2026-10-24T14:49:27+02:00/44d8",
+    "date": "2026-10-24T14:54:31+02:00",
+    "id": "2026-10-24T14:54:31+02:00/5138",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -13,7 +13,12 @@
     "n_electrons": 10,
     "n_alpha": 5,
     "n_beta": 5,
-    "energy_au": -7.6423556169387368E+001
+    "energy_au": -7.6423556169387368E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nENPART\n#\n# ENPART\nLIBRARY\nEXC_FUNCTIONAL 464\n#\n",
@@ -190,8 +195,8 @@
     "job_name": "H2O-WB97X",
     "input_file": "H2O-WB97X.inp",
     "wavefunction_file": "H2O-WB97X.fchk",
-    "date": "2026-10-24T14:49:48+02:00",
-    "id": "2026-10-24T14:49:48+02:00/7c78",
+    "date": "2026-10-24T14:54:53+02:00",
+    "id": "2026-10-24T14:54:53+02:00/0048",
     "threads": 8,
     "status": "stopped",
     "stop_message": "RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp"

@@ -13,7 +13,12 @@
     "n_electrons": 2,
     "n_alpha": 1,
     "n_beta": 1,
-    "energy_au": -1.1734967935672269E+000
+    "energy_au": -1.1734967935672269E+000,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nOSLO\nDOFRAGS\n#\n# OSLO\nBRANCH_ALPHA 1\nBRANCH_BETA 2\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
@@ -225,7 +230,7 @@
         "electrons_beta": [4.9999999999999895E-001, 5.0000000000000089E-001]
       },
       "orbital_file": "H2-S-OSLO-OSLOs.fchk",
-      "orbital_file_id": "2026-10-24T14:49:19+02:00/4560"
+      "orbital_file_id": "2026-10-24T14:54:23+02:00/06b0"
     }
   },
   "atomic_weights": {
@@ -545,8 +550,8 @@
     "job_name": "H2-S-OSLO",
     "input_file": "H2-S-OSLO.inp",
     "wavefunction_file": "H2-S-OSLO.fchk",
-    "date": "2026-10-24T14:49:19+02:00",
-    "id": "2026-10-24T14:49:19+02:00/4560",
+    "date": "2026-10-24T14:54:23+02:00",
+    "id": "2026-10-24T14:54:23+02:00/06b0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

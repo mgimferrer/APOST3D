@@ -13,7 +13,12 @@
     "n_electrons": 20,
     "n_alpha": 10,
     "n_beta": 10,
-    "energy_au": -1.8824847559800841E+002
+    "energy_au": -1.8824847559800841E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nMULLI\nEOS\nDOFRAGS\n#\n# FRAGMENTS\n2\n1\n1\n-1\n#\n",
@@ -362,7 +367,7 @@
       },
       "reliability_percent": 8.9767722520896953E+001,
       "orbital_file": "NaBH3--UHF-EOS-EFOs.fchk",
-      "orbital_file_id": "2026-10-24T14:49:32+02:00/3598"
+      "orbital_file_id": "2026-10-24T14:54:37+02:00/baa0"
     }
   },
   "index": [
@@ -657,8 +662,8 @@
     "job_name": "NaBH3--UHF",
     "input_file": "NaBH3--UHF.inp",
     "wavefunction_file": "NaBH3--UHF.fchk",
-    "date": "2026-10-24T14:49:32+02:00",
-    "id": "2026-10-24T14:49:32+02:00/3598",
+    "date": "2026-10-24T14:54:37+02:00",
+    "id": "2026-10-24T14:54:37+02:00/baa0",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -13,7 +13,12 @@
     "n_electrons": 20,
     "n_alpha": 10,
     "n_beta": 10,
-    "energy_au": -1.5206236833536570E+002
+    "energy_au": -1.5206236833536570E+002,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
   },
   "input": {
     "text": "# METHOD\nTFVC\nENPART\nDOFRAGS\n#\n# ENPART\nHF\nTHREBOD 10\n#\n# GRID\nRADIAL_2E 40\nANGULAR_2E 146\n#\n# FRAGMENTS\n2\n3\n1 2 3\n-1\n#\n",
@@ -819,8 +824,8 @@
     "job_name": "H2O-Dimer-RHF",
     "input_file": "H2O-Dimer-RHF.inp",
     "wavefunction_file": "H2O-Dimer-RHF.fchk",
-    "date": "2026-10-24T14:49:21+02:00",
-    "id": "2026-10-24T14:49:21+02:00/1b70",
+    "date": "2026-10-24T14:54:25+02:00",
+    "id": "2026-10-24T14:54:25+02:00/0ae0",
     "threads": 8,
     "status": "normal",
     "stop_message": null
