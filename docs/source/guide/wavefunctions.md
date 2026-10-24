@@ -184,6 +184,12 @@ pySCF
 - **Dispersion corrections** (D3, D4): their energy is removed from the
   reference electron-electron energy (APOST-3D decomposes the electronic
   energy only), with a note printed.
+- **Functional name**: for RKS, UKS and ROKS the method field of the
+  `.fchk` names the functional (`mf.xc`) with the R/U/RO prefix, as
+  Gaussian does: `RB3LYP`, `UPBE0`, `ROB3LYP`. A functional that is not
+  a single name (`'b88,lyp'`, a mixture) is written `RKS`/`UKS`/`ROKS`,
+  with a note. The name is there for the reader: APOST-3D does not read
+  it, so give the functional in [`# ENPART`](../input/enpart.md#wavefunction-and-functional).
 
 Correlated wavefunctions built on UHF orbitals (UHF-based CASSCF or FCI,
 UCISD, UCCSD) are refused with a message: APOST-3D takes the alpha and beta
@@ -247,6 +253,14 @@ For ENPART, name the functional by its libxc ids: ORCA's B3LYP (VWN5) is
 `LIBRARY` + `EXC_FUNCTIONAL 475`, not the `B3LYP` keyword (see
 [`# ENPART`](../input/enpart.md#wavefunction-and-functional));
 `orca2fchk.py` prints a reminder when it finds it.
+
+The method field of the `.fchk` names the functional keyword of the ORCA
+input with the R/U/RO prefix, as Gaussian does: `RB3LYP`, `UTPSSH`. It
+is read from the input echoed in `mol.out`; without one known functional
+keyword there (a functional defined in `%method`, an input with several
+jobs, no output file) the field is `RKS`/`UKS`/`ROKS`, with a note.
+APOST-3D does not read the name: an `RB3LYP` from ORCA is still ORCA's
+B3LYP, which the `B3LYP` keyword of `# ENPART` does not reproduce.
 
 **CASSCF**: ORCA does not write the RDMs to a file, so `orca2fchk.py`
 builds them from the CI vector printed in the output, which must contain

@@ -442,6 +442,12 @@ program, not a full development history — see `git log` for that.
   message, as is any other unsupported case, without leaving a partial
   file; the `.fchk` no longer contains bare header lines that strict
   readers reject. Existing scripts work unchanged.
+- **Functional name in the `.fchk` of `apost3d.py` and `orca2fchk.py`**
+  — Kohn-Sham files name the functional in the method field, as
+  Gaussian does (`RB3LYP`, `UPBE0`, `ROB3LYP`), instead of `RKS`/`UKS`/
+  `ROKS` (still written when the functional has no single name). The
+  name is for the reader: APOST-3D does not read it, and the `# ENPART`
+  functional is the one given in the input.
 - **Errors end with exit code 1** — a run that stops on an error now
   exits with code 1 (0 after a normal end), so job scripts and workflow
   tools can detect it, and its `STOP` message is the last line of the
