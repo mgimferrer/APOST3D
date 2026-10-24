@@ -721,6 +721,10 @@
    real*8, allocatable :: p0poolcoef(:,:,:)  !! p0poolcoef(igr,igr,2) -- pooled+sorted+igr-truncated EFO coefficients per
                                              !! spin channel, built by eos_analysis, feeds the shared .fchk EFO writer
                                              !! (print.f's rwf_effao_orbprint/uwf_effao_orbprint)
+   real*8, allocatable :: p0rawcoef(:,:,:)   !! p0rawcoef(igr,igr,nat) -- the same EFOs before the fragment weight (real
+                                             !! space): the cube file holds them times w_F
+   real*8, allocatable :: p0poolraw(:,:,:)   !! p0poolraw(igr,igr,2) -- p0rawcoef pooled as p0poolcoef, for the
+                                             !! unweighted EFO .fchk
 
    CONTAINS
 
@@ -741,6 +745,7 @@
    allocate(p0(igr,igr),p0net(igr,nat),p0gro(igr,nat),ip0(nat))
    allocate(p0fit(igr,nat))
    allocate(p0coef(igr,igr,nat),p0poolcoef(igr,igr,2))
+   allocate(p0rawcoef(igr,igr,nat),p0poolraw(igr,igr,2))
 
    END SUBROUTINE allocate_effao
 
@@ -983,7 +988,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.16')
+   call json_value('schema_version','0.17')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)

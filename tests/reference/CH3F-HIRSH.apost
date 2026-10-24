@@ -394,6 +394,9 @@
   Total             0.00
   Overall reliability index R (%)         :         86.312
 
+  EFO file (.fchk)                        : CH3F-HIRSH-EOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : not written with Hirshfeld atoms
+
   TIMING CPU  :: EFFAO computation                                 0.04 s
   TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s

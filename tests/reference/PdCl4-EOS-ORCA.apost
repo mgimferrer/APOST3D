@@ -125,8 +125,8 @@
   Fragment  4 :   4
   Fragment  5 :   5
 
-  TIMING CPU  :: Initialization                                    0.08 s
-  TIMING WALL :: Initialization                                    0.05 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -159,8 +159,8 @@
 
   Sum of atomic overlaps, largest error   : 3.22E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.44 s
-  TIMING WALL :: Atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.29 s
+  TIMING WALL :: Atomic definition                                 0.05 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -365,7 +365,7 @@
   ---------------------------------------------------------------------
   Total (diagonal and one triangle)       :      88.001380
 
-  TIMING CPU  :: Population analysis                               0.03 s
+  TIMING CPU  :: Population analysis                               0.00 s
   TIMING WALL :: Population analysis                               0.00 s
 
   --------------------------------------
@@ -493,9 +493,12 @@
   Total            -2.00
   Overall reliability index R (%)         :         86.155
 
-  TIMING CPU  :: EFFAO computation                                 1.73 s
-  TIMING WALL :: EFFAO computation                                 0.27 s
-  TIMING CPU  :: EOS analysis                                      0.04 s
+  EFO file (.fchk)                        : PdCl4-EOS-ORCA-EOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : PdCl4-EOS-ORCA-EOS-EFOs-unweighted.fchk
+
+  TIMING CPU  :: EFFAO computation                                 0.85 s
+  TIMING WALL :: EFFAO computation                                 0.16 s
+  TIMING CPU  :: EOS analysis                                      0.01 s
   TIMING WALL :: EOS analysis                                      0.01 s
 
   ...Normal Termination of APOST-3D...

@@ -438,6 +438,9 @@
   Total             0.00
   Overall reliability index R (%)         :         97.819
 
+  EFO file (.fchk)                        : LiH-32-FCI-LINDEP-GEOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : LiH-32-FCI-LINDEP-GEOS-EFOs-unweighted.fchk
+
   TIMING CPU  :: EFFAO computation                                 0.03 s
   TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s

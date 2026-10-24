@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.16",
+  "schema_version": "0.17",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -278,8 +278,8 @@
     "job_name": "LiH-35-CAS22-DOINT",
     "input_file": "LiH-35-CAS22-DOINT.inp",
     "wavefunction_file": "LiH-35-CAS22-DOINT.fchk",
-    "date": "2026-10-22T16:40:23+02:00",
-    "id": "2026-10-22T16:40:23+02:00/c878",
+    "date": "2026-10-24T14:49:57+02:00",
+    "id": "2026-10-24T14:49:57+02:00/6930",
     "threads": 8,
     "status": "normal",
     "stop_message": null

@@ -140,8 +140,8 @@
      0.00004   0.00004   0.00004   0.00001   0.00001   0.00001   0.00001   0.00001
      0.00001   0.00000   0.00000   0.00000   0.00000   0.00000
 
-  TIMING CPU  :: Initialization                                    0.14 s
-  TIMING WALL :: Initialization                                    0.23 s
+  TIMING CPU  :: Initialization                                    0.02 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -166,8 +166,8 @@
 
   Sum of atomic overlaps, largest error   : 1.44E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.46 s
-  TIMING WALL :: Atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.29 s
+  TIMING WALL :: Atomic definition                                 0.05 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -400,8 +400,8 @@
   ---------------------------------------------------------------------
   Total (diagonal and one triangle)       :      94.998907
 
-  TIMING CPU  :: Population analysis                               0.04 s
-  TIMING WALL :: Population analysis                               0.01 s
+  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING WALL :: Population analysis                               0.00 s
 
   --------------------------------------
     EFFECTIVE FRAGMENT ORBITALS (EFOs)
@@ -597,9 +597,12 @@
   Total            -1.00
   Overall reliability index R (%)         :        100.000
 
-  TIMING CPU  :: EFFAO computation                                 3.37 s
-  TIMING WALL :: EFFAO computation                                 0.53 s
-  TIMING CPU  :: EOS analysis                                      0.05 s
-  TIMING WALL :: EOS analysis                                      0.02 s
+  EFO file (.fchk)                        : FeCl4-EOS-ORCA-EOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : FeCl4-EOS-ORCA-EOS-EFOs-unweighted.fchk
+
+  TIMING CPU  :: EFFAO computation                                 1.64 s
+  TIMING WALL :: EFFAO computation                                 0.33 s
+  TIMING CPU  :: EOS analysis                                      0.01 s
+  TIMING WALL :: EOS analysis                                      0.01 s
 
   ...Normal Termination of APOST-3D...

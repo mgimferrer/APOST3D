@@ -348,6 +348,8 @@
   Total             0.00
   Overall reliability index R (%)         :         94.026
 
+  EFO file (.fchk)                        : CH3F-NAO-EOS-EFOs.fchk
+
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s
   TIMING CPU  :: EOS analysis                                      0.00 s

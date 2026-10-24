@@ -156,7 +156,7 @@
 
   Sum of atomic overlaps, largest error   : 2.80E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.68 s
+  TIMING CPU  :: Atomic definition                                 0.69 s
   TIMING WALL :: Atomic definition                                 0.10 s
 
   -----------------------------
@@ -484,8 +484,11 @@
   Total            -1.00
   Overall reliability index R (%)         :         80.734
 
-  TIMING CPU  :: EFFAO computation                                 1.16 s
-  TIMING WALL :: EFFAO computation                                 0.27 s
+  EFO file (.fchk)                        : NaBH3--B3LYP-GEOS-GEOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : NaBH3--B3LYP-GEOS-GEOS-EFOs-unweighted.fchk
+
+  TIMING CPU  :: EFFAO computation                                 1.20 s
+  TIMING WALL :: EFFAO computation                                 0.31 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

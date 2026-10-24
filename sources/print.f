@@ -2027,8 +2027,8 @@
 !! tell the file belongs to that run (the source title is dropped).
 !! arguments:
 !!   iu    (in)  unit of the .fchk file being written
-!!   ctype (in)  file name suffix: "-EOS-EFOs", "-GEOS-EFOs", "-OSLOs"
-!!               or "-OSLOs-preortho"
+!!   ctype (in)  file name suffix: "-EOS-EFOs", "-GEOS-EFOs" (each also
+!!               with "-unweighted"), "-OSLOs" or "-OSLOs-preortho"
 !! author: MGimf
 !! ----------------------------------------------------------------------
       subroutine write_fchk_title(iu,ctype)
@@ -2042,6 +2042,10 @@
         what='APOST-3D EOS EFOs'
       else if(trim(ctype).eq.'-GEOS-EFOs') then
         what='APOST-3D GEOS EFOs'
+      else if(trim(ctype).eq.'-EOS-EFOs-unweighted') then
+        what='APOST-3D EOS EFOs, unweighted'
+      else if(trim(ctype).eq.'-GEOS-EFOs-unweighted') then
+        what='APOST-3D GEOS EFOs, unweighted'
       else if(trim(ctype).eq.'-OSLOs-preortho') then
         what='APOST-3D OSLOs before orthogonalization'
       else
@@ -2051,6 +2055,67 @@
         write(iu,'(a)') trim(what)//', run '//json_run_id()
       else
         write(iu,'(a)') trim(what)
+      end if
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! function: efo_unweighted
+!! Whether the EOS/GEOS EFOs are also written before the multiplication
+!! by the fragment weight (-unweighted.fchk): real-space atoms whose
+!! weights the results file gives (BECKE, BECKE-RHO, TFVC), so that a
+!! reader can multiply them by w_F itself.
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      logical function efo_unweighted()
+      use input_options_mod, only: imulli
+      implicit none
+      integer :: iopt(200),ierf
+      real*8 :: aerf
+      common /iops/iopt
+      common /erf/aerf,ierf
+      efo_unweighted=imulli.eq.0.and.iopt(6).eq.0.and.ierf.ne.1
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: print_efo_files
+!! Names the EFO .fchk files of EOS or GEOS at the end of its output: the
+!! EFOs as stored for any viewer and, with real-space atoms, the
+!! unweighted EFOs (or why they are not written).
+!! arguments:
+!!   ctype (in)  file name suffix: "-EOS-EFOs" or "-GEOS-EFOs"
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_efo_files(ctype)
+      use output_mod, only: print_value
+      use input_options_mod, only: imulli
+      implicit none
+      character(len=*), intent(in) :: ctype
+      character*60 :: name0
+      integer :: iopt(200)
+      common /filename/name0
+      common /iops/iopt
+      character*100 :: cfile
+      logical :: efo_unweighted
+
+      cfile=trim(name0)//trim(ctype)//'.fchk'
+      cfile=cfile(index(cfile,'/',back=.true.)+1:)
+      write(*,'(a)') ''
+      call print_value('EFO file (.fchk)',trim(cfile))
+      if(imulli.ne.0) return
+      if(efo_unweighted()) then
+        cfile=trim(name0)//trim(ctype)//'-unweighted.fchk'
+        cfile=cfile(index(cfile,'/',back=.true.)+1:)
+        call print_value('Unweighted EFO file (.fchk)',trim(cfile))
+      else if(iopt(6).ne.0) then
+        call print_value('Unweighted EFO file (.fchk)',
+     +    'not written with Hirshfeld atoms')
+      else
+        call print_value('Unweighted EFO file (.fchk)',
+     +    'not written with ERF_PROF')
       end if
       end
 
@@ -2087,8 +2152,9 @@
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
 
       character*80 line
-      character*60 name0,name1
-      character*20 ctype
+      character*60 name0
+      character*100 name1
+      character(len=*) ctype
 
       dimension pcoef(igr,igr)
       allocatable :: energ(:)
@@ -2206,8 +2272,9 @@
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
 
       character*80 line
-      character*60 name0,name1
-      character*20 ctype
+      character*60 name0
+      character*100 name1
+      character(len=*) ctype
 
       dimension pcoef_a(igr,igr),pcoef_b(igr,igr)
       allocatable :: energ_a(:),energ_b(:)
@@ -2346,8 +2413,9 @@
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
 
       character*80 line
-      character*60 name0,name1
-      character*20 ctype
+      character*60 name0
+      character*100 name1
+      character(len=*) ctype
 
       dimension pcoef_a(igr,igr),pcoef_b(igr,igr)
       allocatable :: energ_a(:),energ_b(:)

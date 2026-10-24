@@ -65,10 +65,12 @@
       allocatable :: poolcoef(:,:,:)
       allocatable :: ineg_frg(:),xneg_net(:,:),xneg_gro(:,:),cneg(:,:,:)
       allocatable :: xneg_fit(:,:)
+      allocatable :: up0raw(:,:,:,:),cnegraw(:,:,:),poolraw(:,:,:)
+      logical efo_unweighted
       allocatable :: Sinv(:,:),cprojfrag(:,:),xfitfrag(:)
       allocatable :: p0sav(:,:),occsav(:,:)
       allocatable :: occn(:),fitp(:)
-      character(len=20) :: ctype
+      character(len=30) :: ctype
 
       icube = iopt(13)
       iatps = nang*nrad
@@ -114,6 +116,9 @@
      +  up0coef(igr,igr,2,icufr),poolcoef(igr,igr,2),up0fit(2,igr,icufr))
       if(iueos.eq.1) ALLOCATE(ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr),
      +  cneg(igr,igr,icufr),xneg_fit(igr,icufr))
+!! the same EFOs before the fragment weight, for the unweighted .fchk !!
+      if(iueos.eq.1) ALLOCATE(up0raw(igr,igr,2,icufr),
+     +  cnegraw(igr,igr,icufr),poolraw(igr,igr,2))
 
 !! S^-1 for reproject_efos_ao, built once for all fragments/channels !!
       if(iueos.eq.1) then
@@ -256,7 +261,9 @@
 !! oxidation-state assignment (see ueos_analysis).                        !!
           if(ineg.gt.0) then
 !! gross occupations stay on the raw c0; only the .fchk copy (cneg) is   !!
-!! projected                                                             !!
+!! projected, and cnegraw keeps the raw c0 for the unweighted .fchk.     !!
+!! parallel over ii: each EFO writes only its own column of the xneg_*,  !!
+!! cneg and cnegraw arrays; c0/sat/pp0/cprojfrag shared, read-only.      !!
             call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +        c0,igr-ineg+1,igr,cprojfrag,xfitfrag)
 !$OMP PARALLEL DO PRIVATE(ii,iorb,icenter,jcenter,jj,kk,xx,xxx)
@@ -279,6 +286,7 @@
               xneg_fit(ii,iicenter)=xfitfrag(ii)
               do kk=1,igr
                 cneg(kk,ii,iicenter)=cprojfrag(kk,iorb)
+                cnegraw(kk,ii,iicenter)=c0(kk,iorb)
               end do
             end do
 !$OMP END PARALLEL DO
@@ -313,6 +321,7 @@
               up0fit(icase,kk,iicenter)=fitp(kk)
               do mu=1,igr
                 up0coef(mu,kk,icase,iicenter)=cprojfrag(mu,kk)
+                up0raw(mu,kk,icase,iicenter)=c0(mu,kk)
               end do
             end if
           end do
@@ -383,7 +392,7 @@
       if(iueos.eq.1) then
         call ueos_analysis(iup0,up0gro,up0coef,poolcoef,
      +    ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit,
-     +    up0net,up0fit)
+     +    up0net,up0fit,up0raw,cnegraw,poolraw)
 
 !! pooled paired/unpaired EFOs as fake Alpha/Beta MOs in a .fchk, for    !!
 !! visualization in any standard viewer -- printed by default, same as  !!
@@ -408,6 +417,22 @@
         else
           call uwf_effao_orbprint(poolcoef(:,:,1),poolcoef(:,:,2),ctype)
         end if
+
+!! the same EFOs before the multiplication by the fragment weight,     !!
+!! exact in the basis: w_F times each of them is its cube file         !!
+        if(efo_unweighted()) then
+          ctype="-GEOS-EFOs-unweighted"
+          if(kop.eq.0) then
+            if(lorb(2).gt.0) then
+              call rwfu_effao_orbprint(poolraw(:,:,1),poolraw(:,:,2),
+     +          ctype)
+            else
+              call rwf_effao_orbprint(poolraw(:,:,1),ctype)
+            end if
+          else
+            call uwf_effao_orbprint(poolraw(:,:,1),poolraw(:,:,2),ctype)
+          end if
+        end if
       end if
 
       DEALLOCATE(S0,Splus,Sm)
@@ -416,6 +441,7 @@
       if(iueos.eq.1) then
         DEALLOCATE(iup0,up0net,up0gro,up0coef,poolcoef,up0fit)
         DEALLOCATE(ineg_frg,xneg_net,xneg_gro,cneg,xneg_fit)
+        DEALLOCATE(up0raw,cnegraw,poolraw)
         DEALLOCATE(Sinv,cprojfrag,xfitfrag)
       end if
 
@@ -444,11 +470,16 @@
 !!   xneg_fit (in)   (igr,icufr) fit fraction of each negative EFO
 !!   up0net   (in)   (2,igr,icufr) net occupations of the kept EFOs
 !!   up0fit   (in)   (2,igr,icufr) fit (%) of the kept EFOs
+!!   up0raw   (in)   (igr,igr,2,icufr) the kept EFOs before the fragment
+!!                   weight (exact in the basis)
+!!   cnegraw  (in)   (igr,igr,icufr) the same for the negative ones
+!!   poolraw  (out)  (igr,igr,2) both pooled as poolcoef, for the
+!!                   unweighted .fchk
 !! author: MGimf
 !! ----------------------------------------------------------------------
       subroutine ueos_analysis(iup0,up0gro,up0coef,poolcoef,
      +  ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit,
-     +  up0net,up0fit)
+     +  up0net,up0fit,up0raw,cnegraw,poolraw)
 
       use output_mod, only: print_value
       use json_mod
@@ -469,8 +500,11 @@
       dimension ineg_frg(icufr),xneg_net(igr,icufr),xneg_gro(igr,icufr)
       dimension cneg(igr,igr,icufr),xneg_fit(igr,icufr)
       dimension up0net(2,igr,icufr),up0fit(2,igr,icufr)
+      dimension up0raw(igr,igr,2,icufr),cnegraw(igr,igr,icufr)
+      dimension poolraw(igr,igr,2)
+      logical efo_unweighted
       character*60 name0
-      character*80 cfile
+      character*100 cfile
       character*8 cspin
       character*20 ckey,cspace
       character*60 cname
@@ -620,6 +654,7 @@
 !! EFOs pooled above, after the positive ones that fit before them.     !!
       nindep=nindep_fchk(igr)
       poolcoef=ZERO
+      poolraw=ZERO
       do icase=1,2
         nwin=nindep
         if(icase.eq.1) nwin=nindep-nneg
@@ -628,6 +663,7 @@
           kk=iorbslot(jj,icase)
           do mu=1,igr
             poolcoef(mu,jj,icase)=up0coef(mu,kk,icase,ii)
+            poolraw(mu,jj,icase)=up0raw(mu,kk,icase,ii)
           end do
         end do
       end do
@@ -638,6 +674,7 @@
           kk=neg_slot(jj)
           do mu=1,igr
             poolcoef(mu,nindep-nneg+jj,1)=cneg(mu,kk,ii)
+            poolraw(mu,nindep-nneg+jj,1)=cnegraw(mu,kk,ii)
           end do
         end do
       end if
@@ -930,6 +967,7 @@
 
       confi2=dmin1(confi,confi0)
       call print_oxidation_states(icufr,oxi,zztot,.true.,confi2)
+      call print_efo_files('-GEOS-EFOs')
 
 !! results file: the negative paired EFOs (last orbitals of the Alpha  !!
 !! block of the .fchk), per-fragment results, overall R, RMSD, file    !!
@@ -1000,6 +1038,11 @@
       cfile=cfile(index(cfile,'/',back=.true.)+1:)
       call json_value('orbital_file',trim(cfile))
       call json_value('orbital_file_id',json_run_id())
+      if(efo_unweighted()) then
+        cfile=trim(name0)//'-GEOS-EFOs-unweighted.fchk'
+        cfile=cfile(index(cfile,'/',back=.true.)+1:)
+        call json_value('orbital_file_unweighted',trim(cfile))
+      end if
       call json_end()
 
       DEALLOCATE(elec_id,elec2,elec_frg_count)

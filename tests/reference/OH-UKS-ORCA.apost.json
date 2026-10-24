@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.16",
+  "schema_version": "0.17",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -40,9 +40,9 @@
     "populations": {
       "scheme": "TFVC",
       "atoms": {
-        "electrons": [8.5874286540928999E+000, 4.1257130680491383E-001],
-        "charges": [-5.8742865409289990E-001, 5.8742869319508617E-001],
-        "spin": [1.0104149941557485E+000, -1.0414992663911063E-002]
+        "electrons": [8.5874286540929052E+000, 4.1257130680491388E-001],
+        "charges": [-5.8742865409290523E-001, 5.8742869319508606E-001],
+        "spin": [1.0104149941557481E+000, -1.0414992663911066E-002]
       },
       "mulliken": {
         "atoms": {
@@ -57,29 +57,29 @@
       "atoms": {
         "matrix": {
           "values": [
-            [8.2517939658261028E+000, 6.7126931408198565E-001],
-            [6.7126931408198565E-001, 7.6936641332911213E-002]
+            [8.2517939658261028E+000, 6.7126931408198576E-001],
+            [6.7126931408198576E-001, 7.6936641332911240E-002]
           ],
           "symmetric": true,
           "diagonal": "localization index",
           "off_diagonal": "bond order"
         },
-        "valence_total": [1.6635293449454451E+000, 6.7153970238466176E-001],
-        "valence_bonded": [6.7126931408198565E-001, 6.7126931408198565E-001],
-        "valence_free": [9.9226003086345949E-001, 2.7038830267611669E-004]
+        "valence_total": [1.6635293449454540E+000, 6.7153970238466187E-001],
+        "valence_bonded": [6.7126931408198576E-001, 6.7126931408198576E-001],
+        "valence_free": [9.9226003086346826E-001, 2.7038830267611669E-004]
       }
     },
     "local_spin": {
       "scheme": "TFVC",
       "wavefunction": "single determinant",
       "total_unpaired_electrons": 1.0036497013023129E+000,
-      "total_s2": 7.5182485139707533E-001,
+      "total_s2": 7.5182485139707511E-001,
       "atoms": {
-        "unpaired_electrons": [9.9781964913675314E-001, 5.8300521655597530E-003],
+        "unpaired_electrons": [9.9781964913675314E-001, 5.8300521655597556E-003],
         "s2": {
           "values": [
-            [7.5553435985329287E-001, -4.0207863691352728E-003],
-            [-4.0207863691352728E-003, 4.3320642820530138E-003]
+            [7.5553435985329265E-001, -4.0207863691352728E-003],
+            [-4.0207863691352728E-003, 4.3320642820530155E-003]
           ],
           "symmetric": true,
           "diagonal": "local spin",
@@ -107,30 +107,30 @@
       "electron_nuclear": {
         "atoms": {
           "values": [
-            [-1.8113809269797972E+002, -6.1372777999341164E+000],
-            [-6.1372777999341164E+000, -6.7348019513230450E-001]
+            [-1.8113809269797940E+002, -6.1372777999341048E+000],
+            [-6.1372777999341048E+000, -6.7348019513230439E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -1.8794885069304613E+002,
+          "total": -1.8794885069304581E+002,
           "total_rule": "diagonal and one triangle"
         },
-        "integration_error_kcal": 1.5375069273143254E-004
+        "integration_error_kcal": 1.5375088891528320E-004
       },
       "kinetic": {
         "atoms": {
           "values": [
-            [7.4919075089674067E+001, 0.0000000000000000E+000],
-            [0.0000000000000000E+000, 3.4176908980973819E-001]
+            [7.4919075089674038E+001, 0.0000000000000000E+000],
+            [0.0000000000000000E+000, 3.4176908980973825E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": 7.5260844179483811E+001,
+          "total": 7.5260844179483783E+001,
           "total_rule": "diagonal and one triangle"
         },
-        "integration_error_kcal": -2.7871354734713121E-003
+        "integration_error_kcal": -2.7871354913062076E-003
       },
       "nuclear_repulsion": {
         "atoms": {
@@ -148,99 +148,99 @@
       "xc_dft": {
         "atoms": {
           "values": [
-            [-6.9633512482171609E+000, -1.5445451202632879E-001],
-            [-1.5445451202632879E-001, -4.8056475771227444E-002]
+            [-6.9633512482171565E+000, -1.5445451202632876E-001],
+            [-1.5445451202632876E-001, -4.8056475771227375E-002]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -7.1658622360147177E+000,
+          "total": -7.1658622360147124E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
       "two_electron_integration": {
-        "energy": 3.2691394604935127E+001,
-        "error_kcal": 1.1198978524283438E+000,
+        "energy": 3.2691394604935148E+001,
+        "error_kcal": 1.1198978524417200E+000,
         "tolerance_kcal": 2.5000000000000000E-001,
         "zero_error_correction": "applied",
-        "rotated_grid_error_kcal": -5.5396285283958795E+000,
-        "damping": 8.3183521043583009E-001,
-        "corrected_energy": 3.2689609934465665E+001,
-        "corrected_error_kcal": 4.4587238789972615E-012
+        "rotated_grid_error_kcal": -5.5396285283724529E+000,
+        "damping": 8.3183521043356767E-001,
+        "corrected_energy": 3.2689609934465651E+001,
+        "corrected_error_kcal": -4.4587238789972615E-012
       },
       "coulomb": {
         "atoms": {
           "values": [
-            [3.9891500429184667E+001, 1.5870370248842498E+000],
-            [1.5870370248842498E+000, 9.0796978385027330E-002]
+            [3.9891500429184646E+001, 1.5870370248842500E+000],
+            [1.5870370248842500E+000, 9.0796978385027274E-002]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": 4.1569334432453942E+001,
+          "total": 4.1569334432453928E+001,
           "total_rule": "diagonal and one triangle"
         }
       },
       "exact_exchange_share": {
         "atoms": {
           "values": [
-            [-1.6644784768434988E+000, -4.0868869346095099E-002],
-            [-4.0868869346095099E-002, -8.5149157839722184E-003]
+            [-1.6644784768434964E+000, -4.0868869346095148E-002],
+            [-4.0868869346095148E-002, -8.5149157839722097E-003]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -1.7138622619735659E+000,
+          "total": -1.7138622619735637E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
       "xc": {
         "atoms": {
           "values": [
-            [-8.6278297250606588E+000, -1.9532338137242389E-001],
-            [-1.9532338137242389E-001, -5.6571391555199670E-002]
+            [-8.6278297250606517E+000, -1.9532338137242392E-001],
+            [-1.9532338137242392E-001, -5.6571391555199586E-002]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -8.8797244979882812E+000,
+          "total": -8.8797244979882741E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
       "total": {
         "atoms": {
           "values": [
-            [-7.4955346904181653E+001, -3.8121604696105693E-001],
-            [-3.8121604696105693E-001, -2.9748551849273869E-001]
+            [-7.4955346904181368E+001, -3.8121604696104516E-001],
+            [-3.8121604696104516E-001, -2.9748551849273847E-001]
           ],
           "symmetric": true,
           "diagonal": "self-energy",
           "off_diagonal": "interaction energy",
-          "total": -7.5634048469635445E+001,
+          "total": -7.5634048469635147E+001,
           "total_rule": "diagonal and one triangle"
         }
       },
-      "total_energy": -7.5634048469635445E+001,
+      "total_energy": -7.5634048469635147E+001,
       "reference_energy": -7.5634044272841876E+001,
       "field_energy": null,
-      "integration_error": -4.1967935686670899E-006,
-      "integration_error_kcal": -2.6335282535568578E-003,
+      "integration_error": -4.1967932702391408E-006,
+      "integration_error_kcal": -2.6335280662904549E-003,
       "atomic_energies": {
         "atoms": {
-          "self_energy": [-7.4955346904181653E+001, -2.9748551849273869E-001],
-          "additive_energy": [-7.5145954927662174E+001, -4.8809354197326715E-001]
+          "self_energy": [-7.4955346904181368E+001, -2.9748551849273847E-001],
+          "additive_energy": [-7.5145954927661890E+001, -4.8809354197326105E-001]
         }
       },
       "classical_interaction": {
         "atoms": {
           "values": [
-            [0.0000000000000000E+000, -1.8589266558863304E-001],
-            [-1.8589266558863304E-001, 0.0000000000000000E+000]
+            [0.0000000000000000E+000, -1.8589266558862125E-001],
+            [-1.8589266558862125E-001, 0.0000000000000000E+000]
           ],
           "symmetric": true,
           "diagonal": "none",
           "off_diagonal": "classical interaction energy",
-          "total": -1.8589266558863304E-001,
+          "total": -1.8589266558862125E-001,
           "total_rule": "diagonal and one triangle"
         }
       }
@@ -615,8 +615,8 @@
     "job_name": "OH-UKS-ORCA",
     "input_file": "OH-UKS-ORCA.inp",
     "wavefunction_file": "OH-UKS-ORCA.fchk",
-    "date": "2026-10-23T18:29:07+02:00",
-    "id": "2026-10-23T18:29:07+02:00/c490",
+    "date": "2026-10-24T14:50:01+02:00",
+    "id": "2026-10-24T14:50:01+02:00/1c28",
     "threads": 8,
     "status": "normal",
     "stop_message": null

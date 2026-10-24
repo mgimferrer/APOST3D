@@ -317,7 +317,7 @@
       subroutine ueffao3d_frag(itotps,ndim,omp,chp,sat,wp,omp2,pk,icase)
 
       use integration_grid
-      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef,p0fit
+      use effao_mod, only: p0,p0net,p0gro,ip0,p0coef,p0fit,p0rawcoef
       use input_options_mod, only: ieos
 
       implicit real*8(a-h,o-z)
@@ -468,7 +468,8 @@
 !! store this fragment's EFOs/occupations into effao_mod (see header):   !!
 !! p0 keeps the raw c0 (cubegen_new applies the fragment weight itself), !!
 !! p0coef (persists across fragments, pooled for the .fchk) gets the     !!
-!! projected coefficients. Fit (%) = 100*(1-xfit), per EFO.              !!
+!! projected coefficients and p0rawcoef the raw c0 (pooled for the       !!
+!! unweighted .fchk). Fit (%) = 100*(1-xfit), per EFO.                   !!
         if(imaxo.gt.0) then
           call reproject_efos_ao(igr,itotps,chp,wp,omp,scr,Sinv,
      +      c0,1,imaxo,cprojfrag,xfitfrag)
@@ -484,6 +485,7 @@
           do mu=1,igr
             p0(mu,k)=c0(mu,k)
             p0coef(mu,k,iicenter)=cprojfrag(mu,k)
+            p0rawcoef(mu,k,iicenter)=c0(mu,k)
           end do
           p0net(k,iicenter)=pp0(k,k)
           p0gro(k,iicenter)=s0all(k)
@@ -522,7 +524,8 @@
 !! ----------------------------------------------------------------------
       subroutine eos_analysis(idobeta,icase,thres)
 
-      use effao_mod, only: p0gro,ip0,p0coef,p0poolcoef,p0net,p0fit
+      use effao_mod, only: p0gro,ip0,p0coef,p0poolcoef,p0net,p0fit,
+     +  p0rawcoef,p0poolraw
       use output_mod, only: print_value
       use json_mod
       use input_options_mod, only: imulli
@@ -538,9 +541,9 @@
       common /loba2/occup(nmax,2),iorbat(nmax,2),lorb(2),confi0
       common /filename/name0
 
-      character(len=20) :: ctype
+      character(len=30) :: ctype
       character*60 name0
-      character*80 cfile
+      character*100 cfile
       character*5 cspin
       character*20 ckey,cspace
       character*60 cname
@@ -556,7 +559,7 @@
       integer, allocatable :: ifr(:),icol(:)
       real*8, allocatable :: xn(:),xf(:)
       logical, allocatable :: lcol(:),lok(:)
-      logical lreal
+      logical lreal,lunw,efo_unweighted
 
 
       if(idobeta.eq.0.and.icase.eq.2) then
@@ -581,6 +584,7 @@
         end do
         lorb(2)=0
         p0poolcoef(:,:,2)=ZERO
+        p0poolraw(:,:,2)=ZERO
         call json_begin_object('beta')
         call json_value('no_electrons',.true.)
         call json_end()
@@ -646,14 +650,22 @@
 !! pooled+sorted coefficient columns, truncated to igr and zero-padded  !!
 !! -- feeds the shared .fchk EFO writer (print.f), same convention as   !!
 !! GEOS's ueos_analysis. Left serial: at most igr*igr copies, once per  !!
-!! icase, negligible next to the diagonalizations done above.           !!
+!! icase, negligible next to the diagonalizations done above. The raw    !!
+!! real-space EFOs go in the same order, for the unweighted .fchk.       !!
+      lunw=efo_unweighted()
       p0poolcoef(:,:,icase)=ZERO
+      if(lunw) p0poolraw(:,:,icase)=ZERO
       do jj=1,MIN(iorb,igr)
         ii2=iorbat(jj,icase)
         kk2=iorbslot(jj,icase)
         do mu=1,igr
           p0poolcoef(mu,jj,icase)=p0coef(mu,kk2,ii2)
         end do
+        if(lunw) then
+          do mu=1,igr
+            p0poolraw(mu,jj,icase)=p0rawcoef(mu,kk2,ii2)
+          end do
+        end if
       end do
 
 !! nnn is the LO EFO index in the pooled, sorted list (alpha/beta          !!
@@ -880,6 +892,7 @@
       if(icase.eq.2) then
         confi2=dmin1(confi,confi0)
         call print_oxidation_states(icufr,oxi,zztot,.true.,confi2)
+        call print_efo_files('-EOS-EFOs')
 
 !! results file: per-fragment results, overall R, the EFO file !!
         call atomic_definition_names(ckey,cname,cshort,cspace)
@@ -904,6 +917,12 @@
         cfile=cfile(index(cfile,'/',back=.true.)+1:)
         call json_value('orbital_file',trim(cfile))
         call json_value('orbital_file_id',json_run_id())
+        lunw=efo_unweighted()
+        if(lunw) then
+          cfile=trim(name0)//"-EOS-EFOs-unweighted.fchk"
+          cfile=cfile(index(cfile,'/',back=.true.)+1:)
+          call json_value('orbital_file_unweighted',trim(cfile))
+        end if
 
 !! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
 !! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!
@@ -927,6 +946,23 @@
           end if
         else
           call uwf_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
+        end if
+
+!! the same EFOs before the multiplication by the fragment weight,     !!
+!! exact in the basis: w_F times each of them is its cube file         !!
+        if(lunw) then
+          ctype="-EOS-EFOs-unweighted"
+          if(kop.eq.0) then
+            if(idobeta.eq.1) then
+              call rwfu_effao_orbprint(p0poolraw(:,:,1),
+     +          p0poolraw(:,:,2),ctype)
+            else
+              call rwf_effao_orbprint(p0poolraw(:,:,1),ctype)
+            end if
+          else
+            call uwf_effao_orbprint(p0poolraw(:,:,1),p0poolraw(:,:,2),
+     +        ctype)
+          end if
         end if
       end if
 

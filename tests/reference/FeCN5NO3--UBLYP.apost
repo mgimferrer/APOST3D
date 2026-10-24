@@ -633,6 +633,8 @@
   Total            -3.00
   Overall reliability index R (%)         :         64.481
 
+  EFO file (.fchk)                        : FeCN5NO3--UBLYP-EOS-EFOs.fchk
+
   TIMING CPU  :: EFFAO computation                                 0.08 s
   TIMING WALL :: EFFAO computation                                 0.06 s
   TIMING CPU  :: EOS analysis                                      0.02 s

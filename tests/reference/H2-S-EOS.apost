@@ -436,6 +436,9 @@
   Total             0.00
   Overall reliability index R (%)         :        100.000
 
+  EFO file (.fchk)                        : H2-S-EOS-EOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : H2-S-EOS-EOS-EFOs-unweighted.fchk
+
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s
   TIMING CPU  :: EOS analysis                                      0.00 s

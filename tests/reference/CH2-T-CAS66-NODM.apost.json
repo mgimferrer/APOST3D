@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.16",
+  "schema_version": "0.17",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -113,8 +113,8 @@
     "job_name": "CH2-T-CAS66-NODM",
     "input_file": "CH2-T-CAS66-NODM.inp",
     "wavefunction_file": "CH2-T-CAS66-NODM.fchk",
-    "date": "2026-10-22T16:40:25+02:00",
-    "id": "2026-10-22T16:40:25+02:00/9f10",
+    "date": "2026-10-24T14:49:59+02:00",
+    "id": "2026-10-24T14:49:59+02:00/4df8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

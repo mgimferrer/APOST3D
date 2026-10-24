@@ -131,7 +131,7 @@
      2.00000
 
   TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.00 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -450,7 +450,10 @@
   Total             0.00
   Overall reliability index R (%)         :        100.000
 
-  TIMING CPU  :: EFFAO computation                                 0.11 s
+  EFO file (.fchk)                        : CH3F-GEOS-GEOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : CH3F-GEOS-GEOS-EFOs-unweighted.fchk
+
+  TIMING CPU  :: EFFAO computation                                 0.10 s
   TIMING WALL :: EFFAO computation                                 0.02 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

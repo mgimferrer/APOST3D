@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.16",
+  "schema_version": "0.17",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -40,8 +40,8 @@
     "populations": {
       "scheme": "TFVC",
       "atoms": {
-        "electrons": [2.4647622649284617E+001, 1.3523773554585143E+000],
-        "charges": [3.5237735071538268E-001, -3.5237735545851434E-001]
+        "electrons": [2.4647622649284646E+001, 1.3523773554585146E+000],
+        "charges": [3.5237735071535425E-001, -3.5237735545851456E-001]
       },
       "mulliken": {
         "atoms": {
@@ -55,16 +55,16 @@
       "atoms": {
         "matrix": {
           "values": [
-            [2.3957291583613351E+001, 1.3806621391474176E+000],
-            [1.3806621391474176E+000, 6.6204628610172844E-001]
+            [2.3957291583613355E+001, 1.3806621391474170E+000],
+            [1.3806621391474170E+000, 6.6204628610172822E-001]
           ],
           "symmetric": true,
           "diagonal": "localization index",
           "off_diagonal": "bond order"
         },
-        "valence_total": [1.3806621313425325E+000, 1.3806621387135718E+000],
-        "valence_bonded": [1.3806621391474176E+000, 1.3806621391474176E+000],
-        "valence_free": [-7.8048851825940346E-009, -4.3384584813566107E-010]
+        "valence_total": [1.3806621313425822E+000, 1.3806621387135727E+000],
+        "valence_bonded": [1.3806621391474170E+000, 1.3806621391474170E+000],
+        "valence_free": [-7.8048347784687166E-009, -4.3384429382342660E-010]
       }
     },
     "enpart": {
@@ -76,22 +76,22 @@
       "electron_nuclear": {
         "atoms": {
           "values": [
-            [-6.2837613758706107E+002, -1.9030822790452735E+001],
-            [-1.9030822790452735E+001, -1.3414064066939990E+000]
+            [-6.2837613758706129E+002, -1.9030822790452742E+001],
+            [-1.9030822790452742E+001, -1.3414064066939995E+000]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -6.4874836678420775E+002,
+          "total": -6.4874836678420797E+002,
           "total_rule": "diagonal and one triangle"
         },
-        "integration_error_kcal": -2.3913227658667891E-004
+        "integration_error_kcal": -2.3913241926584305E-004
       },
       "kinetic": {
         "atoms": {
           "values": [
             [1.1363588221446378E+002, 0.0000000000000000E+000],
-            [0.0000000000000000E+000, 6.0078221424985812E-001]
+            [0.0000000000000000E+000, 6.0078221424985800E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
@@ -115,75 +115,75 @@
         }
       },
       "two_electron_integration": {
-        "energy": 2.2903618033658978E+002,
-        "error_kcal": -1.3708362950431884E+001,
+        "energy": 2.2903618033658992E+002,
+        "error_kcal": -1.3708362950342709E+001,
         "tolerance_kcal": 2.5000000000000000E-001,
         "zero_error_correction": "applied",
-        "rotated_grid_error_kcal": -4.3502860898086780E+001,
-        "damping": 1.4600971284871358E+000,
-        "corrected_energy": 2.2905802599911095E+002,
-        "corrected_error_kcal": -3.5669791031978092E-011
+        "rotated_grid_error_kcal": -4.3502860898095527E+001,
+        "damping": 1.4600971284826307E+000,
+        "corrected_energy": 2.2905802599911101E+002,
+        "corrected_error_kcal": 0.0000000000000000E+000
       },
       "coulomb": {
         "atoms": {
           "values": [
-            [2.3927958395236169E+002, 1.0690183649476083E+001],
-            [1.0690183649476083E+001, 5.9920755025600470E-001]
+            [2.3927958395236149E+002, 1.0690183649476088E+001],
+            [1.0690183649476088E+001, 5.9920755025600358E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": 2.5056897515209377E+002,
+          "total": 2.5056897515209360E+002,
           "total_rule": "diagonal and one triangle"
         }
       },
       "xc": {
         "atoms": {
           "values": [
-            [-2.0953643456802709E+001, -3.1030866558714237E-001],
-            [-3.1030866558714237E-001, -2.4699703059297012E-001]
+            [-2.0953643456802492E+001, -3.1030866558714304E-001],
+            [-3.1030866558714304E-001, -2.4699703059296949E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -2.1510949152982821E+001,
+          "total": -2.1510949152982604E+001,
           "total_rule": "diagonal and one triangle"
         }
       },
       "total": {
         "atoms": {
           "values": [
-            [-2.9641431487703829E+002, -4.2880343598961673E-001],
-            [-4.2880343598961673E-001, -3.8841367278110633E-001]
+            [-2.9641431487703852E+002, -4.2880343598961917E-001],
+            [-4.2880343598961917E-001, -3.8841367278110739E-001]
           ],
           "symmetric": true,
           "diagonal": "self-energy",
           "off_diagonal": "interaction energy",
-          "total": -2.9723153198580900E+002,
+          "total": -2.9723153198580923E+002,
           "total_rule": "diagonal and one triangle"
         }
       },
-      "total_energy": -2.9723153198580900E+002,
+      "total_energy": -2.9723153198580923E+002,
       "reference_energy": -2.9723153166331451E+002,
       "field_energy": null,
-      "integration_error": -3.2249448622678756E-007,
-      "integration_error_kcal": -2.0236838605437697E-004,
+      "integration_error": -3.2249471360046300E-007,
+      "integration_error_kcal": -2.0236852873354108E-004,
       "atomic_energies": {
         "atoms": {
-          "self_energy": [-2.9641431487703829E+002, -3.8841367278110633E-001],
-          "additive_energy": [-2.9662871659503310E+002, -6.0281539077591473E-001]
+          "self_energy": [-2.9641431487703852E+002, -3.8841367278110739E-001],
+          "additive_energy": [-2.9662871659503332E+002, -6.0281539077591695E-001]
         }
       },
       "classical_interaction": {
         "atoms": {
           "values": [
-            [0.0000000000000000E+000, -1.1849477040247436E-001],
-            [-1.1849477040247436E-001, 0.0000000000000000E+000]
+            [0.0000000000000000E+000, -1.1849477040247614E-001],
+            [-1.1849477040247614E-001, 0.0000000000000000E+000]
           ],
           "symmetric": true,
           "diagonal": "none",
           "off_diagonal": "classical interaction energy",
-          "total": -1.1849477040247436E-001,
+          "total": -1.1849477040247614E-001,
           "total_rule": "diagonal and one triangle"
         }
       }
@@ -469,8 +469,8 @@
     "job_name": "HI-ECP-ORCA",
     "input_file": "HI-ECP-ORCA.inp",
     "wavefunction_file": "HI-ECP-ORCA.fchk",
-    "date": "2026-10-23T18:29:02+02:00",
-    "id": "2026-10-23T18:29:02+02:00/b094",
+    "date": "2026-10-24T14:49:59+02:00",
+    "id": "2026-10-24T14:49:59+02:00/23f8",
     "threads": 8,
     "status": "normal",
     "stop_message": null

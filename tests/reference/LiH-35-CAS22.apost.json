@@ -1,6 +1,6 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.16",
+  "schema_version": "0.17",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
@@ -159,16 +159,16 @@
         "error_kcal": -8.6759367908699619E-002,
         "tolerance_kcal": 0.0000000000000000E+000,
         "zero_error_correction": "applied",
-        "rotated_grid_error_kcal": -4.3463718011346397E-001,
-        "damping": 1.2493960950220999E+000,
-        "corrected_energy": 2.7366696762023146E+000,
-        "corrected_error_kcal": -2.7867024243732884E-013
+        "rotated_grid_error_kcal": -4.3463718011262797E-001,
+        "damping": 1.2493960950226992E+000,
+        "corrected_energy": 2.7366696762023142E+000,
+        "corrected_error_kcal": -5.5734048487465768E-013
       },
       "coulomb": {
         "atoms": {
           "values": [
-            [3.8836444230148697E+000, 5.3461010336990411E-001],
-            [5.3461010336990411E-001, 4.0133879094437425E-001]
+            [3.8836444230148701E+000, 5.3461010336990411E-001],
+            [5.3461010336990411E-001, 4.0133879094437436E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
@@ -180,38 +180,38 @@
       "xc": {
         "atoms": {
           "values": [
-            [-1.7325736550621564E+000, -3.4137160178897535E-002],
-            [-3.4137160178897535E-002, -3.1621282588577931E-001]
+            [-1.7325736550621571E+000, -3.4137160178897535E-002],
+            [-3.4137160178897535E-002, -3.1621282588577937E-001]
           ],
           "symmetric": true,
           "diagonal": "self term",
           "off_diagonal": "pair term",
-          "total": -2.0829236411268335E+000,
+          "total": -2.0829236411268339E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
       "total": {
         "atoms": {
           "values": [
-            [-7.3916124024026590E+000, -4.5414304209036443E-002],
-            [-4.5414304209036443E-002, -5.0411808225058408E-001]
+            [-7.3916124024026599E+000, -4.5414304209036443E-002],
+            [-4.5414304209036443E-002, -5.0411808225058397E-001]
           ],
           "symmetric": true,
           "diagonal": "self-energy",
           "off_diagonal": "interaction energy",
-          "total": -7.9411447888622799E+000,
+          "total": -7.9411447888622808E+000,
           "total_rule": "diagonal and one triangle"
         }
       },
-      "total_energy": -7.9411447888622799E+000,
+      "total_energy": -7.9411447888622808E+000,
       "reference_energy": -7.9411447875807788E+000,
       "field_energy": null,
-      "integration_error": -1.2815011274369681E-009,
-      "integration_error_kcal": -8.0415425987752089E-007,
+      "integration_error": -1.2815020156153878E-009,
+      "integration_error_kcal": -8.0415481721800570E-007,
       "atomic_energies": {
         "atoms": {
-          "self_energy": [-7.3916124024026590E+000, -5.0411808225058408E-001],
-          "additive_energy": [-7.4143195545071769E+000, -5.2682523435510231E-001]
+          "self_energy": [-7.3916124024026599E+000, -5.0411808225058397E-001],
+          "additive_energy": [-7.4143195545071778E+000, -5.2682523435510220E-001]
         }
       },
       "classical_interaction": {
@@ -575,8 +575,8 @@
     "job_name": "LiH-35-CAS22",
     "input_file": "LiH-35-CAS22.inp",
     "wavefunction_file": "LiH-35-CAS22.fchk",
-    "date": "2026-10-22T16:40:08+02:00",
-    "id": "2026-10-22T16:40:08+02:00/91d0",
+    "date": "2026-10-24T14:49:41+02:00",
+    "id": "2026-10-24T14:49:41+02:00/4e18",
     "threads": 8,
     "status": "normal",
     "stop_message": null

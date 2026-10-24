@@ -404,6 +404,8 @@
   Total            -1.00
   Overall reliability index R (%)         :         81.713
 
+  EFO file (.fchk)                        : NaBH3--UHF-DAVIDSON-EOS-EFOs.fchk
+
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s
   TIMING CPU  :: EOS analysis                                      0.00 s
