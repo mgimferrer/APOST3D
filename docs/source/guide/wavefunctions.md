@@ -211,6 +211,16 @@ file `mol.out` (`--out` gives another name). Keep them until the
 conversion is done. `-o other.fchk` writes the file under another name
 (the RDM files of a CASSCF take the same name).
 
+```{admonition} ORCA and ENPART
+:class: tip
+
+ORCA wavefunctions are best used for the analyses of the density and the
+orbitals: populations, EFFAO, EOS, GEOS and OSLO. ENPART also works with
+them and was checked on small molecules (HF, B3LYP, UKS, CASSCF), but a
+Gaussian 16 or pySCF wavefunction remains the better-tested choice for
+ENPART.
+```
+
 ```{admonition} Two programs, one input name
 :class: warning
 
