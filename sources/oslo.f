@@ -955,7 +955,9 @@
       else
         call print_value('Fragment populations',trim(ckey))
       end if
-      call print_value('FOLI tolerance',folitol,5)
+!! 5 decimals, more for a tolerance below 1e-5 (as the input summary) !!
+      call print_value('FOLI tolerance',folitol,
+     +  max(5,nint(-log10(folitol))))
       if(lunres) then
         call print_value('Densities','alpha and beta separately')
       else

@@ -119,7 +119,7 @@
 
   # OSLO
   Overlap matrix                          : real space (as in # METHOD)
-  FOLI tolerance                          : 0.001 (FOLI_TOLERANCE 3)
+  FOLI tolerance                          : 0.00100 (FOLI_TOLERANCE 3)
   Branching                               : none
   Non-orthogonalized OSLOs (.fchk)        : no
 
@@ -129,8 +129,8 @@
   Fragment  3 :   3   8   9
   Fragment  4 :   4
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.06 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -170,8 +170,8 @@
 
   Sum of atomic overlaps, largest error   : 1.19E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.58 s
-  TIMING WALL :: Atomic definition                                 0.11 s
+  TIMING CPU  :: Atomic definition                                 1.58 s
+  TIMING WALL :: Atomic definition                                 0.21 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -393,7 +393,7 @@
   ---------------------------------------------------------
   Total (diagonal and one triangle)       :      33.996687
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.02 s
   TIMING WALL :: Population analysis                               0.00 s
 
   ---------------------------------------------------
@@ -1543,7 +1543,7 @@
   ----------------------
   Total             0.00
 
-  TIMING CPU  :: OSLO analysis                                     0.44 s
-  TIMING WALL :: OSLO analysis                                     0.37 s
+  TIMING CPU  :: OSLO analysis                                     2.15 s
+  TIMING WALL :: OSLO analysis                                     1.28 s
 
   ...Normal Termination of APOST-3D...

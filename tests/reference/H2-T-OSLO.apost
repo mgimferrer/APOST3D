@@ -119,7 +119,7 @@
 
   # OSLO
   Overlap matrix                          : real space (as in # METHOD)
-  FOLI tolerance                          : 0.001 (FOLI_TOLERANCE 3)
+  FOLI tolerance                          : 0.00100 (FOLI_TOLERANCE 3)
   Branching                               : none
   Non-orthogonalized OSLOs (.fchk)        : no
 
@@ -134,8 +134,8 @@
   Occupation numbers (>1.0e-6):
      1.00000   1.00000
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -157,7 +157,7 @@
 
   Sum of atomic overlaps, largest error   : 4.06E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.00 s
+  TIMING CPU  :: Atomic definition                                 0.01 s
   TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
@@ -424,7 +424,7 @@
   ----------------------
   Total             0.00
 
-  TIMING CPU  :: OSLO analysis                                     0.00 s
+  TIMING CPU  :: OSLO analysis                                     0.02 s
   TIMING WALL :: OSLO analysis                                     0.00 s
 
   ...Normal Termination of APOST-3D...

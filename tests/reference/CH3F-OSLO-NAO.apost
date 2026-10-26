@@ -119,7 +119,7 @@
 
   # OSLO
   Overlap matrix                          : NAO-BASIS (Hilbert space)
-  FOLI tolerance                          : 0.001 (FOLI_TOLERANCE 3)
+  FOLI tolerance                          : 0.00100 (FOLI_TOLERANCE 3)
   Branching                               : none
   Non-orthogonalized OSLOs (.fchk)        : yes
 
@@ -127,8 +127,8 @@
   Fragment  1 :   2
   Fragment  2 :   1   3   4   5
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.05 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -156,8 +156,8 @@
 
   Sum of atomic overlaps, largest error   : 9.76E-04 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.06 s
-  TIMING WALL :: Atomic definition                                 0.01 s
+  TIMING CPU  :: Atomic definition                                 0.14 s
+  TIMING WALL :: Atomic definition                                 0.02 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -637,7 +637,7 @@
   ----------------------
   Total             0.00
 
-  TIMING CPU  :: OSLO analysis                                     0.03 s
-  TIMING WALL :: OSLO analysis                                     0.02 s
+  TIMING CPU  :: OSLO analysis                                     0.17 s
+  TIMING WALL :: OSLO analysis                                     0.06 s
 
   ...Normal Termination of APOST-3D...

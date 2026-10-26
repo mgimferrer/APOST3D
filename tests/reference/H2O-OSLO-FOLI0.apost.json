@@ -1,0 +1,34 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.17",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 24,
+    "n_electrons": 10,
+    "n_alpha": 5,
+    "n_beta": 5,
+    "energy_au": -7.6381281023578623E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
+  },
+  "index": [],
+  "run": {
+    "job_name": "H2O-OSLO-FOLI0",
+    "input_file": "H2O-OSLO-FOLI0.inp",
+    "wavefunction_file": "H2O-OSLO-FOLI0.fchk",
+    "date": "2026-10-26T18:05:23+01:00",
+    "id": "2026-10-26T18:05:23+01:00/f2fd",
+    "threads": 8,
+    "status": "stopped",
+    "stop_message": "Wrong FOLI_TOLERANCE value in # OSLO"
+  }
+}

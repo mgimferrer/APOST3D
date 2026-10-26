@@ -52,7 +52,7 @@ The beginning of a run, for fluoromethane with `TFVC` and `OSLO`:
 
   # OSLO
   Overlap matrix                          : real space (as in # METHOD)
-  FOLI tolerance                          : 0.001 (FOLI_TOLERANCE 3)
+  FOLI tolerance                          : 0.00100 (FOLI_TOLERANCE 3)
   Branching                               : none
   Non-orthogonalized OSLOs (.fchk)        : yes
 

@@ -3635,6 +3635,41 @@
       ]
     },
     {
+      "name": "H2O-OSLO-FOLI0",
+      "description": "Water, pySCF RKS BHandHLYP, OSLO with FOLI_TOLERANCE 0: n must be 1 to 10 (a tolerance of 10^-n), so the run must stop before OSLO (0 selected every orbital within 1.0, a negative n ended in a Fortran format error).",
+      "tags": [
+        "input",
+        "oslo",
+        "expected-stop"
+      ],
+      "expected_rc": 1,
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS",
+        "OSLO/FOLI-TOLERANCE"
+      ],
+      "checks": [
+        {
+          "label": "Allowed values named",
+          "type": "present",
+          "pattern": "FOLI_TOLERANCE n sets the tolerance 10\\^-n, with n from 1 to 10"
+        },
+        {
+          "label": "Stop line",
+          "type": "present",
+          "pattern": "STOP Wrong FOLI_TOLERANCE value in # OSLO"
+        },
+        {
+          "label": "No OSLO run",
+          "type": "absent",
+          "pattern": "Sum of the FOLI values"
+        }
+      ]
+    },
+    {
       "name": "H2O-FRAGMENTS-SHORT",
       "description": "Water (the H2O-CAS44 file) with a # FRAGMENTS block whose last atom list is one atom short: the run must stop with a message naming the fragment (it used to end in a Fortran read error).",
       "tags": [

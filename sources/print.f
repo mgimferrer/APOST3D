@@ -461,8 +461,10 @@
         if(ilow2.eq.6) cval='NAO-BASIS (Hilbert space)'
         if(ilow2.eq.0) cval='real space (as in # METHOD)'
         call print_value('Overlap matrix',trim(cval))
+!! as oslo_header prints it: 5 decimals, more for a smaller tolerance !!
         write(cnum,'(i0)') ifolitol
-        write(cfmt,'(a,i0,a,i0,a)') '(f',ifolitol+3,'.',ifolitol,')'
+        ndec=max(5,ifolitol)
+        write(cfmt,'(a,i0,a,i0,a)') '(f',ndec+3,'.',ndec,')'
         write(cval,cfmt) 10.0d0**(-ifolitol)
         call print_value('FOLI tolerance',trim(adjustl(cval))//
      +    ' (FOLI_TOLERANCE '//trim(cnum)//')')

@@ -553,6 +553,12 @@
 !! extra options !!
 
         call readint("# OSLO","FOLI_TOLERANCE",ifolitol,3,1) !! FOLI value tolerance, for selection !!
+!! at most 10: FOLI values within 1.0d-10 are equal anyway (oslo.f) !!
+        if(ifolitol.lt.1.or.ifolitol.gt.10) then
+          write(*,'(2x,a)') 'FOLI_TOLERANCE n sets the tolerance '//
+     +      '10^-n, with n from 1 to 10, e.g. FOLI_TOLERANCE 3'
+          call apost_stop('Wrong FOLI_TOLERANCE value in # OSLO')
+        end if
 
 !! branching: the iterations at which the next FOLI value is selected   !!
 !! instead of the lowest one; a lone 0 means none                      !!
