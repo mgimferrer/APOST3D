@@ -78,7 +78,11 @@ program, not a full development history — see `git log` for that.
   external fields, state-averaged CASSCF). For 19 ORCA functionals
   (LDA, GGA, meta-GGA and global hybrids) the libxc ids that reproduce
   ORCA's exchange-correlation energy in ENPART are listed, and the
-  script prints them. See "Preparing the wavefunction".
+  script prints them. Checked against pySCF (and Gaussian 16 for ENPART)
+  on transition-metal complexes: 3d, 4d and 5d metals, high-spin,
+  broken-symmetry and ROKS wavefunctions, per-atom basis sets and
+  pseudopotentials on the metal only give the same populations, EOS,
+  GEOS, OSLO and ENPART results. See "Preparing the wavefunction".
 
 ### Changes to ENPART that affect inputs or results
 

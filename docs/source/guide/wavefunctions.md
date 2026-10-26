@@ -220,12 +220,13 @@ conversion is done. `-o other.fchk` writes the file under another name
 ```{admonition} ORCA and ENPART
 :class: tip
 
-ORCA wavefunctions are best used for the analyses of the density and the
-orbitals: populations, EFFAO, EOS, GEOS and OSLO. ENPART also works with
-them and was checked on small molecules (HF, CASSCF, and the
-functionals of the table below, restricted and unrestricted), but a
-Gaussian 16 or pySCF wavefunction remains the better-tested choice for
-ENPART.
+ORCA wavefunctions serve every analysis of APOST-3D. For populations,
+EFFAO, EOS, GEOS and OSLO the levels of theory checked are listed in
+[Levels of theory checked](#levels-of-theory-checked). For ENPART they
+give the same results as Gaussian 16 and pySCF wavefunctions (checked on
+small molecules and on [FeCl4]⁻ and [PdCl4]²⁻), with HF, CASSCF and the
+functionals of the libxc table below; ORCA's BP86, B3P86 and X3LYP
+cannot be used in ENPART.
 ```
 
 ```{admonition} Two programs, one input name
@@ -336,9 +337,9 @@ and GEOS; SPIN, ENPART and open shells need the `# DM` block.
 
 | ORCA calculation | |
 |---|---|
-| RHF, UHF, ROHF, RKS, UKS, ROKS | yes |
+| RHF, UHF, ROHF, RKS, UKS (also broken symmetry), ROKS | yes |
 | CASSCF, one root | yes, with the `PrintWF det` lines above |
-| Basis sets | any, up to g functions; def2 and other pseudopotentials (the ECP matrix is written for ENPART) |
+| Basis sets | any, up to g functions, also per element or per atom (`%basis`, `NewGTO`) and mixed families; def2 and other pseudopotentials, also on some atoms only (the ECP matrix is written for ENPART) |
 | RI-J, RIJCOSX | yes (the energies written are ORCA's final ones) |
 | D3, D4 dispersion | yes; the dispersion energy is not part of ORCA's SCF energy, nor of the energies written |
 | CPCM solvent | yes; the energies written are those of the molecule without the solvent term (the density is still the polarized one), with a note |
@@ -352,3 +353,29 @@ the basis it writes and compares it with ORCA's, which catches any change
 of ORCA's function order or sign convention in a future version, and the
 geometry of the property file is compared with that of the `.gbw` file.
 Any problem stops it with a message, and no file is written.
+
+### Levels of theory checked
+
+For populations, EFFAO, EOS, GEOS and OSLO, the `.fchk` files of
+`orca2fchk.py` give the same results as pySCF wavefunctions computed with
+the same geometry, basis sets, pseudopotentials and functional, within
+the integration grids of the two programs: atomic charges and EFO
+occupations within 10⁻³, the same oxidation states, R within 0.01 % and
+FOLI values within 10⁻⁴. Checked with ORCA 6.1.1 on transition-metal
+complexes ([Fe(H2O)6]²⁺, [Cu(NH3)4]²⁺, cis-PtCl2(NH3)2, ferrocene,
+RuCl2(NH3)4, a hydroxo-bridged Cu(II) dimer, [MnCl4]²⁻, [CuCl4]²⁻,
+[AuCl4]⁻) and the small molecules of the test suite:
+
+| | Checked |
+|---|---|
+| Wavefunctions | RHF, UHF, ROHF; RKS, UKS (high spin up to sextets, broken symmetry), ROKS; single-root CASSCF (with the `# DM` files) |
+| Functionals | B3LYP, PBE0, TPSSh and BP86 on the complexes; the functionals of the libxc table above on water. These analyses use only the orbitals and the density, so any functional ORCA's SCF converges with can be analysed |
+| Metals | 3d (Mn, Fe, Cu), 4d (Ru, Pd), 5d (Pt, Au); charges −2 to +2 |
+| Basis sets | def2-SVP, def2-TZVP, def2-TZVPD, 6-31G*, cc-pVDZ, cc-pVQZ (g functions); per element and per atom; def2 on the metal with 6-31G* on the ligands |
+| Pseudopotentials | def2 (Ru, Pd, I, Pt, Au), also on the metal only |
+| Approximations | RI-J, RIJCOSX (they change the charges by about 10⁻³ with respect to the exact integrals), D3BJ, D4, CPCM |
+
+For a double-hybrid functional (B2PLYP, ...) the file holds the SCF
+(Kohn-Sham) density, not the MP2-corrected one, as for the correlated
+methods in the table above. The composite `-3c` methods of ORCA
+(r2SCAN-3c, PBEh-3c, ...) have not been checked.
