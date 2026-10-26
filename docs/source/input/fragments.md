@@ -39,7 +39,8 @@ line:
 
 - The run stops, with a message naming the problem, for an atom number
   that does not exist, an atom listed twice, a fragment with no atoms,
-  more fragments than atoms, or `-1` on a fragment that is not the last.
+  more fragments than atoms, `-1` on a fragment that is not the last, or
+  a block that ends before every fragment has its count and its atoms.
 - `EOS`, `GEOS`, `OSLO` and `ENPART` need every atom in a fragment and stop
   otherwise (`atoms in no fragment: ...`). The other analyses run with the
   listed fragments only and print a warning naming the atoms left out.

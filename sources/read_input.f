@@ -363,14 +363,26 @@
       if(idofr.eq.1) then
         call locate_block(16,"# FRAGMENTS",ii)
         if(ii.eq.0) call apost_stop('Required section not found in input file')
-        read(16,*) icufr
+!! every read checked: a short list would otherwise run on into the  !!
+!! next line or end in a Fortran read error at the block's end         !!
+        read(16,*,iostat=ios) icufr
+        if(ios.ne.0) then
+          write(*,'(2x,a)') '# FRAGMENTS: the first line must give '//
+     +      'the number of fragments'
+          call apost_stop('Incomplete # FRAGMENTS block')
+        end if
         if(icufr.lt.1.or.icufr.gt.nat) then
           write(*,'(2x,a,i0,a,i0,a)') '# FRAGMENTS: ',icufr,
      +      ' fragments given, the molecule has ',nat,' atoms'
           call apost_stop(' Wrong number of fragments in # FRAGMENTS')
         end if
         do i=1,icufr
-          read(16,*) nfrlist(i)
+          read(16,*,iostat=ios) nfrlist(i)
+          if(ios.ne.0) then
+            write(*,'(2x,a,i0,a,i0)') '# FRAGMENTS: no number of '//
+     +        'atoms for fragment ',i,' of ',icufr
+            call apost_stop('Incomplete # FRAGMENTS block')
+          end if
           if(nfrlist(i).eq.-1.and.i.ne.icufr) then
             write(*,'(2x,a,i0,a)') '# FRAGMENTS: -1 (all remaining '//
      +        'atoms) given for fragment ',i,
@@ -405,7 +417,12 @@
      +          ' has ',nfrlist(i),' atoms'
               call apost_stop(' Wrong number of atoms in # FRAGMENTS')
             end if
-            read(16,*) (ifrlist(k,i),k=1,nfrlist(i))
+            read(16,*,iostat=ios) (ifrlist(k,i),k=1,nfrlist(i))
+            if(ios.ne.0) then
+              write(*,'(2x,a,i0,a,i0,a)') '# FRAGMENTS: fragment ',i,
+     +          ' needs ',nfrlist(i),' atom numbers'
+              call apost_stop('Incomplete # FRAGMENTS block')
+            end if
             do k=1,nfrlist(i)
               if(ifrlist(k,i).lt.1.or.ifrlist(k,i).gt.nat) then
                 write(*,'(2x,a,i0,a,i0,a,i0,a)') '# FRAGMENTS: atom ',

@@ -195,8 +195,9 @@ program, not a full development history — see `git log` for that.
 - **OSLO together with ENPART** — an input asking for both no longer
   crashes after the energy decomposition.
 - **Checked fragment definitions** — `# FRAGMENTS` with an atom that does
-  not exist, an atom in two fragments, or `-1` before the last fragment
-  now stops with a message naming the problem; atoms left out of the
+  not exist, an atom in two fragments, `-1` before the last fragment, or
+  an atom list cut short by the end of the block (a Fortran read error
+  before) now stops with a message naming the problem; atoms left out of the
   fragments stop EOS, GEOS, OSLO and ENPART (other analyses warn). OSLO
   and GEOS used to run on incomplete fragments and print wrong oxidation
   states.

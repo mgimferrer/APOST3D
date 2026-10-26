@@ -3601,6 +3601,39 @@
       ]
     },
     {
+      "name": "H2O-FRAGMENTS-SHORT",
+      "description": "Water (the H2O-CAS44 file) with a # FRAGMENTS block whose last atom list is one atom short: the run must stop with a message naming the fragment (it used to end in a Fortran read error).",
+      "tags": [
+        "input",
+        "fragments",
+        "expected-stop"
+      ],
+      "expected_rc": 1,
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Fragment and atom count named",
+          "type": "present",
+          "pattern": "# FRAGMENTS: fragment 2 needs 2 atom numbers"
+        },
+        {
+          "label": "Stop line",
+          "type": "present",
+          "pattern": "STOP Incomplete # FRAGMENTS block"
+        },
+        {
+          "label": "No population analysis",
+          "type": "absent",
+          "pattern": "DOING POPULATION ANALYSIS"
+        }
+      ]
+    },
+    {
       "name": "CH3F-EOS-LOWDIN",
       "description": "Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS (beta assigned as alpha, single-channel EFO .fchk), fragments F | CH3.",
       "tags": [
