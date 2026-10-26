@@ -201,6 +201,8 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2O-B3LYP-CPCM-ORCA` | Water, RKS B3LYP-D3BJ with CPCM and RIJCOSX from ORCA: ENPART with ORCA's B3LYP (libxc 475); the reference energies leave out the solvent and dispersion terms | `dft enpart tfvc rks orca hybrid libxc-ids solvent` |
 | `OH-UKS-ORCA` | Hydroxyl radical, UKS B3LYP from ORCA: local spin and ENPART; Mulliken charges and spin populations equal ORCA's | `dft enpart spin tfvc uks openshell orca libxc-ids` |
 | `CH2-T-ROHF-ORCA` | CH₂ triplet, ROHF/def2-TZVP from ORCA: ENPART (HF); Mulliken charges and spin populations equal ORCA's | `hf enpart tfvc rohf openshell orca` |
+| `CH2-T-ROHF-GEOS-ORCA` | The same ROHF triplet: GEOS with C, H, H as fragments, C(−2); the EFO `.fchk` files get Beta blocks for the unpaired EFOs and keep both densities of the input | `hf geos effao tfvc rohf openshell fragments orca` |
+| `CH2-T-ROHF-OSLO-ORCA` | The same ROHF triplet: OSLO with C, H, H as fragments, C(−2); both OSLO `.fchk` files (`PRINT_NONORTHO`) get Beta blocks for the beta OSLOs | `hf oslo tfvc rohf openshell fragments orca` |
 | `FeCl4-EOS-ORCA` | [FeCl₄]⁻ sextet, UKS B3LYP/def2-SVP from ORCA (3d metal, no pseudopotential): EOS with atomic fragments, Fe(+3), Cl(−1) | `dft eos effao tfvc uks openshell fragments orca transition-metal` |
 | `FeCl4-GEOS-ORCA` | The same wavefunction: GEOS, five unpaired electrons on Fe | `dft geos effao tfvc uks openshell fragments orca transition-metal` |
 | `PdCl4-EOS-ORCA` | [PdCl₄]²⁻, RKS B3LYP/def2-SVP from ORCA (4d metal with the def2 pseudopotential): EOS with atomic fragments, Pd(+2), Cl(−1) | `dft eos effao tfvc rks fragments orca transition-metal ecp` |
@@ -287,7 +289,8 @@ orbital indices only with a negative atom count, then exactly one value
 per grid point. `fchk_files` also reads every matching file and checks
 its real blocks: every value carries its exponent letter (Fortran's
 `E16.8` drops it from a three-digit exponent, `1.27052287-118`), and each
-block holds the `N=` values of its header.
+block holds the `N=` values of its header; an optional `"blocks"` list
+names headers every file must have (e.g. `"Beta MO coefficients"`).
 
 A test must exit with code 0. A test of an expected stop declares the
 code of the stop in its entry, next to `timeout`: `"expected_rc": 1` (the

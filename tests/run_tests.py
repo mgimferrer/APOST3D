@@ -322,18 +322,23 @@ _FCHK_HEADER = re.compile(r"^\S.*\s([IRC])\s+N=\s*(\d+)\s*$")
 _FCHK_REAL = re.compile(r"[-+]?\d*\.\d*[Ee][-+]?\d+")
 
 
-def _fchk_numbers_error(path: Path):
+def _fchk_numbers_error(path: Path, blocks=()):
     """
     Return why a .fchk file has an unreadable real block, or None.
 
     Every value of every real array block (header "... R   N=  n") must
     carry its exponent letter, and the block must hold n values. Fortran's
     E16.8 drops the 'E' of an exponent with three digits (1.27052287-118).
+    Every header named in `blocks` must be in the file.
     """
     try:
         lines = path.read_text(errors="replace").splitlines()
     except OSError as exc:
         return f"unreadable ({exc})"
+    headers = {l[:40].strip() for l in lines[2:] if l[:1] not in " -+"}
+    missing = [b for b in blocks if b not in headers]
+    if missing:
+        return "missing block(s): " + ", ".join(missing)
     block = None
     for lineno, line in enumerate(lines[2:], start=3):
         # headers start in column 1, data lines with a blank or a sign
@@ -363,7 +368,8 @@ def evaluate_file_check(rundir: Path, check: dict) -> dict:
       files       the files matching `glob` number `count`
       cube_files  the same, and every one follows the cube layout
       fchk_files  the same, and every real value of every one carries its
-                  exponent letter
+                  exponent letter (and, with `blocks`, every one has those
+                  headers)
     """
     ctype = check["type"]
     result = {"label": check["label"], "type": ctype}
@@ -385,7 +391,8 @@ def evaluate_file_check(rundir: Path, check: dict) -> dict:
         result["message"] = f"{count} cube file(s), layout ok"
         return result
     if ctype == "fchk_files":
-        bad = [(p.name, _fchk_numbers_error(p)) for p in found]
+        bad = [(p.name, _fchk_numbers_error(p, check.get("blocks", ())))
+               for p in found]
         bad = [(n, e) for n, e in bad if e]
         if bad:
             result["status"] = "fail"

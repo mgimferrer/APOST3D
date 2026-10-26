@@ -1,0 +1,580 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.17",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "wavefunction": {
+    "formalism": "unrestricted",
+    "method": "Hartree-Fock",
+    "n_basis_functions": 43,
+    "n_electrons": 8,
+    "n_alpha": 5,
+    "n_beta": 3,
+    "energy_au": -3.8932721778276402E+001,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nOSLO\nDOFRAGS\n#\n# OSLO\nPRINT_NONORTHO\n#\n# FRAGMENTS\n3\n1\n1\n1\n2\n1\n3\n#\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "short_name": "TFVC",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 3,
+    "atomic_numbers": [6, 1, 1],
+    "symbols": ["C", "H", "H"],
+    "nuclear_charges": [6.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+    "coordinates_bohr": [
+      [0.0000000000000000E+000, 0.0000000000000000E+000, 1.9842124400000000E-001],
+      [0.0000000000000000E+000, 1.8651596900000000E+000, -5.9526373200000005E-001],
+      [0.0000000000000000E+000, -1.8651596900000000E+000, -5.9526373200000005E-001]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [1]
+    },
+    {
+      "id": 2,
+      "atoms": [2]
+    },
+    {
+      "id": 3,
+      "atoms": [3]
+    }
+  ],
+  "analyses": {
+    "populations": {
+      "scheme": "TFVC",
+      "atoms": {
+        "electrons": [6.0433231665187233E+000, 9.7838391811707193E-001, 9.7838391811679581E-001],
+        "charges": [-4.3323166518723255E-002, 2.1616081882928073E-002, 2.1616081883204186E-002],
+        "spin": [1.8097590364120861E+000, 9.5120574490050680E-002, 9.5120574490001844E-002]
+      },
+      "fragments": {
+        "electrons": [6.0433231665187233E+000, 9.7838391811707193E-001, 9.7838391811679581E-001],
+        "charges": [-4.3323166518723255E-002, 2.1616081882928073E-002, 2.1616081883204186E-002],
+        "spin": [1.8097590364120861E+000, 9.5120574490050680E-002, 9.5120574490001844E-002]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [6.3065335269014744E+000, 8.4673323881222140E-001, 8.4673323881208529E-001],
+          "charges": [-3.0653352690147440E-001, 1.5326676118777860E-001, 1.5326676118791471E-001],
+          "spin": [1.9574902475071874E+000, 2.1254876566408707E-002, 2.1254876566357730E-002]
+        },
+        "fragments": {
+          "electrons": [6.3065335269014744E+000, 8.4673323881222140E-001, 8.4673323881208529E-001],
+          "charges": [-3.0653352690147440E-001, 1.5326676118777860E-001, 1.5326676118791471E-001],
+          "spin": [1.9574902475071874E+000, 2.1254876566408707E-002, 2.1254876566357730E-002]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "TFVC",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [4.9550677174938880E+000, 1.0883050667146172E+000, 1.0883050667142586E+000],
+            [1.0883050667146172E+000, 4.0955783531741230E-001, 4.9388486162282370E-002],
+            [1.0883050667142586E+000, 4.9388486162282370E-002, 4.0955783531714351E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [3.8142322757210376E+000, 1.1422029584674744E+000, 1.1422029584674545E+000],
+        "valence_bonded": [2.1766101334288761E+000, 1.1376935528768997E+000, 1.1376935528765411E+000],
+        "valence_free": [1.6376221422921615E+000, 4.5094055905747776E-003, 4.5094055909133957E-003]
+      },
+      "fragments": {
+        "matrix": {
+          "values": [
+            [4.9550677174938880E+000, 1.0883050667146172E+000, 1.0883050667142586E+000],
+            [1.0883050667146172E+000, 4.0955783531741230E-001, 4.9388486162282370E-002],
+            [1.0883050667142586E+000, 4.9388486162282370E-002, 4.0955783531714351E-001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 8.0001820077196015E+000,
+          "total_rule": "diagonal and one triangle"
+        },
+        "valence_total": [3.8142322757210376E+000, 1.1422029584674744E+000, 1.1422029584674545E+000],
+        "valence_bonded": [2.1766101334288761E+000, 1.1376935528768997E+000, 1.1376935528765411E+000],
+        "valence_free": [1.6376221422921615E+000, 4.5094055905747776E-003, 4.5094055909133957E-003]
+      }
+    },
+    "oslo": {
+      "scheme": "TFVC",
+      "fragment_populations": "TFVC",
+      "alpha": {
+        "sum_foli": 7.5011328939864121E+000,
+        "oslos": {
+          "rows": "orbital",
+          "n_rows": 5,
+          "fchk_orbitals": "alpha",
+          "columns": [
+            {
+              "key": "iteration",
+              "title": "Iteration",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "foli",
+              "title": "FOLI",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "iteration": [1, 2, 3, 4, 5],
+            "foli": [1.0001166019699219E+000, 1.1451276232046177E+000, 1.2408711081844259E+000, 1.6789249054068554E+000, 2.4360926552205915E+000],
+            "fragments": [
+              [1],
+              [1],
+              [1],
+              [1],
+              [1]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
+            "fchk_column": [1, 2, 3, 4, 5]
+          }
+        }
+      },
+      "beta": {
+        "sum_foli": 5.2217418333502659E+000,
+        "oslos": {
+          "rows": "orbital",
+          "n_rows": 3,
+          "fchk_orbitals": "beta",
+          "columns": [
+            {
+              "key": "iteration",
+              "title": "Iteration",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "foli",
+              "title": "FOLI",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "iteration": [1, 2, 3],
+            "foli": [1.0001473911813297E+000, 1.7855017869483458E+000, 2.4360926552205902E+000],
+            "fragments": [
+              [1],
+              [1],
+              [1]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
+            "fchk_column": [1, 2, 3]
+          }
+        }
+      },
+      "fragments": {
+        "oxidation_states": [-2.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+        "electrons_alpha": [5.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+        "electrons_beta": [3.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000]
+      },
+      "orbital_file": "CH2-T-ROHF-OSLO-ORCA-OSLOs.fchk",
+      "orbital_file_preortho": "CH2-T-ROHF-OSLO-ORCA-OSLOs-preortho.fchk",
+      "orbital_file_id": "2026-10-26T22:52:40+01:00/7155"
+    }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 1.8735632183908049E+000, 1.8735632183908049E+000],
+      [5.3374233128834347E-001, 1.0000000000000000E+000, 1.0000000000000000E+000],
+      [5.3374233128834347E-001, 1.0000000000000000E+000, 1.0000000000000000E+000]
+    ]
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.atoms.spin",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/spin",
+      "kind": "atom_vector",
+      "title": "Spin populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.fragments.spin",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/spin",
+      "kind": "fragment_vector",
+      "title": "Fragment spin populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.spin",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/spin",
+      "kind": "atom_vector",
+      "title": "Spin populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.fragments.spin",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/spin",
+      "kind": "fragment_vector",
+      "title": "Fragment spin populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/matrix",
+      "kind": "fragment_matrix",
+      "title": "Fragment bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_total",
+      "kind": "fragment_vector",
+      "title": "Fragment total valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_bonded",
+      "kind": "fragment_vector",
+      "title": "Fragment valences used in bonds (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_free",
+      "kind": "fragment_vector",
+      "title": "Fragment free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "oslo.alpha.sum_foli",
+      "analysis": "oslo",
+      "spin": "alpha",
+      "path": "/analyses/oslo/alpha/sum_foli",
+      "kind": "scalar",
+      "title": "Sum of the FOLI values, alpha",
+      "unit": null,
+      "decimals": 5,
+      "signed": false
+    },
+    {
+      "id": "oslo.alpha.oslos",
+      "analysis": "oslo",
+      "spin": "alpha",
+      "path": "/analyses/oslo/alpha/oslos",
+      "kind": "table",
+      "title": "OSLOs, alpha",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "oslo.beta.sum_foli",
+      "analysis": "oslo",
+      "spin": "beta",
+      "path": "/analyses/oslo/beta/sum_foli",
+      "kind": "scalar",
+      "title": "Sum of the FOLI values, beta",
+      "unit": null,
+      "decimals": 5,
+      "signed": false
+    },
+    {
+      "id": "oslo.beta.oslos",
+      "analysis": "oslo",
+      "spin": "beta",
+      "path": "/analyses/oslo/beta/oslos",
+      "kind": "table",
+      "title": "OSLOs, beta",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "oslo.fragments.oxidation_states",
+      "analysis": "oslo",
+      "spin": "total",
+      "path": "/analyses/oslo/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "OSLO oxidation states",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "oslo.fragments.electrons_alpha",
+      "analysis": "oslo",
+      "spin": "alpha",
+      "path": "/analyses/oslo/fragments/electrons_alpha",
+      "kind": "fragment_vector",
+      "title": "OSLO electrons, alpha",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "oslo.fragments.electrons_beta",
+      "analysis": "oslo",
+      "spin": "beta",
+      "path": "/analyses/oslo/fragments/electrons_beta",
+      "kind": "fragment_vector",
+      "title": "OSLO electrons, beta",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    }
+  ],
+  "run": {
+    "job_name": "CH2-T-ROHF-OSLO-ORCA",
+    "input_file": "CH2-T-ROHF-OSLO-ORCA.inp",
+    "wavefunction_file": "CH2-T-ROHF-OSLO-ORCA.fchk",
+    "date": "2026-10-26T22:52:40+01:00",
+    "id": "2026-10-26T22:52:40+01:00/7155",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

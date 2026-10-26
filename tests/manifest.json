@@ -5371,6 +5371,133 @@
       ]
     },
     {
+      "name": "CH2-T-ROHF-GEOS-ORCA",
+      "description": "The CH2-T-ROHF-ORCA triplet (ROHF, one set of orbitals): GEOS with C, H, H as fragments, C(-2); its EFO .fchk files insert the unpaired EFOs as Beta blocks and keep both densities of the source.",
+      "tags": [
+        "hf",
+        "geos",
+        "effao",
+        "tfvc",
+        "rohf",
+        "openshell",
+        "fragments",
+        "orca"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "GEOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "C fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 52.934,
+          "tol_abs": 0.02
+        },
+        {
+          "label": "Electronic assignment RMSD value",
+          "pattern": "RMSD of the electron assignment\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 0.63145,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "GEOS EFO .fchk files: Beta and density blocks, every real value readable",
+          "type": "fchk_files",
+          "glob": "*-GEOS-EFOs*.fchk",
+          "count": 2,
+          "blocks": [
+            "Beta Orbital Energies",
+            "Beta MO coefficients",
+            "Total SCF Density",
+            "Spin SCF Density"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CH2-T-ROHF-OSLO-ORCA",
+      "description": "The CH2-T-ROHF-ORCA triplet (ROHF, one set of orbitals): OSLO with C, H, H as fragments, C(-2); its OSLO .fchk files (PRINT_NONORTHO: both) insert the beta OSLOs and their FOLI values as Beta blocks.",
+      "tags": [
+        "hf",
+        "oslo",
+        "tfvc",
+        "rohf",
+        "openshell",
+        "fragments",
+        "orca"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS",
+        "PRINT_NONORTHO"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "OSLO 1 FOLI value (alpha)",
+          "section": "Before orthogonalization",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00012,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "C fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "H fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "OSLO .fchk files: Beta and density blocks, every real value readable",
+          "type": "fchk_files",
+          "glob": "*-OSLOs*.fchk",
+          "count": 2,
+          "blocks": [
+            "Beta Orbital Energies",
+            "Beta MO coefficients",
+            "Total SCF Density",
+            "Spin SCF Density"
+          ]
+        }
+      ]
+    },
+    {
       "name": "FeCl4-EOS-ORCA",
       "description": "[FeCl4]− sextet, UKS B3LYP/def2-SVP from ORCA 6.1.1 (utils/orca2fchk.py), a 3d metal without pseudopotential: TFVC, EOS with five atomic fragments, Fe(+3) and Cl(−1); the Mulliken charges and spin populations equal ORCA's.",
       "tags": [
@@ -5900,7 +6027,7 @@
     },
     {
       "name": "MnCl4-ROKS-ORCA",
-      "description": "[MnCl4]2- sextet, ROKS B3LYP/def2-TZVP from ORCA 6.1.1 (utils/orca2fchk.py): TFVC EOS with Mn and each Cl as fragments: Mn +2, Cl -1, R 100 %; Mulliken charges and spins equal ORCA's (same as a pySCF ROKS twin within 6e-4).",
+      "description": "[MnCl4]2- sextet, ROKS B3LYP/def2-TZVP from ORCA 6.1.1 (utils/orca2fchk.py): TFVC EOS with Mn and each Cl as fragments: Mn +2, Cl -1, R 100 %; Mulliken charges and spins equal ORCA's (same as a pySCF ROKS twin within 6e-4). Its EFO .fchk files (one set of orbitals) insert the beta EFOs as Beta blocks and keep both densities of the source.",
       "tags": [
         "dft",
         "eos",
@@ -5958,6 +6085,18 @@
           "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 100.0,
           "tol_abs": 0.02
+        },
+        {
+          "label": "EOS EFO .fchk files: Beta and density blocks, every real value readable",
+          "type": "fchk_files",
+          "glob": "*-EOS-EFOs*.fchk",
+          "count": 2,
+          "blocks": [
+            "Beta Orbital Energies",
+            "Beta MO coefficients",
+            "Total SCF Density",
+            "Spin SCF Density"
+          ]
         }
       ]
     },
@@ -6047,7 +6186,7 @@
     },
     {
       "name": "PtCl2NH32-ECP-ORCA",
-      "description": "cis-PtCl2(NH3)2, RKS PBE0/def2-TZVP from ORCA 6.1.1, def2 ECP on Pt only and def2-TZVPD on one Cl (per-atom NewGTO): TFVC OSLO with Pt, each Cl and each NH3 as fragments: Pt +2, Cl -1; Mulliken charges equal ORCA's.",
+      "description": "cis-PtCl2(NH3)2, RKS PBE0/def2-TZVP from ORCA 6.1.1, def2 ECP on Pt only and def2-TZVPD on one Cl (per-atom NewGTO): TFVC OSLO with Pt, each Cl and each NH3 as fragments: Pt +2, Cl -1; Mulliken charges equal ORCA's. Its OSLO .fchk copies the source's ECP matrix, whose values below 1e-99 orca2fchk.py writes as 0.",
       "tags": [
         "dft",
         "oslo",
@@ -6112,6 +6251,15 @@
           "pattern": "\\n\\s+4\\s+([-+]?\\d+\\.\\d+)",
           "ref": 0.0,
           "tol_abs": 0.05
+        },
+        {
+          "label": "OSLO .fchk: every real value readable (the ECP Matrix copied from the source)",
+          "type": "fchk_files",
+          "glob": "*-OSLOs.fchk",
+          "count": 1,
+          "blocks": [
+            "ECP Matrix"
+          ]
         }
       ]
     }

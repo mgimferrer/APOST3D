@@ -1,0 +1,497 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : Hartree-Fock
+  Number of atoms                         : 3
+  Number of basis functions               : 43
+  Primitive gaussians                     : 67
+  Spin density                            : read from the .fchk
+  Alpha / beta electrons                  : 5 / 3
+  SCF energy (au)                         :     -38.9327218
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Overlap populations                     : OPOP
+  Oxidation states                        : GEOS (generalized effective oxidation states)
+  Fragments                               : 3 (see # FRAGMENTS)
+
+  # FRAGMENTS (3 fragments)
+  Fragment  1 :   1
+  Fragment  2 :   2
+  Fragment  3 :   3
+
+  --------------------
+    NATURAL ORBITALS
+  --------------------
+
+  Occupation numbers (>1.0e-6):
+     2.00000   2.00000   2.00000   1.00000   1.00000
+
+  TIMING CPU  :: Initialization                                    0.05 s
+  TIMING WALL :: Initialization                                    0.02 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 17520
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   2 : subdivision 13, ratio  1.87356
+  Atom pair   1 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   3 : subdivision 13, ratio  1.87356
+
+  Sum of atomic overlaps, largest error   : 4.28E-04 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 0.09 s
+  TIMING WALL :: Atomic definition                                 0.01 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  C     6.043323    6.306534
+    2  H     0.978384    0.846733
+    3  H     0.978384    0.846733
+  -------------------------------
+  Total      8.000091    8.000000
+
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          6.043323    6.306534
+    2          0.978384    0.846733
+    3          0.978384    0.846733
+  ---------------------------------
+  Total        8.000091    8.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  C    -0.043323   -0.306534
+    2  H     0.021616    0.153267
+    3  H     0.021616    0.153267
+  -------------------------------
+  Total     -0.000091    0.000000
+
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1         -0.043323   -0.306534
+    2          0.021616    0.153267
+    3          0.021616    0.153267
+  ---------------------------------
+  Total       -0.000091    0.000000
+
+  --------------------
+    SPIN POPULATIONS
+  --------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  C     1.809759    1.957490
+    2  H     0.095121    0.021255
+    3  H     0.095121    0.021255
+  -------------------------------
+  Total      2.000000    2.000000
+
+  -----------------------------
+    FRAGMENT SPIN POPULATIONS
+  -----------------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          1.809759    1.957490
+    2          0.095121    0.021255
+    3          0.095121    0.021255
+  ---------------------------------
+  Total        2.000000    2.000000
+
+  -----------------------------
+    OVERLAP POPULATION MATRIX
+  -----------------------------
+
+  -------------------------------------------
+                 1  C        2  H        3  H
+  -------------------------------------------
+    1  C     5.786621    0.128351    0.128351
+    2  H     0.128351    0.850119    0.000026
+    3  H     0.128351    0.000026    0.850119
+  -------------------------------------------
+
+  --------------------------------
+    FRAGMENT OVERLAP POPULATIONS
+  --------------------------------
+
+  ---------------------------------------------
+                      1           2           3
+  ---------------------------------------------
+    1          5.786621    0.128351    0.128351
+    2          0.128351    0.850119    0.000026
+    3          0.128351    0.000026    0.850119
+  ---------------------------------------------
+  Total (all elements)                    :       8.000316
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------
+                 1  C        2  H        3  H
+  -------------------------------------------
+    1  C     4.955068    1.088305    1.088305
+    2  H     1.088305    0.409558    0.049388
+    3  H     1.088305    0.049388    0.409558
+  -------------------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1  C     3.814232
+    2  H     1.142203
+    3  H     1.142203
+  -------------------
+
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          3.814232
+    2          1.142203
+    3          1.142203
+  ---------------------
+  Total        6.098638
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1  C     2.176610
+    2  H     1.137694
+    3  H     1.137694
+  -------------------
+
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          2.176610
+    2          1.137694
+    3          1.137694
+  ---------------------
+  Total        4.451997
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1  C     1.637622
+    2  H     0.004509
+    3  H     0.004509
+  -------------------
+
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          1.637622
+    2          0.004509
+    3          0.004509
+  ---------------------
+  Total        1.646641
+
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
+
+  ---------------------------------------------
+                      1           2           3
+  ---------------------------------------------
+    1          4.955068    1.088305    1.088305
+    2          1.088305    0.409558    0.049388
+    3          1.088305    0.049388    0.409558
+  ---------------------------------------------
+  Total (diagonal and one triangle)       :       8.000182
+
+  TIMING CPU  :: Population analysis                               0.01 s
+  TIMING WALL :: Population analysis                               0.00 s
+
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
+
+  Atomic definition                       : TFVC (real space)
+  Densities                               : paired and unpaired
+  EFO occupation cutoff                   :        0.00010
+  Natural orbitals                        : 5
+
+  ------------------
+    PAIRED DENSITY
+  ------------------
+
+  Fragment 1
+  Net occupation                          :        4.02302
+  Net       1.9999   1.1989   0.8242
+  Gross occupation                        :        4.23356
+  Gross     2.0000   1.2984   0.9352
+  Fit (%)    99.86    86.96    80.37
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
+
+  Fragment 2
+  Net occupation                          :        0.77817
+  Net       0.7740   0.0042
+  Gross occupation                        :        0.88325
+  Gross     0.8765   0.0068
+  Fit (%)    82.01    55.48
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00002
+
+  Fragment 3
+  Net occupation                          :        0.77817
+  Net       0.7740   0.0042
+  Gross occupation                        :        0.88325
+  Gross     0.8765   0.0068
+  Fit (%)    82.01    55.48
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00002
+
+  --------------------
+    UNPAIRED DENSITY
+  --------------------
+
+  Fragment 1
+  Net occupation                          :        1.76360
+  Net       0.8843   0.8793
+  Gross occupation                        :        1.80976
+  Gross     0.9122   0.8975
+  Fit (%)    86.84    90.79
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
+
+  Fragment 2
+  Net occupation                          :        0.07206
+  Net       0.0421   0.0299
+  Gross occupation                        :        0.09512
+  Gross     0.0512   0.0439
+  Fit (%)    68.29    46.82
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
+
+  Fragment 3
+  Net occupation                          :        0.07206
+  Net       0.0421   0.0299
+  Gross occupation                        :        0.09512
+  Gross     0.0512   0.0439
+  Fit (%)    68.29    46.82
+  Left out by the cutoff (net)            :        0.00000
+  Left out by the cutoff (gross)          :        0.00000
+
+  ----------------------------
+    GEOS ELECTRON ASSIGNMENT
+  ----------------------------
+
+  EFOs in the assignment                  : 13
+
+  Ideal assignment                        : 3 electron pairs, 2 unpaired electrons
+  RMSD of the ideal assignment            :        0.63145
+
+  Pairs moved to the unpaired density (kept while the RMSD decreases):
+  Try  Frag.  Paired  Frag.  Unpaired  Frag.  Unpaired     RMSD  Result
+  -----------------------------------------------------------------------
+    1      1  0.9352      2    0.0512      3    0.0512  0.76857  rejected
+  -----------------------------------------------------------------------
+  RMSD of the electron assignment         :        0.63145
+
+  --------------------------
+    GEOS, PAIRED ELECTRONS
+  --------------------------
+
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       6.00      0.935             -
+      2       0.00          -         0.876
+      3       0.00          -         0.876
+  -----------------------------------------
+  Reliability index R (%)                 :         52.934
+  Paired occupations (0 to 2) are halved in R
+
+  ----------------------------
+    GEOS, UNPAIRED ELECTRONS
+  ----------------------------
+
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       2.00      0.898             -
+      2       0.00          -         0.051
+      3       0.00          -         0.051
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
+
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
+  Frag.  Oxidation state
+  ----------------------
+      1            -2.00
+      2             1.00
+      3             1.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :         52.934
+
+  EFO file (.fchk)                        : CH2-T-ROHF-GEOS-ORCA-GEOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : CH2-T-ROHF-GEOS-ORCA-GEOS-EFOs-unweighted.fchk
+
+  TIMING CPU  :: EFFAO computation                                 0.22 s
+  TIMING WALL :: EFFAO computation                                 0.03 s
+  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING WALL :: EOS analysis                                      0.00 s
+
+  ...Normal Termination of APOST-3D...
