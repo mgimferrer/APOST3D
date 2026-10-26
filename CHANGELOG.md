@@ -251,7 +251,8 @@ program, not a full development history — see `git log` for that.
   block (a typo used to create empty files and end in a Fortran error).
   `KEY = value` with spaces is read, a value that can't be read stops the
   run showing the line (real keywords used to fall back silently to their
-  default), and the last block may end without its closing `#`. The
+  default), and the last block may end without its closing `#`. `DM`
+  with a value other than 1 or 2 stops (it was read as `DM 1`). The
   "MO formalism" line of pySCF CASSCF, FCI and CCSD files no longer
   prints unreadable characters.
 - **Hirshfeld atomic densities** — `HIRSH`/`HIRSH-IT` without a

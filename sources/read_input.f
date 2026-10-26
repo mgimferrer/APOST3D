@@ -64,6 +64,11 @@
 !! DM 1/2 replace the density by the 1-RDM file: the results file says !!
 !! so from input()                                                     !!
       call readint("# METHOD","DM",icorr,0,1)
+      if(icorr.lt.0.or.icorr.gt.2) then
+        write(*,'(2x,a)') 'DM takes the value 1 (1-RDM) or 2 (1- and'//
+     +    ' 2-RDMs), e.g. DM 2'
+        call apost_stop('Wrong DM value in # METHOD')
+      end if
 
 !! processing fchk file !!
       call input()

@@ -1,0 +1,20 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "0.17",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-09-22"
+  },
+  "index": [],
+  "run": {
+    "job_name": "H2O-CAS44-DM3",
+    "input_file": "H2O-CAS44-DM3.inp",
+    "wavefunction_file": "H2O-CAS44-DM3.fchk",
+    "date": "2026-10-26T17:47:19+01:00",
+    "id": "2026-10-26T17:47:19+01:00/5e66",
+    "threads": 8,
+    "status": "stopped",
+    "stop_message": "Wrong DM value in # METHOD"
+  }
+}

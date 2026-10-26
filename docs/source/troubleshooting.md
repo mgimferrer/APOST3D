@@ -154,6 +154,9 @@ analyses are not part of version 5.0.
 **`STOP Wrong VERBOSE value in # METHOD`**
 `VERBOSE` needs its value, 0 or 1 (e.g. `VERBOSE 1`).
 
+**`STOP Wrong DM value in # METHOD`**
+`DM` takes 1 (the 1-RDM) or 2 (the 1- and 2-RDMs), e.g. `DM 2`.
+
 **`WARNING: no calibrated rotation angles for ANGULAR_2E ...`**
 ENPART's two-electron grid uses an angular grid without calibrated
 rotation angles (only 146 and 590 have them). Use one of those, or set

@@ -3566,6 +3566,41 @@
       ]
     },
     {
+      "name": "H2O-CAS44-DM3",
+      "description": "The H2O-CAS44 CASSCF(4,4) water with DM 3: DM takes 1 or 2 only, so the run must stop before reading the .fchk (it used to run as DM 1).",
+      "tags": [
+        "input",
+        "dm",
+        "expected-stop"
+      ],
+      "expected_rc": 1,
+      "timeout": 300,
+      "extra_input_files": [
+        "H2O-CAS44.dm1"
+      ],
+      "keywords": [
+        "TFVC",
+        "DM/PYSCF"
+      ],
+      "checks": [
+        {
+          "label": "Values DM takes named",
+          "type": "present",
+          "pattern": "DM takes the value 1 \\(1-RDM\\) or 2"
+        },
+        {
+          "label": "Stop line",
+          "type": "present",
+          "pattern": "STOP Wrong DM value in # METHOD"
+        },
+        {
+          "label": "No population analysis",
+          "type": "absent",
+          "pattern": "DOING POPULATION ANALYSIS"
+        }
+      ]
+    },
+    {
       "name": "CH3F-EOS-LOWDIN",
       "description": "Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS (beta assigned as alpha, single-channel EFO .fchk), fragments F | CH3.",
       "tags": [
