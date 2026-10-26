@@ -34,7 +34,8 @@ orbitals directly from the wavefunction. It is under development.
 
 Each file is a copy of the input `.fchk` whose molecular orbitals are
 replaced by the analysis orbitals; the geometry and basis set are
-unchanged. In the OSLO files the orbitals come in the order they were
+unchanged (the OSLO files also carry the density built from the
+OSLOs). In the OSLO files the orbitals come in the order they were
 assigned, and the **"orbital energy" field holds the FOLI value** of
 each (0 after the last OSLO). In the EFO files:
 
@@ -109,7 +110,8 @@ isovalue of 0.075 it shows the lobes of the exact cube file and no others
 (for a diffuse orbital its surface can be somewhat smaller). Even then,
 its values differ from the exact ones by a few percent of the largest
 value, so the cube file or APOST3Dview remain the reference for the
-shape. It shows lobes that the exact orbital doesn't have:
+shape. The `.fchk` approximation shows lobes that the exact orbital
+doesn't have:
 
 - for weakly occupied orbitals: small extra lobes with `Fit (%)` between
   about 60 and 80, clear ones below about 60;
@@ -164,7 +166,8 @@ extra lobes included.
 ## Cube files
 
 Selected in the [`# CUBE` block](../input/cube.md) by net occupation: by
-default every orbital of each fragment below full occupation is written.
+default every orbital of each fragment is written, core ones included
+(see `MAX_OCC`).
 
 **File names**: `<jobname>_<scheme><density>_<X><n>_<i>[beta].cube`
 

@@ -68,7 +68,7 @@ This page is the reference for its content.
 | `method` | as in the output: `"Hartree-Fock"`, `"KS-DFT"`, `"CASSCF"`, ... |
 | `n_basis_functions` | number of basis functions |
 | `n_electrons`, `n_alpha`, `n_beta` | electron counts (valence electrons only with an ECP) |
-| `energy_au` | the `SCF Energy` field of the `.fchk` file, or `null` when the file has none. For a correlated Gaussian calculation it is the energy of the reference SCF; the `.fchk` files written by `utils/apost3d.py` (pySCF) store the energy of the method itself there. Any change of this definition will be announced in the release notes. |
+| `energy_au` | the `SCF Energy` field of the `.fchk` file, or `null` when the file has none. For a correlated Gaussian calculation it is the energy of the reference SCF; the `.fchk` files written by `utils/apost3d.py` (pySCF) and `utils/orca2fchk.py` (ORCA) store the energy of the method itself there (`orca2fchk.py` without the solvent and dispersion terms). Any change of this definition will be announced in the release notes. |
 | `density` | the density every analysis used: `fchk_block`, the header of its block in the `.fchk` file (`"Total SCF Density"`, or with `DENS` n the n-th block whose header starts with `Total` and names a `Density`, e.g. `"Total MP2 Density"`), `index` (n, 1 without `DENS`) and `source`: `"fchk"`, or `"dm1"` when the 1-RDM file of `# DM` replaces that density. `utils/apost3d.py` and `utils/orca2fchk.py` write the density of the method itself (e.g. CASSCF) in the `"Total SCF Density"` block |
 
 ### `input`
@@ -110,7 +110,7 @@ rebuild the weight of a fragment, w_F = Σ_{A∈F} w_A, anywhere in space.
 |---|---|
 | `profile` | `"becke"` (`BECKE`, `BECKE-RHO`) or `"tfvc"` (`TFVC`): the cell function below |
 | `stiffness` | k, the number of iterations of the cell function (`STIFFNESS`, default 4) |
-| `radius_ratios` | χ_AB for every atom pair: row A, column B; the diagonal (1) is not used. With `BECKE` the ratio of the atomic radii, with `BECKE-RHO` and `TFVC` the ratio APOST-3D sets from the density along the A–B axis |
+| `radius_ratios` | χ_AB for every atom pair: row A, column B; the diagonal (1) is not used. With `BECKE` the ratio of the atomic radii; with `BECKE-RHO` and `TFVC` the ratio APOST-3D sets, mostly from the density along the A–B axis (`BECKE-RHO`: the radius ratio for distant pairs; `TFVC`: 1 when another atom lies between A and B) |
 
 $$
 w_A(\mathbf r) = \frac{P_A(\mathbf r)}{\sum_B P_B(\mathbf r)}, \qquad
@@ -242,8 +242,9 @@ Written with `EFFAO` or `UEFFAO` without `EOS`, and with `EFFAO-U`.
 The `efos` table has one row per EFO above the occupation cutoff,
 fragment by fragment: `fragments`, `shares`, `net` (net occupation) and, in real
 space, `gross` (gross occupation) and, except for `EFFAO-U`,
-`fit_percent` (how closely the EFO written to a `.fchk` file reproduces
-the fragment-weighted orbital).
+`fit_percent` (how closely the EFO's least-squares projection onto the
+basis set, the orbital EOS and GEOS write to their `.fchk` file,
+reproduces the fragment-weighted orbital).
 EFFAO writes no orbital file, so these tables have no `fchk_column`
 and their EFOs cannot be drawn from the results file.
 
@@ -349,7 +350,7 @@ energy, needed to check the total.
 | Key | Content |
 |---|---|
 | `wavefunction`, `formalism` | `"Hartree-Fock"`, `"KS-DFT"`, `"CASSCF"` or `"CISD"` (pySCF FCI and CISD wavefunctions are read as a CAS with every orbital active, so they say `"CASSCF"`); `"restricted"` or `"unrestricted"` |
-| `functional` | KS-DFT: `keyword` (the predefined keyword of `# ENPART`, or `"LIBRARY"`), `components` (one object per libxc functional: `libxc_id`, `name`, `kind`, `family`) and `exact_exchange_fraction` (0 for a pure functional); `null` for Hartree-Fock and correlated wavefunctions |
+| `functional` | KS-DFT: `keyword` (the predefined keyword of `# ENPART`, or `"LIBRARY"`), `components` (one object per libxc functional: `libxc_id`, `name`, `kind`, `family`) and `exact_exchange_fraction` (0 for a pure functional; absent when the run stops at the functional check); `null` for Hartree-Fock and correlated wavefunctions |
 | `pair_threshold`, `multipolar_pairs` | the `THREBOD` bond order, and the atom pairs below it (a list of `[A, B]`, 1-based), whose exchange-correlation term comes from the multipolar expansion |
 | `electron_nuclear`, `kinetic`, `nuclear_repulsion` | one-electron terms (below); `kinetic` is a diagonal matrix |
 | `xc_dft` | KS-DFT: the DFT part of the exchange-correlation (for a hybrid, without the exact exchange) |

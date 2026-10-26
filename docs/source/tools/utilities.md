@@ -104,9 +104,11 @@ wavefunctions it takes in
 - `write_fchk(mol, obj, name, overlap=None, myhf=None)` writes
   `name.fchk` from a pySCF SCF, CASSCF/CASCI, FCI, CISD or CCSD object, with the
   reference energies needed by ENPART; for FCI, pass the underlying
-  mean-field object as `myhf`.
+  mean-field object by keyword, `myhf=mf` (a fifth positional argument
+  is read as the obsolete `unrest`, which is ignored).
 - `write_dm12(mol, mycas, name)` writes the 1- and 2-RDMs of a
-  CASSCF/CASCI, FCI or CISD calculation to `name.dm1` and `name.dm2`.
+  CASSCF/CASCI, FCI or CISD calculation to `name.dm1` and `name.dm2`;
+  for CCSD, only `name.dm1`.
 
 ## orca2fchk.py
 
@@ -115,7 +117,7 @@ KS-DFT, CASSCF), with the reference energies needed by ENPART and, for
 CASSCF, the RDM files `name.dm1` and `name.dm2`:
 
 ```bash
-module load orca/6.1.1                      # orca_2json must be in the PATH
+module load orca/6.1.1                      # orca_2json in the PATH (or ORCA_PATH set)
 python3 $APOST3D_PATH/utils/orca2fchk.py name
 ```
 
@@ -132,7 +134,8 @@ These programs come from earlier versions and have not been checked
 against the current output and input formats.
 ```
 
-- **`eos_aom`** runs the [EOS](../methods/eos.md) analysis from atomic
+- **`eos_aom`** (its Multiwfn route is known to fail) runs the
+  [EOS](../methods/eos.md) analysis from atomic
   overlap matrices computed by another program, so that its atomic
   definition (e.g. QTAIM basins) can be used: `eos_aom name` reads
   `name.fchk` (or `name.wfn` with `eos_aom name -wfn`), a `name.inp` with

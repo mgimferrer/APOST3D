@@ -204,7 +204,8 @@ message, and no file is written.
 `utils/orca2fchk.py` writes the `.fchk` file from an ORCA 6 calculation
 (checked with ORCA 6.1.1), including the reference energies needed by
 ENPART and, for CASSCF, the 1- and 2-RDM files. It needs Python 3 with
-numpy, and ORCA's own converter `orca_2json`, so load ORCA first:
+numpy, and ORCA's own converter `orca_2json` (found in the `PATH` or
+through `ORCA_PATH`), so load ORCA first:
 
 ```bash
 module load orca/6.1.1                       # or put orca_2json in the PATH
@@ -225,8 +226,7 @@ EFFAO, EOS, GEOS and OSLO the levels of theory checked are listed in
 [Levels of theory checked](#levels-of-theory-checked). For ENPART they
 give the same results as Gaussian 16 and pySCF wavefunctions (checked on
 small molecules and on [FeCl4]⁻ and [PdCl4]²⁻), with HF, CASSCF and the
-functionals of the libxc table below; ORCA's BP86, B3P86 and X3LYP
-cannot be used in ENPART.
+functionals of the libxc table below.
 ```
 
 ```{admonition} Two programs, one input name
@@ -335,7 +335,7 @@ and GEOS; SPIN, ENPART and open shells need the `# DM` block.
 
 **What `orca2fchk.py` takes:**
 
-| ORCA calculation | |
+| ORCA calculation | Supported |
 |---|---|
 | RHF, UHF, ROHF, RKS, UKS (also broken symmetry), ROKS | yes |
 | CASSCF, one root | yes, with the `PrintWF det` lines above |
@@ -369,8 +369,8 @@ RuCl2(NH3)4, a hydroxo-bridged Cu(II) dimer, [MnCl4]²⁻, [CuCl4]²⁻,
 | | Checked |
 |---|---|
 | Wavefunctions | RHF, UHF, ROHF; RKS, UKS (high spin up to sextets, broken symmetry), ROKS; single-root CASSCF (with the `# DM` files) |
-| Functionals | B3LYP, PBE0, TPSSh and BP86 on the complexes; the functionals of the libxc table above on water. These analyses use only the orbitals and the density, so any functional ORCA's SCF converges with can be analysed |
-| Metals | 3d (Mn, Fe, Cu), 4d (Ru, Pd), 5d (Pt, Au); charges −2 to +2 |
+| Functionals | B3LYP, PBE0, TPSSh and BP86 on the complexes; the functionals of the libxc table above on water. These analyses use only the orbitals and the density, so any functional ORCA's SCF converges with can be analyzed |
+| Metals | 3d (Mn, Fe, Cu), 4d (Ru, Pd), 5d (Pt, Au); complex charges −2 to +2 |
 | Basis sets | def2-SVP, def2-TZVP, def2-TZVPD, 6-31G*, cc-pVDZ, cc-pVQZ (g functions); per element and per atom; def2 on the metal with 6-31G* on the ligands |
 | Pseudopotentials | def2 (Ru, Pd, I, Pt, Au), also on the metal only |
 | Approximations | RI-J, RIJCOSX (they change the charges by about 10⁻³ with respect to the exact integrals), D3BJ, D4, CPCM |
