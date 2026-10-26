@@ -23,7 +23,7 @@ boxes):
 | Level | Routine | Use |
 |---|---|---|
 | Section | `print_box('TITLE')` | one analysis or one major step |
-| Subsection | `print_subbox('TITLE')` | a part of a section (a spin channel, an iteration, a table) |
+| Subsection | `print_box('TITLE')`, or `print_subbox('TITLE')` right after another heading | a part of a section (a spin channel, an iteration, a table) |
 | Caption | a plain line, sentence case | the title of a single table or list |
 
 - Section and subsection titles are in capitals. `print_box` prints an
@@ -78,8 +78,8 @@ The same kind of quantity always has the same number of decimals:
 | OSLO FOLI values | 5 |
 | Fit and recovery percentages | 2 |
 
-Values read from the input files are printed as precisely as the files
-give them (the SCF energy of the `.fchk` keeps its 10 decimals).
+The SCF energy read from the `.fchk` file is printed with 10 decimals in
+the wavefunction summary.
 
 ## Tables
 
@@ -125,4 +125,4 @@ The same thing has the same name everywhere:
 | EFO, EFOs (effective fragment orbitals) | eff-AO-s, eff-AOs, EFFAOs in text |
 | electron assignment | assignation |
 | neutral titles (`BOND ORDER MATRIX`), the atomic definition named once at the top of its section and as the heading of each value column (`TFVC`, `Mulliken`, `Lowdin-Dav.`) | `"FUZZY ATOMS"`, `APOST3D`, `apost3d`, `3D-space` |
-| Lowdin, Davidson-Lowdin (ASCII in the output) | Löwdin |
+| Lowdin, Lowdin-Davidson (ASCII in the output) | Löwdin, Davidson-Lowdin |

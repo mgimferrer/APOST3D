@@ -12,9 +12,11 @@ make -C $APOST3D_PATH help        # all targets and options
 ```
 
 `make` takes the same `ARCH`, `OPENBLAS_DIR` and `LIBXC_DIR` settings as
-the script (the number of compile jobs is set with `-j`), but does not check the compiler version, build
-libxc, or sign the programs on macOS (run `bash compile_libxc.sh` once
-first if libxc is not installed). After `make_compile.sh`, `make` uses the
+the script (the number of compile jobs is set with `-j`), but does not
+check the compiler version, build libxc, sign the programs on macOS, or
+rebuild everything after a change of compiler or `ARCH` (run
+`make clean` yourself then; run `bash compile_libxc.sh` once first if
+libxc is not installed). After `make_compile.sh`, `make` uses the
 libxc the script checked (recorded in `objects/libxc.mk`, which
 `make clean` removes); `LIBXC_DIR` overrides it. `compile_libxc.sh` builds
 libxc with the `gfortran` on the `PATH`, the one the `Makefile` uses, and
@@ -24,7 +26,7 @@ the `gcc` of the same version when there is one (`gcc-16`, ...).
 
 | Path | Contents |
 |---|---|
-| `sources/` | Program sources (fixed-form `.f`, `modules.f90`, `parameter.h`) |
+| `sources/` | Program sources (fixed-form `.f`, `modules.f90`, `parameter.h`, `Lebedev-Laikov.F`) |
 | `utils/` | Utility sources; `make utils` writes the utility programs here |
 | `objects/` | Every `.o` and `.mod` file (utilities in `objects/utils/`) |
 | `libxc-<version>/` | libxc, when built by `compile_libxc.sh` |
@@ -47,6 +49,8 @@ For debugging, rebuild with other optimization flags:
 make clean
 make -j8 apost3d OPTFLAGS="-g -O0 -fbounds-check"
 ```
+
+(`input2.f` keeps its own `-O1`, without these flags.)
 
 and run with `OMP_NUM_THREADS=1` first, to separate a bug from a
 parallelization problem.

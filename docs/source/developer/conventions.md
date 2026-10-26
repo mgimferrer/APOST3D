@@ -8,31 +8,33 @@ yet still follows earlier habits (ALL-CAPS comments, `c` comment lines,
 ## Language and typing
 
 - Fixed-form Fortran (`.f`, 132-column lines) for the program sources,
-  free form (`.f90`) for modules and utilities.
-- A cleaned routine starts with `implicit none` and declares every
-  variable; dummy arguments carry `intent(in)`, `intent(out)` or
-  `intent(inout)`.
-- A `COMMON` block is declared once, in an include file, and every routine
-  that uses it includes that file. Declaring the same block by hand in
-  several routines lets the copies drift apart (different sizes or
-  names), which the compiler only reports as a warning.
-- Legacy routines still use `implicit real*8(a-h,o-z)`: there, a name
-  starting with `i`-`n` is silently an integer, and a misspelt variable
-  is silently a new one. Read such code with that in mind.
+  free form (`.f90`) for the modules and the newer utilities.
+- The target for typing: every routine starts with `implicit none` and
+  declares every variable, and dummy arguments carry `intent(in)`,
+  `intent(out)` or `intent(inout)`. New routines follow it; most existing
+  routines, cleaned ones included, still use `implicit real*8(a-h,o-z)`
+  (or `implicit double precision`), where a name starting with `i`-`n` is
+  silently an integer and a misspelt variable is silently a new one. Read
+  such code with that in mind.
+- The target for `COMMON` blocks: each declared once, in an include file
+  that every routine using it includes. Today each routine declares its
+  blocks by hand, and the copies can drift apart (different sizes or
+  names), which the compiler only reports as a warning: keep them
+  identical.
 
 ## Layout
 
 - Fixed form: statements start in column 7 and every nesting level
   indents 2 more spaces; `else`, `else if` and `case` sit one level
   shallower than the block they belong to. Free form: the same, starting
-  in column 3.
+  in column 3 (`modules.f90`: column 4).
 - Comments start in column 1.
 - Loops use `do ... end do`; no shared-label `do` loops, no arithmetic
   `if`, no `GOTO` for loops (an early exit uses `exit` or `cycle`).
 
 ## Comments
 
-- Comments are written `!! text !!`, in sentence case, and say what the
+- Comments are written `!! text !!`, in lower case (no ALL CAPS), and say what the
   code does and why, in plain words that make sense to someone reading
   the routine for the first time.
 - No history in comments ("now", "previously", "used to", dates, who
@@ -44,21 +46,27 @@ yet still follows earlier habits (ALL-CAPS comments, `c` comment lines,
 
 ## Routine headers
 
-Every routine has a header directly above its first line:
+Every routine has a header directly above its first line, e.g. in
+`oslo.f`:
 
 ```fortran
 !! ----------------------------------------------------------------------
-!! subroutine: numint_one
-!! One-electron IQA terms (electron-nuclear attraction and kinetic
-!! energy) for every atom and atom pair, by numerical integration on the
-!! molecular grid (P. Salvador et al., J. Chem. Phys. 2024, 160, 172502).
+!! subroutine: oslo_build_Smat
+!! Charge centre R_F of each fragment (its atoms' positions weighted by
+!! atomic number), printed in Angstrom, and its spread matrix, the grid
+!! integral of chi_mu chi_nu |r-R_F|^2 weighted by the atomic weights,
+!! used by every iteration of every channel.
 !! arguments:
-!!   itotps   (in)  number of grid points
-!!   wp       (in)  (itotps) integration weights
+!!   itotps (in)   number of grid points
+!!   wp     (in)   (itotps) integration weights
 !!   ...
 !! author: MGimf
 !! ----------------------------------------------------------------------
 ```
+
+About half of the files still have the older header style (a box of
+`*`, `purpose:`, a closing `!!` on each line); it is replaced when the
+routine is reworked.
 
 - The description says what is computed, in chemical terms, in two to
   four lines, with the paper (and equation) it implements when there is
@@ -89,7 +97,8 @@ them.
 
 ## OpenMP
 
-- Every `!$OMP PARALLEL` region has a comment directly above it saying
+- Every `!$OMP PARALLEL` region has a comment just above it (before its
+  set-up lines) saying
   why it is safe (which variables are private, which are reduced, why no
   two threads write the same element).
 - Parallelize the loops whose size grows with the system (grid points,
@@ -104,7 +113,7 @@ them.
   the loop.
 - A `COMMON` block must be `threadprivate` in every file that declares it
   or in none (GNU `ld` refuses to link a mismatch). Declaring each block
-  in one include file avoids the problem.
+  in one include file (the target above) avoids the problem.
 - After a crash in parallel code, rebuild with
   `make clean && make apost3d OPTFLAGS="-g -O0 -fbounds-check"` (the
   objects don't depend on the flags) and run with one thread

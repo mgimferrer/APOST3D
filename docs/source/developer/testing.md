@@ -7,9 +7,9 @@ stored references. It is the way to check a new build and the safety net
 when changing the code.
 
 ```bash
-make test                 # build if needed, then run every test (8 threads)
+make test                 # build if needed, then run every test (8 threads, fewer on a smaller machine)
 make test NTHREADS=4      # same, with 4 threads
-make test-strict          # any difference from the references fails
+make test-strict          # layout and wording differences fail too
 ```
 
 `NTHREADS` has the same meaning as for `bash make_compile.sh`. Every run
@@ -44,12 +44,16 @@ The full-output comparison has two levels:
 | `make test` | fails | note only (blank and border lines are not compared) |
 | `make test-strict` | fails | fails |
 
+At both levels a "changed number" is one beyond the tolerance above (5
+units of the last printed digit, or 1e-8): `make test-strict` adds the
+text and layout, not a tighter tolerance.
+
 `make test` is for everyday development: rewording the output doesn't
 break it, a changed number does. `make test-strict` is for the same code
 on another machine or compiler, or before a release.
 
 ```text
-  [29/54]  H2O-SVWN                       dft enpart tfvc rks lda functional-keyword
+  [31/79]  H2O-SVWN                       dft enpart tfvc rks lda functional-keyword
            (0s)
            ✓  Normal Termination                     found in output
            ✓  Total KS-DFT energy (au)               got -76.05056   ref -76.05056   Δ 0.0e+00   [abs 2e-06]
@@ -58,7 +62,7 @@ on another machine or compiler, or before a release.
            ✓  Results file vs reference              same values
            PASSED  (11/11 checks)
   ...
-  54 PASSED   (68s total)
+  79 PASSED   (200s total)
 ```
 
 A failing full-output check lists the lines that differ:
@@ -66,8 +70,8 @@ A failing full-output check lists the lines that differ:
 ```text
            ✗  Full output vs reference               1 number(s) changed on 1 line(s)
                   in 'IQA ENERGY TERMS (TFVC)':
-                    ref   443: 1  O   -74.525625   -0.529237   -0.529236
-                    new   443: 1  O   -74.525615   -0.529236   -0.529236   <- -74.525625 -> -74.525615 (off by 10 in the last digit)
+                    ref   399: 1  O   -74.525615   -0.529236   -0.529236
+                    new   399: 1  O   -74.525625   -0.529236   -0.529236   <- -74.525615 -> -74.525625 (off by 10 in the last digit)
 ```
 
 ## Running the runner directly
@@ -81,7 +85,8 @@ python3 tests/run_tests.py --verbose
 python3 tests/run_tests.py --help
 ```
 
-`--ulps K` changes the allowed deviation to `K` units of the last digit,
+`--nthreads N` sets the threads (default 1; `make test` passes
+`NTHREADS`), `--ulps K` changes the allowed deviation to `K` units of the last digit,
 `--strict` selects the strict level, `--no-full` skips the full-output
 comparison, `--output-dir DIR` saves the outputs elsewhere.
 
@@ -96,8 +101,8 @@ python3 tests/compare_outputs.py --ref-dir tests/reference --out-dir tests/repor
 
 Clone or copy the whole repository (the test inputs are in `tests/`),
 build as usual, and run `make test-strict NTHREADS=<n>`. A passing suite
-means the new build prints exactly the same output as the developers'
-machine.
+means the new build prints the same text and layout as the developers'
+machine, with every number within 5 units of its last printed digit.
 
 ## Updating the references
 
@@ -113,7 +118,8 @@ them at full printed precision.
 
 A test with `"orbital_reference": true` in its manifest entry also keeps
 the orbital `.fchk` files of the same run (`-EOS-EFOs`, `-GEOS-EFOs`,
-`-OSLOs`, `-OSLOs-preortho`) in `tests/reference-orbitals/`, rewritten
+their `-unweighted` versions, `-OSLOs`, `-OSLOs-preortho`) in
+`tests/reference-orbitals/`, rewritten
 with its references. They pair with its `.apost.json` reference through
 the run id, as the APOST3Dview tests expect, so keep both from the same
 run: restoring one of them with `git checkout` means restoring both.
@@ -201,6 +207,11 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `PdCl4-GEOS-ORCA` | The same wavefunction: closed-shell GEOS | `dft geos effao tfvc rks fragments orca transition-metal ecp` |
 | `H2O-CAS44-ORCA` | The `H2O-CAS44` state from ORCA's CASSCF (`ORCA` in `# DM`, RDMs built by `orca2fchk.py`): the same post-HF ENPART | `casscf enpart tfvc orca dm fragments correlation verbose spin` |
 | `CH2-T-CAS66-ORCA` | The `CH2-T-CAS66` triplet from ORCA's CASSCF, `DM 2`: bond orders and correlated local spin | `casscf dm orca spin tfvc openshell` |
+| `H2O-RM06HF-METHOD` | The `H2O-M062X` Gaussian 16 file with `RM06HF` in the method field (Mulliken only): a functional name containing HF reads as KS-DFT, not Hartree-Fock | `dft rks fchk-header` |
+| `H2O-TPSSH-ORCA` | Water, RKS TPSSh/def2-TZVP from ORCA (`utils/orca2fchk.py`): ENPART with ORCA's TPSSh as libxc 457, a hybrid meta-GGA, on a 40 × 146 two-electron grid; the pure exchange-correlation energy equals ORCA's | `dft enpart tfvc rks orca meta-gga hybrid libxc-ids` |
+| `MnCl4-ROKS-ORCA` | [MnCl₄]²⁻ sextet, ROKS B3LYP/def2-TZVP from ORCA: EOS with Mn and each Cl as fragments, Mn(+2), Cl(−1), R 100 %; Mulliken charges and spins equal ORCA's | `dft eos effao tfvc roks openshell fragments orca transition-metal` |
+| `Cu2OH2NH34-BS-ORCA` | [Cu₂(μ-OH)₂(NH₃)₄]²⁺, broken-symmetry UKS B3LYP/def2-SVP from ORCA: EOS with each Cu, OH and NH₃ as fragments, Cu(II)/Cu(II), R 97.11 %; Mulliken charges and the opposite Cu spins equal ORCA's | `dft eos effao tfvc uks openshell broken-symmetry fragments orca transition-metal` |
+| `PtCl2NH32-ECP-ORCA` | cis-PtCl₂(NH₃)₂, RKS PBE0/def2-TZVP from ORCA, def2 pseudopotential on Pt only and def2-TZVPD on one Cl (per-atom basis): OSLO with Pt, each Cl and each NH₃ as fragments, Pt(+2), Cl(−1); Mulliken charges equal ORCA's | `dft oslo tfvc rks fragments orca transition-metal ecp` |
 
 ## Adding a test
 
@@ -220,8 +231,10 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
    the quantity.
 4. Run `python3 tests/run_tests.py --filter SystemName --no-full` until
    the checks pass.
-5. Write the reference output:
-   `python3 tests/run_tests.py --filter SystemName --update-ref`.
+5. Write the reference output at 8 threads, like the others:
+   `python3 tests/run_tests.py --nthreads 8 --filter SystemName --update-ref`
+   (`--filter` matches substrings: check that it selects only the new
+   test).
 6. Commit the inputs, the reference output and the manifest entry
    together. List the keywords the test covers in the entry's
    `keywords` (`make coverage` counts only those) and add a new keyword
@@ -240,6 +253,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | OSLO FOLI values | `2e-4` |
 | `Fit (%)` | `0.05` |
 | `Norm in cube` | `1e-3` |
+| Integer counts (orbitals, pairs, iterations) | `0.5` |
 
 A manifest check looks like:
 
@@ -256,8 +270,8 @@ A manifest check looks like:
 ```
 
 `type` is `float` (the default; `pattern` has one capture group),
-`present` or `absent`; `section` restricts the search to the output after
-that marker; `match_index` (1-based) picks one of several matches.
+`present` or `absent`; `section` (float checks only) restricts the
+search to the output after that marker; `match_index` (1-based) picks one of several matches.
 
 Two more types check the files a run writes, in place of the output:
 
