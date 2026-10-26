@@ -76,7 +76,7 @@ wavefunction. `THREBOD -1` computes the exchange-correlation term
 of every atom pair. The optional `# GRID` block here
 repeats the default two-electron grid. See [ENPART](../methods/enpart.md).
 
-Try it on `H2O-T-BLYP.fchk` (triplet water, UKS BLYP; under a minute on 8
+Try it on `H2O-T-BLYP.fchk` (triplet water, UKS BLYP; about a minute on 8
 threads): the fragments are O and H₂.
 
 ## Example 3 - Local spin of a correlated wavefunction from pySCF
@@ -201,6 +201,6 @@ is one:
   ------------------------------------------
 ```
 
-written as `LiH-32-FCI_tfvc_paired_neg_FR2_1.cube`. The same orbital is the
-last Alpha orbital of `LiH-32-FCI-GEOS-EFOs.fchk`. The resulting oxidation
+written as `mol_tfvc_paired_neg_FR2_1.cube` (with the job name `mol`).
+The same orbital is the last Alpha orbital of `mol-GEOS-EFOs.fchk`. The resulting oxidation
 states are +1 (Li) and −1 (H). See [GEOS](../methods/geos.md).
