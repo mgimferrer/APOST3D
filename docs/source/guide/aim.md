@@ -137,6 +137,7 @@ set or is not an NAO file (another NBO matrix).
 | [OSLO](../methods/oslo.md) | yes | only for the fragment populations, in `# OSLO` |
 | [SPIN](../methods/spin.md) | yes | yes |
 | [ENPART](../methods/enpart.md) | yes | no |
+| [POLAR](../methods/polar.md) | yes | no |
 
 ## Which one to use
 

@@ -203,4 +203,5 @@ correlated wavefunction, `FRAGMENT EXCHANGE-CORRELATION BOND ORDERS (DI)`).
   A clear difference points to an integration problem: use a larger grid
   (see [Running a calculation](../guide/running.md)).
 - For a correlated wavefunction, check that the 1- and 2-RDMs correspond to
-  the orbitals in the `.fchk` file (written together by `apost3d.py`).
+  the orbitals in the `.fchk` file (written together by `apost3d.py` or
+  `orca2fchk.py`).

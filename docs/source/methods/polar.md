@@ -28,7 +28,7 @@ $$
 $$
 
 with the intrinsic dipole
-$\boldsymbol\mu_A^{\rm intr} = -\int w_A\,\rho\,(\mathbf r - \mathbf R_A)$,
+$\boldsymbol\mu_A^{\rm intr} = -\int w_A\,\rho\,(\mathbf r - \mathbf R_A)\,d\mathbf r$,
 measured from the nucleus of the atom. The atomic dipoles
 $\boldsymbol\mu_A$ depend on the origin through $q_A\mathbf R_A$. Keith's
 bond charges remove that dependence: each pair of neighbor atoms gets a
@@ -49,7 +49,10 @@ charge of the molecule.
 
 When the `.fchk` file comes from a calculation in a static electric field
 (see [ENPART](enpart.md#external-electric-field)), `POLAR` also gives the
-energy of each atomic dipole in the field, $\boldsymbol\mu_A\cdot\mathbf F$.
+energies of the intrinsic and charge-transfer dipoles of each atom in the
+field, $\boldsymbol\mu_A^{\rm intr}\cdot\mathbf F$ and
+$\boldsymbol\mu_A^{\rm CT}\cdot\mathbf F$, and that of the molecular
+dipole, $\boldsymbol\mu\cdot\mathbf F$.
 
 ## Requirements and input
 
@@ -94,7 +97,8 @@ extra bond charges; otherwise the run stops.
 The excerpts come from water, RHF/cc-pVDZ in a field of 0.005 au along
 *z*, TFVC atoms (test `H2O-RHF-FIELD`). All dipoles are in au
 (e·bohr). `ORIGIN-DEPENDENT ATOMIC DIPOLES` ($\boldsymbol\mu_A$) and
-`INTRINSIC ATOMIC DIPOLES` come first, each with its total:
+`INTRINSIC ATOMIC DIPOLES` come first, each with its total (the
+intrinsic ones here):
 
 % source: tests/reference/H2O-RHF-FIELD.apost
 ```text

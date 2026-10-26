@@ -49,8 +49,11 @@ analyses.
   exception are the functional names in `# ENPART` (`B3LYP`, `b3lyp`, ...).
 - **Values** follow the keyword after a space or an `=`: `DM 2`, `DM=2`
   and `DM = 2` are the same. A keyword without its value takes the
-  default (except `VERBOSE`, which needs 0 or 1); a value that can't be read (e.g. `THREBOD 2.5`, which must be
-  an integer) stops the run, showing the line.
+  default (except `VERBOSE`, which needs 0 or 1, and `ROTATION_2E`, which
+  needs its two angles); a value that can't be read (e.g. `THREBOD 2.5`,
+  which must be an integer) stops the run, showing the line.
+- **Spaces, not tabs**: a keyword next to a tab character is not read.
+  Only the first 80 characters of each line are read.
 - **No comments inside a block.** Any line that contains a `#` ends the
   block, so a `## comment` line hides every keyword after it. Keywords
   written after the closing `#` of a block are ignored without warning.

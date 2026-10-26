@@ -111,5 +111,6 @@ Zero-error strategy
 
 Multipolar expansion
   The approximation used by ENPART for the exchange-correlation energy of
-  weakly bonded atom pairs (bond order below `THREBOD`).
+  weakly bonded atom pairs (bond order below the `THREBOD` threshold,
+  0.005 by default).
 ```

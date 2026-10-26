@@ -72,7 +72,7 @@ Three variants differ in the density that is analyzed:
 |---|---|---|
 | `EFFAO` | Total density | 0 to 2 |
 | `UEFFAO` | Alpha and beta densities, separately | 0 to 1 |
-| `EFFAO-U` | Paired and unpaired densities, separately (the orbitals of [GEOS](geos.md), without its oxidation states; occupation cutoff 0.0001, no `Fit (%)`). Real-space schemes only | up to 2 (paired, can be slightly negative, see [GEOS](geos.md)), 0 to 1 (unpaired) |
+| `EFFAO-U` | Paired and unpaired densities, separately (the orbitals of [GEOS](geos.md), without its oxidation states; occupation cutoff 0.0001, no `Fit (%)`). Real-space schemes only | up to 2 (paired; slightly negative ones are reported only by [GEOS](geos.md)), 0 to 1 (unpaired) |
 
 For a closed-shell wavefunction, `UEFFAO` computes the alpha orbitals
 only, since the beta ones are the same.
@@ -134,7 +134,7 @@ density:
 - `Gross occupation` and the `Gross` rows are the same for the gross
   occupations, in the same order.
 - `Left out by the cutoff` is what the listed EFOs miss of the fragment's
-  net and gross (alpha) population: the occupations of the EFOs below
+  net and gross population in that density (alpha here): the occupations of the EFOs below
   0.001. Small values mean the listed EFOs describe the fragment's density
   well. With a Hilbert-space scheme only the net value is printed.
 - `Fit (%)` (real-space schemes, not `EFFAO-U`) measures how well the

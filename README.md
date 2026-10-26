@@ -3,7 +3,7 @@
 ## Chemical concepts from wave function analysis
 
 APOST-3D reads a converged wavefunction (a formatted checkpoint file from
-Gaussian, Q-Chem, pySCF, ...) and translates it into chemical language:
+Gaussian, Q-Chem, pySCF, ORCA, ...) and translates it into chemical language:
 atomic charges and bond orders, effective atomic and fragment orbitals,
 oxidation states (EOS, GEOS, OSLO), local spins, and the decomposition of
 the molecular energy into atomic and interatomic terms (IQA). It is
@@ -18,8 +18,9 @@ and a [developer guide](https://apost3d.readthedocs.io/en/latest/developer/build
 
 ## Quick start
 
-Install gfortran (10 or newer), OpenBLAS and CMake with your package
-manager (e.g. `sudo apt install gfortran libopenblas-dev cmake`), then
+Install gfortran (10 or newer), make, OpenBLAS, CMake, Python 3 and curl
+with your package manager (e.g. `sudo apt install gfortran gcc make
+libopenblas-dev cmake python3 curl`), then
 
 ```bash
 git clone https://github.com/mgimferrer/APOST3D.git

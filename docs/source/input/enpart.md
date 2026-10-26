@@ -7,7 +7,9 @@ described in [ENPART](../methods/enpart.md).
 ## Wavefunction and functional
 
 Give exactly one of: `HF`, a predefined functional keyword, `LIBRARY`
-(with libxc ids), `CASSCF` or `CISD`.
+(with libxc ids), `CASSCF` or `CISD`. Not every combination of two is
+caught: the run may silently use one of them, so check the wavefunction
+and functional named in the ENPART section of the output.
 
 | Keyword | Description |
 | ------- | ----------- |
@@ -18,7 +20,10 @@ Give exactly one of: `HF`, a predefined functional keyword, `LIBRARY`
 
 ### Predefined functionals
 
-Each keyword reproduces the Gaussian 16 functional of the same name (checked on water). Keywords are case-insensitive.
+Each keyword reproduces the Gaussian 16 functional of the same name
+(checked on water). These names are case-insensitive (`B3LYP`, `b3lyp`;
+the other `# ENPART` keywords are not) and must be the first word of
+their line.
 
 | Keyword | Functional | libxc ids |
 | ------- | ---------- | --------- |

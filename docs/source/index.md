@@ -3,12 +3,13 @@
 **Chemical concepts from wave function analysis**
 
 APOST-3D reads a converged wavefunction (a formatted checkpoint file from
-Gaussian, Q-Chem, pySCF, ...) and translates it into chemical language:
+Gaussian, Q-Chem, pySCF, ORCA, ...) and translates it into chemical language:
 atomic charges and bond orders, effective atomic and fragment orbitals,
 oxidation states, local spins, and a decomposition of the molecular
-energy into atomic and interatomic terms. It is developed at the
-Universitat de Girona by P. Salvador, M. Gimferrer and collaborators, and
-is free and open source ([GitHub](https://github.com/mgimferrer/APOST3D)).
+energy into atomic and interatomic terms. It is developed by
+P. Salvador (Universitat de Girona), M. Gimferrer (University of
+Göttingen) and collaborators, and is free and open source
+([GitHub](https://github.com/mgimferrer/APOST3D)).
 
 ## What can I compute?
 
@@ -25,7 +26,7 @@ On top of it, one or more analyses can be requested in the same run:
 | [Oxidation states from localized orbitals](methods/oslo.md) | `OSLO` | Fragment-localized orbitals (OSLOs) and the oxidation states they imply |
 | [Local spin](methods/spin.md) | `SPIN` | Atomic and diatomic contributions to ⟨*S*²⟩ |
 | [Energy partitioning](methods/enpart.md) | `ENPART` | The molecular energy split into atomic self-energies and interatomic interactions (IQA), for HF, KS-DFT and CASSCF/CISD |
-| [Dipole moment decomposition](methods/polar.md) | `POLAR` | Intrinsic and charge-transfer atomic dipoles, origin independent, for static polarizabilities by finite fields |
+| [Dipole moment decomposition](methods/polar.md) | `POLAR` | Origin-independent atomic dipoles (intrinsic and charge transfer) and, from calculations in several electric fields, atomic contributions to the static polarizability |
 
 Atoms can be grouped into [fragments](guide/fragments.md) (ligands, metal
 centers, molecules) for any of these analyses.

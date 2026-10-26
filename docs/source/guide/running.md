@@ -27,8 +27,8 @@ A run is complete when the output ends with
   ...Normal Termination of APOST-3D...
 ```
 
-If this line is missing, the run stopped early and the last line of the
-output, starting with `STOP`, says why (see
+If this line is missing, the run stopped early and the last lines of the
+output (usually a line starting with `STOP`) say why (see
 [Troubleshooting](../troubleshooting.md)). The program then exits with
 code 1 (0 after a normal end), so scripts can test it directly. A crash
 (not a `STOP`) also gives a nonzero code.
@@ -36,7 +36,7 @@ code 1 (0 after a normal end), so scripts can test it directly. A crash
 ## Integration grid
 
 Real-space analyses integrate on an atomic grid of radial × angular points
-around each atom. The default is 40 × 146 (150 × 590 for ENPART),
+around each atom. The default is 40 × 146 (150 × 590 for ENPART and POLAR),
 printed at the top of the output:
 
 % source: tests/reference/CH3F.apost
@@ -98,7 +98,7 @@ not MPI): ask for one task with several CPUs.
 
 ## Time and memory
 
-Population analysis, effective orbitals, EOS, OSLO and local spin take
+Population analysis, effective orbitals, EOS, GEOS, OSLO and local spin take
 seconds to minutes for molecules of a few dozen atoms. ENPART is much more
 expensive: its two-electron integrations grow with the square of the
 grid, see [ENPART](../methods/enpart.md#grids-and-cost). The cost of each

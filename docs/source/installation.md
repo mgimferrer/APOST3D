@@ -102,12 +102,12 @@ cd $APOST3D_PATH
 make test
 ```
 
-This runs every test of the suite (54 calculations at present) and
+This runs every test of the suite (79 calculations at present) and
 compares every number they print with stored reference outputs. It takes
 a few minutes and should end with
 
 ```text
-  54 PASSED   (...s total)
+  79 PASSED   (...s total)
 ```
 
 If a test fails, the output says which values differ; see
@@ -117,8 +117,7 @@ You are ready: continue with the [tutorial](tutorial.md).
 
 ## Build options
 
-`make_compile.sh` accepts these options (`ARCH` and `clean` work the same
-with `make`, where the number of compile jobs is set with `-j`):
+`make_compile.sh` accepts these options:
 
 | Option | Effect |
 |---|---|
@@ -128,7 +127,10 @@ with `make`, where the number of compile jobs is set with `-j`):
 | `help` | List all options. |
 
 For example `bash make_compile.sh NTHREADS=4`. Changing the compiler or
-`ARCH` triggers a full rebuild automatically.
+`ARCH` triggers a full rebuild automatically. `ARCH` also works with
+`make` directly (where `-j` sets the number of compile jobs), but there a
+change of compiler or `ARCH` needs `make clean` first, and `make clean`
+only removes the compiled files.
 
 ## Updating
 

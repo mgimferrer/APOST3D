@@ -24,8 +24,8 @@ recommended. How to choose is explained in
 `MULLI` is accepted as `MULLIKEN`. `QTAIM` is not available in this
 version: the run stops if it is requested.
 
-The empirical atomic radii (used by `BECKE`, by `TFVC` and `BECKE-RHO`
-for distant atom pairs, and for the box of the cube files) can be
+The empirical atomic radii (used by `BECKE`, and by `TFVC` and
+`BECKE-RHO` for distant atom pairs) can be
 replaced by those of a file `radius.inp` in the working folder: the
 number of entries, then one line per element with its atomic number and
 radius in Å. The output says when the file was read.

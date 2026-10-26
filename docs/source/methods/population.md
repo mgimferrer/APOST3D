@@ -73,7 +73,7 @@ column:
 The sum of the real-space populations differs from the number of electrons
 by the numerical integration error (here 0.0005). `TOTAL ATOMIC CHARGES`
 follows in the same layout, and `SPIN POPULATIONS` for open-shell
-wavefunctions. With `EOS` or `GEOS` and a real-space or Mulliken atomic
+wavefunctions (correlated ones need a [`# DM` block](../input/dm.md)). With `EOS` or `GEOS` and a real-space or Mulliken atomic
 definition, the overlap populations between atoms are also printed
 (`OVERLAP POPULATION MATRIX`).
 

@@ -73,15 +73,14 @@ A last FOLI close to 1 means the last orbital is well localized.
 - A **single-determinant** wavefunction (HF or KS-DFT, restricted or
   unrestricted). The run stops for CASSCF, CISD or FCI wavefunctions.
 - **Fragments** (`DOFRAGS` and a [`# FRAGMENTS` block](../input/fragments.md)),
-  with every atom in a fragment; the run stops otherwise. OSLO is not
-  meaningful for single atoms.
+  with every atom in a fragment; the run stops otherwise.
 - A **real-space atomic definition** in `# METHOD` (use `TFVC`): the
   spread matrix is integrated on its grid. The run stops with a
   Hilbert-space scheme there.
 - A [`# OSLO` block](../input/oslo.md). It can choose the atoms that decide
   which fragment each OSLO belongs to (the fragment populations in the
   FOLI: `MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`, `NAO-BASIS`); without one,
-  the scheme of `# METHOD` is used for both.
+  the real-space scheme of `# METHOD` is used for the populations too.
 
 ```text
 # METHOD

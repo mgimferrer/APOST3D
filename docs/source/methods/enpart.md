@@ -89,11 +89,12 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
   file, enable the integration-error checks and the zero-error strategy.
   For Gaussian they are added with `utils/get_energy_g16` (or
   `get_energy` for Gaussian 09); `.fchk` files written from pySCF with
-  `utils/apost3d.py` already contain them. See
+  `utils/apost3d.py` or from ORCA with `utils/orca2fchk.py` already
+  contain them. See
   [Preparing the wavefunction](../guide/wavefunctions.md#gaussian).
 - **Pseudopotentials** (ECPs) are supported. The reference
   electron-nuclear energy then includes the ECP energy, and the ECP
-  matrix appended to the `.fchk` file (by the same utilities) is split
+  matrix written to the `.fchk` file (by the same utilities) is split
   among the atoms, Mulliken-like, and added to the one-atom
   electron-nuclear terms. With Gaussian the matrix carries a small
   rounding error, see
@@ -102,7 +103,8 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
   from calculations with an empirical dispersion correction (e.g.
   Grimme's GD3) cannot be decomposed directly. For pySCF, `apost3d.py`
   removes the dispersion energy from the reference electron-electron
-  energy (see [Preparing the wavefunction](../guide/wavefunctions.md)).
+  energy, and the energies `orca2fchk.py` writes for ORCA never include
+  it (see [Preparing the wavefunction](../guide/wavefunctions.md)).
 
 ```text
 # METHOD
@@ -133,9 +135,12 @@ keywords, their libxc ids and how to give a functional by its ids are in
 | Meta-GGA and hybrid meta-GGA (TPSS, M06-2X, ...) | yes |
 | Range-separated hybrids (CAM-B3LYP, ωB97X, LC-ωPBE, HSE, ...) | no |
 | Functionals with VV10 nonlocal correlation | no |
+| Double hybrids (B2PLYP, ...) | no |
 
-Unsupported functionals stop the run with a message before any energy is
-computed.
+Range-separated and VV10 functionals, and ids that are not exchange or
+correlation functionals, stop the run with a message before any energy
+is computed. A double hybrid would be decomposed without its MP2 term:
+don't use one.
 
 ```{admonition} Same name, different functional
 :class: warning
@@ -387,8 +392,9 @@ Each comes with its fragment version under `DOFRAGS`.
 ### Correlated wavefunctions
 
 CASSCF and CISD wavefunctions (also FCI) print the same sections, with
-`EXCHANGE-CORRELATION ENERGY` built from the cumulant of the 2-RDM in
-place of the exchange or the DFT terms, and the same
+`EXCHANGE-CORRELATION ENERGY` built from the 1- and 2-RDMs (the 2-RDM
+minus its Coulomb part: exchange plus cumulant) in place of the exchange
+or the DFT terms, and the same
 `TWO-ELECTRON INTEGRATION ERROR` section. With `CORRELATION` in
 `# ENPART`, the exchange-correlation is also split into `EXCHANGE ENERGY`
 and `CORRELATION ENERGY`. The zero-error correction applies to the
@@ -409,11 +415,16 @@ separately, so:
   construction, even if the functional does not match the wavefunction.
 - The informative numbers are the one-electron integration errors, the
   two-electron error **before** the zero-error strategy (the first
-  `Integration error` of `TWO-ELECTRON INTEGRATION ERROR`: about −3 to
-  +6 kcal/mol in the tests with the 40 × 146 two-electron grid, more for
-  heavy atoms), and the damping parameter (0.1 to 1.5 in the tests). An
-  error of tens or hundreds of kcal/mol points to a functional that does
-  not match the wavefunction.
+  `Integration error` of `TWO-ELECTRON INTEGRATION ERROR`: about −5 to
+  +6 kcal/mol in the tests of light-atom molecules with the 40 × 146
+  two-electron grid), and the damping parameter (0.1 to 1.8 in the
+  tests). For small molecules of light atoms (water, the water dimer,
+  ...), an error of tens of kcal/mol points to a functional that does
+  not match the wavefunction (ORCA's and Gaussian's B3LYP differ by
+  about 23 kcal/mol for water). Heavier atoms give larger errors even
+  with the right functional (−13.7 kcal/mol for HI with def2-SVP and its
+  pseudopotential on the 40 × 146 grid); for transition-metal complexes
+  the grids are still being tuned, so this check is less telling there.
 - Without reference energies, the final integration error is the raw
   numerical error and depends strongly on the two-electron grid,
   especially for heavier atoms.

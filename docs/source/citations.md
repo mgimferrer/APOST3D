@@ -83,7 +83,7 @@ relevant references at the top.
   Comput.*, **2023**, 19, 3469-3485.
   DOI: [10.1021/acs.jctc.3c00143](https://doi.org/10.1021/acs.jctc.3c00143)
 
-**Origin-independent decomposition of static polarizabilities** (`POLAR`)
+**Origin-independent decomposition of static polarizabilities** ([POLAR](methods/polar.md))
 
 - M. Montilla, J. M. Luis and P. Salvador, *J. Chem. Theory Comput.*,
   **2021**, 17, 1098-1105.

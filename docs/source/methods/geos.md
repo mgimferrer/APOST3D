@@ -34,7 +34,7 @@ P. Salvador, *J. Chem. Theory Comput.*, **2015**, 11, 1501-1508. See
    unpaired one takes one. The starting assignment places the |N_α − N_β|
    electrons that must be unpaired, and the rest as electron pairs. The
    program then repeatedly tries to break the least-occupied pair into
-   the two most-occupied unpaired EFOs, keeping the move only while it
+   the two most-occupied unpaired EFOs not yet assigned, keeping the move only while it
    lowers the RMSD between the assigned and the actual occupations.
 5. **Oxidation states.** Each fragment's oxidation state follows from the
    number of electrons assigned to it, and a reliability index R(%) is
@@ -77,8 +77,8 @@ H as fragments 1 and 2 (the full input is
 
 **EFO blocks.** After the atomic definition, the densities, the
 occupation cutoff (0.0001 for GEOS) and the number of natural orbitals,
-one section per density (`PAIRED DENSITY`, then `UNPAIRED DENSITY`), with
-one entry per fragment:
+the output has one section per density (`PAIRED DENSITY`, then
+`UNPAIRED DENSITY`), with one entry per fragment:
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
@@ -140,7 +140,8 @@ They never take part in the electron assignment. They are written to the
 
 The assignment starts with every electron paired (except the
 `|Nα − Nβ|` that must be unpaired) and moves one pair at a time, from the
-least occupied paired EFO to the two most occupied unpaired ones, while
+least occupied paired EFO to the two most occupied unpaired ones not yet
+assigned, while
 that lowers the RMSD between occupations and assigned electrons; each try
 is listed. Here moving the pair raises the RMSD, so it is rejected.
 
@@ -209,9 +210,10 @@ NEG_EFOS 10
 ## Checking the result
 
 - R(%) is read as in [EOS](eos.md#how-it-works), per density and overall.
-- `RMSD of the electron assignment` is the square root of the sum, over
-  all EFOs, of the squared differences between the assigned and the
-  actual occupations, divided by the number of electrons: the smaller,
-  the closer the electron distribution is to the integer assignment.
+- `RMSD of the electron assignment` is
+  $\sqrt{\sum_i (n_i^{\rm assigned} - n_i)^2 / N}$, over all EFOs, with
+  $n_i$ the gross occupations and $N$ the number of electrons: the
+  smaller, the closer the electron distribution is to the integer
+  assignment.
 - For negative paired EFOs, `Fit (%)` tells how faithfully the
   orbital in `<jobname>-GEOS-EFOs.fchk` represents them.

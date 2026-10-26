@@ -1,9 +1,11 @@
 # Troubleshooting
 
-Messages are quoted as the program prints them. A message starting with
-`STOP` ends the run: it is the last line of the output, and the program
-exits with code 1. Some errors print a line or two of explanation just
-before it.
+Messages are quoted as the program prints them (up to the spacing: most
+`STOP` lines have two spaces after `STOP`, e.g. `STOP  More than one
+atomic definition`). A message starting with `STOP` ends the run: it is
+the last line of the output, and the program exits with code 1. Most
+errors print a line or two of explanation just before it; a few print
+only that explanation, without a `STOP` line.
 
 ## Building
 
@@ -132,6 +134,9 @@ The line above names the value: the angular points must be a Lebedev grid
 (the list is printed), the radial points between 1 and 500. See
 [# GRID](input/grid.md).
 
+**`STOP Renamed block in the input`**
+The line above names the old block and its new name.
+
 **`STOP Grid on the command line`**
 The grid is no longer given after the job name: set `RADIAL` and
 `ANGULAR` in the [`# GRID` block](input/grid.md).
@@ -142,6 +147,14 @@ earlier versions: `MOD-GRIDTWOEL` is gone (`# GRID` is always read, its
 two-electron grid is now `RADIAL_2E`/`ANGULAR_2E`), `phb1`/`phb2` are
 chosen by the program (or `ROTATION_2E`), `rr00` is `R0_2E`, and
 `FINEGRID` is `ANGULAR 974` in `# GRID`.
+
+**`STOP Keyword not available in this version`**
+The line above names the keyword: `EDAIQA`, `TOPOLOGY`, `DAFH`,
+`SHANNON`, `WFN` or `READINT` in `# METHOD`, or `DMRG` in `# DM`. These
+analyses are not part of version 5.0.
+
+**`STOP Wrong VERBOSE value in # METHOD`**
+`VERBOSE` needs its value, 0 or 1 (e.g. `VERBOSE 1`).
 
 **`WARNING: no calibrated rotation angles for ANGULAR_2E ...`**
 ENPART's two-electron grid uses an angular grid without calibrated
@@ -161,6 +174,11 @@ files have a single density, see
 **`STOP DENS: unrestricted wavefunction`**
 `DENS` above 1 works only with restricted wavefunctions.
 
+**`STOP DENS above 1 with ENPART or OSLO`**
+ENPART and OSLO use the orbitals of the `.fchk` file, which are the SCF
+ones, so they cannot analyse a correlated density selected with `DENS`
+(see [`DENS`](input/method.md#options)).
+
 ## Atomic definitions
 
 **`STOP densoutput not found`**, **`STOP densoutput cannot be read`**,
@@ -176,6 +194,11 @@ an incomplete one.
 above the stop says what is wrong. See also
 [Atoms in molecules](guide/aim.md#hilbert-space-schemes).
 
+**`STOP More than one atomic definition`**
+`# METHOD` names two atomic definitions (e.g. `TFVC` and `MULLIKEN`);
+the line above lists them. Keep one: each run uses a single
+[atomic definition](guide/aim.md).
+
 **`STOP This version can not do QTAIM`**
 QTAIM is not available; use `TFVC`, which gives very similar results.
 
@@ -183,7 +206,8 @@ QTAIM is not available; use `TFVC`, which gives very similar results.
 
 **`STOP GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)`**,
 **`STOP ENPART needs a real-space AIM (e.g. TFVC)`**,
-**`STOP OSLO needs a real-space AIM (e.g. TFVC)`**
+**`STOP OSLO needs a real-space AIM (e.g. TFVC)`**,
+**`STOP POLAR needs a real-space AIM (e.g. TFVC)`**
 These analyses don't work with Mulliken, Löwdin or NAO atoms in
 `# METHOD`. For OSLO, those schemes can go in the
 [`# OSLO` block](input/oslo.md) instead, for the fragment populations.
@@ -211,6 +235,10 @@ the `.fchk` of the correlated calculation (CASSCF, FCI, CI) they come from.
 **`STOP OSLO cannot be performed for multireference wavefunctions`**
 OSLO needs a single determinant (HF or KS-DFT). For correlated
 wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
+
+**`STOP BRANCH_ALPHA/BRANCH_BETA need an unrestricted wavefunction`**
+A restricted wavefunction has a single set of orbitals: use
+`BRANCH_ITERATION` (see [# OSLO](input/oslo.md)).
 
 **`Note: SPIN skipped: a closed-shell single determinant has no local spins`**
 Not an error: the local spins of a closed-shell restricted determinant are

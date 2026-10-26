@@ -149,7 +149,8 @@ The run also wrote `feco2-EOS-EFOs.fchk`: open it in an orbital viewer
 (GaussView, Avogadro, IQmol, ...) to browse the effective fragment
 orbitals; the "orbital energy" of each one is its occupation. With TFVC
 atoms these orbitals are basis-set approximations: for the exact shape
-of an orbital, use its cube file or APOST3Dview
+of an orbital, use its cube file or APOST3Dview, which reads the second
+file written, `feco2-EOS-EFOs-unweighted.fchk`
 ([Visualizing orbitals](guide/visualization.md)).
 
 ## Next steps
