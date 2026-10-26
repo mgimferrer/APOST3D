@@ -7,9 +7,12 @@ described in [ENPART](../methods/enpart.md).
 ## Wavefunction and functional
 
 Give exactly one of: `HF`, a predefined functional keyword, `LIBRARY`
-(with libxc ids), `CASSCF` or `CISD`. Not every combination of two is
-caught: the run may silently use one of them, so check the wavefunction
-and functional named in the ENPART section of the output.
+(with libxc ids), `CASSCF` or `CISD`; more than one stops the run. The
+method need not be the one of the calculation: a KS-DFT wavefunction can
+be decomposed with `HF` or another functional. A CASSCF or CI
+wavefunction always gets the correlated decomposition (`HF` or a
+functional is not used for it). The ENPART section of the output names
+the wavefunction and the functional used.
 
 | Keyword | Description |
 | ------- | ----------- |

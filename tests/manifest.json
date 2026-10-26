@@ -2818,6 +2818,40 @@
       ]
     },
     {
+      "name": "H2O-ENPART-TWO-METHODS",
+      "description": "Water, pySCF RKS BHandHLYP, with HF and BHANDHLYP both in # ENPART: only one way of decomposing may be given, so the run must stop before any energy is computed (HF used to win silently).",
+      "tags": [
+        "input",
+        "enpart",
+        "expected-stop"
+      ],
+      "expected_rc": 1,
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "ENPART",
+        "ENPART/HF"
+      ],
+      "checks": [
+        {
+          "label": "The choices named",
+          "type": "present",
+          "pattern": "Give one of HF, a functional keyword, LIBRARY, CASSCF or CISD"
+        },
+        {
+          "label": "Stop line",
+          "type": "present",
+          "pattern": "STOP MORE THAN ONE METHOD IN # ENPART\\. REVISE inp"
+        },
+        {
+          "label": "No energy decomposition printed",
+          "type": "absent",
+          "pattern": "IQA ENERGY TERMS"
+        }
+      ]
+    },
+    {
       "name": "H2O-SVWN",
       "description": "Water, RKS SVWN / cc-pVDZ (Gaussian 16) — ENPART with the SVWN keyword (libxc 1 + 8, VWN-RPA), the LDA-family case.",
       "tags": [

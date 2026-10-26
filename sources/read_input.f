@@ -232,9 +232,20 @@
         id_cfunc=0
         call readchar("# ENPART","LIBRARY",ilib)
         call enpart_functional_keyword(ikwfunc,idkxc,idkx,idkc)
+!! one way of decomposing: the reads below take the first they find  !!
+!! (LIBRARY, HF, a functional keyword, CASSCF/CISD) and ignore the rest !!
+        call readchar("# ENPART","HF",ii)
+        nsel=ilib+ikwfunc+ii
+        call readchar("# ENPART","CASSCF",ii)
+        nsel=nsel+ii
+        call readchar("# ENPART","CISD",ii)
+        nsel=nsel+ii
+        if(nsel.gt.1) then
+          write(*,'(2x,a)') 'Give one of HF, a functional keyword, '//
+     +      'LIBRARY, CASSCF or CISD in # ENPART'
+          call apost_stop('MORE THAN ONE METHOD IN # ENPART. REVISE inp')
+        end if
         if(ilib.eq.1) then
-          if(ikwfunc.eq.1)
-     +      call apost_stop('GIVE EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART. REVISE inp')
           call readint("# ENPART","EXC_FUNCTIONAL",id_xcfunc,0,1)
           call readint("# ENPART","EX_FUNCTIONAL",id_xfunc,0,1)
           call readint("# ENPART","EC_FUNCTIONAL",id_cfunc,0,1)

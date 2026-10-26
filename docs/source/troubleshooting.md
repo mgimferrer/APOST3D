@@ -279,10 +279,9 @@ Give either `EXC_FUNCTIONAL` alone, or `EX_FUNCTIONAL` and/or
 `EC_FUNCTIONAL`.
 
 **`STOP MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART. REVISE inp`** /
-**`STOP GIVE EITHER LIBRARY OR A FUNCTIONAL KEYWORD IN # ENPART. REVISE
-inp`**
-Give one functional only: one predefined keyword, or `LIBRARY` with its
-ids.
+**`STOP MORE THAN ONE METHOD IN # ENPART. REVISE inp`**
+Give one way of decomposing only: `HF`, one predefined functional
+keyword, `LIBRARY` with its ids, `CASSCF` or `CISD`.
 
 **`STOP LDA KEYWORD REMOVED. REVISE inp`**
 The old `LDA` keyword meant Slater exchange only. Use `SVWN` or `SVWN5`,

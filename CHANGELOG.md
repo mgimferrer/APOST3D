@@ -103,6 +103,8 @@ program, not a full development history — see `git log` for that.
   atom definition (`MULLIKEN`, `LOWDIN`) now stop with a message before any energy is computed. So do ENPART of a
   correlated (CASSCF/CISD) wavefunction computed in an electric field, and
   `POLAR` with a correlated wavefunction, whose untested code was removed.
+  More than one of `HF`, a functional keyword, `LIBRARY`, `CASSCF` and
+  `CISD` in `# ENPART` stops too (the first one found was used).
 - **Clearer output** — the section starts with the wavefunction, the
   atomic definition and how to read the matrices; every term is printed
   once, with its final values: the two-electron matrices follow a
