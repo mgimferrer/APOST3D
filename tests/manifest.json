@@ -3527,7 +3527,7 @@
         {
           "label": "Stop line",
           "type": "present",
-          "pattern": "STOP\\s+DENS above 1 with ENPART or OSLO"
+          "pattern": "STOP DENS above 1 with ENPART or OSLO"
         },
         {
           "label": "No energy partitioning",
@@ -3556,7 +3556,7 @@
         {
           "label": "Stop line",
           "type": "present",
-          "pattern": "STOP\\s+More than one atomic definition"
+          "pattern": "STOP More than one atomic definition"
         },
         {
           "label": "No population analysis",

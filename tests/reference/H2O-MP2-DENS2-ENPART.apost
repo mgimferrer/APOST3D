@@ -111,4 +111,4 @@
   SCF energy (au)                         :     -76.0267720534
   DENS above 1: ENPART and OSLO use the orbitals of the .fchk file, which belong to the SCF density;
   use DENS 1 for them
-STOP  DENS above 1 with ENPART or OSLO
+STOP DENS above 1 with ENPART or OSLO

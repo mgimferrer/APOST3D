@@ -109,4 +109,4 @@
   SCF energy (au)                         :      -1.1734967936
   More than one atomic definition in # METHOD: HIRSH TFVC
   Give exactly one (TFVC is recommended)
-STOP  More than one atomic definition
+STOP More than one atomic definition

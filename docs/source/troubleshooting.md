@@ -1,11 +1,9 @@
 # Troubleshooting
 
-Messages are quoted as the program prints them (up to the spacing: most
-`STOP` lines have two spaces after `STOP`, e.g. `STOP  More than one
-atomic definition`). A message starting with `STOP` ends the run: it is
-the last line of the output, and the program exits with code 1. Most
-errors print a line or two of explanation just before it; a few print
-only that explanation, without a `STOP` line.
+Messages are quoted as the program prints them. A message starting with
+`STOP` ends the run: it is the last line of the output, and the program
+exits with code 1. Most errors print a line or two of explanation just
+before it; a few print only that explanation, without a `STOP` line.
 
 ## Building
 

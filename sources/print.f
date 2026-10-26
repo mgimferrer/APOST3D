@@ -106,7 +106,7 @@
       character(len=*) msg
 
       call json_close('stopped',msg)
-      if(len_trim(msg).gt.0) write(*,'(a,a)') 'STOP ',msg
+      if(len_trim(msg).gt.0) write(*,'(a,a)') 'STOP ',trim(adjustl(msg))
       flush(6)
       call exit(1)
 
