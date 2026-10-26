@@ -26,7 +26,7 @@ orbitals directly from the wavefunction. It is under development.
 
 | File | Written by | Orbitals |
 |---|---|---|
-| `<jobname>-OSLOs.fchk` | `OSLO` | The final (orthogonalized) OSLOs |
+| `<jobname>-OSLOs.fchk` | `OSLO` | The final (orthogonalized) OSLOs: alpha in the Alpha set, beta in the Beta set (only alpha for closed shells) |
 | `<jobname>-OSLOs-preortho.fchk` | `OSLO` with `PRINT_NONORTHO` | The OSLOs before orthogonalization |
 | `<jobname>-EOS-EFOs.fchk` | `EOS` | Effective fragment orbitals: alpha in the Alpha set, beta in the Beta set (only alpha for closed shells) |
 | `<jobname>-GEOS-EFOs.fchk` | `GEOS` | Paired orbitals in the Alpha set, unpaired ones in the Beta set (see [GEOS](../methods/geos.md#orbitals-in-the-fchk-file)) |
@@ -35,7 +35,9 @@ orbitals directly from the wavefunction. It is under development.
 Each file is a copy of the input `.fchk` whose molecular orbitals are
 replaced by the analysis orbitals; the geometry and basis set are
 unchanged (the OSLO files also carry the density built from the
-OSLOs). In the OSLO files the orbitals come in the order they were
+OSLOs). The beta orbitals of an open shell go in the Beta set, also when
+the input `.fchk` has a single set of orbitals (ROHF/ROKS: the Beta
+blocks are added after the Alpha ones). In the OSLO files the orbitals come in the order they were
 assigned, and the **"orbital energy" field holds the FOLI value** of
 each (0 after the last OSLO). In the EFO files:
 

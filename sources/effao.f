@@ -924,45 +924,22 @@
           call json_value('orbital_file_unweighted',trim(cfile))
         end if
 
-!! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for visualization !!
-!! in any standard viewer -- printed by default, same as OSLO/GEOS's    !!
-!! own .fchk output, for every population scheme. A                    !!
-!! restricted wavefunction (kop=0) has no Beta blocks to splice into,   !!
-!! but its beta channel isn't always empty -- e.g. a restricted-orbital !!
-!! open-shell CASSCF source (idobeta=1 despite kop=0, main.f's own      !!
-!! dispatch condition) genuinely populates it. Gated on idobeta itself, !!
-!! not lorb(2): the idobeta=0 branch above sets lorb(2)=lorb(1) purely  !!
-!! to duplicate occup/iorbat for this print, without ever touching      !!
-!! p0poolcoef(:,:,2) -- lorb(2)>0 there does NOT mean real coefficients !!
-!! exist. rwfu_effao_orbprint inserts a synthetic Beta MO set next to   !!
-!! the real Alpha one when idobeta=1, same convention as GEOS's writer; !!
-!! otherwise fall back to the plain restricted, single-channel writer.  !!
+!! pooled EOS EFOs as fake Alpha/Beta MOs in a .fchk, for every       !!
+!! population scheme. The beta channel is populated when idobeta=1     !!
+!! (open shell, ROHF/ROKS included, or an open-shell CASSCF with kop=0) !!
+!! -- not when lorb(2)>0: the idobeta=0 branch above sets lorb(2)=      !!
+!! lorb(1) only to duplicate occup/iorbat, p0poolcoef(:,:,2) stays     !!
+!! empty.                                                              !!
         ctype="-EOS-EFOs"
-        if(kop.eq.0) then
-          if(idobeta.eq.1) then
-            call rwfu_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
-          else
-            call rwf_effao_orbprint(p0poolcoef(:,:,1),ctype)
-          end if
-        else
-          call uwf_effao_orbprint(p0poolcoef(:,:,1),p0poolcoef(:,:,2),ctype)
-        end if
+        call efo_fchk_write(p0poolcoef(:,:,1),p0poolcoef(:,:,2),
+     +    idobeta.eq.1,ctype)
 
 !! the same EFOs before the multiplication by the fragment weight,     !!
 !! exact in the basis: w_F times each of them is its cube file         !!
         if(lunw) then
           ctype="-EOS-EFOs-unweighted"
-          if(kop.eq.0) then
-            if(idobeta.eq.1) then
-              call rwfu_effao_orbprint(p0poolraw(:,:,1),
-     +          p0poolraw(:,:,2),ctype)
-            else
-              call rwf_effao_orbprint(p0poolraw(:,:,1),ctype)
-            end if
-          else
-            call uwf_effao_orbprint(p0poolraw(:,:,1),p0poolraw(:,:,2),
-     +        ctype)
-          end if
+          call efo_fchk_write(p0poolraw(:,:,1),p0poolraw(:,:,2),
+     +      idobeta.eq.1,ctype)
         end if
       end if
 

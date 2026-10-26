@@ -2153,6 +2153,66 @@
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! function: fchk_beta_mos
+!! Whether the source .fchk (unit 15) has Beta MO coefficients, i.e. a
+!! set of orbitals per spin. A ROHF/ROKS file (IROHF 1) has two spin
+!! channels (kop=1) but one set of orbitals and no Beta blocks.
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      logical function fchk_beta_mos()
+      implicit none
+      character*80 :: line
+
+      fchk_beta_mos=.false.
+      rewind(15)
+      do while(.true.)
+        read(15,'(a80)',end=1) line
+        if(index(line,'Beta MO coefficients').eq.1) then
+          fchk_beta_mos=.true.
+          exit
+        end if
+      end do
+1     rewind(15)
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: efo_fchk_write
+!! Writes the pooled EOS/GEOS EFOs as the orbitals of <jobname><ctype>
+!! .fchk with the writer that fits the source .fchk: its Beta blocks
+!! replaced when it has them (uwf_effao_orbprint); else Beta blocks
+!! inserted next to the Alpha ones when the second channel is populated
+!! (rwfu_effao_orbprint: ROHF/ROKS, or a restricted correlated
+!! wavefunction); else the first channel only (rwf_effao_orbprint).
+!! arguments:
+!!   coef_a, coef_b (in)  (igr,igr) pooled EFOs of each channel
+!!   ltwo           (in)  logical: the second channel is populated
+!!   ctype          (in)  file name suffix, e.g. "-EOS-EFOs"
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine efo_fchk_write(coef_a,coef_b,ltwo,ctype)
+
+      implicit double precision(a-h,o-z)
+
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+
+      logical ltwo,fchk_beta_mos
+      character(len=*) ctype
+      dimension coef_a(igr,igr),coef_b(igr,igr)
+
+      if(fchk_beta_mos()) then
+        call uwf_effao_orbprint(coef_a,coef_b,ctype)
+      else if(ltwo) then
+        call rwfu_effao_orbprint(coef_a,coef_b,ctype)
+      else
+        call rwf_effao_orbprint(coef_a,ctype)
+      end if
+      end
+
+!! ***** !!
+
 !! ********************************************************************* !!
 !! subroutine: rwf_effao_orbprint                                        !!
 !! purpose: writes a restricted-wavefunction pooled-EFO .fchk -- splices !!
@@ -2406,12 +2466,13 @@
 
 !! ********************************************************************* !!
 !! subroutine: rwfu_effao_orbprint                                       !!
-!! purpose: writes a pooled-EFO .fchk for a restricted-wavefunction      !!
-!!   source (kop=0) whose unpaired/second channel is genuinely populated !!
-!!   -- e.g. a restricted-orbital post-HF wavefunction (CASSCF/FCI/CISD) !!
-!!   with real fractional natural-orbital occupations, not the trivial   !!
-!!   ~0 unpaired channel of an ordinary restricted single-determinant    !!
-!!   wavefunction (see rwf_effao_orbprint for that case). The source     !!
+!! purpose: writes a pooled-EFO .fchk for a source with one set of      !!
+!!   orbitals whose second channel is genuinely populated -- a ROHF/ROKS !!
+!!   wavefunction (kop=1, no Beta blocks) or a restricted-orbital post-HF !!
+!!   wavefunction (CASSCF/FCI/CISD, kop=0) with real fractional natural- !!
+!!   orbital occupations, not the trivial ~0 unpaired channel of an      !!
+!!   ordinary restricted single determinant (rwf_effao_orbprint; the     !!
+!!   choice is efo_fchk_write's). The source                             !!
 !!   .fchk has no Beta MO set to splice into, so this *inserts* a        !!
 !!   synthetic Beta Orbital Energies/MO coefficients block (second       !!
 !!   channel) immediately next to the real Alpha one (first channel),    !!

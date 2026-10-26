@@ -201,6 +201,12 @@ program, not a full development history — see `git log` for that.
   is now written as 0. This happened in the unweighted EOS EFOs of
   transition-metal complexes; the same holds for the blocks the utilities
   `get_energy_g16`, `get_energy` and `wfn2fchk` write.
+- **EOS, GEOS and OSLO `.fchk` files of ROHF/ROKS wavefunctions** — the
+  EFO files of a wavefunction with one set of orbitals for both spins lost
+  the density blocks of the input `.fchk`, with a stray line of numbers in
+  their place, and the OSLO files had no beta orbitals. The beta orbitals
+  now go in Beta blocks added after the Alpha ones, and the rest of the
+  input file is kept.
 - **OSLO together with ENPART** — an input asking for both no longer
   crashes after the energy decomposition.
 - **Checked fragment definitions** — `# FRAGMENTS` with an atom that does

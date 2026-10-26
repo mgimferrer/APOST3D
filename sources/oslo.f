@@ -1089,7 +1089,8 @@
 !! (0 after the last OSLO) and their density. Blocks are replaced
 !! wherever they come (Q-Chem writes the energies after the
 !! coefficients) and skipped by their own N= size, so any .fchk layout
-!! works (G16, G09, pySCF, Q-Chem).
+!! works (G16, G09, pySCF, Q-Chem). A ROHF/ROKS source has no Beta
+!! blocks: the beta ones follow the Alpha ones.
 !! arguments:
 !!   lunres (in)  logical: unrestricted (Beta blocks and spin density)
 !!   cmat_a, cmat_b (in)  (igr,igr) OSLOs of each channel (restricted:
@@ -1110,7 +1111,7 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /filename/name0
 
-      logical lunres
+      logical lunres,lins,fchk_beta_mos
       character*80 line
       character*60 name0,name1
       character*20 ctype
@@ -1132,6 +1133,9 @@
         eb(ii)=foli_b(ii)
       end do
 
+!! unrestricted OSLOs of a source without Beta blocks (ROHF/ROKS) !!
+      lins=lunres.and..not.fchk_beta_mos()
+
       name1=trim(name0)//trim(ctype)//".fchk"
       open(unit=69,file=name1)
       rewind(69)
@@ -1144,6 +1148,10 @@
         if(index(line,"Alpha Orbital Energies").eq.1) then
           write(69,10) "Alpha Orbital Energies","R","N= ",indepigr
           call write_fchk_reals(69,indepigr,ea)
+          if(lins) then
+            write(69,10) "Beta Orbital Energies ","R","N= ",indepigr
+            call write_fchk_reals(69,indepigr,eb)
+          end if
         else if(lunres.and.index(line,"Beta Orbital Energies").eq.1)
      +    then
           write(69,10) "Beta Orbital Energies ","R","N= ",indepigr
@@ -1151,6 +1159,10 @@
         else if(index(line,"Alpha MO coefficients").eq.1) then
           write(69,11) "Alpha MO coefficients","R","N= ",norb
           call write_fchk_reals(69,norb,cmat_a)
+          if(lins) then
+            write(69,11) "Beta MO coefficients ","R","N= ",norb
+            call write_fchk_reals(69,norb,cmat_b)
+          end if
         else if(lunres.and.index(line,"Beta MO coefficients").eq.1)
      +    then
           write(69,11) "Beta MO coefficients ","R","N= ",norb

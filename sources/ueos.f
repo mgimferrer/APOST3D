@@ -394,44 +394,20 @@
      +    ineg_frg,xneg_net,xneg_gro,cneg,xminocc_neg,xneg_fit,
      +    up0net,up0fit,up0raw,cnegraw,poolraw)
 
-!! pooled paired/unpaired EFOs as fake Alpha/Beta MOs in a .fchk, for    !!
-!! visualization in any standard viewer -- printed by default, same as  !!
-!! OSLO's own .fchk output, no separate keyword needed. A restricted    !!
-!! wavefunction (kop=0) has no Beta blocks to splice into, but its      !!
-!! unpaired channel isn't always trivially empty -- e.g. a restricted-  !!
-!! orbital post-HF wavefunction (CASSCF/FCI/CISD, kop=0 since pySCF's   !!
-!! writer never emits a Beta MO set for these regardless of spin state) !!
-!! can have real fractional natural-orbital occupations and hence a     !!
-!! genuinely populated unpaired channel. When that happens (lorb(2)>0), !!
-!! rwfu_effao_orbprint inserts a synthetic Beta MO set (unpaired) next  !!
-!! to the real Alpha one (paired) so both channels still end up in one  !!
-!! file -- otherwise fall back to the plain restricted, single-channel  !!
-!! writer, same as for an ordinary restricted-wavefunction EFFAO run.   !!
+!! pooled paired/unpaired EFOs as fake Alpha/Beta MOs in a .fchk (paired !!
+!! -> Alpha, unpaired -> Beta), printed by default. The unpaired channel !!
+!! of a restricted single determinant is empty (lorb(2)=0, one channel); !!
+!! a ROHF/ROKS or restricted correlated wavefunction populates it.       !!
         ctype="-GEOS-EFOs"
-        if(kop.eq.0) then
-          if(lorb(2).gt.0) then
-            call rwfu_effao_orbprint(poolcoef(:,:,1),poolcoef(:,:,2),ctype)
-          else
-            call rwf_effao_orbprint(poolcoef(:,:,1),ctype)
-          end if
-        else
-          call uwf_effao_orbprint(poolcoef(:,:,1),poolcoef(:,:,2),ctype)
-        end if
+        call efo_fchk_write(poolcoef(:,:,1),poolcoef(:,:,2),
+     +    lorb(2).gt.0,ctype)
 
 !! the same EFOs before the multiplication by the fragment weight,     !!
 !! exact in the basis: w_F times each of them is its cube file         !!
         if(efo_unweighted()) then
           ctype="-GEOS-EFOs-unweighted"
-          if(kop.eq.0) then
-            if(lorb(2).gt.0) then
-              call rwfu_effao_orbprint(poolraw(:,:,1),poolraw(:,:,2),
-     +          ctype)
-            else
-              call rwf_effao_orbprint(poolraw(:,:,1),ctype)
-            end if
-          else
-            call uwf_effao_orbprint(poolraw(:,:,1),poolraw(:,:,2),ctype)
-          end if
+          call efo_fchk_write(poolraw(:,:,1),poolraw(:,:,2),
+     +      lorb(2).gt.0,ctype)
         end if
       end if
 
