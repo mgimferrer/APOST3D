@@ -139,8 +139,7 @@ keywords, their libxc ids and how to give a functional by its ids are in
 
 Range-separated and VV10 functionals, and ids that are not exchange or
 correlation functionals, stop the run with a message before any energy
-is computed. A double hybrid would be decomposed without its MP2 term:
-don't use one.
+is computed. Double hybrids can't be decomposed with ENPART.
 
 ```{admonition} Same name, different functional
 :class: warning
