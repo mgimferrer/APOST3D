@@ -91,9 +91,12 @@ _ORCA_FUNCTIONALS = frozenset('''
 
 # libxc ids of # ENPART (LIBRARY) for ORCA functionals: the exchange-
 # correlation energy of ENPART equals ORCA's E(XC) within 0.02 kcal/mol
-# (water, def2-TZVP, ORCA 6.1.1; B3LYP, PBE0, TPSSh also UKS)
+# (water, def2-TZVP, ORCA 6.1.1; B3LYP, PBE0, TPSSh also UKS); ORCA's
+# aliases LDA, B3PW, BP and B3P give the energies of LSD, B3PW91, BP86 and
+# B3P86 to every printed digit
 _ENPART_LIBXC = {
     'LSD': 'EX_FUNCTIONAL 1 + EC_FUNCTIONAL 7',
+    'LDA': 'EX_FUNCTIONAL 1 + EC_FUNCTIONAL 7',
     'BLYP': 'EX_FUNCTIONAL 106 + EC_FUNCTIONAL 131',
     'PBE': 'EX_FUNCTIONAL 101 + EC_FUNCTIONAL 130',
     'REVPBE': 'EX_FUNCTIONAL 102 + EC_FUNCTIONAL 130',
@@ -105,6 +108,7 @@ _ENPART_LIBXC = {
     'B3LYP_G': 'EXC_FUNCTIONAL 402',
     'PBE0': 'EXC_FUNCTIONAL 406',
     'B3PW91': 'EXC_FUNCTIONAL 401',
+    'B3PW': 'EXC_FUNCTIONAL 401',
     'BHANDHLYP': 'EXC_FUNCTIONAL 436',
     'TPSSH': 'EXC_FUNCTIONAL 457',
     'TPSS0': 'EXC_FUNCTIONAL 396',
@@ -117,7 +121,9 @@ _ENPART_LIBXC = {
 # ORCA functionals that no libxc id reproduces (same check)
 _ENPART_NO_LIBXC = {
     'BP86': 'its P86 correlation is built on PW92',
+    'BP': 'its P86 correlation is built on PW92',
     'B3P86': 'its P86 correlation is built on PW92',
+    'B3P': 'its P86 correlation is built on PW92',
     'X3LYP': 'its local correlation is VWN5, libxc\'s X3LYP has VWN-RPA',
 }
 

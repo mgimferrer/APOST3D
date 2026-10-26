@@ -262,7 +262,7 @@ ids when it finds one of them:
 
 | ORCA keyword | `# ENPART` with `LIBRARY` |
 |---|---|
-| `LSD` | `EX_FUNCTIONAL 1`, `EC_FUNCTIONAL 7` |
+| `LSD`, `LDA` | `EX_FUNCTIONAL 1`, `EC_FUNCTIONAL 7` |
 | `BLYP` | `EX_FUNCTIONAL 106`, `EC_FUNCTIONAL 131` |
 | `PBE` | `EX_FUNCTIONAL 101`, `EC_FUNCTIONAL 130` |
 | `revPBE` | `EX_FUNCTIONAL 102`, `EC_FUNCTIONAL 130` |
@@ -272,7 +272,7 @@ ids when it finds one of them:
 | `B3LYP` | `EXC_FUNCTIONAL 475` |
 | `B3LYP/G` | `EXC_FUNCTIONAL 402` (Gaussian's B3LYP) |
 | `PBE0` | `EXC_FUNCTIONAL 406` |
-| `B3PW91` | `EXC_FUNCTIONAL 401` |
+| `B3PW91`, `B3PW` | `EXC_FUNCTIONAL 401` |
 | `BHANDHLYP` | `EXC_FUNCTIONAL 436` |
 | `TPSSh` | `EXC_FUNCTIONAL 457` |
 | `TPSS0` | `EXC_FUNCTIONAL 396` |
@@ -282,8 +282,8 @@ ids when it finds one of them:
 | `r2SCANh` | `EXC_FUNCTIONAL 659` |
 | `r2SCAN0` | `EXC_FUNCTIONAL 660` |
 
-ORCA's `BP86`, `B3P86` and `X3LYP` have no libxc equivalent (see "Same
-name, different functional" in
+ORCA's `BP86` (also `BP`), `B3P86` (also `B3P`) and `X3LYP` have no libxc
+equivalent (see "Same name, different functional" in
 [`# ENPART`](../input/enpart.md#predefined-functionals)): for ENPART use
 a Gaussian 16 or pySCF wavefunction. Range-separated and double-hybrid
 functionals are not supported by ENPART.
