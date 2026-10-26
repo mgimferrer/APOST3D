@@ -106,7 +106,7 @@
   Primitive gaussians                     : 14
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 1 / 1
-  SCF energy (au)                         :      -1.1734967936
+  SCF energy (au)                         :      -1.1734968
   More than one atomic definition in # METHOD: HIRSH TFVC
   Give exactly one (TFVC is recommended)
 STOP More than one atomic definition

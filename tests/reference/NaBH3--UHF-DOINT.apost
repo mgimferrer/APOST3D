@@ -106,7 +106,7 @@
   Primitive gaussians                     : 125
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 10 / 10
-  SCF energy (au)                         :    -188.2484755980
+  SCF energy (au)                         :    -188.2484756
 
   -----------------
     INPUT SUMMARY
@@ -125,8 +125,8 @@
      1.99722   1.36193   0.63807   0.00278   0.00040   0.00040   0.00000   0.00000
      0.00000
 
-  TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING CPU  :: Initialization                                    0.05 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   -----------------------------
     SETTING ATOMIC DEFINITION
@@ -243,7 +243,7 @@
     5  H     0.005425
   -------------------
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.02 s
   TIMING WALL :: Population analysis                               0.00 s
 
   ...Normal Termination of APOST-3D...

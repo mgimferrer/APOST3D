@@ -109,7 +109,7 @@
   CAS active orbitals                     : 7
   CAS spin-orbitals                       : 14
   Alpha / beta electrons                  : 5 / 5
-  SCF energy (au)                         :     -75.0118731696
+  SCF energy (au)                         :     -75.0118732
 
   Note: closed-shell correlated wavefunction: its local spins come from electron correlation
 
@@ -147,8 +147,8 @@
   Occupation numbers (>1.0e-6):
      2.00000   1.99849   1.99803   1.97806   1.97504   0.02548   0.02490
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -173,8 +173,8 @@
 
   Sum of atomic overlaps, largest error   : 8.23E-08 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.08 s
-  TIMING WALL :: Atomic definition                                 0.02 s
+  TIMING CPU  :: Atomic definition                                 0.29 s
+  TIMING WALL :: Atomic definition                                 0.05 s
 
   ---------------------------------
     POST-HARTREE-FOCK CALCULATION
@@ -366,7 +366,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      10.000000
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.02 s
   TIMING WALL :: Population analysis                               0.00 s
 
   -----------------------------
@@ -542,8 +542,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :       9.189534
 
-  TIMING CPU  :: ENPART one-electron terms                         0.08 s
-  TIMING WALL :: ENPART one-electron terms                         0.01 s
+  TIMING CPU  :: ENPART one-electron terms                         0.28 s
+  TIMING WALL :: ENPART one-electron terms                         0.03 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -555,12 +555,12 @@
   Pairs integrated (exchange-correlation) : 3
   Pairs from the multipolar expansion     : 0
 
-  TIMING CPU  :: ENPART Coulomb                                    0.25 s
-  TIMING WALL :: ENPART Coulomb                                    0.04 s
-  TIMING CPU  :: ENPART exchange-correlation                       5.75 s
-  TIMING WALL :: ENPART exchange-correlation                       0.74 s
-  TIMING CPU  :: ENPART exchange and correlation                   5.74 s
-  TIMING WALL :: ENPART exchange and correlation                   0.74 s
+  TIMING CPU  :: ENPART Coulomb                                    0.66 s
+  TIMING WALL :: ENPART Coulomb                                    0.08 s
+  TIMING CPU  :: ENPART exchange-correlation                       6.62 s
+  TIMING WALL :: ENPART exchange-correlation                       0.84 s
+  TIMING CPU  :: ENPART exchange and correlation                   6.60 s
+  TIMING WALL :: ENPART exchange and correlation                   0.84 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -761,7 +761,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      -0.127642
 
-  TIMING CPU  :: ENPART two-electron terms                        11.76 s
-  TIMING WALL :: ENPART two-electron terms                         1.53 s
+  TIMING CPU  :: ENPART two-electron terms                        13.96 s
+  TIMING WALL :: ENPART two-electron terms                         1.77 s
 
   ...Normal Termination of APOST-3D...

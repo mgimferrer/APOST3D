@@ -110,7 +110,7 @@
   CAS spin-orbitals                       : 14
   CAS spin state                          : non-singlet
   Alpha / beta electrons                  : 5 / 3
-  SCF energy (au)                         :     -38.9474605347
+  SCF energy (au)                         :     -38.9474605
 
   -----------------
     INPUT SUMMARY
@@ -134,7 +134,7 @@
      2.00000   1.97939   1.97585   1.00000   0.99993   0.02635   0.01848
 
   TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.03 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION

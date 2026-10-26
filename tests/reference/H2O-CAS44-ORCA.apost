@@ -109,7 +109,7 @@
   CAS active orbitals                     : 4
   CAS spin-orbitals                       : 14
   Alpha / beta electrons                  : 5 / 5
-  SCF energy (au)                         :     -75.0085688624
+  SCF energy (au)                         :     -75.0085689
 
   Note: closed-shell correlated wavefunction: its local spins come from electron correlation
 
@@ -149,7 +149,7 @@
      2.00000   2.00000   2.00000   1.97698   1.97349   0.02558   0.02395
 
   TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.03 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -174,8 +174,8 @@
 
   Sum of atomic overlaps, largest error   : 7.56E-08 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.28 s
-  TIMING WALL :: Atomic definition                                 0.04 s
+  TIMING CPU  :: Atomic definition                                 0.29 s
+  TIMING WALL :: Atomic definition                                 0.05 s
 
   ---------------------------------
     POST-HARTREE-FOCK CALCULATION
@@ -555,12 +555,12 @@
   Pairs integrated (exchange-correlation) : 3
   Pairs from the multipolar expansion     : 0
 
-  TIMING CPU  :: ENPART Coulomb                                    0.61 s
+  TIMING CPU  :: ENPART Coulomb                                    0.66 s
   TIMING WALL :: ENPART Coulomb                                    0.08 s
-  TIMING CPU  :: ENPART exchange-correlation                       6.24 s
-  TIMING WALL :: ENPART exchange-correlation                       0.79 s
-  TIMING CPU  :: ENPART exchange and correlation                   6.24 s
-  TIMING WALL :: ENPART exchange and correlation                   0.80 s
+  TIMING CPU  :: ENPART exchange-correlation                       6.95 s
+  TIMING WALL :: ENPART exchange-correlation                       0.88 s
+  TIMING CPU  :: ENPART exchange and correlation                   6.93 s
+  TIMING WALL :: ENPART exchange and correlation                   0.88 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -578,8 +578,8 @@
   The one-center Coulomb and exchange-correlation terms of the matrices
   below are the corrected ones; the pair terms do not change.
 
-  TIMING CPU  :: ENPART zero-error correction                      3.41 s
-  TIMING WALL :: ENPART zero-error correction                      0.43 s
+  TIMING CPU  :: ENPART zero-error correction                      3.54 s
+  TIMING WALL :: ENPART zero-error correction                      0.44 s
 
   ----------------------------------------------------
     COULOMB ENERGY, BEFORE THE ZERO-ERROR CORRECTION
@@ -827,7 +827,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      -0.143315
 
-  TIMING CPU  :: ENPART two-electron terms                        16.57 s
-  TIMING WALL :: ENPART two-electron terms                         2.10 s
+  TIMING CPU  :: ENPART two-electron terms                        18.15 s
+  TIMING WALL :: ENPART two-electron terms                         2.29 s
 
   ...Normal Termination of APOST-3D...

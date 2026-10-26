@@ -108,7 +108,7 @@
   Density used                            : 2 (Total MP2 Density)
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :     -76.0267720534
+  SCF energy (au)                         :     -76.0267721
 
   -----------------
     INPUT SUMMARY
@@ -118,8 +118,8 @@
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
   Density (DENS)                          : 2
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -144,8 +144,8 @@
 
   Sum of atomic overlaps, largest error   : 2.18E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.02 s
-  TIMING WALL :: Atomic definition                                 0.00 s
+  TIMING CPU  :: Atomic definition                                 0.04 s
+  TIMING WALL :: Atomic definition                                 0.01 s
 
   -----------------------------
     DOING POPULATION ANALYSIS

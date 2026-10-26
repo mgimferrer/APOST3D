@@ -106,7 +106,7 @@
   Primitive gaussians                     : 14
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 2 / 0
-  SCF energy (au)                         :      -0.7777035451
+  SCF energy (au)                         :      -0.7777035
 
   -----------------
     INPUT SUMMARY
@@ -135,7 +135,7 @@
      1.00000   1.00000
 
   TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.02 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION

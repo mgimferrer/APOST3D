@@ -51,6 +51,7 @@
       common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /printout/iaccur
       dimension clin(nmax**2)
       character*80 line,line2
       character*20 cform,ctype
@@ -350,9 +351,12 @@
         write(cnum,'(i0,a,i0)') nalf,' / ',nb
         call print_value('Alpha / beta electrons',trim(cnum))
       end if
-!! the energy keeps the 10 decimals of the .fchk listing !!
+!! 7 decimals as every energy (13 with FULLPRECISION), as ENPART's !!
+!! "Energy in the .fchk file"                                       !!
+      ndec=7
+      if(iaccur.ne.0) ndec=13
       if(lescf) then
-        call print_value('SCF energy',escf,10,'au')
+        call print_value('SCF energy',escf,ndec,'au')
       else
         call print_value('SCF energy','not in the .fchk','au')
       end if

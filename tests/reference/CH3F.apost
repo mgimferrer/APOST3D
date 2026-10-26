@@ -106,7 +106,7 @@
   Primitive gaussians                     : 71
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 9
-  SCF energy (au)                         :    -139.6281885899
+  SCF energy (au)                         :    -139.6281886
 
   -----------------
     INPUT SUMMARY
@@ -639,7 +639,7 @@
   ----------------------
   Total             0.00
 
-  TIMING CPU  :: OSLO analysis                                     0.21 s
+  TIMING CPU  :: OSLO analysis                                     0.20 s
   TIMING WALL :: OSLO analysis                                     0.09 s
 
   ...Normal Termination of APOST-3D...

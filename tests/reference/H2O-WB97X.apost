@@ -106,7 +106,7 @@
   Primitive gaussians                     : 47
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :     -76.4235561694
+  SCF energy (au)                         :     -76.4235562
 
   -----------------
     INPUT SUMMARY
@@ -122,8 +122,8 @@
   Two-electron grid                       : 150 x 590 (default)
   Rotation angles (two-electron grid)     : 0.169 / 0.170 (calibrated)
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -148,8 +148,8 @@
 
   Sum of atomic overlaps, largest error   : 9.75E-06 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.26 s
-  TIMING WALL :: Atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.66 s
+  TIMING WALL :: Atomic definition                                 0.10 s
 
   -----------------------------
     DOING POPULATION ANALYSIS

@@ -50,8 +50,9 @@ up:
 - The unit is given for every quantity that has one: `(au)` for
   energies in hartree, `(kcal/mol)`, `(bohr)`, `(%)`. Dimensionless
   quantities (electrons, bond orders, oxidation states) have none.
-- A value printed in the input summary and again later in the run is
-  printed the same way both times (same units, same decimals).
+- A value printed in the wavefunction or input summary and again later
+  in the run is printed the same way both times (same units, same
+  decimals).
 - Zero is printed as `0.00`, never `-0.00` (the `Makefile` compiles with
   `-fno-sign-zero`).
 - In code, such a line is printed with `print_value` (module
@@ -77,9 +78,6 @@ The same kind of quantity always has the same number of decimals:
 | Reliability index R (%) | 3 |
 | OSLO FOLI values | 5 |
 | Fit and recovery percentages | 2 |
-
-The SCF energy read from the `.fchk` file is printed with 10 decimals in
-the wavefunction summary.
 
 ## Tables
 

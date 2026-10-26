@@ -106,7 +106,7 @@
   Primitive gaussians                     : 47
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 6 / 4
-  SCF energy (au)                         :     -76.1484132880
+  SCF energy (au)                         :     -76.1484132880005
   External electric field, x y z (au)     : 0.005000  0.000000  0.000000
 
   -----------------

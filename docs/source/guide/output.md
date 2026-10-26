@@ -39,7 +39,7 @@ The beginning of a run, for fluoromethane with `TFVC` and `OSLO`:
   Primitive gaussians                     : 71
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 9
-  SCF energy (au)                         :    -139.6281885899
+  SCF energy (au)                         :    -139.6281886
 
   -----------------
     INPUT SUMMARY

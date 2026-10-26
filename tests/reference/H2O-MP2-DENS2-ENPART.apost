@@ -108,7 +108,7 @@
   Density used                            : 2 (Total MP2 Density)
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :     -76.0267720534
+  SCF energy (au)                         :     -76.0267721
   DENS above 1: ENPART and OSLO use the orbitals of the .fchk file, which belong to the SCF density;
   use DENS 1 for them
 STOP DENS above 1 with ENPART or OSLO

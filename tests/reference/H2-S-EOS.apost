@@ -106,7 +106,7 @@
   Primitive gaussians                     : 14
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 1 / 1
-  SCF energy (au)                         :      -1.1734967936
+  SCF energy (au)                         :      -1.1734968
 
   -----------------
     INPUT SUMMARY
@@ -129,8 +129,8 @@
   Occupation numbers (>1.0e-6):
      2.00000
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -339,7 +339,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :       2.000008
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.01 s
   TIMING WALL :: Population analysis                               0.00 s
 
   --------------------------------------
@@ -441,7 +441,7 @@
 
   TIMING CPU  :: EFFAO computation                                 0.00 s
   TIMING WALL :: EFFAO computation                                 0.00 s
-  TIMING CPU  :: EOS analysis                                      0.00 s
+  TIMING CPU  :: EOS analysis                                      0.02 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
   ...Normal Termination of APOST-3D...

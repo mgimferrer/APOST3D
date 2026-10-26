@@ -106,7 +106,7 @@
   Primitive gaussians                     : 206
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 9
-  SCF energy (au)                         :     -79.8656133777
+  SCF energy (au)                         :     -79.8656134
 
   -----------------
     INPUT SUMMARY
@@ -127,8 +127,8 @@
   Fragment  1 :   1   3   4   5
   Fragment  2 :   2   6   7   8
 
-  TIMING CPU  :: Initialization                                    0.39 s
-  TIMING WALL :: Initialization                                    0.24 s
+  TIMING CPU  :: Initialization                                    0.13 s
+  TIMING WALL :: Initialization                                    0.06 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -162,8 +162,8 @@
 
   Sum of atomic overlaps, largest error   : 2.63E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 1.64 s
-  TIMING WALL :: Atomic definition                                 0.22 s
+  TIMING CPU  :: Atomic definition                                 1.68 s
+  TIMING WALL :: Atomic definition                                 0.23 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -353,7 +353,7 @@
   Total (diagonal and one triangle)       :      17.996544
 
   TIMING CPU  :: Population analysis                               0.06 s
-  TIMING WALL :: Population analysis                               0.03 s
+  TIMING WALL :: Population analysis                               0.02 s
 
   ---------------------------------------------------
     OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
@@ -608,7 +608,7 @@
   Total             0.00
   Fractional values: orbitals shared between fragments (see the iterations)
 
-  TIMING CPU  :: OSLO analysis                                     2.99 s
-  TIMING WALL :: OSLO analysis                                     2.39 s
+  TIMING CPU  :: OSLO analysis                                     3.02 s
+  TIMING WALL :: OSLO analysis                                     2.43 s
 
   ...Normal Termination of APOST-3D...

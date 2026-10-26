@@ -106,7 +106,7 @@
   Primitive gaussians                     : 14
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 2 / 0
-  SCF energy (au)                         :      -0.6757729728
+  SCF energy (au)                         :      -0.6757730
 
   -----------------
     INPUT SUMMARY
@@ -158,7 +158,7 @@
 
   Sum of atomic overlaps, largest error   : 6.79E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.01 s
+  TIMING CPU  :: Atomic definition                                 0.00 s
   TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
@@ -321,7 +321,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :       1.999832
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.01 s
   TIMING WALL :: Population analysis                               0.00 s
 
   ---------------------------------------------------

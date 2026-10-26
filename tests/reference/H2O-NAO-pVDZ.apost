@@ -106,7 +106,7 @@
   Primitive gaussians                     : 47
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :     -76.4205882159
+  SCF energy (au)                         :     -76.4205882
 
   -----------------
     INPUT SUMMARY
@@ -115,8 +115,8 @@
   # METHOD
   Atomic definition                       : NAO-BASIS (Hilbert space)
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   -----------------------------
     SETTING ATOMIC DEFINITION

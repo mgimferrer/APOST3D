@@ -110,7 +110,7 @@
   CAS spin-orbitals                       : 14
   CAS spin state                          : non-singlet
   Alpha / beta electrons                  : 5 / 3
-  SCF energy (au)                         :     -38.9474605343
+  SCF energy (au)                         :     -38.9474605
 
   -----------------
     INPUT SUMMARY
@@ -131,8 +131,8 @@
   Occupation numbers (>1.0e-6):
      2.00000   1.97939   1.97584   1.00000   0.99993   0.02635   0.01848
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -157,7 +157,7 @@
 
   Sum of atomic overlaps, largest error   : 5.71E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.01 s
+  TIMING CPU  :: Atomic definition                                 0.02 s
   TIMING WALL :: Atomic definition                                 0.00 s
 
   ---------------------------------
@@ -276,7 +276,7 @@
   -------------------------------------------
   Total (diagonal and one triangle)       :       8.000186
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.01 s
   TIMING WALL :: Population analysis                               0.00 s
 
   ...Normal Termination of APOST-3D...

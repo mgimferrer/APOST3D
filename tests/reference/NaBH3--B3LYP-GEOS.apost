@@ -106,7 +106,7 @@
   Primitive gaussians                     : 276
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 10 / 10
-  SCF energy (au)                         :    -189.1470282120
+  SCF energy (au)                         :    -189.1470282
 
   -----------------
     INPUT SUMMARY
@@ -130,8 +130,8 @@
      2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   1.99994   1.99994
      1.99952   1.74329   0.25671   0.00048   0.00006   0.00006   0.00000
 
-  TIMING CPU  :: Initialization                                    0.04 s
-  TIMING WALL :: Initialization                                    0.04 s
+  TIMING CPU  :: Initialization                                    0.27 s
+  TIMING WALL :: Initialization                                    0.13 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -156,8 +156,8 @@
 
   Sum of atomic overlaps, largest error   : 2.80E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.69 s
-  TIMING WALL :: Atomic definition                                 0.10 s
+  TIMING CPU  :: Atomic definition                                 0.91 s
+  TIMING WALL :: Atomic definition                                 0.13 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -366,8 +366,8 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      19.999813
 
-  TIMING CPU  :: Population analysis                               0.01 s
-  TIMING WALL :: Population analysis                               0.01 s
+  TIMING CPU  :: Population analysis                               0.06 s
+  TIMING WALL :: Population analysis                               0.03 s
 
   --------------------------------------
     EFFECTIVE FRAGMENT ORBITALS (EFOs)
@@ -487,8 +487,8 @@
   EFO file (.fchk)                        : NaBH3--B3LYP-GEOS-GEOS-EFOs.fchk
   Unweighted EFO file (.fchk)             : NaBH3--B3LYP-GEOS-GEOS-EFOs-unweighted.fchk
 
-  TIMING CPU  :: EFFAO computation                                 1.20 s
-  TIMING WALL :: EFFAO computation                                 0.31 s
+  TIMING CPU  :: EFFAO computation                                 2.56 s
+  TIMING WALL :: EFFAO computation                                 0.56 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

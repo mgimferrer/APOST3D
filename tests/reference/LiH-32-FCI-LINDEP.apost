@@ -110,7 +110,7 @@
   CAS active orbitals                     : 31
   CAS spin-orbitals                       : 62
   Alpha / beta electrons                  : 2 / 2
-  SCF energy (au)                         :      -7.9512474164
+  SCF energy (au)                         :      -7.9512474
 
   -----------------
     INPUT SUMMARY
@@ -135,8 +135,8 @@
      0.00010   0.00010   0.00003   0.00003   0.00003   0.00001   0.00001   0.00001
      0.00000   0.00000   0.00000   0.00000
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.04 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -158,8 +158,8 @@
 
   Sum of atomic overlaps, largest error   : 9.61E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.02 s
-  TIMING WALL :: Atomic definition                                 0.00 s
+  TIMING CPU  :: Atomic definition                                 0.04 s
+  TIMING WALL :: Atomic definition                                 0.01 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -441,7 +441,7 @@
   EFO file (.fchk)                        : LiH-32-FCI-LINDEP-GEOS-EFOs.fchk
   Unweighted EFO file (.fchk)             : LiH-32-FCI-LINDEP-GEOS-EFOs-unweighted.fchk
 
-  TIMING CPU  :: EFFAO computation                                 0.03 s
+  TIMING CPU  :: EFFAO computation                                 0.10 s
   TIMING WALL :: EFFAO computation                                 0.01 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

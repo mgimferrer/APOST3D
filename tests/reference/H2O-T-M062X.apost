@@ -106,7 +106,7 @@
   Primitive gaussians                     : 47
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 6 / 4
-  SCF energy (au)                         :     -76.1084341615
+  SCF energy (au)                         :     -76.1084342
 
   -----------------
     INPUT SUMMARY
@@ -130,8 +130,8 @@
      2.00000   1.99994   1.99975   1.99945   1.00000   1.00000   0.00055   0.00025
      0.00006
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -156,8 +156,8 @@
 
   Sum of atomic overlaps, largest error   : 1.53E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.35 s
-  TIMING WALL :: Atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.66 s
+  TIMING WALL :: Atomic definition                                 0.09 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -320,8 +320,8 @@
   -------------------------------------------
   Nuclear-nuclear repulsion (au)          :       9.1193799
 
-  TIMING CPU  :: ENPART one-electron terms                         0.29 s
-  TIMING WALL :: ENPART one-electron terms                         0.04 s
+  TIMING CPU  :: ENPART one-electron terms                         0.69 s
+  TIMING WALL :: ENPART one-electron terms                         0.09 s
 
   ------------------------------------
     DFT EXCHANGE-CORRELATION (BODEN)
@@ -361,8 +361,8 @@
   -------------------------------------------
   DFT exchange-correlation (au)           :      -4.4044761
 
-  TIMING CPU  :: ENPART DFT exchange-correlation                   1.52 s
-  TIMING WALL :: ENPART DFT exchange-correlation                   0.43 s
+  TIMING CPU  :: ENPART DFT exchange-correlation                   3.91 s
+  TIMING WALL :: ENPART DFT exchange-correlation                   1.23 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -372,10 +372,10 @@
   Angular points                          : 146
   Grid points                             : 17520
 
-  TIMING CPU  :: ENPART Coulomb                                    0.39 s
-  TIMING WALL :: ENPART Coulomb                                    0.05 s
-  TIMING CPU  :: ENPART exact exchange                             6.65 s
-  TIMING WALL :: ENPART exact exchange                             0.87 s
+  TIMING CPU  :: ENPART Coulomb                                    0.66 s
+  TIMING WALL :: ENPART Coulomb                                    0.08 s
+  TIMING CPU  :: ENPART exact exchange                            10.26 s
+  TIMING WALL :: ENPART exact exchange                             1.29 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -394,8 +394,8 @@
   The one-center Coulomb and exchange terms of the matrices below
   are the corrected ones; the pair terms do not change.
 
-  TIMING CPU  :: ENPART zero-error correction                      3.50 s
-  TIMING WALL :: ENPART zero-error correction                      0.49 s
+  TIMING CPU  :: ENPART zero-error correction                      5.77 s
+  TIMING WALL :: ENPART zero-error correction                      0.79 s
 
   ------------------
     COULOMB ENERGY
@@ -490,7 +490,7 @@
   -------------------------------------------
   Classical interaction energy (au)       :      -0.4784336
 
-  TIMING CPU  :: ENPART two-electron terms                        10.58 s
-  TIMING WALL :: ENPART two-electron terms                         1.42 s
+  TIMING CPU  :: ENPART two-electron terms                        16.80 s
+  TIMING WALL :: ENPART two-electron terms                         2.17 s
 
   ...Normal Termination of APOST-3D...

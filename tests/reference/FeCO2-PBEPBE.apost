@@ -106,7 +106,7 @@
   Primitive gaussians                     : 171
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 26
-  SCF energy (au)                         :   -1488.2914233301
+  SCF energy (au)                         :   -1488.2914233
 
   -----------------
     INPUT SUMMARY
@@ -123,8 +123,8 @@
   Fragment  2 :   2   4
   Fragment  3 :   3   5
 
-  TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING CPU  :: Initialization                                    0.07 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -149,8 +149,8 @@
 
   Sum of atomic overlaps, largest error   : 6.16E-04 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.21 s
-  TIMING WALL :: Atomic definition                                 0.03 s
+  TIMING CPU  :: Atomic definition                                 0.36 s
+  TIMING WALL :: Atomic definition                                 0.05 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -341,7 +341,7 @@
   ---------------------------------------------
   Total (diagonal and one triangle)       :      52.000563
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.02 s
   TIMING WALL :: Population analysis                               0.00 s
 
   --------------------------------------
@@ -432,9 +432,9 @@
   EFO file (.fchk)                        : FeCO2-PBEPBE-EOS-EFOs.fchk
   Unweighted EFO file (.fchk)             : FeCO2-PBEPBE-EOS-EFOs-unweighted.fchk
 
-  TIMING CPU  :: EFFAO computation                                 0.33 s
-  TIMING WALL :: EFFAO computation                                 0.07 s
-  TIMING CPU  :: EOS analysis                                      0.01 s
+  TIMING CPU  :: EFFAO computation                                 0.74 s
+  TIMING WALL :: EFFAO computation                                 0.11 s
+  TIMING CPU  :: EOS analysis                                      0.04 s
   TIMING WALL :: EOS analysis                                      0.01 s
 
   ...Normal Termination of APOST-3D...

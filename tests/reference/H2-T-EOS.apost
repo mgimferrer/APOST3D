@@ -106,7 +106,7 @@
   Primitive gaussians                     : 14
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 2 / 0
-  SCF energy (au)                         :      -0.7777035451
+  SCF energy (au)                         :      -0.7777035
 
   -----------------
     INPUT SUMMARY
@@ -129,8 +129,8 @@
   Occupation numbers (>1.0e-6):
      1.00000   1.00000
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -152,7 +152,7 @@
 
   Sum of atomic overlaps, largest error   : 4.06E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.00 s
+  TIMING CPU  :: Atomic definition                                 0.01 s
   TIMING WALL :: Atomic definition                                 0.00 s
 
   -----------------------------
@@ -424,7 +424,7 @@
   EFO file (.fchk)                        : H2-T-EOS-EOS-EFOs.fchk
   Unweighted EFO file (.fchk)             : H2-T-EOS-EOS-EFOs-unweighted.fchk
 
-  TIMING CPU  :: EFFAO computation                                 0.00 s
+  TIMING CPU  :: EFFAO computation                                 0.01 s
   TIMING WALL :: EFFAO computation                                 0.00 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s

@@ -106,7 +106,7 @@
   Primitive gaussians                     : 71
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 9
-  SCF energy (au)                         :    -139.6281885899
+  SCF energy (au)                         :    -139.6281886
 
   -----------------
     INPUT SUMMARY
@@ -130,8 +130,8 @@
      2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000
      2.00000
 
-  TIMING CPU  :: Initialization                                    0.01 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.05 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -159,8 +159,8 @@
 
   Sum of atomic overlaps, largest error   : 1.14E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.07 s
-  TIMING WALL :: Atomic definition                                 0.01 s
+  TIMING CPU  :: Atomic definition                                 0.18 s
+  TIMING WALL :: Atomic definition                                 0.02 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -344,7 +344,7 @@
   ---------------------------------
   Total (diagonal and one triangle)       :      18.001005
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.01 s
   TIMING WALL :: Population analysis                               0.00 s
 
   --------------------------------------
@@ -453,8 +453,8 @@
   EFO file (.fchk)                        : CH3F-GEOS-GEOS-EFOs.fchk
   Unweighted EFO file (.fchk)             : CH3F-GEOS-GEOS-EFOs-unweighted.fchk
 
-  TIMING CPU  :: EFFAO computation                                 0.10 s
-  TIMING WALL :: EFFAO computation                                 0.02 s
+  TIMING CPU  :: EFFAO computation                                 0.28 s
+  TIMING WALL :: EFFAO computation                                 0.04 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 

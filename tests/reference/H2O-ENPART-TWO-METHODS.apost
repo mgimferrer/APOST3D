@@ -106,6 +106,6 @@
   Primitive gaussians                     : 49
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :     -76.3812810236
+  SCF energy (au)                         :     -76.3812810
   Give one of HF, a functional keyword, LIBRARY, CASSCF or CISD in # ENPART
 STOP MORE THAN ONE METHOD IN # ENPART. REVISE inp

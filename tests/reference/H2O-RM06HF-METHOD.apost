@@ -106,7 +106,7 @@
   Primitive gaussians                     : 47
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :     -76.3887592533
+  SCF energy (au)                         :     -76.3887593
 
   -----------------
     INPUT SUMMARY
@@ -115,8 +115,8 @@
   # METHOD
   Atomic definition                       : MULLIKEN (Hilbert space)
 
-  TIMING CPU  :: Initialization                                    0.02 s
-  TIMING WALL :: Initialization                                    0.22 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   -----------------------------
     SETTING ATOMIC DEFINITION

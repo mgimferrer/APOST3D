@@ -106,7 +106,7 @@
   Primitive gaussians                     : 381
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 55 / 54
-  SCF energy (au)                         :   -1857.1187471128
+  SCF energy (au)                         :   -1857.1187471
 
   -----------------
     INPUT SUMMARY
@@ -147,8 +147,8 @@
      0.00049   0.00020   0.00011   0.00011   0.00009   0.00003   0.00002   0.00001
      0.00001   0.00001   0.00001   0.00000   0.00000   0.00000   0.00000
 
-  TIMING CPU  :: Initialization                                    0.36 s
-  TIMING WALL :: Initialization                                    0.20 s
+  TIMING CPU  :: Initialization                                    0.35 s
+  TIMING WALL :: Initialization                                    0.19 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -187,8 +187,8 @@
 
   Sum of atomic overlaps, largest error   : 1.09E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 5.26 s
-  TIMING WALL :: Atomic definition                                 0.73 s
+  TIMING CPU  :: Atomic definition                                 5.35 s
+  TIMING WALL :: Atomic definition                                 0.75 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -8120,7 +8120,7 @@
   ----------------------
   Total            -3.00
 
-  TIMING CPU  :: OSLO analysis                                    57.33 s
-  TIMING WALL :: OSLO analysis                                    31.92 s
+  TIMING CPU  :: OSLO analysis                                    57.37 s
+  TIMING WALL :: OSLO analysis                                    31.98 s
 
   ...Normal Termination of APOST-3D...

@@ -106,7 +106,7 @@
   Primitive gaussians                     : 99
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :    -100.0633306036
+  SCF energy (au)                         :    -100.0633306
 
   -----------------
     INPUT SUMMARY
@@ -115,8 +115,8 @@
   # METHOD
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.06 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -139,7 +139,7 @@
 
   Sum of atomic overlaps, largest error   : 1.55E-02 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.05 s
+  TIMING CPU  :: Atomic definition                                 0.08 s
   TIMING WALL :: Atomic definition                                 0.01 s
 
   -----------------------------

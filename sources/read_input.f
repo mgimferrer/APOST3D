@@ -69,6 +69,14 @@
      +    ' 2-RDMs), e.g. DM 2'
         call apost_stop('Wrong DM value in # METHOD')
       end if
+!! FULLPRECISION (forced by POLAR) also sets the decimals of the SCF    !!
+!! energy that input() prints                                          !!
+      call readchar("# METHOD","FULLPRECISION",iaccur)
+!! nonlinear optical properties (POLAR) !!
+      call readchar("# METHOD","POLAR",ipolar )
+      if(ipolar.eq.1) then
+        iaccur=1
+      end if
 
 !! processing fchk file !!
       call input()
@@ -77,7 +85,6 @@
 
 !! look for options !!
       call readchar("# METHOD","ALLPOINTS",iallpo)
-      call readchar("# METHOD","FULLPRECISION",iaccur)
 
 !! output detail: VERBOSE 0 (default) or 1; a bare VERBOSE stops !!
       call readchar("# METHOD","VERBOSE",ii)
@@ -338,12 +345,6 @@
 
 !! integration grids (# GRID, optional), once the analyses are known !!
       call read_grid(ienpart,idftdm1)
-
-!! nonlinear optical properties (POLAR) !!
-      call readchar("# METHOD","POLAR",ipolar )
-      if(ipolar.eq.1) then
-        iaccur=1
-      end if
 
 !! a static field in the .fchk ends the WAVEFUNCTION SUMMARY !!
       call field_misc(ifield)

@@ -109,7 +109,7 @@
   CAS active orbitals                     : 2
   CAS spin-orbitals                       : 6
   Alpha / beta electrons                  : 2 / 2
-  SCF energy (au)                         :      -7.9411447876
+  SCF energy (au)                         :      -7.9411448
 
   Note: closed-shell correlated wavefunction: its local spins come from electron correlation
 
@@ -135,8 +135,8 @@
   Occupation numbers (>1.0e-6):
      2.00000   1.54688   0.45312
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.00 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.01 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -269,7 +269,7 @@
   -------------------------------
   Total (diagonal and one triangle)       :       4.000065
 
-  TIMING CPU  :: Population analysis                               0.00 s
+  TIMING CPU  :: Population analysis                               0.01 s
   TIMING WALL :: Population analysis                               0.00 s
 
   -----------------------------

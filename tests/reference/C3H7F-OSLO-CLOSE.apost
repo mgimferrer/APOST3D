@@ -106,7 +106,7 @@
   Primitive gaussians                     : 140
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 17
-  SCF energy (au)                         :    -218.3666625924
+  SCF energy (au)                         :    -218.3666626
 
   -----------------
     INPUT SUMMARY
@@ -130,7 +130,7 @@
   Fragment  4 :   4
 
   TIMING CPU  :: Initialization                                    0.06 s
-  TIMING WALL :: Initialization                                    0.03 s
+  TIMING WALL :: Initialization                                    0.02 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -393,7 +393,7 @@
   ---------------------------------------------------------
   Total (diagonal and one triangle)       :      33.996687
 
-  TIMING CPU  :: Population analysis                               0.02 s
+  TIMING CPU  :: Population analysis                               0.03 s
   TIMING WALL :: Population analysis                               0.00 s
 
   ---------------------------------------------------
@@ -1544,6 +1544,6 @@
   Total             0.00
 
   TIMING CPU  :: OSLO analysis                                     2.15 s
-  TIMING WALL :: OSLO analysis                                     1.28 s
+  TIMING WALL :: OSLO analysis                                     1.29 s
 
   ...Normal Termination of APOST-3D...

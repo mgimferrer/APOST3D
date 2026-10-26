@@ -106,7 +106,7 @@
   Primitive gaussians                     : 47
   Spin density                            : built from the MOs
   Doubly occupied MOs                     : 5
-  SCF energy (au)                         :     -76.3887592533
+  SCF energy (au)                         :     -76.3887593
 
   -----------------
     INPUT SUMMARY
@@ -122,8 +122,8 @@
   Two-electron grid                       : 40 x 146 (# GRID)
   Rotation angles (two-electron grid)     : 0.162 / 0.182 (calibrated)
 
-  TIMING CPU  :: Initialization                                    0.00 s
-  TIMING WALL :: Initialization                                    0.01 s
+  TIMING CPU  :: Initialization                                    0.01 s
+  TIMING WALL :: Initialization                                    0.03 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -148,8 +148,8 @@
 
   Sum of atomic overlaps, largest error   : 1.17E-05 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                 0.35 s
-  TIMING WALL :: Atomic definition                                 0.06 s
+  TIMING CPU  :: Atomic definition                                 0.67 s
+  TIMING WALL :: Atomic definition                                 0.10 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -300,8 +300,8 @@
   -------------------------------------------
   Nuclear-nuclear repulsion (au)          :       9.1193799
 
-  TIMING CPU  :: ENPART one-electron terms                         0.27 s
-  TIMING WALL :: ENPART one-electron terms                         0.04 s
+  TIMING CPU  :: ENPART one-electron terms                         0.61 s
+  TIMING WALL :: ENPART one-electron terms                         0.08 s
 
   ------------------------------------
     DFT EXCHANGE-CORRELATION (BODEN)
@@ -341,8 +341,8 @@
   -------------------------------------------
   DFT exchange-correlation (au)           :      -4.4879056
 
-  TIMING CPU  :: ENPART DFT exchange-correlation                   1.08 s
-  TIMING WALL :: ENPART DFT exchange-correlation                   0.23 s
+  TIMING CPU  :: ENPART DFT exchange-correlation                   2.83 s
+  TIMING WALL :: ENPART DFT exchange-correlation                   0.60 s
 
   ---------------------
     TWO-ELECTRON GRID
@@ -352,10 +352,10 @@
   Angular points                          : 146
   Grid points                             : 17520
 
-  TIMING CPU  :: ENPART Coulomb                                    0.39 s
-  TIMING WALL :: ENPART Coulomb                                    0.06 s
-  TIMING CPU  :: ENPART exact exchange                             3.07 s
-  TIMING WALL :: ENPART exact exchange                             0.40 s
+  TIMING CPU  :: ENPART Coulomb                                    0.66 s
+  TIMING WALL :: ENPART Coulomb                                    0.08 s
+  TIMING CPU  :: ENPART exact exchange                             4.53 s
+  TIMING WALL :: ENPART exact exchange                             0.57 s
 
   ----------------------------------
     TWO-ELECTRON INTEGRATION ERROR
@@ -374,8 +374,8 @@
   The one-center Coulomb and exchange terms of the matrices below
   are the corrected ones; the pair terms do not change.
 
-  TIMING CPU  :: ENPART zero-error correction                      1.70 s
-  TIMING WALL :: ENPART zero-error correction                      0.26 s
+  TIMING CPU  :: ENPART zero-error correction                      2.75 s
+  TIMING WALL :: ENPART zero-error correction                      0.41 s
 
   ------------------
     COULOMB ENERGY
@@ -470,7 +470,7 @@
   -------------------------------------------
   Classical interaction energy (au)       :      -0.5488154
 
-  TIMING CPU  :: ENPART two-electron terms                         5.19 s
-  TIMING WALL :: ENPART two-electron terms                         0.72 s
+  TIMING CPU  :: ENPART two-electron terms                         8.03 s
+  TIMING WALL :: ENPART two-electron terms                         1.07 s
 
   ...Normal Termination of APOST-3D...

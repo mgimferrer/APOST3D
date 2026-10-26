@@ -49,7 +49,7 @@ understood. Check them first in every new calculation:
   Number of basis functions               : 86
   ...
   Doubly occupied MOs                     : 26
-  SCF energy (au)                         :   -1488.2914233301
+  SCF energy (au)                         :   -1488.2914233
   ...
   # METHOD
   Atomic definition                       : TFVC (topological fuzzy Voronoi cells)

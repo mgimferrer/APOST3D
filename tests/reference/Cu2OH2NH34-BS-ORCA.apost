@@ -106,7 +106,7 @@
   Primitive gaussians                     : 410
   Spin density                            : read from the .fchk
   Alpha / beta electrons                  : 57 / 57
-  SCF energy (au)                         :   -3657.4531927480
+  SCF energy (au)                         :   -3657.4531927
 
   -----------------
     INPUT SUMMARY
@@ -146,8 +146,8 @@
      0.00001   0.00001   0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
      0.00000   0.00000   0.00000   0.00000   0.00000   0.00000
 
-  TIMING CPU  :: Initialization                                    3.26 s
-  TIMING WALL :: Initialization                                    0.66 s
+  TIMING CPU  :: Initialization                                    0.38 s
+  TIMING WALL :: Initialization                                    0.22 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -223,8 +223,8 @@
 
   Sum of atomic overlaps, largest error   : 3.90E-03 (from the analytic overlap S)
 
-  TIMING CPU  :: Atomic definition                                23.31 s
-  TIMING WALL :: Atomic definition                                 3.22 s
+  TIMING CPU  :: Atomic definition                                22.86 s
+  TIMING WALL :: Atomic definition                                 3.05 s
 
   -----------------------------
     DOING POPULATION ANALYSIS
@@ -1101,8 +1101,8 @@
   EFO file (.fchk)                        : Cu2OH2NH34-BS-ORCA-EOS-EFOs.fchk
   Unweighted EFO file (.fchk)             : Cu2OH2NH34-BS-ORCA-EOS-EFOs-unweighted.fchk
 
-  TIMING CPU  :: EFFAO computation                               116.17 s
-  TIMING WALL :: EFFAO computation                                24.42 s
+  TIMING CPU  :: EFFAO computation                                98.14 s
+  TIMING WALL :: EFFAO computation                                19.40 s
   TIMING CPU  :: EOS analysis                                      0.17 s
   TIMING WALL :: EOS analysis                                      0.13 s
 
