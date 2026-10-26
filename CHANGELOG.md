@@ -200,7 +200,10 @@ program, not a full development history — see `git log` for that.
   exponent only), which programs reading the file reject or misread; it
   is now written as 0. This happened in the unweighted EOS EFOs of
   transition-metal complexes; the same holds for the blocks the utilities
-  `get_energy_g16`, `get_energy` and `wfn2fchk` write.
+  `get_energy_g16`, `get_energy` and `wfn2fchk` write, and for the
+  `.fchk` files of `orca2fchk.py` and `apost3d.py`, where such a value ran
+  into the one before it (ENPART could not read the pseudopotential
+  matrix of an ORCA Pt complex).
 - **EOS, GEOS and OSLO `.fchk` files of ROHF/ROKS wavefunctions** — the
   EFO files of a wavefunction with one set of orbitals for both spins lost
   the density blocks of the input `.fchk`, with a stray line of numbers in

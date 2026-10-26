@@ -795,7 +795,13 @@ def _iarr(f, label, values):
 
 
 def _rarr(f, label, values):
-    values = np.ravel(values)
+    # a value with a three-digit exponent fills all 16 columns of %16.8E
+    # and runs into the previous one: below 1e-99 written as 0
+    values = np.ravel(values).astype(float)
+    if np.any(np.abs(values) >= 9.999999995e98):
+        raise Orca2fchkError('%s: a value above 1e99, not writable in .fchk '
+                             'format' % label)
+    values = np.where(np.abs(values) < 1e-99, 0.0, values)
     f.write('%-43sR   N=%12d\n' % (label, len(values)))
     for k in range(0, len(values), 5):
         f.write(''.join('%16.8E' % v for v in values[k:k + 5]) + '\n')
