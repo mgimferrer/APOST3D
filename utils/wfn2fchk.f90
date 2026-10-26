@@ -691,7 +691,11 @@
        character(len=43) ::  title
        title=adjustl(key)
        write(iunit,'(A43,A6,I12)') title,"R   N=",ival
-       write(iunit,'(5ES16.8)') (rarray(i),i=1,ival)
+!! 5ES16.8 has room for a two-digit exponent only: below 1e-99 write 0 !!
+       if(any(abs(rarray).ge.9.999999995d98)) &
+         stop 'value above 1e99, not writable in .fchk format'
+       write(iunit,'(5ES16.8)') &
+         (merge(0.0d0,rarray(i),abs(rarray(i)).lt.1.0d-99),i=1,ival)
        end
 
        integer function fcof(ival,ido5d)
@@ -719,7 +723,11 @@
        character(len=43) ::  title
        title=adjustl(key)
        write(iunit,'(A43,A6,I17)') title,"R   N=",ival*jval
-       write(iunit,'(5ES16.8)') ((rmatrix(i,j),j=1,jval),i=1,ival)
+!! 5ES16.8 has room for a two-digit exponent only: below 1e-99 write 0 !!
+       if(any(abs(rmatrix).ge.9.999999995d98)) &
+         stop 'value above 1e99, not writable in .fchk format'
+       write(iunit,'(5ES16.8)') ((merge(0.0d0,rmatrix(i,j), &
+         abs(rmatrix(i,j)).lt.1.0d-99),j=1,jval),i=1,ival)
        end
 
 

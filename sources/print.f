@@ -2063,6 +2063,36 @@
 !! ***** !!
 
 !! ----------------------------------------------------------------------
+!! subroutine: write_fchk_reals
+!! Data lines of a real block of an orbital .fchk file written by
+!! APOST-3D: five E16.8 values per line. E16.8 has room for a two-digit
+!! exponent only (Fortran drops the 'E' of 1.27052287-118), so values
+!! below 1e-99 are written as 0 and values that would print above 1e99
+!! stop the run.
+!! arguments:
+!!   iu (in)  unit of the .fchk file being written
+!!   n  (in)  number of values
+!!   x  (in)  (n) values, in .fchk order
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine write_fchk_reals(iu,n,x)
+      implicit none
+      integer, intent(in) :: iu,n
+      double precision, intent(in) :: x(n)
+      integer :: ii
+
+!! 9.999999995d98 already rounds to 1.00000000+100 in E16.8 !!
+      do ii=1,n
+        if(abs(x(ii)).ge.9.999999995d98) call apost_stop(
+     +    ' .fchk value above 1e99, not writable in E16.8')
+      end do
+      write(iu,'(5(1p,e16.8))')
+     +  (merge(0.0d0,x(ii),abs(x(ii)).lt.1.0d-99),ii=1,n)
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
 !! function: efo_unweighted
 !! Whether the EOS/GEOS EFOs are also written before the multiplication
 !! by the fragment weight (-unweighted.fchk): real-space atoms whose
@@ -2193,11 +2223,11 @@
           read(15,'(a80)') line
         end do
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
-        write(69,13) (energ(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ)
 
         call skip_fchk_orbblock(15,indepigr,line)
         write(69,12) "Alpha MO coefficients","R","N= ",norb
-        write(69,13) ((pcoef(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef)
 
         call skip_fchk_orbblock(15,norb,line)
       else
@@ -2206,11 +2236,11 @@
           read(15,'(a80)') line
         end do
         write(69,12) "Alpha MO coefficients","R","N= ",norb
-        write(69,13) ((pcoef(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef)
 
         call skip_fchk_orbblock(15,norb,line)
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
-        write(69,13) (energ(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ)
 
         call skip_fchk_orbblock(15,indepigr,line)
       end if
@@ -2227,7 +2257,6 @@
 !! Printing formats !!
 11    FORMAT(a22,21x,a1,3x,a3,i11)
 12    FORMAT(a21,22x,a1,3x,a3,i11)
-13    FORMAT(5(1p,e16.8))
 
       end
 
@@ -2316,19 +2345,19 @@
           read(15,'(a80)') line
         end do
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
-        write(69,13) (energ_a(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_a)
 
         call skip_fchk_orbblock(15,indepigr,line)
         write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
-        write(69,13) (energ_b(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_b)
 
         call skip_fchk_orbblock(15,indepigr,line)
         write(69,12) "Alpha MO coefficients","R","N= ",norb
-        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_a)
 
         call skip_fchk_orbblock(15,norb,line)
         write(69,12) "Beta MO coefficients ","R","N= ",norb
-        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_b)
 
         call skip_fchk_orbblock(15,norb,line)
       else
@@ -2340,19 +2369,19 @@
           read(15,'(a80)') line
         end do
         write(69,12) "Alpha MO coefficients","R","N= ",norb
-        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_a)
 
         call skip_fchk_orbblock(15,norb,line)
         write(69,12) "Beta MO coefficients ","R","N= ",norb
-        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_b)
 
         call skip_fchk_orbblock(15,norb,line)
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
-        write(69,13) (energ_a(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_a)
 
         call skip_fchk_orbblock(15,indepigr,line)
         write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
-        write(69,13) (energ_b(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_b)
 
         call skip_fchk_orbblock(15,indepigr,line)
       end if
@@ -2370,7 +2399,6 @@
 !! Printing formats !!
 11    FORMAT(a22,21x,a1,3x,a3,i11)
 12    FORMAT(a21,22x,a1,3x,a3,i11)
-13    FORMAT(5(1p,e16.8))
 
       end
 
@@ -2458,15 +2486,15 @@
           read(15,'(a80)') line
         end do
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
-        write(69,13) (energ_a(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_a)
         write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
-        write(69,13) (energ_b(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_b)
 
         call skip_fchk_orbblock(15,indepigr,line)
         write(69,12) "Alpha MO coefficients","R","N= ",norb
-        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_a)
         write(69,12) "Beta MO coefficients ","R","N= ",norb
-        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_b)
 
         call skip_fchk_orbblock(15,norb,line)
       else
@@ -2480,15 +2508,15 @@
           read(15,'(a80)') line
         end do
         write(69,12) "Alpha MO coefficients","R","N= ",norb
-        write(69,13) ((pcoef_a(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_a)
         write(69,12) "Beta MO coefficients ","R","N= ",norb
-        write(69,13) ((pcoef_b(ii,jj),ii=1,igr),jj=1,indepigr)
+        call write_fchk_reals(69,norb,pcoef_b)
 
         call skip_fchk_orbblock(15,norb,line)
         write(69,11) "Alpha Orbital Energies","R","N= ",indepigr
-        write(69,13) (energ_a(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_a)
         write(69,11) "Beta Orbital Energies ","R","N= ",indepigr
-        write(69,13) (energ_b(ii),ii=1,indepigr)
+        call write_fchk_reals(69,indepigr,energ_b)
 
         call skip_fchk_orbblock(15,indepigr,line)
       end if
@@ -2505,6 +2533,5 @@
 !! Printing formats !!
 11    FORMAT(a22,21x,a1,3x,a3,i11)
 12    FORMAT(a21,22x,a1,3x,a3,i11)
-13    FORMAT(5(1p,e16.8))
 
       end

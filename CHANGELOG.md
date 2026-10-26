@@ -194,6 +194,13 @@ program, not a full development history — see `git log` for that.
   with an end-of-file error (before printing the oxidation states) when
   writing `<jobname>-OSLOs.fchk`; the written file now keeps every block
   of the input `.fchk`.
+- **Tiny values in the written `.fchk` files** — an orbital coefficient,
+  orbital energy or density element below 1e-99 was written without its
+  `E` (`1.27052287-118`: a `.fchk` field has room for a two-digit
+  exponent only), which programs reading the file reject or misread; it
+  is now written as 0. This happened in the unweighted EOS EFOs of
+  transition-metal complexes; the same holds for the blocks the utilities
+  `get_energy_g16`, `get_energy` and `wfn2fchk` write.
 - **OSLO together with ENPART** — an input asking for both no longer
   crashes after the energy decomposition.
 - **Checked fragment definitions** — `# FRAGMENTS` with an atom that does

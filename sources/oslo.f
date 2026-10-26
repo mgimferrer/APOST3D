@@ -1117,12 +1117,12 @@
       dimension cmat_a(igr,igr),cmat_b(igr,igr)
       dimension pmat_a(igr,igr),pmat_b(igr,igr)
       dimension foli_a(*),foli_b(*)
-      allocatable :: ea(:),eb(:)
+      allocatable :: ea(:),eb(:),ptri(:)
 
       indepigr = nindep_fchk(igr)
       norb     = igr*indepigr
       norbt    = igr*(igr+1)/2
-      ALLOCATE(ea(indepigr),eb(indepigr))
+      ALLOCATE(ea(indepigr),eb(indepigr),ptri(norbt))
       ea=ZERO
       eb=ZERO
       do ii=1,min(nfa,indepigr)
@@ -1143,28 +1143,39 @@
       do while(.true.)
         if(index(line,"Alpha Orbital Energies").eq.1) then
           write(69,10) "Alpha Orbital Energies","R","N= ",indepigr
-          write(69,13) (ea(ii),ii=1,indepigr)
+          call write_fchk_reals(69,indepigr,ea)
         else if(lunres.and.index(line,"Beta Orbital Energies").eq.1)
      +    then
           write(69,10) "Beta Orbital Energies ","R","N= ",indepigr
-          write(69,13) (eb(ii),ii=1,indepigr)
+          call write_fchk_reals(69,indepigr,eb)
         else if(index(line,"Alpha MO coefficients").eq.1) then
           write(69,11) "Alpha MO coefficients","R","N= ",norb
-          write(69,13) ((cmat_a(ii,jj),ii=1,igr),jj=1,indepigr)
+          call write_fchk_reals(69,norb,cmat_a)
         else if(lunres.and.index(line,"Beta MO coefficients").eq.1)
      +    then
           write(69,11) "Beta MO coefficients ","R","N= ",norb
-          write(69,13) ((cmat_b(ii,jj),ii=1,igr),jj=1,indepigr)
+          call write_fchk_reals(69,norb,cmat_b)
         else if(index(line,"Total SCF Density").eq.1) then
           write(69,12) "Total SCF Density","R","N= ",norbt
-          if(lunres) then
-            write(69,13) ((pmat_a(ii,jj)+pmat_b(ii,jj),jj=1,ii),ii=1,igr)
-          else
-            write(69,13) ((pmat_a(ii,jj),jj=1,ii),ii=1,igr)
-          end if
+          kk=0
+          do ii=1,igr
+            do jj=1,ii
+              kk=kk+1
+              ptri(kk)=pmat_a(ii,jj)
+              if(lunres) ptri(kk)=ptri(kk)+pmat_b(ii,jj)
+            end do
+          end do
+          call write_fchk_reals(69,norbt,ptri)
         else if(lunres.and.index(line,"Spin SCF Density").eq.1) then
           write(69,12) "Spin SCF Density ","R","N= ",norbt
-          write(69,13) ((pmat_a(ii,jj)-pmat_b(ii,jj),jj=1,ii),ii=1,igr)
+          kk=0
+          do ii=1,igr
+            do jj=1,ii
+              kk=kk+1
+              ptri(kk)=pmat_a(ii,jj)-pmat_b(ii,jj)
+            end do
+          end do
+          call write_fchk_reals(69,norbt,ptri)
         else
           write(69,'(a80)') line
           read(15,'(a80)',end=99) line
@@ -1181,12 +1192,11 @@
       end do
 99    continue
       close(69)
-      DEALLOCATE(ea,eb)
+      DEALLOCATE(ea,eb,ptri)
 
 10    FORMAT(a22,21x,a1,3x,a3,i11)
 11    FORMAT(a21,22x,a1,3x,a3,i11)
 12    FORMAT(a17,26x,a1,3x,a3,i11)
-13    FORMAT(5(1p,e16.8))
 
       end
 

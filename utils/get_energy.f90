@@ -90,6 +90,11 @@ program get_energy
     call fail('no " KE= ... PE= ... EE=" line (the route needs #P and Pop=Full)')
   if(ecp_used.and..not.have_ecp) &
     call fail('pseudopotentials used but their integrals are not printed (add iop(3/33=3))')
+!! 5ES16.8 has room for a two-digit exponent only: below 1e-99 write 0 !!
+  if(have_ecp) then
+    if(any(abs(xecp(1:ntri)).ge.9.999999995d98)) &
+      call fail('ECP matrix element above 1e99, not writable in .fchk format')
+  end if
 
   write(error_unit,'(a)') 'get_energy: Gaussian 09 version, to be deprecated (use get_energy_g16)'
   title='Kinetic Energy'
@@ -101,7 +106,7 @@ program get_energy
   if(have_ecp) then
     title='ECP Matrix'
     write(*,'(A43,A6,I12)') title,'R   N=',ntri
-    write(*,'(5ES16.8)') (xecp(i),i=1,ntri)
+    write(*,'(5ES16.8)') (merge(0.0_dp,xecp(i),abs(xecp(i)).lt.1.0d-99),i=1,ntri)
   end if
 
 contains
