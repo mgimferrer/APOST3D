@@ -318,12 +318,52 @@ def _cube_layout_error(path: Path):
     return None
 
 
+_FCHK_HEADER = re.compile(r"^\S.*\s([IRC])\s+N=\s*(\d+)\s*$")
+_FCHK_REAL = re.compile(r"[-+]?\d*\.\d*[Ee][-+]?\d+")
+
+
+def _fchk_numbers_error(path: Path):
+    """
+    Return why a .fchk file has an unreadable real block, or None.
+
+    Every value of every real array block (header "... R   N=  n") must
+    carry its exponent letter, and the block must hold n values. Fortran's
+    E16.8 drops the 'E' of an exponent with three digits (1.27052287-118).
+    """
+    try:
+        lines = path.read_text(errors="replace").splitlines()
+    except OSError as exc:
+        return f"unreadable ({exc})"
+    block = None
+    for lineno, line in enumerate(lines[2:], start=3):
+        # headers start in column 1, data lines with a blank or a sign
+        if line[:1] not in " -+":
+            m = _FCHK_HEADER.match(line)
+            if block and block[1] != block[2]:
+                return f"{block[0]}: {block[2]} values, header says {block[1]}"
+            block = None
+            if m and m.group(1) == "R":
+                block = [line[:40].strip(), int(m.group(2)), 0]
+            continue
+        if block is None:
+            continue
+        for x in line.split():
+            if not _FCHK_REAL.fullmatch(x):
+                return f"line {lineno}, {block[0]}: '{x}' has no exponent letter"
+            block[2] += 1
+    if block and block[1] != block[2]:
+        return f"{block[0]}: {block[2]} values, header says {block[1]}"
+    return None
+
+
 def evaluate_file_check(rundir: Path, check: dict) -> dict:
     """
     Apply one check to the files a run wrote.
 
       files       the files matching `glob` number `count`
       cube_files  the same, and every one follows the cube layout
+      fchk_files  the same, and every real value of every one carries its
+                  exponent letter
     """
     ctype = check["type"]
     result = {"label": check["label"], "type": ctype}
@@ -343,6 +383,17 @@ def evaluate_file_check(rundir: Path, check: dict) -> dict:
             return result
         result["status"] = "pass"
         result["message"] = f"{count} cube file(s), layout ok"
+        return result
+    if ctype == "fchk_files":
+        bad = [(p.name, _fchk_numbers_error(p)) for p in found]
+        bad = [(n, e) for n, e in bad if e]
+        if bad:
+            result["status"] = "fail"
+            result["message"] = f"{len(bad)} of {count} .fchk file(s) with unreadable reals"
+            result["details"] = [f"{n}: {e}" for n, e in bad]
+            return result
+        result["status"] = "pass"
+        result["message"] = f"{count} .fchk file(s), every real value readable"
         return result
     result["status"] = "pass"
     result["message"] = f"{count} file(s) {check['glob']}"
@@ -530,7 +581,7 @@ def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
         # Evaluate all checks
         check_results = [
             evaluate_file_check(rundir, c)
-            if c.get("type") in ("files", "cube_files")
+            if c.get("type") in ("files", "cube_files", "fchk_files")
             else evaluate_check(output, c)
             for c in test.get("checks", [])
         ]

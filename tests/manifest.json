@@ -5963,7 +5963,7 @@
     },
     {
       "name": "Cu2OH2NH34-BS-ORCA",
-      "description": "[Cu2(mu-OH)2(NH3)4]2+, broken-symmetry UKS B3LYP/def2-SVP (BrokenSym 1,1) from ORCA 6.1.1: TFVC EOS with each Cu, OH and NH3 as fragments: Cu(II)/Cu(II), R 97.11 %; Mulliken charges and the opposite Cu spins (+-0.594) equal ORCA's.",
+      "description": "[Cu2(mu-OH)2(NH3)4]2+, broken-symmetry UKS B3LYP/def2-SVP (BrokenSym 1,1) from ORCA 6.1.1: TFVC EOS with each Cu, OH and NH3 as fragments: Cu(II)/Cu(II), R 97.11 %; Mulliken charges and the opposite Cu spins (+-0.594) equal ORCA's. Its unweighted EFO .fchk has coefficients below 1e-99, written as 0 (E16.8 drops the 'E' of a three-digit exponent).",
       "tags": [
         "dft",
         "eos",
@@ -6036,6 +6036,12 @@
           "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "ref": 97.11,
           "tol_abs": 0.02
+        },
+        {
+          "label": "Unweighted EFO .fchk: every real value with its exponent letter",
+          "type": "fchk_files",
+          "glob": "*-EOS-EFOs-unweighted.fchk",
+          "count": 1
         }
       ]
     },

@@ -278,12 +278,16 @@ Two more types check the files a run writes, in place of the output:
 ```json
 {"label": "One .int file per atom", "type": "files", "glob": "*.int", "count": 3}
 {"label": "Cube files", "type": "cube_files", "glob": "*.cube", "count": 15}
+{"label": "EFO .fchk", "type": "fchk_files", "glob": "*-EFOs-unweighted.fchk", "count": 1}
 ```
 
 `files` passes when exactly `count` files match `glob`. `cube_files` also
 reads every matching file and checks the cube layout: the extra line of
 orbital indices only with a negative atom count, then exactly one value
-per grid point.
+per grid point. `fchk_files` also reads every matching file and checks
+its real blocks: every value carries its exponent letter (Fortran's
+`E16.8` drops it from a three-digit exponent, `1.27052287-118`), and each
+block holds the `N=` values of its header.
 
 A test must exit with code 0. A test of an expected stop declares the
 code of the stop in its entry, next to `timeout`: `"expected_rc": 1` (the
