@@ -1,0 +1,618 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   22 September 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: ROB3LYP)
+  Number of atoms                         : 5
+  Number of basis functions               : 193
+  Primitive gaussians                     : 378
+  Spin density                            : read from the .fchk
+  Alpha / beta electrons                  : 50 / 45
+  SCF energy (au)                         :   -2991.8858201970
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Overlap populations                     : OPOP
+  Oxidation states                        : EOS (effective oxidation states)
+  Fragments                               : 5 (see # FRAGMENTS)
+
+  # FRAGMENTS (5 fragments)
+  Fragment  1 :   1
+  Fragment  2 :   2
+  Fragment  3 :   3
+  Fragment  4 :   4
+  Fragment  5 :   5
+
+  --------------------
+    NATURAL ORBITALS
+  --------------------
+
+  Occupation numbers (>1.0e-6):
+     2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000
+     2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000
+     2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000
+     2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000
+     2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000   2.00000
+     2.00000   2.00000   2.00000   2.00000   2.00000   1.00000   1.00000   1.00000
+     1.00000   1.00000
+
+  TIMING CPU  :: Initialization                                    0.30 s
+  TIMING WALL :: Initialization                                    0.14 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 29200
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : subdivision 16, ratio  0.83486
+  Atom pair   1 -   3 : subdivision 16, ratio  0.83486
+  Atom pair   1 -   4 : subdivision 16, ratio  0.83486
+  Atom pair   1 -   5 : subdivision 16, ratio  0.83486
+
+  Sum of atomic overlaps, largest error   : 1.61E-03 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 1.26 s
+  TIMING WALL :: Atomic definition                                 0.18 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Mn    23.806433   24.067898
+    2 Cl    17.798726   17.733026
+    3 Cl    17.798726   17.733026
+    4 Cl    17.798726   17.733026
+    5 Cl    17.798726   17.733026
+  -------------------------------
+  Total     95.001336   95.000000
+
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1         23.806433   24.067898
+    2         17.798726   17.733026
+    3         17.798726   17.733026
+    4         17.798726   17.733026
+    5         17.798726   17.733026
+  ---------------------------------
+  Total       95.001336   95.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Mn     1.193567    0.932102
+    2 Cl    -0.798726   -0.733026
+    3 Cl    -0.798726   -0.733026
+    4 Cl    -0.798726   -0.733026
+    5 Cl    -0.798726   -0.733026
+  -------------------------------
+  Total     -2.001336   -2.000000
+
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          1.193567    0.932102
+    2         -0.798726   -0.733026
+    3         -0.798726   -0.733026
+    4         -0.798726   -0.733026
+    5         -0.798726   -0.733026
+  ---------------------------------
+  Total       -2.001336   -2.000000
+
+  --------------------
+    SPIN POPULATIONS
+  --------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1 Mn     4.570024    4.744910
+    2 Cl     0.107595    0.063773
+    3 Cl     0.107595    0.063773
+    4 Cl     0.107595    0.063773
+    5 Cl     0.107595    0.063773
+  -------------------------------
+  Total      5.000404    5.000000
+
+  -----------------------------
+    FRAGMENT SPIN POPULATIONS
+  -----------------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          4.570024    4.744910
+    2          0.107595    0.063773
+    3          0.107595    0.063773
+    4          0.107595    0.063773
+    5          0.107595    0.063773
+  ---------------------------------
+  Total        5.000404    5.000000
+
+  -----------------------------
+    OVERLAP POPULATION MATRIX
+  -----------------------------
+
+  -------------------------------------------------------------------
+                 1 Mn        2 Cl        3 Cl        4 Cl        5 Cl
+  -------------------------------------------------------------------
+    1 Mn    23.321255    0.121294    0.121294    0.121294    0.121294
+    2 Cl     0.121294   17.649769    0.009159    0.009159    0.009159
+    3 Cl     0.121294    0.009159   17.649769    0.009159    0.009159
+    4 Cl     0.121294    0.009159    0.009159   17.649769    0.009159
+    5 Cl     0.121294    0.009159    0.009159    0.009159   17.649769
+  -------------------------------------------------------------------
+
+  --------------------------------
+    FRAGMENT OVERLAP POPULATIONS
+  --------------------------------
+
+  ---------------------------------------------------------------------
+                      1           2           3           4           5
+  ---------------------------------------------------------------------
+    1         23.321255    0.121294    0.121294    0.121294    0.121294
+    2          0.121294   17.649769    0.009159    0.009159    0.009159
+    3          0.121294    0.009159   17.649769    0.009159    0.009159
+    4          0.121294    0.009159    0.009159   17.649769    0.009159
+    5          0.121294    0.009159    0.009159    0.009159   17.649769
+  ---------------------------------------------------------------------
+  Total (all elements)                    :      95.000593
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------------------------------
+                 1 Mn        2 Cl        3 Cl        4 Cl        5 Cl
+  -------------------------------------------------------------------
+    1 Mn    22.556345    0.625615    0.625615    0.625615    0.625615
+    2 Cl     0.625615   17.395444    0.060349    0.060349    0.060349
+    3 Cl     0.625615    0.060349   17.395444    0.060349    0.060349
+    4 Cl     0.625615    0.060349    0.060349   17.395444    0.060349
+    5 Cl     0.625615    0.060349    0.060349    0.060349   17.395444
+  -------------------------------------------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1 Mn     6.678085
+    2 Cl     0.810148
+    3 Cl     0.810148
+    4 Cl     0.810148
+    5 Cl     0.810148
+  -------------------
+
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          6.678085
+    2          0.810148
+    3          0.810148
+    4          0.810148
+    5          0.810148
+  ---------------------
+  Total        9.918675
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1 Mn     2.502458
+    2 Cl     0.806661
+    3 Cl     0.806661
+    4 Cl     0.806661
+    5 Cl     0.806661
+  -------------------
+
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          2.502458
+    2          0.806661
+    3          0.806661
+    4          0.806661
+    5          0.806661
+  ---------------------
+  Total        5.729103
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1 Mn     4.175626
+    2 Cl     0.003486
+    3 Cl     0.003486
+    4 Cl     0.003486
+    5 Cl     0.003486
+  -------------------
+
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          4.175626
+    2          0.003486
+    3          0.003486
+    4          0.003486
+    5          0.003486
+  ---------------------
+  Total        4.189572
+
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
+
+  ---------------------------------------------------------------------
+                      1           2           3           4           5
+  ---------------------------------------------------------------------
+    1         22.556345    0.625615    0.625615    0.625615    0.625615
+    2          0.625615   17.395444    0.060349    0.060349    0.060349
+    3          0.625615    0.060349   17.395444    0.060349    0.060349
+    4          0.625615    0.060349    0.060349   17.395444    0.060349
+    5          0.625615    0.060349    0.060349    0.060349   17.395444
+  ---------------------------------------------------------------------
+  Total (diagonal and one triangle)       :      95.002672
+
+  TIMING CPU  :: Population analysis                               0.08 s
+  TIMING WALL :: Population analysis                               0.05 s
+
+  --------------------------------------
+    EFFECTIVE FRAGMENT ORBITALS (EFOs)
+  --------------------------------------
+
+  Atomic definition                       : TFVC (real space)
+  Densities                               : alpha and beta separately
+  EFO occupation cutoff                   :        0.00100
+
+  -----------------
+    ALPHA DENSITY
+  -----------------
+
+  Fragment 1
+  Net occupation                          :       13.90547
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9958   0.9917   0.9917
+            0.9917   0.9349   0.9349   0.9306   0.9306   0.9306   0.1113   0.0416
+            0.0416   0.0416   0.0066   0.0066   0.0066   0.0060   0.0060   0.0018
+            0.0018   0.0018
+  Gross occupation                        :       14.18631
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9975   0.9950   0.9950
+            0.9950   0.9537   0.9537   0.9504   0.9504   0.9504   0.1564   0.0688
+            0.0688   0.0688   0.0139   0.0139   0.0139   0.0126   0.0126   0.0051
+            0.0051   0.0051
+  Fit (%)    99.98    99.94    99.94    99.94    99.93    98.54    97.65    97.65
+             97.65    94.11    94.11    93.43    93.43    93.43    77.35    71.04
+             71.04    71.04    65.69    65.69    65.69    74.66    74.66    12.95
+             12.95    12.95
+  Left out by the cutoff (net)            :        0.00043
+  Left out by the cutoff (gross)          :        0.00192
+
+  Fragment 2
+  Net occupation                          :        8.86695
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9987   0.9739   0.9739
+            0.8740   0.0124   0.0124   0.0121   0.0034   0.0019   0.0019   0.0011
+            0.0011
+  Gross occupation                        :        8.94924
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9990   0.9814   0.9814
+            0.9034   0.0215   0.0215   0.0209   0.0068   0.0041   0.0041   0.0026
+            0.0026
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.24    96.58    96.58
+             94.57    51.39    51.39    63.91    41.74    29.37    29.37    31.80
+             31.80
+  Left out by the cutoff (net)            :        0.00112
+  Left out by the cutoff (gross)          :        0.00392
+
+  Fragment 3
+  Net occupation                          :        8.86695
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9987   0.9739   0.9739
+            0.8740   0.0124   0.0124   0.0121   0.0034   0.0019   0.0019   0.0011
+            0.0011
+  Gross occupation                        :        8.94924
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9990   0.9814   0.9814
+            0.9034   0.0215   0.0215   0.0209   0.0068   0.0041   0.0041   0.0026
+            0.0026
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.24    96.58    96.58
+             94.57    51.39    51.39    63.91    41.74    29.37    29.37    31.80
+             31.80
+  Left out by the cutoff (net)            :        0.00112
+  Left out by the cutoff (gross)          :        0.00392
+
+  Fragment 4
+  Net occupation                          :        8.86695
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9987   0.9739   0.9739
+            0.8740   0.0124   0.0124   0.0121   0.0034   0.0019   0.0019   0.0011
+            0.0011
+  Gross occupation                        :        8.94924
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9990   0.9814   0.9814
+            0.9034   0.0215   0.0215   0.0209   0.0068   0.0041   0.0041   0.0026
+            0.0026
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.24    96.58    96.58
+             94.57    51.39    51.39    63.91    41.74    29.37    29.37    31.80
+             31.80
+  Left out by the cutoff (net)            :        0.00112
+  Left out by the cutoff (gross)          :        0.00392
+
+  Fragment 5
+  Net occupation                          :        8.86695
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9987   0.9739   0.9739
+            0.8740   0.0124   0.0124   0.0121   0.0034   0.0019   0.0019   0.0011
+            0.0011
+  Gross occupation                        :        8.94924
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9990   0.9814   0.9814
+            0.9034   0.0215   0.0215   0.0209   0.0068   0.0041   0.0041   0.0026
+            0.0026
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.24    96.58    96.58
+             94.57    51.39    51.39    63.91    41.74    29.37    29.37    31.80
+             31.80
+  Left out by the cutoff (net)            :        0.00112
+  Left out by the cutoff (gross)          :        0.00392
+
+  ------------------------
+    EOS, ALPHA ELECTRONS
+  ------------------------
+
+  EFOs in the assignment                  : 94
+  Electron assignment                     : integer
+
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1      14.00      0.950         0.156
+      2       9.00      0.903         0.021
+      3       9.00      0.903         0.021
+      4       9.00      0.903         0.021
+      5       9.00      0.903         0.021
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
+
+  ----------------
+    BETA DENSITY
+  ----------------
+
+  Fragment 1
+  Net occupation                          :        9.41389
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9958   0.9911   0.9911
+            0.9911   0.1113   0.0703   0.0703   0.0703   0.0268   0.0268   0.0212
+            0.0212   0.0212   0.0018   0.0018   0.0018
+  Gross occupation                        :        9.61338
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9975   0.9946   0.9946
+            0.9946   0.1564   0.0968   0.0968   0.0968   0.0360   0.0360   0.0326
+            0.0326   0.0326   0.0051   0.0051   0.0051
+  Fit (%)    99.98    99.93    99.93    99.93    99.93    98.54    97.59    97.59
+             97.59    77.35    80.72    80.72    80.72    85.46    85.46    75.74
+             75.74    75.74    12.95    12.95    12.95
+  Left out by the cutoff (net)            :        0.00165
+  Left out by the cutoff (gross)          :        0.00483
+
+  Fragment 2
+  Net occupation                          :        8.77972
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9981   0.9612   0.9612
+            0.8484   0.0038   0.0030   0.0030   0.0011
+  Gross occupation                        :        8.84074
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9985   0.9698   0.9698
+            0.8802   0.0074   0.0057   0.0057   0.0036
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.15    96.70    96.70
+             94.82    50.96    47.96    47.96    38.89
+  Left out by the cutoff (net)            :        0.00180
+  Left out by the cutoff (gross)          :        0.00482
+
+  Fragment 3
+  Net occupation                          :        8.77972
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9981   0.9612   0.9612
+            0.8484   0.0038   0.0030   0.0030   0.0011
+  Gross occupation                        :        8.84074
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9985   0.9698   0.9698
+            0.8802   0.0074   0.0057   0.0057   0.0036
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.15    96.70    96.70
+             94.82    50.96    47.96    47.96    38.89
+  Left out by the cutoff (net)            :        0.00180
+  Left out by the cutoff (gross)          :        0.00482
+
+  Fragment 4
+  Net occupation                          :        8.77972
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9981   0.9612   0.9612
+            0.8484   0.0038   0.0030   0.0030   0.0011
+  Gross occupation                        :        8.84074
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9985   0.9698   0.9698
+            0.8802   0.0074   0.0057   0.0057   0.0036
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.15    96.70    96.70
+             94.82    50.96    47.96    47.96    38.89
+  Left out by the cutoff (net)            :        0.00180
+  Left out by the cutoff (gross)          :        0.00482
+
+  Fragment 5
+  Net occupation                          :        8.77972
+  Net       1.0000   1.0000   1.0000   1.0000   1.0000   0.9981   0.9612   0.9612
+            0.8484   0.0038   0.0030   0.0030   0.0011
+  Gross occupation                        :        8.84074
+  Gross     1.0000   1.0000   1.0000   1.0000   1.0000   0.9985   0.9698   0.9698
+            0.8802   0.0074   0.0057   0.0057   0.0036
+  Fit (%)   100.00    99.97    99.97    99.95    99.93    99.15    96.70    96.70
+             94.82    50.96    47.96    47.96    38.89
+  Left out by the cutoff (net)            :        0.00180
+  Left out by the cutoff (gross)          :        0.00482
+
+  -----------------------
+    EOS, BETA ELECTRONS
+  -----------------------
+
+  EFOs in the assignment                  : 73
+  Electron assignment                     : integer
+
+  Frag.  Electrons  Last occ.  First unocc.
+  -----------------------------------------
+      1       9.00      0.995         0.156
+      2       9.00      0.880         0.007
+      3       9.00      0.880         0.007
+      4       9.00      0.880         0.007
+      5       9.00      0.880         0.007
+  -----------------------------------------
+  Reliability index R (%)                 :        100.000
+
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
+  Frag.  Oxidation state
+  ----------------------
+      1             2.00
+      2            -1.00
+      3            -1.00
+      4            -1.00
+      5            -1.00
+  ----------------------
+  Total            -2.00
+  Overall reliability index R (%)         :        100.000
+
+  EFO file (.fchk)                        : MnCl4-ROKS-ORCA-EOS-EFOs.fchk
+  Unweighted EFO file (.fchk)             : MnCl4-ROKS-ORCA-EOS-EFOs-unweighted.fchk
+
+  TIMING CPU  :: EFFAO computation                                 9.77 s
+  TIMING WALL :: EFFAO computation                                 1.92 s
+  TIMING CPU  :: EOS analysis                                      0.14 s
+  TIMING WALL :: EOS analysis                                      0.09 s
+
+  ...Normal Termination of APOST-3D...

@@ -5760,6 +5760,217 @@
           "tol_abs": 2e-05
         }
       ]
+    },
+    {
+      "name": "MnCl4-ROKS-ORCA",
+      "description": "[MnCl4]2- sextet, ROKS B3LYP/def2-TZVP from ORCA 6.1.1 (utils/orca2fchk.py): TFVC EOS with Mn and each Cl as fragments: Mn +2, Cl -1, R 100 %; Mulliken charges and spins equal ORCA's (same as a pySCF ROKS twin within 6e-4).",
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "tfvc",
+        "roks",
+        "openshell",
+        "fragments",
+        "orca",
+        "transition-metal"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Mn Mulliken charge (ORCA: 0.932102)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+Mn\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.932102,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Mn Mulliken spin population (ORCA: 4.744910)",
+          "section": "SPIN POPULATIONS",
+          "pattern": "1\\s+Mn\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 4.74491,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Mn fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Cl fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 100.0,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "Cu2OH2NH34-BS-ORCA",
+      "description": "[Cu2(mu-OH)2(NH3)4]2+, broken-symmetry UKS B3LYP/def2-SVP (BrokenSym 1,1) from ORCA 6.1.1: TFVC EOS with each Cu, OH and NH3 as fragments: Cu(II)/Cu(II), R 97.11 %; Mulliken charges and the opposite Cu spins (+-0.594) equal ORCA's.",
+      "tags": [
+        "dft",
+        "eos",
+        "effao",
+        "tfvc",
+        "uks",
+        "openshell",
+        "broken-symmetry",
+        "fragments",
+        "orca",
+        "transition-metal"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EOS",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Cu1 Mulliken charge (ORCA: 0.586565)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+Cu\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.586565,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Cu1 Mulliken spin population (ORCA: 0.594416)",
+          "section": "SPIN POPULATIONS",
+          "pattern": "1\\s+Cu\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.594416,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Cu2 Mulliken spin population (ORCA: -0.594439)",
+          "section": "SPIN POPULATIONS",
+          "pattern": "2\\s+Cu\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.594439,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Cu1 fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Cu2 fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "OH fragment oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+3\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Overall reliability index R(%)",
+          "pattern": "Overall reliability index R \\(%\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
+          "ref": 97.11,
+          "tol_abs": 0.02
+        }
+      ]
+    },
+    {
+      "name": "PtCl2NH32-ECP-ORCA",
+      "description": "cis-PtCl2(NH3)2, RKS PBE0/def2-TZVP from ORCA 6.1.1, def2 ECP on Pt only and def2-TZVPD on one Cl (per-atom NewGTO): TFVC OSLO with Pt, each Cl and each NH3 as fragments: Pt +2, Cl -1; Mulliken charges equal ORCA's.",
+      "tags": [
+        "dft",
+        "oslo",
+        "tfvc",
+        "rks",
+        "fragments",
+        "orca",
+        "transition-metal",
+        "ecp"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "OSLO",
+        "DOFRAGS"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Pt Mulliken charge (ORCA: 0.413845)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "1\\s+Pt\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.413845,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "Cl (def2-TZVPD) Mulliken charge (ORCA: -0.488707)",
+          "section": "TOTAL ATOMIC CHARGES",
+          "pattern": "2\\s+Cl\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -0.488707,
+          "tol_abs": 2e-05
+        },
+        {
+          "label": "OSLO 1 FOLI value",
+          "section": "Before orthogonalization",
+          "pattern": "FOLI\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 1.00007,
+          "tol_abs": 0.0002
+        },
+        {
+          "label": "Pt fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+1\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 2.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "Cl (def2-TZVPD) fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+2\\s+([-+]?\\d+\\.\\d+)",
+          "ref": -1.0,
+          "tol_abs": 0.05
+        },
+        {
+          "label": "NH3 fragment OSLO oxidation state",
+          "section": "FRAGMENT OXIDATION STATES",
+          "pattern": "\\n\\s+4\\s+([-+]?\\d+\\.\\d+)",
+          "ref": 0.0,
+          "tol_abs": 0.05
+        }
+      ]
     }
   ]
 }
