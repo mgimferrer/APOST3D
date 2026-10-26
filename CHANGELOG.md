@@ -22,11 +22,6 @@ program, not a full development history — see `git log` for that.
   oxidation-state analysis (`# METHOD GEOS`), built from paired/unpaired
   densities separately (Takatsuka's definition) rather than the total
   density alone, complementing the existing EOS method.
-- **DFT-DM1** (in development, not documented yet) — a new analysis method (`DFTDM1` in `# METHOD`) for
-  UHF/UKS-DFT wavefunctions: builds an approximate one-particle density
-  matrix from the local exchange-energy density and prints per-atom-pair
-  exchange energies and bond orders, with an optional natural-orbital
-  analysis (`NATORB`).
 - **OSLO extended to open-shell systems** — OSLO orbital analysis now
   fully supports unrestricted (UHF/UKS) wavefunctions, not just
   restricted ones.
@@ -55,7 +50,7 @@ program, not a full development history — see `git log` for that.
   occupation are reported, left out of the electron assignment and
   exported to the `.fchk` file; `# CUBE NEG_EFOS` writes their cube files.
   The exported EFOs approximate the fragment-weighted orbital shown in the
-  cube files, with a per-EFO `FIT %` telling how closely.
+  cube files, with a per-EFO `Fit (%)` telling how closely.
 - **Predefined functional keywords for ENPART** — `SVWN`, `SVWN5`, `BLYP`,
   `BP86`, `PBE` (or `PBEPBE`), `B3LYP`, `B3PW91`, `B3P86`, `PBE0` (or
   `PBE1PBE`), `BHANDHLYP` and `M062X`, each checked to reproduce the
@@ -75,7 +70,7 @@ program, not a full development history — see `git log` for that.
   `ORCA` in `# DM`. It checks the basis it writes against ORCA's overlap
   matrix and the RDMs against ORCA's CASSCF density, and stops on the
   calculations APOST-3D cannot analyse (relativistic Hamiltonians,
-  external fields, state-averaged CASSCF). For 19 ORCA functionals
+  external fields, point charges, state-averaged CASSCF). For 19 ORCA functionals
   (LDA, GGA, meta-GGA and global hybrids) the libxc ids that reproduce
   ORCA's exchange-correlation energy in ENPART are listed, and the
   script prints them. Checked against pySCF (and Gaussian 16 for ENPART)
@@ -187,7 +182,7 @@ program, not a full development history — see `git log` for that.
   LAPACK/OpenBLAS instead of the previous in-house routine.
 - **Broader multi-core parallelization** — OpenMP parallelization was
   extended across the major computational bottlenecks (numerical
-  integration, energy partitioning/ENPART, EFFAO/EOS, OSLO, DFT-DM1,
+  integration, energy partitioning/ENPART, EFFAO/EOS, OSLO,
   cube-file generation), giving real speedups on multi-core machines
   beyond what was already parallelized before.
 
@@ -268,8 +263,8 @@ program, not a full development history — see `git log` for that.
 - **`DM 1`/`DM 2` with a single-determinant `.fchk`** — now stops with a
   message instead of failing in the diagonalization of an empty matrix.
 - **`DENS n`** — densities are now counted the same way in Gaussian,
-  Q-Chem and pySCF files (with Q-Chem files `DENS 2` read the third
-  density), the output lists them, and an unrestricted or ROHF
+  Q-Chem and pySCF files (with Q-Chem files `DENS 2` used to read the
+  third density), the output lists them, and an unrestricted or ROHF
   wavefunction stops instead of silently using the SCF density. ENPART
   and OSLO with `DENS` above 1 also stop: they used the SCF orbitals
   together with the correlated density.
@@ -336,7 +331,7 @@ program, not a full development history — see `git log` for that.
 - **Cube norm** — the printed norm of each cube (now `Norm in cube`) used
   a voxel volume that was too small, making it 5–10% low. It is the share
   of the orbital inside the box, and a warning now flags values below
-  0.9. Fragment and orbital numbers of any size go into the file names.
+  0.9 (box too small) or above 1.1 (grid too coarse). Fragment and orbital numbers of any size go into the file names.
 - **`DOINT` file names and check** — `.int` and `.files` names keep the
   whole job name (they were cut to 55 characters, the lines of the
   `.files` list to 40). The check that the atomic overlap matrices add up
