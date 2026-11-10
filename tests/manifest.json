@@ -4215,6 +4215,56 @@
       ]
     },
     {
+      "name": "H2-CUBE-PADDING",
+      "description": "H2 singlet (pySCF UKS), TFVC, EFFAO with CUBE in a large box (PADDING 30, SPACING 2.0): values below 1e-99 at the box corners, written as 0 (every value with its exponent letter), and the norm-above-1.1 warning of a coarse grid.",
+      "tags": [
+        "dft",
+        "effao",
+        "tfvc",
+        "uks",
+        "cube"
+      ],
+      "timeout": 300,
+      "extra_input_files": [],
+      "keywords": [
+        "TFVC",
+        "EFFAO",
+        "CUBE",
+        "CUBE/PADDING",
+        "CUBE/SPACING"
+      ],
+      "checks": [
+        {
+          "label": "Normal Termination",
+          "type": "present",
+          "pattern": "Normal Termination"
+        },
+        {
+          "label": "Grid points of the atom 1 box",
+          "type": "present",
+          "pattern": "Grid points \\(x, y, z\\)\\s*:\\s*31 x 31 x 31"
+        },
+        {
+          "label": "Atom 1, EFO 1 norm in cube",
+          "section": "Cube files, atom 1",
+          "pattern": "\\n\\s+1\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)\\s+\\S+\\.cube",
+          "ref": 3.3551,
+          "tol_abs": 0.001
+        },
+        {
+          "label": "Norm-above-1.1 warning",
+          "type": "present",
+          "pattern": "WARNING: 1 cube file\\(s\\) with a norm above 1\\.1"
+        },
+        {
+          "label": "Cube files follow the cube layout, every value readable",
+          "type": "cube_files",
+          "glob": "*.cube",
+          "count": 2
+        }
+      ]
+    },
+    {
       "name": "CH3F-BECKE-RHO-EOS",
       "orbital_reference": true,
       "description": "Fluoromethane, RKS (the CH3F-EOS-LOWDIN wavefunction), Becke atoms with radii from the density (BECKE-RHO): populations and EOS with fragments F | CH3.",

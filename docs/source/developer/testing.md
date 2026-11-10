@@ -190,6 +190,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `NaBH3--UHF-DOINT` | NaBH₃⁻, UHF, Mulliken atoms: DOINT for an unrestricted wavefunction (alpha and beta blocks, whole matrices) | `hf uhf mulliken doint` |
 | `LiH-35-CAS22-DOINT` | LiH at 3.5 Å, CASSCF(2,2) with `# DM PYSCF`, TFVC: DOINT in the natural-orbital basis | `casscf pyscf tfvc doint` |
 | `CH3F-EOS-CUBE` | Fluoromethane, RKS, TFVC: EOS with fragments F and CH₃, a cube file for every EFO with net occupation below 1 | `dft rks tfvc eos effao fragments cube` |
+| `H2-CUBE-PADDING` | H2 singlet, UKS from pySCF, TFVC: EFFAO with cube files in a large box (`PADDING 30`, `SPACING 2.0`). The values below 10⁻⁹⁹ in its corners are written as 0, and the coarse grid gives the norm-above-1.1 warning | `dft effao tfvc uks cube` |
 | `CH3F-BECKE-RHO-EOS` | Fluoromethane, RKS, Becke atoms with radii from the density (`BECKE-RHO`): populations and EOS with fragments F and CH₃ | `dft rks becke-rho eos effao fragments` |
 | `H2O-BECKE-EFFAO` | Water, RKS, Becke atoms with fixed radii (`BECKE`): populations and EFFAO per atom | `dft rks becke effao` |
 | `NaBH3--UHF-UEFFAO` | NaBH₃⁻, UHF, TFVC: UEFFAO per atom, without EOS | `hf uhf tfvc effao` |
@@ -293,7 +294,8 @@ Two more types check the files a run writes, in place of the output:
 `files` passes when exactly `count` files match `glob`. `cube_files` also
 reads every matching file and checks the cube layout: the extra line of
 orbital indices only with a negative atom count, then exactly one value
-per grid point. `fchk_files` also reads every matching file and checks
+per grid point, each a readable number (a value written without its
+exponent letter, `0.11975-111`, fails). `fchk_files` also reads every matching file and checks
 its real blocks: every value carries its exponent letter (Fortran's
 `E16.8` drops it from a three-digit exponent, `1.27052287-118`), and each
 block holds the `N=` values of its header. An optional `"blocks"` list
