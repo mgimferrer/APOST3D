@@ -1,7 +1,10 @@
 
-c nmax: largest number of basis functions; maxat: largest number of atoms
-      parameter (nmax=3000)
-      parameter (maxat=350) 
+c nmax: largest number of basis functions, maxat: largest number of
+c atoms. Raise them and rebuild for larger systems (input stops with a
+c message above them). maxat sizes maxat x maxat local arrays on the
+c stack (ENPART): ulimit -s unlimited
+      parameter (nmax=8000)
+      parameter (maxat=500)
 c other limits and equivalences 
       parameter (maxp=10000,maxg=nmax,maxc=36) 
       parameter (maxnna=20)

@@ -394,6 +394,10 @@ program, not a full development history — see `git log` for that.
 
 ### Others
 
+- **Size limits** — APOST-3D is compiled for up to 8000 basis functions
+  and 500 atoms (it was 3000 and 350). A larger `.fchk` file now stops
+  with a message instead of overrunning the arrays. The limits are
+  `nmax` and `maxat` in `sources/parameter.h`.
 - **`CUBE` without an EFO analysis** — the input summary warns that no
   cube file is written.
 - **Thread count** — printed once, after the banner (`OpenMP threads`),

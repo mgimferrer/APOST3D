@@ -11,7 +11,13 @@ explains how to produce it, and the extra data some analyses need.
 The geometry, the basis set and the molecular orbitals (and their
 density), which every program above writes by default. Spherical and
 Cartesian basis functions up to g are supported. The program is compiled
-for up to 3000 basis functions and 350 atoms.
+for up to 8000 basis functions and 500 atoms, and stops with a message for
+a larger file. To change these limits, edit `nmax` (basis functions) and
+`maxat` (atoms) in `sources/parameter.h` and rebuild with `bash
+make_compile.sh` ([Installation](../installation.md)). Beyond the limits,
+memory sets the size that can be analyzed: every matrix of the size of the
+basis takes 8 × N² bytes for N basis functions (0.5 GB for 8000), and the
+program holds several of them at once.
 
 | Analysis | Extra requirement |
 |---|---|

@@ -52,7 +52,7 @@
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       common /printout/iaccur
-      dimension clin(nmax**2)
+      real*8, allocatable :: clin(:)
       character*80 line,line2
       character*20 cform,ctype
       character*30 cword
@@ -150,6 +150,19 @@
       call print_value('Number of basis functions',nbasis)
       call print_value('Primitive gaussians',numprim)
 
+!! the fixed-size arrays (parameter.h) must hold the system           !!
+      if(natoms.gt.maxat) then
+        write(*,'(2x,a,i0,a)') 'APOST-3D is compiled for at most ',
+     +    maxat,' atoms: raise maxat in sources/parameter.h and rebuild'
+        call apost_stop(' Too many atoms')
+      end if
+      if(nbasis.gt.nmax) then
+        write(*,'(2x,a,i0,a)') 'APOST-3D is compiled for at most ',
+     +    nmax,' basis functions: raise nmax in sources/parameter.h '//
+     +    'and rebuild'
+        call apost_stop(' Too many basis functions')
+      end if
+
       igr=nbasis
       nat=natoms
 
@@ -221,7 +234,10 @@
       end if
 
 !! reading P-matrix from fchk !!
+      allocate(clin(igr*(igr+1)/2))
       ntriang=int_locate(15,"otal SCF D",ilog)
+      if(ntriang.gt.size(clin))
+     +  call apost_stop(' Density larger than the basis in the .fchk file')
       read(15,*)(clin(i),i=1,ntriang)
       cdblock='Total SCF Density'
 
@@ -304,6 +320,8 @@
 
 !! checking if spin density is available in fchk !!
       ntriang=int_locate(15,"Spin SCF ",ilog)
+      if(ilog.and.ntriang.gt.size(clin))
+     +  call apost_stop(' Density larger than the basis in the .fchk file')
       if(ilog) then
         read(15,*)(clin(i),i=1,ntriang)
         ncou=1
@@ -318,6 +336,7 @@
       else if(icas.ne.1.and.icisd.ne.1) then
         call print_value('Spin density','built from the MOs')
       end if
+      deallocate(clin)
 
 !! in case CASSCF !!
       ncasel=int_locate(15,"Number of CAS El",ilog)
