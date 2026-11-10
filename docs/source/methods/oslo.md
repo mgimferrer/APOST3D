@@ -2,8 +2,8 @@
 
 `OSLO` assigns oxidation states to fragments by localizing the occupied
 orbitals onto the fragments, one at a time, and giving each electron pair
-(or electron, for open shells) to the fragment its orbital is localized
-on. The **oxidation state localized orbitals** (OSLOs) themselves are a
+(or electron, for open shells) to the fragment on which its orbital is
+most localized. The **oxidation state localized orbitals** (OSLOs) themselves are a
 useful picture of the bonding between fragments, and the **fragment
 orbital localization index** (FOLI) measures how clearly each orbital
 belongs to one fragment.
@@ -12,7 +12,7 @@ belongs to one fragment.
 :class: note
 
 M. Gimferrer, A. Aldossary, P. Salvador and M. Head-Gordon, *J. Chem.
-Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
+Theory Comput.*, **2022**, 18, 309-322. See [How to cite](../citations.md).
 ```
 
 ## How it works
@@ -52,9 +52,9 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
    fragments: half and half for two equivalent fragments.
 4. **Oxidation states.** Each OSLO gives its electrons (two in a
    restricted calculation, one per spin orbital in an unrestricted one) to
-   the fragment it was localized on, and a shared orbital gives each
-   fragment its share. The oxidation state of a fragment is the sum of the nuclear
-   charges of its atoms minus its electrons. A pair shared half and half
+   the fragment on which it is most localized, and a shared orbital gives
+   each fragment its share. The oxidation state of a fragment is the sum
+   of the nuclear charges of its atoms minus its electrons. A pair shared half and half
    gives one electron to each fragment (a homolytic assignment of that
    bond), and unequal shares give fractional oxidation states.
 

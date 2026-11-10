@@ -11,7 +11,7 @@ much less dependent on the basis set.
 :class: note
 
 I. Mayer and P. Salvador, *Chem. Phys. Lett.*, **2004**, 383, 368-375.
-See [Citations](../citations.md).
+See [How to cite](../citations.md).
 ```
 
 ## How it works
@@ -68,6 +68,16 @@ column:
     5  H     1.050704    0.964978
   -------------------------------
   Total     18.000503   18.000000
+```
+
+```{admonition} Mulliken values
+:class: warning
+
+The Mulliken column comes at no extra cost and is useful to check
+implementations, but it is **not a robust indicator**. Mulliken charges
+and bond orders depend strongly on the basis set and can lose their
+meaning with diffuse functions. For results you interpret or publish, use
+a real-space scheme (`TFVC` recommended).
 ```
 
 The sum of the real-space populations differs from the number of electrons
@@ -136,8 +146,8 @@ bond orders and valences are not printed, and a note asks for the 1-RDM.
   for a larger grid (see [Running a calculation](../guide/running.md#integration-grid)).
 - For a closed-shell single determinant, the free valences are zero up to
   the integration error.
-- Mulliken values (also printed for comparison) depend strongly on the
-  basis set, the real-space ones much less.
+- Don't rely on the Mulliken values printed for comparison (see
+  [Mulliken values](#reading-the-output) above).
 
 ## Atomic overlap matrices for other programs
 

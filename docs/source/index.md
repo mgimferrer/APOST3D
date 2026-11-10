@@ -45,7 +45,7 @@ centers, molecules) for any of these analyses.
 :class: note
 
 If you use APOST-3D in published work, please cite the program paper and
-the papers of the methods you used (see [Citations](citations.md)).
+the papers of the methods you used (see [How to cite](citations.md)).
 ```
 
 ```{toctree}
@@ -54,6 +54,7 @@ the papers of the methods you used (see [Citations](citations.md)).
 
 installation
 tutorial
+citations
 ```
 
 ```{toctree}
@@ -110,7 +111,6 @@ tools/utilities
 
 troubleshooting
 glossary
-citations
 changelog
 ```
 

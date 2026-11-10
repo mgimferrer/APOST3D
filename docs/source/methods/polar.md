@@ -12,7 +12,7 @@ static polarizability.
 :class: note
 
 M. Montilla, J. M. Luis and P. Salvador, *J. Chem. Theory Comput.*,
-**2021**, 17, 1098-1105. See [Citations](../citations.md).
+**2021**, 17, 1098-1105. See [How to cite](../citations.md).
 ```
 
 ## How it works

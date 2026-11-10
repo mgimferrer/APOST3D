@@ -13,7 +13,7 @@ structure or bond assignment.
 
 E. Ramos-Cordoba, V. Postils and P. Salvador, *J. Chem. Theory Comput.*,
 **2015**, 11, 1501-1508. Review: M. Gimferrer, *Theor. Chem. Acc.*,
-**2026**, 145, 74. See [Citations](../citations.md).
+**2026**, 145, 74. See [How to cite](../citations.md).
 ```
 
 ## How it works

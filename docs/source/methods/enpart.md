@@ -21,7 +21,7 @@ Hartree-Fock: P. Salvador, M. Duran and I. Mayer, *J. Chem. Phys.*,
 **2004**, 120, 5046-5052. KS-DFT (bond order density approach and
 zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
 **2007**, 126, 234113; M. Gimferrer and P. Salvador, *J. Chem. Phys.*,
-**2023**, 158, 234105. See [Citations](../citations.md).
+**2023**, 158, 234105. See [How to cite](../citations.md).
 ```
 
 ## How it works

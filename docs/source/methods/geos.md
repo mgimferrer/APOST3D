@@ -1,5 +1,13 @@
 # GEOS - Generalized effective oxidation states
 
+```{admonition} Unpublished method
+:class: danger
+
+GEOS is not published yet (manuscript in preparation). The method, its
+keywords and its output may still change before publication, and **we
+do not recommend its use for production results yet**.
+```
+
 **Generalized effective oxidation states** (`GEOS`) assigns electrons, and
 from them oxidation states, to atoms or fragments using two density
 functions instead of one: the **paired** and the **unpaired** electron
@@ -10,10 +18,11 @@ the alpha/beta picture used by EOS is not the natural one.
 ```{admonition} Cite
 :class: note
 
-M. Gimferrer and P. Salvador, *manuscript in preparation*, **2026**,
-together with the EOS reference: E. Ramos-Cordoba, V. Postils and
-P. Salvador, *J. Chem. Theory Comput.*, **2015**, 11, 1501-1508. See
-[Citations](../citations.md).
+- M. Gimferrer and P. Salvador, *manuscript in preparation*, **2026**.
+- The EOS method it builds on: E. Ramos-Cordoba, V. Postils and
+  P. Salvador, *J. Chem. Theory Comput.*, **2015**, 11, 1501-1508.
+
+See [How to cite](../citations.md).
 ```
 
 ## How it works
@@ -98,7 +107,8 @@ the output has one section per density (`PAIRED DENSITY`, then
 - `Fit (%)` gives, for each EFO, how faithfully the projected orbital
   written to `<jobname>-GEOS-EFOs.fchk` reproduces it (see *Orbitals in
   the .fchk file* below). The cube files and the unweighted file are
-  exact.
+  exact. It concerns only the drawing of the orbitals, never a result
+  (see [EFFAO](effao.md#reading-the-output)).
 - `Left out by the cutoff` is what the listed EFOs miss of the fragment's
   net and gross population in that density (see [EFFAO](effao.md)). In
   the paired density it can be negative, as here: the EFOs below the

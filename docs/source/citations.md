@@ -1,4 +1,4 @@
-# Citations
+# How to cite
 
 If you use APOST-3D in published work, please cite the program paper and
 the papers of the analyses you used. The main output also prints the

@@ -24,7 +24,7 @@ wavefunctions.
 E. Ramos-Cordoba, E. Matito, I. Mayer and P. Salvador, *J. Chem. Theory
 Comput.*, **2012**, 8, 1270-1279; E. Ramos-Cordoba, E. Matito,
 P. Salvador and I. Mayer, *Phys. Chem. Chem. Phys.*, **2012**, 14,
-15291-15298. See [Citations](../citations.md).
+15291-15298. See [How to cite](../citations.md).
 ```
 
 ## How it works

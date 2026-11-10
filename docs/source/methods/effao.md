@@ -33,7 +33,7 @@ I. Mayer, *J. Phys. Chem.*, **1996**, 100, 6249-6257; I. Mayer and
 P. Salvador, *J. Chem. Phys.*, **2009**, 130, 234106; E. Ramos-Cordoba,
 P. Salvador and I. Mayer, *J. Chem. Phys.*, **2013**, 138, 214107.
 Review of the method and its applications: M. Gimferrer, *Theor. Chem.
-Acc.*, **2026**, 145, 74. See [Citations](../citations.md).
+Acc.*, **2026**, 145, 74. See [How to cite](../citations.md).
 ```
 
 ## How it works
@@ -143,6 +143,15 @@ density:
   (`-GEOS-EFOs.fchk`), reproduces the EFO. It does not concern the cube
   files or the unweighted `.fchk` file, which are both exact (see
   [Visualizing orbitals](../guide/visualization.md#orbital-fchk-files)).
+
+```{admonition} Fit (%) is only about drawing the orbitals
+:class: important
+
+`Fit (%)` says how well the orbitals in `<jobname>-EOS-EFOs.fchk` and
+`<jobname>-GEOS-EFOs.fchk` can be drawn. **It has no effect on any
+result.** Occupations, oxidation states, R and every other number come
+from the exact EFOs.
+```
 
 Here the iron alpha EFOs show five core-like orbitals at 1.000, five
 more above 0.98 (the rest of the core and the 3d-type orbitals that keep

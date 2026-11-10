@@ -6,7 +6,7 @@ All results are printed to the standard output, normally saved with
 `apost3d jobname > jobname.apost 2>&1`. It is printed in this order:
 
 1. the program header, with the references of the methods (see
-   [Citations](../citations.md))
+   [How to cite](../citations.md))
 2. `WAVEFUNCTION SUMMARY`: what was read from the `.fchk` file (restricted
    or unrestricted, type of calculation, number of atoms, basis functions
    and electrons, energy)
