@@ -5422,6 +5422,7 @@
     },
     {
       "name": "CH2-T-ROHF-GEOS-ORCA",
+      "orbital_reference": true,
       "description": "The CH2-T-ROHF-ORCA triplet (ROHF, one set of orbitals): GEOS with C, H, H as fragments, C(-2); its EFO .fchk files insert the unpaired EFOs as Beta blocks and keep both densities of the source.",
       "tags": [
         "hf",
@@ -5488,6 +5489,7 @@
     },
     {
       "name": "CH2-T-ROHF-OSLO-ORCA",
+      "orbital_reference": true,
       "description": "The CH2-T-ROHF-ORCA triplet (ROHF, one set of orbitals): OSLO with C, H, H as fragments, C(-2); its OSLO .fchk files (PRINT_NONORTHO: both) insert the beta OSLOs and their FOLI values as Beta blocks.",
       "tags": [
         "hf",
@@ -6077,6 +6079,7 @@
     },
     {
       "name": "MnCl4-ROKS-ORCA",
+      "orbital_reference": true,
       "description": "[MnCl4]2- sextet, ROKS B3LYP/def2-TZVP from ORCA 6.1.1 (utils/orca2fchk.py): TFVC EOS with Mn and each Cl as fragments: Mn +2, Cl -1, R 100 %; Mulliken charges and spins equal ORCA's (same as a pySCF ROKS twin within 6e-4). Its EFO .fchk files (one set of orbitals) insert the beta EFOs as Beta blocks and keep both densities of the source.",
       "tags": [
         "dft",

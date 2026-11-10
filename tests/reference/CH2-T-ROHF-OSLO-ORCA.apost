@@ -135,8 +135,8 @@
   Occupation numbers (>1.0e-6):
      2.00000   2.00000   2.00000   1.00000   1.00000
 
-  TIMING CPU  :: Initialization                                    0.05 s
-  TIMING WALL :: Initialization                                    0.02 s
+  TIMING CPU  :: Initialization                                    0.06 s
+  TIMING WALL :: Initialization                                    0.17 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -789,7 +789,7 @@
   ----------------------
   Total             0.00
 
-  TIMING CPU  :: OSLO analysis                                     0.24 s
-  TIMING WALL :: OSLO analysis                                     0.08 s
+  TIMING CPU  :: OSLO analysis                                     0.20 s
+  TIMING WALL :: OSLO analysis                                     0.07 s
 
   ...Normal Termination of APOST-3D...

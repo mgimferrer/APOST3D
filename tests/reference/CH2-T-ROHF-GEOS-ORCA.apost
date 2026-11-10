@@ -131,7 +131,7 @@
      2.00000   2.00000   2.00000   1.00000   1.00000
 
   TIMING CPU  :: Initialization                                    0.05 s
-  TIMING WALL :: Initialization                                    0.02 s
+  TIMING WALL :: Initialization                                    0.17 s
 
   ----------------------------------------
     SETTING ATOMIC GRIDS FOR INTEGRATION
@@ -489,8 +489,8 @@
   EFO file (.fchk)                        : CH2-T-ROHF-GEOS-ORCA-GEOS-EFOs.fchk
   Unweighted EFO file (.fchk)             : CH2-T-ROHF-GEOS-ORCA-GEOS-EFOs-unweighted.fchk
 
-  TIMING CPU  :: EFFAO computation                                 0.22 s
-  TIMING WALL :: EFFAO computation                                 0.03 s
+  TIMING CPU  :: EFFAO computation                                 0.19 s
+  TIMING WALL :: EFFAO computation                                 0.02 s
   TIMING CPU  :: EOS analysis                                      0.00 s
   TIMING WALL :: EOS analysis                                      0.00 s
 
