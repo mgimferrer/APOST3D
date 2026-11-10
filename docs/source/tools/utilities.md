@@ -6,27 +6,26 @@ programs into `$APOST3D_PATH/utils/`, which also holds the Python module
 
 | Program | Purpose |
 |---|---|
-| `get_energy_g16`, `get_energy` | Append the reference energies of a Gaussian 16 / 09 calculation to its `.fchk` file (for ENPART) |
+| `get_energy_g16` | Append the reference energies of a Gaussian 16 calculation to its `.fchk` file (for ENPART) |
 | `gen_hirsh` | Build the free-atom densities file `densoutput` needed by `HIRSH` and `HIRSH-IT` |
 | `apost3d.py` | Write `.fchk` and RDM files from pySCF |
 | `orca2fchk.py` | Write `.fchk` and RDM files from ORCA 6 |
 | `eos_aom` | EOS from atomic overlap matrices computed by AIMAll or Multiwfn |
 | `wfn2fchk` | Older helper, see the end of this page |
 
-## get_energy_g16 and get_energy
+## get_energy_g16
 
 ENPART checks its numerical integration, and corrects it with the
 zero-error strategy, against the kinetic, electron-nuclear and
 electron-electron energies of the original calculation. Gaussian prints
 them in its output file when the route section contains `#P`,
-`iop(3/33=3)` and `Pop=Full`. These programs read them from the output
-file of a finished calculation and print them in `.fchk` format, to be
+`iop(3/33=3)` and `Pop=Full`. This program reads them from the output
+file of a finished calculation and prints them in `.fchk` format, to be
 appended to the `.fchk` file:
 
 ```bash
 formchk mol.chk mol.fchk
-$APOST3D_PATH/utils/get_energy_g16 mol.log >> mol.fchk    # Gaussian 16
-$APOST3D_PATH/utils/get_energy mol.log >> mol.fchk        # Gaussian 09 (to be removed)
+$APOST3D_PATH/utils/get_energy_g16 mol.log >> mol.fchk
 ```
 
 The appended lines look like
@@ -44,9 +43,9 @@ small error in the ECP energy, about 0.1 kcal/mol for an iodine atom; it
 shows up in the electron-nuclear integration error of ENPART.
 
 If the output file is incomplete (the calculation did not end normally)
-or lacks one of the lines they need, the programs print an error message,
-add nothing to the `.fchk` file and exit with code 1. `get_energy`
-(Gaussian 09) will be removed in a future version.
+or lacks one of the lines it needs, the program prints an error message,
+adds nothing to the `.fchk` file and exits with code 1. Its Gaussian 09
+version, `get_energy`, is deprecated.
 
 ## gen_hirsh
 

@@ -12,7 +12,8 @@ keywords you want to change.
 | `ANGULAR_2E` | integer | 590 | Angular points of the two-electron grid; the same list as `ANGULAR`. |
 
 The defaults of the one-electron grid are enough for populations, bond
-orders and effective orbitals with `TFVC` (see
+orders and effective orbitals with `TFVC`, and `RADIAL 150` with
+`ANGULAR 590` is recommended for production results (see
 [Running a calculation](../guide/running.md#integration-grid)). The
 two-electron grid sets both the accuracy and the cost of ENPART (see
 [ENPART](../methods/enpart.md#grids-and-cost)).

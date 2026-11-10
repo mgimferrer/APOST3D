@@ -11,7 +11,7 @@ P. Salvador (Universitat de Girona), M. Gimferrer (University of
 Göttingen) and collaborators, and is free and open source
 ([GitHub](https://github.com/mgimferrer/APOST3D)).
 
-## What can I compute?
+## What APOST-3D computes
 
 Every run starts by choosing an **atoms-in-molecules (AIM) scheme**, the
 rule that splits the molecule into atoms ([Atoms in molecules](guide/aim.md)).

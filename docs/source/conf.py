@@ -1,7 +1,7 @@
 """Sphinx configuration for the APOST-3D documentation site."""
 
 project = "APOST-3D"
-copyright = "P. Salvador (University of Girona), M. Gimferrer (University of Göttingen) and collaborators"
+copyright = "M. Gimferrer (University of Göttingen)"
 author = "P. Salvador, M. Gimferrer and collaborators"
 
 extensions = [

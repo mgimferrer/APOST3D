@@ -57,13 +57,13 @@ formchk mol.chk mol.fchk
 
 **For ENPART**, add `#P`, `iop(3/33=3)` and `Pop=Full` to the route
 section, so that the output file contains the energy components, and then
-append them to the `.fchk` file with the utility that matches your
-Gaussian version:
+append them to the `.fchk` file:
 
 ```bash
-$APOST3D_PATH/utils/get_energy_g16 mol.log >> mol.fchk    # Gaussian 16
-$APOST3D_PATH/utils/get_energy mol.log >> mol.fchk        # Gaussian 09 (to be removed)
+$APOST3D_PATH/utils/get_energy_g16 mol.log >> mol.fchk
 ```
+
+Its Gaussian 09 version, `get_energy`, is deprecated.
 
 **For NAO-BASIS**, the transformation to natural atomic orbitals comes
 from the NBO program: add `pop=(full,nboread)` to the route section and

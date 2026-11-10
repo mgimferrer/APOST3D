@@ -71,7 +71,10 @@ The default grid is accurate enough for populations, bond orders and
 effective orbitals with `TFVC`: the sum of the atomic populations, printed
 in the population analysis, shows the integration error (e.g. 18.0005 for
 18 electrons). Increase the grid if that sum is clearly off, which is
-more likely with heavy atoms or diffuse basis sets.
+more likely with heavy atoms or diffuse basis sets. For production
+results, such as those of a publication, we recommend `RADIAL 150` and
+`ANGULAR 590`, the grid that ENPART and POLAR use by default. It is more
+expensive.
 
 ## On a cluster
 

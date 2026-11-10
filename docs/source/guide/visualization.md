@@ -7,10 +7,25 @@ OSLOs) can be looked at in two ways:
 |---|---|---|
 | Written by | `OSLO`, `GEOS` and `EOS`, always | `EFFAO`, `UEFFAO`, `EFFAO-U`, `EOS`, `GEOS`, with `CUBE` in `# METHOD` and a [`# CUBE` block](../input/cube.md) |
 | Content | All orbitals of all fragments, in one file | One file per selected orbital, values on a grid |
-| View with | Any program that reads `.fchk` files (GaussView, Avogadro, IQmol, Jmol, Multiwfn, ...) | Any program that reads cube files (VMD, Avogadro, VESTA, Chimera, ...) |
+| View with | Any program that reads `.fchk` files ([ChemCraft](https://www.chemcraftprog.com), GaussView, Avogadro, IQmol, Jmol, Multiwfn, ...) | Any program that reads cube files ([ChemCraft](https://www.chemcraftprog.com), VMD, Avogadro, VESTA, Chimera, ...) |
 
-The `.fchk` files are the easiest way to browse all orbitals at once;
-cube files show an effective orbital exactly as the program computes it.
+The `.fchk` files are the easiest way to browse all orbitals at once.
+Cube files show an effective orbital exactly as the program computes it.
+
+```{admonition} Figures of effective fragment orbitals
+:class: important
+
+For figures of EFOs, and above all for publication, we **highly
+recommend** the cube files (`CUBE` in `# METHOD`) or, with `BECKE`,
+`BECKE-RHO` or `TFVC` atoms, the
+[unweighted `.fchk` file opened in APOST3Dview](#the-unweighted-files).
+Both show the exact EFOs. With a real-space scheme, the orbitals of
+`<jobname>-EOS-EFOs.fchk` and `<jobname>-GEOS-EFOs.fchk` are fits to the
+basis set, which can show lobes the EFO does not have (see
+[below](#orbital-fchk-files)). Use them to browse the EFOs, not to show
+their shape. With a Hilbert-space scheme (`MULLIKEN`, `LOWDIN`, ...) the
+EFOs of these files are exact.
+```
 
 ```{admonition} APOST3Dview
 :class: tip
@@ -49,19 +64,6 @@ each (0 after the last OSLO). In the EFO files:
   does the main output through the occupations;
 - the densities in the file are the original ones, not built from the
   EFOs.
-
-```{admonition} The shape of an effective fragment orbital
-:class: important
-
-With a real-space scheme, judge the shape of an EFO from its cube file
-(`CUBE` in `# METHOD`) or, with `BECKE`, `BECKE-RHO` or `TFVC` atoms, in
-APOST3Dview: both show the exact orbital. The orbitals of
-`<jobname>-EOS-EFOs.fchk` and `<jobname>-GEOS-EFOs.fchk`, which any
-program can show, are their least-squares projections onto the basis
-set: close to the EFO on its own fragment, with small spurious tails on
-the other fragments, and only rough for weakly occupied EFOs, whose fit
-is poor. They should not be used to judge an EFO's shape.
-```
 
 **Which file holds what.** For an EFO of a real-space scheme, with w_F
 the weight function of its fragment:

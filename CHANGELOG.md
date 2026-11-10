@@ -304,8 +304,7 @@ program, not a full development history — see `git log` for that.
   (calculation not ended normally) or one without the lines they need now
   gives an error message and adds nothing to the `.fchk` file; they used
   to crash or append wrong energies. They no longer have a limit of 3000
-  basis functions. `get_energy` (Gaussian 09) will be removed in a future
-  version.
+  basis functions. `get_energy` (Gaussian 09) is deprecated.
 - **Cube file names** — the `.cube` files of `# CUBE` keep the whole job
   name (it was cut to 30 characters in the file name and to 8 in the
   title line inside the file).

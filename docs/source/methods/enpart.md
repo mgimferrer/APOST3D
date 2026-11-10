@@ -87,20 +87,19 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
 - **Reference energies**, recommended: the kinetic, electron-nuclear and
   electron-electron energies of the calculation, appended to the `.fchk`
   file, enable the integration-error checks and the zero-error strategy.
-  For Gaussian they are added with `utils/get_energy_g16` (or
-  `get_energy` for Gaussian 09); `.fchk` files written from pySCF with
-  `utils/apost3d.py` or from ORCA with `utils/orca2fchk.py` already
-  contain them. See
+  For Gaussian they are added with `utils/get_energy_g16`, and `.fchk`
+  files written from pySCF with `utils/apost3d.py` or from ORCA with
+  `utils/orca2fchk.py` already contain them. See
+  [Preparing the wavefunction](../guide/wavefunctions.md#gaussian).
 - A calculation **without density fitting** (ORCA: `NoRI`), see
   [Density fitting and ENPART](../guide/wavefunctions.md#density-fitting-and-enpart).
-  [Preparing the wavefunction](../guide/wavefunctions.md#gaussian).
 - **Pseudopotentials** (ECPs) are supported. The reference
   electron-nuclear energy then includes the ECP energy, and the ECP
   matrix written to the `.fchk` file (by the same utilities) is split
   among the atoms, Mulliken-like, and added to the one-atom
   electron-nuclear terms. With Gaussian the matrix carries a small
   rounding error, see
-  [get_energy_g16](../tools/utilities.md#get_energy_g16-and-get_energy).
+  [get_energy_g16](../tools/utilities.md#get_energy_g16).
 - Only the **electronic energy** is decomposed: Gaussian wavefunctions
   from calculations with an empirical dispersion correction (e.g.
   Grimme's GD3) cannot be decomposed directly. For pySCF, `apost3d.py`
