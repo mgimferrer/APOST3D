@@ -15,6 +15,10 @@ name: APOST-3D build & test
 # `make test` always runs every case, no tiers. NTHREADS is set to the
 # runner's core count to exercise the OpenMP paths and keep CI reasonably
 # quick.
+#
+# Two runners: ubuntu-24.04 (gfortran 13) and ubuntu-latest (Ubuntu 26.04
+# since late 2026, gfortran 15), so both compiler generations users have
+# on their clusters are tested.
 
 "on":
   push:
@@ -25,7 +29,11 @@ name: APOST-3D build & test
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
 
     env:
@@ -84,7 +92,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: test-reports-${{ matrix.os }}
           path: tests/report/
           retention-days: 30
 
