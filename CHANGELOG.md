@@ -398,6 +398,11 @@ program, not a full development history — see `git log` for that.
   and 500 atoms (it was 3000 and 350). A larger `.fchk` file now stops
   with a message instead of overrunning the arrays. The limits are
   `nmax` and `maxat` in `sources/parameter.h`.
+- **Density fitting and ENPART** — `orca2fchk.py` and `apost3d.py` print
+  a note when the calculation used density fitting (ORCA's RI-J,
+  RIJCOSX or RI-JK, pySCF's `density_fit()`). ENPART needs reference
+  energies from exact integrals (ORCA: `NoRI`). The other analyses are
+  not affected.
 - **`CUBE` without an EFO analysis** — the input summary warns that no
   cube file is written.
 - **Thread count** — printed once, after the banner (`OpenMP threads`),

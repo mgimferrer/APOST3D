@@ -198,7 +198,7 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `CH2-T-CAS66-NODM` | The same without `# DM`: no bond orders or valences for a non-singlet, with a note | `casscf pyscf tfvc openshell` |
 | `HF-G-ORCA` | Hydrogen fluoride, RHF from ORCA 6 (`utils/orca2fchk.py`) with cc-pVQZ (g shells) on F, the geometry of `HF-G-pySCF`: TFVC; the Mulliken charges equal ORCA's, which checks the order and signs of every shell type | `hf tfvc rhf orca g-functions` |
 | `HI-ECP-ORCA` | Hydrogen iodide, RHF/def2-SVP from ORCA with the def2 pseudopotential on I: ENPART (HF), with the ECP matrix written by `orca2fchk.py` | `hf enpart tfvc rhf orca ecp` |
-| `H2O-B3LYP-CPCM-ORCA` | Water, RKS B3LYP-D3BJ with CPCM and RIJCOSX from ORCA: ENPART with ORCA's B3LYP (libxc 475); the reference energies leave out the solvent and dispersion terms | `dft enpart tfvc rks orca hybrid libxc-ids solvent` |
+| `H2O-B3LYP-CPCM-ORCA` | Water, RKS B3LYP-D3BJ with CPCM from ORCA (`NoRI`): ENPART with ORCA's B3LYP (libxc 475); the reference energies leave out the solvent and dispersion terms | `dft enpart tfvc rks orca hybrid libxc-ids solvent` |
 | `OH-UKS-ORCA` | Hydroxyl radical, UKS B3LYP from ORCA: local spin and ENPART; Mulliken charges and spin populations equal ORCA's | `dft enpart spin tfvc uks openshell orca libxc-ids` |
 | `CH2-T-ROHF-ORCA` | CH₂ triplet, ROHF/def2-TZVP from ORCA: ENPART (HF); Mulliken charges and spin populations equal ORCA's | `hf enpart tfvc rohf openshell orca` |
 | `CH2-T-ROHF-GEOS-ORCA` | The same ROHF triplet: GEOS with C, H, H as fragments, C(−2); the EFO `.fchk` files get Beta blocks for the unpaired EFOs and keep both densities of the input | `hf geos effao tfvc rohf openshell fragments orca` |

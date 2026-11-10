@@ -24,9 +24,28 @@ program holds several of them at once.
 | All, single determinant (HF, KS-DFT) | none |
 | All except OSLO, correlated wavefunction (CASSCF, CISD, ...) | the density of the correlated wavefunction in the `.fchk` file (natural orbitals are computed from it) |
 | `SPIN`, `ENPART` with a correlated wavefunction | the 1- and 2-RDM files, in a [`# DM` block](../input/dm.md) |
-| `ENPART` | the reference energies appended to the `.fchk` file (recommended; see below) |
+| `ENPART` | a calculation without density fitting ([below](#density-fitting-and-enpart)), and the reference energies appended to the `.fchk` file (recommended; see below) |
 | `NAO-BASIS` | the NAO transformation file `jobname.nao` |
 | `HIRSH`, `HIRSH-IT` | the atomic densities file `densoutput` ([utilities](../tools/utilities.md)) |
+
+### Density fitting and ENPART
+
+ENPART checks and corrects its numerical integration against the reference
+energies of the calculation. With density fitting (RI-J, RIJCOSX, RI-JK,
+...) those energies carry the fitting error, and the zero-error correction
+moves it into the atomic energies without any warning. **For ENPART, run
+the calculation without density fitting**, whatever the program:
+
+- **ORCA** uses it by default for DFT (RI-J, or RIJCOSX for hybrids): add
+  `NoRI` to the keyword line. `orca2fchk.py` prints a note when the
+  calculation used it.
+- **pySCF**: don't call `density_fit()`. `apost3d.py` prints a note when
+  the calculation used it.
+- **Gaussian** and **Q-Chem** don't use it unless asked for: no fitting
+  basis set in Gaussian (such as `/Auto`), no `RI_J` or `RI_K` in Q-Chem.
+
+The other analyses use only the orbitals and the density, and density
+fitting is fine for them.
 
 ## Gaussian
 
@@ -177,7 +196,8 @@ pySCF
 
 **What `apost3d.py` takes:**
 
-- **SCF**: RHF, UHF, ROHF, RKS, UKS and ROKS, also with density fitting.
+- **SCF**: RHF, UHF, ROHF, RKS, UKS and ROKS, also with density fitting
+  (not for ENPART, see [above](#density-fitting-and-enpart)).
 - **CASSCF/CASCI and FCI** on RHF or ROHF orbitals, with `write_dm12` for
   the RDMs.
 - **CISD** for closed shells (`ci.CISD` on RHF, no frozen orbitals), with
@@ -232,7 +252,8 @@ EFFAO, EOS, GEOS and OSLO the levels of theory checked are listed in
 [Levels of theory checked](#levels-of-theory-checked). For ENPART they
 give the same results as Gaussian 16 and pySCF wavefunctions (checked on
 small molecules and on [FeCl4]⁻ and [PdCl4]²⁻), with HF, CASSCF and the
-functionals of the libxc table below.
+functionals of the libxc table below. For ENPART, run ORCA with `NoRI`
+([Density fitting and ENPART](#density-fitting-and-enpart)).
 ```
 
 ```{admonition} Two programs, one input name
@@ -245,10 +266,10 @@ APOST-3D input `mol-ap.inp`, or in another folder.
 
 **Single determinant** (HF or KS-DFT): an ordinary single point, with a
 tight SCF convergence so that the density and the reference energies
-match:
+match, and `NoRI` for ENPART:
 
 ```text
-! B3LYP def2-TZVP TightSCF
+! B3LYP def2-TZVP NoRI TightSCF
 %pal nprocs 8 end
 * xyz 0 1
 O   0.000000   0.000000   0.117300
@@ -346,7 +367,7 @@ and GEOS; SPIN, ENPART and open shells need the `# DM` block.
 | RHF, UHF, ROHF, RKS, UKS (also broken symmetry), ROKS | yes |
 | CASSCF, one root | yes, with the `PrintWF det` lines above |
 | Basis sets | any, up to g functions, also per element or per atom (`%basis`, `NewGTO`) and mixed families; def2 and other pseudopotentials, also on some atoms only (the ECP matrix is written for ENPART) |
-| RI-J, RIJCOSX | yes (the energies written are ORCA's final ones) |
+| RI-J, RIJCOSX, RI-JK | yes for populations, EFFAO, EOS, GEOS and OSLO, not for ENPART (`NoRI`, see [Density fitting and ENPART](#density-fitting-and-enpart)), with a note |
 | D3, D4 dispersion | yes; the dispersion energy is not part of ORCA's SCF energy, nor of the energies written |
 | CPCM solvent | yes; the energies written are those of the molecule without the solvent term (the density is still the polarized one), with a note |
 | MP2, CCSD, DLPNO, ... | only the SCF wavefunction is written, with a note |

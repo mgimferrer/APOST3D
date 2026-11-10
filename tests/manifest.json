@@ -5171,7 +5171,7 @@
     },
     {
       "name": "H2O-B3LYP-CPCM-ORCA",
-      "description": "Water, RKS B3LYP-D3BJ/def2-SVP with CPCM(water) and RIJCOSX from ORCA 6.1.1 (utils/orca2fchk.py): ENPART with ORCA's B3LYP (VWN5, libxc 475) and a 40 × 146 two-electron grid; the reference energies are those of the vacuum Hamiltonian, without the CPCM and dispersion terms, so the total energy closes.",
+      "description": "Water, RKS B3LYP-D3BJ/def2-SVP with CPCM(water) from ORCA 6.1.1 without density fitting (NoRI, utils/orca2fchk.py): ENPART with ORCA's B3LYP (VWN5, libxc 475) and a 40 × 146 two-electron grid; the reference energies are those of the vacuum Hamiltonian, without the CPCM and dispersion terms, so the total energy closes.",
       "tags": [
         "dft",
         "enpart",
@@ -5201,40 +5201,40 @@
         {
           "label": "Kinetic energy (au)",
           "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 75.8351246,
+          "ref": 75.8353719,
           "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy (au)",
           "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -76.3200702,
+          "ref": -76.3199753,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 4.09e-05,
+          "ref": 4.06e-05,
           "tol_abs": 2e-06
         },
         {
           "label": "Two-electron error before the zero-error correction (kcal/mol)",
           "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 3,
-          "ref": -3.36,
+          "ref": -3.42,
           "tol_abs": 0.01
         },
         {
-          "label": "O Mulliken charge (ORCA: -0.349262)",
+          "label": "O Mulliken charge (ORCA: -0.349988)",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.349262,
+          "ref": -0.349988,
           "tol_abs": 2e-05
         }
       ]
     },
     {
       "name": "OH-UKS-ORCA",
-      "description": "Hydroxyl radical, UKS B3LYP/def2-SVP from ORCA 6.1.1 (utils/orca2fchk.py): single-determinant local spin and ENPART with ORCA's B3LYP (libxc 475), 40 × 146 two-electron grid; the Mulliken charges and spin populations equal ORCA's.",
+      "description": "Hydroxyl radical, UKS B3LYP/def2-SVP from ORCA 6.1.1 without density fitting (NoRI, utils/orca2fchk.py): single-determinant local spin and ENPART with ORCA's B3LYP (libxc 475), 40 × 146 two-electron grid; the Mulliken charges and spin populations equal ORCA's.",
       "tags": [
         "dft",
         "enpart",
@@ -5265,13 +5265,13 @@
         {
           "label": "Kinetic energy (au)",
           "pattern": "Kinetic energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": 75.2608442,
+          "ref": 75.2611025,
           "tol_abs": 2e-06
         },
         {
           "label": "Total integrated energy (au)",
           "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -75.6340485,
+          "ref": -75.6339762,
           "tol_abs": 2e-06
         },
         {
@@ -5284,21 +5284,21 @@
           "label": "Two-electron error before the zero-error correction (kcal/mol)",
           "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 3,
-          "ref": 1.12,
+          "ref": 1.07,
           "tol_abs": 0.01
         },
         {
-          "label": "O Mulliken charge (ORCA: -0.176764)",
+          "label": "O Mulliken charge (ORCA: -0.177047)",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.176764,
+          "ref": -0.177047,
           "tol_abs": 2e-05
         },
         {
-          "label": "O Mulliken spin population (ORCA: 1.026658)",
+          "label": "O Mulliken spin population (ORCA: 1.026654)",
           "section": "SPIN POPULATIONS",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": 1.026658,
+          "ref": 1.026654,
           "tol_abs": 2e-05
         }
       ]
@@ -5959,7 +5959,7 @@
     },
     {
       "name": "H2O-TPSSH-ORCA",
-      "description": "Water, RKS TPSSh/def2-TZVP from ORCA 6.1.1 (utils/orca2fchk.py): ENPART with ORCA's TPSSh as libxc 457, a hybrid meta-GGA, and a 40 × 146 two-electron grid; the pure exchange-correlation energy equals ORCA's E(XC), -8.4488023 au.",
+      "description": "Water, RKS TPSSh/def2-TZVP from ORCA 6.1.1 without density fitting (NoRI, utils/orca2fchk.py): ENPART with ORCA's TPSSh as libxc 457, a hybrid meta-GGA, and a 40 × 146 two-electron grid; the pure exchange-correlation energy equals ORCA's E(XC), -8.4486450 au.",
       "tags": [
         "dft",
         "enpart",
@@ -5992,35 +5992,35 @@
           "pattern": "libxc functional\\s*:\\s*TPSSh \\(libxc id 457\\)"
         },
         {
-          "label": "DFT exchange-correlation energy (au; ORCA E(XC) -8.4488023)",
+          "label": "DFT exchange-correlation energy (au; ORCA E(XC) -8.4486450)",
           "pattern": "DFT exchange-correlation \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -8.4488046,
+          "ref": -8.4486473,
           "tol_abs": 2e-06
         },
         {
           "label": "Two-electron error before the zero-error correction (kcal/mol)",
           "pattern": "Integration error \\(kcal/mol\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
           "match_index": 3,
-          "ref": 1.13,
+          "ref": 1.04,
           "tol_abs": 0.01
         },
         {
           "label": "Total integrated energy (au)",
           "pattern": "Total energy \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -76.4558017,
+          "ref": -76.4556642,
           "tol_abs": 2e-06
         },
         {
           "label": "Integration error (au)",
           "pattern": "Integration error \\(au\\)\\s*:\\s*([-+]?\\d+\\.\\d+)",
-          "ref": -4.71e-05,
+          "ref": -4.69e-05,
           "tol_abs": 2e-06
         },
         {
-          "label": "O Mulliken charge (ORCA: -0.641217)",
+          "label": "O Mulliken charge (ORCA: -0.640844)",
           "section": "TOTAL ATOMIC CHARGES",
           "pattern": "1\\s+O\\s+[-+]?\\d+\\.\\d+\\s+([-+]?\\d+\\.\\d+)",
-          "ref": -0.641217,
+          "ref": -0.640844,
           "tol_abs": 2e-05
         }
       ]

@@ -91,6 +91,8 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
   `get_energy` for Gaussian 09); `.fchk` files written from pySCF with
   `utils/apost3d.py` or from ORCA with `utils/orca2fchk.py` already
   contain them. See
+- A calculation **without density fitting** (ORCA: `NoRI`), see
+  [Density fitting and ENPART](../guide/wavefunctions.md#density-fitting-and-enpart).
   [Preparing the wavefunction](../guide/wavefunctions.md#gaussian).
 - **Pseudopotentials** (ECPs) are supported. The reference
   electron-nuclear energy then includes the ECP energy, and the ECP

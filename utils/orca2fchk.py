@@ -25,7 +25,10 @@ note gives their libxc ids (or says that libxc has no equivalent).
 Pseudopotentials are supported (the ECP matrix is written for ENPART). The
 energies written are those of the vacuum Hamiltonian: a CPCM dielectric
 energy is left out, with a printed note; ORCA's SCF energy excludes an
-empirical dispersion (D3/D4) already. The ORCA output (name.out; optional
+empirical dispersion (D3/D4) already. Density fitting (RI-J, RIJCOSX,
+RI-JK, ORCA's default for DFT) is fine for every analysis but ENPART,
+whose reference energies need exact integrals (NoRI): a note says so. The
+ORCA output (name.out; optional
 for SCF) gives the basis name, a cross-check of the reference energies,
 and stops the conversion of a scalar-relativistic (ZORA, DKH, X2C)
 calculation or one with an external electric field or point charges.
@@ -258,6 +261,15 @@ def _orca_output(fil):
         raise Orca2fchkError('external point charges (QM/MM): not '
                              'supported')
     out['functional'], out['functional_why'] = _functional(echo)
+    # density fitting: fine for the orbitals, not for ENPART's energies
+    if re.search(r'RI-approximation to the Coulomb term is turned on|'
+                 r'(RIJCOSX|RI-JK) approximation\s*\.+\s*on', text):
+        if re.search(r'RIJ-?COSX[^\n]*\.+\s*on', text):
+            out['ri'] = 'RIJCOSX'
+        elif re.search(r'RI-JK[^\n]*\.+\s*on', text):
+            out['ri'] = 'RI-JK'
+        else:
+            out['ri'] = 'RI-J'
     return out
 
 
@@ -933,6 +945,10 @@ def convert(name, fchk=None, outfile=None):
     if disp:
         _note('dispersion correction %.10f au: not in the energies written '
               '(ORCA\'s SCF energy excludes it)' % disp)
+    if out.get('ri'):
+        _note('%s density fitting in the ORCA calculation. Fine for '
+              'populations, EFFAO, EOS, GEOS and OSLO, but not for ENPART: '
+              'rerun ORCA with NoRI' % out['ri'])
     if 'etwo' in out:
         out['etwo'] = float(out['etwo']) + float(out.get('dxfinal', 0.0))
     if cas:             # the components printed are the SCF guess's
