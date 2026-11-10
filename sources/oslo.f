@@ -181,6 +181,8 @@
 !! is nearly one of them; with a delta-FOLI below dfoliwarn it is a      !!
 !! close alternative selection                                           !!
       real*8,parameter :: xlindep=0.1d0,dfoliwarn=0.5d0
+!! FOLI values closer than ftie are a tie (printed alike, 5 decimals)  !!
+      real*8 ftie
 
       character*40 line
       logical lbranch
@@ -309,13 +311,16 @@
         DEALLOCATE(S0)
 
 !! 2) Lowest FOLI value, and the next one beyond the tolerance !!
-!! 1.0d-10: FOLIs equal up to rounding (symmetry-equivalent fragments) !!
-!! keep the first one found, so the choice is the same on any machine  !!
+!! FOLIs within ftie are equal up to rounding (symmetry-equivalent      !!
+!! fragments, whose round-off differs between compilers): keep the     !!
+!! first one found, so the choice is the same on any machine. ftie is  !!
+!! below the printed digits and a tenth of the tolerance at most       !!
+        ftie=MIN(1.0d-6,0.1d0*folitol)
         xcutoff=100.0d0
         iifrg=0
         do ifrg=1,icufr
           do ii=1,nel
-            if(foli(ifrg,ii).lt.xcutoff-1.0d-10) then
+            if(foli(ifrg,ii).lt.xcutoff-ftie) then
               iifrg=ifrg
               xcutoff=foli(ifrg,ii)
             end if
@@ -331,7 +336,7 @@
         do ifrg=1,icufr
           do ii=1,nel
             xx=foli(ifrg,ii)
-            if(xcutoff+folitol.lt.xx.and.xx.lt.xfront-1.0d-10) then
+            if(xcutoff+folitol.lt.xx.and.xx.lt.xfront-ftie) then
               jjfrg=ifrg
               xfront=xx
             end if

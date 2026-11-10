@@ -272,7 +272,7 @@
         "electrons": [1.6000000000000000E+001, 1.8000000000000000E+001, 1.8000000000000000E+001, 1.0000000000000000E+001, 1.0000000000000000E+001]
       },
       "orbital_file": "PtCl2NH32-ECP-ORCA-OSLOs.fchk",
-      "orbital_file_id": "2026-10-25T23:05:24+01:00/5bc0"
+      "orbital_file_id": "2026-11-10T12:37:01+01:00/1a13"
     }
   },
   "atomic_weights": {
@@ -522,8 +522,8 @@
     "job_name": "PtCl2NH32-ECP-ORCA",
     "input_file": "PtCl2NH32-ECP-ORCA.inp",
     "wavefunction_file": "PtCl2NH32-ECP-ORCA.fchk",
-    "date": "2026-10-25T23:05:24+01:00",
-    "id": "2026-10-25T23:05:24+01:00/5bc0",
+    "date": "2026-11-10T12:37:01+01:00",
+    "id": "2026-11-10T12:37:01+01:00/1a13",
     "threads": 8,
     "status": "normal",
     "stop_message": null
