@@ -28,13 +28,19 @@ Each test is checked in three ways:
   change on another machine or compiler but not a real change, and two
   values within 1e-8 of each other are always equal (digits beyond that,
   printed only with `FULLPRECISION` or `POLAR`, are numerical noise that
-  changes between machines). Timings, the thread count and the date are
-  ignored.
+  changes between machines). One exception: in the OSLO orbital tables,
+  the FOLI of an orbital with a fragment population below 0.001 is
+  compared to 1e-5 relative, since it behaves like 1/population and its
+  last digits change between compilers. Timings, the thread count and
+  the date are ignored.
 - **Results file**: `<name>.apost.json` must exist, be valid JSON and
   say how the run ended, and match `tests/reference/<name>.apost.json`
   (`tests/compare_json.py`: same structure, text and integers, reals
   within a relative 1e-9 or an absolute 1e-8 au, 6.3e-6 for values in
-  kcal/mol, and the thread count, date and run id are ignored). See
+  kcal/mol, and the thread count, date and run id are ignored). Two
+  values defined only to round-off have their own tolerance: `fit_percent`
+  to 1e-4 % (the split of a degenerate pair of EFOs is arbitrary) and
+  ENPART's `damping` to 1e-6 relative. See
   [Results file (JSON)](json-output.md).
 
 The full-output comparison has two levels:

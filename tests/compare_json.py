@@ -9,7 +9,12 @@ cancel to almost zero (free valences of 1e-6, a total <S^2> of 1e-10)
 differ between machines by ~1e-10, far below the printed digits
 (--rtol 0 asks for identical values). Values in kcal/mol (keys ending in
 _kcal, e.g. integration errors, differences of energies of hundreds of
-au) get the same absolute tolerance converted: 1e-8 au = 6.3e-6 kcal/mol. run.threads,
+au) get the same absolute tolerance converted: 1e-8 au = 6.3e-6 kcal/mol.
+Two values are only defined to round-off and have their own tolerance
+(LOOSE): fit_percent (how a degenerate pair of EFOs is split is
+arbitrary, and so is the fit of each) to 1e-4 %, and ENPART's damping (a
+ratio of small differences of large numbers) to 1e-6 relative. Between
+gfortran 13 and 15 they differ by up to 1.6e-6 % and 4.9e-8. run.threads,
 run.date, run.id and every orbital_file_id are not compared: they describe
 the run, not its results.
 
@@ -31,6 +36,8 @@ IGNORED_KEYS = {"orbital_file_id"}
 RTOL = 1e-9
 ATOL = 1e-8        # values that cancel to almost zero, across machines
 KCAL = 627.5096    # au -> kcal/mol, as in parameter.h
+# key: (relative, absolute) tolerance of values defined only to round-off
+LOOSE = {"fit_percent": (0.0, 1e-4), "damping": (1e-6, 0.0)}
 
 
 def load(path):
@@ -49,6 +56,16 @@ def _atol(path, rtol):
     if path and isinstance(path[-1], str) and path[-1].endswith("_kcal"):
         return ATOL * KCAL
     return ATOL
+
+
+def _tolerances(path, rtol):
+    """rel_tol and abs_tol of the value at path (identical values when
+    rtol is 0)."""
+    key = next((p for p in reversed(path) if isinstance(p, str)), None)
+    if rtol and key in LOOSE:
+        rel, abs_ = LOOSE[key]
+        return {"rel_tol": max(rel, rtol), "abs_tol": max(abs_, _atol(path, rtol))}
+    return {"rel_tol": rtol, "abs_tol": _atol(path, rtol)}
 
 
 def diff(a, b, rtol, path=(), out=None, limit=20):
@@ -82,7 +99,7 @@ def diff(a, b, rtol, path=(), out=None, limit=20):
     elif isinstance(a, (int, float)) and isinstance(b, (int, float)):
         if type(a) is not type(b):
             out.append(f"{where}: {a!r} in reference, {b!r} in new (type)")
-        elif not math.isclose(a, b, rel_tol=rtol, abs_tol=_atol(path, rtol)):
+        elif not math.isclose(a, b, **_tolerances(path, rtol)):
             out.append(f"{where}: {a!r} in reference, {b!r} in new")
     else:
         out.append(f"{where}: {type(a).__name__} in reference, "

@@ -18,6 +18,11 @@ number after it. On aligned lines:
     (--abs-tol) are equal: digits beyond that are numerical noise that
     changes between machines (13-decimal output of FULLPRECISION/POLAR).
     It only matters for values printed with more than 8 decimals.
+  - one exception: in the OSLO orbital tables, the FOLI of an orbital
+    with a printed fragment population below 0.001 is compared to 1e-5
+    relative. It behaves like 1/population there, and its last printed
+    digits change between compilers (up to 2.2e-6 relative between
+    gfortran 13 and 15).
 
 Two levels:
 
@@ -61,6 +66,18 @@ TITLE_RE = re.compile(r"[A-Za-z]{3,}")
 # Blank and border lines (no letter or digit), skipped unless strict.
 LAYOUT_RE = re.compile(r"^[^A-Za-z0-9]*$")
 TEXT = "text differs"
+# OSLO orbital table (title line, row = Orb. Spread Frag.pop. FOLI): FOLI
+# of an orbital almost absent from the fragment, defined to round-off only
+FOLI_TITLE_RE = re.compile(r"Frag\. pop\.\s+FOLI")
+FOLI_POP_MAX = 1e-3
+FOLI_RTOL = 1e-5
+
+
+def _loose_foli(title, nums):
+    """True when the row's FOLI (4th number) is that of an orbital
+    almost absent from the fragment."""
+    return (bool(FOLI_TITLE_RE.search(title)) and len(nums) == 4
+            and _ulp(nums[0]) is None and abs(_value(nums[2])) < FOLI_POP_MAX)
 
 
 def _load(path, strict):
@@ -120,7 +137,8 @@ def compare_files(ref_path, new_path, ulps=5, strict=False, abs_tol=1e-8):
             for k in range(i2 - i1):
                 la, lb = a[i1 + k], b[j1 + k]
                 bad = []
-                for ta, tb in zip(la[3], lb[3]):
+                loose = _loose_foli(titles_a[i1 + k], la[3])
+                for n, (ta, tb) in enumerate(zip(la[3], lb[3])):
                     numbers += 1
                     ua, ub = _ulp(ta), _ulp(tb)
                     if ua is None or ub is None:
@@ -135,6 +153,9 @@ def compare_files(ref_path, new_path, ulps=5, strict=False, abs_tol=1e-8):
                     u = max(ua, ub)
                     diff = abs(_value(ta) - _value(tb))
                     if diff <= abs_tol:
+                        continue
+                    if loose and n == 3 and \
+                            diff <= FOLI_RTOL * abs(_value(ta)):
                         continue
                     dev = diff / u
                     worst = max(worst, dev)
