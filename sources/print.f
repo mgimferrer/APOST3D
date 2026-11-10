@@ -1900,9 +1900,12 @@
         do i=1,nat
           write(44,43) iznuc(i),zn(i),(coord(j,i),j=1,3)
         end do
+!! E13.5 has room for a two-digit exponent only (Fortran drops the 'E' !!
+!! of 0.11975-111), so values below 1e-99 are written as 0             !!
         do i=1,igrid(1)
           do j=1,igrid(2)
-            write(44,40)(xyz(i,j,k),k=1,igrid(3))
+            write(44,40)(merge(0.0d0,xyz(i,j,k),
+     +        abs(xyz(i,j,k)).lt.1.0d-99),k=1,igrid(3))
           end do
         end do
         close(44)

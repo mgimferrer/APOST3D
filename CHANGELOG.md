@@ -194,7 +194,7 @@ program, not a full development history — see `git log` for that.
   with an end-of-file error (before printing the oxidation states) when
   writing `<jobname>-OSLOs.fchk`; the written file now keeps every block
   of the input `.fchk`.
-- **Tiny values in the written `.fchk` files** — an orbital coefficient,
+- **Tiny values in the written `.fchk` and cube files** — an orbital coefficient,
   orbital energy or density element below 1e-99 was written without its
   `E` (`1.27052287-118`: a `.fchk` field has room for a two-digit
   exponent only), which programs reading the file reject or misread; it
@@ -203,7 +203,10 @@ program, not a full development history — see `git log` for that.
   `get_energy_g16`, `get_energy` and `wfn2fchk` write, and for the
   `.fchk` files of `orca2fchk.py` and `apost3d.py`, where such a value ran
   into the one before it (ENPART could not read the pseudopotential
-  matrix of an ORCA Pt complex).
+  matrix of an ORCA Pt complex). The cube files of `# CUBE` had the same
+  problem (`0.11975-111`), in the corners of large boxes and where a
+  fragment's weight is vanishingly small (the NH₃ fragments of a Cu
+  complex with `BECKE`): such values are now written as 0 too.
 - **EOS, GEOS and OSLO `.fchk` files of ROHF/ROKS wavefunctions** — the
   EFO files of a wavefunction with one set of orbitals for both spins lost
   the density blocks of the input `.fchk`, with a stray line of numbers in

@@ -192,7 +192,10 @@ file gives the orbital's gross and net occupation.
 fragment's weight function, i.e. the part of the orbital that belongs to
 the fragment. With Mulliken or Löwdin, the plain orbital. Cube files and
 `.fchk` orbitals are on the same scale (neither is renormalized), so the
-same isovalue can be used for both.
+same isovalue can be used for both. Values below 10⁻⁹⁹ are written as
+0: the format has room for a two-digit exponent only. They occur in the
+corners of large boxes and where a fragment's weight is vanishingly
+small.
 
 **Box size.** The box encloses the fragment's atoms plus a margin of
 `PADDING` bohr (5 by default) on every side. For each fragment, the
