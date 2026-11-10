@@ -28,7 +28,7 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
 
 1. **One-electron terms.** Kinetic energy (one-center only) and
    electron-nuclear attraction are integrated on the main (one-electron)
-   grid; the nuclear repulsion is exact.
+   grid. The nuclear repulsion is exact.
 2. **Coulomb term.** The classical electron-electron repulsion is a 6-D
    integral, computed numerically. For the one-center terms the second
    electron's coordinates use a copy of the grid rotated by a small
@@ -39,7 +39,7 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    - **KS-DFT**: the one-center terms come from the functional's energy
      density integrated within each atom ("exact" one-center terms). The
      interatomic terms come from evaluating the functional on the **bond
-     order density** (BODEN) of each atom pair; for a meta-GGA, the
+     order density** (BODEN) of each atom pair. For a meta-GGA, the
      kinetic energy density of the pair is built from the same
      orbital products as the BODEN and its gradient. The one-center terms are
      then rearranged so that all terms add up exactly to the KS-DFT
@@ -57,18 +57,18 @@ zero-error strategy): P. Salvador and I. Mayer, *J. Chem. Phys.*,
    expansion of the xc density, from charge-charge up to
    quadrupole-quadrupole terms (E. Francisco *et al.*, *J. Comput.
    Chem.*, **2017**, 38, 816-829). For Hartree-Fock and KS-DFT the xc
-   density is that of the (Kohn-Sham) determinant; for CASSCF/CISD, the
-   one built from the RDMs. For a hybrid functional, the (1 − *a*) share
+   density is that of the (Kohn-Sham) determinant, and for CASSCF/CISD
+   the one built from the RDMs. For a hybrid functional, the (1 − *a*) share
    appears in the DFT part and the *a* share, *a* being the
    exact-exchange fraction, with the HF-type exchange. For the DFT part,
    the self terms are then built as usual (the functional within the atom
-   minus half of each pair term), so its total does not change; for the
+   minus half of each pair term), so its total does not change. For the
    exchange (Hartree-Fock, the exact-exchange share of hybrids) and for
    correlated wavefunctions, the multipolar estimate replaces the pair
    term and the one-center terms are not changed.
 
    The default threshold, a bond order of 0.005, was chosen for a good
-   accuracy/cost ratio; `THREBOD -1` computes every pair.
+   accuracy/cost ratio. `THREBOD -1` computes every pair.
 5. **Zero-error strategy.** The 6-D integrations carry a numerical error
    of the order of 1 kcal/mol even with good grids. When the `.fchk` file
    contains the reference electron-electron energy (see below), the
@@ -125,7 +125,7 @@ The full keyword list is in [Block section # ENPART](../input/enpart.md).
 
 The functional must be the one used to compute the wavefunction. It is
 given with a predefined keyword (`B3LYP`, `PBE0`, ...) or with `LIBRARY`
-and its [libxc](https://libxc.gitlab.io/functionals/) identifiers; the
+and its [libxc](https://libxc.gitlab.io/functionals/) identifiers. The
 keywords, their libxc ids and how to give a functional by its ids are in
 [Block section # ENPART](../input/enpart.md).
 
@@ -181,7 +181,7 @@ with its id, kind, family, exact-exchange fraction (hybrids) and
 references.
 
 **One-electron terms.** `ELECTRON-NUCLEAR ATTRACTION` and
-`NUCLEAR-NUCLEAR REPULSION` are matrices; `KINETIC ENERGY` is a column
+`NUCLEAR-NUCLEAR REPULSION` are matrices, and `KINETIC ENERGY` is a column
 per atom, since the kinetic energy has no pair terms. With reference
 energies in the `.fchk`, the electron-nuclear and kinetic totals are
 followed by their integration errors:
@@ -216,7 +216,7 @@ EXCHANGE-CORRELATION ENERGY` is the final matrix:
   DFT exchange-correlation (au)           :      -8.9820876
 ```
 
-For a pure functional this is the whole exchange-correlation energy; for
+For a pure functional this is the whole exchange-correlation energy. For
 a hybrid one it is only the DFT part, as the line under the title says.
 
 **Two-electron integration error.** With reference energies, the
@@ -238,7 +238,7 @@ reference, and the zero-error strategy is applied when the error exceeds
   Corrected integration error (kcal/mol)  :           0.00
 ```
 
-Below the tolerance the section says the correction is not needed;
+Below the tolerance the section says the correction is not needed, and
 without reference energies it says that the error is neither estimated
 nor corrected. Either way, **the matrices printed after this section hold
 the final values**: when the correction is applied, their one-center
@@ -307,7 +307,7 @@ matrices:
 
 - `ATOMIC ENERGIES`: each atom's self-energy and its additive energy,
   *E*<sub>A</sub> = *E*<sub>self</sub>(A) + ½ Σ<sub>B</sub>
-  *E*<sub>int</sub>(A,B); the additive energies add up to the total
+  *E*<sub>int</sub>(A,B). The additive energies add up to the total
   energy.
 - `CLASSICAL INTERACTION ENERGIES`: the electron-nuclear, nuclear-nuclear
   and Coulomb part of each interaction energy. The rest of it,
@@ -337,10 +337,10 @@ fragments.
 ### External electric field
 
 When the `.fchk` file comes from a calculation in a static electric field
-(Gaussian's `Field` keyword; APOST-3D reads it from the `External
+(Gaussian's `Field` keyword, with the field read from the `External
 E-field` block), the wavefunction summary shows the field, and ENPART
 adds an `EXTERNAL ELECTRIC FIELD` section after the one-electron terms.
-This works for Hartree-Fock and KS-DFT wavefunctions; for a correlated
+This works for Hartree-Fock and KS-DFT wavefunctions. For a correlated
 (CASSCF/CISD) wavefunction in a field, ENPART stops with a message.
 For water, RHF/cc-pVDZ in a field of 0.005 au along *z* (test
 `H2O-RHF-FIELD`, which also uses `POLAR` and therefore prints 13
@@ -366,7 +366,7 @@ decimals):
   field-free calculation.
 - `FIELD INTERACTION PER ATOM` splits it into an intrinsic dipole term
   per atom (origin independent) and a charge-transfer term (origin
-  dependent); the two columns add up to the field interaction energy.
+  dependent). The two columns add up to the field interaction energy.
 
 ### More detail: VERBOSE 1
 
@@ -376,12 +376,12 @@ checks and development (the results do not change):
 - KS-DFT: the BODEN integral of each atom pair (`multipolar` for the pairs
   below `THREBOD`), `DFT EXCHANGE-CORRELATION, PAIR TERMS` and `DFT
   EXCHANGE-CORRELATION, ONE-CENTER TERMS` (the functional integrated
-  within each atom, before half of each pair term is moved out of it);
-  for a meta-GGA, the share of each pair's BODEN where libxc limits the
+  within each atom, before half of each pair term is moved out of it).
+  For a meta-GGA, the share of each pair's BODEN where libxc limits the
   density gradient by the kinetic energy density, and the mean
-  τ<sub>W</sub>/τ of the pair;
+  τ<sub>W</sub>/τ of the pair.
 - hybrid functionals: `HF-TYPE EXCHANGE, UNSCALED`, the full HF-type
-  exchange before the exact-exchange fraction is applied;
+  exchange before the exact-exchange fraction is applied.
 - when the zero-error correction is applied, the two-electron matrices
   integrated on the first grid, titled `..., BEFORE THE ZERO-ERROR
   CORRECTION` (for a correlated wavefunction with `CORRELATION`, also the
@@ -403,9 +403,9 @@ separately, so:
 
 - without the correction (error within `TWOELTOLER`, or no reference
   energies), the separate exchange and correlation matrices are printed,
-  and they add up to the exchange-correlation;
+  and they add up to the exchange-correlation.
 - with the correction, only the corrected `EXCHANGE-CORRELATION ENERGY`
-  is printed, with a note; `VERBOSE 1` also prints the exchange and
+  is printed, with a note. `VERBOSE 1` also prints the exchange and
   correlation before the correction.
 
 ## Checking the result
@@ -423,7 +423,7 @@ separately, so:
   not match the wavefunction (ORCA's and Gaussian's B3LYP differ by
   about 23 kcal/mol for water). Heavier atoms give larger errors even
   with the right functional (−13.7 kcal/mol for HI with def2-SVP and its
-  pseudopotential on the 40 × 146 grid); for transition-metal complexes
+  pseudopotential on the 40 × 146 grid). For transition-metal complexes
   the grids are still being tuned, so this check is less telling there.
 - Without reference energies, the final integration error is the raw
   numerical error and depends strongly on the two-electron grid,
@@ -435,13 +435,13 @@ separately, so:
   150 radial × 590 angular points per atom by default for ENPART.
 - **Two-electron grid**: 150 × 590 by default, set with `RADIAL_2E` and
   `ANGULAR_2E` in the optional `# GRID` block (see
-  [Block section # GRID](../input/grid.md)); the rotation angles of the
+  [Block section # GRID](../input/grid.md)). The rotation angles of the
   grid are chosen by the program for 146 and 590 angular points, and
   other sizes use the 590 angles, with a warning.
 - The 6-D two-electron integrations dominate the cost, which grows with
   the square of the number of points per atom: 40 × 146 is much cheaper
   than 150 × 590 and, with the zero-error strategy, useful for tests and
-  larger systems; for publication-quality ENPART numbers keep the
+  larger systems. For publication-quality ENPART numbers keep the
   default.
   `THREBOD` saves time by skipping weakly bonded pairs.
 - The DFT part stores the orbital gradients on the one-electron grid:

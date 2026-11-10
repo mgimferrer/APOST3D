@@ -1,6 +1,6 @@
 # Output style guide
 
-How the `.apost` output is laid out. New output follows these rules;
+How the `.apost` output is laid out. New output follows these rules, and
 sections written before the guide are brought in line by the
 [clean-up protocol](cleanup-protocol.md).
 
@@ -27,7 +27,7 @@ boxes):
 | Caption | a plain line, sentence case | the title of a single table or list |
 
 - Section and subsection titles are in capitals. `print_box` prints an
-  empty line before and after the box; `print_subbox` prints the same box
+  empty line before and after the box, and `print_subbox` prints the same box
   without the empty line before, for a heading that directly follows
   another one. The caller adds none.
 - Two headings never follow each other directly with the same level:
@@ -100,7 +100,7 @@ The same kind of quantity always has the same number of decimals:
   the diagonal).
 - Matrices use the shared printers: `MPRINT2` (atom × atom) and
   `group_by_frag_mat` (fragment × fragment, with its total), which split
-  wide matrices into blocks of six columns; `VPRINT` prints the rows of a
+  wide matrices into blocks of six columns, and `VPRINT` prints the rows of a
   per-atom table. All of them print 13 decimals instead of 6 with
   `FULLPRECISION`.
 - Element symbols come from `elements_mod` (`element_symbol`,

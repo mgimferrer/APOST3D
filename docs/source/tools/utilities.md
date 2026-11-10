@@ -39,7 +39,7 @@ Electron-Electron Energy                   R      3.787105778929102E+01
 With pseudopotentials, the ECP integral matrix printed in the output file
 is appended too (`ECP Matrix`), for ENPART to split the ECP energy among
 the atoms. Gaussian prints it with 6 significant digits, which leaves a
-small error in the ECP energy, about 0.1 kcal/mol for an iodine atom; it
+small error in the ECP energy, about 0.1 kcal/mol for an iodine atom. It
 shows up in the electron-nuclear integration error of ENPART.
 
 If the output file is incomplete (the calculation did not end normally)
@@ -91,7 +91,7 @@ All sections are required, in any order:
 (`gauss_C_nul.com`, `gauss_C_min.com`, ...), a script `runatoms.com` that
 runs them, runs it, and builds `densoutput` from the resulting `.fchk`
 files. Copy `densoutput` into the folder of every calculation that uses
-`HIRSH` or `HIRSH-IT`; it must contain every element of the molecule.
+`HIRSH` or `HIRSH-IT`. It must contain every element of the molecule.
 
 ## apost3d.py
 
@@ -102,12 +102,12 @@ wavefunctions it takes in
 
 - `write_fchk(mol, obj, name, overlap=None, myhf=None)` writes
   `name.fchk` from a pySCF SCF, CASSCF/CASCI, FCI, CISD or CCSD object, with the
-  reference energies needed by ENPART; for FCI, pass the underlying
+  reference energies needed by ENPART. For FCI, pass the underlying
   mean-field object by keyword, `myhf=mf` (a fifth positional argument
   is read as the obsolete `unrest`, which is ignored).
 - `write_dm12(mol, mycas, name)` writes the 1- and 2-RDMs of a
-  CASSCF/CASCI, FCI or CISD calculation to `name.dm1` and `name.dm2`;
-  for CCSD, only `name.dm1`.
+  CASSCF/CASCI, FCI or CISD calculation to `name.dm1` and `name.dm2`
+  (for CCSD, only `name.dm1`).
 
 ## orca2fchk.py
 

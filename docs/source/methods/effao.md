@@ -6,7 +6,7 @@ electron density belonging to that atom. For a group of atoms (a ligand,
 a metal center, a molecule in a complex) they are called **effective
 fragment orbitals** (EFOs). They need no reference state, Lewis structure
 or threshold, and they work for any wavefunction, from Hartree-Fock and
-KS-DFT to CASSCF; with a real-space atomic definition they hardly depend
+KS-DFT to CASSCF. With a real-space atomic definition they hardly depend
 on the basis set.
 
 Two properties make them useful:
@@ -15,7 +15,7 @@ Two properties make them useful:
   calculation, an atom has only as many eff-AOs with significant occupation
   as orbitals in its classical minimal basis: one for H, five for C, N or O
   (1s, 2s, 2p), and so on. The occupied ones are core orbitals, lone pairs
-  and valence hybrids; the rest have negligible occupations.
+  and valence hybrids, and the rest have negligible occupations.
 - **Fragment orbitals look like the orbitals of the free fragment**,
   polarized by the environment, with fractional occupations. For a CO
   ligand bound to a metal, for instance, the σ lone-pair EFO has an
@@ -72,7 +72,7 @@ Three variants differ in the density that is analyzed:
 |---|---|---|
 | `EFFAO` | Total density | 0 to 2 |
 | `UEFFAO` | Alpha and beta densities, separately | 0 to 1 |
-| `EFFAO-U` | Paired and unpaired densities, separately (the orbitals of [GEOS](geos.md), without its oxidation states; occupation cutoff 0.0001, no `Fit (%)`). Real-space schemes only | up to 2 (paired; slightly negative ones are reported only by [GEOS](geos.md)), 0 to 1 (unpaired) |
+| `EFFAO-U` | Paired and unpaired densities, separately (the orbitals of [GEOS](geos.md), without its oxidation states, with an occupation cutoff of 0.0001 and no `Fit (%)`). Real-space schemes only | up to 2 (paired, with slightly negative ones reported only by [GEOS](geos.md)), 0 to 1 (unpaired) |
 
 For a closed-shell wavefunction, `UEFFAO` computes the alpha orbitals
 only, since the beta ones are the same.
@@ -80,7 +80,7 @@ only, since the beta ones are the same.
 ## Requirements and input
 
 - Any atomic definition (`TFVC` recommended, see
-  [Atoms in molecules](../guide/aim.md)); `EFFAO-U` needs a real-space one.
+  [Atoms in molecules](../guide/aim.md)). `EFFAO-U` needs a real-space one.
 - Any wavefunction.
 - Fragments are optional. Without `DOFRAGS` every atom is a fragment, and
   the result is the set of effective atomic orbitals.
@@ -105,7 +105,7 @@ DOFRAGS
 
 The excerpt below comes from the FeCO₂²⁺ complex, RKS PBE, TFVC, with Fe
 as fragment 1 and the two CO ligands as fragments 2 and 3 (test
-`FeCO2-PBEPBE`, which runs `EOS`; `UEFFAO` prints the same blocks). The
+`FeCO2-PBEPBE`, which runs `EOS`, and `UEFFAO` prints the same blocks). The
 section starts with the atomic definition, the densities the EFOs come
 from and the occupation cutoff, then gives each fragment one entry per
 density:
@@ -167,7 +167,7 @@ occupations can slightly exceed 1.
 
 - The number of EFOs with a significant occupation should match the
   minimal basis of the fragment (e.g. 5 per C, N or O atom, 1 per H). Many
-  more points to a very diffuse basis set with a Hilbert-space scheme; use
+  more points to a very diffuse basis set with a Hilbert-space scheme: use
   a real-space one.
 - With a real-space scheme, the gross occupations of all fragments add up
   to the number of electrons (of each spin, for `UEFFAO`).

@@ -33,8 +33,8 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
    D^F_i = \sqrt{D_i / N^i_F}.
    $$
 
-   A FOLI of 1 means an orbital entirely on fragment F; 2 means an orbital
-   shared equally between two fragments; larger values mean more
+   A FOLI of 1 means an orbital entirely on fragment F, 2 means an orbital
+   shared equally between two fragments, and larger values mean more
    delocalization, or an orbital centered on F but mostly elsewhere. An
    orbital with a population on F of 10⁻⁵ or less is not a candidate of
    F (Mulliken populations can even be slightly negative).
@@ -43,7 +43,7 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
    within the tolerance (0.001 by default) of it. The selected orbitals
    are orthogonalized and removed from the occupied space, and step 1 is
    repeated in the space left, until every occupied orbital has been
-   assigned. Core and lone-pair orbitals go first; the orbitals of the
+   assigned. Core and lone-pair orbitals go first. The orbitals of the
    bonds between fragments, the ones that decide the oxidation states, come
    last, and are better localized for having the others removed first.
    When the selected orbitals are the same orbital found from several
@@ -52,11 +52,11 @@ Theory Comput.*, **2022**, 18, 309-322. See [Citations](../citations.md).
    fragments: half and half for two equivalent fragments.
 4. **Oxidation states.** Each OSLO gives its electrons (two in a
    restricted calculation, one per spin orbital in an unrestricted one) to
-   the fragment it was localized on; a shared orbital gives each fragment
-   its share. The oxidation state of a fragment is the sum of the nuclear
+   the fragment it was localized on, and a shared orbital gives each
+   fragment its share. The oxidation state of a fragment is the sum of the nuclear
    charges of its atoms minus its electrons. A pair shared half and half
    gives one electron to each fragment (a homolytic assignment of that
-   bond); unequal shares give fractional oxidation states.
+   bond), and unequal shares give fractional oxidation states.
 
 For an unrestricted wavefunction the procedure is done separately for the
 alpha and the beta orbitals.
@@ -64,8 +64,8 @@ alpha and the beta orbitals.
 The **Δ-FOLI** of an iteration is the gap between the selected FOLI and the
 next candidate. In the **last iteration** it measures how clear the
 assignment of the least localized orbital, and so the whole result, is:
-above about 0.5 the assignment is usually clear (above 1, clearly ionic);
-smaller values mean an increasingly covalent bond between the fragments.
+above about 0.5 the assignment is usually clear (above 1, clearly ionic),
+and smaller values mean an increasingly covalent bond between the fragments.
 A last FOLI close to 1 means the last orbital is well localized.
 
 ## Requirements and input
@@ -73,13 +73,13 @@ A last FOLI close to 1 means the last orbital is well localized.
 - A **single-determinant** wavefunction (HF or KS-DFT, restricted or
   unrestricted). The run stops for CASSCF, CISD or FCI wavefunctions.
 - **Fragments** (`DOFRAGS` and a [`# FRAGMENTS` block](../input/fragments.md)),
-  with every atom in a fragment; the run stops otherwise.
+  with every atom in a fragment. The run stops otherwise.
 - A **real-space atomic definition** in `# METHOD` (use `TFVC`): the
   spread matrix is integrated on its grid. The run stops with a
   Hilbert-space scheme there.
 - A [`# OSLO` block](../input/oslo.md). It can choose the atoms that decide
   which fragment each OSLO belongs to (the fragment populations in the
-  FOLI: `MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`, `NAO-BASIS`); without one,
+  FOLI: `MULLIKEN`, `LOWDIN`, `LOWDIN-DAVIDSON`, `NAO-BASIS`). Without one,
   the real-space scheme of `# METHOD` is used for the populations too.
 
 ```text
@@ -273,7 +273,7 @@ results, each run prints at the end of the iterations (per spin channel)
 
 and a lower sum means OSLOs that are better localized overall. For an
 unrestricted wavefunction, `BRANCH_ITERATION` acts on both channels and
-`BRANCH_ALPHA`/`BRANCH_BETA` on one; the iteration numbers are those of
+`BRANCH_ALPHA`/`BRANCH_BETA` on one. The iteration numbers are those of
 the output of each channel.
 
 ## Files written

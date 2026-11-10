@@ -147,7 +147,7 @@ computed is explained in [EOS](methods/eos.md).
 
 The run also wrote `feco2-EOS-EFOs.fchk`: open it in an orbital viewer
 (GaussView, Avogadro, IQmol, ...) to browse the effective fragment
-orbitals; the "orbital energy" of each one is its occupation. With TFVC
+orbitals. The "orbital energy" of each one is its occupation. With TFVC
 atoms these orbitals are basis-set approximations: for the exact shape
 of an orbital, use its cube file or APOST3Dview, which reads the second
 file written, `feco2-EOS-EFOs-unweighted.fchk`
@@ -158,6 +158,6 @@ file written, `feco2-EOS-EFOs-unweighted.fchk`
 - Prepare your own wavefunction: [Preparing the wavefunction](guide/wavefunctions.md).
 - See what else can be computed: one page per method under
   *Analysis methods*, starting with [effective atomic orbitals](methods/effao.md).
-- Complete inputs for other analyses: [Input examples](input/examples.md);
-  the test inputs in `$APOST3D_PATH/tests/inputs/` are more examples,
+- Complete inputs for other analyses: [Input examples](input/examples.md).
+  The test inputs in `$APOST3D_PATH/tests/inputs/` are more examples,
   with their outputs in `tests/reference/`.

@@ -15,10 +15,10 @@ make -C $APOST3D_PATH help        # all targets and options
 the script (the number of compile jobs is set with `-j`), but does not
 check the compiler version, build libxc, sign the programs on macOS, or
 rebuild everything after a change of compiler or `ARCH` (run
-`make clean` yourself then; run `bash compile_libxc.sh` once first if
+`make clean` yourself then, and run `bash compile_libxc.sh` once first if
 libxc is not installed). After `make_compile.sh`, `make` uses the
 libxc the script checked (recorded in `objects/libxc.mk`, which
-`make clean` removes); `LIBXC_DIR` overrides it. `compile_libxc.sh` builds
+`make clean` removes), and `LIBXC_DIR` overrides it. `compile_libxc.sh` builds
 libxc with the `gfortran` on the `PATH`, the one the `Makefile` uses, and
 the `gcc` of the same version when there is one (`gcc-16`, ...).
 
@@ -27,7 +27,7 @@ the `gcc` of the same version when there is one (`gcc-16`, ...).
 | Path | Contents |
 |---|---|
 | `sources/` | Program sources (fixed-form `.f`, `modules.f90`, `parameter.h`, `Lebedev-Laikov.F`) |
-| `utils/` | Utility sources; `make utils` writes the utility programs here |
+| `utils/` | Utility sources (`make utils` writes the utility programs here) |
 | `objects/` | Every `.o` and `.mod` file (utilities in `objects/utils/`) |
 | `libxc-<version>/` | libxc, when built by `compile_libxc.sh` |
 | `tests/` | Test runner, inputs and reference outputs ([Running the test suite](testing.md)) |
@@ -67,5 +67,5 @@ python3 -m venv /tmp/docvenv
 ```
 
 `-W -n` turns every warning (including broken internal links) into an
-error; the build must be clean. Open `/tmp/apost3d-docs/index.html` to
+error. The build must be clean. Open `/tmp/apost3d-docs/index.html` to
 view the result.

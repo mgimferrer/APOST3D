@@ -26,23 +26,23 @@ visible at that level.
 For each routine:
 
 1. **Code**: remove dead variables and unused `COMMON` blocks, redundant
-   work and stale branches; `implicit none` and `intent` declarations;
-   `COMMON` blocks through their include files; loops without labels
-   or `GOTO`.
+   work and stale branches. Use `implicit none` and `intent`
+   declarations, `COMMON` blocks through their include files, and loops
+   without labels or `GOTO`.
 2. **Duplication**: merge twins and repeated blocks into one routine
    with arguments where that does not cost speed.
 3. **Comments**: rewrite them as the conventions ask (plain words, no
-   history, no ALL CAPS); delete commented-out code.
-4. **Header**: write or correct it; the description says what is
+   history, no ALL CAPS) and delete commented-out code.
+4. **Header**: write or correct it. The description says what is
    computed and from which paper.
 5. **Printing**: formatted writes only, following the output style
-   guide; check every `aN` format against the length of the text it
-   prints (a longer text is cut silently); twin routines print the same
+   guide. Check every `aN` format against the length of the text it
+   prints (a longer text is cut silently). Twin routines print the same
    labels. Before renaming a printed label, search `tests/manifest.json`
    and the docs for it.
 6. **Parallelization**: measure first (the `TIMING` lines of a
    representative run). Parallelize a loop only when the routine takes a
-   noticeable share of the run time; otherwise leave it serial. Every
+   noticeable share of the run time, otherwise leave it serial. Every
    parallel region gets its safety comment.
 
 ## Three kinds of commits
@@ -53,8 +53,8 @@ one clear cause:
 | Kind | What changes | Required check |
 |---|---|---|
 | Refactor | code only | outputs bit-identical to the previous commit at one thread |
-| Output format | layout, labels, blank lines | every number identical; reference outputs updated in the same commit |
-| Numerical | a result | explained in the commit message, approved by the maintainers; reference outputs and manifest values updated in the same commit |
+| Output format | layout, labels, blank lines | every number identical, reference outputs updated in the same commit |
+| Numerical | a result | explained in the commit message and approved by the maintainers, reference outputs and manifest values updated in the same commit |
 
 ## Testing a change
 
@@ -64,12 +64,12 @@ one clear cause:
   in a separate git worktree, builds the working tree, runs every test
   at one thread with both, and compares the outputs:
   - default: they must be identical except for timings (refactors,
-    parallel regions);
+    parallel regions).
   - `--format`: only the numbers must be identical (output-format
     changes): line by line where the text matches, and as the full
     sequence of numbers of each output, in order
     (`tests/compare_numbers.py`), so a number on a reworded line is
-    checked too;
+    checked too.
   - `--threads N`: also runs the new build with N threads and shows the
     differences against one thread (a parallel region may change the last
     printed digit by summing in another order).
@@ -78,7 +78,7 @@ one clear cause:
 - `python3 tests/lint.py <files>` lists what in those files does not
   follow the conventions yet (comments, list-directed writes, headers,
   OpenMP comments, compiler warnings). It is a helper for reviewing a
-  cleaned file or a contribution, run by hand; the build and the test
+  cleaned file or a contribution, run by hand. The build and the test
   suite do not use it.
 
 ## When the file is done
@@ -88,7 +88,7 @@ one clear cause:
   same commit as the code. `python3 tests/check_docs_excerpts.py` lists
   every output excerpt in the docs that no longer matches its reference
   (each excerpt is a `text` block preceded by a comment line
-  `% source: tests/reference/<test>.apost`); read the text around each
+  `% source: tests/reference/<test>.apost`). Read the text around each
   one too, since it may name the old labels.
 - The [CHANGELOG](../changelog.md) gets a line when users will notice
   (renamed labels, new or removed lines).

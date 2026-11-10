@@ -1,7 +1,7 @@
 # Block section # FRAGMENTS
 
-Defines the fragments used with `DOFRAGS`; see [Fragments](../guide/fragments.md)
-for what they change in the results. Atoms are numbered as in the `.fchk`
+Defines the fragments used with `DOFRAGS` (see [Fragments](../guide/fragments.md)
+for what they change in the results). Atoms are numbered as in the `.fchk`
 file (the order of the geometry of the calculation).
 
 The block holds the number of fragments, then, for each fragment, a line

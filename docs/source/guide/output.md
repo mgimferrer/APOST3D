@@ -6,18 +6,18 @@ All results are printed to the standard output, normally saved with
 `apost3d jobname > jobname.apost 2>&1`. It is printed in this order:
 
 1. the program header, with the references of the methods (see
-   [Citations](../citations.md));
+   [Citations](../citations.md))
 2. `WAVEFUNCTION SUMMARY`: what was read from the `.fchk` file (restricted
    or unrestricted, type of calculation, number of atoms, basis functions
-   and electrons, energy);
+   and electrons, energy)
 3. `INPUT SUMMARY`: the options of the input file, as the program
    understood them. **Check it first when a result looks unexpected**: an
    analysis or option missing there was not read (`TWOELTOLER` is shown
-   in the ENPART part instead);
+   in the ENPART part instead)
 4. the natural orbitals (open-shell and correlated wavefunctions), the
-   integration grid (real-space schemes) and the atomic definition;
-5. the [population analysis](../methods/population.md);
-6. the requested analyses, each with its own page in *Analysis methods*;
+   integration grid (real-space schemes) and the atomic definition
+5. the [population analysis](../methods/population.md)
+6. the requested analyses, each with its own page in *Analysis methods*
 7. `...Normal Termination of APOST-3D...`.
 
 After each step, `TIMING CPU` and `TIMING WALL` lines give its cost. A run

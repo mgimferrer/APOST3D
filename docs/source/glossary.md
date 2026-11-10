@@ -47,7 +47,7 @@ Net occupation
 Gross occupation
   The occupation of an effective orbital including its share of the
   overlap with other fragments. Gross occupations add up to the number of
-  electrons; they are the ones used by EOS.
+  electrons, and they are the ones used by EOS.
 
 EOS
   Effective oxidation states: oxidation states from assigning the
@@ -71,12 +71,12 @@ Unpaired density
   EFFAO-U.
 
 Natural orbitals
-  The eigenvectors of the one-particle density matrix; their eigenvalues
+  The eigenvectors of the one-particle density matrix. Their eigenvalues
   are the natural occupations (0 or 2 for a closed-shell determinant,
   fractional for correlated wavefunctions).
 
 RDM
-  Reduced density matrix. The 1-RDM gives the density; the 2-RDM is needed
+  Reduced density matrix. The 1-RDM gives the density, and the 2-RDM is needed
   for local spins and energy partitioning of correlated wavefunctions.
 
 OSLO
@@ -89,11 +89,11 @@ FOLI
 
 Δ-FOLI
   In OSLO, the FOLI gap between the selected orbital and the next
-  candidate; in the last iteration, it measures how clear the assignment
+  candidate. In the last iteration, it measures how clear the assignment
   is.
 
 Local spin
-  The atomic contribution $\langle \hat S^2\rangle_A$ to the total spin;
+  The atomic contribution $\langle \hat S^2\rangle_A$ to the total spin:
   3/4 for one unpaired electron on the atom. See [SPIN](methods/spin.md).
 
 IQA

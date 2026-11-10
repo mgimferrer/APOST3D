@@ -3,7 +3,7 @@
 Messages are quoted as the program prints them. A message starting with
 `STOP` ends the run: it is the last line of the output, and the program
 exits with code 1. Most errors print a line or two of explanation just
-before it; a few print only that explanation, without a `STOP` line.
+before it. A few print only that explanation, without a `STOP` line.
 
 ## Building
 
@@ -17,7 +17,7 @@ install gcc`, `module load` a newer GCC on a cluster, or on Ubuntu
 `sudo apt install gfortran-12` followed by `sudo update-alternatives
 --install /usr/bin/gfortran gfortran /usr/bin/gfortran-12 100` (the
 package alone installs only `gfortran-12`, and the scripts call
-`gfortran`). Then run `bash make_compile.sh` again; it rebuilds everything
+`gfortran`). Then run `bash make_compile.sh` again: it rebuilds everything
 automatically.
 
 **`could not link against OpenBLAS`** (or `cannot find -lopenblas`)
@@ -33,7 +33,7 @@ cmake` installs one without administrator rights.
 **`ERROR: curl not found, needed to download libxc`**
 Install `curl`. On a machine without internet access, download the file
 named in the message on another machine and copy it to the place the
-message gives; the script then uses it.
+message gives. The script then uses it.
 
 **`ERROR: the libxc in LIBXC_DIR (...) cannot be used: <reason>`**
 The libxc that `LIBXC_DIR` points to has no Fortran interface, its Fortran
@@ -47,7 +47,7 @@ Information only: a libxc installed on the system is not suitable (same
 reasons as above), so the script builds and uses its own copy.
 
 **`cannot find -lxcf03` or `-lxc`**
-libxc was not built. Run `bash make_compile.sh`, which builds it; when
+libxc was not built. Run `bash make_compile.sh`, which builds it. When
 building with `make` directly, run `bash compile_libxc.sh` first.
 
 **macOS: a program doesn't start (`dyld`, "Library not loaded", killed on
@@ -171,7 +171,7 @@ rotation angles (only 146 and 590 have them). Use one of those, or set
 
 **`STOP DENS: density not found`**
 `DENS` asks for a density that the `.fchk` file doesn't contain (the
-output lists the ones it has); see
+output lists the ones it has). See
 [Preparing the wavefunction](guide/wavefunctions.md#gaussian). Q-Chem
 files have a single density, see
 [Q-Chem](guide/wavefunctions.md#q-chem).
@@ -189,23 +189,23 @@ ones, so they cannot analyse a correlated density selected with `DENS`
 **`STOP densoutput not found`**, **`STOP densoutput cannot be read`**,
 **`ERROR: atom <El> is missing in densoutput`**
 The Hirshfeld schemes need a complete `densoutput` file with every element
-of the molecule in the working directory; build it with
+of the molecule in the working directory. Build it with
 [`gen_hirsh`](tools/utilities.md). A `gen_hirsh` run that stopped leaves
 an incomplete one.
 
 **`STOP NAO-BASIS needs the NBO file jobname.nao (AONAO=W), not found`**, **`STOP jobname.nao is not an NAO file`**, **`STOP jobname.nao does not match the basis`**
 `NAO-BASIS` needs the NAO transformation of the same calculation (see
-[Preparing the wavefunction](guide/wavefunctions.md#gaussian)); the line
-above the stop says what is wrong. See also
+[Preparing the wavefunction](guide/wavefunctions.md#gaussian)), and the
+line above the stop says what is wrong. See also
 [Atoms in molecules](guide/aim.md#hilbert-space-schemes).
 
 **`STOP More than one atomic definition`**
-`# METHOD` names two atomic definitions (e.g. `TFVC` and `MULLIKEN`);
-the line above lists them. Keep one: each run uses a single
+`# METHOD` names two atomic definitions (e.g. `TFVC` and `MULLIKEN`),
+and the line above lists them. Keep one: each run uses a single
 [atomic definition](guide/aim.md).
 
 **`STOP This version can not do QTAIM`**
-QTAIM is not available; use `TFVC`, which gives very similar results.
+QTAIM is not available. Use `TFVC`, which gives very similar results.
 
 ## Analyses
 
@@ -230,8 +230,8 @@ keyword or bring it back towards the default.
 
 **`WARNING: no atomic definition in # METHOD, TFVC used`**
 `# METHOD` names no atomic definition. The run goes on with `TFVC`, but
-write it (or the scheme you want) in the input; see
-[Atoms in molecules](guide/aim.md).
+write it (or the scheme you want) in the input (see
+[Atoms in molecules](guide/aim.md)).
 
 **`STOP DM needs a correlated-wavefunction .fchk`**
 `DM 1`/`DM 2` are set with an HF or KS-DFT `.fchk`. The RDM files go with
@@ -253,7 +253,7 @@ all zero, so `SPIN` is skipped.
 (with `Electron assignment : fractional`)
 Not an error: frontier orbitals of different fragments have almost the
 same occupation, and the electrons are shared among them (fractional
-oxidation states); see [EOS](methods/eos.md).
+oxidation states). See [EOS](methods/eos.md).
 
 ### ENPART
 

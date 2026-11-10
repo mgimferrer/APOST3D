@@ -46,10 +46,10 @@ P. Salvador, *J. Chem. Theory Comput.*, **2015**, 11, 1501-1508. See
   an error for Hilbert-space schemes (`MULLIKEN`, `LOWDIN`, ...).
 - Any wavefunction whose `.fchk` provides the total density: restricted,
   unrestricted (including broken-symmetry), or correlated (e.g. a pySCF
-  CASSCF/FCI `.fchk`; no `.dm1`/`.dm2` needed).
+  CASSCF/FCI `.fchk`, with no `.dm1`/`.dm2` needed).
 - Fragments are required (`DOFRAGS` and a
   [`# FRAGMENTS` block](../input/fragments.md)), with every atom in exactly
-  one of them; the run stops otherwise. For one oxidation state per atom,
+  one of them. The run stops otherwise. For one oxidation state per atom,
   make every atom a fragment of its own.
 
 ```text
@@ -97,7 +97,7 @@ the output has one section per density (`PAIRED DENSITY`, then
   Paired occupations go up to 2, unpaired ones up to 1.
 - `Fit (%)` gives, for each EFO, how faithfully the projected orbital
   written to `<jobname>-GEOS-EFOs.fchk` reproduces it (see *Orbitals in
-  the .fchk file* below); the cube files and the unweighted file are
+  the .fchk file* below). The cube files and the unweighted file are
   exact.
 - `Left out by the cutoff` is what the listed EFOs miss of the fragment's
   net and gross population in that density (see [EFFAO](effao.md)). In
@@ -142,13 +142,13 @@ The assignment starts with every electron paired (except the
 `|Nα − Nβ|` that must be unpaired) and moves one pair at a time, from the
 least occupied paired EFO to the two most occupied unpaired ones not yet
 assigned, while
-that lowers the RMSD between occupations and assigned electrons; each try
+that lowers the RMSD between occupations and assigned electrons. Each try
 is listed. Here moving the pair raises the RMSD, so it is rejected.
 
 Then come the usual EOS tables, one per density (`GEOS, PAIRED
 ELECTRONS` / `GEOS, UNPAIRED ELECTRONS`: electrons per fragment, last
-occupied and first unoccupied gross occupation, and R; paired
-occupations are halved when computing R), followed by:
+occupied and first unoccupied gross occupation, and R, with the paired
+occupations halved when computing R), followed by:
 
 % source: tests/reference/LiH-32-FCI.apost
 ```text
@@ -168,7 +168,7 @@ fragments as its orbitals (see [Visualizing orbitals](../guide/visualization.md)
 for the general layout and the meaning of `Fit (%)`):
 
 - **Alpha orbitals:** paired EFOs of all fragments, sorted by decreasing
-  gross occupation; the negative paired EFOs, if any, are the **last**
+  gross occupation. The negative paired EFOs, if any, are the **last**
   Alpha orbitals (most negative last).
 - **Beta orbitals:** unpaired EFOs, same ordering. For a restricted
   input `.fchk` with a non-empty unpaired density, a Beta set is added.

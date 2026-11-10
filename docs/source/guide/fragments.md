@@ -21,7 +21,7 @@ DOFRAGS
 #
 ```
 
-(fragment 1 is atom 1, e.g. the metal; fragment 2 all the other atoms).
+(fragment 1 is atom 1, e.g. the metal, and fragment 2 all the other atoms).
 
 | Analysis | Effect of fragments |
 |---|---|

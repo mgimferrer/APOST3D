@@ -33,7 +33,7 @@ EFOs of these files are exact.
 [APOST3Dview](https://github.com/mgimferrer/APOST3Dview), the companion
 viewer of APOST-3D, opens the results file `<jobname>.apost.json`
 together with its `.fchk` file and shows the computed values on the
-molecule; it also opens cube, `.molden` and `.xyz` files and draws
+molecule. It also opens cube, `.molden` and `.xyz` files and draws
 orbitals directly from the wavefunction. It is under development.
 ```
 
@@ -48,7 +48,7 @@ orbitals directly from the wavefunction. It is under development.
 | `<jobname>-EOS-EFOs-unweighted.fchk`, `<jobname>-GEOS-EFOs-unweighted.fchk` | `EOS`, `GEOS` with `BECKE`, `BECKE-RHO` or `TFVC` atoms | The same EFOs before the multiplication by the fragment's weight (see [below](#the-unweighted-files)) |
 
 Each file is a copy of the input `.fchk` whose molecular orbitals are
-replaced by the analysis orbitals; the geometry and basis set are
+replaced by the analysis orbitals. The geometry and basis set are
 unchanged (the OSLO files also carry the density built from the
 OSLOs). The beta orbitals of an open shell go in the Beta set, also when
 the input `.fchk` has a single set of orbitals (ROHF/ROKS: the Beta
@@ -56,13 +56,13 @@ blocks are added after the Alpha ones). In the OSLO files the orbitals come in t
 assigned, and the **"orbital energy" field holds the FOLI value** of
 each (0 after the last OSLO). In the EFO files:
 
-- the orbitals of all fragments are sorted together by decreasing gross
+- The orbitals of all fragments are sorted together by decreasing gross
   occupation, and the **"orbital energy" field holds the gross
-  occupation**, so the viewer's orbital list reads as an occupation list;
-- fragment labels are not stored in the file: the results file
+  occupation**, so the viewer's orbital list reads as an occupation list.
+- Fragment labels are not stored in the file: the results file
   (`<jobname>.apost.json`) maps every orbital to its fragment, and so
-  does the main output through the occupations;
-- the densities in the file are the original ones, not built from the
+  does the main output through the occupations.
+- The densities in the file are the original ones, not built from the
   EFOs.
 
 **Which file holds what.** For an EFO of a real-space scheme, with w_F
@@ -70,8 +70,8 @@ the weight function of its fragment:
 
 | File | Holds | Use it for |
 |---|---|---|
-| `<jobname>-EOS-EFOs.fchk`, `-GEOS-EFOs.fchk` | The projection of the EFO onto the basis set: an approximation, of quality `Fit (%)` | Programs that show the orbitals stored in a `.fchk` file; browsing all EFOs at once |
-| `<jobname>-EOS-EFOs-unweighted.fchk`, `-GEOS-EFOs-unweighted.fchk` (`BECKE`, `BECKE-RHO`, `TFVC`) | The basis-set vector φ, exact; the EFO is w_F × φ | APOST3Dview, which multiplies by w_F; programs that apply w_F themselves |
+| `<jobname>-EOS-EFOs.fchk`, `-GEOS-EFOs.fchk` | The projection of the EFO onto the basis set: an approximation, of quality `Fit (%)` | Programs that show the orbitals stored in a `.fchk` file, browsing all EFOs at once |
+| `<jobname>-EOS-EFOs-unweighted.fchk`, `-GEOS-EFOs-unweighted.fchk` (`BECKE`, `BECKE-RHO`, `TFVC`) | The basis-set vector φ, exact (the EFO is w_F × φ) | APOST3Dview, which multiplies by w_F, and programs that apply w_F themselves |
 | Cube files (`CUBE`) | w_F × φ on a grid: the EFO, exact | The shape of the EFO, in any program that reads cube files |
 
 With a Hilbert-space scheme the EFOs of the first file are exact, and no
@@ -118,7 +118,7 @@ shape. The `.fchk` approximation shows lobes that the exact orbital
 doesn't have:
 
 - for weakly occupied orbitals: small extra lobes with `Fit (%)` between
-  about 60 and 80, clear ones below about 60;
+  about 60 and 80, clear ones below about 60
 - at small isovalues (0.03 and below), where the small differences
   between the two become visible.
 
@@ -151,7 +151,7 @@ these orbitals φ is a combination of basis functions, written exactly,
 and the effective fragment orbital is w_F × φ: the cube file of the same
 EFO holds exactly that product. On its own, φ is not the EFO (it is not
 cut to its fragment and can be large elsewhere), so the file is meant
-for programs that multiply each orbital by w_F themselves; the results
+for programs that multiply each orbital by w_F themselves. The results
 file gives everything needed to rebuild w_F
 ([`atomic_weights`](../developer/json-output.md#atomic_weights)). The
 output names both files at the end of EOS and GEOS.
@@ -176,13 +176,13 @@ default every orbital of each fragment is written, core ones included
 **File names**: `<jobname>_<scheme><density>_<X><n>_<i>[beta].cube`
 
 - `<scheme>`: `tfvc`, `becke`, `beckerho`, `hirsh`, `hirsh-it`,
-  `mulliken` or `lowdin` (also for `LOWDIN-DAVIDSON` and `NAO-BASIS`);
-- `<density>`: empty for EFFAO/EOS; `_paired`, `_unpaired` or
-  `_paired_neg` for GEOS and EFFAO-U;
+  `mulliken` or `lowdin` (also for `LOWDIN-DAVIDSON` and `NAO-BASIS`)
+- `<density>`: empty for EFFAO/EOS, and `_paired`, `_unpaired` or
+  `_paired_neg` for GEOS and EFFAO-U
 - `<X><n>`: `FR<n>` for fragment *n* with `DOFRAGS`, otherwise the element
-  symbol and atom number (e.g. `O1`);
+  symbol and atom number (e.g. `O1`)
 - `<i>`: orbital number within the fragment, by decreasing net occupation
-  (for `_paired_neg`, 1 is the most negative);
+  (for `_paired_neg`, 1 is the most negative)
 - `beta`: added for the beta orbitals of `EOS`/`UEFFAO`.
 
 Example: `LiH-32-FCI_tfvc_paired_neg_FR2_1.cube`. The second line of each
@@ -190,7 +190,7 @@ file gives the orbital's gross and net occupation.
 
 **Values**: with a real-space scheme, the orbital multiplied by the
 fragment's weight function, i.e. the part of the orbital that belongs to
-the fragment; with Mulliken or Löwdin, the plain orbital. Cube files and
+the fragment. With Mulliken or Löwdin, the plain orbital. Cube files and
 `.fchk` orbitals are on the same scale (neither is renormalized), so the
 same isovalue can be used for both.
 
@@ -203,12 +203,12 @@ times the fragment's weight), so `Norm in cube` is the share of the
 orbital inside the box. The output warns when it is below 0.9 or above
 1.1:
 
-- below 0.9, the box cuts the orbital: raise `PADDING`. Diffuse
+- Below 0.9, the box cuts the orbital: raise `PADDING`. Diffuse
   orbitals need the most room: for the H atom of stretched LiH, the
   norm is 0.93 with the default margin and 0.996 with `PADDING 8`. At
   the default, the orbitals of the test systems stay below 0.03 on the
-  box faces, so their surfaces at the usual isovalues are not cut open;
-- far from 1, either way, the grid is too coarse for a compact orbital,
+  box faces, so their surfaces at the usual isovalues are not cut open.
+- Far from 1, either way, the grid is too coarse for a compact orbital,
   typically a core orbital sampled near its nucleus (3.29 for the F 1s
   of CH3F at the default spacing): lower `SPACING`. The norm, a sum over
   the grid points, suffers much more than the surfaces.

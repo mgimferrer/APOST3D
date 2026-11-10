@@ -2,7 +2,7 @@
 
 Installing APOST-3D takes three steps: install a few standard packages,
 run one build script, and run the test suite to check the result. Everything
-used is free and open source; no compiler or library license is needed.
+used is free and open source, and no compiler or library license is needed.
 
 ## 1. Install the prerequisites
 
@@ -55,7 +55,7 @@ gfortran --version            # must say 10 or higher
 The exchange-correlation library [libxc](https://libxc.gitlab.io/) is also
 needed, but you don't have to install it. If libxc 7.0 or newer is already
 installed (with its Fortran interface, built by the same gfortran), the
-build script uses it; otherwise it downloads and compiles its own copy the
+build script uses it. Otherwise it downloads and compiles its own copy the
 first time (this is what CMake and curl are for).
 
 ## 2. Build the program
@@ -66,7 +66,7 @@ cd APOST3D
 bash make_compile.sh
 ```
 
-The first build takes a few minutes, most of it compiling libxc; later
+The first build takes a few minutes, most of it compiling libxc, and later
 builds take seconds. If something is missing (`make`, a recent enough
 gfortran, OpenBLAS, CMake, curl), the script stops with a clear message and
 the command to fix it, before compiling anything (see [Troubleshooting](troubleshooting.md)). At the end it
@@ -110,8 +110,8 @@ a few minutes and should end with
   79 PASSED   (...s total)
 ```
 
-If a test fails, the output says which values differ; see
-[Running the test suite](developer/testing.md) for how to read it.
+If a test fails, the output says which values differ (see
+[Running the test suite](developer/testing.md) for how to read it).
 
 You are ready: continue with the [tutorial](tutorial.md).
 
@@ -121,7 +121,7 @@ You are ready: continue with the [tutorial](tutorial.md).
 
 | Option | Effect |
 |---|---|
-| `NTHREADS=<n>` | Number of parallel compile jobs. Default 8, or fewer if the machine has fewer CPUs; use a small value on a shared login node. `make test` takes the same option for its threads (`make test NTHREADS=4`). |
+| `NTHREADS=<n>` | Number of parallel compile jobs. Default 8, or fewer if the machine has fewer CPUs. Use a small value on a shared login node. `make test` takes the same option for its threads (`make test NTHREADS=4`). |
 | `ARCH=native` | Optimize for the CPU of the machine that compiles. By default the program runs on every CPU of its family (x86-64 or arm64), which is what you want on a cluster with nodes of different ages, or when compiling on a login node. With `ARCH=native` it may be somewhat faster, but can stop with `Illegal instruction` on older CPUs. Any other `gcc -march` value also works, e.g. `ARCH=x86-64-v3`. |
 | `clean` | Remove everything compiled and rebuild from scratch. |
 | `help` | List all options. |
@@ -160,7 +160,7 @@ bash make_compile.sh
 **An existing libxc.** If libxc is already installed (a distribution
 package, conda, Homebrew's `libxc`), the script finds it through
 `pkg-config` and does not build its own. It must be libxc 7.0 or newer, built
-with the same gfortran; if an installed copy gives build errors, build the bundled
+with the same gfortran. If an installed copy gives build errors, build the bundled
 one with `bash compile_libxc.sh` and point at it with
 `LIBXC_DIR=$APOST3D_PATH/libxc-7.1.2`. To use a specific copy:
 
@@ -180,7 +180,7 @@ checked against the same checksum).
 cmake` installs a recent one without administrator rights.
 
 **macOS.** Homebrew's OpenBLAS is found automatically. The script also
-signs the programs so that macOS lets them run; if one is still blocked,
+signs the programs so that macOS lets them run. If one is still blocked,
 see [Troubleshooting](troubleshooting.md).
 
 To compile with `make` directly instead of the script, see

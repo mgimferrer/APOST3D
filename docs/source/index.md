@@ -45,7 +45,7 @@ centers, molecules) for any of these analyses.
 :class: note
 
 If you use APOST-3D in published work, please cite the program paper and
-the papers of the methods you used; see [Citations](citations.md).
+the papers of the methods you used (see [Citations](citations.md)).
 ```
 
 ```{toctree}
@@ -131,7 +131,7 @@ developer/json-output
 The program uses parts of the program APOST by I. Mayer and A. Hamza
 (Budapest, 2000-2003). The numerical integration uses the Lebedev-Laikov
 angular quadrature routines
-([source](http://www.ccl.net/cca/software/SOURCES/FORTRAN/Lebedev-Laikov-Grids/Lebedev-Laikov.F);
+([source](http://www.ccl.net/cca/software/SOURCES/FORTRAN/Lebedev-Laikov-Grids/Lebedev-Laikov.F),
 V. I. Lebedev and D. N. Laikov, *Doklady Mathematics*, **1999**, 59,
 477-481), and exchange-correlation functionals come from the
 [libxc](https://libxc.gitlab.io/) library through its Fortran 2003

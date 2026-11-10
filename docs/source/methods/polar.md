@@ -84,13 +84,13 @@ title line
 ```
 
 - line 2: minus the number of neighbor pairs to remove (here one, the
-  pair 2-5, given on the next line), or 0 to remove none;
+  pair 2-5, given on the next line), or 0 to remove none.
 - then the number of ring equations, and for each ring the number of its
   atoms and the atoms in order around the ring. Each ring equation sets
   the sum of the bond charges around the ring to zero.
 
 The removed pairs and the ring equations together must make up for the
-extra bond charges; otherwise the run stops.
+extra bond charges, otherwise the run stops.
 
 ## Reading the output
 
@@ -112,7 +112,7 @@ intrinsic ones here):
 ```
 
 `BOND CHARGES` gives the number of neighbor pairs and $Q(A|B)$ for each
-of them; here each hydrogen gives 0.61 electrons to oxygen:
+of them. Here each hydrogen gives 0.61 electrons to oxygen:
 
 % source: tests/reference/H2O-RHF-FIELD.apost
 ```text
@@ -158,8 +158,8 @@ of the molecular dipole:
 ```
 
 The energies follow Gaussian's convention, *E* = +**μ**·**F**. The
-intrinsic column is the same as in ENPART's `FIELD INTERACTION PER ATOM`;
-the charge-transfer column differs per atom, because ENPART uses the
+intrinsic column is the same as in ENPART's `FIELD INTERACTION PER ATOM`,
+but the charge-transfer column differs per atom, because ENPART uses the
 origin-dependent $q_A\mathbf R_A\cdot\mathbf F$.
 
 ## Checking the result
@@ -169,7 +169,7 @@ origin-dependent $q_A\mathbf R_A\cdot\mathbf F$.
   integration error: here −0.8347573 against −0.8347549 au.
 - For a neutral molecule, the total charge-transfer dipole of the bond
   charges equals $\sum_A q_A\mathbf R_A$ up to the integration error
-  (here 3e-7 au); a difference above 1e-4 au is flagged with a warning
+  (here 3e-7 au). A difference above 1e-4 au is flagged with a warning
   (integration grid, or `ichi.inp`).
 - For an ion, the bond charges cannot carry the charge of the molecule:
   a note says that their charge-transfer dipoles do not add up to

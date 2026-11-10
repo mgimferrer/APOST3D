@@ -5,7 +5,7 @@ file `<job>.apost.json` (the job name is the one given on the command
 line, so `water.inp` and `water.fchk` give `water.apost.json`). It is
 meant for programs: the APOST3Dview visualizer, scripts, workflows. The
 `.apost` text is meant for people and its layout may change between
-versions; the results file changes only as described under
+versions, and the results file changes only as described under
 [Versions](#versions).
 
 This page is the reference for its content.
@@ -19,7 +19,7 @@ This page is the reference for its content.
   file left from an earlier run with the same name is removed first.
 - A run that stops on an error (usually a `STOP` line at the end of the
   output) still completes its file, with `run.status` set to `"stopped"`
-  and the message in `run.stop_message`; it holds the blocks written
+  and the message in `run.stop_message`. It holds the blocks written
   before the stop. A run that stops while reading the input has no
   `input`, `molecule`, `fragments` or `analyses`.
 - A run that stops before the files are opened (missing input or
@@ -37,7 +37,7 @@ This page is the reference for its content.
   same double-precision value the program computed, whatever the
   `FULLPRECISION` setting of the text output. A value that is not
   available is `null` (also a non-finite number).
-- Per-atom lists have one entry per atom; per-fragment lists one entry
+- Per-atom lists have one entry per atom, per-fragment lists one entry
   per fragment, in `fragments` order. Matrices are lists of rows.
 - Atom and fragment values are both written by APOST-3D: a reader never
   builds fragment values by summing atom values.
@@ -68,7 +68,7 @@ This page is the reference for its content.
 | `method` | as in the output: `"Hartree-Fock"`, `"KS-DFT"`, `"CASSCF"`, ... |
 | `n_basis_functions` | number of basis functions |
 | `n_electrons`, `n_alpha`, `n_beta` | electron counts (valence electrons only with an ECP) |
-| `energy_au` | the `SCF Energy` field of the `.fchk` file, or `null` when the file has none. For a correlated Gaussian calculation it is the energy of the reference SCF; the `.fchk` files written by `utils/apost3d.py` (pySCF) and `utils/orca2fchk.py` (ORCA) store the energy of the method itself there (`orca2fchk.py` without the solvent and dispersion terms). Any change of this definition will be announced in the release notes. |
+| `energy_au` | the `SCF Energy` field of the `.fchk` file, or `null` when the file has none. For a correlated Gaussian calculation it is the energy of the reference SCF, while the `.fchk` files written by `utils/apost3d.py` (pySCF) and `utils/orca2fchk.py` (ORCA) store the energy of the method itself there (`orca2fchk.py` without the solvent and dispersion terms). Any change of this definition will be announced in the release notes. |
 | `density` | the density every analysis used: `fchk_block`, the header of its block in the `.fchk` file (`"Total SCF Density"`, or with `DENS` n the n-th block whose header starts with `Total` and names a `Density`, e.g. `"Total MP2 Density"`), `index` (n, 1 without `DENS`) and `source`: `"fchk"`, or `"dm1"` when the 1-RDM file of `# DM` replaces that density. `utils/apost3d.py` and `utils/orca2fchk.py` write the density of the method itself (e.g. CASSCF) in the `"Total SCF Density"` block |
 
 ### `input`
@@ -91,17 +91,17 @@ This page is the reference for its content.
 ### `fragments`
 
 A list with one object per fragment, `{"id": 1, "atoms": [1, 2, 3]}`, in
-the order of `# FRAGMENTS`; empty when the input defines no fragments.
+the order of `# FRAGMENTS`, empty when the input defines no fragments.
 Fragments never share an atom (the run stops). An atom can belong to no
 fragment only when no fragment analysis needs every atom (EOS, GEOS,
-OSLO and ENPART stop; the others warn in the output); `-1` on the last
+OSLO and ENPART stop, the others warn in the output). `-1` on the last
 fragment of the input means "all remaining atoms", so it is written out
 as their list.
 
 ### `atomic_weights`
 
 Written with the real-space atomic definitions `BECKE`, `BECKE-RHO` and
-`TFVC`; absent with Hilbert-space atoms, `HIRSH` and `HIRSH-IT`, and in a
+`TFVC`, and absent with Hilbert-space atoms, `HIRSH` and `HIRSH-IT`, and in a
 run that stops before its atoms are set up. With the coordinates of
 `molecule` it defines the weight w_A(r) of every atom, so a reader can
 rebuild the weight of a fragment, w_F = Σ_{A∈F} w_A, anywhere in space.
@@ -110,7 +110,7 @@ rebuild the weight of a fragment, w_F = Σ_{A∈F} w_A, anywhere in space.
 |---|---|
 | `profile` | `"becke"` (`BECKE`, `BECKE-RHO`) or `"tfvc"` (`TFVC`): the cell function below |
 | `stiffness` | k, the number of iterations of the cell function (`STIFFNESS`, default 4) |
-| `radius_ratios` | χ_AB for every atom pair: row A, column B; the diagonal (1) is not used. With `BECKE` the ratio of the atomic radii; with `BECKE-RHO` and `TFVC` the ratio APOST-3D sets, mostly from the density along the A–B axis (`BECKE-RHO`: the radius ratio for distant pairs; `TFVC`: 1 when another atom lies between A and B) |
+| `radius_ratios` | χ_AB for every atom pair: row A, column B. The diagonal (1) is not used. With `BECKE` the ratio of the atomic radii, with `BECKE-RHO` and `TFVC` the ratio APOST-3D sets, mostly from the density along the A–B axis (`BECKE-RHO`: the radius ratio for distant pairs, `TFVC`: 1 when another atom lies between A and B) |
 
 $$
 w_A(\mathbf r) = \frac{P_A(\mathbf r)}{\sum_B P_B(\mathbf r)}, \qquad
@@ -122,7 +122,7 @@ with f applied k times, the distances in bohr,
 μ_AB = (|r − R_A| − |r − R_B|) / |R_A − R_B| and χ = χ_AB:
 
 - `becke`: ν_AB = μ_AB + a (1 − μ_AB²), a = (1 − χ²) / (4χ), limited to
-  the range −½ to ½;
+  the range −½ to ½.
 - `tfvc`: ν_AB = (1 + μ_AB − χ (1 − μ_AB)) / (1 + μ_AB + χ (1 − μ_AB)).
 
 With these atoms, the orbitals of `orbital_file` (eos, geos) are
@@ -140,7 +140,7 @@ by w_F again.
 
 | Key | Content |
 |---|---|
-| `job_name`, `input_file`, `wavefunction_file` | file names without folders (`"water"`, `"water.inp"`, `"water.fchk"`); the input, wavefunction and results files are always in the same folder |
+| `job_name`, `input_file`, `wavefunction_file` | file names without folders (`"water"`, `"water.inp"`, `"water.fchk"`). The input, wavefunction and results files are always in the same folder |
 | `date` | when the run started, ISO 8601 with time zone (`"2026-10-13T14:05:31+02:00"`) |
 | `id` | the run id: the start time and 4 hex digits (`"2026-10-13T14:05:31+02:00/7f3a"`), also written in the title line of every orbital `.fchk` file of the run |
 | `threads` | number of threads |
@@ -155,7 +155,7 @@ intermediate steps (for example, the ENPART matrices before the
 zero-error correction), diagnostics and settings stay in the text
 output. A block is added in the same version that adds the analysis to
 the results file, and is described on this page then. A key is present
-only when the run computes it; the conditions are given with each block.
+only when the run computes it, and the conditions are given with each block.
 
 ### Matrix objects
 
@@ -179,15 +179,15 @@ A table (several quantities per fragment or per orbital) is an object:
 | `rows` | `"fragment"` (row i is fragment i) or `"orbital"` (one row per orbital, in the order given) |
 | `n_rows` | number of rows |
 | `columns` | one object per column: `key`, `title`, `unit` (or `null`), `decimals`, `signed` (as in the [index](#index)) |
-| `data` | one list per column, under its `key`; `null` where a row has no value. A column may hold a list per row (`fragments`, `shares`) |
+| `data` | one list per column, under its `key`, with `null` where a row has no value. A column may hold a list per row (`fragments`, `shares`) |
 | `fchk_orbitals` | in a table of orbitals written to a `.fchk` file: `"alpha"` or `"beta"`, the block of the file its `fchk_column` values refer to |
 
 **Orbital tables** (`efos`, `negative_efos`, `oslos`) have one row per
 orbital and the same two columns for its fragments: `fragments`, a list
 of fragment numbers, and `shares`, the share of each. An EFO always has
-one fragment and share 1 (`[3]`, `[1.0]`); a shared OSLO has several
+one fragment and share 1 (`[3]`, `[1.0]`), a shared OSLO has several
 (`[1, 2]`, `[0.5, 0.5]`). A table whose orbitals are in a `.fchk` file
-also has `fchk_orbitals` and a `fchk_column` column (1-based; `null` for
+also has `fchk_orbitals` and a `fchk_column` column (1-based, `null` for
 an orbital the file does not hold). The block of such a table gives the
 file name (`orbital_file`) and `orbital_file_id`, equal to the first line
 of the file after `run `: a file from another run (same molecule,
@@ -212,9 +212,9 @@ without `# DM` (no bond orders printed).
 | Key | Content |
 |---|---|
 | `scheme` | as in `populations` |
-| `atoms` | `matrix`: bond orders (localization index on the diagonal; with `# DM`, the exchange-only bond orders of the 1-RDM); `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free`; with `# DM` also `improved_bond_orders` (I. Mayer's improved bond orders, from the natural orbitals) with its total |
+| `atoms` | `matrix`: bond orders (localization index on the diagonal, and with `# DM` the exchange-only bond orders of the 1-RDM), `valence_total`, `valence_bonded` (sum of the bond orders of the atom), `valence_free`. With `# DM` also `improved_bond_orders` (I. Mayer's improved bond orders, from the natural orbitals) with its total |
 | `fragments` | `matrix` (localization index of the fragment on the diagonal, bond orders between fragments off it, total over the diagonal and one triangle), the three valences summed per fragment and, with `# DM`, `improved_bond_orders` (only with fragments) |
-| `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations; written when the output prints them (EOS and GEOS, except with Lowdin, Lowdin-Davidson or NAO atoms) |
+| `overlap_populations` | `atoms` and `fragments` (only with fragments), each with a `matrix` of overlap populations. Written when the output prints them (EOS and GEOS, except with Lowdin, Lowdin-Davidson or NAO atoms) |
 
 ### `local_spin`
 
@@ -227,7 +227,7 @@ a correlated wavefunction.
 | `wavefunction` | `"single determinant"` or `"correlated"` |
 | `total_unpaired_electrons` | number of effectively unpaired electrons N_D |
 | `total_s2` | total of the <S^2> decomposition |
-| `atoms` | `unpaired_electrons` (one value per atom) and `s2`, the a=3/4 decomposition of <S^2> (atomic terms on the diagonal, diatomic ones off it); for a correlated wavefunction also `xc_bond_orders` (exchange-correlation bond orders from the 2-RDM: delocalization indices, localization indices on the diagonal) with its total |
+| `atoms` | `unpaired_electrons` (one value per atom) and `s2`, the a=3/4 decomposition of <S^2> (atomic terms on the diagonal, diatomic ones off it). For a correlated wavefunction also `xc_bond_orders` (exchange-correlation bond orders from the 2-RDM: delocalization indices, localization indices on the diagonal) with its total |
 | `fragments` | `unpaired_electrons`, `s2` and, for a correlated wavefunction, `xc_bond_orders`, per fragment (only with fragments) |
 
 ### `effao`
@@ -256,11 +256,11 @@ Written with `EOS`.
 |---|---|
 | `scheme` | as in `populations` |
 | `alpha` | `reliability_percent` (R of the channel), `assignment` (`"integer"`, or `"fractional"` when electrons are shared among EFOs of equal occupation at the frontier), `frontier` (table per fragment: `last_occupied`, `first_unoccupied`, the gross occupations of its last occupied and first unoccupied EFOs, `null` when it has none), `frontier_efos` (the EFOs that set R, below), `efos` (below) |
-| `beta` | as `alpha`; or `{"same_as_alpha": true}` when the beta density equals the alpha one (closed shell), or `{"no_electrons": true}` |
+| `beta` | as `alpha`, or `{"same_as_alpha": true}` when the beta density equals the alpha one (closed shell), or `{"no_electrons": true}` |
 | `fragments` | `oxidation_states`, `electrons_alpha`, `electrons_beta` |
 | `reliability_percent` | the overall R, the smaller of the two channels |
 | `orbital_file`, `orbital_file_id` | the `.fchk` file with the EFOs (in the same folder) and its id (see [Tables](#tables)) |
-| `orbital_file_unweighted` | with `BECKE`, `BECKE-RHO` and `TFVC` atoms only: the `.fchk` file with the same EFOs before the multiplication by the fragment's weight (see [`atomic_weights`](#atomic_weights)); same orbital columns and run id as `orbital_file`, so `fchk_column` labels both |
+| `orbital_file_unweighted` | with `BECKE`, `BECKE-RHO` and `TFVC` atoms only: the `.fchk` file with the same EFOs before the multiplication by the fragment's weight (see [`atomic_weights`](#atomic_weights)). Same orbital columns and run id as `orbital_file`, so `fchk_column` labels both |
 
 The `efos` table of a channel lists every EFO of the assignment, sorted
 by gross occupation as they are assigned, which is also the order of the
@@ -298,8 +298,8 @@ place of the alpha and beta electrons:
 | Key | Content |
 |---|---|
 | `scheme` | as in `populations` |
-| `paired`, `unpaired` | `reliability_percent`, `frontier`, `frontier_efos` and `efos` as in `eos` (for `paired`, occupations run from 0 to 2: λ_LO = 2 when `last_occupied` is empty, and R = 100 min(1, (λ_LO − λ_FU)/2 + 0.5)). The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals; `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
-| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `fit_percent` (as in the EFO tables: how closely its projected orbital in `orbital_file` reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block); no rows when there are none |
+| `paired`, `unpaired` | `reliability_percent`, `frontier`, `frontier_efos` and `efos` as in `eos` (for `paired`, occupations run from 0 to 2: λ_LO = 2 when `last_occupied` is empty, and R = 100 min(1, (λ_LO − λ_FU)/2 + 0.5)). The `efos` rows follow the orbitals of the channel in `orbital_file`: paired EFOs are its alpha orbitals, unpaired ones its beta orbitals. `electrons` is 2 or 0 for a paired EFO and 1 or 0 for an unpaired one |
+| `negative_efos` | table of the paired EFOs with a clearly negative net occupation, left out of the assignment: `fragments`, `shares`, `net`, `gross`, `fit_percent` (as in the EFO tables: how closely its projected orbital in `orbital_file` reproduces it) and `fchk_column`, their alpha orbital in `orbital_file` (the last ones of the block). No rows when there are none |
 | `fragments` | `oxidation_states`, `electrons_paired`, `electrons_unpaired` |
 | `reliability_percent` | the overall R |
 | `rmsd` | root-mean-square deviation between the pooled occupations and the electrons assigned to them |
@@ -308,7 +308,7 @@ place of the alpha and beta electrons:
 
 To label the orbitals of `orbital_file`: alpha orbital k is the row with
 `fchk_column` k of a table with `fchk_orbitals` `"alpha"` (`paired.efos`
-or `negative_efos`, the last orbitals of the block); beta orbital k the
+or `negative_efos`, the last orbitals of the block), and beta orbital k the
 one of `unpaired.efos`. Orbitals with no row are empty (zero
 coefficients). The same rule holds for every orbital file.
 
@@ -319,7 +319,7 @@ Written with `OSLO`.
 | Key | Content |
 |---|---|
 | `scheme` | the atomic definition of the spreads, as in `populations` |
-| `fragment_populations` | the atoms of the fragment populations (`# OSLO` `MULLIKEN`, `LOWDIN`, ...; else as `scheme`) |
+| `fragment_populations` | the atoms of the fragment populations (`# OSLO` `MULLIKEN`, `LOWDIN`, ..., else as `scheme`) |
 | `total`, or `alpha` and `beta` | one object per channel (`total` for a restricted wavefunction, each orbital doubly occupied): `sum_foli` and the `oslos` table (below) |
 | `fragments` | `oxidation_states`, and `electrons` (restricted) or `electrons_alpha`, `electrons_beta` |
 | `orbital_file`, `orbital_file_id` | the `.fchk` file with the final OSLOs and its id |
@@ -331,7 +331,7 @@ which is the order of the orbitals of the channel in `orbital_file`
 `iteration` (that selected it), `foli` (also stored as its orbital
 energy in the file), `fragments` (a list: the fragment it was assigned
 to, or every fragment of a shared orbital), `shares` (a list, as
-`fragments`: 1 for a single fragment; for a shared orbital the shares
+`fragments`: 1 for a single fragment, and for a shared orbital the shares
 printed in the output, divided equally among the orbitals of the
 selection) and `fchk_column`. The `-OSLOs-preortho.fchk` file, when
 written, has the same orbitals before orthogonalization in the same
@@ -340,36 +340,36 @@ order.
 ### `enpart`
 
 Written with `ENPART`, for Hartree-Fock, KS-DFT and correlated
-(CASSCF/CISD) wavefunctions. Energies in au; every matrix
+(CASSCF/CISD) wavefunctions. Energies are in au, and every matrix
 is a [matrix object](#matrix-objects) in the convention of the text
 output: one-center terms on the diagonal, the whole A–B term off it, the
 total over the diagonal and one triangle. The external-field analysis
-(per-atom terms) and `POLAR` are not written; only the field interaction
+(per-atom terms) and `POLAR` are not written, only the field interaction
 energy, needed to check the total.
 
 | Key | Content |
 |---|---|
-| `wavefunction`, `formalism` | `"Hartree-Fock"`, `"KS-DFT"`, `"CASSCF"` or `"CISD"` (pySCF FCI and CISD wavefunctions are read as a CAS with every orbital active, so they say `"CASSCF"`); `"restricted"` or `"unrestricted"` |
-| `functional` | KS-DFT: `keyword` (the predefined keyword of `# ENPART`, or `"LIBRARY"`), `components` (one object per libxc functional: `libxc_id`, `name`, `kind`, `family`) and `exact_exchange_fraction` (0 for a pure functional; absent when the run stops at the functional check); `null` for Hartree-Fock and correlated wavefunctions |
+| `wavefunction`, `formalism` | `"Hartree-Fock"`, `"KS-DFT"`, `"CASSCF"` or `"CISD"` (pySCF FCI and CISD wavefunctions are read as a CAS with every orbital active, so they say `"CASSCF"`), and `"restricted"` or `"unrestricted"` |
+| `functional` | KS-DFT: `keyword` (the predefined keyword of `# ENPART`, or `"LIBRARY"`), `components` (one object per libxc functional: `libxc_id`, `name`, `kind`, `family`) and `exact_exchange_fraction` (0 for a pure functional, absent when the run stops at the functional check). `null` for Hartree-Fock and correlated wavefunctions |
 | `pair_threshold`, `multipolar_pairs` | the `THREBOD` bond order, and the atom pairs below it (a list of `[A, B]`, 1-based), whose exchange-correlation term comes from the multipolar expansion |
-| `electron_nuclear`, `kinetic`, `nuclear_repulsion` | one-electron terms (below); `kinetic` is a diagonal matrix |
+| `electron_nuclear`, `kinetic`, `nuclear_repulsion` | one-electron terms (below). `kinetic` is a diagonal matrix |
 | `xc_dft` | KS-DFT: the DFT part of the exchange-correlation (for a hybrid, without the exact exchange) |
-| `two_electron_integration` | `energy` and `error_kcal` on the first grid, `tolerance_kcal`, `zero_error_correction` (`"applied"`, `"not needed"` or `"no reference energy"`), and when applied `rotated_grid_error_kcal`, `damping`, `corrected_energy`, `corrected_error_kcal` (`null` otherwise); `error_kcal` and `tolerance_kcal` are `null` with `"no reference energy"` |
+| `two_electron_integration` | `energy` and `error_kcal` on the first grid, `tolerance_kcal`, `zero_error_correction` (`"applied"`, `"not needed"` or `"no reference energy"`), and when applied `rotated_grid_error_kcal`, `damping`, `corrected_energy`, `corrected_error_kcal` (`null` otherwise). `error_kcal` and `tolerance_kcal` are `null` with `"no reference energy"` |
 | `coulomb` | the Coulomb term |
 | `exact_exchange_share` | hybrid functionals: the HF-type exchange multiplied by the exact-exchange fraction, as it enters the energy |
 | `xc` | the final exchange-correlation term: the exchange for Hartree-Fock, `xc_dft` for a pure functional, `xc_dft` + `exact_exchange_share` for a hybrid, the cumulant term for a correlated wavefunction |
 | `exchange`, `correlation` | correlated wavefunctions with `CORRELATION`, only when the zero-error correction was not applied (it corrects their sum `xc`): the exchange and correlation parts, adding up to `xc` |
 | `total` | the IQA matrix: self-energies on the diagonal, interaction energies off it |
-| `total_energy`, `reference_energy`, `field_energy`, `integration_error`, `integration_error_kcal` | the total of `total`, the energy of the `.fchk` (which includes the interaction with an external field, when there is one), the field interaction energy (`null` without a field; it is not part of the IQA terms), and `integration_error` = `total_energy` + `field_energy` − `reference_energy` |
-| `atomic_energies` | `atoms` and, with `DOFRAGS`, `fragments`: `self_energy` and `additive_energy` (self-energy + half of each interaction energy; they add up to `total_energy`) |
-| `classical_interaction` | the electron-nuclear + nuclear-nuclear + Coulomb part of each interaction energy (`total` − `xc` off the diagonal; the diagonal is zero) |
+| `total_energy`, `reference_energy`, `field_energy`, `integration_error`, `integration_error_kcal` | the total of `total`, the energy of the `.fchk` (which includes the interaction with an external field, when there is one), the field interaction energy (`null` without a field, and not part of the IQA terms), and `integration_error` = `total_energy` + `field_energy` − `reference_energy` |
+| `atomic_energies` | `atoms` and, with `DOFRAGS`, `fragments`: `self_energy` and `additive_energy` (self-energy + half of each interaction energy: they add up to `total_energy`) |
+| `classical_interaction` | the electron-nuclear + nuclear-nuclear + Coulomb part of each interaction energy (`total` − `xc` off the diagonal, zero on the diagonal) |
 
 Each term (`electron_nuclear` ... `total`, `exchange`, `correlation`,
 `classical_interaction`) is an
 object with `atoms` (atom matrix), `fragments` (fragment matrix, with
 `DOFRAGS`) and, for `electron_nuclear` and `kinetic` when the `.fchk` has
 the reference energies, `integration_error_kcal`. All values are the
-final ones, after the zero-error correction when it was applied; the
+final ones, after the zero-error correction when it was applied. The
 matrices of `VERBOSE 1` are not written.
 
 ## Index
@@ -383,14 +383,14 @@ entry per quantity, in the order they are written:
 |---|---|
 | `id` | stable name, the path below `analyses` joined with dots (`"populations.atoms.charges"`) |
 | `analysis` | the key of its block in `analyses` |
-| `spin` | the channel of a quantity given per channel: `"alpha"`, `"beta"`, `"paired"`, `"unpaired"`, or `"total"` for the combined result; `null` otherwise |
-| `path` | JSON Pointer to the value (`"/analyses/populations/atoms/charges"`); for a matrix, to its matrix object |
-| `role` | `"comparison"` for a value printed only to compare with the result (the Mulliken values of a run with another atomic definition); absent otherwise |
+| `spin` | the channel of a quantity given per channel: `"alpha"`, `"beta"`, `"paired"`, `"unpaired"`, or `"total"` for the combined result, `null` otherwise |
+| `path` | JSON Pointer to the value (`"/analyses/populations/atoms/charges"`), for a matrix to its matrix object |
+| `role` | `"comparison"` for a value printed only to compare with the result (the Mulliken values of a run with another atomic definition), absent otherwise |
 | `kind` | `scalar` (one number, e.g. `local_spin.total_s2`), `atom_vector`, `atom_matrix`, `fragment_vector`, `fragment_matrix` or `table` |
 | `title` | a name for a menu, with the atomic definition (`"Atomic charges (TFVC)"`) |
 | `unit` | `"au"`, `"%"`, ... or `null` for a dimensionless quantity |
-| `decimals` | decimals the text output prints for it (2 to 7; 13 for the 6- and 7-decimal values with `FULLPRECISION`): a default for display; `null` for a table, whose columns give their own |
-| `signed` | `true` when the values can be negative by nature (charges, spin populations, the <S^2> decomposition, energies, oxidation states, the occupations of negative EFOs, and Mulliken bond orders and overlap populations): a diverging colour scale centred on zero suits them; `false` when they are not (populations, bond orders, valences), even if a value comes out slightly negative from the numerical integration |
+| `decimals` | decimals the text output prints for it (2 to 7, and 13 for the 6- and 7-decimal values with `FULLPRECISION`): a default for display. `null` for a table, whose columns give their own |
+| `signed` | `true` when the values can be negative by nature (charges, spin populations, the <S^2> decomposition, energies, oxidation states, the occupations of negative EFOs, and Mulliken bond orders and overlap populations): a diverging colour scale centred on zero suits them. `false` when they are not (populations, bond orders, valences), even if a value comes out slightly negative from the numerical integration |
 
 `index` is always present (empty when the run stopped before any
 analysis).
@@ -398,12 +398,12 @@ analysis).
 ## Versions
 
 `schema_version` is `"major.minor"`. A new key or block increases the
-minor number; a renamed or removed key, or a change of meaning, increases
+minor number. A renamed or removed key, or a change of meaning, increases
 the major number. Version 0.x is the draft that becomes 1.0 with
-APOST-3D 5.0; while it is a draft a key may still be renamed with only a
+APOST-3D 5.0. While it is a draft a key may still be renamed with only a
 minor increase (0.8 replaced the `fragment` column of the EFO tables by
-`fragments` and `shares`; 0.13 renamed `recovered_percent` of
-`negative_efos` to `fit_percent`; 0.14 moved `new_bond_orders` from
+`fragments` and `shares`, 0.13 renamed `recovered_percent` of
+`negative_efos` to `fit_percent`, and 0.14 moved `new_bond_orders` from
 `local_spin` to `bond_orders` as `improved_bond_orders` and renamed `li_di` to `xc_bond_orders`).
 
 ## Checking a change
@@ -412,6 +412,6 @@ The test suite keeps a reference results file for every test
 (`tests/reference/<test>.apost.json`) and compares each run with it
 (`tests/compare_json.py`: same structure, text and integers, reals within
 a relative 1e-9 or an absolute 1e-8 au, so that values that cancel to
-almost zero compare across machines; keys ending in `_kcal` get the same
+almost zero compare across machines. Keys ending in `_kcal` get the same
 1e-8 au in kcal/mol, 6.3e-6). `make update-ref` rewrites them together with the
 `.apost` references.

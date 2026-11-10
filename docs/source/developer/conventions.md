@@ -3,7 +3,7 @@
 These rules apply to every routine that is added or cleaned. Older code
 that has not been through the [clean-up protocol](cleanup-protocol.md)
 yet still follows earlier habits (ALL-CAPS comments, `c` comment lines,
-`GOTO` loops); it is brought in line when its turn comes, not piecemeal.
+`GOTO` loops). It is brought in line when its turn comes, not piecemeal.
 
 ## Language and typing
 
@@ -11,7 +11,7 @@ yet still follows earlier habits (ALL-CAPS comments, `c` comment lines,
   free form (`.f90`) for the modules and the newer utilities.
 - The target for typing: every routine starts with `implicit none` and
   declares every variable, and dummy arguments carry `intent(in)`,
-  `intent(out)` or `intent(inout)`. New routines follow it; most existing
+  `intent(out)` or `intent(inout)`. New routines follow it, but most existing
   routines, cleaned ones included, still use `implicit real*8(a-h,o-z)`
   (or `implicit double precision`), where a name starting with `i`-`n` is
   silently an integer and a misspelt variable is silently a new one. Read
@@ -25,11 +25,11 @@ yet still follows earlier habits (ALL-CAPS comments, `c` comment lines,
 ## Layout
 
 - Fixed form: statements start in column 7 and every nesting level
-  indents 2 more spaces; `else`, `else if` and `case` sit one level
+  indents 2 more spaces. `else`, `else if` and `case` sit one level
   shallower than the block they belong to. Free form: the same, starting
   in column 3 (`modules.f90`: column 4).
 - Comments start in column 1.
-- Loops use `do ... end do`; no shared-label `do` loops, no arithmetic
+- Loops use `do ... end do`: no shared-label `do` loops, no arithmetic
   `if`, no `GOTO` for loops (an early exit uses `exit` or `cycle`).
 
 ## Comments
@@ -65,14 +65,14 @@ Every routine has a header directly above its first line, e.g. in
 ```
 
 About half of the files still have the older header style (a box of
-`*`, `purpose:`, a closing `!!` on each line); it is replaced when the
+`*`, `purpose:`, a closing `!!` on each line). It is replaced when the
 routine is reworked.
 
 - The description says what is computed, in chemical terms, in two to
   four lines, with the paper (and equation) it implements when there is
   one. Implementation details go in comments inside the routine.
 - Arguments: name, `(in)`/`(out)`/`(inout)`, array shape, meaning.
-- `author:` is the last line: initials of the author of a new routine;
+- `author:` is the last line: initials of the author of a new routine,
   left blank for an existing routine whose author is unknown.
 - Inside a module's `contains`, a lighter divider `!! ---- !!` separates
   short helper routines.

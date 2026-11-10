@@ -37,7 +37,7 @@ Effective oxidation states with natural atomic orbitals as atoms (which
 needs the file `jobname.nao`, see
 [Preparing the wavefunction](../guide/wavefunctions.md#gaussian)), and cube
 files of the effective fragment orbitals with net occupations between 0.3
-and 0.7. Fragment 1 is atom 1; fragment 2 all the other atoms.
+and 0.7. Fragment 1 is atom 1, and fragment 2 all the other atoms.
 
 Try it on `CH3F-NAO.fchk` with `CH3F-NAO.nao` (copied as `mol.nao`): the
 fragments are C and FH₃, with oxidation states −2 and +2 and six cube
@@ -71,12 +71,12 @@ ANGULAR_2E 590
 
 Energy partitioning of a KS-DFT wavefunction. The libxc ids 106 (B88
 exchange) and 131 (LYP correlation) make up BLYP, so the `BLYP` keyword
-gives the same result; the functional must be the one of the
+gives the same result. The functional must be the one of the
 wavefunction. `THREBOD -1` computes the exchange-correlation term
 of every atom pair. The optional `# GRID` block here
 repeats the default two-electron grid. See [ENPART](../methods/enpart.md).
 
-Try it on `H2O-T-BLYP.fchk` (triplet water, UKS BLYP; about a minute on 8
+Try it on `H2O-T-BLYP.fchk` (triplet water, UKS BLYP, about a minute on 8
 threads): the fragments are O and H₂.
 
 ## Example 3 - Local spin of a correlated wavefunction from pySCF

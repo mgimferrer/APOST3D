@@ -1,8 +1,8 @@
 # Running the test suite
 
 The regression suite runs a set of complete calculations (RKS/UKS DFT, HF,
-CASSCF, FCI; population analysis, EFFAO, EOS, GEOS, OSLO, local spin,
-ENPART; Gaussian, Q-Chem, pySCF and ORCA inputs) and compares their output with
+CASSCF, FCI, with population analysis, EFFAO, EOS, GEOS, OSLO, local spin
+and ENPART, from Gaussian, Q-Chem, pySCF and ORCA inputs) and compares their output with
 stored references. It is the way to check a new build and the safety net
 when changing the code.
 
@@ -23,7 +23,7 @@ Each test is checked in three ways:
 - **Manifest checks**: selected quantities (energies, charges, oxidation
   states, ...) listed in `tests/manifest.json`, each with its tolerance.
 - **Full output vs reference**: every number printed is compared with
-  `tests/reference/<name>.apost`. Integers must match; decimals may differ
+  `tests/reference/<name>.apost`. Integers must match, and decimals may differ
   by at most 5 units of their last printed digit, which allows a rounding
   change on another machine or compiler but not a real change, and two
   values within 1e-8 of each other are always equal (digits beyond that,
@@ -34,7 +34,7 @@ Each test is checked in three ways:
   say how the run ended, and match `tests/reference/<name>.apost.json`
   (`tests/compare_json.py`: same structure, text and integers, reals
   within a relative 1e-9 or an absolute 1e-8 au, 6.3e-6 for values in
-  kcal/mol; the thread count, date and run id are ignored). See
+  kcal/mol, and the thread count, date and run id are ignored). See
   [Results file (JSON)](json-output.md).
 
 The full-output comparison has two levels:
@@ -85,7 +85,7 @@ python3 tests/run_tests.py --verbose
 python3 tests/run_tests.py --help
 ```
 
-`--nthreads N` sets the threads (default 1; `make test` passes
+`--nthreads N` sets the threads (default 1, `make test` passes
 `NTHREADS`), `--ulps K` changes the allowed deviation to `K` units of the last digit,
 `--strict` selects the strict level, `--no-full` skips the full-output
 comparison, `--output-dir DIR` saves the outputs elsewhere.
@@ -134,15 +134,15 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 
 | System | Description | Tags |
 |--------|-------------|------|
-| `H2O-T-B3LYP` | Water, triplet UKS B3LYP: TFVC, ENPART, local spin, fragments O and H2, `VERBOSE 1`; `THREBOD 2000` treats the H–H pair with the multipolar expansion | `dft enpart spin tfvc uks openshell hybrid threbod multipolar fragments verbose` |
+| `H2O-T-B3LYP` | Water, triplet UKS B3LYP: TFVC, ENPART, local spin, fragments O and H2, `VERBOSE 1`. `THREBOD 2000` treats the H–H pair with the multipolar expansion | `dft enpart spin tfvc uks openshell hybrid threbod multipolar fragments verbose` |
 | `CH3F` | Fluoromethane, RKS: TFVC, fragment OSLO | `dft oslo tfvc rks fragments` |
 | `CH3F-pySCF` | Fluoromethane, RKS B3LYP from pySCF (`utils/apost3d.py`): TFVC, fragment OSLO and its `.fchk` export | `dft oslo tfvc rks fragments pyscf` |
-| `HF-G-pySCF` | Hydrogen fluoride, RHF from pySCF with cc-pVQZ (g shells) on F: TFVC; the Mulliken charges equal pySCF's, which checks the order and normalization of every shell type | `hf tfvc rhf pyscf g-functions` |
-| `H2O-MP2-DENS2` | Water, RMP2 from Gaussian 16 with `density=current`: `DENS 2` analyses the MP2 density (TFVC); the Mulliken charges equal Gaussian's own | `h2o tfvc rmp2 dens gaussian` |
+| `HF-G-pySCF` | Hydrogen fluoride, RHF from pySCF with cc-pVQZ (g shells) on F: TFVC. The Mulliken charges equal pySCF's, which checks the order and normalization of every shell type | `hf tfvc rhf pyscf g-functions` |
+| `H2O-MP2-DENS2` | Water, RMP2 from Gaussian 16 with `density=current`: `DENS 2` analyses the MP2 density (TFVC). The Mulliken charges equal Gaussian's own | `h2o tfvc rmp2 dens gaussian` |
 | `H2O-MP2-DENS2-ENPART` | Same file: ENPART with `DENS 2` must stop (the orbitals belong to the SCF density) | `h2o rmp2 dens gaussian expected-stop` |
 | `H2-T-OSLO` | H2 triplet, UKS B3LYP from pySCF: fragment OSLO with no beta electrons and more linear-dependency candidates than electrons | `dft oslo tfvc uks fragments openshell pyscf` |
 | `C2H6-OSLO-2CH3` | Ethane, RKS B3LYP, two CH₃ fragments: the C–C bond, found from both, is shared half and half (oxidation states 0/0) | `dft oslo tfvc rks fragments shared` |
-| `H2-S-OSLO` | H2 singlet, UKS B3LYP from pySCF: the orbital of each spin channel shared between the two atoms; `BRANCH_ALPHA`/`BRANCH_BETA` reported as not applicable | `dft oslo tfvc uks fragments pyscf shared branching` |
+| `H2-S-OSLO` | H2 singlet, UKS B3LYP from pySCF: the orbital of each spin channel shared between the two atoms. `BRANCH_ALPHA`/`BRANCH_BETA` reported as not applicable | `dft oslo tfvc uks fragments pyscf shared branching` |
 | `H2-T-OSLO-CLOSE` | H2 triplet at 0.60 Å, UKS B3LYP from pySCF: the first selection takes both alpha orbitals (Δ-FOLI 0.30), so the close-alternative check is skipped | `dft oslo tfvc uks fragments openshell pyscf` |
 | `C3H7F-OSLO-CLOSE` | 1-Fluoropropane, RKS B3LYP/6-31G* from pySCF, fragments CH₃, CH₂, CH₂ and F: the CH₃–CH₂ bond is found from both sides (overlap 0.99955, Δ-FOLI 0.075) with an orbital still left, so the close-alternative warning suggests `BRANCH_ITERATION 13` | `dft oslo tfvc rks fragments pyscf branching` |
 | `CH3F-OSLO-BRANCH` | Fluoromethane, RKS: `BRANCH_ITERATION 6` gives the C–F bond to CH₃ (+1/−1), with a higher sum of FOLI values | `dft oslo tfvc rks fragments branching` |
@@ -173,36 +173,36 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2O-SVWN` | Water, Gaussian 16 SVWN: predefined functional keyword, LDA family | `dft enpart tfvc rks lda functional-keyword` |
 | `H2O-BHANDHLYP-pySCF` | Water, pySCF RKS BHandHLYP: the `BHANDHLYP` keyword, whose long libxc name is printed in full | `dft enpart tfvc rks hybrid functional-keyword pyscf` |
 | `H2O-M062X` | Water, Gaussian 16 M06-2X: the `M062X` keyword, a hybrid meta-GGA at the default `THREBOD` | `dft enpart tfvc rks meta-gga hybrid functional-keyword` |
-| `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, BLYP / B3LYP at the default `THREBOD`: 7 weak pairs by the multipolar expansion; B3LYP also with two water fragments | `dft enpart tfvc rks threbod multipolar` (B3LYP: also `hybrid fragments`) |
+| `H2O-Dimer-BLYP` / `H2O-Dimer-B3LYP` | Water dimer, BLYP / B3LYP at the default `THREBOD`: 7 weak pairs by the multipolar expansion. B3LYP also with two water fragments | `dft enpart tfvc rks threbod multipolar` (B3LYP: also `hybrid fragments`) |
 | `H2-TWO-AIM` | H2 with two atomic definitions in `# METHOD`: the run must stop while reading the input | `input expected-stop` |
 | `CH3F-EOS-LOWDIN` | Fluoromethane, RKS, Lowdin atoms: closed-shell Hilbert-space EOS, beta assigned as alpha | `dft eos effao lowdin rks fragments` |
 | `H2-T-EOS` | H2 triplet, UKS from pySCF: EOS with no beta electrons | `dft eos effao tfvc uks fragments` |
 | `H2-S-EOS` | H2 singlet, UKS from pySCF: EOS with one electron per channel shared between the two atoms (fractional assignment) | `dft eos effao tfvc uks fragments` |
 | `CH3F-GEOS` | Fluoromethane, RKS: GEOS on a closed shell, same oxidation states as EOS | `dft geos effao tfvc rks fragments` |
 | `LiH-32-FCI-LINDEP` | LiH at 3.2 Å, pySCF FCI/aug-cc-pVDZ with one near-linear dependency removed: GEOS with a negative paired EFO in a basis with fewer independent functions than basis functions | `fci geos effao tfvc pyscf fragments negative-efo lindep` |
-| `H2O-DOINT` | Water, RKS (the H2O-SVWN wavefunction), TFVC: DOINT writes one `.int` file per atom (lower triangle) and the `.files` list, whose matrices add up to the identity; `CUBE` without an EFO analysis (warning, no cube file) | `dft rks tfvc doint cube` |
+| `H2O-DOINT` | Water, RKS (the H2O-SVWN wavefunction), TFVC: DOINT writes one `.int` file per atom (lower triangle) and the `.files` list, whose matrices add up to the identity. `CUBE` without an EFO analysis (warning, no cube file) | `dft rks tfvc doint cube` |
 | `NaBH3--UHF-DOINT` | NaBH₃⁻, UHF, Mulliken atoms: DOINT for an unrestricted wavefunction (alpha and beta blocks, whole matrices) | `hf uhf mulliken doint` |
 | `LiH-35-CAS22-DOINT` | LiH at 3.5 Å, CASSCF(2,2) with `# DM PYSCF`, TFVC: DOINT in the natural-orbital basis | `casscf pyscf tfvc doint` |
 | `CH3F-EOS-CUBE` | Fluoromethane, RKS, TFVC: EOS with fragments F and CH₃, a cube file for every EFO with net occupation below 1 | `dft rks tfvc eos effao fragments cube` |
 | `CH3F-BECKE-RHO-EOS` | Fluoromethane, RKS, Becke atoms with radii from the density (`BECKE-RHO`): populations and EOS with fragments F and CH₃ | `dft rks becke-rho eos effao fragments` |
 | `H2O-BECKE-EFFAO` | Water, RKS, Becke atoms with fixed radii (`BECKE`): populations and EFFAO per atom | `dft rks becke effao` |
 | `NaBH3--UHF-UEFFAO` | NaBH₃⁻, UHF, TFVC: UEFFAO per atom, without EOS | `hf uhf tfvc effao` |
-| `CH3F-OSLO-MULLIKEN` | Fluoromethane, RKS: OSLO with Mulliken fragment populations (`# OSLO MULLIKEN`); orbitals with a negative Mulliken population are no candidates | `dft rks oslo mulliken fragments` |
+| `CH3F-OSLO-MULLIKEN` | Fluoromethane, RKS: OSLO with Mulliken fragment populations (`# OSLO MULLIKEN`). Orbitals with a negative Mulliken population are no candidates | `dft rks oslo mulliken fragments` |
 | `CH3F-HIRSH` | Fluoromethane, G16 RKS B3LYP/6-31G(d) with Cartesian d: Hirshfeld atoms from `densoutput` (`gen_hirsh`, same level), populations and EOS with fragments F and CH₃ | `dft rks hirsh eos effao fragments` |
 | `CH3F-HIRSH-IT` | The same, iterative Hirshfeld atoms: the iteration table, populations and EOS | `dft rks hirsh-it eos effao fragments` |
-| `CH3F-NAO` | The same wavefunction, NAO atoms from the NBO `AONAO=W` file: the charges are NBO's natural charges; EOS with fragments F and CH₃ | `dft rks nao eos effao fragments` |
+| `CH3F-NAO` | The same wavefunction, NAO atoms from the NBO `AONAO=W` file: the charges are NBO's natural charges. EOS with fragments F and CH₃ | `dft rks nao eos effao fragments` |
 | `H2O-NAO-pVDZ` | Water, G16 RKS B3LYP/cc-pVDZ (spherical d), NAO atoms: the charges are NBO's natural charges | `dft rks nao` |
 | `CH3F-OSLO-NAO` | The CH3F-HIRSH wavefunction: OSLO with NAO fragment populations (`# OSLO NAO-BASIS`) | `dft rks oslo nao fragments` |
 | `CH2-T-CAS66` | CH₂ triplet, ROHF-based CASSCF(6,6)/6-31G from pySCF, `DM 2`: exchange-only bond orders of the 1-RDM (with its spin density), Mayer's improved bond orders, exchange-correlation bond orders (DI) and correlated local spin | `casscf dm pyscf spin tfvc openshell` |
 | `CH2-T-CAS66-DM1` | The same with `DM 1`: both bond-order matrices in the population analysis, no local spin | `casscf dm pyscf tfvc openshell` |
 | `CH2-T-CAS66-NODM` | The same without `# DM`: no bond orders or valences for a non-singlet, with a note | `casscf pyscf tfvc openshell` |
-| `HF-G-ORCA` | Hydrogen fluoride, RHF from ORCA 6 (`utils/orca2fchk.py`) with cc-pVQZ (g shells) on F, the geometry of `HF-G-pySCF`: TFVC; the Mulliken charges equal ORCA's, which checks the order and signs of every shell type | `hf tfvc rhf orca g-functions` |
+| `HF-G-ORCA` | Hydrogen fluoride, RHF from ORCA 6 (`utils/orca2fchk.py`) with cc-pVQZ (g shells) on F, the geometry of `HF-G-pySCF`: TFVC. The Mulliken charges equal ORCA's, which checks the order and signs of every shell type | `hf tfvc rhf orca g-functions` |
 | `HI-ECP-ORCA` | Hydrogen iodide, RHF/def2-SVP from ORCA with the def2 pseudopotential on I: ENPART (HF), with the ECP matrix written by `orca2fchk.py` | `hf enpart tfvc rhf orca ecp` |
-| `H2O-B3LYP-CPCM-ORCA` | Water, RKS B3LYP-D3BJ with CPCM from ORCA (`NoRI`): ENPART with ORCA's B3LYP (libxc 475); the reference energies leave out the solvent and dispersion terms | `dft enpart tfvc rks orca hybrid libxc-ids solvent` |
-| `OH-UKS-ORCA` | Hydroxyl radical, UKS B3LYP from ORCA: local spin and ENPART; Mulliken charges and spin populations equal ORCA's | `dft enpart spin tfvc uks openshell orca libxc-ids` |
-| `CH2-T-ROHF-ORCA` | CH₂ triplet, ROHF/def2-TZVP from ORCA: ENPART (HF); Mulliken charges and spin populations equal ORCA's | `hf enpart tfvc rohf openshell orca` |
-| `CH2-T-ROHF-GEOS-ORCA` | The same ROHF triplet: GEOS with C, H, H as fragments, C(−2); the EFO `.fchk` files get Beta blocks for the unpaired EFOs and keep both densities of the input | `hf geos effao tfvc rohf openshell fragments orca` |
-| `CH2-T-ROHF-OSLO-ORCA` | The same ROHF triplet: OSLO with C, H, H as fragments, C(−2); both OSLO `.fchk` files (`PRINT_NONORTHO`) get Beta blocks for the beta OSLOs | `hf oslo tfvc rohf openshell fragments orca` |
+| `H2O-B3LYP-CPCM-ORCA` | Water, RKS B3LYP-D3BJ with CPCM from ORCA (`NoRI`): ENPART with ORCA's B3LYP (libxc 475). The reference energies leave out the solvent and dispersion terms | `dft enpart tfvc rks orca hybrid libxc-ids solvent` |
+| `OH-UKS-ORCA` | Hydroxyl radical, UKS B3LYP from ORCA: local spin and ENPART. Mulliken charges and spin populations equal ORCA's | `dft enpart spin tfvc uks openshell orca libxc-ids` |
+| `CH2-T-ROHF-ORCA` | CH₂ triplet, ROHF/def2-TZVP from ORCA: ENPART (HF). Mulliken charges and spin populations equal ORCA's | `hf enpart tfvc rohf openshell orca` |
+| `CH2-T-ROHF-GEOS-ORCA` | The same ROHF triplet: GEOS with C, H, H as fragments, C(−2). The EFO `.fchk` files get Beta blocks for the unpaired EFOs and keep both densities of the input | `hf geos effao tfvc rohf openshell fragments orca` |
+| `CH2-T-ROHF-OSLO-ORCA` | The same ROHF triplet: OSLO with C, H, H as fragments, C(−2). Both OSLO `.fchk` files (`PRINT_NONORTHO`) get Beta blocks for the beta OSLOs | `hf oslo tfvc rohf openshell fragments orca` |
 | `FeCl4-EOS-ORCA` | [FeCl₄]⁻ sextet, UKS B3LYP/def2-SVP from ORCA (3d metal, no pseudopotential): EOS with atomic fragments, Fe(+3), Cl(−1) | `dft eos effao tfvc uks openshell fragments orca transition-metal` |
 | `FeCl4-GEOS-ORCA` | The same wavefunction: GEOS, five unpaired electrons on Fe | `dft geos effao tfvc uks openshell fragments orca transition-metal` |
 | `PdCl4-EOS-ORCA` | [PdCl₄]²⁻, RKS B3LYP/def2-SVP from ORCA (4d metal with the def2 pseudopotential): EOS with atomic fragments, Pd(+2), Cl(−1) | `dft eos effao tfvc rks fragments orca transition-metal ecp` |
@@ -210,10 +210,10 @@ thread ([Testing a change](cleanup-protocol.md#testing-a-change)).
 | `H2O-CAS44-ORCA` | The `H2O-CAS44` state from ORCA's CASSCF (`ORCA` in `# DM`, RDMs built by `orca2fchk.py`): the same post-HF ENPART | `casscf enpart tfvc orca dm fragments correlation verbose spin` |
 | `CH2-T-CAS66-ORCA` | The `CH2-T-CAS66` triplet from ORCA's CASSCF, `DM 2`: bond orders and correlated local spin | `casscf dm orca spin tfvc openshell` |
 | `H2O-RM06HF-METHOD` | The `H2O-M062X` Gaussian 16 file with `RM06HF` in the method field (Mulliken only): a functional name containing HF reads as KS-DFT, not Hartree-Fock | `dft rks fchk-header` |
-| `H2O-TPSSH-ORCA` | Water, RKS TPSSh/def2-TZVP from ORCA (`utils/orca2fchk.py`): ENPART with ORCA's TPSSh as libxc 457, a hybrid meta-GGA, on a 40 × 146 two-electron grid; the pure exchange-correlation energy equals ORCA's | `dft enpart tfvc rks orca meta-gga hybrid libxc-ids` |
-| `MnCl4-ROKS-ORCA` | [MnCl₄]²⁻ sextet, ROKS B3LYP/def2-TZVP from ORCA: EOS with Mn and each Cl as fragments, Mn(+2), Cl(−1), R 100 %; Mulliken charges and spins equal ORCA's | `dft eos effao tfvc roks openshell fragments orca transition-metal` |
-| `Cu2OH2NH34-BS-ORCA` | [Cu₂(μ-OH)₂(NH₃)₄]²⁺, broken-symmetry UKS B3LYP/def2-SVP from ORCA: EOS with each Cu, OH and NH₃ as fragments, Cu(II)/Cu(II), R 97.11 %; Mulliken charges and the opposite Cu spins equal ORCA's | `dft eos effao tfvc uks openshell broken-symmetry fragments orca transition-metal` |
-| `PtCl2NH32-ECP-ORCA` | cis-PtCl₂(NH₃)₂, RKS PBE0/def2-TZVP from ORCA, def2 pseudopotential on Pt only and def2-TZVPD on one Cl (per-atom basis): OSLO with Pt, each Cl and each NH₃ as fragments, Pt(+2), Cl(−1); Mulliken charges equal ORCA's | `dft oslo tfvc rks fragments orca transition-metal ecp` |
+| `H2O-TPSSH-ORCA` | Water, RKS TPSSh/def2-TZVP from ORCA (`utils/orca2fchk.py`): ENPART with ORCA's TPSSh as libxc 457, a hybrid meta-GGA, on a 40 × 146 two-electron grid. The pure exchange-correlation energy equals ORCA's | `dft enpart tfvc rks orca meta-gga hybrid libxc-ids` |
+| `MnCl4-ROKS-ORCA` | [MnCl₄]²⁻ sextet, ROKS B3LYP/def2-TZVP from ORCA: EOS with Mn and each Cl as fragments, Mn(+2), Cl(−1), R 100 %. Mulliken charges and spins equal ORCA's | `dft eos effao tfvc roks openshell fragments orca transition-metal` |
+| `Cu2OH2NH34-BS-ORCA` | [Cu₂(μ-OH)₂(NH₃)₄]²⁺, broken-symmetry UKS B3LYP/def2-SVP from ORCA: EOS with each Cu, OH and NH₃ as fragments, Cu(II)/Cu(II), R 97.11 %. Mulliken charges and the opposite Cu spins equal ORCA's | `dft eos effao tfvc uks openshell broken-symmetry fragments orca transition-metal` |
+| `PtCl2NH32-ECP-ORCA` | cis-PtCl₂(NH₃)₂, RKS PBE0/def2-TZVP from ORCA, def2 pseudopotential on Pt only and def2-TZVPD on one Cl (per-atom basis): OSLO with Pt, each Cl and each NH₃ as fragments, Pt(+2), Cl(−1). Mulliken charges equal ORCA's | `dft oslo tfvc rks fragments orca transition-metal ecp` |
 
 ## Adding a test
 
@@ -271,9 +271,10 @@ A manifest check looks like:
 }
 ```
 
-`type` is `float` (the default; `pattern` has one capture group),
-`present` or `absent`; `section` (float checks only) restricts the
-search to the output after that marker; `match_index` (1-based) picks one of several matches.
+`type` is `float` (the default, and `pattern` has one capture group),
+`present` or `absent`. `section` (float checks only) restricts the
+search to the output after that marker, and `match_index` (1-based)
+picks one of several matches.
 
 Two more types check the files a run writes, in place of the output:
 
@@ -289,7 +290,7 @@ orbital indices only with a negative atom count, then exactly one value
 per grid point. `fchk_files` also reads every matching file and checks
 its real blocks: every value carries its exponent letter (Fortran's
 `E16.8` drops it from a three-digit exponent, `1.27052287-118`), and each
-block holds the `N=` values of its header; an optional `"blocks"` list
+block holds the `N=` values of its header. An optional `"blocks"` list
 names headers every file must have (e.g. `"Beta MO coefficients"`).
 
 A test must exit with code 0. A test of an expected stop declares the

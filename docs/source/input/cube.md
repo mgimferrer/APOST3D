@@ -3,7 +3,7 @@
 Selects the effective orbitals written as cube files when `CUBE` is set
 in `# METHOD`. The block is required with `CUBE`, but may be empty (all
 defaults). Cube files are written for `EFFAO`, `UEFFAO`, `EFFAO-U`, `EOS`
-and `GEOS`; what they contain, how they are named and how to view them is
+and `GEOS`. What they contain, how they are named and how to view them is
 described in [Visualizing orbitals](../guide/visualization.md). Without
 one of these analyses no cube file is written, and the input summary
 says so in a warning.

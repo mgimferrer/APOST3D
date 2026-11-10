@@ -24,7 +24,7 @@ program holds several of them at once.
 | All, single determinant (HF, KS-DFT) | none |
 | All except OSLO, correlated wavefunction (CASSCF, CISD, ...) | the density of the correlated wavefunction in the `.fchk` file (natural orbitals are computed from it) |
 | `SPIN`, `ENPART` with a correlated wavefunction | the 1- and 2-RDM files, in a [`# DM` block](../input/dm.md) |
-| `ENPART` | a calculation without density fitting ([below](#density-fitting-and-enpart)), and the reference energies appended to the `.fchk` file (recommended; see below) |
+| `ENPART` | a calculation without density fitting ([below](#density-fitting-and-enpart)), and the reference energies appended to the `.fchk` file (recommended, see below) |
 | `NAO-BASIS` | the NAO transformation file `jobname.nao` |
 | `HIRSH`, `HIRSH-IT` | the atomic densities file `densoutput` ([utilities](../tools/utilities.md)) |
 
@@ -68,13 +68,14 @@ Its Gaussian 09 version, `get_energy`, is deprecated.
 **For NAO-BASIS**, the transformation to natural atomic orbitals comes
 from the NBO program: add `pop=(full,nboread)` to the route section and
 the line `$NBO AONAO=W $END` at the end of the input file. NBO writes the
-matrix to `FILE.33`; rename it to `mol.nao` before the next calculation in
+matrix to `FILE.33`. Rename it to `mol.nao` before the next calculation in
 the same folder, which would overwrite it.
 
 **Correlated densities** (MP2, CI, ...): Gaussian writes them after the SCF
-density in the `.fchk` file when the calculation uses `density=current`;
-select them with `DENS 2` in `# METHOD` (restricted wavefunctions; ENPART
-and OSLO stop with it, see [`DENS`](../input/method.md#options)).
+density in the `.fchk` file when the calculation uses `density=current`.
+Select them with `DENS 2` in `# METHOD`. This works for restricted
+wavefunctions only, and ENPART and OSLO stop with it (see
+[`DENS`](../input/method.md#options)).
 
 ## Q-Chem
 
@@ -88,7 +89,7 @@ with a correlated method such as MP2, Q-Chem writes the relaxed
 correlated density in place of the SCF one, so the default `DENS 1`
 analyses that density, while the orbitals in the file are still the SCF
 ones. ENPART and OSLO also use those orbitals, so their results are not
-meaningful for such a file; APOST-3D can't tell it from an SCF one, so it
+meaningful for such a file. APOST-3D can't tell it from an SCF one, so it
 doesn't stop. This only concerns correlated gradient jobs: for the usual
 HF and DFT files every analysis works as usual. The other density blocks
 Q-Chem writes are not read, so `DENS 2` does not apply to Q-Chem files.
@@ -201,7 +202,7 @@ pySCF
 - **CASSCF/CASCI and FCI** on RHF or ROHF orbitals, with `write_dm12` for
   the RDMs.
 - **CISD** for closed shells (`ci.CISD` on RHF, no frozen orbitals), with
-  `write_dm12` for the RDMs; read with `CASSCF` in `# ENPART`.
+  `write_dm12` for the RDMs, read with `CASSCF` in `# ENPART`.
 - **CCSD** for closed shells (`cc.CCSD` on RHF): its unrelaxed 1-RDM.
   `write_dm12` writes only the `.dm1` file: there is no CCSD 2-RDM, so no
   SPIN or ENPART.
@@ -283,8 +284,8 @@ For ENPART, name an ORCA functional by its libxc ids with `LIBRARY` (see
 functional keywords of `# ENPART` reproduce Gaussian's functionals,
 which are not always ORCA's (ORCA's B3LYP is 475, not the `B3LYP`
 keyword). For the ORCA keywords below, ENPART's exchange-correlation
-energy equals ORCA's to 0.02 kcal/mol (water, def2-TZVP, ORCA 6.1.1;
-B3LYP, PBE0 and TPSSh also unrestricted), and `orca2fchk.py` prints the
+energy equals ORCA's to 0.02 kcal/mol (water, def2-TZVP, ORCA 6.1.1,
+with B3LYP, PBE0 and TPSSh also unrestricted), and `orca2fchk.py` prints the
 ids when it finds one of them:
 
 | ORCA keyword | `# ENPART` with `LIBRARY` |
@@ -317,7 +318,7 @@ functionals are not supported by ENPART.
 
 The method field of the `.fchk` names the functional keyword of the ORCA
 input with the R/U/RO prefix, as Gaussian does: `RB3LYP`, `UTPSSH`. It
-is read from the input echoed in `mol.out`; without one known functional
+is read from the input echoed in `mol.out`. Without one known functional
 keyword there (a functional defined in `%method`, an input with several
 jobs, no output file) the field is `RKS`/`UKS`/`ROKS`, with a note.
 APOST-3D does not read the name: an `RB3LYP` from ORCA is still ORCA's
@@ -342,7 +343,7 @@ H   0.0  0.0  1.6
 *
 ```
 
-It writes `mol.fchk`, `mol.dm1` and `mol.dm2`; give the RDM files in the
+It writes `mol.fchk`, `mol.dm1` and `mol.dm2`. Give the RDM files in the
 APOST-3D input, with `ORCA` as the program:
 
 ```text
@@ -355,10 +356,10 @@ ORCA
 
 The RDMs are checked against the CASSCF density that ORCA writes, and the
 conversion stops if they differ. As with any CASSCF, check that ORCA's active
-orbitals are the intended ones; `%scf rotate {i, j, 90} end end` swaps
+orbitals are the intended ones: `%scf rotate {i, j, 90} end end` swaps
 two orbitals of the guess. As for pySCF, the `.fchk` file alone is
 enough for a closed-shell CASSCF in the population analysis, EFFAO, EOS
-and GEOS; SPIN, ENPART and open shells need the `# DM` block.
+and GEOS. SPIN, ENPART and open shells need the `# DM` block.
 
 **What `orca2fchk.py` takes:**
 
@@ -366,13 +367,13 @@ and GEOS; SPIN, ENPART and open shells need the `# DM` block.
 |---|---|
 | RHF, UHF, ROHF, RKS, UKS (also broken symmetry), ROKS | yes |
 | CASSCF, one root | yes, with the `PrintWF det` lines above |
-| Basis sets | any, up to g functions, also per element or per atom (`%basis`, `NewGTO`) and mixed families; def2 and other pseudopotentials, also on some atoms only (the ECP matrix is written for ENPART) |
+| Basis sets | any, up to g functions, also per element or per atom (`%basis`, `NewGTO`) and mixed families. def2 and other pseudopotentials, also on some atoms only (the ECP matrix is written for ENPART) |
 | RI-J, RIJCOSX, RI-JK | yes for populations, EFFAO, EOS, GEOS and OSLO, not for ENPART (`NoRI`, see [Density fitting and ENPART](#density-fitting-and-enpart)), with a note |
-| D3, D4 dispersion | yes; the dispersion energy is not part of ORCA's SCF energy, nor of the energies written |
-| CPCM solvent | yes; the energies written are those of the molecule without the solvent term (the density is still the polarized one), with a note |
+| D3, D4 dispersion | yes. The dispersion energy is not part of ORCA's SCF energy, nor of the energies written |
+| CPCM solvent | yes. The energies written are those of the molecule without the solvent term (the density is still the polarized one), with a note |
 | MP2, CCSD, DLPNO, ... | only the SCF wavefunction is written, with a note |
 | State-averaged CASSCF, fractional occupations | no: stops with a message |
-| ZORA, DKH, X2C; external electric field; point charges (QM/MM) | no: stops with a message (only detected with the output file) |
+| ZORA, DKH, X2C, external electric field, point charges (QM/MM) | no: stops with a message (only detected with the output file) |
 | h functions | no: stops with a message |
 
 `orca2fchk.py` checks its own result: it recomputes the overlap matrix of
@@ -395,10 +396,10 @@ RuCl2(NH3)4, a hydroxo-bridged Cu(II) dimer, [MnCl4]²⁻, [CuCl4]²⁻,
 
 | | Checked |
 |---|---|
-| Wavefunctions | RHF, UHF, ROHF; RKS, UKS (high spin up to sextets, broken symmetry), ROKS; single-root CASSCF (with the `# DM` files) |
-| Functionals | B3LYP, PBE0, TPSSh and BP86 on the complexes; the functionals of the libxc table above on water. These analyses use only the orbitals and the density, so any functional ORCA's SCF converges with can be analyzed |
-| Metals | 3d (Mn, Fe, Cu), 4d (Ru, Pd), 5d (Pt, Au); complex charges −2 to +2 |
-| Basis sets | def2-SVP, def2-TZVP, def2-TZVPD, 6-31G*, cc-pVDZ, cc-pVQZ (g functions); per element and per atom; def2 on the metal with 6-31G* on the ligands |
+| Wavefunctions | RHF, UHF, ROHF, RKS, UKS (high spin up to sextets, broken symmetry), ROKS and single-root CASSCF (with the `# DM` files) |
+| Functionals | B3LYP, PBE0, TPSSh and BP86 on the complexes, and the functionals of the libxc table above on water. These analyses use only the orbitals and the density, so any functional ORCA's SCF converges with can be analyzed |
+| Metals | 3d (Mn, Fe, Cu), 4d (Ru, Pd), 5d (Pt, Au), complex charges −2 to +2 |
+| Basis sets | def2-SVP, def2-TZVP, def2-TZVPD, 6-31G*, cc-pVDZ, cc-pVQZ (g functions), per element and per atom, def2 on the metal with 6-31G* on the ligands |
 | Pseudopotentials | def2 (Ru, Pd, I, Pt, Au), also on the metal only |
 | Approximations | RI-J, RIJCOSX (they change the charges by about 10⁻³ with respect to the exact integrals), D3BJ, D4, CPCM |
 

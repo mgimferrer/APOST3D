@@ -40,11 +40,11 @@ E. Ramos-Cordoba, V. Postils and P. Salvador, *J. Chem. Theory Comput.*,
    $$
 
    and the overall index is $R = \min(R_\alpha, R_\beta)$. A gap of half an
-   electron or more gives 100; two frontier EFOs with the same occupation
+   electron or more gives 100. Two frontier EFOs with the same occupation
    on different fragments give 50, i.e. two equally plausible assignments.
 
-   As a rule of thumb, $R > 80$ is a clear-cut ionic assignment; 60 to 80
-   means significant covalency, but the assignment still holds; below 60
+   As a rule of thumb, $R > 80$ is a clear-cut ionic assignment. 60 to 80
+   means significant covalency, but the assignment still holds. Below 60
    the bond is highly covalent and the result may depend on the
    wavefunction and the atomic definition, so look at the frontier EFOs
    and compare with other descriptors.
@@ -61,16 +61,16 @@ alpha one, so only the alpha EFOs are computed.
 ## Requirements and input
 
 - Any atomic definition. Real-space schemes (`TFVC` recommended) give the
-  most robust results; Mulliken, Löwdin, Löwdin-Davidson and NAO are
+  most robust results. Mulliken, Löwdin, Löwdin-Davidson and NAO are
   available too (see [Atoms in molecules](../guide/aim.md)). Every scheme
   writes the EFOs to a `.fchk` file.
 - Any wavefunction: restricted or unrestricted single determinants, and
   correlated wavefunctions. For a closed-shell correlated wavefunction the
-  `.fchk` file is enough; for an open-shell one the alpha and beta
+  `.fchk` file is enough. For an open-shell one the alpha and beta
   densities come from the 1-RDM in a [`# DM` block](../input/dm.md).
 - Fragments are required (`DOFRAGS` and a
   [`# FRAGMENTS` block](../input/fragments.md)), with every atom in exactly
-  one of them; the run stops otherwise. For one oxidation state per atom,
+  one of them. The run stops otherwise. For one oxidation state per atom,
   make every atom a fragment of its own. A good choice for a complex is one fragment per
   metal center and one per ligand.
 
@@ -164,13 +164,13 @@ and a neutral NO still holds, but with significant covalency.
 ## Files written
 
 - `<jobname>-EOS-EFOs.fchk`: the EFOs of all fragments as orbitals, for
-  any viewer that reads `.fchk` files; with a real-space scheme they are
-  basis-set approximations, not to be used to judge an EFO's shape; see
-  [Visualizing orbitals](../guide/visualization.md#orbital-fchk-files).
+  any viewer that reads `.fchk` files. With a real-space scheme they are
+  basis-set approximations, not to be used to judge an EFO's shape (see
+  [Visualizing orbitals](../guide/visualization.md#orbital-fchk-files)).
 - `<jobname>-EOS-EFOs-unweighted.fchk` with `BECKE`, `BECKE-RHO` or
   `TFVC` atoms: the same EFOs before the multiplication by the fragment's
-  weight, for viewers that apply it themselves; see
-  [The unweighted files](../guide/visualization.md#the-unweighted-files).
+  weight, for viewers that apply it themselves (see
+  [The unweighted files](../guide/visualization.md#the-unweighted-files)).
 - Cube files of selected EFOs with `CUBE`.
 
 ## Checking the result

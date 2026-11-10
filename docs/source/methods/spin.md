@@ -66,7 +66,7 @@ in ordinary closed-shell molecules described with correlated wavefunctions.
 
 ## Requirements and input
 
-- Any atomic definition. The tests use `TFVC`; Hilbert-space schemes
+- Any atomic definition. The tests use `TFVC`, and Hilbert-space schemes
   (`MULLIKEN`, `LOWDIN`, ...) are accepted too.
 - An open-shell single determinant, or a correlated wavefunction with its
   1- and 2-RDMs (`DM 2` and a `# DM` block). With `DM 1` only, the run
@@ -199,7 +199,7 @@ correlated wavefunction, `FRAGMENT EXCHANGE-CORRELATION BOND ORDERS (DI)`).
 ## Checking the result
 
 - `Total <S^2>` must equal the total $\langle \hat S^2\rangle$ of the
-  wavefunction (`S**2` in a Gaussian `.fchk`; 0 for a correlated singlet).
+  wavefunction (`S**2` in a Gaussian `.fchk`, 0 for a correlated singlet).
   A clear difference points to an integration problem: use a larger grid
   (see [Running a calculation](../guide/running.md)).
 - For a correlated wavefunction, check that the 1- and 2-RDMs correspond to

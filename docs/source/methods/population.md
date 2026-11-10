@@ -32,8 +32,8 @@ equivalent):
 | Free valence | $F_A = V_A - V^B_A$ |
 
 $Z_A$ is the nuclear charge (the effective one if a pseudopotential is
-used). The free valence is zero for a closed-shell single determinant;
-a non-zero value points to unpaired electrons, or to radical character in
+used). The free valence is zero for a closed-shell single determinant.
+A non-zero value points to unpaired electrons, or to radical character in
 a correlated wavefunction.
 
 ## Requirements and input
@@ -49,8 +49,8 @@ The excerpts come from fluoromethane, RKS, TFVC (test `CH3F`). The
 section starts with the atomic definition used
 (`Atomic definition : TFVC (real space)`). The population, charge and
 spin tables have a column named after it (`TFVC` here, `Lowdin`,
-`Hirshfeld`, ... in other runs) and, for comparison, the Mulliken value;
-the other tables, and every table of a Mulliken run, have a single
+`Hirshfeld`, ... in other runs) and, for comparison, the Mulliken value.
+The other tables, and every table of a Mulliken run, have a single
 column:
 
 % source: tests/reference/CH3F.apost
@@ -93,9 +93,9 @@ definition, the overlap populations between atoms are also printed
 ```
 
 - Off-diagonal elements are the bond orders: 0.81 for C–F and 0.92 for
-  C–H, close to single bonds; the small F···H and H···H values are
+  C–H, close to single bonds. The small F···H and H···H values are
   through-space contributions.
-- Diagonal elements are the electrons localized on each atom; for a
+- Diagonal elements are the electrons localized on each atom. For a
   closed-shell molecule, the diagonal element plus half the off-diagonal
   elements of its row add up to the population of the atom.
 
@@ -104,7 +104,7 @@ Then `TOTAL VALENCES` ($V_A$, 3.56 for carbon), `VALENCES USED IN BONDS`
 this closed-shell molecule).
 
 With `DOFRAGS`, every table has its fragment version
-(`FRAGMENT ELECTRON POPULATIONS`, ...; `FRAGMENT BOND ORDERS` comes last,
+(`FRAGMENT ELECTRON POPULATIONS`, ..., with `FRAGMENT BOND ORDERS` last,
 after the valences), where the populations and charges are summed over the atoms of each
 fragment and the bond order between two fragments is the sum of the bond
 orders between their atoms (see [Fragments](../guide/fragments.md)).
@@ -121,7 +121,7 @@ B_{AB} = \sum_{ij} \left(n_i n_j + \sqrt{u_i u_j}\right) S^A_{ij} S^B_{ji},
 $$
 
 with $n_i$ the occupations of the natural orbitals and $\mathbf S^A$ in
-their basis; its total (diagonal and one triangle) is the number of
+their basis. Its total (diagonal and one triangle) is the number of
 electrons. With `DM 2`, the [local spin analysis](spin.md) adds the
 exchange-correlation bond orders from the 2-RDM. Without `# DM`, the bond
 orders come from the density of the `.fchk` file, which is right for a
@@ -132,12 +132,12 @@ bond orders and valences are not printed, and a note asks for the 1-RDM.
 
 - With a real-space scheme, the sum of the populations should equal the
   number of electrons (and the sum of the charges, the charge of the
-  molecule) up to a small integration error; a larger difference calls
+  molecule) up to a small integration error. A larger difference calls
   for a larger grid (see [Running a calculation](../guide/running.md#integration-grid)).
 - For a closed-shell single determinant, the free valences are zero up to
   the integration error.
 - Mulliken values (also printed for comparison) depend strongly on the
-  basis set; the real-space ones much less.
+  basis set, the real-space ones much less.
 
 ## Atomic overlap matrices for other programs
 
@@ -154,6 +154,6 @@ printed in the `NATURAL ORBITALS` section of the output.
 The output gives the number of files, the file that lists them, the
 number of natural orbitals (correlated wavefunctions) and, when every
 atom is included, the largest deviation of the summed matrices from the
-identity. They add up to the identity up to the integration error; a
+identity. They add up to the identity up to the integration error, and a
 warning (above 0.01 on the diagonal, 0.001 off it) points to the
 integration grid.

@@ -11,14 +11,14 @@ $APOST3D_PATH/apost3d jobname > jobname.apost 2>&1
 - **The job name has no extension**: `apost3d water`, not
   `apost3d water.inp` (the run stops with a message). The program adds
   `.fchk` and `.inp` itself.
-- `ulimit -s unlimited` lifts the limit on the stack memory of the shell;
-  without it, larger systems crash with a segmentation fault.
+- `ulimit -s unlimited` lifts the limit on the stack memory of the shell.
+  Without it, larger systems crash with a segmentation fault.
 - `OMP_NUM_THREADS` sets the number of CPU cores used. Without it, all
   available cores are used.
 - All results go to the standard output, here saved in `jobname.apost`
   (`2>&1` also keeps the error messages there). Other files (orbitals,
-  cubes) are written into the same folder; see
-  [Output files](output.md).
+  cubes) are written into the same folder (see
+  [Output files](output.md)).
 
 A run is complete when the output ends with
 
@@ -63,9 +63,9 @@ ANGULAR 434
 
 The angular number must be a Lebedev grid (6, 14, 26, 38, 50, 74, 86, 110,
 146, 170, 194, 230, 266, 302, 350, 434, 590, 770 or 974) and the radial
-one between 1 and 500; otherwise the run stops. For ENPART these set the
-one-electron grid; its two-electron grid has its own keywords in the same
-block.
+one between 1 and 500, otherwise the run stops. For ENPART these set the
+one-electron grid, and its two-electron grid has its own keywords in the
+same block.
 
 The default grid is accurate enough for populations, bond orders and
 effective orbitals with `TFVC`: the sum of the atomic populations, printed
@@ -78,7 +78,7 @@ expensive.
 
 ## On a cluster
 
-A job script for SLURM; other queueing systems work the same way:
+A job script for SLURM (other queueing systems work the same way):
 
 ```bash
 #!/bin/bash
@@ -113,4 +113,4 @@ step is printed after it:
   TIMING WALL :: Population analysis                               0.10 s
 ```
 
-(CPU time is summed over all threads; WALL is the elapsed time.)
+(CPU time is summed over all threads, and WALL is the elapsed time.)

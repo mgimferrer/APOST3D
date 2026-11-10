@@ -19,7 +19,7 @@ There are two families:
   become meaningless for large basis sets with diffuse functions.
 
 All analyses are written in terms of atomic overlap matrices, so the same
-code serves both families; the table at the end shows which combinations
+code serves both families. The table at the end shows which combinations
 are possible.
 
 ## Real-space schemes
@@ -57,14 +57,14 @@ bonded pair of atoms:
 The last line checks the grid for every real-space definition: the
 atomic overlap matrices must add up to the overlap matrix of the basis
 set, and the largest difference shows how accurately the grid
-integrates (the smaller, the better; above 0.1 the output adds a
+integrates (the smaller, the better: above 0.1 the output adds a
 warning and a larger [`# GRID`](../input/grid.md) is advisable).
 
 The integration grid is described in
 [Running a calculation](running.md#integration-grid).
 
 For `HIRSH` and `HIRSH-IT`, the output names the free-atom densities it
-read and the elements of the molecule found in them; `HIRSH-IT` then
+read and the elements of the molecule found in them. `HIRSH-IT` then
 prints its iterations:
 
 % source: tests/reference/CH3F-HIRSH-IT.apost
@@ -92,7 +92,7 @@ between the two charge states of `densoutput` around each population
 change` is the largest change of an atomic population from the previous
 iteration, and `Total population` their sum, which differs from the
 number of electrons only by the integration error. The populations are
-converged when no change is above 10⁻⁶; Hirshfeld-I converges slowly
+converged when no change is above 10⁻⁶. Hirshfeld-I converges slowly
 (each iteration removes about a quarter of the change), so this can take
 a few tens of iterations, and after 100 the output warns and uses the last
 populations. `densoutput` holds the charges −2 to +2: an atom that goes
@@ -105,7 +105,7 @@ warning.
 |---|---|
 | `MULLIKEN` | **Mulliken.** The original basis functions. Use only with small basis sets without diffuse functions. |
 | `LOWDIN` | **Löwdin.** Basis functions orthogonalized symmetrically. Less basis-dependent than Mulliken, but still not reliable for extended basis sets. |
-| `LOWDIN-DAVIDSON` | **Löwdin-Davidson.** Orthogonalization that first preserves the atomic character within each atom. Strongly basis-dependent (the charge of O in water goes from −0.27 with STO-3G to +0.84 with cc-pVTZ): meaningful only with small basis sets without diffuse functions; prefer a real-space definition. |
+| `LOWDIN-DAVIDSON` | **Löwdin-Davidson.** Orthogonalization that first preserves the atomic character within each atom. Strongly basis-dependent (the charge of O in water goes from −0.27 with STO-3G to +0.84 with cc-pVTZ): meaningful only with small basis sets without diffuse functions. Prefer a real-space definition. |
 | `NAO-BASIS` | **Natural atomic orbitals** from the NBO program, the most robust of the Hilbert-space options. Needs the transformation in a `jobname.nao` file (see [Preparing the wavefunction](wavefunctions.md#gaussian)). |
 
 `NAO-BASIS` gives the natural populations of NBO (the `Summary of Natural
