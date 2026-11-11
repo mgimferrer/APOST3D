@@ -62,7 +62,8 @@ parallelization problem.
 ## Documentation
 
 The documentation is written in Markdown ([MyST](https://myst-parser.readthedocs.io/))
-and built with Sphinx. To build it locally:
+and built with Sphinx. To build it locally (Python 3.9 or newer, which
+Sphinx 7.2 needs):
 
 ```bash
 python3 -m venv /tmp/docvenv

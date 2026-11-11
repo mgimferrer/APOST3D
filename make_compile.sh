@@ -115,8 +115,10 @@ fi
 if ! command -v gfortran &>/dev/null; then
   echo "ERROR: gfortran not found on PATH."
   echo "       Install with:"
-  echo "         macOS:  brew install gcc"
-  echo "         Ubuntu: sudo apt install gfortran"
+  echo "         macOS:   brew install gcc"
+  echo "         Ubuntu:  sudo apt install gfortran"
+  echo "         Fedora:  sudo dnf install gcc-gfortran"
+  echo "         cluster: module load gcc (see 'module avail' for the name)"
   exit 1
 fi
 
@@ -127,8 +129,9 @@ if [[ ! "$GFORTRAN_VERSION_MAJOR" =~ ^[0-9]+$ ]] || (( GFORTRAN_VERSION_MAJOR < 
   echo "ERROR: gfortran >= 10 is required (found: $GFORTRAN_VERSION_FULL)."
   echo "       -fallow-argument-mismatch was introduced in GCC 10."
   echo "       Install a newer gfortran, e.g.:"
-  echo "         macOS:  brew install gcc"
-  echo "         Ubuntu: sudo apt install gfortran-12"
+  echo "         macOS:   brew install gcc"
+  echo "         Ubuntu:  sudo apt install gfortran-12"
+  echo "         cluster: module load a newer gcc (see 'module avail')"
   exit 1
 fi
 

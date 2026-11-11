@@ -78,8 +78,10 @@ bash make_compile.sh
 The first build takes a few minutes, most of it compiling libxc, and later
 builds take seconds. If something is missing (`make`, a recent enough
 gfortran, OpenBLAS, CMake, curl), the script stops with a clear message and
-the command to fix it, before compiling anything (see [Troubleshooting](troubleshooting.md)). At the end it
-launches each program once and lists them:
+the command to fix it, before compiling anything (see [Troubleshooting](troubleshooting.md)). The compiler
+prints some warnings about old Fortran constructs in a few files: they are
+expected. At the end the script launches each program once and lists
+them:
 
 ```text
 --- Binaries produced ---

@@ -99,10 +99,11 @@ Q-Chem writes are not read, so `DENS 2` does not apply to Q-Chem files.
 `utils/apost3d.py` writes the `.fchk` file from a pySCF calculation,
 including the reference energies needed by ENPART, and for CASSCF and FCI
 also the 1- and 2-RDM files. It works with pySCF 2.7 and newer (checked up
-to 2.14). Make it importable:
+to 2.14). Make it importable, first in the path, so that no older copy
+of `apost3d.py` is taken instead:
 
 ```bash
-export PYTHONPATH=$PYTHONPATH:$APOST3D_PATH/utils
+export PYTHONPATH=$APOST3D_PATH/utils:$PYTHONPATH
 ```
 
 **Single determinant** (HF or KS-DFT):
