@@ -86,6 +86,7 @@ A job script for SLURM (other queueing systems work the same way):
 #SBATCH --cpus-per-task=8
 #SBATCH --time=02:00:00
 
+module load gcc openblas      # the modules loaded for the build, if any
 export APOST3D_PATH=/home/user/APOST3D
 ulimit -s unlimited
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
@@ -97,7 +98,9 @@ fi
 ```
 
 APOST-3D runs on a single node (it is parallelized with OpenMP threads,
-not MPI): ask for one task with several CPUs.
+not MPI): ask for one task with several CPUs. The job needs the libraries
+of the build: the modules loaded to compile it, and the `LD_LIBRARY_PATH`
+of an OpenBLAS of your own ([Installation](../installation.md#special-setups)).
 
 ## Time and memory
 

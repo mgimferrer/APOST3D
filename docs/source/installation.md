@@ -44,7 +44,16 @@ module load gcc openblas      # names differ between clusters: see `module avail
 ```
 
 and, if the cluster's CMake is older than 3.21, get a recent one with
-`pip install --user cmake`.
+`pip install --user cmake`. If the cluster has no OpenBLAS module,
+install your own copy in your home folder (conda, spack, or from source)
+and point at it with `OPENBLAS_DIR` (see [Special setups](#special-setups)).
+
+The program needs these libraries also when it runs: load the same
+modules in your job scripts (see [Running on a cluster](guide/running.md#on-a-cluster)).
+Build with libraries the compute nodes have too: an OpenBLAS found in the
+login node's own system folders (`/usr/lib64`) may be missing on the
+nodes. Running `make test` once as a job, not on the login node, checks
+both.
 
 Check the compiler version:
 
@@ -161,6 +170,10 @@ contains its `lib/` and `include/`:
 export OPENBLAS_DIR=/path/to/openblas
 bash make_compile.sh
 ```
+
+The program then needs that `lib/` folder when it runs too: add
+`export LD_LIBRARY_PATH=/path/to/openblas/lib:$LD_LIBRARY_PATH` to your
+`~/.bashrc` and to your job scripts.
 
 **An existing libxc.** If libxc is already installed (a distribution
 package, conda, Homebrew's `libxc`), the script finds it through

@@ -86,6 +86,17 @@ without its block (`# OSLO` may be empty).
 A file listed in the [`# DM` block](input/dm.md) (named in the line
 above) is not in the folder.
 
+**`error while loading shared libraries: libopenblas.so.0: cannot open shared object file`**,
+or **`` version `GFORTRAN_10' not found ``** (or another library)
+The program can't find a library it was built with. In a job script, load
+the modules you loaded for the build, and add the `lib/` folder of your own
+OpenBLAS to `LD_LIBRARY_PATH` (see [Special setups](installation.md#special-setups)).
+If the job runs on a compute node and the library was found on the login
+node only, the nodes don't have it: install OpenBLAS in your home folder
+and build against it with `OPENBLAS_DIR`. `ldd $APOST3D_PATH/apost3d`
+lists the libraries the program uses, with `not found` for each missing
+one.
+
 **Segmentation fault**
 Run `ulimit -s unlimited` before the program (in job scripts too).
 
