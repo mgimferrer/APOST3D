@@ -11,13 +11,14 @@
 
 ## --------------------------------------------------------- ##
 ## USER SETTINGS                                             ##
-## APOST3D_PATH defaults to the directory of this Makefile;  ##
-## an exported APOST3D_PATH (or make APOST3D_PATH=...) wins. ##
+## APOST3D_PATH is the directory of this Makefile: an        ##
+## exported APOST3D_PATH (set for the job scripts, maybe of  ##
+## another copy) is not used. make APOST3D_PATH=... wins.    ##
 ## --------------------------------------------------------- ##
 
 # Evaluated once, here: a lazy ?= would be expanded after the include of
 # objects/libxc.mk below, which then is the last makefile read.
-ifndef APOST3D_PATH
+ifneq ($(origin APOST3D_PATH),command line)
 APOST3D_PATH := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 endif
 

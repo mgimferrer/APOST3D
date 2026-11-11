@@ -7,7 +7,7 @@
 #
 # Usage:
 #   bash make_compile.sh [clean] [NTHREADS=N] [ARCH=cpu] [help]
-#   (APOST3D_PATH defaults to this script's directory)
+#   (it builds the copy of APOST-3D it belongs to, whatever APOST3D_PATH says)
 #
 # Arguments (same grammar as `make`: bare words are actions, KEY=value sets
 # a parameter — and NTHREADS is spelled identically to `make test NTHREADS=N`):
@@ -35,7 +35,10 @@ set -euo pipefail
 # Defaults
 # ------------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APOST3D_PATH="${APOST3D_PATH:-$SCRIPT_DIR}"
+# The copy built is always the one of this script: an APOST3D_PATH set for
+# the job scripts of another copy must not send the build there.
+APOST3D_PATH_ENV="${APOST3D_PATH:-}"
+APOST3D_PATH="$SCRIPT_DIR"
 CLEAN=0
 NTHREADS=""
 ARCH=""
@@ -82,9 +85,18 @@ fi
 MAKEFILE="$APOST3D_PATH/Makefile"
 
 if [[ ! -f "$MAKEFILE" ]]; then
-  echo "ERROR: Makefile not found at $APOST3D_PATH"
-  echo "       Make sure APOST3D_PATH is set correctly."
+  echo "ERROR: Makefile not found in $APOST3D_PATH"
+  echo "       Run make_compile.sh of a complete copy of APOST-3D."
   exit 1
+fi
+
+if [[ -n "$APOST3D_PATH_ENV" ]] && \
+   [[ "$(cd "$APOST3D_PATH_ENV" 2>/dev/null && pwd -P)" != "$(cd "$APOST3D_PATH" && pwd -P)" ]]; then
+  echo "Note: building the copy of this script,"
+  echo "        $APOST3D_PATH"
+  echo "      APOST3D_PATH names another one, which job scripts still run:"
+  echo "        $APOST3D_PATH_ENV"
+  echo ""
 fi
 
 if ! command -v make &>/dev/null; then
@@ -348,7 +360,7 @@ mkdir -p "$APOST3D_PATH/objects"
 echo "============================================================"
 echo "  APOST-3D gfortran build"
 echo "============================================================"
-echo "  APOST3D_PATH : $APOST3D_PATH"
+echo "  Copy built   : $APOST3D_PATH"
 echo "  Makefile     : $MAKEFILE"
 echo "  Compiler     : $GFORTRAN_VERSION_FULL"
 echo "  Threads      : $NTHREADS (compile jobs, OMP_NUM_THREADS)"

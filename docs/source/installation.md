@@ -95,6 +95,11 @@ export APOST3D_PATH=/home/user/APOST3D
 
 Open a new terminal (or run `source ~/.bashrc`) for it to take effect.
 
+The build script and `make test` don't read this variable: they always
+build and test the copy of APOST-3D they belong to. A second copy (a new
+version, a branch) can be built and tested next to the first, and job
+scripts keep running the copy that `APOST3D_PATH` names.
+
 ## 3. Check the build
 
 ```bash

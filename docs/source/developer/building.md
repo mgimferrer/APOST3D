@@ -11,8 +11,10 @@ make -C $APOST3D_PATH clean       # remove all objects and programs
 make -C $APOST3D_PATH help        # all targets and options
 ```
 
-`make` takes the same `ARCH`, `OPENBLAS_DIR` and `LIBXC_DIR` settings as
-the script (the number of compile jobs is set with `-j`), but does not
+`make` works on the copy of its `Makefile` (here the one in
+`$APOST3D_PATH`), like the script: an exported `APOST3D_PATH` is not
+used, only `make APOST3D_PATH=...` on the command line. It takes the same
+`ARCH`, `OPENBLAS_DIR` and `LIBXC_DIR` settings as the script (the number of compile jobs is set with `-j`), but does not
 check the compiler version, build libxc, sign the programs on macOS, or
 rebuild everything after a change of compiler or `ARCH` (run
 `make clean` yourself then, and run `bash compile_libxc.sh` once first if

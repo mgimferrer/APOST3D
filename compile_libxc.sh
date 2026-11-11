@@ -5,7 +5,7 @@
 # libxc ships source-only, no prebuilt binaries or published checksums.
 # Fetches the pinned release tag archive from upstream, verifies it
 # against the recorded SHA256, and builds+installs it via CMake into
-# libxc-<version>/ under APOST3D_PATH.
+# libxc-<version>/ in the APOST-3D copy this script belongs to.
 #
 # CMake over Autotools: no bootstrap step needed (the tag archive ships
 # no pre-generated `configure`), fewer prerequisites, and Autotools is
@@ -15,11 +15,10 @@
 # already-usable libxc first and only falls back to this script.
 #
 # Usage:
-#   export APOST3D_PATH=/path/to/APOST3D
-#   bash compile_libxc.sh
+#   bash /path/to/APOST3D/compile_libxc.sh
 #
 # No internet egress (air-gapped HPC): pre-place the tarball at
-# $APOST3D_PATH/libxc-<version>.tar.gz (matching LIBXC_SHA256 below) and
+# /path/to/APOST3D/libxc-<version>.tar.gz (matching LIBXC_SHA256 below) and
 # it will be used as-is instead of downloaded.
 # ==============================================================================
 
@@ -36,8 +35,9 @@ LIBXC_CMAKE_MIN="3.21"
 # shellcheck disable=SC2034  # read by make_compile.sh
 LIBXC_MIN_VERSION="7.0.0"
 
-# APOST3D_PATH defaults to this script's directory, like make_compile.sh
-APOST3D_PATH="${APOST3D_PATH:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+# Always the copy of this script, like make_compile.sh (an APOST3D_PATH set
+# for the job scripts of another copy must not send the build there)
+APOST3D_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 LIBXCDIR="${APOST3D_PATH}/libxc-${LIBXC_VERSION}"
 TARBALL="${APOST3D_PATH}/libxc-${LIBXC_VERSION}.tar.gz"
