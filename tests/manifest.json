@@ -5506,7 +5506,7 @@
         "TFVC",
         "OSLO",
         "DOFRAGS",
-        "PRINT_NONORTHO"
+        "OSLO/PRINT-NON-ORTHO"
       ],
       "checks": [
         {

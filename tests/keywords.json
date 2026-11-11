@@ -40,6 +40,8 @@
 
     {"id": "EFFAO",           "key": "EFFAO",             "section": "# METHOD",   "category": "orbital",
      "description": "Effective Atomic Orbitals from 3D numerical integration",                                "priority": "high"},
+    {"id": "UEFFAO",          "key": "UEFFAO",            "section": "# METHOD",   "category": "orbital",
+     "description": "Effective atomic/fragment orbitals of the alpha and beta densities",                     "priority": "medium"},
     {"id": "EOS",             "key": "EOS",               "section": "# METHOD",   "category": "orbital",
      "description": "Effective Oxidation States from EFAOs (fragment-based)",                                 "priority": "high"},
     {"id": "GEOS",            "key": "GEOS",              "section": "# METHOD",   "category": "orbital",
