@@ -116,13 +116,15 @@ cd $APOST3D_PATH
 make test
 ```
 
-This runs every test of the suite (79 calculations at present) and
-compares every number they print with stored reference outputs. It takes
-a few minutes and should end with
+This runs every calculation of the test suite and compares every number
+they print with stored reference outputs. It takes a few minutes and
+should end with one line, the number of tests and `PASSED`, for example
 
 ```text
-  79 PASSED   (...s total)
+  86 PASSED   (127s total)
 ```
+
+with no `FAILED` line before it.
 
 If a test fails, the output says which values differ (see
 [Running the test suite](developer/testing.md) for how to read it).

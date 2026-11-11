@@ -59,7 +59,7 @@ break it, a changed number does. `make test-strict` is for the same code
 on another machine or compiler, or before a release.
 
 ```text
-  [31/79]  H2O-SVWN                       dft enpart tfvc rks lda functional-keyword
+  [32/86]  H2O-SVWN                       dft enpart tfvc rks lda functional-keyword
            (0s)
            ✓  Normal Termination                     found in output
            ✓  Total KS-DFT energy (au)               got -76.05056   ref -76.05056   Δ 0.0e+00   [abs 2e-06]
@@ -68,7 +68,7 @@ on another machine or compiler, or before a release.
            ✓  Results file vs reference              same values
            PASSED  (11/11 checks)
   ...
-  79 PASSED   (200s total)
+  86 PASSED   (127s total)
 ```
 
 A failing full-output check lists the lines that differ:
