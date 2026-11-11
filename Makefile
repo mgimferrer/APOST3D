@@ -137,6 +137,18 @@ OPENBLAS_LIB = -lopenblas
 endif
 endif
 
+## LINK STAMP: objects/.link_libs holds the libraries apost3d and gen_hirsh
+## are linked with, and is rewritten only when they change (another
+## OPENBLAS_DIR or libxc), so that both are relinked then: their objects
+## alone wouldn't tell make. Not for clean/help/coverage, which link nothing.
+LINK_LIBS  := $(strip $(LIBXC_LIB) $(OPENBLAS_LIB))
+LINK_STAMP := $(OBJDIR)/.link_libs
+ifneq ($(filter-out clean help coverage,$(or $(MAKECMDGOALS),all)),)
+_link_stamp := $(shell mkdir -p $(OBJDIR) && \
+  if [ "$$(cat $(LINK_STAMP) 2>/dev/null)" != '$(LINK_LIBS)' ]; then \
+    printf '%s\n' '$(LINK_LIBS)' > $(LINK_STAMP); fi)
+endif
+
 ## OBJECTS (all under $(OBJDIR))
 MOD_OBJ   = $(OBJDIR)/modules.o
 QUAD_OBJ  = $(OBJDIR)/Lebedev-Laikov.o
@@ -177,15 +189,19 @@ $(SIMPLE_UTILS): $(UTILDIR)/%: $(UTILOBJDIR)/%.o
 
 # gen_hirsh calls quad(); program objects come as a whole with modules.o,
 # and they need OpenMP at link time
-$(UTILDIR)/gen_hirsh: $(UTILOBJDIR)/gen_hirsh.o $(OBJ_LIST_NOMAIN) $(QUAD_OBJ)
-	$(FC) $(FFLAGS) $^ $(LIBXC_LIB) $(OPENBLAS_LIB) -o $@
+$(UTILDIR)/gen_hirsh: $(UTILOBJDIR)/gen_hirsh.o $(OBJ_LIST_NOMAIN) $(QUAD_OBJ) $(LINK_STAMP)
+	$(FC) $(FFLAGS) $(filter-out $(LINK_STAMP),$^) $(LIBXC_LIB) $(OPENBLAS_LIB) -o $@
 
 ## BUILD DIRECTORIES
 $(OBJDIR) $(UTILOBJDIR):
 	mkdir -p $@
 
+# Only when the stamp is gone during a run (make clean all)
+$(LINK_STAMP):
+	@mkdir -p $(OBJDIR) && printf '%s\n' '$(LINK_LIBS)' > $@
+
 ## MAIN EXECUTABLE
-apost3d: $(OBJ_LIST) $(QUAD_OBJ)
+apost3d: $(OBJ_LIST) $(QUAD_OBJ) $(LINK_STAMP)
 	$(FC) $(FFLAGS) \
 	  $(OBJ_LIST) $(QUAD_OBJ) \
 	  $(LIBXC_LIB) $(OPENBLAS_LIB) \

@@ -141,7 +141,8 @@ You are ready: continue with the [tutorial](tutorial.md).
 | `help` | List all options. |
 
 For example `bash make_compile.sh NTHREADS=4`. Changing the compiler or
-`ARCH` triggers a full rebuild automatically. `ARCH` also works with
+`ARCH` triggers a full rebuild automatically, and changing the OpenBLAS
+or libxc used (`OPENBLAS_DIR`, `LIBXC_DIR`) relinks the programs. `ARCH` also works with
 `make` directly (where `-j` sets the number of compile jobs), but there a
 change of compiler or `ARCH` needs `make clean` first, and `make clean`
 only removes the compiled files.

@@ -20,7 +20,9 @@ rebuild everything after a change of compiler or `ARCH` (run
 `make clean` yourself then, and run `bash compile_libxc.sh` once first if
 libxc is not installed). After `make_compile.sh`, `make` uses the
 libxc the script checked (recorded in `objects/libxc.mk`, which
-`make clean` removes), and `LIBXC_DIR` overrides it. `compile_libxc.sh` builds
+`make clean` removes), and `LIBXC_DIR` overrides it. When the libraries
+linked change (another `OPENBLAS_DIR` or libxc), `make` relinks `apost3d`
+and `gen_hirsh`: their link flags are recorded in `objects/.link_libs`. `compile_libxc.sh` builds
 libxc with the `gfortran` on the `PATH`, the one the `Makefile` uses, and
 the `gcc` of the same version when there is one (`gcc-16`, ...).
 
