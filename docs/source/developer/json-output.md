@@ -50,7 +50,7 @@ This page is the reference for its content.
 |---|---|
 | `schema` | always `"apost3d-results"` |
 | `schema_version` | `"major.minor"`, see [Versions](#versions) |
-| `program` | `name`, `version` (`"5.0"`), `version_date` (release date of that version, ISO 8601: `"2026-09-22"`) |
+| `program` | `name`, `version` (`"5.0"`), `version_date` (release date of that version, ISO 8601: `"2026-11-12"`) |
 | `wavefunction` | as read from the `.fchk` file (below) |
 | `input` | the input as written, and the atomic definition used (below) |
 | `molecule` | atoms and geometry (below) |
@@ -399,12 +399,7 @@ analysis).
 
 `schema_version` is `"major.minor"`. A new key or block increases the
 minor number. A renamed or removed key, or a change of meaning, increases
-the major number. Version 0.x is the draft that becomes 1.0 with
-APOST-3D 5.0. While it is a draft a key may still be renamed with only a
-minor increase (0.8 replaced the `fragment` column of the EFO tables by
-`fragments` and `shares`, 0.13 renamed `recovered_percent` of
-`negative_efos` to `fit_percent`, and 0.14 moved `new_bond_orders` from
-`local_spin` to `bond_orders` as `improved_bond_orders` and renamed `li_di` to `xc_bond_orders`).
+the major number. Version 1.0 is the schema of APOST-3D 5.0.
 
 ## Checking a change
 

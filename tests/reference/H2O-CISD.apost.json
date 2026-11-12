@@ -1,10 +1,10 @@
 {
   "schema": "apost3d-results",
-  "schema_version": "0.17",
+  "schema_version": "1.0",
   "program": {
     "name": "APOST-3D",
     "version": "5.0",
-    "version_date": "2026-09-22"
+    "version_date": "2026-11-12"
   },
   "wavefunction": {
     "formalism": "restricted",

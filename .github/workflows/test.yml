@@ -1,7 +1,7 @@
 name: APOST-3D build & test
 
 # Runs the gfortran build and the full regression test suite (tests/manifest.json)
-# on every push/PR to master and MAJOR-UPDATE, plus manual runs.
+# on every push/PR to master and develop, plus manual runs.
 #
 # IMPORTANT: this workflow never needs to change when tests are added or
 # removed. `make test` discovers every case from tests/manifest.json at run
@@ -22,9 +22,9 @@ name: APOST-3D build & test
 
 "on":
   push:
-    branches: [master, MAJOR-UPDATE]
+    branches: [master, develop]
   pull_request:
-    branches: [master, MAJOR-UPDATE]
+    branches: [master, develop]
   workflow_dispatch: {}
 
 jobs:

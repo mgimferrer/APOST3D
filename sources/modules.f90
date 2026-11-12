@@ -796,8 +796,8 @@
    implicit none
    character(len=*), parameter :: version_number='5'
    character(len=*), parameter :: version_full='5.0'
-   character(len=*), parameter :: version_date='22 September 2026'
-   character(len=*), parameter :: version_date_iso='2026-09-22'
+   character(len=*), parameter :: version_date='12 November 2026'
+   character(len=*), parameter :: version_date_iso='2026-11-12'
    END MODULE version_mod
 
 !! ***** !!
@@ -988,7 +988,7 @@
    first(1)=.true.
    closer(1)='}'
    call json_value('schema','apost3d-results')
-   call json_value('schema_version','0.17')
+   call json_value('schema_version','1.0')
    call json_begin_object('program')
    call json_value('name','APOST-3D')
    call json_value('version',version_full)

@@ -40,6 +40,6 @@ html_title = "APOST-3D documentation"
 html_theme_options = {
     "sidebar_hide_name": True,
     "source_repository": "https://github.com/mgimferrer/APOST3D/",
-    "source_branch": "MAJOR-UPDATE",
+    "source_branch": "master",
     "source_directory": "docs/source/",
 }

@@ -4,7 +4,7 @@ What changed for users in each release of APOST-3D. Each entry links to
 the documentation page with the details. The full history is in
 `git log`.
 
-## [5.0] — Unreleased
+## [5.0] — 2026-11-12
 
 Version 5.0 brings two oxidation-state analyses for open-shell systems
 (GEOS, and OSLO for unrestricted wavefunctions), wavefunctions from ORCA,
