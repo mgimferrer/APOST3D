@@ -1,285 +1,325 @@
-
+!! ----------------------------------------------------------------------
+!! subroutine: spincorr
+!! Local spin analysis of a correlated wavefunction from its 1- and
+!! 2-RDM: the exchange-correlation bond orders (localization and
+!! delocalization indices) from the 2-RDM, the effectively unpaired
+!! electrons of each atom and the a=3/4 decomposition of <S^2>
+!! (E. Ramos-Cordoba et al., J. Chem. Theory Comput. 2012, 8, 1270),
+!! per atom and per fragment. The exchange-only bond orders of the
+!! 1-RDM (bo, /ovpop/) come from fborder (pop.f); the 2-RDM cumulant
+!! is added to them.
+!! arguments:
+!!   sat (in)  (igr,igr,nat) atomic overlap matrices S^A
+!!   dm1 (in)  (nspinorb,nspinorb) 1-RDM, spin-orbital basis
+!!   dm2 (in)  (norb,norb,norb,norb) spinless 2-RDM, natural orbitals
+!! author: PSalse, ERaco
+!! ----------------------------------------------------------------------
       subroutine spincorr(sat,dm1,dm2)
       use ao_matrices
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
-      parameter (TOL=1.0d-10)
+      common /printout/iaccur
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /localspin/xlsa(maxat,maxat),ua(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       dimension sat(igr,igr,nat)
       dimension dm1(nspinorb,nspinorb)
       dimension dm2(norb,norb,norb,norb)
-      character*80 line
 
       dimension S234(maxat,maxat)
-      dimension bonew(maxat,maxat)
-      allocatable scr(:,:),scr2(:,:),satmo(:,:,:)
-      allocatable sfdm1(:,:), psdm1(:,:),u_no(:)
+      allocatable scr(:,:),satmo(:,:,:)
+      allocatable sfdm1(:,:),psdm1(:,:),u_no(:)
 
-      idofr= iopt(40)
+      idofr = iopt(40)
 
-      allocate (scr(igr,igr),scr2(igr,igr))
-      allocate (satmo(igr,igr,nat))
-      allocate (sfdm1(norb,norb),psdm1(norb,norb),u_no(norb))
+      allocate(scr(igr,igr))
+      allocate(satmo(igr,igr,nat))
+      allocate(sfdm1(norb,norb),psdm1(norb,norb),u_no(norb))
 
-c Compute eff. unpaired electrons in NO basis
-c assuming same dimension as MOs
+!! effective unpaired electrons in the NO basis, same dimension as MOs !!
       do iat=1,nat
-       do i=1,norb
-        do nu=1,igr 
-         x=0.0d0
-         do mu=1,igr 
-          x=x+c_no(mu,i)*sat(mu,nu,iat)
-         end do 
-         scr(i,nu)=x
-        end do 
-       end do 
-       do i=1,norb
-        do j=1,norb 
-         x=0.0d0
-         do nu=1,igr 
-          x=x+c_no(nu,j)*scr(i,nu)      
-         end do 
-         satmo(i,j,iat)=x
-        end do 
-       end do 
-      end do 
-c print
-c       write (*,*) 'atom1'
-c       do i=1,norb
-c         write(*,*) (satmo(i,j,1),j=1,norb)
-c       end do
-c       write (*,*) 'atom2'
-c       do i=1,norb
-c         write(*,*) (satmo(i,j,2),j=1,norb)
-c       end do
+        do i=1,norb
+          do nu=1,igr
+            x=0.0d0
+            do mu=1,igr
+              x=x+c_no(mu,i)*sat(mu,nu,iat)
+            end do
+            scr(i,nu)=x
+          end do
+        end do
+        do i=1,norb
+          do j=1,norb
+            x=0.0d0
+            do nu=1,igr
+              x=x+c_no(nu,j)*scr(i,nu)
+            end do
+            satmo(i,j,iat)=x
+          end do
+        end do
+      end do
 
       xnd=0.0d0
       do i=1,norb
-        u_no(i)=2.0d0*occ_no(i,i)-occ_no(i,i)**2.0d0 
+        u_no(i)=2.0d0*occ_no(i,i)-occ_no(i,i)**2.0d0
         xnd=xnd+u_no(i)
-      end do 
+      end do
 
-c atom condensed
+!! atom condensed !!
       do iat=1,nat
-       xx=0.0d0
-       do i=1,norb
-         xx=xx+u_no(i)*satmo(i,i,iat)                   
-       end do 
-       ua(iat)=xx
-      end do 
-
-      do iat=1,nat
-       do jat=iat,nat
-        yy=0.0d0
-        do i=1,norb
-         do j=1,norb
-c exchanged indices
-c          yy=yy+occ_no(i,i)*occ_no(j,j)*satmo(i,j,iat)*satmo(i,j,jat)
-          yy=yy+occ_no(i,i)*occ_no(j,j)*satmo(i,j,iat)*satmo(j,i,jat)
-         end do 
-        end do 
         xx=0.0d0
         do i=1,norb
-         if(u_no(i).gt.TOL) then
-          uno12=dsqrt(u_no(i))
-          do j=1,norb
-c exchanged indices
-c          if(u_no(j).gt.TOL) xx=xx+uno12*dsqrt(u_no(j))*satmo(i,j,iat)*satmo(i,j,jat)
-          if(u_no(j).gt.TOL) xx=xx+uno12*dsqrt(u_no(j))*satmo(i,j,iat)*satmo(j,i,jat)
-          end do 
-         end if
-        end do 
-        if(iat.eq.jat) then
-         bonew(iat,jat)= (yy+xx)/2.0d0
-        else
-         bonew(iat,jat)= yy+xx
-         bonew(jat,iat)= bonew(iat,jat)
-        end if
-       end do 
-      end do 
-C done with eff. unpaired electrons and new bond order
-
-C LSA
-C Transforming now to the MO basis
-      do iat=1,nat
-       do i=1,norb    
-        do nu=1,igr 
-         x=0.0d0
-         do mu=1,igr
-          x=x+c(mu,i)*sat(mu,nu,iat)
-         end do 
-         scr(i,nu)=x
-        end do 
-       end do 
-       do i=1,norb
-        do j=1,norb
-         x=0.0d0
-         do nu=1,igr
-          x=x+c(nu,j)*scr(i,nu)      
-         end do 
-         satmo(i,j,iat)=x
-        end do 
-       end do 
-
-      end do 
-
-C orthogonality check
-       do i=1,norb
-        do j=i,norb
-         delta=0.0d0
-         if(i.eq.j) delta=1.0d0
-         do iat=1,nat
-          delta=delta-satmo(i,j,iat)
-         end do
-         if(delta.gt.1.0d-2) then 
-          write(*,*) 'Large deviation from orthonormality in MOs:',i,j,delta
-         end if
-        end do 
-       end do 
-
-C Initializing arrays for Local Spin, DI and U decomposition
-c Local spin formulae:  (-1+2a)*Gamma_ijij - 0.5*Gamma_ijji
-C a=0 --> Alcoba
-C a=3/4 --> Ramos
-c now recalculating BO
-      do i=1,nat
-       do j=1,nat
-        s234(i,j)=0.0d0
-        DI(i,j)=0.0d0
-        BO(i,j)=0.0d0
-       end do 
-      end do
-
-C P AND Ps in MO basis
-      do i=1,norb
-       do k=1,norb
-        sfdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)+dm1((i-1)*2+2,(k-1)*2+2)
-        psdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)-dm1((i-1)*2+2,(k-1)*2+2)
-       end do 
-      end do 
-
-C CONTRIBUTIONS FROM THE SPINLESS CUMULANT OF THE DM2 in 1122 form
-C spin density contributions included  in the cumulant (i.e. not removed)
-      do i=1,norb
-       do j=1,norb
-        do k=1,norb
-         do l=1,norb
-          xx1=dm2(i,j,k,l)-sfdm1(i,j)*sfdm1(k,l)+(sfdm1(l,i)*sfdm1(j,k)+psdm1(l,i)*psdm1(j,k))/2.0d0
-          xx0=dm2(i,j,k,l)-sfdm1(i,j)*sfdm1(k,l)+(sfdm1(l,i)*sfdm1(j,k))/2.0d0
-          xx2=(sfdm1(l,i)*sfdm1(j,k))/2.0d0+(psdm1(l,i)*psdm1(j,k))/2.0d0
-          do iat=1,nat
-           do jat=iat,nat
-c exchanged indices
-c            S234(iat,jat)=s234(iat,jat)+xx0*0.5d0*(satmo(j,i,iat)*satmo(k,l,jat)-satmo(l,i,iat)*satmo(k,j,jat)) 
-            S234(iat,jat)=s234(iat,jat)+xx0*0.5d0*(satmo(j,i,iat)*satmo(l,k,jat)-satmo(l,i,iat)*satmo(j,k,jat)) 
-c exchanged indices 
-c            DI(iat,jat)=DI(iat,jat)-xx1*2.0d0*(satmo(j,i,iat)*satmo(k,l,jat))
-            DI(iat,jat)=DI(iat,jat)-xx1*2.0d0*(satmo(j,i,iat)*satmo(l,k,jat))
-c exchanged indices 
-c            BO(iat,jat)=BO(iat,jat)+xx2*2.0d0*(satmo(j,i,iat)*satmo(k,l,jat))
-            BO(iat,jat)=BO(iat,jat)+xx2*2.0d0*(satmo(j,i,iat)*satmo(l,k,jat))
-c            if(iat.eq.1.and.jat.eq.2) write(8,'(4i3,6f10.6)') j,i,l,k,satmo(j,i,iat),satmo(l,k,jat),xx2,xx1,xx2*2.0d0*(satmo(j,i,iat)*satmo(l,k,jat)),-xx1*2.0d0*(satmo(j,i,iat)*satmo(l,k,jat))
-           end do
-          end do
-         end do
+          xx=xx+u_no(i)*satmo(i,i,iat)
         end do
-       end do
+        ua(iat)=xx
       end do
 
-C CONTRIBUTIONS FROM THE  DM1
-C simply from the density of eff. unpaired elec, already calculated
+!! LSA: transforming now to the MO basis !!
+      do iat=1,nat
+        do i=1,norb
+          do nu=1,igr
+            x=0.0d0
+            do mu=1,igr
+              x=x+c(mu,i)*sat(mu,nu,iat)
+            end do
+            scr(i,nu)=x
+          end do
+        end do
+        do i=1,norb
+          do j=1,norb
+            x=0.0d0
+            do nu=1,igr
+              x=x+c(nu,j)*scr(i,nu)
+            end do
+            satmo(i,j,iat)=x
+          end do
+        end do
+      end do
 
+!! orthogonality check !!
+      do i=1,norb
+        do j=i,norb
+          delta=0.0d0
+          if(i.eq.j) delta=1.0d0
+          do iat=1,nat
+            delta=delta-satmo(i,j,iat)
+          end do
+          if(delta.gt.1.0d-2) then
+            write(*,'(2x,a,i0,a,i0,a,f10.6)') 'WARNING: orbitals ',i,
+     +        ' and ',j,' deviate from orthonormality by ',delta
+          end if
+        end do
+      end do
+
+!! initializing arrays for local spin, DI and U decomposition; local !!
+!! spin formula (-1+2a)*Gamma_ijij - 0.5*Gamma_ijji, a=0 (Alcoba) vs !!
+!! a=3/4 (Ramos-Cordoba) -- this routine implements a=3/4.           !!
+      do i=1,nat
+        do j=1,nat
+          s234(i,j)=0.0d0
+          DI(i,j)=0.0d0
+        end do
+      end do
+
+!! P and Ps in the MO basis !!
+      do i=1,norb
+        do k=1,norb
+          sfdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)+dm1((i-1)*2+2,(k-1)*2+2)
+          psdm1(i,k)=dm1((i-1)*2+1,(k-1)*2+1)-dm1((i-1)*2+2,(k-1)*2+2)
+        end do
+      end do
+
+!! contributions from the spinless cumulant of dm2, 1122 form (spin   !!
+!! density contributions included in the cumulant, i.e. not removed). !!
+!! satmo is read with its indices exchanged (satmo(j,i,iat)) relative !!
+!! to the naive iat/jat-symmetric form, consistently.                 !!
+      do i=1,norb
+        do j=1,norb
+          do k=1,norb
+            do l=1,norb
+              xx1=dm2(i,j,k,l)-sfdm1(i,j)*sfdm1(k,l)+(sfdm1(l,i)*sfdm1(j,k)+psdm1(l,i)*psdm1(j,k))/2.0d0
+              xx0=dm2(i,j,k,l)-sfdm1(i,j)*sfdm1(k,l)+(sfdm1(l,i)*sfdm1(j,k))/2.0d0
+              do iat=1,nat
+                do jat=iat,nat
+                  S234(iat,jat)=s234(iat,jat)+xx0*0.5d0*(satmo(j,i,iat)*satmo(l,k,jat)-satmo(l,i,iat)*satmo(j,k,jat))
+                  DI(iat,jat)=DI(iat,jat)-xx1*2.0d0*(satmo(j,i,iat)*satmo(l,k,jat))
+                end do
+              end do
+            end do
+          end do
+        end do
+      end do
+
+!! contributions from dm1 -- simply the density of eff. unpaired elec., !!
+!! already calculated above. !!
       do iat=1,nat
         S234(iat,iat)=s234(iat,iat)+0.75d0*ua(iat)
       end do
       deallocate (satmo,sfdm1,psdm1)
 
-C symmetrizing and computing LI/DI
+!! symmetrizing; LI/DI = exchange-only bond orders (bo, localization !!
+!! index halved on the diagonal) + cumulant part                      !!
       do i=1,nat
-       do j=i+1,nat
-        s234(j,i)=s234(i,j)
-        bo(j,i)=bo(i,j)
-        DI(i,j)=DI(i,j)+bo(i,j)
-        DI(j,i)=DI(i,j)
-       end do 
-       BO(i,i)=BO(i,i)/2.0d0
-       DI(i,i)=DI(i,i)/2.0d0+bo(i,i)
-      end do 
-c saving Ramos decomposition
-      do i=1,nat
-       do j=1,nat
-        xlsa(i,j)=s234(i,j)
-       end do
+        do j=i+1,nat
+          s234(j,i)=s234(i,j)
+          DI(i,j)=DI(i,j)+bo(i,j)
+          DI(j,i)=DI(i,j)
+        end do
+        DI(i,i)=DI(i,i)/2.0d0+bo(i,i)
       end do
-C
-C Sum checks
-C
+
+!! saving Ramos-Cordoba decomposition !!
+      do i=1,nat
+        do j=1,nat
+          xlsa(i,j)=s234(i,j)
+        end do
+      end do
+
+!! sum checks !!
       x0=0.d0
-      x1=0.d0
       x2=0.d0
-      x3=0.d0
       do iat=1,nat
-       x0=x0+di(iat,iat)
-       x1=x1+bonew(iat,iat)
-       do jat=1,nat
-         x2=x2+s234(iat,jat)
-         if(iat.ne.jat) x0=x0+di(iat,jat)/2.0d0
-         if(iat.ne.jat) x1=x1+bonew(iat,jat)/2.0d0
-       enddo
+        x0=x0+di(iat,iat)
+        do jat=1,nat
+          x2=x2+s234(iat,jat)
+          if(iat.ne.jat) x0=x0+di(iat,jat)/2.0d0
+        enddo
       enddo
 
-C printing
-      WRITE(*,8)
- 8    FORMAT(1x,/21X,'  APOST3D BOND ORDER MATRIX')
-      print *,' '
-      call MPRINT(bo,nat,maxat)
-      print *,' '
+!! printing !!
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
 
-      WRITE(*,5)
- 5    FORMAT(1x,/21X,'  APOST3D NEW BOND ORDER MATRIX')
-      print *,' Improved definition by I. Mayer on CPL 554, 83 (2012)'
-      print *,' '
-      call MPRINT(bonew,nat,maxat)
-      print *,' '
-      write(*,'(a13,f10.5)') ' Sum check = ' ,x1
-      print *,' '
+      call print_box('EXCHANGE-CORRELATION BOND ORDER MATRIX (DI)')
+      write(*,'(2x,a)') 'From the 2-RDM: delocalization indices, '//
+     +  'localization indices on the diagonal'
+      write(*,'(a)') ''
+      call mprint2(di,nat,maxat)
+      call print_value('Total (diagonal and one triangle)',x0,ndec)
+      if(idofr.eq.1) call group_by_frag_mat(1,
+     +  'FRAGMENT EXCHANGE-CORRELATION BOND ORDERS (DI)',di)
 
-      WRITE(*,4)
- 4    FORMAT(1x,/21X,'    APOST3D LI/DI MATRIX'//)
-      call MPRINT(DI,nat,maxat)
-      print *,' '
-      write(*,'(a13,f10.5)') ' Sum check = ' ,x0
-      if (idofr.eq.1) then
-        line ='   FRAGMENT ANALYSIS : Deloc. Index'
-        call group_by_frag_mat(1,line ,di)
-      end if
+      call print_atom_table('EFFECTIVELY UNPAIRED ELECTRONS',' ',' ',ua)
+      call print_value('Total unpaired electrons N_D',xnd,ndec)
+      if(idofr.eq.1) call group_by_frag_vec(1,
+     +  'FRAGMENT UNPAIRED ELECTRONS',ua,cshort,' ')
 
-      print *,'  '
-      print *,' EFFECTIVELY UNPAIRED ELECTRONS'
-      print *,'  '
-      print *,'    Atom     u_A'
-      print *,' -----------------'
-      call vprint(ua,nat,maxat,1)
-      print *,' ------------------'
-      write(*,'(a16,f10.5)') ' Sum check N_D = ' ,xnd
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Num. eff. unpaired elec.'
-       call group_by_frag_vec(1,line ,ua)
-      end if
+      call print_box('S^2 DECOMPOSITION (a=3/4)')
+      call mprint2(s234,nat,maxat)
+      call print_value('Total <S^2>',x2,ndec)
+      if(idofr.eq.1) call group_by_frag_mat(0,
+     +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
 
-      WRITE(*,3)
- 3    FORMAT(1x,/21X,'    APOST3D S^2 DECOMPOSITION (a=3/4)'//)
-      call MPRINT(s234,nat,maxat)
-      print *,' '
-      write(*,'(a20,f10.5)') 'Sum check  <S^2> = ' ,x2
-      if (idofr.eq.1) then
-       line ='   FRAGMENT ANALYSIS : Local Spin Analysis'
-       call group_by_frag_mat(0,line ,xlsa)
-      end if
-   
-      end 
+      call json_local_spin(.true.,xnd,x2,di,x0)
+
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: bond_orders_no
+!! Mayer's improved bond orders of a correlated wavefunction, from its
+!! natural orbitals (I. Mayer, Chem. Phys. Lett. 2012, 554, 83):
+!!   B_AB = sum_ij [n_i n_j + sqrt(u_i u_j)] S^A_ij S^B_ji,  u = 2n - n^2
+!! (S^A in the natural-orbital basis, half of it on the diagonal), per
+!! atom and per fragment. Needs the natural orbitals of the 1-RDM
+!! (dm1input).
+!! arguments:
+!!   sat    (in)  (igr,igr,nat) atomic overlap matrices S^A
+!!   bonew  (out) (maxat,maxat) the bond orders
+!!   xbonew (out) their total, diagonal and one triangle
+!! author: PSalse
+!! ----------------------------------------------------------------------
+      subroutine bond_orders_no(sat,bonew,xbonew)
+      use ao_matrices
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /printout/iaccur
+      parameter (TOL=1.0d-10)
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      dimension sat(igr,igr,nat)
+      dimension bonew(maxat,maxat)
+      allocatable scr(:,:),satmo(:,:,:),u_no(:)
+
+      idofr = iopt(40)
+
+      allocate(scr(igr,igr))
+      allocate(satmo(igr,igr,nat))
+      allocate(u_no(norb))
+
+!! S^A in the NO basis !!
+      do iat=1,nat
+        do i=1,norb
+          do nu=1,igr
+            x=0.0d0
+            do mu=1,igr
+              x=x+c_no(mu,i)*sat(mu,nu,iat)
+            end do
+            scr(i,nu)=x
+          end do
+        end do
+        do i=1,norb
+          do j=1,norb
+            x=0.0d0
+            do nu=1,igr
+              x=x+c_no(nu,j)*scr(i,nu)
+            end do
+            satmo(i,j,iat)=x
+          end do
+        end do
+      end do
+
+      do i=1,norb
+        u_no(i)=2.0d0*occ_no(i,i)-occ_no(i,i)**2.0d0
+      end do
+
+!! satmo(i,j,jat) is read with its indices exchanged (satmo(j,i,jat)) !!
+!! relative to the naive iat/jat-symmetric form                       !!
+      xbonew=0.0d0
+      do iat=1,nat
+        do jat=iat,nat
+          yy=0.0d0
+          do i=1,norb
+            do j=1,norb
+              yy=yy+occ_no(i,i)*occ_no(j,j)*satmo(i,j,iat)*satmo(j,i,jat)
+            end do
+          end do
+          xx=0.0d0
+          do i=1,norb
+            if(u_no(i).gt.TOL) then
+              uno12=dsqrt(u_no(i))
+              do j=1,norb
+                if(u_no(j).gt.TOL) xx=xx+uno12*dsqrt(u_no(j))*satmo(i,j,iat)*satmo(j,i,jat)
+              end do
+            end if
+          end do
+          if(iat.eq.jat) then
+            bonew(iat,jat)= (yy+xx)/2.0d0
+          else
+            bonew(iat,jat)= yy+xx
+            bonew(jat,iat)= bonew(iat,jat)
+          end if
+          xbonew=xbonew+bonew(iat,jat)
+        end do
+      end do
+      deallocate(scr,satmo,u_no)
+
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+      call print_box('IMPROVED BOND ORDER MATRIX')
+      write(*,'(2x,a)') 'From the natural orbitals, I. Mayer, '//
+     +  'Chem. Phys. Lett. 2012, 554, 83'
+      write(*,'(a)') ''
+      call mprint2(bonew,nat,maxat)
+      call print_value('Total (diagonal and one triangle)',xbonew,ndec)
+      if(idofr.eq.1) call group_by_frag_mat(1,
+     +  'FRAGMENT IMPROVED BOND ORDERS',bonew)
+
+      end

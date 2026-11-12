@@ -1,32 +1,39 @@
-## Addint type of files to not be pushed to github. Basically the ones created after compilation of libraries/code ##
-## Feel free to add more types if desired/required                                                                 ##
+## Files created after compilation — not tracked in git ##
 
+## Build output: every object/module goes to objects/; the programs to the
+## repo root (apost3d) and utils/ (make utils)
+objects/
 *.o
 *.mod
-*.optrpt
-*.dyn
-*pgopti*
-
-
-## Executables ##
-
-eos_aom
-apost3d-eos
 apost3d
-
-
-## Other files ##
-nohup.out
-compiler-testset/*OSLOs*.fchk
-compiler-testset/*.apost*
-
-
-## Ignored the pycache folder, its created when the user executes the apost3d.py util ##
-
+utils/eos_aom
+utils/gen_hirsh
+utils/get_energy
+utils/get_energy_g16
+utils/wfn2fchk
+## libxc: fetched tarball + built tree (compile_libxc.sh fetches the
+## pinned release from upstream and builds it here -- neither is
+## committed; see compile_libxc.sh for the pinned version/checksum).
+## Glob, not a pinned version number, so a future version bump needs no
+## .gitignore edit.
+libxc-*.tar.gz
+libxc-*/
+## OSLO visualization output (written by apost3d itself during OSLO runs,
+## e.g. if run manually inside tests/inputs/ instead of an isolated
+## tempdir — not required input, regenerated on every run)
+tests/inputs/*OSLOs*.fchk
+tests/inputs/*EFOs*.fchk
+tests/inputs/*.apost*
+tests/inputs/*.cube
+## Python cache
 utils/__pycache__
-
-
-## Also the folder of the libraries, for problems of permission ##
-
-libxc-4.2.3
-
+tests/__pycache__
+## Test runner auto-generated reports (regenerated on every run)
+tests/report/
+## Misc
+nohup.out
+## AI-assistant reference doc — local working reference, not part of the
+## published repo (architecture notes, known issues, planned-work tracking).
+CLAUDE.md
+## Sphinx build output (Read the Docs builds this itself; not tracked)
+docs/build/

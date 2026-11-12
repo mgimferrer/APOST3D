@@ -1,0 +1,119 @@
+# Running a calculation
+
+Put `jobname.fchk` and `jobname.inp` in the same folder, go there, and run
+
+```bash
+ulimit -s unlimited
+export OMP_NUM_THREADS=8
+$APOST3D_PATH/apost3d jobname > jobname.apost 2>&1
+```
+
+- **The job name has no extension**: `apost3d water`, not
+  `apost3d water.inp` (the run stops with a message). The program adds
+  `.fchk` and `.inp` itself.
+- `ulimit -s unlimited` lifts the limit on the stack memory of the shell.
+  Without it, larger systems crash with a segmentation fault.
+- `OMP_NUM_THREADS` sets the number of CPU cores used. Without it, all
+  available cores are used.
+- All results go to the standard output, here saved in `jobname.apost`
+  (`2>&1` also keeps the error messages there). Other files (orbitals,
+  cubes) are written into the same folder (see
+  [Output files](output.md)).
+
+A run is complete when the output ends with
+
+% source: tests/reference/CH3F.apost
+```text
+  ...Normal Termination of APOST-3D...
+```
+
+If this line is missing, the run stopped early and the last lines of the
+output (usually a line starting with `STOP`) say why (see
+[Troubleshooting](../troubleshooting.md)). The program then exits with
+code 1 (0 after a normal end), so scripts can test it directly. A crash
+(not a `STOP`) also gives a nonzero code.
+
+## Integration grid
+
+Real-space analyses integrate on an atomic grid of radial × angular points
+around each atom. The default is 40 × 146 (150 × 590 for ENPART and POLAR),
+printed at the top of the output:
+
+% source: tests/reference/CH3F.apost
+```text
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 29200
+```
+
+A different grid is set in the input, in the optional
+[`# GRID` block](../input/grid.md):
+
+```text
+# GRID
+RADIAL 70
+ANGULAR 434
+#
+```
+
+The angular number must be a Lebedev grid (6, 14, 26, 38, 50, 74, 86, 110,
+146, 170, 194, 230, 266, 302, 350, 434, 590, 770 or 974) and the radial
+one between 1 and 500, otherwise the run stops. For ENPART these set the
+one-electron grid, and its two-electron grid has its own keywords in the
+same block.
+
+The default grid is accurate enough for populations, bond orders and
+effective orbitals with `TFVC`: the sum of the atomic populations, printed
+in the population analysis, shows the integration error (e.g. 18.0005 for
+18 electrons). Increase the grid if that sum is clearly off, which is
+more likely with heavy atoms or diffuse basis sets. For production
+results, such as those of a publication, we recommend `RADIAL 150` and
+`ANGULAR 590`, the grid that ENPART and POLAR use by default. It is more
+expensive.
+
+## On a cluster
+
+A job script for SLURM (other queueing systems work the same way):
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=mol
+#SBATCH --cpus-per-task=8
+#SBATCH --time=02:00:00
+
+module load gcc openblas      # the modules loaded for the build, if any
+export APOST3D_PATH=/home/user/APOST3D
+ulimit -s unlimited
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+cd $SLURM_SUBMIT_DIR
+if ! $APOST3D_PATH/apost3d mol > mol.apost 2>&1; then
+  echo "APOST-3D stopped early, see the end of mol.apost"
+fi
+```
+
+APOST-3D runs on a single node (it is parallelized with OpenMP threads,
+not MPI): ask for one task with several CPUs. The job needs the libraries
+of the build: the modules loaded to compile it, and the `LD_LIBRARY_PATH`
+of an OpenBLAS of your own ([Installation](../installation.md#special-setups)).
+
+## Time and memory
+
+Population analysis, effective orbitals, EOS, GEOS, OSLO and local spin take
+seconds to minutes for molecules of a few dozen atoms. ENPART is much more
+expensive: its two-electron integrations grow with the square of the
+grid, see [ENPART](../methods/enpart.md#grids-and-cost). The cost of each
+step is printed after it:
+
+% source: tests/reference/FeCN5NO3--UBLYP.apost
+```text
+  TIMING CPU  :: Population analysis                               0.10 s
+  TIMING WALL :: Population analysis                               0.10 s
+```
+
+(CPU time is summed over all threads, and WALL is the elapsed time.)

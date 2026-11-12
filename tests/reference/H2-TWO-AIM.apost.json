@@ -1,0 +1,34 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "1.0",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-11-12"
+  },
+  "wavefunction": {
+    "formalism": "unrestricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 10,
+    "n_electrons": 2,
+    "n_alpha": 1,
+    "n_beta": 1,
+    "energy_au": -1.1734967935672269E+000,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
+  },
+  "index": [],
+  "run": {
+    "job_name": "H2-TWO-AIM",
+    "input_file": "H2-TWO-AIM.inp",
+    "wavefunction_file": "H2-TWO-AIM.fchk",
+    "date": "2026-10-24T14:55:03+02:00",
+    "id": "2026-10-24T14:55:03+02:00/3e68",
+    "threads": 8,
+    "status": "stopped",
+    "stop_message": "More than one atomic definition"
+  }
+}

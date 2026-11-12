@@ -1,0 +1,101 @@
+name: APOST-3D build & test
+
+# Runs the gfortran build and the full regression test suite (tests/manifest.json)
+# on every push/PR to master and develop, plus manual runs.
+#
+# IMPORTANT: this workflow never needs to change when tests are added or
+# removed. `make test` discovers every case from tests/manifest.json at run
+# time, so adding a new test is purely a data change:
+#   1. drop SystemName.fchk / SystemName.inp into tests/inputs/
+#   2. add a reference tests/reference/SystemName.apost
+#      (python3 tests/run_tests.py --filter SystemName --update-ref)
+#   3. add an entry to tests/manifest.json
+#   4. commit — CI picks it up automatically, no workflow edits required.
+#
+# `make test` always runs every case, no tiers. NTHREADS is set to the
+# runner's core count to exercise the OpenMP paths and keep CI reasonably
+# quick.
+#
+# Two runners: ubuntu-24.04 (gfortran 13) and ubuntu-latest (Ubuntu 26.04
+# since late 2026, gfortran 15), so both compiler generations users have
+# on their clusters are tested.
+
+"on":
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    env:
+      APOST3D_PATH: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install gfortran/gcc/make/openblas/cmake
+        id: toolchain
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gfortran gcc make libopenblas-dev cmake
+          gfortran --version
+          cmake --version
+          echo "gfortran_version=$(gfortran -dumpfullversion)" >> "$GITHUB_OUTPUT"
+          # Extracted from compile_libxc.sh itself (not duplicated here) so
+          # bumping the pinned version there can never drift out of sync
+          # with this cache key.
+          libxc_version="$(grep -m1 '^LIBXC_VERSION=' compile_libxc.sh | sed -E 's/^LIBXC_VERSION="([^"]+)"/\1/')"
+          echo "libxc_version=$libxc_version" >> "$GITHUB_OUTPUT"
+
+      - name: Cache libxc build
+        id: libxc-cache
+        uses: actions/cache@v4
+        with:
+          path: libxc-${{ steps.toolchain.outputs.libxc_version }}
+          # Keyed on both the resolved compiler version (.mod files aren't
+          # portable across gfortran versions -- a runner image compiler
+          # bump must invalidate the cache) and the pinned libxc version
+          # (not a tarball hash, since the tarball isn't committed).
+          key: libxc-${{ steps.toolchain.outputs.libxc_version }}-${{ runner.os }}-gfortran-${{ steps.toolchain.outputs.gfortran_version }}
+
+      - name: Build libxc
+        if: steps.libxc-cache.outputs.cache-hit != 'true'
+        run: bash compile_libxc.sh
+
+      - name: Build APOST-3D
+        run: bash make_compile.sh
+
+      - name: Run regression test suite
+        run: make test NTHREADS=$(nproc)
+
+      # The references were written on another machine and compiler: compare
+      # the outputs above at the strict level too. Informative only (shown as
+      # a warning, never fails the run): a difference here means the output
+      # is not reproduced exactly on this runner, worth a look before a
+      # release.
+      - name: Strict comparison with the references (informative)
+        if: always()
+        continue-on-error: true
+        run: python3 tests/compare_outputs.py --strict --ref-dir tests/reference --out-dir tests/report/outputs --max-show 5
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: tests/report/
+          retention-days: 30
+
+      - name: Keyword coverage report
+        if: always()
+        run: make coverage

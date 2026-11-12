@@ -1,0 +1,665 @@
+{
+  "schema": "apost3d-results",
+  "schema_version": "1.0",
+  "program": {
+    "name": "APOST-3D",
+    "version": "5.0",
+    "version_date": "2026-11-12"
+  },
+  "wavefunction": {
+    "formalism": "restricted",
+    "method": "KS-DFT",
+    "n_basis_functions": 86,
+    "n_electrons": 52,
+    "n_alpha": 26,
+    "n_beta": 26,
+    "energy_au": -1.4882914233300880E+003,
+    "density": {
+      "fchk_block": "Total SCF Density",
+      "index": 1,
+      "source": "fchk"
+    }
+  },
+  "input": {
+    "text": "# METHOD\nTFVC\nDOFRAGS\nEOS\n#\n# FRAGMENTS\n3\n1\n1\n2\n2 4\n-1\n#\n\n",
+    "atomic_definition": {
+      "keyword": "TFVC",
+      "name": "Topological fuzzy Voronoi cells",
+      "short_name": "TFVC",
+      "space": "real",
+      "default": false
+    }
+  },
+  "molecule": {
+    "n_atoms": 5,
+    "atomic_numbers": [26, 6, 6, 8, 8],
+    "symbols": ["Fe", "C", "C", "O", "O"],
+    "nuclear_charges": [2.6000000000000000E+001, 6.0000000000000000E+000, 6.0000000000000000E+000, 8.0000000000000000E+000, 8.0000000000000000E+000],
+    "coordinates_bohr": [
+      [-4.3368086899999998E-019, 4.9568368100000000E-018, 8.1135197299999993E-003],
+      [-8.1792211899999998E-016, 3.5941410800000000E+000, -2.4747871900000001E-003],
+      [1.5118115099999999E-015, -3.5941410800000000E+000, -2.4747871900000001E-003],
+      [-1.1848161300000001E-015, 6.5994429900000000E+000, -1.1328379200000000E-002],
+      [2.7699197099999999E-015, -6.5994429900000000E+000, -1.1328379200000000E-002]
+    ]
+  },
+  "fragments": [
+    {
+      "id": 1,
+      "atoms": [1]
+    },
+    {
+      "id": 2,
+      "atoms": [2, 4]
+    },
+    {
+      "id": 3,
+      "atoms": [3, 5]
+    }
+  ],
+  "analyses": {
+    "populations": {
+      "scheme": "TFVC",
+      "atoms": {
+        "electrons": [2.4556758472790094E+001, 5.5872014708614071E+000, 5.5872014708773845E+000, 8.1345599516461284E+000, 8.1345599516309246E+000],
+        "charges": [1.4432415272099064E+000, 4.1279852913859294E-001, 4.1279852912261550E-001, -1.3455995164612844E-001, -1.3455995163092460E-001]
+      },
+      "fragments": {
+        "electrons": [2.4556758472790094E+001, 1.3721761422507535E+001, 1.3721761422508308E+001],
+        "charges": [1.4432415272099064E+000, 2.7823857749246450E-001, 2.7823857749169090E-001]
+      },
+      "mulliken": {
+        "atoms": {
+          "electrons": [2.5119035694908757E+001, 5.5875050719789074E+000, 5.5875050719611901E+000, 7.8529770598698514E+000, 7.8529770598715372E+000],
+          "charges": [8.8096430509124346E-001, 4.1249492802109256E-001, 4.1249492803880994E-001, 1.4702294013014860E-001, 1.4702294012846284E-001]
+        },
+        "fragments": {
+          "electrons": [2.5119035694908757E+001, 1.3440482131848759E+001, 1.3440482131832727E+001],
+          "charges": [8.8096430509124346E-001, 5.5951786815124116E-001, 5.5951786816727278E-001]
+        }
+      }
+    },
+    "bond_orders": {
+      "scheme": "TFVC",
+      "atoms": {
+        "matrix": {
+          "values": [
+            [2.2981402588987077E+001, 1.1105511089420492E+000, 1.1105511089728368E+000, 4.6518501241025578E-001, 4.6518501221898173E-001],
+            [1.1105511089420492E+000, 3.9207618194974820E+000, 5.2986537503732938E-002, 2.1135187608559285E+000, 5.5774540289790536E-002],
+            [1.1105511089728368E+000, 5.2986537503732938E-002, 3.9207618195622600E+000, 5.5774540289720315E-002, 2.1135187608104733E+000],
+            [4.6518501241025578E-001, 2.1135187608559285E+000, 5.5774540289720315E-002, 6.8007065626725067E+000, 3.3177937803704885E-002],
+            [4.6518501221898173E-001, 5.5774540289790536E-002, 2.1135187608104733E+000, 3.3177937803704885E-002, 6.8007065626468846E+000]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order"
+        },
+        "valence_total": [3.1507117676060332E+000, 3.3328793027278500E+000, 3.3328793026302490E+000, 2.6677067779472434E+000, 2.6677067779680801E+000],
+        "valence_bonded": [3.1514722425441239E+000, 3.3328309475915012E+000, 3.3328309475767632E+000, 2.6676562513596096E+000, 2.6676562511229505E+000],
+        "valence_free": [-7.6047493809072719E-004, 4.8355136348821048E-005, 4.8355053485771293E-005, 5.0526587633825670E-005, 5.0526845129628128E-005]
+      },
+      "fragments": {
+        "matrix": {
+          "values": [
+            [2.2981402588987077E+001, 1.5757361213523051E+000, 1.5757361211918186E+000],
+            [1.5757361213523051E+000, 1.2834987143025916E+001, 1.9771355588694869E-001],
+            [1.5757361211918186E+000, 1.9771355588694869E-001, 1.2834987143019617E+001]
+          ],
+          "symmetric": true,
+          "diagonal": "localization index",
+          "off_diagonal": "bond order",
+          "total": 5.2000562673463683E+001,
+          "total_rule": "diagonal and one triangle"
+        },
+        "valence_total": [3.1507117676060332E+000, 6.0005860806750935E+000, 6.0005860805983291E+000],
+        "valence_bonded": [3.1514722425441239E+000, 6.0004871989511113E+000, 6.0004871986997141E+000],
+        "valence_free": [-7.6047493809072719E-004, 9.8881723982646719E-005, 9.8881898615399422E-005]
+      },
+      "overlap_populations": {
+        "atoms": {
+          "matrix": {
+            "values": [
+              [2.4233577954733263E+001, 1.6158811010682017E-001, 1.6158811010920723E-001, 2.1489204628017093E-006, 2.1489204628166509E-006],
+              [1.6158811010682017E-001, 5.2563953329518709E+000, 1.3121935991274133E-007, 1.6895986948239780E-001, 5.1869125593198617E-012],
+              [1.6158811010920723E-001, 1.3121935991274133E-007, 5.2563953329701389E+000, 5.1869125592648349E-012, 1.6895986947769293E-001],
+              [2.1489204628017093E-006, 1.6895986948239780E-001, 5.1869125592648349E-012, 7.9657829986818065E+000, 4.9646850164321903E-015],
+              [2.1489204628166509E-006, 5.1869125593198617E-012, 1.6895986947769293E-001, 4.9646850164321903E-015, 7.9657829986712940E+000]
+            ],
+            "symmetric": true,
+            "diagonal": "self overlap population",
+            "off_diagonal": "overlap population"
+          }
+        },
+        "fragments": {
+          "matrix": {
+            "values": [
+              [2.4233577954733263E+001, 1.6159025902728297E-001, 1.6159025902967006E-001],
+              [1.6159025902728297E-001, 1.3560098070598475E+001, 1.3122973870254495E-007],
+              [1.6159025902967006E-001, 1.3122973870254495E-007, 1.3560098070596819E+001]
+            ],
+            "symmetric": true,
+            "diagonal": "self overlap population",
+            "off_diagonal": "overlap population",
+            "total": 5.2000135394501939E+001,
+            "total_rule": "all elements"
+          }
+        }
+      }
+    },
+    "eos": {
+      "scheme": "TFVC",
+      "alpha": {
+        "reliability_percent": 9.6597626845481372E+001,
+        "assignment": "integer",
+        "frontier": {
+          "rows": "fragment",
+          "n_rows": 3,
+          "columns": [
+            {
+              "key": "last_occupied",
+              "title": "Last occupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            },
+            {
+              "key": "first_unoccupied",
+              "title": "First unoccupied EFO",
+              "unit": null,
+              "decimals": 3,
+              "signed": false
+            }
+          ],
+          "data": {
+            "last_occupied": [8.3744471716736479E-001, 7.8701440512520660E-001, 7.8701440515977139E-001],
+            "first_unoccupied": [3.2103813667039299E-001, 8.3769157683012463E-002, 8.3769157680685186E-002]
+          }
+        },
+        "frontier_efos": {
+          "last_occupied": [
+            {
+              "efo_row": 25,
+              "fragment": 2,
+              "occupation": 7.8701440512520660E-001
+            },
+            {
+              "efo_row": 26,
+              "fragment": 3,
+              "occupation": 7.8701440515977139E-001
+            }
+          ],
+          "first_unoccupied": [
+            {
+              "efo_row": 27,
+              "fragment": 1,
+              "occupation": 3.2103813667039299E-001
+            }
+          ]
+        },
+        "efos": {
+          "rows": "orbital",
+          "n_rows": 41,
+          "fchk_orbitals": "alpha",
+          "columns": [
+            {
+              "key": "fragments",
+              "title": "Fragments",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            },
+            {
+              "key": "shares",
+              "title": "Fragment shares",
+              "unit": null,
+              "decimals": 5,
+              "signed": false
+            },
+            {
+              "key": "net",
+              "title": "Net occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "gross",
+              "title": "Gross occupation",
+              "unit": null,
+              "decimals": 4,
+              "signed": false
+            },
+            {
+              "key": "fit_percent",
+              "title": "Fit",
+              "unit": "%",
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "electrons",
+              "title": "Assigned electrons",
+              "unit": null,
+              "decimals": 2,
+              "signed": false
+            },
+            {
+              "key": "fchk_column",
+              "title": "Column in the .fchk file",
+              "unit": null,
+              "decimals": 0,
+              "signed": false
+            }
+          ],
+          "data": {
+            "fragments": [
+              [1],
+              [1],
+              [2],
+              [3],
+              [1],
+              [1],
+              [1],
+              [2],
+              [3],
+              [2],
+              [3],
+              [1],
+              [1],
+              [1],
+              [2],
+              [3],
+              [1],
+              [1],
+              [2],
+              [3],
+              [2],
+              [3],
+              [1],
+              [1],
+              [2],
+              [3],
+              [1],
+              [1],
+              [1],
+              [2],
+              [3],
+              [2],
+              [3],
+              [1],
+              [1],
+              [1],
+              [2],
+              [3],
+              [2],
+              [3],
+              [1]
+            ],
+            "shares": [
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000],
+              [1.0000000000000000E+000]
+            ],
+            "net": [1.0000013559455627E+000, 9.9999970318786480E-001, 9.9999974359245314E-001, 9.9999974359241173E-001, 9.9999829728820611E-001, 9.9999829500103876E-001, 9.9999596021059456E-001, 9.9998815432368360E-001, 9.9998815432403176E-001, 9.9998284431707973E-001, 9.9998284430796514E-001, 9.9628480078361392E-001, 9.9628304891675712E-001, 9.9569346486907795E-001, 9.9135479230175150E-001, 9.9135479227867329E-001, 9.8538627300166870E-001, 9.8164730293169544E-001, 9.8331089218687773E-001, 9.8331089212721112E-001, 9.0560154877149202E-001, 9.0560154883926336E-001, 8.1562974801066901E-001, 8.1441390861752272E-001, 7.4730368653395252E-001, 7.4730368656684998E-001, 2.7588403786115151E-001, 1.6438812921267001E-001, 6.0876556222965242E-002, 7.2144070673313895E-002, 7.2144070671104538E-002, 7.0817694556166599E-002, 7.0817694555508182E-002, 1.1955283139189280E-002, 8.5711546606836858E-003, 8.0785375657921026E-003, 6.0025666557520577E-003, 6.0025666511695766E-003, 1.8659695966006279E-003, 1.8659695965380855E-003, 1.8023663748187484E-003],
+            "gross": [1.0000013837069541E+000, 9.9999983638299528E-001, 9.9999975692329945E-001, 9.9999975692326049E-001, 9.9999879960586713E-001, 9.9999879818741422E-001, 9.9999700100004651E-001, 9.9999079088542087E-001, 9.9999079088581300E-001, 9.9998638938512574E-001, 9.9998638937587148E-001, 9.9783042438093850E-001, 9.9782932512485145E-001, 9.9740679075602801E-001, 9.9276479564345765E-001, 9.9276479561824793E-001, 9.9075225723526372E-001, 9.8861411646845965E-001, 9.8610945316718046E-001, 9.8610945311024900E-001, 9.0873695324349535E-001, 9.0873695331137128E-001, 8.3807263426873435E-001, 8.3744471716736479E-001, 7.8701440512520660E-001, 7.8701440515977139E-001, 3.2103813667039299E-001, 1.6755872569094879E-001, 9.8114557532222035E-002, 8.3769157683012463E-002, 8.3769157680685186E-002, 8.2163148983927084E-002, 8.2163148982316803E-002, 1.6039322539485690E-002, 1.2363042362672249E-002, 1.1684642100227077E-002, 1.1161225584152961E-002, 1.1161225583625332E-002, 4.6846351012284357E-003, 4.6846351011268477E-003, 3.3907047923678576E-003],
+            "fit_percent": [9.9988771999591847E+001, 9.9986439031975209E+001, 9.9964975296038631E+001, 9.9964975295674506E+001, 9.9927965303383530E+001, 9.9927913546044294E+001, 9.9904218086480739E+001, 9.9841493443660312E+001, 9.9841493439663537E+001, 9.9869329979067587E+001, 9.9869329984238163E+001, 9.7918945377518611E+001, 9.7916214033612050E+001, 9.8892017171209602E+001, 9.8431429436027344E+001, 9.8431429437438382E+001, 9.4645010057309179E+001, 9.5363559573777692E+001, 9.7801053105058571E+001, 9.7801053103736749E+001, 9.7574269561213882E+001, 9.7574269561304334E+001, 9.0945221873376482E+001, 9.0854098566419026E+001, 9.1509681876099933E+001, 9.1509681876112907E+001, 8.6782820648312835E+001, 9.3033096299852133E+001, 5.9763625909120478E+001, 7.6801824330013929E+001, 7.6801824329376856E+001, 7.6773928427853392E+001, 7.6773928428268462E+001, 8.4758211612720615E+001, 7.0616938078695995E+001, 7.0470960753742744E+001, 5.3132142401124028E+001, 5.3132142354200987E+001, 8.7020279676132795E+000, 8.7020279664819391E+000, 5.8339836239773149E+001],
+            "electrons": [1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+            "fchk_column": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]
+          }
+        }
+      },
+      "beta": {
+        "same_as_alpha": true
+      },
+      "fragments": {
+        "oxidation_states": [2.0000000000000000E+000, 0.0000000000000000E+000, 0.0000000000000000E+000],
+        "electrons_alpha": [1.2000000000000000E+001, 7.0000000000000000E+000, 7.0000000000000000E+000],
+        "electrons_beta": [1.2000000000000000E+001, 7.0000000000000000E+000, 7.0000000000000000E+000]
+      },
+      "reliability_percent": 9.6597626845481372E+001,
+      "orbital_file": "FeCO2-PBEPBE-EOS-EFOs.fchk",
+      "orbital_file_id": "2026-10-24T14:54:23+02:00/70f8",
+      "orbital_file_unweighted": "FeCO2-PBEPBE-EOS-EFOs-unweighted.fchk"
+    }
+  },
+  "atomic_weights": {
+    "profile": "tfvc",
+    "stiffness": 4,
+    "radius_ratios": [
+      [1.0000000000000000E+000, 9.6078431372549011E-001, 9.6078431372549011E-001, 1.0000000000000000E+000, 1.0000000000000000E+000],
+      [1.0408163265306123E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 7.8571428571428570E-001, 1.0000000000000000E+000],
+      [1.0408163265306123E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 7.8571428571428570E-001],
+      [1.0000000000000000E+000, 1.2727272727272729E+000, 1.0000000000000000E+000, 1.0000000000000000E+000, 1.0000000000000000E+000],
+      [1.0000000000000000E+000, 1.0000000000000000E+000, 1.2727272727272729E+000, 1.0000000000000000E+000, 1.0000000000000000E+000]
+    ]
+  },
+  "index": [
+    {
+      "id": "populations.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "path": "/analyses/populations/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.atoms.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/electrons",
+      "kind": "atom_vector",
+      "title": "Electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.atoms.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/atoms/charges",
+      "kind": "atom_vector",
+      "title": "Atomic charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "populations.mulliken.fragments.electrons",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/electrons",
+      "kind": "fragment_vector",
+      "title": "Fragment electron populations (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "populations.mulliken.fragments.charges",
+      "analysis": "populations",
+      "spin": null,
+      "role": "comparison",
+      "path": "/analyses/populations/mulliken/fragments/charges",
+      "kind": "fragment_vector",
+      "title": "Fragment charges (Mulliken)",
+      "unit": null,
+      "decimals": 6,
+      "signed": true
+    },
+    {
+      "id": "bond_orders.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_total",
+      "kind": "atom_vector",
+      "title": "Total valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_bonded",
+      "kind": "atom_vector",
+      "title": "Valences used in bonds (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.atoms.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/atoms/valence_free",
+      "kind": "atom_vector",
+      "title": "Free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/matrix",
+      "kind": "fragment_matrix",
+      "title": "Fragment bond orders (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_total",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_total",
+      "kind": "fragment_vector",
+      "title": "Fragment total valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_bonded",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_bonded",
+      "kind": "fragment_vector",
+      "title": "Fragment valences used in bonds (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.fragments.valence_free",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/fragments/valence_free",
+      "kind": "fragment_vector",
+      "title": "Fragment free valences (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.overlap_populations.atoms.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/overlap_populations/atoms/matrix",
+      "kind": "atom_matrix",
+      "title": "Overlap populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "bond_orders.overlap_populations.fragments.matrix",
+      "analysis": "bond_orders",
+      "spin": null,
+      "path": "/analyses/bond_orders/overlap_populations/fragments/matrix",
+      "kind": "fragment_matrix",
+      "title": "Fragment overlap populations (TFVC)",
+      "unit": null,
+      "decimals": 6,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.reliability_percent",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R, alpha (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.frontier",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/frontier",
+      "kind": "table",
+      "title": "EOS frontier EFOs, alpha (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.alpha.efos",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/alpha/efos",
+      "kind": "table",
+      "title": "EFOs, alpha (TFVC)",
+      "unit": null,
+      "decimals": null,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.oxidation_states",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/fragments/oxidation_states",
+      "kind": "fragment_vector",
+      "title": "EOS oxidation states (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": true
+    },
+    {
+      "id": "eos.fragments.electrons_alpha",
+      "analysis": "eos",
+      "spin": "alpha",
+      "path": "/analyses/eos/fragments/electrons_alpha",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, alpha (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.fragments.electrons_beta",
+      "analysis": "eos",
+      "spin": "beta",
+      "path": "/analyses/eos/fragments/electrons_beta",
+      "kind": "fragment_vector",
+      "title": "EOS electrons, beta (TFVC)",
+      "unit": null,
+      "decimals": 2,
+      "signed": false
+    },
+    {
+      "id": "eos.reliability_percent",
+      "analysis": "eos",
+      "spin": "total",
+      "path": "/analyses/eos/reliability_percent",
+      "kind": "scalar",
+      "title": "Reliability index R (TFVC)",
+      "unit": "%",
+      "decimals": 3,
+      "signed": false
+    }
+  ],
+  "run": {
+    "job_name": "FeCO2-PBEPBE",
+    "input_file": "FeCO2-PBEPBE.inp",
+    "wavefunction_file": "FeCO2-PBEPBE.fchk",
+    "date": "2026-10-24T14:54:23+02:00",
+    "id": "2026-10-24T14:54:23+02:00/70f8",
+    "threads": 8,
+    "status": "normal",
+    "stop_message": null
+  }
+}

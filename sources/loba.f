@@ -8,10 +8,10 @@
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
 
-      allocatable :: orbpop(:)
+      allocatable :: orbpop(:),orbpopat(:,:)
       allocatable :: flo(:,:),clo(:,:)
 
       dimension sat(igr,igr,nat)
@@ -23,7 +23,7 @@
       idofr=iopt(40)
       if(idofr.eq.0) then
         write(*,*) " FRAGMENT DEFINITION REQUIRED FOR LOBA, CHECK .inp FILE "
-        stop
+        call apost_stop('')
       end if
 
       !! FRAGMENT CHARGE EXTRACTED FROM zn (AVOIDS PROBLEMS WHEN PSEUDOPOTENTIALS ARE USED) !!
@@ -47,38 +47,43 @@
       if(kop.ne.1) then
 
         !! CALCULATING FIRST FRAGMENT POPULATIONS FOR EACH LO !!
-        ALLOCATE(orbpop(nocc))
+        !! clo is fixed here, so its expensive per-atom population matrix !!
+        !! is computed once, then just summed per fragment below.        !!
+        ALLOCATE(orbpop(nocc),orbpopat(nocc,nat))
         ALLOCATE(flo(nocc,icufr),clo(igr,igr))
 
         flo=ZERO
         clo=c
 
+        call rwf_uwf_orbpop_atom(sat,nocc,clo,orbpopat)
+
         !! LOOP OVER FRAGMENTS !!
         do jfrg=1,icufr
           orbpop=ZERO
-          call rwf_uwf_frg_pop(jfrg,sat,nocc,clo,orbpop)
+          call rwf_uwf_frg_pop(jfrg,nocc,orbpopat,orbpop)
 
           !! SAVING FRAGMENT POPULATIONS !!
           do ii=1,nocc
             flo(ii,jfrg)=orbpop(ii)
           end do
         end do
+        DEALLOCATE(orbpopat)
 
         write(*,*) " ----------------------------------------- "
         write(*,*) "  Fragment population analysis of each LO  "
         write(*,*) " ----------------------------------------- "
-        write(*,*) " "
+        write(*,*)
         call rwf_uwf_print_LO_pop(nocc,flo)
 
         !! ASSIGNING ELECTRONS AND CI VALUES !!
         write(*,*) " -------------------------------- "
         write(*,*) "  Assigning electrons of each LO  "
         write(*,*) " -------------------------------- "
-        write(*,*) " "
+        write(*,*)
 
         !! EVALUATING CLARITY INDEX (CI) FOR EACH LOCALIZED ORBITAL !!
         write(*,*) " INFO: Considering Frg. 1 for OS assignment "
-        write(*,*) " "
+        write(*,*)
         write(*,*) "  Orbital     CI     Frg. 1 Pop    Assignment   "
         write(*,*) " ---------------------------------------------- "
 
@@ -140,19 +145,19 @@
 
         !! CLOSING THE TABLE !!
         write(*,*) " ---------------------------------------------- "
-        write(*,*) " "
+        write(*,*)
 
         !! FINAL PRINTING !!
         write(*,*) " --------------------------- "
         write(*,*) "  FRAGMENT OXIDATION STATES  "
         write(*,*) " --------------------------- "
-        write(*,*) " "
+        write(*,*)
         write(*,*) "  Frag.  Oxidation State  "
         write(*,*) " ------------------------ "
         write(*,'(3x,a3,6x,f8.2)') "  1",REAL(iznfrg1-iel1)
         write(*,'(3x,a5,4x,f8.2)') " Rest",REAL(iznrest-ielrest) 
         write(*,*) " ------------------------ "
-        write(*,*) " "
+        write(*,*)
 
         !! DEALLOCATING MATRICES !!
         DEALLOCATE(orbpop,flo)
@@ -160,7 +165,7 @@
       !! FOR THE MOMENT ONLY CLOSED-SHELL !!
       else
         write(*,*) " LOBA IMPLEMENTED ONLY FOR CLOSED-SHELL "
-        stop
+        call apost_stop('')
       end if
 
       !! PRINTING FORMATS !!
@@ -198,7 +203,7 @@
           do jfrg=1,icufr
             write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,norb)
           end do
-          write(*,*) " "
+          write(*,*)
 
 !! FOR PACKS OF 5 COLUMNS !!
         else
@@ -206,7 +211,7 @@
           do jfrg=1,icufr
             write(*,'(2x,a9,i3,a1,5f10.5)') "Frg. Pop.",jfrg,":",(frgpop(jj,jfrg),jj=dd,dd+4)
           end do
-          write(*,*) " "
+          write(*,*)
           dd=dd+5
         end if
       end do

@@ -1,20 +1,48 @@
+!! *********************************************************************** !!
+!! ATOM-CENTERED INTEGRATION GRID -- radial (Gauss-Legendre, mapped to      !!
+!! [0,inf) via LEGZO below) x angular (Lebedev-Laikov, Lebedev-Laikov.F).   !!
+!! Only APOST-3D-specific driver is quad; LEGZO is a standard               !!
+!! published algorithm, left untouched (same treatment as util.f's svd).   !!
+!!   quad  -- builds one atom's radial/angular grid (xr/wr/th/ph, all in    !!
+!!            integration_grid) for the given point counts                 !!
+!!   LEGZO -- Legendre-polynomial zeros/weights for Gauss-Legendre          !!
+!!            quadrature on [-1,1] (external algorithm, see its own        !!
+!!            header)                                                      !!
+!! *********************************************************************** !!
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: quad                                                      !!
+!! purpose: builds the radial (xr/wr) and angular (th/ph, from the       !!
+!!   Lebedev-Laikov tables) grid point arrays for one atom, into the      !!
+!!   integration_grid module.                                            !!
+!! arguments:                                                            !!
+!!   Nrad0    (in) -- number of radial points                            !!
+!!   Npoints  (in) -- number of angular (Lebedev) points                 !!
+!! author:                                                                !!
+!! ********************************************************************* !!
        subroutine quad(Nrad0,Npoints)
        use integration_grid
        implicit double precision(a-h,o-z)
        double precision x(1000),y(1000),z(1000)
 
-       PI=datan(1.0d0)*4.0d0
        r=rr00
 
-!! CLEANED VERSION OF THE SUBROUTINE !!
-!! DIFFERENT RADIAL QUADRATURES/DISTRIBUTIONS IN OLDER DEVELOPMENT (M. Gimferrer) VERSIONS !!
+!! parallelization: not worth it -- called a handful of times per job    !!
+!! (once per distinct grid setup, not per atom or per grid point), so    !!
+!! its cost is negligible regardless of system size.                     !!
+!! radial part: Gauss-Legendre zeros/weights on [-1,1] (LEGZO), remapped !!
+!! to [0,inf) -- rr00 sets the point at which half the mass has been     !!
+!! distributed. Other radial quadratures existed in older development    !!
+!! versions, superseded by this one.                                     !!
        CALL LEGZO(Nrad0,XR,WR)
        do i=1,nrad0
          wR(i)=2.0d0*r*wr(i)/(1.0d0-Xr(i))**2.0d0
          XR(i)=R*(Xr(i)+1.0d0)/(1.0d0-Xr(i))
        end do
 
-!! LEBEDEV-LAIKOV ANGULAR PART !!
+!! Lebedev-Laikov angular part !!
        if(npoints.eq.6)     CALL LD0006(X,Y,Z,W,N)
        if(npoints.eq.14)    CALL LD0014(X,Y,Z,W,N)
        if(npoints.eq.26)    CALL LD0026(X,Y,Z,W,N)
@@ -53,21 +81,20 @@
 
        end
 
-c###############################################################
+!! ***** !!
 
-
+!! ----------------------------------------------------------------------
+!! subroutine: LEGZO
+!! Zeros of the Legendre polynomial P_n(x) in [-1,1] and the weights of
+!! the Gauss-Legendre quadrature of order n (S. Zhang and J. Jin,
+!! Computation of Special Functions, Wiley 1996). Kept as published.
+!! arguments:
+!!   n (in)   order of the Legendre polynomial
+!!   x (out)  (n) zeros
+!!   w (out)  (n) weights
+!! author: S. Zhang, J. Jin
+!! ----------------------------------------------------------------------
         SUBROUTINE LEGZO(N,X,W)
-C
-C       =========================================================
-C       Purpose : Compute the zeros of Legendre polynomial Pn(x)
-C                 in the interval [-1,1], and the corresponding
-C                 weighting coefficients for Gauss-Legendre
-C                 integration
-C       Input :   n    --- Order of the Legendre polynomial
-C       Output:   X(n) --- Zeros of the Legendre polynomial
-C                 W(n) --- Corresponding weighting coefficients
-C       =========================================================
-C
         IMPLICIT DOUBLE PRECISION (A-H,O-Z)
         DIMENSION X(N),W(N)
         N0=(N+1)/2

@@ -1,0 +1,1008 @@
+#!/usr/bin/env python3
+"""
+APOST-3D Regression Test Runner
+================================
+Reads tests/manifest.json, runs apost3d on each test case, extracts named
+quantities from the output using regex patterns, and compares them against
+reference values with configurable tolerances.
+
+Usage
+-----
+  # Build + run the ENTIRE suite (the one documented way to run tests):
+  make test
+  make test NTHREADS=4        # same flag as 'bash make_compile.sh NTHREADS=4'
+
+  # Run this script directly for narrower, ad hoc runs during development
+  # (from repo root or tests/ directory):
+  python3 tests/run_tests.py
+
+  # Run a single test by name substring:
+  python3 tests/run_tests.py --filter H2O
+
+  # Run only tests tagged "enpart":
+  python3 tests/run_tests.py --tags enpart
+
+  # Run multiple tags (OR logic):
+  python3 tests/run_tests.py --tags enpart,oslo
+
+  # After an intentional change of the output, regenerate the reference
+  # outputs (manifest values are only rewritten with --update-manifest):
+  python3 tests/run_tests.py --update-ref
+
+  # Verbose: show all check details even for passing checks:
+  python3 tests/run_tests.py --verbose
+
+Options
+-------
+  --binary  PATH    Path to apost3d binary (default: <repo>/apost3d)
+  --inputs  DIR     Directory with .fchk / .inp input files
+                    (default: <tests>/inputs/)
+  --manifest PATH   Path to manifest.json (default: <tests>/manifest.json)
+  --ref     DIR     Directory with reference .apost files
+                    (default: <tests>/reference/)
+  --filter  STR     Only run tests whose name contains STR (case-insensitive)
+  --tags    LIST    Comma-separated tags; only run tests that have at least one
+  --exclude-tags LIST  Comma-separated tags; skip tests carrying any of these
+                    (applied after --tags/--filter)
+  --update-ref      Write each fresh output as the new tests/reference/<name>.apost
+                    (and .apost.json); a test with "orbital_reference": true
+                    also keeps its orbital .fchk files, from the same run, in
+                    tests/reference-orbitals/ (for the APOST3Dview CI)
+  --update-manifest With --update-ref, also rewrite the manifest's ref values
+                    from the fresh output (at full printed precision)
+  --no-full         Skip the full-output comparison against tests/reference/
+  --strict          Full-output comparison fails on any difference, layout
+                    and wording included (default: only changed numbers fail,
+                    layout/wording differences are a note)
+  --ulps K          Full-output tolerance, in units of each number's last
+                    printed digit (default: 5)
+  --nthreads N      OMP_NUM_THREADS (default: 1)
+  --verbose         Show check details for passing checks too
+  --no-color        Disable ANSI colour output
+
+Every run's raw .apost output is always saved to tests/report/outputs/
+(each test itself still runs in a throwaway temp dir, but its output is
+copied out before that dir is deleted). Pass --output-dir to redirect it
+elsewhere; there is no flag to disable saving it.
+
+Besides the manifest checks, every test's whole output is compared with
+tests/reference/<name>.apost (compare_outputs.py). By default only a changed
+number fails it; layout and wording differences are reported as a note.
+With --strict (make test-strict) any difference fails: use it for the same
+code on another machine or compiler, or before a release.
+"""
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from compare_outputs import compare_files, format_diffs, summary  # noqa: E402
+import compare_json  # noqa: E402
+
+# ── ANSI colour helpers ───────────────────────────────────────────────────────
+
+_USE_COLOR = sys.stdout.isatty()
+
+
+def _c(code, text):
+    return f"\033[{code}m{text}\033[0m" if _USE_COLOR else text
+
+
+def green(t):   return _c("32", t)
+def red(t):     return _c("31", t)
+def yellow(t):  return _c("33", t)
+def bold(t):    return _c("1",  t)
+def dim(t):     return _c("2",  t)
+def cyan(t):    return _c("36", t)
+
+
+SYM_PASS = green("✓")
+SYM_FAIL = red("✗")
+SYM_SKIP = yellow("○")
+SYM_WARN = yellow("!")
+
+# ── Argument parsing ──────────────────────────────────────────────────────────
+
+
+def parse_args():
+    p = argparse.ArgumentParser(
+        description="APOST-3D regression test runner",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    p.add_argument("--binary",     default=None, metavar="PATH",
+                   help="Path to apost3d binary")
+    p.add_argument("--inputs",     default=None, metavar="DIR",
+                   help="Directory with .fchk / .inp input files")
+    p.add_argument("--manifest",   default=None, metavar="PATH",
+                   help="Path to manifest.json")
+    p.add_argument("--ref",        default=None, metavar="DIR",
+                   help="Directory with reference .apost files")
+    p.add_argument("--filter",     default=None, metavar="STR",
+                   help="Run only tests whose name contains STR")
+    p.add_argument("--tags",       default=None, metavar="LIST",
+                   help="Comma-separated tags (OR); run only matching tests")
+    p.add_argument("--exclude-tags", default=None, metavar="LIST",
+                   help="Comma-separated tags; skip tests carrying any of "
+                        "these (applied after --tags/--filter). Not used by "
+                        "'make test', which always runs every case — this is "
+                        "purely a script-level convenience for ad hoc runs.")
+    p.add_argument("--update-ref", action="store_true",
+                   help="Write each fresh output as the new reference .apost")
+    p.add_argument("--update-manifest", action="store_true",
+                   help="With --update-ref, also rewrite the manifest's ref "
+                        "values from the fresh output")
+    p.add_argument("--no-full", action="store_true",
+                   help="Skip the full-output comparison against the "
+                        "reference .apost files")
+    p.add_argument("--strict", action="store_true",
+                   help="Full-output comparison fails on any difference, "
+                        "layout and wording included")
+    p.add_argument("--ulps", type=float, default=5, metavar="K",
+                   help="Full-output tolerance in units of each number's "
+                        "last printed digit (default: 5)")
+    p.add_argument("--nthreads",   default="1", metavar="N",
+                   help="OMP_NUM_THREADS (default: 1)")
+    p.add_argument("--verbose",    action="store_true",
+                   help="Show check details even for passing checks")
+    p.add_argument("--no-color",   action="store_true",
+                   help="Disable ANSI colour output")
+    p.add_argument("--output-dir", default=None, metavar="DIR",
+                   help="Where to save each test's raw .apost output "
+                        "(default: <tests>/report/outputs/). Output is "
+                        "always saved; this only redirects where.")
+    return p.parse_args()
+
+
+# ── Path resolution ───────────────────────────────────────────────────────────
+
+
+def _tests_dir():
+    """Directory containing this script (tests/)."""
+    return Path(__file__).resolve().parent
+
+
+def _repo_root():
+    """Repo root = parent of tests/."""
+    return _tests_dir().parent
+
+
+def resolve_paths(args):
+    """Return (binary, input_dir, manifest_path, ref_dir) as Path objects."""
+    root = _repo_root()
+    tdir = _tests_dir()
+    binary       = Path(args.binary)   if args.binary   else root / "apost3d"
+    input_dir    = Path(args.inputs)   if args.inputs   else tdir / "inputs"
+    manifest_path = Path(args.manifest) if args.manifest else tdir / "manifest.json"
+    ref_dir      = Path(args.ref)      if args.ref      else tdir / "reference"
+    return binary, input_dir, manifest_path, ref_dir
+
+
+# ── Check evaluation ──────────────────────────────────────────────────────────
+
+
+def _extract_float(output: str, check: dict) -> float:
+    """
+    Extract a float value from `output` according to check fields:
+
+      pattern     (required) Regex with exactly one capture group.
+      section     (optional) Regex; search only in text *after* this marker.
+      match_index (optional, 1-based) Which occurrence to use (default: 1).
+
+    Raises ValueError if the pattern or section is not found.
+    """
+    text = output
+
+    if "section" in check:
+        m = re.search(check["section"], text)
+        if not m:
+            raise ValueError(f"Section not found in output: {check['section']!r}")
+        text = text[m.end():]
+
+    idx = check.get("match_index", 1) - 1
+    matches = re.findall(check["pattern"], text)
+    if not matches:
+        raise ValueError(f"Pattern not found in output: {check['pattern']!r}")
+    if idx >= len(matches):
+        raise ValueError(
+            f"match_index={idx + 1} requested but only {len(matches)} match(es) found "
+            f"for pattern {check['pattern']!r}"
+        )
+    return float(matches[idx])
+
+
+def evaluate_check(output: str, check: dict) -> dict:
+    """
+    Apply one check against the full output text.
+
+    Returns a result dict with keys:
+      label, type, status ("pass" / "fail" / "error"), message
+      value, ref, delta, tol  (only for float checks)
+    """
+    label = check["label"]
+    ctype = check.get("type", "float")
+    result = {"label": label, "type": ctype}
+
+    # ── presence / absence checks ────────────────────────────────────────────
+    if ctype == "present":
+        found = bool(re.search(check["pattern"], output))
+        result["status"] = "pass" if found else "fail"
+        result["message"] = (
+            "found in output" if found else "NOT FOUND in output"
+        )
+        return result
+
+    if ctype == "absent":
+        found = bool(re.search(check["pattern"], output))
+        result["status"] = "fail" if found else "pass"
+        result["message"] = (
+            "correctly absent from output"
+            if not found
+            else "unexpectedly found in output"
+        )
+        return result
+
+    # ── float comparison ─────────────────────────────────────────────────────
+    try:
+        value = _extract_float(output, check)
+        ref = float(check["ref"])
+        result["value"] = value
+        result["ref"]   = ref
+
+        # Determine tolerance
+        if "tol_rel" in check:
+            base = abs(ref) if ref != 0 else 1.0
+            tol = base * float(check["tol_rel"])
+            tol_label = f"rel {check['tol_rel']:.0e}"
+        else:
+            tol = float(check.get("tol_abs", 1e-4))
+            tol_label = f"abs {tol:.0e}"
+
+        delta = abs(value - ref)
+        result["delta"]     = delta
+        result["tol"]       = tol
+        result["tol_label"] = tol_label
+
+        if delta <= tol:
+            result["status"]  = "pass"
+            result["message"] = (
+                f"got {value:+.7g}   ref {ref:+.7g}   "
+                f"Δ {delta:.1e}   [{tol_label}]"
+            )
+        else:
+            result["status"]  = "fail"
+            result["message"] = (
+                f"got {value:+.7g}   ref {ref:+.7g}   "
+                f"Δ {delta:.1e}   EXCEEDS {tol_label}"
+            )
+
+    except ValueError as exc:
+        result["status"]  = "error"
+        result["message"] = f"EXTRACTION ERROR: {exc}"
+
+    return result
+
+
+def _cube_layout_error(path: Path):
+    """
+    Return why a .cube file breaks the Gaussian cube layout, or None.
+
+    Layout: two title lines; atom count and origin; three lines with the
+    point count and step of each axis; one line per atom; with a negative
+    atom count only, one line of orbital indices; then exactly n1*n2*n3
+    values.
+    """
+    try:
+        lines = path.read_text(errors="replace").splitlines()
+        nat = int(lines[2].split()[0])
+        npts = [int(lines[3 + i].split()[0]) for i in range(3)]
+        first = 6 + abs(nat)
+        if nat < 0:
+            first += 1
+        nval = sum(len(l.split()) for l in lines[first:])
+        for l in lines[first:]:
+            for x in l.split():
+                float(x)
+    except (IndexError, ValueError) as exc:
+        return f"unreadable ({exc})"
+    expected = npts[0] * npts[1] * npts[2]
+    if nval != expected:
+        return f"{nval} values for {npts[0]}x{npts[1]}x{npts[2]} = {expected} points"
+    return None
+
+
+_FCHK_HEADER = re.compile(r"^\S.*\s([IRC])\s+N=\s*(\d+)\s*$")
+_FCHK_REAL = re.compile(r"[-+]?\d*\.\d*[Ee][-+]?\d+")
+
+
+def _fchk_numbers_error(path: Path, blocks=()):
+    """
+    Return why a .fchk file has an unreadable real block, or None.
+
+    Every value of every real array block (header "... R   N=  n") must
+    carry its exponent letter, and the block must hold n values. Fortran's
+    E16.8 drops the 'E' of an exponent with three digits (1.27052287-118).
+    Every header named in `blocks` must be in the file.
+    """
+    try:
+        lines = path.read_text(errors="replace").splitlines()
+    except OSError as exc:
+        return f"unreadable ({exc})"
+    headers = {l[:40].strip() for l in lines[2:] if l[:1] not in " -+"}
+    missing = [b for b in blocks if b not in headers]
+    if missing:
+        return "missing block(s): " + ", ".join(missing)
+    block = None
+    for lineno, line in enumerate(lines[2:], start=3):
+        # headers start in column 1, data lines with a blank or a sign
+        if line[:1] not in " -+":
+            m = _FCHK_HEADER.match(line)
+            if block and block[1] != block[2]:
+                return f"{block[0]}: {block[2]} values, header says {block[1]}"
+            block = None
+            if m and m.group(1) == "R":
+                block = [line[:40].strip(), int(m.group(2)), 0]
+            continue
+        if block is None:
+            continue
+        for x in line.split():
+            if not _FCHK_REAL.fullmatch(x):
+                return f"line {lineno}, {block[0]}: '{x}' has no exponent letter"
+            block[2] += 1
+    if block and block[1] != block[2]:
+        return f"{block[0]}: {block[2]} values, header says {block[1]}"
+    return None
+
+
+def evaluate_file_check(rundir: Path, check: dict) -> dict:
+    """
+    Apply one check to the files a run wrote.
+
+      files       the files matching `glob` number `count`
+      cube_files  the same, and every one follows the cube layout
+      fchk_files  the same, and every real value of every one carries its
+                  exponent letter (and, with `blocks`, every one has those
+                  headers)
+    """
+    ctype = check["type"]
+    result = {"label": check["label"], "type": ctype}
+    found = sorted(rundir.glob(check["glob"]))
+    count = int(check["count"])
+    if len(found) != count:
+        result["status"] = "fail"
+        result["message"] = f"{len(found)} file(s) {check['glob']}, expected {count}"
+        return result
+    if ctype == "cube_files":
+        bad = [(p.name, _cube_layout_error(p)) for p in found]
+        bad = [(n, e) for n, e in bad if e]
+        if bad:
+            result["status"] = "fail"
+            result["message"] = f"{len(bad)} of {count} cube file(s) break the layout"
+            result["details"] = [f"{n}: {e}" for n, e in bad]
+            return result
+        result["status"] = "pass"
+        result["message"] = f"{count} cube file(s), layout ok"
+        return result
+    if ctype == "fchk_files":
+        bad = [(p.name, _fchk_numbers_error(p, check.get("blocks", ())))
+               for p in found]
+        bad = [(n, e) for n, e in bad if e]
+        if bad:
+            result["status"] = "fail"
+            result["message"] = f"{len(bad)} of {count} .fchk file(s) with unreadable reals"
+            result["details"] = [f"{n}: {e}" for n, e in bad]
+            return result
+        result["status"] = "pass"
+        result["message"] = f"{count} .fchk file(s), every real value readable"
+        return result
+    result["status"] = "pass"
+    result["message"] = f"{count} file(s) {check['glob']}"
+    return result
+
+
+def full_output_check(ref_file: Path, out_file: Path, ulps: float,
+                      strict: bool) -> dict:
+    """
+    Compare the whole output with the stored reference .apost. Status "warn"
+    (a note, not a failure) when only layout/wording differs at the default
+    level.
+    """
+    label = "Full output vs reference" + (" (strict)" if strict else "")
+    result = {"label": label, "type": "full"}
+    if not ref_file.exists():
+        result["status"] = "error"
+        result["message"] = f"no reference file {ref_file.name}"
+        return result
+    res = compare_files(ref_file, out_file, ulps, strict)
+    if res["failed"]:
+        result["status"] = "fail"
+    elif res["text_diffs"]:
+        result["status"] = "warn"
+    else:
+        result["status"] = "pass"
+    result["message"] = summary(res, ulps)
+    if res["num_diffs"] or res["text_diffs"]:
+        result["details"] = format_diffs(res)
+    return result
+
+
+def results_file_check(json_file: Path, expected_rc: int) -> dict:
+    """
+    The results file <name>.apost.json exists, is valid JSON, and says how
+    the run ended: "normal", or "stopped" for an expected-stop test.
+    """
+    result = {"label": "Results file (.apost.json)", "type": "json"}
+    if not json_file.exists():
+        result["status"] = "fail"
+        result["message"] = f"{json_file.name} was not written"
+        return result
+    try:
+        data = compare_json.load(json_file)
+    except ValueError as exc:
+        result["status"] = "fail"
+        result["message"] = str(exc)
+        return result
+    want = "normal" if expected_rc == 0 else "stopped"
+    got = data.get("run", {}).get("status")
+    if got != want:
+        result["status"] = "fail"
+        result["message"] = f"run status {got!r}, expected {want!r}"
+    else:
+        result["status"] = "pass"
+        result["message"] = f"valid, run status {got!r}"
+    return result
+
+
+def json_reference_check(ref_file: Path, json_file: Path) -> dict:
+    """
+    Compare the results file with tests/reference/<name>.apost.json: same
+    structure, text and integers, reals within compare_json.RTOL.
+    """
+    result = {"label": "Results file vs reference", "type": "json"}
+    if not ref_file.exists():
+        result["status"] = "error"
+        result["message"] = f"no reference file {ref_file.name}"
+        return result
+    if not json_file.exists():
+        result["status"] = "fail"
+        result["message"] = "no results file to compare"
+        return result
+    try:
+        diffs = compare_json.compare_files(ref_file, json_file)
+    except ValueError as exc:
+        result["status"] = "fail"
+        result["message"] = str(exc)
+        return result
+    if diffs:
+        result["status"] = "fail"
+        result["message"] = f"{len(diffs)} difference(s)"
+        result["details"] = diffs
+    else:
+        result["status"] = "pass"
+        result["message"] = "same values"
+    return result
+
+
+# ── Test execution ────────────────────────────────────────────────────────────
+
+
+def run_test(test: dict, binary: Path, input_dir: Path, nthreads: str,
+             output_dir: Path, ref_dir: Path = None, ulps: float = 5,
+             strict: bool = False) -> dict:
+    """
+    Execute one test case and return a result dict.
+
+    Each run happens in its own throwaway temp directory (auto-deleted on
+    exit) so tests never leave .apost files behind in tests/inputs/ or
+    tests/. The raw <name>.apost output is always copied to output_dir
+    before that temp dir is deleted, so every run's output is available
+    for inspection afterward.
+
+    The binary is invoked as:
+        cd <rundir> && apost3d <name>
+    with all required input files copied into <rundir>.
+
+    Result dict keys:
+      name, status ("pass"/"fail"/"skip"), reason, rc, elapsed,
+      checks (list of check result dicts), output (full stdout text)
+    """
+    name    = test["name"]
+    timeout = test.get("timeout", 600)
+
+    # Collect required input files
+    required = [f"{name}.fchk", f"{name}.inp"] + list(
+        test.get("extra_input_files", [])
+    )
+    missing = [f for f in required if not (input_dir / f).exists()]
+    if missing:
+        return {
+            "name": name, "status": "skip",
+            "reason": "Input file(s) not found: " + ", ".join(missing),
+            "elapsed": 0.0, "checks": [], "output": "",
+        }
+
+    with tempfile.TemporaryDirectory(prefix=f"apost_{name}_") as _rundir:
+        rundir = Path(_rundir)
+
+        # Copy input files
+        for fname in required:
+            shutil.copy(input_dir / fname, rundir / fname)
+
+        outfile = rundir / f"{name}.apost"
+        env = os.environ.copy()
+        env["OMP_NUM_THREADS"] = nthreads
+
+        t0 = time.time()
+        try:
+            with open(outfile, "w") as fout:
+                proc = subprocess.run(
+                    [str(binary), name],
+                    cwd=rundir,
+                    stdout=fout,
+                    stderr=subprocess.STDOUT,
+                    env=env,
+                    timeout=timeout,
+                )
+            rc = proc.returncode
+        except subprocess.TimeoutExpired:
+            elapsed = time.time() - t0
+            return {
+                "name": name, "status": "fail",
+                "reason": f"Timeout after {timeout}s",
+                "rc": -1, "elapsed": elapsed, "checks": [], "output": "",
+            }
+        except Exception as exc:
+            elapsed = time.time() - t0
+            return {
+                "name": name, "status": "fail",
+                "reason": str(exc),
+                "rc": -1, "elapsed": elapsed, "checks": [], "output": "",
+            }
+
+        elapsed = time.time() - t0
+        output  = outfile.read_text(errors="replace")
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy(outfile, output_dir / f"{name}.apost")
+        json_file = rundir / f"{name}.apost.json"
+        json_text = None
+        if json_file.exists():
+            json_text = json_file.read_text(errors="replace")
+            shutil.copy(json_file, output_dir / f"{name}.apost.json")
+        # orbital files of the same run, paired with its results file by
+        # the run id, kept for --update-ref
+        orbital_files = {}
+        if test.get("orbital_reference"):
+            for suffix in ORBITAL_SUFFIXES:
+                f = rundir / f"{name}{suffix}"
+                if f.exists():
+                    orbital_files[f.name] = f.read_bytes()
+
+        # Evaluate all checks
+        check_results = [
+            evaluate_file_check(rundir, c)
+            if c.get("type") in ("files", "cube_files", "fchk_files")
+            else evaluate_check(output, c)
+            for c in test.get("checks", [])
+        ]
+        check_results.append(results_file_check(json_file,
+                                                test.get("expected_rc", 0)))
+        if ref_dir is not None:
+            check_results.append(full_output_check(ref_dir / f"{name}.apost",
+                                                   outfile, ulps, strict))
+            check_results.append(json_reference_check(
+                ref_dir / f"{name}.apost.json", json_file))
+
+        n_fail = sum(1 for r in check_results if r["status"] in ("fail", "error"))
+
+        # an expected-stop test declares the exit code of its stop
+        # (apost_stop exits with 1); every other test must exit with 0
+        expected_rc = test.get("expected_rc", 0)
+        if rc != expected_rc:
+            overall_status = "fail"
+            reason = f"exit code {rc} (expected {expected_rc})"
+        elif n_fail:
+            overall_status = "fail"
+            reason = f"{n_fail} check(s) failed"
+        else:
+            overall_status = "pass"
+            reason = ""
+
+        return {
+            "name":    name,
+            "status":  overall_status,
+            "reason":  reason,
+            "rc":      rc,
+            "elapsed": elapsed,
+            "checks":  check_results,
+            "output":  output,
+            "json_text": json_text,
+            "orbital_files": orbital_files,
+        }
+
+
+# ── Terminal output ───────────────────────────────────────────────────────────
+
+
+def _print_check(cr: dict, verbose: bool):
+    """Print one check result line."""
+    if cr["status"] == "pass":
+        sym = SYM_PASS
+        msg = dim(cr["message"]) if not verbose else cr["message"]
+    elif cr["status"] == "fail":
+        sym = SYM_FAIL
+        msg = cr["message"]
+    else:
+        sym = SYM_WARN
+        msg = cr["message"]
+
+    print(f"           {sym}  {cr['label']:<38s} {msg}")
+    if cr["status"] in ("fail", "error") or (cr["status"] == "warn" and verbose):
+        for line in cr.get("details", []):
+            print(f"                {line}")
+
+
+def print_test_result(result: dict, test_meta: dict, idx: int, total: int, verbose: bool):
+    """Print the full result block for one test."""
+    name    = result["name"]
+    tags    = " ".join(test_meta.get("tags", []))
+    elapsed = result["elapsed"]
+
+    # Header line (already printed as progress line before running)
+    print(f"           {dim(f'({elapsed:.0f}s)')}")
+
+    if result["status"] == "skip":
+        print(f"           {SYM_SKIP} SKIPPED — {result['reason']}")
+        print()
+        return
+
+    for cr in result["checks"]:
+        _print_check(cr, verbose)
+
+    n_pass  = sum(1 for r in result["checks"] if r["status"] in ("pass", "warn"))
+    n_total = len(result["checks"])
+    n_note  = sum(1 for r in result["checks"] if r["status"] == "warn")
+    note    = f", {n_note} note" if n_note else ""
+
+    if result["status"] == "pass":
+        print(f"           {green('PASSED')}  ({n_pass}/{n_total} checks{note})")
+    else:
+        msg = result.get("reason", "")
+        print(f"           {red('FAILED')}  ({n_pass}/{n_total} checks passed)  {msg}")
+        # Show tail of output if binary crashed
+        if result.get("rc", 0) != 0:
+            lines = result.get("output", "").strip().splitlines()
+            for line in lines[-8:]:
+                print(f"             {dim(line)}")
+
+    print()
+
+
+def print_summary(results: list, total_elapsed: float):
+    """Print the final summary table."""
+    n_pass = sum(1 for r in results if r["status"] == "pass")
+    n_fail = sum(1 for r in results if r["status"] == "fail")
+    n_skip = sum(1 for r in results if r["status"] == "skip")
+
+    print("═" * 64)
+    print("  SUMMARY")
+    print("═" * 64)
+    for r in results:
+        if r["status"] == "pass":
+            sym  = SYM_PASS
+            note = ""
+        elif r["status"] == "fail":
+            sym  = SYM_FAIL
+            note = f"  ← {r.get('reason','')}"
+        else:
+            sym  = SYM_SKIP
+            note = f"  ← {r.get('reason','')}"
+        print(f"  {sym}  {r['name']:<30s}  {r['elapsed']:6.0f}s{note}")
+
+    print()
+    parts = []
+    if n_pass: parts.append(green(f"{n_pass} PASSED"))
+    if n_fail: parts.append(red(f"{n_fail} FAILED"))
+    if n_skip: parts.append(yellow(f"{n_skip} SKIPPED"))
+    print(f"  {'  ·  '.join(parts)}   {dim(f'({total_elapsed:.0f}s total)')}")
+    noted = [r["name"] for r in results
+             if any(c["status"] == "warn" for c in r.get("checks", []))]
+    if noted:
+        print(f"  {SYM_WARN}  Layout/wording differs from the reference in "
+              f"{len(noted)} test(s): {', '.join(noted)}")
+        print("     Not a failure. Check with --verbose (or "
+              "tests/compare_outputs.py) and refresh with 'make update-ref'.")
+    print("═" * 64)
+    print()
+
+
+# ── Report writing ────────────────────────────────────────────────────────────
+
+
+def write_text_report(results: list, path: Path):
+    """Write a plain-text report to path."""
+    lines = [
+        "APOST-3D Test Report",
+        f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+        "=" * 64,
+        "",
+    ]
+    for r in results:
+        badge = {"pass": "PASS", "fail": "FAIL", "skip": "SKIP"}[r["status"]]
+        lines.append(f"[{badge}]  {r['name']}  ({r['elapsed']:.0f}s)")
+        if r.get("reason"):
+            lines.append(f"       Reason: {r['reason']}")
+        for cr in r.get("checks", []):
+            sym = {"pass": "✓", "warn": "!"}.get(cr["status"], "✗")
+            lines.append(f"  {sym}  {cr['label']:<38s} {cr['message']}")
+            if cr["status"] != "pass":
+                lines.extend(f"        {d}" for d in cr.get("details", []))
+        lines.append("")
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def write_html_report(results: list, path: Path):
+    """Write an HTML report to path."""
+    rows = []
+    for r in results:
+        color = {
+            "pass": "#1a6b3c",
+            "fail": "#9b2226",
+            "skip": "#6c757d",
+        }[r["status"]]
+        badge = r["status"].upper()
+        rows.append(
+            f"<tr><td><b>{r['name']}</b></td>"
+            f"<td style='color:{color};font-weight:bold'>{badge}</td>"
+            f"<td>{r['elapsed']:.0f}s</td><td></td></tr>"
+        )
+        for cr in r.get("checks", []):
+            sym  = {"pass": "✓", "warn": "!"}.get(cr["status"], "✗")
+            ccol = {"pass": "#1a6b3c", "warn": "#b07d00"}.get(cr["status"],
+                                                             "#9b2226")
+            rows.append(
+                f"<tr style='font-size:0.88em'>"
+                f"<td style='padding-left:2em;color:#555'>{cr['label']}</td>"
+                f"<td style='color:{ccol}'>{sym}</td>"
+                f"<td colspan='2' style='font-family:monospace'>{cr['message']}</td></tr>"
+            )
+
+    html = (
+        "<!DOCTYPE html>\n<html><head><meta charset='utf-8'>\n"
+        "<title>APOST-3D Test Report</title>\n"
+        "<style>body{font-family:system-ui,sans-serif;margin:2em;max-width:900px}"
+        "h2{color:#333}table{border-collapse:collapse;width:100%}"
+        "td,th{padding:5px 10px;border-bottom:1px solid #eee}"
+        "th{text-align:left;background:#f5f5f5;font-size:0.9em}"
+        "</style>\n</head><body>\n"
+        f"<h2>APOST-3D Test Report</h2>\n"
+        f"<p style='color:#666;font-size:0.9em'>Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}</p>\n"
+        "<table><tr><th>Test</th><th>Status</th><th>Time</th><th>Details</th></tr>\n"
+        + "\n".join(rows)
+        + "\n</table></body></html>\n"
+    )
+    path.write_text(html, encoding="utf-8")
+
+
+# ── update-ref mode ───────────────────────────────────────────────────────────
+
+# orbital .fchk files a run writes, <name><suffix>: EOS/EFFAO, GEOS, OSLO
+ORBITAL_SUFFIXES = ("-EOS-EFOs.fchk", "-GEOS-EFOs.fchk",
+                    "-EOS-EFOs-unweighted.fchk", "-GEOS-EFOs-unweighted.fchk",
+                    "-OSLOs.fchk", "-OSLOs-preortho.fchk")
+
+
+def update_references(tests: list, results: list, ref_dir: Path,
+                      manifest_path: Path, update_manifest: bool):
+    """
+    For all non-skipped test results:
+      1. Write the fresh output to tests/reference/<name>.apost (and
+         .apost.json); with "orbital_reference", replace its orbital files
+         in tests/reference-orbitals/ by those of the same run
+      2. Only with update_manifest: re-extract every float check value and
+         write it to manifest.json at full printed precision. Only the tests
+         that ran are touched; the rest of the manifest is kept as is.
+
+    Prints a summary of what was updated.
+    """
+    ref_dir.mkdir(parents=True, exist_ok=True)
+    result_map = {r["name"]: r for r in results}
+
+    print(bold("\nUpdating reference outputs and manifest values:"))
+    any_updated = False
+
+    for test in tests:
+        name = test["name"]
+        r = result_map.get(name)
+        if not r or r["status"] == "skip":
+            print(f"  {SYM_SKIP}  {name}: skipped — no output to capture")
+            continue
+
+        if r["status"] == "fail" and not update_manifest:
+            print(f"  {SYM_FAIL}  {name}: not written, its checks fail "
+                  f"(fix them, or add --update-manifest if the change is "
+                  f"intended)")
+            continue
+
+        output = r.get("output", "")
+
+        # 1. Write reference output file
+        ref_file = ref_dir / f"{name}.apost"
+        ref_file.write_text(output, encoding="utf-8")
+        print(f"  {SYM_PASS}  {name}: wrote {ref_file.name}")
+        if r.get("json_text") is not None:
+            (ref_dir / f"{name}.apost.json").write_text(r["json_text"],
+                                                        encoding="utf-8")
+        if test.get("orbital_reference"):
+            orb_dir = ref_dir.parent / "reference-orbitals"
+            orb_dir.mkdir(exist_ok=True)
+            for suffix in ORBITAL_SUFFIXES:
+                (orb_dir / f"{name}{suffix}").unlink(missing_ok=True)
+            for fname, data in r.get("orbital_files", {}).items():
+                (orb_dir / fname).write_bytes(data)
+            print(f"  {SYM_PASS}  {name}: wrote "
+                  f"{len(r.get('orbital_files', {}))} orbital file(s) to "
+                  f"{orb_dir.name}/")
+
+        if not update_manifest:
+            continue
+
+        # 2. Update ref values in checks
+        updated = 0
+        for check in test.get("checks", []):
+            if check.get("type", "float") != "float":
+                continue
+            try:
+                val = _extract_float(output, check)
+                if val != check.get("ref"):
+                    check["ref"] = val
+                    updated += 1
+            except ValueError:
+                pass
+        if updated:
+            print(f"       Updated {updated} ref value(s) in manifest")
+        any_updated = True
+
+    if any_updated and update_manifest:
+        # Merge the updated tests back by name: a --filter/--tags run must not
+        # drop the tests it did not run from the manifest
+        with open(manifest_path) as f:
+            manifest = json.load(f)
+        updated_by_name = {t["name"]: t for t in tests}
+        manifest["tests"] = [updated_by_name.get(t["name"], t)
+                             for t in manifest["tests"]]
+        manifest_path.write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+        print(f"\n  {SYM_PASS}  Manifest updated: {manifest_path}")
+    print()
+
+
+# ── main ──────────────────────────────────────────────────────────────────────
+
+
+def main():
+    args = parse_args()
+
+    # Colour override
+    global _USE_COLOR
+    if args.no_color:
+        _USE_COLOR = False
+
+    binary, input_dir, manifest_path, ref_dir = resolve_paths(args)
+
+    # ── Load manifest ────────────────────────────────────────────────────────
+    if not manifest_path.exists():
+        print(red(f"ERROR: manifest not found: {manifest_path}"), file=sys.stderr)
+        sys.exit(1)
+
+    with open(manifest_path, encoding="utf-8") as f:
+        manifest = json.load(f)
+
+    tests = list(manifest["tests"])  # work on a copy (update-ref mutates)
+
+    # ── Filter by name ───────────────────────────────────────────────────────
+    if args.filter:
+        tests = [t for t in tests if args.filter.lower() in t["name"].lower()]
+        if not tests:
+            print(yellow(f"No tests match --filter {args.filter!r}"))
+            sys.exit(0)
+
+    # ── Filter by tags ───────────────────────────────────────────────────────
+    if args.tags:
+        wanted = {t.strip().lower() for t in args.tags.split(",")}
+        tests = [t for t in tests if set(t.get("tags", [])) & wanted]
+        if not tests:
+            print(yellow(f"No tests match --tags {args.tags!r}"))
+            sys.exit(0)
+
+    # ── Exclude by tags (e.g. 'slow') ───────────────────────────────────────
+    if args.exclude_tags:
+        unwanted = {t.strip().lower() for t in args.exclude_tags.split(",")}
+        before = len(tests)
+        tests = [t for t in tests if not (set(t.get("tags", [])) & unwanted)]
+        skipped = before - len(tests)
+        if skipped:
+            print(dim(f"Skipping {skipped} test(s) tagged {sorted(unwanted)}"))
+        if not tests:
+            print(yellow(f"No tests remain after --exclude-tags {args.exclude_tags!r}"))
+            sys.exit(0)
+
+    # ── Output directory (every run's raw .apost is always saved here) ────────
+    output_dir = Path(args.output_dir) if args.output_dir else (
+        _tests_dir() / "report" / "outputs"
+    )
+
+    # ── Validate binary ──────────────────────────────────────────────────────
+    if not binary.exists() or not os.access(str(binary), os.X_OK):
+        print(red(f"ERROR: binary not found or not executable: {binary}"),
+              file=sys.stderr)
+        print("       Build first with:  make all", file=sys.stderr)
+        sys.exit(1)
+
+    # ── Header ───────────────────────────────────────────────────────────────
+    print()
+    print("═" * 64)
+    print(
+        f"  APOST-3D Test Suite  ·  {len(tests)} test(s)"
+        f"  ·  {args.nthreads} thread(s)"
+        + ("  ·  strict" if args.strict else "")
+        + ("  ·  verbose" if args.verbose else "")
+        + f"  ·  output -> {output_dir}"
+    )
+    print("═" * 64)
+    print()
+
+    # ── Run tests ────────────────────────────────────────────────────────────
+    results      = []
+    t_total_start = time.time()
+
+    for idx, test in enumerate(tests, 1):
+        name = test["name"]
+        tags = dim(" ".join(test.get("tags", [])))
+        # Print progress header before running
+        print(f"  [{idx:2d}/{len(tests)}]  {bold(name):<30s} {tags}")
+        sys.stdout.flush()
+
+        full_ref = None if (args.no_full or args.update_ref) else ref_dir
+        result = run_test(test, binary, input_dir, args.nthreads, output_dir,
+                          full_ref, args.ulps, args.strict)
+        results.append(result)
+
+        print_test_result(result, test, idx, len(tests), args.verbose)
+
+    total_elapsed = time.time() - t_total_start
+
+    # ── Summary ──────────────────────────────────────────────────────────────
+    print_summary(results, total_elapsed)
+
+    # ── Write reports ─────────────────────────────────────────────────────────
+    report_dir = _tests_dir() / "report"
+    report_dir.mkdir(exist_ok=True)
+    write_text_report(results, report_dir / "last_run.txt")
+    write_html_report(results, report_dir / "last_run.html")
+    print(f"  Reports saved to:  {report_dir}/")
+    print(f"    last_run.txt   — plain-text summary")
+    print(f"    last_run.html  — open in browser for formatted view")
+    print(f"    outputs/       — raw .apost output of every test run")
+    print()
+
+    # ── Update references ─────────────────────────────────────────────────────
+    if args.update_ref:
+        update_references(tests, results, ref_dir, manifest_path,
+                          args.update_manifest)
+
+    # ── Exit code ─────────────────────────────────────────────────────────────
+    n_fail = sum(1 for r in results if r["status"] == "fail")
+    sys.exit(1 if n_fail else 0)
+
+
+if __name__ == "__main__":
+    main()

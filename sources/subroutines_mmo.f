@@ -8,7 +8,7 @@
       double precision, dimension(igr,igr,nat) ::sat
       dimension ibaspoint(iatps*nat)
       double precision, dimension(iatps*nat,igr) ::chp
-      common /iops/iopt(100)
+      common /iops/iopt(200)
 
       iradmat = iopt(48)
       iunit=32
@@ -25,7 +25,7 @@
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /qat/qat(maxat,2),qsat(maxat,2)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       DOUBLE PRECISION, DIMENSION(nat) :: NCTAIM_qat
 
       iradmat = iopt(48)
@@ -48,7 +48,7 @@
          CLOSE(iunit)
        else if(iradmat.eq.0) then
          write(*,*) 'Incompatible options ELCOUNT=1,RADMAT=0. Stopping.'
-         STOP 'Incompatible options. Problem in ELCOUNT user input.'
+         call apost_stop('Incompatible options. Problem in ELCOUNT user input.')
        end if
       END SUBROUTINE
 
@@ -231,7 +231,7 @@ C STEP 8: Store current value of Q.
 
          if(ielcount_iteration.ge.50) then
            write(*,*) 'Convergence problem, maximum number of iterations reached.'
-           STOP 'Convergence problem'
+           call apost_stop('Convergence problem')
          end if
        end do !cycle main algorithm until convergence achieved
       END SUBROUTINE
@@ -302,7 +302,7 @@ c      double precision, dimension(maxat) :: pop
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
 
       dimension :: wp(itotps),pcoord(itotps,3)
@@ -533,7 +533,7 @@ c exchange
          end do
        end do !end of main loop
 
-       write(*,*) " "
+       write(*,*)
        write(*,*) " *** ANALYTICAL COULOMB *** "
  
        coulen=ZERO
@@ -542,11 +542,11 @@ c exchange
        end do
  
        write(*,*) " Ecoul TERMS "
-       write(*,*) " "
+       write(*,*)
        CALL Mprint(coul,nat,maxat)
        write(*,*) " Coulomb energy : ",coulen
  
-       write(*,*) " "
+       write(*,*)
        write(*,*) " *** ANALYTICAL EXCHANGE *** "
  
        exchen_hf=ZERO
@@ -559,10 +559,10 @@ c exchange
        else
          write(*,*) " UHF Ex TERMS  "
        end if
-       write(*,*) " "
+       write(*,*)
        CALL Mprint(exch_hf,nat,maxat)
        write(*,*) " Hartree-Fock exchange energy : ",exchen_hf
-       write(*,*) " "
+       write(*,*)
 
       END SUBROUTINE
 
@@ -651,8 +651,6 @@ c exchange
       END SUBROUTINE
 
       subroutine numint_dft_analytical(ndim,itotps,wp,omp,omp2,chp,eto,pcoord,sat)
-      use xc_f90_types_m
-      use xc_f90_lib_m
       USE ao_matrices
       USE integration_grid
       implicit real*8(a-h,o-z)
@@ -660,7 +658,7 @@ c exchange
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common /achi/achi(maxat,maxat),ibcp
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
@@ -673,7 +671,7 @@ c exchange
       character*80 line
 
       allocatable :: chp2(:,:),scr(:),rho(:),scrx(:,:)
-      allocatable :: scr_a(:),rho_a(:),scr2(:)
+      allocatable :: scr_a(:),rho_a(:),scr2(:),scr_tau(:)
       allocatable :: sab(:,:,:)
 
       i5d      =  Iopt(11)
@@ -683,10 +681,22 @@ c exchange
       ianalytical=  Iopt(90)
       iatps=nang*nrad
 
+!! meta-GGA's tau ingredient isn't wired into this analytical two-electron !!
+!! path (separately scoped, unrelated to the numerical-integration DFT    !!
+!! path -- see numint_dft) -- guard stops here, before any energy is       !!
+!! computed. !!
+      if(itype.eq.3) call apost_stop(' META-GGA not implemented for the ANALYTIC (ianalytical) two-electron path ')
+
       ALLOCATE(chp2(itotps,nocc),scr(itotps),rho(itotps))
-      ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps))
+      ALLOCATE(scr_a(itotps),rho_a(itotps),scr2(itotps),scr_tau(itotps))
       ALLOCATE(sab(nocc,nocc,nat))
       ALLOCATE(scrx(igr,nocc))
+
+!! itype.eq.3 is stopped above, so xc's meta-GGA branch never actually    !!
+!! reads this -- zeroed only to avoid passing uninitialized memory.        !!
+      do kk=1,itotps
+        scr_tau(kk)=ZERO
+      end do
 
 !! BUILDING RHO!!
 
@@ -706,7 +716,7 @@ c exchange
 !! EXCHANGE AND CORRELATION FOR DFT !!
 
       write(*,*) " *** DFT MOLECULAR ENERGY DECOMPOSITION *** "
-      write(*,*) " "
+      write(*,*)
 
       do iatom=1,nat
         do nu=1,igr
@@ -744,11 +754,11 @@ c exchange
 !         if(abs(x).gt.1.0d-2) then
           if(abs(x).gt.1.0d-3) then
             write(*,*) ii,jj,x
-            stop " Problem with MOs overlaps "
+            call apost_stop(" Problem with MOs overlaps ")
           end if
         end do
       end do
-      write(*,*) " "
+      write(*,*)
 
 !! chp2 : MOs, chpd : MO DERIVATIVES !!
 
@@ -760,10 +770,9 @@ c exchange
         call sigma(pcoord,chp2,scr) !this line IS NEEDED for analytical as well
       end if
 
-!! CALCULATE "EXACT" (ONCE-CENTER) XC ENERGY !! 
-!! Laplacian for the MGGA functionals can be calculated using LAPLACIAN subroutine (qtaim.f). NOT IMPLEMENTED
+!! CALCULATE "EXACT" (ONCE-CENTER) XC ENERGY !!
 
-      call xc(itotps,rho,scr,scr2) 
+      call xc(itotps,rho,scr,scr_tau,scr2)
       xtot=ZERO
       do icenter=1,nat
         x=ZERO
@@ -775,10 +784,10 @@ c exchange
         xtot=xtot+x
       end do
       write(*,*) " PURE DFT ONE-CENTER CONTRIBUTIONS (EXACT) "
-      write(*,*) " "
+      write(*,*)
       CALL Mprint(exch,NAT,maxat)
       write(*,*) " Exact one-center decomposition for DFT xc energy : ",xtot
-      write(*,*) " "
+      write(*,*)
 
 !! PRINTING !!
 
@@ -791,20 +800,22 @@ c exchange
       end do
       etot=xtot
       write(*,*) " FINAL KS-DFT XC ENERGY COMPONENTS "
-      write(*,*) " "
+      write(*,*)
       call Mprint(exch,nat,maxat)
       write(*,*) " Sum of (exact) DFT xc energy components : ",exchen
-      write(*,*) " "
+      write(*,*)
       if(xmix.gt.ZERO) then
-        write(*,*) " WARNING: HF-exchange part missing "
-        write(*,*) " "
+        write(*,'(2x,a,f5.3,a)') 'Note: DFT part only. The ',xmix,
+     +    ' x HF-type exchange is added in the'
+        write(*,'(2x,a)') 'two-electron part; complete terms: HYBRID KS-DFT XC TERMS.'
+        write(*,*)
       end if
       if (idofr.eq.1) then
         line='   FRAGMENT ANALYSIS: Exc Decomposition' 
         call group_by_frag_mat(1,line,exch)
       end if
 
-      DEALLOCATE(chp2,scr,rho,scr_a,rho_a,scr2,sab,scrx)
+      DEALLOCATE(chp2,scr,rho,scr_a,rho_a,scr2,scr_tau,sab,scrx)
       end
 
       SUBROUTINE Population_analysis(aux_sat,nat0,igr0,aux_qat)
@@ -815,7 +826,7 @@ c exchange
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
 !      common /ps/ps(nmax,nmax),pa(nmax,nmax),pb(nmax,nmax)
       common /qat/qat(maxat,2),qsat(maxat,2)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       DIMENSION aux_sat(igr0,igr0,nat0)
       DIMENSION aux_qat(maxat,2)
       character*80 line
@@ -883,9 +894,9 @@ CCCCCCCCCCCCCCC
        aux_qat(i,1)=qat(i,1)
        aux_qat(i,2)=qat(i,2)
       enddo
-      print *,'  '
+      write(*,*)
       print *,'    ELECTRON POPULATIONS'
-      print *,'  '
+      write(*,*)
       print *,'  Atom   apost3d      Mulliken'
       print *,' -----------------------------'
       call vprint(qat,nat,maxat,2)
@@ -898,7 +909,7 @@ CCCCCCCCCCCCCCC
 
       if (idofr.eq.1) then
        line ='   FRAGMENT ANALYSIS : Electron populations'
-       call group_by_frag_vec(2,line ,qat)
+       call group_by_frag_vec(2,line ,qat,'3D-space','Mulliken')
       end if
 
       END SUBROUTINE

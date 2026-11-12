@@ -285,7 +285,7 @@ c write to gaussian com file
        OPEN (UNIT=l, FILE=fileout,IOSTAT=log, ACTION='READ')
        if(log/=0) then
         write(*,*) 'A problem occurred processing file ',fileout
-        stop
+        call apost_stop('')
        end if 
 
       CALL sameline("Number of basis functions",l,57,nbasf)
@@ -297,7 +297,7 @@ c write to gaussian com file
        CALL sameline("Number of alpha",l,57,nalf)
        CALL sameline("Number of beta",l,57,nbet )
        CALL sameline("Alpha MO coeff",l,57,ndim)  
-       if(ndim.ne.nbasf*nbasf) stop 'inconsistency problem'
+       if(ndim.ne.nbasf*nbasf) call apost_stop('inconsistency problem')
        READ(l,'(5e16.8)') ((ca(ii,jj),ii=1,nbasf),jj=1,nbasf)
 ! build P matrix from orbitals
        do ii=1,nbasf
@@ -361,14 +361,36 @@ c write to gaussian com file
 
       CALL sameline("Shell types",l,57,nsh)        
       write (*,*) 'shelltypes: ',nsh
+      if(nsh.gt.maxshells.or.nbasf.gt.maxbasisf) then
+        write(*,'(a,a,a,i0,a,i0,a)') ' gen_hirsh: ',trim(fileout),
+     +    ' exceeds ',maxshells,' shells or ',maxbasisf,
+     +    ' basis functions'
+        call apost_stop('')
+      end if
       READ (l,*) shelltypes(1:nsh)
       write(*,*) shelltypes(1:nsh)
+
+!! rho1 evaluates s, sp, p and Cartesian d (6D) and f (10F) shells only; !!
+!! any other type would silently give wrong densities                   !!
+      do nn=1,nsh
+        if(shelltypes(nn).lt.-1.or.shelltypes(nn).gt.3) then
+          write(*,'(a,i0,a,a)') ' gen_hirsh needs Cartesian functions '//
+     +      '(6D 10F in $Gaussian) and no g shells: shell type ',
+     +      shelltypes(nn),' found in ',trim(fileout)
+          call apost_stop('')
+        end if
+      end do
 
 
 
 
       CALL sameline("Number of primitives per shell",l,57,npr)  
       READ (l,*) nprimi(1:npr)
+      if(maxval(nprimi(1:npr)).gt.maxprimicoeff) then
+        write(*,'(a,a,a,i0,a)') ' gen_hirsh: ',trim(fileout),
+     +    ' has shells with more than ',maxprimicoeff,' primitives'
+        call apost_stop('')
+      end if
        
 
       CALL sameline("Primitive exponents",l,57,nprco)
@@ -514,7 +536,7 @@ c write to gaussian com file
 
     
 
-      call spline(xr, radial, nrad, -10.0d0, 0.0d0, y2)
+      call gh_spline(xr, radial, nrad, -10.0d0, 0.0d0, y2)
 
   
 
@@ -877,75 +899,6 @@ c       WRITE (*,*) 'rho1', rho1
 
       END
 
-
-
-
-      function gamma(getal)
-      implicit double precision(a-h,o-z)
-
-      DOUBLE PRECISION :: pi
-      DOUBLE PRECISION :: getal
-      DOUBLE PRECISION :: x
-
-      pi=dacos(-1.0d0)
-
-      IF (getal==0.5) then
-      x=SQRT(pi)
-      END IF
-
-      IF (getal==1.5) then
-      x=SQRT(pi)/2
-      END IF
-
-      IF (getal==2.5) then
-      x=(3*SQRT(pi))/4
-      END IF
-
-      IF (getal==3.5) then
-      x=(15*SQRT(pi))/8
-      END IF
-
-      gamma=x
-c       WRITE (*,*) 'gamma',x
-
-      end
-
-
-
-      function fac(getal)
-
-      INTEGER :: getal
-      DOUBLE PRECISION :: x=1.0d0
-      DOUBLE PRECISION :: fac
-      i=0
-
-      DO WHILE (getal-i>=2) !maal 1 geen zin
-       x = x*(getal-i)
-       i=i+1
-      END DO
-
-      fac=x
-       WRITE(*,*) 'fac', fac
-
-      end
-
-      function dfac(getal)
-
-      INTEGER :: getal
-      DOUBLE PRECISION :: u=1.0d0
-      DOUBLE PRECISION :: dfac
-      i=0
-
-      DO WHILE (getal-i>=2)
-       u = u*(getal-i)
-       i=i+2
-      END DO
-
-      dfac=u
-c       WRITE(*,*) 'dfac', dfac
-
-      end
-
  
       function primovlp(xexp,yexp,zexp,alfaa,alfab)
       IMPLICIT DOUBLE PRECISION (a-h,o-z)
@@ -975,7 +928,7 @@ c       WRITE(*,*) 'dfac', dfac
      
       end 
 
-      SUBROUTINE spline(x,y,n,yp1,ypn,y2)
+      SUBROUTINE gh_spline(x,y,n,yp1,ypn,y2)
 
       INTEGER n,NMAX
       DOUBLE PRECISION yp1,ypn,x(n),y(n),y2(n)
@@ -1036,7 +989,7 @@ c       WRITE(*,*) 'dfac', dfac
       endif
 
       h=xa(khi)-xa(klo)
-      if (h.eq.0.) pause 'bad xa input in splint'
+      if (h.eq.0.) call apost_stop('bad xa input in splint')
       a=(xa(khi)-x)/h
       b=(x-xa(klo))/h
       y=a*ya(klo)+b*ya(khi)+((a**3-a)*y2a(klo)+(b**3-b)*y2a(khi))*(h**

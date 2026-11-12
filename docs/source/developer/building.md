@@ -1,0 +1,76 @@
+# Building with make
+
+[Installation](../installation.md) uses `make_compile.sh`, which checks the
+prerequisites and then calls the `Makefile`. For development, or a custom
+build setup, `make` can be used directly:
+
+```bash
+make -C $APOST3D_PATH -j8 all     # apost3d
+make -C $APOST3D_PATH -j8 utils   # the utilities in utils/
+make -C $APOST3D_PATH clean       # remove all objects and programs
+make -C $APOST3D_PATH help        # all targets and options
+```
+
+`make` works on the copy of its `Makefile` (here the one in
+`$APOST3D_PATH`), like the script: an exported `APOST3D_PATH` is not
+used, only `make APOST3D_PATH=...` on the command line. It takes the same
+`ARCH`, `OPENBLAS_DIR` and `LIBXC_DIR` settings as the script (the number of compile jobs is set with `-j`), but does not
+check the compiler version, build libxc, sign the programs on macOS, or
+rebuild everything after a change of compiler or `ARCH` (run
+`make clean` yourself then, and run `bash compile_libxc.sh` once first if
+libxc is not installed). After `make_compile.sh`, `make` uses the
+libxc the script checked (recorded in `objects/libxc.mk`, which
+`make clean` removes), and `LIBXC_DIR` overrides it. When the libraries
+linked change (another `OPENBLAS_DIR` or libxc), `make` relinks `apost3d`
+and `gen_hirsh`: their link flags are recorded in `objects/.link_libs`. `compile_libxc.sh` builds
+libxc with the `gfortran` on the `PATH`, the one the `Makefile` uses, and
+the `gcc` of the same version when there is one (`gcc-16`, ...).
+
+## Layout
+
+| Path | Contents |
+|---|---|
+| `sources/` | Program sources (fixed-form `.f`, `modules.f90`, `parameter.h`, `Lebedev-Laikov.F`) |
+| `utils/` | Utility sources (`make utils` writes the utility programs here) |
+| `objects/` | Every `.o` and `.mod` file (utilities in `objects/utils/`) |
+| `libxc-<version>/` | libxc, when built by `compile_libxc.sh` |
+| `tests/` | Test runner, inputs and reference outputs ([Running the test suite](testing.md)) |
+| `docs/source/` | This documentation |
+| `apost3d` | The program |
+
+## Compiler flags
+
+The `Makefile` compiles with `-O3 -ffast-math -fopenmp -fbacktrace
+-ffixed-line-length-132 -fallow-argument-mismatch -fno-sign-zero` (the last
+one prints a value that rounds to zero as `0.00`, never `-0.00`), plus `-march=$(ARCH)`
+when `ARCH` is set. `input2.f` (input parsing) is compiled at `-O1`. The
+utilities are compiled without `-fopenmp`: with it, gfortran places their
+large local arrays on the stack, which overflows it.
+
+For debugging, rebuild with other optimization flags:
+
+```bash
+make clean
+make -j8 apost3d OPTFLAGS="-g -O0 -fbounds-check"
+```
+
+(`input2.f` keeps its own `-O1`, without these flags.)
+
+and run with `OMP_NUM_THREADS=1` first, to separate a bug from a
+parallelization problem.
+
+## Documentation
+
+The documentation is written in Markdown ([MyST](https://myst-parser.readthedocs.io/))
+and built with Sphinx. To build it locally (Python 3.9 or newer, which
+Sphinx 7.2 needs):
+
+```bash
+python3 -m venv /tmp/docvenv
+/tmp/docvenv/bin/pip install -r docs/requirements.txt
+/tmp/docvenv/bin/sphinx-build -W -n -b html docs/source /tmp/apost3d-docs
+```
+
+`-W -n` turns every warning (including broken internal links) into an
+error. The build must be clean. Open `/tmp/apost3d-docs/index.html` to
+view the result.

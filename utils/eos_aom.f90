@@ -31,7 +31,7 @@
       "Al","Si","P","S","Cl","Ar","K","Ca","Sc","Ti","V","Cr","Mn",&
       "Fe", "Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr","Rb",&
       "Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn",&
-      "Sb","Te","I","Xe","Cs","Ba","La","Ce","Pr","Nd","Pm","Sn",&
+      "Sb","Te","I","Xe","Cs","Ba","La","Ce","Pr","Nd","Pm","Sm",&
       "Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","Hf","Ta","W","Re",&
       "Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn","Fr",&
       "Ra","Ac","Th","Pa","U" /
@@ -145,7 +145,7 @@
 ! read  apost input file
        name=trim(name0)//".inp"
        open(1, file=name,status="OLD")
-       call locate(1,"# METODE",ii)
+       call locate(1,"# METHOD",ii)
        imultiwfn=0
        iaimall=0
        idofr=0
@@ -748,7 +748,7 @@
         ip0(ifrag)=imaxo
 
 !  write cube file
-!        if(icube.eq.1) call cubegen4(ifrag,icase)
+!        if(icube.eq.1) call cubegen_new(ifrag,icase)
        end do
 
 ! Doing EOS analysis of the ALPHA PART
@@ -975,7 +975,7 @@
         end do
         ip0(ifrag)=imaxo
 !  write cube file
-!        if(icube.eq.1) call cubegen4(ifrag,icase)
+!        if(icube.eq.1) call cubegen_new(ifrag,icase)
 
        end do
 

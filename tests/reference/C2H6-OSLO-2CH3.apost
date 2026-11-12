@@ -1,0 +1,614 @@
+  ------------------------------------------------------------------------------
+
+                     ___    ____  ____  ___________   _____ ____
+                    /   |  / __ \/ __ \/ ___/_  __/  |__  // __ \
+                   / /| | / /_/ / / / /\__ \ / /_____ /_ </ / / /
+                  / ___ |/ ____/ /_/ /___/ // /_____/__/ / /_/ /
+                 /_/  |_/_/    \____//____//_/     /____/_____/
+
+                        Version 5   --   12 November 2026
+                         --------------------------------
+
+      Real-space and Hilbert-space tools for wave function analysis
+
+      Documentation: https://apost3d.readthedocs.io
+      Source code & issue tracker: https://github.com/mgimferrer/APOST3D
+
+      Cite this program as:
+      ---------------------
+        P. Salvador, E. Ramos-Cordoba, M. Montilla, L. Pujal and M. Gimferrer
+        J. Chem. Phys., 2024, 160, 172502 DOI: 10.1063/5.0206187
+
+      e-mail: pedro.salvador@udg.edu, mgimferrer18@gmail.com
+
+      Available atomic definitions:
+      ----------------------------
+
+      Real space:
+        Becke, J. Chem. Phys. 88 2547 1988
+        Hirshfeld, Theor. Chim. Acta 44 129 1977
+        Hirshfeld-Iterative, J. Chem. Phys. 126 144111 2007
+        Topological fuzzy Voronoi cells (TFVC), J. Chem. Phys. 139 071103 2013
+
+      Hilbert space: Mulliken, Lowdin, Lowdin-Davidson, natural atomic
+        orbitals (NAO)
+
+      Analyses and their references:
+      ------------------------------
+
+        A) Atomic and overlap populations, bond orders and valences
+           I. Mayer and P. Salvador, Chem. Phys. Lett. 383 368-375 2004
+
+        B) Hartree-Fock molecular energy decomposition
+           P. Salvador, M. Duran and I. Mayer, J. Chem. Phys. 115 1153-1157 2001
+           P. Salvador and I. Mayer, J. Chem. Phys. 120 5046-5052 2004
+
+        C) KS-DFT molecular energy decomposition
+           P. Salvador and I. Mayer, J. Chem. Phys. 126 234113 2007
+           M. Gimferrer and P. Salvador, J. Chem. Phys. 158 234105 2023
+
+        D) Molecular energy decomposition for CASSCF/CISD wavefunctions
+
+        E) Effective atomic orbitals
+           I. Mayer, J. Phys. Chem. 100 6249 1996
+           I. Mayer and P. Salvador, J. Chem. Phys. 130 234106 2009
+           E. Ramos-Cordoba et al., J. Chem. Phys. 138 214107 2013
+           Review: M. Gimferrer, Theor. Chem. Acc. 145 74 2026
+
+        F) Local spin analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 8 1270-1279 2012
+           E. Ramos-Cordoba et al., Phys. Chem. Chem. Phys. 14 15291-15298 2012
+
+        G) Effective oxidation states analysis
+           E. Ramos-Cordoba et al., J. Chem. Theory Comput. 11 1501-1508 2015
+           M. Gimferrer and P. Salvador, manuscript in preparation, 2026
+
+        H) Oxidation states from localized orbitals
+           M. Gimferrer, G. Comas-Vila and P. Salvador, Molecules 25 234 2020
+           M. Gimferrer et al., Inorg. Chem. 59 15410-15420 2020
+           M. Gimferrer et al., J. Chem. Theory Comput. 18 309-322 2022
+
+        I) Decomposition of EDA quantities into one- and two-center IQA terms
+           M. Gimferrer et al., J. Chem. Theory Comput. 19 3469-3485 2023
+           (under reimplementation in version 5)
+
+        J) Origin-independent decomposition of static polarizabilities
+           M. Montilla et al., J. Chem. Theory Comput. 17 1098-1105 2021
+
+  ------------------------------------------------------------------------------
+
+      The program has been written by using parts of the program APOST by
+      I. Mayer and A. Hamza, Budapest, 2000-2003.
+
+      The numerical integration utilizes the subroutines for Lebedev
+      quadrature downloaded from CCL. The appropriate reference is:
+      V.I. Lebedev, and D.N. Laikov "A quadrature formula for the sphere of
+      the 131st algebraic order of accuracy" Doklady Mathematics, 59 477-481
+      1999.
+
+      The program uses the libxc library when necessary, through the
+      Fortran interfaces provided by its authors (https://libxc.gitlab.io/).
+
+      We are extremely grateful for the possibility of using these routines!
+
+  ------------------------------------------------------------------------------
+
+  OpenMP threads                          : 8
+
+  ------------------------
+    WAVEFUNCTION SUMMARY
+  ------------------------
+
+  MO formalism                            : Restricted
+  Calculation type                        : KS-DFT, Kohn-Sham determinant (.fchk method: RB3LYP)
+  Number of atoms                         : 8
+  Number of basis functions               : 160
+  Primitive gaussians                     : 206
+  Spin density                            : built from the MOs
+  Doubly occupied MOs                     : 9
+  SCF energy (au)                         :     -79.8656134
+
+  -----------------
+    INPUT SUMMARY
+  -----------------
+
+  # METHOD
+  Atomic definition                       : TFVC (topological fuzzy Voronoi cells)
+  Oxidation states                        : OSLO (oxidation states from localized orbitals)
+  Fragments                               : 2 (see # FRAGMENTS)
+
+  # OSLO
+  Overlap matrix                          : real space (as in # METHOD)
+  FOLI tolerance                          : 0.00100 (FOLI_TOLERANCE 3)
+  Branching                               : none
+  Non-orthogonalized OSLOs (.fchk)        : yes
+
+  # FRAGMENTS (2 fragments)
+  Fragment  1 :   1   3   4   5
+  Fragment  2 :   2   6   7   8
+
+  TIMING CPU  :: Initialization                                    0.13 s
+  TIMING WALL :: Initialization                                    0.06 s
+
+  ----------------------------------------
+    SETTING ATOMIC GRIDS FOR INTEGRATION
+  ----------------------------------------
+
+  Radial points                           : 40
+  Angular points                          : 146
+  r0 (bohr)                               : 0.500
+  Grid points                             : 46720
+
+  -----------------------------
+    SETTING ATOMIC DEFINITION
+  -----------------------------
+
+  Cell stiffness k                        : 4
+  Using density along atom pairs to set atomic radii
+
+  Atom pair   1 -   2 : subdivision 21, ratio  1.00000
+  Atom pair   1 -   3 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   3 : subdivision 28, ratio  1.68097
+  Atom pair   1 -   4 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   4 : subdivision 28, ratio  1.68097
+  Atom pair   1 -   5 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   1 -   5 : subdivision 28, ratio  1.68097
+  Atom pair   2 -   6 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   6 : subdivision 28, ratio  1.68097
+  Atom pair   2 -   7 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   7 : subdivision 28, ratio  1.68097
+  Atom pair   2 -   8 : 1 max / 1 min extrema; inconsistent extrema, selecting minimum closest to midpoint
+  Atom pair   2 -   8 : subdivision 28, ratio  1.68097
+
+  Sum of atomic overlaps, largest error   : 2.63E-03 (from the analytic overlap S)
+
+  TIMING CPU  :: Atomic definition                                 1.68 s
+  TIMING WALL :: Atomic definition                                 0.23 s
+
+  -----------------------------
+    DOING POPULATION ANALYSIS
+  -----------------------------
+
+  Atomic definition                       : TFVC (real space)
+
+  ------------------------
+    ELECTRON POPULATIONS
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  C     5.712052    6.180470
+    2  C     5.712052    6.180470
+    3  H     1.095716    0.939840
+    4  H     1.095684    0.939845
+    5  H     1.095684    0.939845
+    6  H     1.095716    0.939840
+    7  H     1.095684    0.939845
+    8  H     1.095684    0.939845
+  -------------------------------
+  Total     17.998271   18.000000
+
+  ---------------------------------
+    FRAGMENT ELECTRON POPULATIONS
+  ---------------------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          8.999136    9.000000
+    2          8.999136    9.000000
+  ---------------------------------
+  Total       17.998271   18.000000
+
+  ------------------------
+    TOTAL ATOMIC CHARGES
+  ------------------------
+
+  Atom           TFVC    Mulliken
+  -------------------------------
+    1  C     0.287948   -0.180470
+    2  C     0.287948   -0.180470
+    3  H    -0.095716    0.060160
+    4  H    -0.095684    0.060155
+    5  H    -0.095684    0.060155
+    6  H    -0.095716    0.060160
+    7  H    -0.095684    0.060155
+    8  H    -0.095684    0.060155
+  -------------------------------
+  Total      0.001729    0.000000
+
+  --------------------
+    FRAGMENT CHARGES
+  --------------------
+
+  Frag.            TFVC    Mulliken
+  ---------------------------------
+    1          0.000864    0.000000
+    2          0.000864    0.000000
+  ---------------------------------
+  Total        0.001729    0.000000
+
+  ---------------------
+    BOND ORDER MATRIX
+  ---------------------
+
+  -------------------------------------------------------------------------------
+                 1  C        2  C        3  H        4  H        5  H        6  H
+  -------------------------------------------------------------------------------
+    1  C     3.701671    0.948103    0.966738    0.967448    0.967448    0.056647
+    2  C     0.948103    3.701671    0.056647    0.056540    0.056540    0.966738
+    3  H     0.966738    0.056647    0.504737    0.062573    0.062573    0.016948
+    4  H     0.967448    0.056540    0.062573    0.504749    0.062575    0.007950
+    5  H     0.967448    0.056540    0.062573    0.062575    0.504749    0.007950
+    6  H     0.056647    0.966738    0.016948    0.007950    0.007950    0.504737
+    7  H     0.056540    0.967448    0.007950    0.016930    0.007926    0.062573
+    8  H     0.056540    0.967448    0.007950    0.007926    0.016930    0.062573
+  -------------------------------------------------------------------------------
+
+  -------------------------------
+                 7  H        8  H
+  -------------------------------
+    1  C     0.056540    0.056540
+    2  C     0.967448    0.967448
+    3  H     0.007950    0.007950
+    4  H     0.016930    0.007926
+    5  H     0.007926    0.016930
+    6  H     0.062573    0.062573
+    7  H     0.504749    0.062575
+    8  H     0.062575    0.504749
+  -------------------------------
+
+  ------------------
+    TOTAL VALENCES
+  ------------------
+
+  Atom           TFVC
+  -------------------
+    1  C     4.020761
+    2  C     4.020761
+    3  H     1.181958
+    4  H     1.181869
+    5  H     1.181869
+    6  H     1.181958
+    7  H     1.181869
+    8  H     1.181869
+  -------------------
+
+  ---------------------------
+    FRAGMENT TOTAL VALENCES
+  ---------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          7.566458
+    2          7.566458
+  ---------------------
+  Total       15.132916
+
+  --------------------------
+    VALENCES USED IN BONDS
+  --------------------------
+
+  Sum of the bond orders of each atom
+
+  Atom           TFVC
+  -------------------
+    1  C     4.019464
+    2  C     4.019464
+    3  H     1.181380
+    4  H     1.181943
+    5  H     1.181943
+    6  H     1.181380
+    7  H     1.181943
+    8  H     1.181943
+  -------------------
+
+  -----------------------------------
+    FRAGMENT VALENCES USED IN BONDS
+  -----------------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          7.564730
+    2          7.564730
+  ---------------------
+  Total       15.129461
+
+  -----------------
+    FREE VALENCES
+  -----------------
+
+  Atom           TFVC
+  -------------------
+    1  C     0.001297
+    2  C     0.001297
+    3  H     0.000577
+    4  H    -0.000073
+    5  H    -0.000073
+    6  H     0.000577
+    7  H    -0.000073
+    8  H    -0.000073
+  -------------------
+
+  --------------------------
+    FRAGMENT FREE VALENCES
+  --------------------------
+
+  Frag.            TFVC
+  ---------------------
+    1          0.001727
+    2          0.001727
+  ---------------------
+  Total        0.003455
+
+  ------------------------
+    FRAGMENT BOND ORDERS
+  ------------------------
+
+  ---------------------------------
+                      1           2
+  ---------------------------------
+    1          8.305262    1.386020
+    2          1.386020    8.305262
+  ---------------------------------
+  Total (diagonal and one triangle)       :      17.996544
+
+  TIMING CPU  :: Population analysis                               0.06 s
+  TIMING WALL :: Population analysis                               0.02 s
+
+  ---------------------------------------------------
+    OXIDATION STATES FROM LOCALIZED ORBITALS (OSLO)
+  ---------------------------------------------------
+
+  Atomic definition (spreads)             : TFVC (real space)
+  Fragment populations                    : TFVC
+  FOLI tolerance                          :        0.00100
+  Densities                               : total (closed shell)
+
+  Charge centre R_F of each fragment (Angstrom)
+  Frag.         x         y         z
+  -----------------------------------
+      1  -0.00001   0.89595   0.00000
+      2   0.00001  -0.89595   0.00000
+  -----------------------------------
+
+  ---------------
+    ITERATION 1
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   18.74361     0.02240   6.83302
+     2   16.94316     0.02539   6.43625
+     3   16.93108     0.02540   6.43864
+     4    9.93573     0.00100  31.70481
+     5    5.34897     0.49476   2.01134
+     6    4.63097     0.97479   1.03870
+     7    4.62590     0.97425   1.03956
+     8    3.46651     0.98167   1.02797
+     9    0.16049     0.99993   1.00010
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   18.74361     0.02240   6.83302
+     2   16.94316     0.02539   6.43625
+     3   16.93108     0.02540   6.43864
+     4    9.93573     0.00100  31.70481
+     5    5.34897     0.49476   2.01134
+     6    4.63097     0.97479   1.03870
+     7    4.62590     0.97425   1.03956
+     8    3.46651     0.98167   1.02797
+     9    0.16049     0.99993   1.00010
+  -------------------------------------
+
+  Lowest FOLI value (fragment 1)          :        1.00010
+  Next FOLI value (fragment 1)            :        1.02797
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
+     9      1   1.00010
+     9      2   1.00010
+  ---------------------
+  OSLOs selected                          : 2
+  Delta-FOLI                              :        0.02787
+  Orbitals left to assign                 : 7
+
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     8      1   1.02797    0.00000
+     8      2   1.02797    0.00000
+  --------------------------------
+  Largest overlap with the selected OSLOs :        0.00000
+
+  ---------------
+    ITERATION 2
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   18.73995     0.02232   6.84494
+     2   16.94316     0.02539   6.43625
+     3   16.93108     0.02540   6.43864
+     4    5.35569     0.49573   2.00941
+     5    4.63097     0.97479   1.03870
+     6    4.62590     0.97425   1.03956
+     7    3.46653     0.98170   1.02791
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   18.73995     0.02232   6.84494
+     2   16.94316     0.02539   6.43625
+     3   16.93108     0.02540   6.43864
+     4    5.35569     0.49573   2.00941
+     5    4.63097     0.97479   1.03870
+     6    4.62590     0.97425   1.03956
+     7    3.46653     0.98170   1.02791
+  -------------------------------------
+
+  Lowest FOLI value (fragment 1)          :        1.02791
+  Next FOLI value (fragment 1)            :        1.03870
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
+     7      1   1.02791
+     7      2   1.02791
+  ---------------------
+  OSLOs selected                          : 2
+  Delta-FOLI                              :        0.01079
+  Orbitals left to assign                 : 5
+
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     5      1   1.03870    0.00000
+     6      1   1.03956    0.00000
+     5      2   1.03870    0.00000
+     6      2   1.03956    0.00000
+  --------------------------------
+  Largest overlap with the selected OSLOs :        0.00000
+
+  ---------------
+    ITERATION 3
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   16.94316     0.02539   6.43625
+     2   16.93108     0.02540   6.43864
+     3    6.98390     0.49981   2.00115
+     4    4.63097     0.97479   1.03870
+     5    4.62590     0.97425   1.03956
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1   16.94316     0.02539   6.43625
+     2   16.93108     0.02540   6.43864
+     3    6.98390     0.49981   2.00115
+     4    4.63097     0.97479   1.03870
+     5    4.62590     0.97425   1.03956
+  -------------------------------------
+
+  Lowest FOLI value (fragment 1)          :        1.03870
+  Next FOLI value (fragment 1)            :        2.00115
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
+     4      1   1.03870
+     5      1   1.03956
+     4      2   1.03870
+     5      2   1.03956
+  ---------------------
+  OSLOs selected                          : 4
+  Delta-FOLI                              :        0.96245
+  Orbitals left to assign                 : 1
+
+  Next OSLOs against the selected ones
+  Orb.  Frag.      FOLI    Overlap
+  --------------------------------
+     3      1   2.00115    0.00000
+     3      2   2.00115    0.00000
+  --------------------------------
+  Largest overlap with the selected OSLOs :        0.00000
+
+  ---------------
+    ITERATION 4
+  ---------------
+
+  Fragment 1: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1    6.98390     0.49981   2.00115
+  -------------------------------------
+
+  Fragment 2: candidate orbitals
+  Orb.     Spread  Frag. pop.      FOLI
+  -------------------------------------
+     1    6.98390     0.49981   2.00115
+  -------------------------------------
+
+  Lowest FOLI value (fragment 1)          :        2.00115
+  Next FOLI value                         : none
+
+  Selected orbitals
+  Orb.  Frag.      FOLI
+  ---------------------
+     1      1   2.00115
+     1      2   2.00115
+  ---------------------
+  OSLOs selected                          : 2
+  Delta-FOLI                              : none (no other candidate)
+
+  Shared orbital: the 2 selected OSLOs span 1 orbital
+  Frag.     Share
+  ---------------
+      1   0.50000
+      2   0.50000
+  ---------------
+  Orbitals left to assign                 : 0
+
+  Close alternatives: not checked, no orbital left after this selection
+
+  Sum of the FOLI values                  :       10.21367
+
+  ------------------
+    SELECTED OSLOs
+  ------------------
+
+  Before orthogonalization
+  OSLO              1         2         3         4         5
+  Iteration         1         1         2         2         3
+  FOLI        1.00010   1.00010   1.02791   1.02791   1.03870
+  -----------------------------------------------------------
+  Frag.   1   0.99993   0.00007   0.98170   0.01823   0.97479
+  Frag.   2   0.00007   0.99993   0.01823   0.98170   0.02538
+  -----------------------------------------------------------
+
+  OSLO              6         7         8         9
+  Iteration         3         3         3         4
+  FOLI        1.03956   1.03870   1.03956   2.00115
+  -------------------------------------------------
+  Frag.   1   0.97425   0.02538   0.02538   0.49981
+  Frag.   2   0.02538   0.97479   0.97425   0.49981
+  -------------------------------------------------
+
+  After orthogonalization (the orbitals of the .fchk file)
+  OSLO              1         2         3         4         5
+  -----------------------------------------------------------
+  Frag.   1   0.99993   0.00007   0.98246   0.01748   0.97748
+  Frag.   2   0.00007   0.99993   0.01748   0.98246   0.02269
+  -----------------------------------------------------------
+
+  OSLO              6         7         8         9
+  -------------------------------------------------
+  Frag.   1   0.97695   0.02269   0.02269   0.49981
+  Frag.   2   0.02269   0.97748   0.97695   0.49981
+  -------------------------------------------------
+
+  -----------------------------
+    FRAGMENT OXIDATION STATES
+  -----------------------------
+
+  Frag.  Oxidation state
+  ----------------------
+      1             0.00
+      2             0.00
+  ----------------------
+  Total             0.00
+  Fractional values: orbitals shared between fragments (see the iterations)
+
+  TIMING CPU  :: OSLO analysis                                     3.02 s
+  TIMING WALL :: OSLO analysis                                     2.43 s
+
+  ...Normal Termination of APOST-3D...

@@ -1,10 +1,48 @@
+!! ********************************************************** !!
+!! IQA energy partitioning (ENPART)                           !!
+!! one-electron part:                                         !!
+!!   numint_one      -- RHF/RKS                               !!
+!!   numint_one_uhf  -- UHF/UKS                               !!
+!! two-electron part (both call calc_coul/multipolar_mo       !!
+!! internally for the Coulomb/multipolar-expansion terms):    !!
+!!   numint_two      -- RHF/RKS                               !!
+!!   numint_two_uhf  -- UHF/UKS                               !!
+!!   calc_coul       -- Coulomb energy term                   !!
+!! multipolar-expansion xc estimate for skipped atom pairs:   !!
+!!   multipolar      -- stored pair functions (CASSCF/CISD)   !!
+!!   multipolar_mo   -- MO products, formed on the fly        !!
+!!   mp_init/mp_moments/mp_pairs/mp_sum -- shared pieces      !!
+!! polarizability analysis (# POLAR keyword, standalone --    !!
+!! not part of the one/two-electron machinery above):         !!
+!!   polar                                                    !!
+!! ********************************************************** !!
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: numint_one                                                  !!
+!! purpose: one-electron IQA/ENPART energy partition -- electron-nuclear   !!
+!!   attraction, kinetic energy, nuclear repulsion, and (if present) the   !!
+!!   external-field dipole terms, each decomposed into atomic/diatomic     !!
+!!   contributions. RHF/RKS only -- see numint_one_uhf for open-shell.     !!
+!! arguments:                                                              !!
+!!   ndim   (in)  -- number of basis functions (leading dim of chp)        !!
+!!   itotps (in)  -- total number of grid points                           !!
+!!   wp     (in)  -- integration weight of each grid point                 !!
+!!   rho    (in)  -- electron density at each grid point                   !!
+!!   omp    (in)  -- becke/tfvc weight of each grid point for its own atom !!
+!!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                   every atom                                            !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   chp    (in)  -- basis-function values at each grid point              !!
+!!   eto    (out) -- total one-electron atomic/diatomic energy matrix      !!
+!! author: PSalse, MGimf, MMO.                                             !!
+!! *********************************************************************** !!
       subroutine numint_one(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
 
       use ao_matrices
       use integration_grid
+      use output_mod, only: print_value
 
       implicit real*8(a-h,o-z)
 
@@ -12,7 +50,7 @@
 
       common /nat/nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /actual/iact,jat,icenter
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /energ0/ekin0,eelnuc0,evee0,etot0
@@ -20,17 +58,17 @@
       common /efield/field(4),edipole
 
       integer, intent(in) :: ndim,itotps
-      character*80 line
 
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
-! TO DO: xkdens = kinetic energy density
-! TO DO: Laplacian!
-      dimension xkdens(itotps)
       dimension eto(maxat,maxat)
       dimension epa(maxat,maxat),ekin(maxat,maxat),dip(maxat,3),enuc(maxat,maxat)
       dimension eecp(maxat),ect(maxat,maxat)
       dimension edip(maxat,maxat)
+      dimension tkin(maxat),fdip(maxat,2)
+      character*40 cfld
+      logical lref
+      common /printout/iaccur
 
       allocatable :: chp2(:,:),scr(:),chpaux(:,:)
 
@@ -39,57 +77,36 @@
       ipoints = itotps
       iatps   = nang*nrad
       xxdip   = ZERO
-
-      write(*,*) " "
-      write(*,*) " --------------------------- "
-      write(*,*) "  GENERAL ONE-ELECTRON PART  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      ndec=7
+      if(iaccur.ne.0) ndec=13
 
       ALLOCATE(chp2(itotps,nocc),scr(itotps))
 
-!! TO MOs !!
-      do k=1,ipoints
-        xx0=ZERO
-        do j=1,nocc
-          xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chp(k,i) 
-          end do
-          chp2(k,j)=xx
-        end do
-      end do
+      call ao_to_mo_grid(itotps,igr,nocc,c,chp,chp2)
 
-!! ZEROING MATRICES !!
       epa=ZERO
       ekin=ZERO
       enuc=ZERO
       eto=ZERO
       ect=ZERO
+      edip=ZERO
 
-!! DOING ENERGY PARTITION !!
-!! ONE-ELECTRON PART !!
-
-!! IN CASE OF HAVING PSEUDOPOTENTIAL !!
-      call mga_misc(iecp,eecp) !! MAYBE WE SHOULD DO A BETTER VERSION OF THIS... !!
+!! pseudopotential atomic energies (if present), added to the E-N terms !!
+      call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
-        write(*,*) " ADDING ECP ATOMIC ENERGIES TO E-N TERMS "
         do ii=1,nat
           epa(ii,ii)=eecp(ii)
-        end do 
+        end do
       end if
 
-!! IN CASE OF HAVING AN ELECTRIC FIELD !!
-      !MMO- minor: is it really necessary to call field_misc again? this has been done on main.f, 
-      !MMO- and everything is stored in /common/efield
-      call field_misc(ifield)
-      !MMO- fixed the following: xxdip should be initialized as 0.0d0 if there's no field... 
-      !MMO- as xxdip should be used for the printing of integration error (see below)
+!! field(:)/ifield were already read by main.f into the /efield/ common  !!
+!! and iopt(47) -- no need to re-scan the .inp file here.                !!
       if(ifield.eq.1) then
-        write(*,*) " The system is under a static electric field "
-        write(*,'(2x,3(x,a3,x,f8.6))') "Fx=",field(2),"Fy=",field(3),"Fz=",field(4)
-        write(*,*) " Electron-nuclear and nuclear repulsion terms are affected by E. field "
-        xtot=ZERO
+!! parallel over icenter: each iteration writes only its own dip(icenter,:)/ !!
+!! ect(icenter,icenter); x/y/z/zztop/xtot are per-iteration scratch, not     !!
+!! running totals, so no reduction is needed. Untested: no test uses an      !!
+!! external electric field.                                                  !!
+!$OMP PARALLEL DO PRIVATE(icenter,x,y,z,zztop,ifut,distx,disty,distz,xtot)
         do icenter=1,nat
           x=ZERO
           y=ZERO
@@ -104,31 +121,30 @@
             z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
             zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
           end do
-          dip(icenter,1)=-x+zztop*coord(1,icenter)    
-          dip(icenter,2)=-y+zztop*coord(2,icenter)    
-          dip(icenter,3)=-z+zztop*coord(3,icenter)    
-          xtot=(coord(1,icenter)*field(2)+coord(2,icenter)*field(3)+coord(3,icenter)*field(4))    
-          ect(icenter,icenter)=-zztop*xtot                
+          dip(icenter,1)=-x+zztop*coord(1,icenter)
+          dip(icenter,2)=-y+zztop*coord(2,icenter)
+          dip(icenter,3)=-z+zztop*coord(3,icenter)
+          xtot=(coord(1,icenter)*field(2)+coord(2,icenter)*field(3)+coord(3,icenter)*field(4))
+          ect(icenter,icenter)=-zztop*xtot
         end do
+!$OMP END PARALLEL DO
 
-!! ENERGY CONTRIBUTIONS. ELECTRIC FIELD X,Y,Z COMPONENTS ARE ON field(2-4) !!
+!! electric field x,y,z components are on field(2-4) !!
         xtot=ZERO
         do i=1,nat
           edip(i,i)=+dip(i,1)*field(2)+dip(i,2)*field(3)+dip(i,3)*field(4)
           xtot=xtot+ect(i,i)+edip(i,i)
         end do
         xxdip=xtot
-        write(*,'(2x,a37,x,f14.7)') "Electronic dipole moment energy term:",xxdip
-        write(*,*) " "
-      else
-        !! MG: at the beginning of the subroutine is made zero, necessary again? !!
-        xxdip=ZERO !MMO- added this else condition
       end if
 
-!! ELECTRON-NUCLEI ATTRACTION INTEGRALS !!
+!! electron-nuclei attraction integrals; parallel over the (icenter,jcenter) !!
+!! atom-pair space (COLLAPSE(2), both bounds constant) -- each pair writes  !!
+!! only its own epa(icenter,jcenter), xtot is a genuine running total.      !!
       xtot=ZERO
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jcenter,x,zz,dx0,dy0,dz0,ifut,distx,disty,distz,rr) REDUCTION(+:xtot)
       do icenter=1,nat
-        do jcenter=1,nat     
+        do jcenter=1,nat
           x=ZERO
           zz=zn(jcenter)
           dx0=coord(1,jcenter)
@@ -147,11 +163,12 @@
           epa(icenter,jcenter)=epa(icenter,jcenter)-x
         end do
       end do
+!$OMP END PARALLEL DO
 
       xtot=ZERO
       do i=1,nat
         xtot=xtot+epa(i,i)
-        do j=1,i-1  
+        do j=1,i-1
           epa(i,j)=(epa(i,j)+epa(j,i))
           epa(j,i)=epa(i,j)
           xtot=xtot+epa(i,j)
@@ -159,50 +176,56 @@
       end do
       eelnuc=xtot
 
-!! PRINTING MATRIX !!
-      write(*,*) " ----------------------------- "
-      write(*,*) "  ELECTRON-NUCLEAR ATTRACTION  "
-      write(*,*) " ----------------------------- "
-      write(*,*) " "
-      call MPRINT2(epa,nat,maxat)
-      write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
+      if(iecp.eq.1) then
+        call enpart_matrix('ELECTRON-NUCLEAR ATTRACTION','Includes the'//
+     +    ' pseudopotential (ECP) energy of each atom on the diagonal.',
+     +    ' ',epa,'Electron-nuclear attraction',eelnuc)
+      else
+        call enpart_matrix('ELECTRON-NUCLEAR ATTRACTION',' ',' ',epa,
+     +    'Electron-nuclear attraction',eelnuc)
+      end if
 
-!! CHECKING INTEGRATION ERROR (IF ENERGIES INCLUDED IN .fchk FILE) !!
-      if(eelnuc0.ne.ZERO) then
-        !MMO- printing fix: to correctly evaluate error, add xxdip here, because during the decomp process we do not add 
-        !MMO- it to any atomic contributions (we avoid atomic terms related to dipole)
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
+!! xxdip is added here (not just eelnuc) since it's excluded from the    !!
+!! atomic epa contributions above -- keeps this check apples-to-apples.  !!
+      lref=eelnuc0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(eelnuc+xxdip-eelnuc0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
         eelnuc0=eelnuc
       end if
-      write(*,*) " "
-      if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Electron-nuclei attraction ' 
-        call group_by_frag_mat(1,line,epa)
-      end if
+      call enpart_frag('ELECTRON-NUCLEAR ATTRACTION',epa)
+      call json_enpart_term('electron_nuclear','Electron-nuclear '//
+     +  'attraction',epa,eelnuc,lref,errk)
 
-!! GENERATIONG GRID FOR 2nd DERIVATIVE OVER AOs !!
+!! second-derivative AO values, needed for the kinetic-energy density below !!
       ALLOCATE(chpaux(itotps,igr))
       call dpoints(chpaux,pcoord)
 
-!! TO MOs AND MULTIPLY BY MOs AND SUM OVER MOs USING SCRATCH ARRAY !!
-!! HENCE WE HAVE DENSITY IN scr EXCEPT FOR THE FACTOR OF TWO !!
+!! kinetic-energy density at each point: transform the 2nd-derivative AOs !!
+!! to MOs and dot with the already-transformed chp2 -- density in scr,   !!
+!! off by the usual factor of two. parallel over k: each k only reads    !!
+!! its own chpaux(k,:)/chp2(k,:) and writes only scr(k).                 !!
+!$OMP PARALLEL DO PRIVATE(k,x,j,xx,i)
       do k=1,ipoints
         x=ZERO
         do j=1,nocc
           xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chpaux(k,i) 
+          do i=1,igr
+            xx=xx+c(i,j)*chpaux(k,i)
           end do
           x=x+chp2(k,j)*xx
         end do
         scr(k)=x
-!! TO DO: Kinetic energy density !!
-!       xkdens(k)=scr(k)
-!! TO DO: Laplacian !!
       end do
+!$OMP END PARALLEL DO
 
+!! contract the kinetic-energy density onto atoms; parallel over icenter, !!
+!! each iteration writes only its own ekin(icenter,icenter), xtot is a    !!
+!! genuine running total.                                                 !!
       xtot=ZERO
+!$OMP PARALLEL DO PRIVATE(icenter,x,ifut) REDUCTION(+:xtot)
       do icenter=1,nat
         x=ZERO
         do ifut=iatps*(icenter-1)+1,iatps*icenter
@@ -211,30 +234,32 @@
         ekin(icenter,icenter)=ekin(icenter,icenter)+x
         xtot=xtot+x
       end do
+!$OMP END PARALLEL DO
       ekinen=xtot
 
-!! PRINTING MATRIX !!
-      write(*,*) " ---------------- "
-      write(*,*) "  KINETIC ENERGY  "
-      write(*,*) " ---------------- "
-      write(*,*) " "
-      call MPRINT2(ekin,nat,maxat)
-      write(*,'(2x,a15,x,f14.7)') "Kinetic energy:",ekinen
-
-!! CHECKING INTEGRATION ERROR (IF ENERGIES INCLUDED IN .fchk FILE) !!
-      if(ekin0.ne.ZERO) then
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*tokcal
+      do i=1,nat
+        tkin(i)=ekin(i,i)
+      end do
+      call enpart_atom_table('KINETIC ENERGY','One-center terms only:'//
+     +  ' the kinetic energy has no pair terms.',' ',1,tkin,'Kinetic',
+     +  ' ',' ',.false.)
+      call print_value('Kinetic energy',ekinen,ndec,'au')
+      lref=ekin0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(ekinen-ekin0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
-        ekin0=ekinen  
+        ekin0=ekinen
       end if
-      write(*,*) " "
-      if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Kinetic energy ' 
-        call group_by_frag_mat(1,line,ekin)
-      end if
+      if(idofr.eq.1) call group_by_frag_vec(1,'FRAGMENT KINETIC ENERGY',
+     +  tkin,'Kinetic',' ')
+!! the results file keeps the kinetic energy as a (diagonal) matrix, !!
+!! like the other terms                                              !!
+      call json_enpart_term('kinetic','Kinetic energy',ekin,ekinen,lref,
+     +  errk)
       DEALLOCATE(chpaux)
 
-!! ADDING NUCLEAR REPULSION !!
       erep=ZERO
       do i=1,nat
         eto(i,i)=ekin(i,i)+epa(i,i)
@@ -243,27 +268,19 @@
           eto(i,j)=ekin(i,j)+epa(i,j)+zn(i)*zn(j)/dist
           eto(j,i)=eto(i,j)
 
-!! SAVING ALSO FOR PRINTING PURPOSES, I THINK WE SHOULD GIVE IT... COMES FOR FREE !!
+!! enuc: nuclear-repulsion pair matrix, kept only for the printout below. !!
           enuc(i,j)=zn(i)*zn(j)/dist
           enuc(j,i)=enuc(i,j)
           erep=erep+zn(i)*zn(j)/dist
         end do
       end do
 
-!! PRINTING MATRIX !!
-      write(*,*) " --------------------------- "
-      write(*,*) "  NUCLEAR-NUCLEAR REPULSION  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
-      call MPRINT2(enuc,nat,maxat)
-      write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
-      write(*,*) " "
-      if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Nuclear repulsion energy '
-        call group_by_frag_mat(1,line,enuc)
-      end if
+      call enpart_matrix('NUCLEAR-NUCLEAR REPULSION',' ',' ',enuc,
+     +  'Nuclear-nuclear repulsion',erep)
+      call enpart_frag('NUCLEAR-NUCLEAR REPULSION',enuc)
+      call json_enpart_term('nuclear_repulsion','Nuclear-nuclear '//
+     +  'repulsion',enuc,erep,.false.,0.0d0)
 
-!! IN CASE OF HAVING AN ELECTRIC FIELD !!
       if(ifield.eq.1) then
         xxx=ZERO
         xtot=ZERO
@@ -272,56 +289,702 @@
           ect(i,i)=ect(i,i)+xxx
           xtot=xtot+xxx
         end do
-        write(*,'(2x,a50,x,f14.7)') "Nuclear repulsion energy including nuclear dipole:",erep+xtot
-        write(*,'(2x,a34,x,f14.7)') "Nuclear dipole moment energy term:",xtot
         edipole=xtot+xxdip
-        write(*,'(2x,a32,x,f14.7)') "Total dipole moment energy term:",edipole
-        write(*,*) " "
-        write(*,*) " ----------------------------------------------------------- "
-        write(*,*) "  INTRINSIC DIPOLE ENERGY CONTRIBUTION (ORIGIN INDEPENDENT)  "
-        write(*,*) " ----------------------------------------------------------- "
-        write(*,*) " "
-        call MPRINT2(edip,nat,maxat)
-        xtot=ZERO
+        call print_box('EXTERNAL ELECTRIC FIELD')
+        write(cfld,'(3f10.6)') field(2),field(3),field(4)
+        call print_value('Field x, y, z',trim(adjustl(cfld)),'au')
+        call print_value('Electronic dipole term',xxdip,ndec,'au')
+        call print_value('Nuclear dipole term',xtot,ndec,'au')
+        call print_value('Field interaction energy',edipole,ndec,'au')
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Not part of the IQA terms: added to their'//
+     +    ' total in the energy check'
+        write(*,'(2x,a)') 'of IQA ENERGY TERMS.'
         do i=1,nat
-          xtot=xtot+edip(i,i)
+          fdip(i,1)=edip(i,i)
+          fdip(i,2)=ect(i,i)
         end do
-        write(*,'(2x,a28,x,f14.7)') "Total Intrinsic dipole term:",xtot
-        write(*,*) " "
-        write(*,*) " -------------------------------------------------------- "
-        write(*,*) "  CHARGE-TRANSFER ENERGY CONTRIBUTION (ORIGIN DEPENDENT)  "
-        write(*,*) " -------------------------------------------------------- "
-        write(*,*) " "
-        call MPRINT2(ect,nat,maxat)
-        xtot=ZERO
-        do i=1,nat
-          xtot=xtot+ect(i,i)
-        end do
-        write(*,'(2x,a27,x,f14.7)') "Total Charge-Transfer term:",xtot
-        write(*,*) " "
+        call enpart_atom_table('FIELD INTERACTION PER ATOM','Intrinsic'//
+     +    ' dipole term (origin independent) and charge-transfer',
+     +    'term (origin dependent) of each atom.',2,fdip,'Dipole',
+     +    'Charge tr.',' ',.true.)
+        if(idofr.eq.1) call group_by_frag_vec(2,
+     +    'FRAGMENT FIELD INTERACTION',fdip,'Dipole','Charge tr.')
       end if
 
-!! TOTAL ENERGY UP TO HERE !!
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
 
-!! DEALLOCATING !!
       DEALLOCATE(chp2,scr)
 
       end
 
 !! ***** !!
 
+!! ----------------------------------------------------------------------
+!! subroutine: enpart_matrix
+!! Prints one ENPART atom x atom matrix under its own title: optional
+!! caption lines, the matrix and its total (diagonal and one triangle).
+!! arguments:
+!!   title     (in)  section title
+!!   cap1,cap2 (in)  caption lines, ' ' for none
+!!   A         (in)  (maxat,maxat) matrix
+!!   label     (in)  label of the total line (the unit, au, is added)
+!!   xtot      (in)  the total
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine enpart_matrix(title,cap1,cap2,A,label,xtot)
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /printout/iaccur
+      character*(*) title,cap1,cap2,label
+      dimension A(maxat,maxat)
+
+      call print_box(title)
+      if(len_trim(cap1).gt.0) then
+        write(*,'(2x,a)') trim(cap1)
+        if(len_trim(cap2).gt.0) write(*,'(2x,a)') trim(cap2)
+        write(*,'(a)') ''
+      end if
+      call MPRINT2(A,nat,maxat)
+      ndec=7
+      if(iaccur.ne.0) ndec=13
+      call print_value(label,xtot,ndec,'au')
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: enpart_frag
+!! With DOFRAGS, prints the fragment matrix of an ENPART matrix, titled
+!! "FRAGMENT " + the title of the atom matrix.
+!! arguments:
+!!   title (in)  title of the atom matrix
+!!   A     (in)  (maxat,maxat) atom matrix
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine enpart_frag(title,A)
+      use input_options_mod, only: idofr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      character*(*) title
+      dimension A(maxat,maxat)
+
+      if(idofr.eq.1) call group_by_frag_mat(1,'FRAGMENT '//trim(title),A)
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: enpart_atom_table
+!! Prints a per-atom ENPART or POLAR table (one to three columns) under
+!! its own title, with optional caption lines and Total row.
+!! arguments:
+!!   title     (in)  section title
+!!   cap1,cap2 (in)  caption lines, ' ' for none
+!!   ncol      (in)  number of columns (1 to 3)
+!!   arr       (in)  (maxat,ncol) values
+!!   h1,h2,h3  (in)  column headings (those beyond ncol unused)
+!!   ltot      (in)  logical, print a Total row (column sums)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine enpart_atom_table(title,cap1,cap2,ncol,arr,h1,h2,h3,
+     +  ltot)
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /printout/iaccur
+      character*(*) title,cap1,cap2,h1,h2,h3
+      logical ltot
+      dimension arr(maxat,ncol),tot(3)
+      character*30 fmthdr,fmttot
+
+!! atom label 7 characters wide, as in vprint; value columns 12 wide    !!
+!! (6 decimals), 20 wide (13) with FULLPRECISION                        !!
+      if(iaccur.eq.0) then
+        iw=12
+        ndec=6
+      else
+        iw=20
+        ndec=13
+      end if
+      write(fmthdr,'(a,i0,a,i0,a)') '(2x,a,',ncol,'a',iw,')'
+      write(fmttot,'(a,i0,a,i0,a,i0,a)') '(2x,a,',ncol,'f',iw,'.',ndec,
+     +  ')'
+
+      call print_box(title)
+      if(len_trim(cap1).gt.0) then
+        write(*,'(2x,a)') trim(cap1)
+        if(len_trim(cap2).gt.0) write(*,'(2x,a)') trim(cap2)
+        write(*,'(a)') ''
+      end if
+      if(ncol.eq.3) then
+        write(*,fmthdr) 'Atom   ',trim(h1),trim(h2),trim(h3)
+      else if(ncol.eq.2) then
+        write(*,fmthdr) 'Atom   ',trim(h1),trim(h2)
+      else
+        write(*,fmthdr) 'Atom   ',trim(h1)
+      end if
+      write(*,'(2x,a)') repeat('-',7+iw*ncol)
+      call vprint(arr,nat,maxat,ncol)
+      write(*,'(2x,a)') repeat('-',7+iw*ncol)
+      if(ltot) then
+        do j=1,ncol
+          tot(j)=0.0d0
+          do i=1,nat
+            tot(j)=tot(j)+arr(i,j)
+          end do
+        end do
+        write(*,fmttot) 'Total  ',(tot(j),j=1,ncol)
+      end if
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: enpart_ee_head
+!! Opens the TWO-ELECTRON INTEGRATION ERROR section: the electron-electron
+!! energy on the first grid, its error against the reference energy of
+!! the .fchk and whether the zero-error correction follows, or a note
+!! when the .fchk has no reference energy.
+!! arguments:
+!!   evee     (in)  electron-electron energy (au)
+!!   twoelerr (in)  its integration error (kcal/mol)
+!!   iref     (in)  1 if the .fchk has the reference energy
+!!   tol      (in)  tolerance of the error (kcal/mol)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine enpart_ee_head(evee,twoelerr,iref,tol)
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      common /printout/iaccur
+
+      ndec=7
+      if(iaccur.ne.0) ndec=13
+      call print_box('TWO-ELECTRON INTEGRATION ERROR')
+      call print_value('Electron-electron energy',evee,ndec,'au')
+      if(iref.eq.1) then
+        call print_value('Integration error',twoelerr,2,'kcal/mol')
+        call print_value('Tolerance',tol,2,'kcal/mol')
+        if(abs(twoelerr).gt.tol) then
+          call print_value('Zero-error correction',
+     +      'applied to the one-center terms')
+        else
+          call print_value('Zero-error correction',
+     +      'not needed (error within the tolerance)')
+        end if
+      else
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'No reference electron-electron energy in the'//
+     +    ' .fchk file: the error'
+        write(*,'(2x,a)') 'is neither estimated nor corrected. To enable'//
+     +    ' it, append the'
+        write(*,'(2x,a)') 'reference energies to the .fchk'//
+     +    ' (utils/get_energy_g16 for Gaussian 16;'
+        write(*,'(2x,a)') 'utils/apost3d.py writes them for pySCF).'
+      end if
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: enpart_ee_tail
+!! Closes the TWO-ELECTRON INTEGRATION ERROR section after the zero-error
+!! correction: error on the rotated grid, damping parameter, corrected
+!! electron-electron energy and its error.
+!! arguments:
+!!   err1    (in)  error on the first grid (kcal/mol)
+!!   err2    (in)  error on the rotated grid (kcal/mol)
+!!   damp    (in)  damping parameter of the interpolation
+!!   evee    (in)  corrected electron-electron energy (au)
+!!   errc    (in)  its error (kcal/mol)
+!!   lphf    (in)  logical, correlated wavefunction (the corrected terms
+!!                 are its exchange-correlation, not an exchange)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine enpart_ee_tail(err1,err2,damp,evee,errc,lphf)
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      common /printout/iaccur
+      logical lphf
+
+      ndec=7
+      if(iaccur.ne.0) ndec=13
+      call print_value('Error on the rotated grid',err2,2,'kcal/mol')
+      if(err1*err2.gt.0.0d0) write(*,'(2x,a)')
+     +  'Same-sign error on both grids: extrapolating, not interpolating'
+!! 7 decimals also with FULLPRECISION: a ratio of small differences, !!
+!! its further digits depend on the summation order                  !!
+      call print_value('Damping parameter',damp,7)
+      call print_value('Corrected electron-electron energy',evee,ndec,
+     +  'au')
+      call print_value('Corrected integration error',errc,2,'kcal/mol')
+      write(*,'(a)') ''
+      if(lphf) then
+        write(*,'(2x,a)') 'The one-center Coulomb and exchange-correlation'//
+     +    ' terms of the matrices'
+        write(*,'(2x,a)') 'below are the corrected ones; the pair terms'//
+     +    ' do not change.'
+      else
+        write(*,'(2x,a)') 'The one-center Coulomb and exchange terms of the'//
+     +    ' matrices below'
+        write(*,'(2x,a)') 'are the corrected ones; the pair terms do not'//
+     +    ' change.'
+      end if
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: enpart_two_mats
+!! Prints the two-electron matrices of HF and KS-DFT: Coulomb, and the
+!! exchange (HF) or, for a hybrid functional, the exact-exchange share
+!! (scaled by the exact-exchange fraction, as it enters the energy) and
+!! the complete exchange-correlation; with VERBOSE 1 also the unscaled
+!! HF-type exchange. A pure functional has only the Coulomb matrix here
+!! (its exchange-correlation is the DFT part, printed before).
+!! arguments:
+!!   ihf         (in)  1 for Hartree-Fock
+!!   xmix        (in)  exact-exchange fraction (0 for a pure functional)
+!!   coul,xcoul  (in)  Coulomb matrix and total
+!!   exhf,xexhf  (in)  unscaled HF-type exchange matrix and total
+!!   exc,xexc    (in)  complete exchange-correlation matrix and total
+!!                     (hybrid functionals)
+!!   cstage      (in)  appended to the titles (' ' for the final values)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine enpart_two_mats(ihf,xmix,coul,xcoul,exhf,xexhf,exc,
+     +  xexc,cstage)
+      use input_options_mod, only: iverbose
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      dimension coul(maxat,maxat),exhf(maxat,maxat),exc(maxat,maxat)
+      allocatable :: sc(:,:)
+      character*(*) cstage
+      character*80 c1,c2,ct
+      logical lfin
+
+!! the results file gets the final matrices only !!
+      lfin=len_trim(cstage).eq.0
+
+      ct='COULOMB ENERGY'//cstage
+      call enpart_matrix(ct,' ',' ',coul,'Coulomb energy',xcoul)
+      call enpart_frag(ct,coul)
+      if(lfin) call json_enpart_term('coulomb','Coulomb energy',coul,
+     +  xcoul,.false.,0.0d0)
+
+      if(ihf.eq.1) then
+        ct='EXCHANGE ENERGY (HARTREE-FOCK)'//cstage
+        call enpart_matrix(ct,' ',' ',exhf,'Exchange energy',xexhf)
+        call enpart_frag(ct,exhf)
+        if(lfin) call json_enpart_term('xc','Exchange energy (HF)',exhf,
+     +    xexhf,.false.,0.0d0)
+      else if(xmix.gt.0.0d0) then
+        if(iverbose.eq.1) then
+          ct='HF-TYPE EXCHANGE, UNSCALED'//cstage
+          write(c1,'(a,f5.3,a)') 'The full HF-type exchange: only ',xmix,
+     +      ' x this matrix enters'
+          c2='the energy (see EXACT-EXCHANGE SHARE).'
+          call enpart_matrix(ct,c1,c2,exhf,'HF-type exchange, unscaled',
+     +      xexhf)
+          call enpart_frag(ct,exhf)
+        end if
+        ALLOCATE(sc(maxat,maxat))
+        sc=0.0d0
+        xsc=0.0d0
+        do i=1,nat
+          do j=1,nat
+            sc(i,j)=xmix*exhf(i,j)
+          end do
+          do j=i,nat
+            xsc=xsc+sc(i,j)
+          end do
+        end do
+        ct='EXACT-EXCHANGE SHARE'//cstage
+        write(c1,'(f5.3,a)') xmix,' x the HF-type exchange: the exact-'//
+     +    'exchange part of the'
+        c2='functional, already scaled, as it enters the energy.'
+        call enpart_matrix(ct,c1,c2,sc,'Exact-exchange share',xsc)
+        call enpart_frag(ct,sc)
+        if(lfin) call json_enpart_term('exact_exchange_share',
+     +    'Exact-exchange share',sc,xsc,.false.,0.0d0)
+        DEALLOCATE(sc)
+        ct='EXCHANGE-CORRELATION ENERGY'//cstage
+        c1='DFT part (DFT EXCHANGE-CORRELATION ENERGY) + exact-exchange'//
+     +    ' share.'
+        call enpart_matrix(ct,c1,' ',exc,'Exchange-correlation energy',
+     +    xexc)
+        call enpart_frag(ct,exc)
+        if(lfin) call json_enpart_term('xc','Exchange-correlation '//
+     +    'energy',exc,xexc,.false.,0.0d0)
+      else
+!! pure functional: its exchange-correlation is the DFT part !!
+        if(lfin) call json_enpart_term('xc','Exchange-correlation '//
+     +    'energy',exc,xexc,.false.,0.0d0)
+      end if
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_enpart_term
+!! Writes one ENPART term to the results file (inside the enpart block):
+!! an object with the atom matrix and, with DOFRAGS, the fragment matrix
+!! (self terms on the diagonal, whole pair terms off it, totals over the
+!! diagonal and one triangle), and the integration error of the term
+!! when the output prints one.
+!! arguments:
+!!   key   (in)  key of the term ('total' and 'classical_interaction'
+!!               get their own nouns for the diagonal and off-diagonal)
+!!   title (in)  title of the term for the index
+!!   A     (in)  (maxat,maxat) atom matrix
+!!   xtot  (in)  its total
+!!   lerr  (in)  logical, write errk
+!!   errk  (in)  integration error of the term (kcal/mol)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_enpart_term(key,title,A,xtot,lerr,errk)
+      use input_options_mod, only: idofr
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /printout/iaccur
+      character*(*) key,title
+      dimension A(maxat,maxat)
+      logical lerr
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      character*30 cdiag,coff
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+!! nouns for legends: the IQA matrix has self-energies and interaction !!
+!! energies; the classical interactions have no self terms              !!
+      cdiag='self term'
+      coff='pair term'
+      if(key.eq.'total') then
+        cdiag='self-energy'
+        coff='interaction energy'
+      else if(key.eq.'classical_interaction') then
+        cdiag='none'
+        coff='classical interaction energy'
+      end if
+      call json_begin_object(key)
+      call json_atom_matrix('atoms',A,.true.,trim(cdiag),trim(coff),1,
+     +  xtot)
+      call json_index('atoms','atom_matrix',trim(title)//' ('//
+     +  trim(cshort)//')','au',ndec,' ',.true.,' ')
+      if(idofr.eq.1) then
+        call json_frag_matrix('fragments',1,A,.true.,trim(cdiag),
+     +    trim(coff))
+        call json_index('fragments','fragment_matrix','Fragment '//
+     +    trim(title)//' ('//trim(cshort)//')','au',ndec,' ',.true.,' ')
+      end if
+      if(lerr) then
+        call json_value('integration_error_kcal',errk)
+        call json_index('integration_error_kcal','scalar',trim(title)//
+     +    ', integration error','kcal/mol',2,' ',.true.,' ')
+      end if
+      call json_end()
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_enpart_ee
+!! Writes the two_electron_integration object of the enpart block: the
+!! electron-electron energy on the first grid, its error, the tolerance,
+!! whether the zero-error correction was applied and its results.
+!! arguments:
+!!   evee1 (in)  electron-electron energy, first grid (au)
+!!   err1  (in)  its integration error (kcal/mol)
+!!   iref  (in)  1 if the .fchk has the reference energy
+!!   tol   (in)  tolerance (kcal/mol)
+!!   izerr (in)  1 if the zero-error correction was applied
+!!   err2  (in)  error on the rotated grid (kcal/mol), izerr=1
+!!   damp  (in)  damping parameter, izerr=1
+!!   evee  (in)  corrected electron-electron energy (au), izerr=1
+!!   errc  (in)  its error (kcal/mol), izerr=1
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_enpart_ee(evee1,err1,iref,tol,izerr,err2,damp,
+     +  evee,errc)
+      use json_mod
+      implicit real*8(a-h,o-z)
+      common /printout/iaccur
+
+      ndec=7
+      if(iaccur.ne.0) ndec=13
+      call json_begin_object('two_electron_integration')
+      call json_value('energy',evee1)
+      call json_index('energy','scalar','Electron-electron energy, '//
+     +  'first grid','au',ndec,' ',.false.,' ')
+      if(iref.eq.1) then
+        call json_value('error_kcal',err1)
+        call json_value('tolerance_kcal',tol)
+        if(izerr.eq.1) then
+          call json_value('zero_error_correction','applied')
+        else
+          call json_value('zero_error_correction','not needed')
+        end if
+      else
+        call json_null('error_kcal')
+        call json_null('tolerance_kcal')
+        call json_value('zero_error_correction','no reference energy')
+      end if
+      call json_index('error_kcal','scalar','Two-electron integration '//
+     +  'error, first grid','kcal/mol',2,' ',.true.,' ')
+      if(izerr.eq.1) then
+        call json_value('rotated_grid_error_kcal',err2)
+        call json_value('damping',damp)
+        call json_value('corrected_energy',evee)
+        call json_value('corrected_error_kcal',errc)
+        call json_index('corrected_error_kcal','scalar','Two-electron '//
+     +    'integration error, corrected','kcal/mol',2,' ',.true.,' ')
+      else
+        call json_null('rotated_grid_error_kcal')
+        call json_null('damping')
+        call json_null('corrected_energy')
+        call json_null('corrected_error_kcal')
+      end if
+      call json_end()
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_enpart_pairs
+!! Writes the atom-pair threshold of the enpart block and the atom pairs
+!! below it, whose exchange(-correlation) term comes from the multipolar
+!! expansion.
+!! arguments: none (THREBOD from input_options_mod, bond orders /ovpop/)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_enpart_pairs()
+      use input_options_mod, only: ithrebod
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      dimension ipair(2)
+
+      if(ithrebod.lt.1) then
+        threbod=0.0d0
+      else
+        threbod=real(ithrebod)/10000.0d0
+      end if
+      call json_value('pair_threshold',threbod)
+      call json_begin_array('multipolar_pairs')
+      do i=1,nat
+        do j=i+1,nat
+          if(bo(i,j).lt.threbod) then
+            ipair(1)=i
+            ipair(2)=j
+            call json_vector(' ',ipair,2)
+          end if
+        end do
+      end do
+      call json_end()
+      end
+
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! subroutine: enpart_iqa
+!! Prints the final IQA matrix (self-energies on the diagonal, interaction
+!! energies off it), its total against the energy of the .fchk, and the
+!! summary built from the final matrices: additive atomic energies and
+!! classical interaction energies.
+!! arguments:
+!!   eto    (in)  (maxat,maxat) final IQA matrix
+!!   etot   (in)  its total
+!!   escf   (in)  energy of the .fchk
+!!   ifield (in)  1 with an external field
+!!   edip   (in)  field interaction energy (ifield=1)
+!!   xcfin  (in)  (maxat,maxat) final exchange-correlation matrix
+!!   ljson  (in)  logical, write the results-file entries (the caller has
+!!                the enpart block open)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine enpart_iqa(eto,etot,escf,ifield,edip,xcfin,ljson)
+      use output_mod, only: print_value
+      use input_options_mod, only: idofr
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,
+     +  jfrlist(maxat)
+      common /printout/iaccur
+      dimension eto(maxat,maxat),xcfin(maxat,maxat)
+      dimension arr(maxat,2)
+      allocatable :: vcl(:,:),bm(:,:)
+      dimension bf(maxat,2),bv(maxat,1),x(2),xs(1),fself(maxat)
+      logical ljson
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      character*80 ct
+
+      ndec=7
+      if(iaccur.ne.0) ndec=13
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ct='IQA ENERGY TERMS ('//trim(cshort)//')'
+      call enpart_matrix(ct,'Self-energies on the diagonal, interaction'//
+     +  ' energies off it.',' ',eto,'Total energy',etot)
+      call print_value('Energy in the .fchk file',escf,ndec,'au')
+      if(ifield.eq.1) then
+        call print_value('Field interaction energy',edip,ndec,'au')
+        err=etot-escf+edip
+      else
+        err=etot-escf
+      end if
+      call print_value('Integration error',err,ndec,'au')
+      call print_value('Integration error',err*tokcal,2,'kcal/mol')
+      call enpart_frag(ct,eto)
+      if(ljson) then
+        call json_enpart_term('total','IQA energy terms',eto,etot,
+     +    .false.,0.0d0)
+        call json_value('total_energy',etot)
+        call json_index('total_energy','scalar','Total energy (IQA)',
+     +    'au',ndec,' ',.true.,' ')
+        call json_value('reference_energy',escf)
+!! a field run: integration_error = total + field_energy - reference !!
+        if(ifield.eq.1) then
+          call json_value('field_energy',edip)
+        else
+          call json_null('field_energy')
+        end if
+        call json_value('integration_error',err)
+        call json_index('integration_error','scalar','Integration '//
+     +    'error of the total energy','au',ndec,' ',.true.,' ')
+        call json_value('integration_error_kcal',err*tokcal)
+      end if
+
+!! additive atomic energies: self-energy + half of each interaction !!
+      do i=1,nat
+        arr(i,1)=eto(i,i)
+        xx=0.0d0
+        do j=1,nat
+          if(j.ne.i) xx=xx+eto(i,j)
+        end do
+        arr(i,2)=eto(i,i)+xx/2.0d0
+      end do
+      call enpart_atom_table('ATOMIC ENERGIES','Additive energy = self-'//
+     +  'energy + half of each interaction energy of the atom;',
+     +  'the additive energies add up to the total energy.',2,arr,
+     +  'Self-energy','Additive',' ',.true.)
+      if(ifield.eq.1) write(*,'(2x,a)')
+     +  'The field interaction energy is not included.'
+      ndv=6
+      if(iaccur.ne.0) ndv=13
+      if(ljson) then
+        call json_begin_object('atomic_energies')
+        call json_begin_object('atoms')
+        call json_vector('self_energy',arr(1:nat,1),nat)
+        call json_index('self_energy','atom_vector','Atomic self-'//
+     +    'energies','au',ndv,' ',.true.,' ')
+        call json_vector('additive_energy',arr(1:nat,2),nat)
+        call json_index('additive_energy','atom_vector','Additive '//
+     +    'atomic energies','au',ndv,' ',.true.,' ')
+        call json_end()
+      end if
+      if(idofr.eq.1) then
+        ALLOCATE(bm(maxat,maxat))
+        call frag_sum_mat(1,eto,bm,xx)
+        call frag_sum_vec(1,arr(1,2),bv,xs)
+        x(1)=0.0d0
+        x(2)=0.0d0
+        do k=1,icufr
+          bf(k,1)=bm(k,k)
+          bf(k,2)=bv(k,1)
+          x(1)=x(1)+bf(k,1)
+          x(2)=x(2)+bf(k,2)
+        end do
+        call print_frag_table(2,'FRAGMENT ATOMIC ENERGIES',bf,x,
+     +    'Self-energy','Additive')
+        do k=1,icufr
+          fself(k)=bf(k,1)
+        end do
+        if(ljson) then
+          call json_begin_object('fragments')
+          call json_vector('self_energy',fself,icufr)
+          call json_index('self_energy','fragment_vector','Fragment '//
+     +      'self-energies','au',ndv,' ',.true.,' ')
+          call json_frag_vector('additive_energy',arr(1,2))
+          call json_index('additive_energy','fragment_vector','Additive'//
+     +      ' fragment energies','au',ndv,' ',.true.,' ')
+          call json_end()
+        end if
+        DEALLOCATE(bm)
+      end if
+
+!! classical interaction energies: interaction minus its xc part !!
+      ALLOCATE(vcl(maxat,maxat))
+      vcl=0.0d0
+      xx=0.0d0
+      do i=1,nat
+        vcl(i,i)=0.0d0
+        do j=1,nat
+          if(j.ne.i) vcl(i,j)=eto(i,j)-xcfin(i,j)
+          if(j.gt.i) xx=xx+vcl(i,j)
+        end do
+      end do
+      ct='CLASSICAL INTERACTION ENERGIES'
+      call enpart_matrix(ct,'Electron-nuclear + nuclear-nuclear +'//
+     +  ' Coulomb part of each interaction;','the rest of it is the'//
+     +  ' exchange-correlation part. No self terms.',vcl,
+     +  'Classical interaction energy',xx)
+      if(ljson) call json_end()
+      call enpart_frag(ct,vcl)
+      if(ljson) call json_enpart_term('classical_interaction',
+     +  'Classical interaction energies',vcl,xx,.false.,0.0d0)
+      DEALLOCATE(vcl)
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: numint_two                                                  !!
+!! purpose: two-electron IQA/ENPART energy partition, RHF/RKS -- Coulomb   !!
+!!   (via calc_coul) and, if requested, HF-type exchange (same-center      !!
+!!   and atom-pair kernels, skipping pairs below the THREBOD bond-order    !!
+!!   threshold via a multipolar approximation instead), each decomposed    !!
+!!   into atomic/diatomic contributions. A second pass on a phase-         !!
+!!   rotated grid estimates and corrects the numerical-integration error.  !!
+!!   (the "zero-error" interpolation) when it exceeds tolerance. See       !!
+!!   numint_two_uhf for open-shell.                                        !!
+!! arguments:                                                              !!
+!!   ndim   (in)  -- number of basis functions (leading dim of chp)        !!
+!!   itotps (in)  -- total number of grid points                           !!
+!!   wp     (in)  -- integration weight of each grid point                 !!
+!!   omp    (in)  -- becke/tfvc weight of each grid point for its own atom !!
+!!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                   every atom                                            !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   chp    (in)  -- basis-function values at each grid point              !!
+!!   rho    (in)  -- electron density at each grid point                   !!
+!!   eto    (inout) -- total energy matrix, accumulated on top of the      !!
+!!                   one-electron part already in it                       !!
+!! author: PSalse, MGimf; loop order for OpenMP: R. Oswald.               !!
+!! *********************************************************************** !!
       subroutine numint_two(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
       use ao_matrices
       use integration_grid
       use OMP_LIB
-      use IFPORT
+      use timing_mod
+      use output_mod, only: print_value
+      use input_options_mod, only: iverbose
 
       implicit real*8(a-h,o-z)
 
-      integer external OMP_GET_NUM_PROCS
 
       include 'parameter.h'
       parameter (maxpass=5)
@@ -330,47 +993,44 @@
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /frlist/ifrlist(maxat,maxfrag),nfrlist(maxfrag),icufr,jfrlist(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /actual/iact,jat,icenter
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /energ0/ekin0,eelnuc0,evee0,etot0
       common /exchg/exch(maxat,maxat),xmix
       common /twoel/twoeltoler
       common /efield/field(4),edipole
-!! FROM # GRID SECTION !!
+!! rotated-grid angles/thresholds, read from the # GRID input section. !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
 
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
       dimension eto(maxat,maxat),Excmp(maxat,maxat)
 
       dimension coul0(maxat,2*maxpass)
+      allocatable :: coulb(:,:),exhfb(:,:),exchb(:,:)
       dimension exch_hf(maxat,maxat)
       dimension coul(maxat,maxat)
       
-      character*80 line
       character*100 threadenv
 
-      allocatable :: chp2(:,:), fij(:,:),xocc(:,:)
+      allocatable :: chp2(:,:)
       allocatable :: chppha(:,:), wppha(:),pcoordpha(:,:),omppha(:)
       allocatable :: chp2pha(:,:),rhopha(:),omp2pha(:,:),ibaspointpha(:)
 
-!! FOR ENPART PARALLEL !!
-      allocatable :: chp2s(:,:),chp2phas(:,:) !! SWITCHED ORDER OF COLUMNS AND ROWS !!
-      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+!! parallelization-related arrays below. !!
+      allocatable :: chp2s(:,:),chp2phas(:,:) !! transposed layout (rows/columns swapped) !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! included atom pairs, thread-slicing bookkeeping !!
       allocatable :: exch_hfk(:,:)
       allocatable :: exch_hfij(:,:)
       allocatable :: f3k(:)
 
       ihf         = Iopt(18) 
-      idofr       = Iopt(40)
       ithrebod    = Iopt(44)
       ifield      = Iopt(47)
       ipolar      = Iopt(46)
       ianalytical = Iopt(91)
 
-      !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
       if(ithrebod.lt.1) then
         threbod=ZERO
       else
@@ -379,14 +1039,30 @@
       idoex=0
       if(xmix.gt.ZERO) idoex=1
       iatps=nang*nrad
+!! zero-error strategy only possible with a reference electron-electron !!
+!! energy in the .fchk (evee0, see mga_misc); twoelerr stays defined.    !!
+      iref=0
+      if(evee0.ne.ZERO) iref=1
+      twoelerr=ZERO
 
-!! DOING ENERGY PARTITION !!
-      npass=2     
-      write(*,*) " "
-      write(*,*) " --------------------------- "
-      write(*,*) "  GENERAL TWO-ELECTRON PART  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      npass=2
+!! HF: the atom pairs integrated and those from the multipolar expansion !!
+!! (for KS-DFT the DFT part has already printed them)                   !!
+      if(ihf.eq.1.and.ianalytical.eq.0) then
+        npairs=0
+        nskip=0
+        do i=1,nat
+          do j=i+1,nat
+            if(bo(i,j).ge.threbod) then
+              npairs=npairs+1
+            else
+              nskip=nskip+1
+            end if
+          end do
+        end do
+        call print_value('Pairs integrated (exact exchange)',npairs)
+        call print_value('Pairs from the multipolar expansion',nskip)
+      end if
       do i=1,nat
         do j=1,nat
           coul(i,j)=ZERO
@@ -398,304 +1074,247 @@
       end do
 
       ALLOCATE(chp2(itotps,nocc))
-      ALLOCATE(chp2s(nocc,itotps)) !! TODO: CHANGING THAT NEVER USE CHP2 !!
+      ALLOCATE(chp2s(nocc,itotps))
 
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nocc
-          xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chp(k,i) 
-          end do
-          chp2(k,j)=xx
-          chp2s(j,k)=xx
-        end do
-      end do
+      call ao_to_mo_grid_t(itotps,igr,nocc,c,chp,chp2,chp2s)
 
-      if(ianalytical.eq.0) then !MMO- skip if analytical
+      if(ianalytical.eq.0) then !! skip this whole rotated-grid pass for the analytical two-electron path !!
 
-!! ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
-      phb=phb12
-      pha=ZERO 
-      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
-      ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
-      ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
-      ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
-      ALLOCATE(chp2phas(nocc,itotps)) !!TODO
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+        phb=phb12
+        pha=ZERO
+        ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
+        ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
+        ALLOCATE(chp2pha(itotps,nocc),rhopha(itotps))
+        ALLOCATE(chp2phas(nocc,itotps))
 
-      call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
+        call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nocc
-          xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chppha(k,i) 
-          end do
-          chp2pha(k,j)=xx !! MG: TODO
-          chp2phas(j,k)=xx
-        end do
-      end do
-      end if !MMO- non-analytical skip ends here
+        call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
+      end if !! non-analytical skip ends here !!
 
-!! COULOMB PART !!
+!! Coulomb energy term. !!
       call cpu_time(xtime)
+      call get_wall_time(wxtime)
       if(ianalytical.eq.0) then
         call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       else
+!! chp2b is not declared here: under implicit typing it is a scalar, not !!
+!! the rank-2 array calc_twoel_analytical expects (gfortran warns of the  !!
+!! rank mismatch). Only reached with ANALYTIC, which no test covers.      !!
         call calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
       call cpu_time(xtime2)
-      write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)' 
-      write(*,*) " "
+      call get_wall_time(wxtime2)
+      write(*,'(a)') ''
+      call print_timer('ENPART Coulomb',xtime2-xtime,wxtime2-wxtime)
       xtime=xtime2
+      wxtime=wxtime2
 
-!! IN CASE OF HAVING HF-TYPE EXCHANGE !!
-      if(ianalytical.eq.0) then !MMO- skip if analytical
-      if(idoex.eq.1) then
+      if(ianalytical.eq.0) then !! skip HF-type exchange for the analytical path !!
+        if(idoex.eq.1) then
 
-!! COMPUTING MULTIPOLAR APPROACH HERE !!
-        norb2=nocc*(nocc+1)/2
-        ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
-        do ii=1,itotps
-          irun=0
-          do jj=1,nocc
-            do kk=jj,nocc
-              irun=irun+1
-              fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
-              if(ii.eq.1) then
-                xocc(irun,irun)=-TWO
-                if(jj.ne.kk) xocc(irun,irun)=-FOUR
+!! multipolar approximation, used below for atom pairs skipped by THREBOD !!
+!! (closed shell: weight -2 for phi_i^2, -4 for phi_i*phi_j, i<j)        !!
+          call multipolar_mo(nocc,itotps,wp,omp2,pcoord,chp2,-TWO,-FOUR,Excmp)
+
+!! loops ordered for the thread splitting below (R. Oswald) !!
+
+!! same-center terms first; determine the core count for thread splitting. !!
+          call getenv('OMP_NUM_THREADS',threadenv)
+          if(trim(threadenv)=='') then
+            ithreadenv=ZERO
+          else
+            read(unit=threadenv,FMT='(I4)') ithreadenv
+          end if
+!! a parallel region only to query the thread and processor counts;  !!
+!! every thread writes the same values to iprocs/ithreads            !!
+        !$OMP PARALLEL
+          iprocs=OMP_GET_MAX_THREADS()
+          ithreads=INT(OMP_GET_NUM_PROCS())
+        !$OMP END PARALLEL
+          if(ithreadenv.ne.ZERO) ithreads=ithreadenv
+
+!! per-thread grid-point slicing bookkeeping. !!
+          ALLOCATE(f3k(ithreads))
+          ALLOCATE(exch_hfk(nat,ithreads))
+          ALLOCATE(istart(ithreads),iend(ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
+
+!! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
+!! avoids an old cap that limited parallelization to 8 cores.               !!
+          exch_hfk=ZERO
+          do icenter=1,nat
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
+
+!! both calls below are required for the thread count to actually take effect. !!
+            call omp_set_dynamic(.false.)
+            call omp_set_num_threads(ithreads)
+!! parallel over the thread slices ik: f3loc is a PRIVATE scalar that     !!
+!! absorbs the i/j accumulation; exch_hfk(icenter,ik) is SHARED but        !!
+!! index-partitioned by ik and written once per ifut, which avoids the     !!
+!! false sharing of writing adjacent ik slots in every inner iteration.    !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(icenter-1)+1,iatps*icenter
+                  x1=wppha(jfut)*omp2pha(jfut,icenter)
+                  dx1=pcoordpha(jfut,1)
+                  dy1=pcoordpha(jfut,2)
+                  dz1=pcoordpha(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then
+                    do i=1,nocc-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      do j=i+1,nocc
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
+                      end do
+                    end do
+                    f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
+                    f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
+                  end if
+                end do
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
+              end do
+            end do
+!$OMP END PARALLEL DO
+          end do
+
+!! reduce the per-thread accumulator into the same-center exch_hf term. !!
+          do icenter=1,nat
+            do isum=1,ithreads
+              exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+            end do
+          end do
+
+!! atom-pair terms, skipping pairs below the THREBOD bond-order threshold. !!
+          iterms=0
+          ipaircounter=0
+          ALLOCATE(ijpaircount(nat*nat,2))
+          do icenter=1,nat
+            do jcenter=icenter+1,nat
+              bx0=bo(icenter,jcenter)
+              if(bx0.ge.threbod) then
+                ipaircounter=ipaircounter+1
+                ijpaircount(ipaircounter,1)=icenter
+                ijpaircount(ipaircounter,2)=jcenter
+              else
+                iterms=iterms+1
               end if
             end do
           end do
-        end do
-        call multipolar(nocc,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
-        DEALLOCATE(fij,xocc)
 
-!! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
-!! IMPLEMENTATION PERFORMED THANKS TO Dr. R. OSWALD !!
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) "  EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  "
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) " "
-        write(*,'(2x,a23,x,i6,x,a8)') "Two-el integrations for",nocc*(nocc+1),"MO pairs"
-        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
-
-!! FIRST ONLY SAME CENTER TERMS !!
-!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
-        call getenv('OMP_NUM_THREADS',threadenv)
-        if(trim(threadenv)=='') then
-          write(*,*) " OMP_NUM_THREADS not set"
-          ithreadenv=ZERO
-        else
-          read(unit=threadenv,FMT='(I4)') ithreadenv
-        end if
-        !$OMP PARALLEL
-        iprocs=OMP_GET_MAX_THREADS()
-        ithreads=INT(OMP_GET_NUM_PROCS())
-        !$OMP END PARALLEL
-        if(ithreadenv.ne.ZERO) then
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
-     &    ithreads,"available hardware cores"
-          ithreads=ithreadenv
-        else
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
-     &    ithreads,"available hardware cores"
-        end if
-
-!! TO ENSURE PROPER SLICING BY THREADS !!
-        ALLOCATE(f3k(ithreads))
-        ALLOCATE(exch_hfk(nat,ithreads))
-        ALLOCATE(istart(ithreads),iend(ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
-
-!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
-        exch_hfk=ZERO
-        !DIR$ NOPARALLEL
-        do icenter=1,nat
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
-          !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=iend(ithreads-1)+1
-          iend(ithreads)=icenter*iatps
-
-!! THIS TWO CALLS ARE CRUCIAL !!
-          call omp_set_dynamic(.false.)
-          call omp_set_num_threads(ithreads)
-          !DIR$ PARALLEL
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
-                x1=wppha(jfut)*omp2pha(jfut,icenter)
-                dx1=pcoordpha(jfut,1)
-                dy1=pcoordpha(jfut,2)
-                dz1=pcoordpha(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                  do i=1,nocc-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
-                    do j=i+1,nocc
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+!! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
+          ALLOCATE(exch_hfij(ipaircounter,ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
+          exch_hfij=ZERO
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
+!! parallel over the thread slices ik, as the same-center block above: !!
+!! f3loc is PRIVATE, exch_hfij(numpairnat,ik) written once per ifut.     !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  chp2snifut,chp2snjfut,chp2sijfut,chp2siifut,i,j,f2,f3loc)
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                chp2snifut=chp2s(nocc,ifut)
+                f3loc=ZERO
+                do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+                  x1=wp(jfut)*omp2(jfut,jcenter)
+                  dx1=pcoord(jfut,1)
+                  dy1=pcoord(jfut,2)
+                  dz1=pcoord(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then
+                    chp2snjfut=chp2s(nocc,jfut)
+                    do i=1,nocc-1
+                      chp2sijfut=chp2s(i,jfut)
+                      chp2siifut=chp2s(i,ifut)
+                      do j=i+1,nocc
+                        f2=TWO*x0*chp2siifut*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2sijfut*chp2s(j,jfut)/dist
+                      end do
+                      f2=x0*chp2siifut*chp2siifut
+                      f3loc=f3loc+f2*x1*chp2sijfut*chp2sijfut/dist
                     end do
-                  end do
-                  f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
-                end if
+                    f2=x0*chp2snifut*chp2snifut
+                    f3loc=f3loc+f2*x1*chp2snjfut*chp2snjfut/dist
+                  end if
+                end do
+                exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
+            end do
+!$OMP END PARALLEL DO
+          end do
+
+!! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            do isum=1,ithreads
+              exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
             end do
           end do
-        end do
 
-!! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
-        do icenter=1,nat
-          do isum=1,ithreads
-            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
-          end do
-        end do
-
-!! NOW PAIRS OF CENTERS !!
-        iterms=0
-        ipaircounter=0
-        ALLOCATE(ijpaircount(nat*nat,2))
-        do icenter=1,nat
-          do jcenter=icenter+1,nat
-            bx0=bo(icenter,jcenter)
-            if(bx0.ge.threbod) then
-              ipaircounter=ipaircounter+1
-              ijpaircount(ipaircounter,1)=icenter
-              ijpaircount(ipaircounter,2)=jcenter
-            else
-              iterms=iterms+1
-            end if
-          end do
-        end do
-        write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
-        write(*,*) " "
-
-!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
-        ALLOCATE(exch_hfij(ipaircounter,ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
-        exch_hfij=ZERO
-        !DIR$ NOPARALLEL
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
-          !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=iend(ithreads-1)+1
-          iend(ithreads)=icenter*iatps
-          !DIR$ PARALLEL
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              chp2snifut=chp2s(nocc,ifut)
-              f3k(ik)=ZERO
-              do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-                x1=wp(jfut)*omp2(jfut,jcenter)
-                dx1=pcoord(jfut,1)
-                dy1=pcoord(jfut,2)
-                dz1=pcoord(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
-                  chp2snjfut=chp2s(nocc,jfut)
-                  do i=1,nocc-1
-                    chp2sijfut=chp2s(i,jfut)
-                    chp2siifut=chp2s(i,ifut)
-                    do j=i+1,nocc
-                      f2=TWO*x0*chp2siifut*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2sijfut*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
-                    end do
-                    f2=x0*chp2siifut*chp2siifut
-                    f3k(ik)=f3k(ik)+f2*x1*chp2sijfut*chp2sijfut/dist
-                  end do
-                  f2=x0*chp2snifut*chp2snifut
-                  f3k(ik)=f3k(ik)+f2*x1*chp2snjfut*chp2snjfut/dist
-                end if
-              end do
-              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3k(ik)
+!! account for A-B/B-A symmetry (factor of 2) and for atom pairs whose !!
+!! term came from the multipolar approximation instead of integration. !!
+          exchen_hf=ZERO
+          do i=1,nat
+            exchen_hf=exchen_hf+exch_hf(i,i)
+            do j=i+1,nat
+              if(bo(i,j).lt.threbod) then 
+                exch_hf(i,j)=Excmp(i,j)
+              else 
+                exch_hf(i,j)=TWO*(exch_hf(i,j))
+              end if 
+              exch_hf(j,i)=exch_hf(i,j)
+              exchen_hf=exchen_hf+exch_hf(i,j)
             end do
           end do
-        end do
 
-!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          do isum=1,ithreads
-            exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
-          end do
-        end do
+          call cpu_time(xtime2)
+          call get_wall_time(wxtime2)
+          call print_timer('ENPART exact exchange',xtime2-xtime,
+     +      wxtime2-wxtime)
+          xtime=xtime2
+          wxtime=wxtime2
+        end if
+      end if !! non-analytical skip ends here !!
 
-!! ACCOUNTING THAT AB = BA (FACTOR OF 2), AND IF SOME TERMS COME FROM MULTIPOLAR APPROACH !!
-        exchen_hf=ZERO
-        do i=1,nat
-          exchen_hf=exchen_hf+exch_hf(i,i)
-          do j=i+1,nat
-            if(bo(i,j).lt.threbod) then 
-              exch_hf(i,j)=Excmp(i,j)
-            else 
-              exch_hf(i,j)=TWO*(exch_hf(i,j))
-            end if 
-            exch_hf(j,i)=exch_hf(i,j)
-            exchen_hf=exchen_hf+exch_hf(i,j)
-          end do
-        end do
-
-!! PRINTING !!
-        write(*,*) " ----------------------------------------- "
-        write(*,*) "  HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-        write(*,*) " ----------------------------------------- "
-        write(*,*) " "
-        CALL MPRINT2(exch_hf,nat,maxat)
-        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-        write(*,*) " "
-        call cpu_time(xtime2)
-        write(*,'(a39,f10.1,a2)')'(Elapsed time :: Exact-exchange energy ',xtime2-xtime,'s)' 
-        write(*,*) " "
-        xtime=xtime2
-      end if
-      end if !MMO- non-analytical skip ends here
-
-!! CHECKING ACCURACY OF THE TWO-ELECTRON PART !!
-!! HF ONLY !!
+!! electron-electron energy on the first grid and its integration error; !!
+!! for a hybrid functional the exact-exchange share joins the DFT part   !!
       if(ihf.eq.1) then
         evee=coulen+exchen_hf
-        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
-        if(evee0.ne.ZERO) then
-          twoelerr=(evee-evee0)*tokcal
-          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-          write(*,*) " "
-        else
-          evee0=evee    
-        end if
-
-!! DFT CASE !!
       else
         exchen=ZERO
         do i=1,nat
@@ -707,248 +1326,221 @@
             exchen=exchen+exch(i,j)
           end do
         end do
-        if(idoex.eq.1) then
-          write(*,*) " ------------------------ "
-          write(*,*) "  HYBRID KS-DFT XC TERMS  "
-          write(*,*) " ------------------------ "
-          write(*,*) " "
-          call MPRINT2(exch,nat,maxat)
-          write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-          write(*,*) " "
-        end if
         evee=coulen+exchen
-        write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee            
-        if(evee0.ne.ZERO) then
-          twoelerr=(evee-evee0)*tokcal
-          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-        else
-          evee0=evee
-        end if
-        write(*,*) " "
+      end if
+      if(evee0.ne.ZERO) then
+        twoelerr=(evee-evee0)*tokcal
+      else
+        evee0=evee
       end if
 
-!! ZERO ERROR STRATEGY FOR VEE PART !!
       if(ianalytical.eq.1) twoeltoler=232000
-      write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
-      write(*,*) " "
+      call enpart_ee_head(evee,twoelerr,iref,twoeltoler)
+!! first-grid values, kept for the results file !!
+      eveefg=evee
+      errfg=twoelerr
+      err2=ZERO
+      phabest=ZERO
 
-      if(abs(twoelerr).gt.twoeltoler) then
-
-!! NOW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
-      phb=phb22
-      pha=ZERO 
-      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
-      nat0=nat
-      call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
-
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nocc
-          xx=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chppha(k,i) 
+!! the zero-error correction changes only the one-center terms; the      !!
+!! first-grid matrices are kept for VERBOSE 1                            !!
+      izerr=0
+      if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) izerr=1
+      if(izerr.eq.1.and.iverbose.eq.1) then
+        ALLOCATE(coulb(maxat,maxat),exhfb(maxat,maxat))
+        ALLOCATE(exchb(maxat,maxat))
+        do i=1,nat
+          do j=1,nat
+            coulb(i,j)=coul(i,j)
+            exhfb(i,j)=exch_hf(i,j)
+            exchb(i,j)=exch(i,j)
           end do
-          chp2phas(j,k)=xx
         end do
-      end do
+        xcoulb=coulen
+        xexhfb=exchen_hf
+        xexchb=exchen
+      end if
 
-!! DOING INTEGRATIONS FOR ONLY THE ATOMIC TERMS !!
-!! MG: CAN ALSO BEEN DONE WITH BETTER SCALING... IF NECESSARY !!
-      do icenter=1,nat
-        do ifut=iatps*(icenter-1)+1,iatps*icenter
-          x0=wp(ifut)*omp2(ifut,icenter)
-          dx0=pcoord(ifut,1)
-          dy0=pcoord(ifut,2)
-          dz0=pcoord(ifut,3)
+      if(izerr.eq.1) then
 
-!! COULOMB PART !!
-          f3=ZERO
-          do jfut=iatps*(icenter-1)+1,iatps*icenter
-            x1=wppha(jfut)*omp2pha(jfut,icenter)
-            dx1=pcoordpha(jfut,1)
-            dy1=pcoordpha(jfut,2)
-            dz1=pcoordpha(jfut,3)
-            dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-            if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist !! MG: Could be controlled using the thr2 variable !!
-          end do
-          coul0(icenter,3)=coul0(icenter,3)+f3/TWO
-        end do
-      end do
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
+        phb=phb22
+        pha=ZERO
+        nat0=nat
+        call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! HF-TYPE EXCHANGE !!
-      if(idoex.eq.1) then
+        call ao_to_mo_grid_t(itotps,igr,nocc,c,chppha,chp2pha,chp2phas)
 
-!! AS BEFORE, MORE CONVOLUTED LOOP STRUCTURE !!
-        exch_hfk=ZERO
-        !DIR$ NOPARALLEL
+!! same-center-only recompute of the Coulomb part on the rotated grid, !!
+!! for the zero-error interpolation below. parallel over icenter: each !!
+!! iteration accumulates into its own coul0(icenter,3), independent of !!
+!! every other icenter.                                                !!
+!$OMP PARALLEL DO PRIVATE(icenter,ifut,x0,dx0,dy0,dz0,f3,jfut,x1,dx1,dy1,dz1,dist)
         do icenter=1,nat
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
-          !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=iend(ithreads-1)+1
-          iend(ithreads)=icenter*iatps
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            x0=wp(ifut)*omp2(ifut,icenter)
+            dx0=pcoord(ifut,1)
+            dy0=pcoord(ifut,2)
+            dz0=pcoord(ifut,3)
 
-!! AGAIN THE TWO CALLS ARE CRUCIAL !!
-          call omp_set_dynamic(.false.)
-          call omp_set_num_threads(ithreads)
-          !DIR$ PARALLEL
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
-                x1=wppha(jfut)*omp2pha(jfut,icenter)
-                dx1=pcoordpha(jfut,1)
-                dy1=pcoordpha(jfut,2)
-                dz1=pcoordpha(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
-                  do i=1,nocc-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
-                    do j=i+1,nocc
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+            f3=ZERO
+            do jfut=iatps*(icenter-1)+1,iatps*icenter
+              x1=wppha(jfut)*omp2pha(jfut,icenter)
+              dx1=pcoordpha(jfut,1)
+              dy1=pcoordpha(jfut,2)
+              dz1=pcoordpha(jfut,3)
+              dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+              if(dist.gt.1.0d-12) f3=f3+rho(ifut)*rhopha(jfut)*x1*x0/dist
+            end do
+            coul0(icenter,3)=coul0(icenter,3)+f3/TWO
+          end do
+        end do
+!$OMP END PARALLEL DO
+
+        if(idoex.eq.1) then
+
+!! same-center recompute, same manual-chunking shape as above. !!
+          exch_hfk=ZERO
+          do icenter=1,nat
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
+
+!! both calls below are required for the thread count to actually take effect. !!
+            call omp_set_dynamic(.false.)
+            call omp_set_num_threads(ithreads)
+!! parallel over the thread slices ik, as the same-center block above: !!
+!! f3loc is PRIVATE, exch_hfk(icenter,ik) written once per ifut.         !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,i,j,f2,f3loc)
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(icenter-1)+1,iatps*icenter
+                  x1=wppha(jfut)*omp2pha(jfut,icenter)
+                  dx1=pcoordpha(jfut,1)
+                  dy1=pcoordpha(jfut,2)
+                  dz1=pcoordpha(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                if(dist.gt.1.0d-8) then !! 1e-8 here, 1e-12 in the other loops !!
+                    do i=1,nocc-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      do j=i+1,nocc
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
+                      end do
                     end do
-                  end do
-                  f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
-                end if
+                    f2=x0*chp2s(nocc,ifut)*chp2s(nocc,ifut)
+                    f3loc=f3loc+f2*x1*chp2phas(nocc,jfut)*chp2phas(nocc,jfut)/dist
+                  end if
+                end do
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
               end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
+            end do
+!$OMP END PARALLEL DO
+          end do
+
+!! reduce the per-thread accumulator into the same-center coul0 term. !!
+          do icenter=1,nat
+            do isum=1,ithreads
+              coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)
             end do
           end do
+        end if
+
+        do i=1,nat
+          coul0(i,1)=coul(i,i)
+          if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
+        end do
+        deltaee=ZERO
+        do i=1,nat
+          deltaee=deltaee+coul0(i,1)-coul0(i,3)
+          if(idoex.eq.1) deltaee=deltaee+xmix*(coul0(i,2)-coul0(i,4))
+        end do
+        deltaee=deltaee*tokcal
+        phabest=ONE-(twoelerr/deltaee)
+        err1=twoelerr
+        err2=twoelerr-deltaee
+
+!! interpolate energies, replacing the old Coulomb/exchange terms !!
+        do i=1,nat
+          coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
+          if(idoex.eq.1) exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
         end do
 
-!! ADDING THE TERMS INTO THE ORIGINAL coul0 MATRIX !!
-        do icenter=1,nat
-          do isum=1,ithreads
-            coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)
-          end do
-        end do
-      end if
-
-!! CHECKING NEW VALUES !!
-      do i=1,nat
-        coul0(i,1)=coul(i,i)
-        if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
-      end do
-      deltaee=ZERO
-      do i=1,nat
-        deltaee=deltaee+coul0(i,1)-coul0(i,3)
-        if(idoex.eq.1) deltaee=deltaee+xmix*(coul0(i,2)-coul0(i,4))
-      end do
-      deltaee=deltaee*tokcal
-      phabest=ONE-(twoelerr/deltaee)
-      write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-      if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
-      write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest !MMO- not dumping !! ...
-
-!! INTERPOLATING ENERGIES, REPLACING OLD COULOMB AND EXCHANGE TERMS !!
-      do i=1,nat
-        coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
-        if(idoex.eq.1) exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
-      end do
-      write(*,*) " "
-      call cpu_time(xtime2)
-      write(*,'(a41,f10.1,a2)')'(Elapsed time :: Interpolated zero-error ',xtime2-xtime,'s)' 
-      xtime=xtime2
-
-!! PRINTING !!
-      write(*,*) " "
-      write(*,*) " ------------------------------------------------------- "
-      write(*,*) "  INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
-      write(*,*) " ------------------------------------------------------- "
-      write(*,*) " "
-      call MPRINT2(coul,nat,maxat)
-      coulen=ZERO
-      do i=1,nat
-        do j=i,nat
-          coulen=coulen+coul(i,j)
-        end do
-      end do
-      write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-      write(*,*) " "
-      if(idofr.eq.1) then
-        line=' FRAGMENT ANALYSIS: Coulomb energy ' 
-        call group_by_frag_mat(1,line,coul)
-      end if
-
-      if(idoex.eq.1) then
-        write(*,*) " ------------------------------------------------------ "
-        write(*,*) "  INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-        write(*,*) " ------------------------------------------------------ "
-        write(*,*) " "
-        call MPRINT2(exch_hf,nat,maxat)
-        exchen_hf=ZERO
+        coulen=ZERO
         do i=1,nat
           do j=i,nat
-            exchen_hf=exchen_hf+exch_hf(i,j)
+            coulen=coulen+coul(i,j)
           end do
         end do
-        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-        write(*,*) " "
-
-        if(ihf.ne.1) then
+        if(idoex.eq.1) then
+          exchen_hf=ZERO
+          do i=1,nat
+            do j=i,nat
+              exchen_hf=exchen_hf+exch_hf(i,j)
+            end do
+          end do
+          if(ihf.ne.1) then
+            exchen=ZERO
+            do i=1,nat
+              exch(i,i)=exch(i,i)+xmix*(exch_hf(i,i)-coul0(i,2))
+              exchen=exchen+exch(i,i)
+              do j=i+1,nat
+                exchen=exchen+exch(i,j)
+              end do
+            end do
+          end if
+        else
           exchen=ZERO
           do i=1,nat
-            exch(i,i)=exch(i,i)+xmix*(exch_hf(i,i)-coul0(i,2))
             exchen=exchen+exch(i,i)
             do j=i+1,nat
               exchen=exchen+exch(i,j)
             end do
           end do
-
-          write(*,*) " ------------------------------------- "
-          write(*,*) "  INTERPOLATED HYBRID KS-DFT XC TERMS  "
-          write(*,*) " ------------------------------------- "
-          write(*,*) " "
-          call MPRINT2(exch,nat,maxat)
-          write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-          write(*,*) " "
-          if(idofr.eq.1) then
-            line=' FRAGMENT ANALYSIS: Final Exc Decomposition ' 
-            call group_by_frag_mat(1,line,exch)
-          end if
         end if
-      else    
-        exchen=ZERO
-        do i=1,nat
-          exchen=exchen+exch(i,i)
-          do j=i+1,nat
-            exchen=exchen+exch(i,j)
-          end do
-        end do
-      end if
 
-!! TOTAL TWO-ELECTRON PART !!
-      if(ihf.eq.0) then
-        evee=coulen+exchen
-        write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee             
+        if(ihf.eq.0) then
+          evee=coulen+exchen
+        else
+          evee=coulen+exchen_hf
+        end if
         twoelerr=(evee-evee0)*tokcal
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-      else
-        evee=coulen+exchen_hf
-        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee            
-        twoelerr=(evee-evee0)*tokcal
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
+        call enpart_ee_tail(err1,err2,phabest,evee,twoelerr,.false.)
+        write(*,'(a)') ''
+        call cpu_time(xtime2)
+        call get_wall_time(wxtime2)
+        call print_timer('ENPART zero-error correction',xtime2-xtime,
+     +    wxtime2-wxtime)
+        xtime=xtime2
+        wxtime=wxtime2
       end if
-      write(*,*) " "
 
-      end if
+      call json_enpart_ee(eveefg,errfg,iref,twoeltoler,izerr,err2,
+     +  phabest,evee,twoelerr)
 
-!! END ZERO ERROR STRATEGY !!
+!! final two-electron matrices; with VERBOSE 1 first the first-grid ones !!
+!! when the zero-error correction was applied                            !!
+      if(izerr.eq.1.and.iverbose.eq.1) call enpart_two_mats(ihf,xmix,
+     +  coulb,xcoulb,exhfb,xexhfb,exchb,xexchb,
+     +  ', BEFORE THE ZERO-ERROR CORRECTION')
+      if(allocated(coulb)) DEALLOCATE(coulb,exhfb,exchb)
+      call enpart_two_mats(ihf,xmix,coul,coulen,exch_hf,exchen_hf,exch,
+     +  exchen,' ')
 
-!! FINAL PRINTING !!
+!! IQA matrix: one-electron terms (in eto) + Coulomb + exchange(-corr.) !!
       if(ihf.eq.1) then
         xtot=ZERO
         do i=1,nat
@@ -961,22 +1553,7 @@
           end do
         end do
         etot=xtot
-
-        write(*,*) " -------------------------------------------- "
-        write(*,*) "  FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------------- "
-        write(*,*) " "
-        call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
-        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf  
-        if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
-          err=(etot-escf+edipole)
-        else
-          err=(etot-escf)
-        end if
-        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch_hf,.true.)
       else
         xtot=ZERO
         do i=1,nat
@@ -989,34 +1566,16 @@
           end do
         end do
         etot=xtot
-
-        write(*,*) " -------------------------------------- "
-        write(*,*) "  FUZZY ATOMS KS-DFT ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------- "
-        write(*,*) " "
-        call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot  
-        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
-        if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
-          err=(etot-escf+edipole)
-        else
-          err=(etot-escf)
-        end if
-        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
-      end if
-      if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Energy Decomposition' 
-        call group_by_frag_mat(1,line,eto)
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch,.true.)
       end if
 
       if(ianalytical.eq.0) then
         DEALLOCATE(chp2,chp2pha,rhopha,chppha,wppha,pcoordpha,omppha,omp2pha)
         DEALLOCATE(chp2s,chp2phas)
-!! MG: DEALLOCATING THE PARALLEL PART MISSING (I'VE BEEN LAZY)
+        if(idoex.eq.1) then
+          DEALLOCATE(f3k,exch_hfk,istart,iend,ijpaircount,exch_hfij)
+        end if
       else
-!        DEALLOCATE(chp2,rho) !MMO- rho is no longer allocated in the current version?
         DEALLOCATE(chp2)
       end if
 
@@ -1024,76 +1583,118 @@
 
 !! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: numint_one_uhf                                            !!
+!! purpose: one-electron IQA/ENPART energy partition, UHF/UKS twin of    !!
+!!   numint_one -- electron-nuclear attraction, kinetic energy, nuclear  !!
+!!   repulsion and (if present) the external-field dipole terms, each    !!
+!!   decomposed into atomic/diatomic contributions.                      !!
+!! arguments: same as numint_one.                                        !!
+!! author: PSalse, MGimf.                                                !!
+!! ********************************************************************* !!
       subroutine numint_one_uhf(ndim,itotps,wp,rho,omp,omp2,pcoord,chp,eto)
+
       use ao_matrices
       use integration_grid
+      use output_mod, only: print_value
+
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
-      character*80 line
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/exchg/exch(maxat,maxat),xmix
+      common/efield/field(4),edipole
       dimension eto(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
-! (TO DO) xkdens = kinetic energy density (MG)
-! (TO DO) Laplacian!
-      dimension xkdens(itotps)
 
-      dimension Epa(maxat,maxat),ekin(maxat,maxat),enuc(maxat,maxat)
-      dimension eecp(maxat)
+      dimension Epa(maxat,maxat),ekin(maxat,maxat),dip(maxat,3),enuc(maxat,maxat)
+      dimension eecp(maxat),ect(maxat,maxat)
+      dimension edip(maxat,maxat)
+      dimension tkin(maxat),fdip(maxat,2)
+      character*40 cfld
+      logical lref
+      common /printout/iaccur
       allocatable :: chp2(:,:),scr(:),chpaux(:,:), chp3(:,:)
 
       idofr   =  Iopt(40)
+      ifield  =  Iopt(47)
       ipoints =  itotps
       iatps   =  nang*nrad
-
-      write(*,*) " "
-      write(*,*) " --------------------------- "
-      write(*,*) "  GENERAL ONE-ELECTRON PART  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+      xxdip   =  ZERO
+      ndec=7
+      if(iaccur.ne.0) ndec=13
 
       ALLOCATE(chp2(itotps,nalf),chp3(itotps,nb))
 
-!! TO MOs !!
-      do k=1,ipoints
-        do j=1,nalf
-          xx=ZERO
-          xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chp(k,i)
-            if(j.le.nb) xxb=xxb+cb(i,j)*chp(k,i)
-          end do
-          chp2(k,j)=xx
-          if(j.le.nb) chp3(k,j)=xxb
-        end do
-      end do
+      call ao_to_mo_grid(itotps,igr,nalf,c,chp,chp2)
+      call ao_to_mo_grid(itotps,igr,nb,cb,chp,chp3)
 
-!! ZEROING MATRICES !!
       epa=ZERO
       ekin=ZERO
       eto=ZERO
       enuc=ZERO
-      
-!! DOING ENERGY PARTITION !!
-!! ONE ELECTRON PART !!
+      ect=ZERO
+      edip=ZERO
 
-!! IN CASE OF HAVING PSEUDOPOTENTIAL !!
-      call mga_misc(iecp,eecp) !! MAYBE WE SHOULD DO A BETTER VERSION OF THIS... !!
+!! pseudopotential atomic energies (if present), added to the E-N terms !!
+      call mga_misc(iecp,eecp)
       if(iecp.eq.1) then
-        write(*,*) " ADDING ECP ATOMIC ENERGIES TO E-N TERMS "
-        do i=1,nat       
+        do i=1,nat
           epa(i,i)=eecp(i)
-        end do 
-      end if 
+        end do
+      end if
+
+!! field(:)/ifield were already read by main.f into the /efield/ common  !!
+!! and iopt(47) -- no need to re-scan the .inp file here.                !!
+      if(ifield.eq.1) then
+!! parallel over icenter: each iteration writes only its own dip(icenter,:)/ !!
+!! ect(icenter,icenter); x/y/z/zztop/xtot are per-iteration scratch, not     !!
+!! running totals, so no reduction is needed. Untested: no test uses an      !!
+!! external electric field.                                                  !!
+!$OMP PARALLEL DO PRIVATE(icenter,x,y,z,zztop,ifut,distx,disty,distz,xtot)
+        do icenter=1,nat
+          x=ZERO
+          y=ZERO
+          z=ZERO
+          zztop=ZERO
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            distx=pcoord(ifut,1)
+            disty=pcoord(ifut,2)
+            distz=pcoord(ifut,3)
+            x=x+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distx
+            y=y+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*disty
+            z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
+            zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
+          end do
+          dip(icenter,1)=-x+zztop*coord(1,icenter)
+          dip(icenter,2)=-y+zztop*coord(2,icenter)
+          dip(icenter,3)=-z+zztop*coord(3,icenter)
+          xtot=(coord(1,icenter)*field(2)+coord(2,icenter)*field(3)+coord(3,icenter)*field(4))
+          ect(icenter,icenter)=-zztop*xtot
+        end do
+!$OMP END PARALLEL DO
+
+!! electric field x,y,z components are on field(2-4) !!
+        xtot=ZERO
+        do i=1,nat
+          edip(i,i)=+dip(i,1)*field(2)+dip(i,2)*field(3)+dip(i,3)*field(4)
+          xtot=xtot+ect(i,i)+edip(i,i)
+        end do
+        xxdip=xtot
+      end if
+
+!! electron-nuclei attraction integrals; parallel over the (icenter,jcenter) !!
+!! atom-pair space (COLLAPSE(2), both bounds constant) -- each pair writes  !!
+!! only its own epa(icenter,jcenter), xtot is a genuine running total.      !!
       xtot=ZERO
+!$OMP PARALLEL DO COLLAPSE(2) PRIVATE(icenter,jcenter,x,zz,dx0,dy0,dz0,ifut,distx,disty,distz,rr) REDUCTION(+:xtot)
       do icenter=1,nat
-        do jcenter=1,nat     
+        do jcenter=1,nat
           x=ZERO
           zz=zn(jcenter)
           dx0=coord(1,jcenter)
@@ -1112,10 +1713,11 @@
           epa(icenter,jcenter)=epa(icenter,jcenter)-x
         end do
       end do
+!$OMP END PARALLEL DO
       xtot=ZERO
       do i=1,nat
         xtot=xtot+epa(i,i)
-        do j=1,i-1  
+        do j=1,i-1
           epa(i,j)=(epa(i,j)+epa(j,i))
           epa(j,i)=epa(i,j)
           xtot=xtot+epa(i,j)
@@ -1123,53 +1725,61 @@
       end do
       eelnuc=xtot
 
-!! PRINTING MATRIX !!
-      write(*,*) " ----------------------------- "
-      write(*,*) "  ELECTRON-NUCLEAR ATTRACTION  "
-      write(*,*) " ----------------------------- "
-      write(*,*) " "
-      call MPRINT2(epa,nat,maxat)
-      write(*,'(2x,a23,x,f14.7)') "Electron-nuclei energy:",eelnuc
+      if(iecp.eq.1) then
+        call enpart_matrix('ELECTRON-NUCLEAR ATTRACTION','Includes the'//
+     +    ' pseudopotential (ECP) energy of each atom on the diagonal.',
+     +    ' ',epa,'Electron-nuclear attraction',eelnuc)
+      else
+        call enpart_matrix('ELECTRON-NUCLEAR ATTRACTION',' ',' ',epa,
+     +    'Electron-nuclear attraction',eelnuc)
+      end if
 
-!! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE)
-      if(eelnuc0.ne.ZERO) then
-!        write(*,'(a31,f8.2)') 'Integration error (kcal/mol): ',(eelnuc-eelnuc0)*tokcal !MMO- same as restricted case
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(eelnuc+xxdip-eelnuc0)*tokcal
-        write(*,*) ' '
+!! xxdip is added here (not just eelnuc) since it's excluded from the    !!
+!! atomic epa contributions above -- keeps this check apples-to-apples.  !!
+      lref=eelnuc0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(eelnuc+xxdip-eelnuc0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
         eelnuc0=eelnuc
       end if
-      if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Electron-nuclei attraction '
-        call group_by_frag_mat(1,line ,epa)
-      end if
+      call enpart_frag('ELECTRON-NUCLEAR ATTRACTION',epa)
+      call json_enpart_term('electron_nuclear','Electron-nuclear '//
+     +  'attraction',epa,eelnuc,lref,errk)
 
-!! GENERATING GRID FOR 2nd DERIVATIVE OVER AOs !!
+!! second-derivative AO values, needed for the kinetic-energy density below !!
       ALLOCATE(chpaux(itotps,igr))
       call dpoints(chpaux,pcoord)
 
-!! NOW TO MO AND MULTPLY BY MOs AND SUM OVER MOs USING SCRATCH ARRAY !!
-!! HENCE WE HAVE DENSITY IN scr EXCEPT FOR THE FACTOR OF TWO !!
+!! kinetic-energy density at each point: transform the 2nd-derivative AOs !!
+!! to MOs (alpha+beta) and dot with the already-transformed chp2/chp3 --  !!
+!! density in scr, /TWO like the restricted case's implicit factor of two !!
+!! (kept unmodified from the original UHF formula). parallel over k: each !!
+!! k only reads its own chpaux(k,:)/chp2(k,:)/chp3(k,:) and writes scr(k). !!
       ALLOCATE(scr(itotps))
+!$OMP PARALLEL DO PRIVATE(k,x,j,xx,xxb,i)
       do k=1,ipoints
         x=ZERO
         do j=1,nalf
           xx=ZERO
           xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chpaux(k,i) 
-            if(j.le.nb) xxb=xxb+cb(i,j)*chpaux(k,i) 
+          do i=1,igr
+            xx=xx+c(i,j)*chpaux(k,i)
+            if(j.le.nb) xxb=xxb+cb(i,j)*chpaux(k,i)
           end do
           x=x+chp2(k,j)*xx
           if(j.le.nb) x=x+chp3(k,j)*xxb
         end do
         scr(k)=x/TWO
-! (TO DO) Kinetic energy density (MG)
-!       xkdens(k)=scr(k)
-! (TO DO) Laplacian!
       end do
+!$OMP END PARALLEL DO
 
+!! contract the kinetic-energy density onto atoms; parallel over icenter, !!
+!! each iteration writes only its own ekin(icenter,icenter), xtot is a    !!
+!! genuine running total.                                                 !!
       xtot=ZERO
+!$OMP PARALLEL DO PRIVATE(icenter,x,ifut) REDUCTION(+:xtot)
       do icenter=1,nat
         x=ZERO
         do ifut=iatps*(icenter-1)+1,iatps*icenter
@@ -1178,54 +1788,83 @@
         ekin(icenter,icenter)=ekin(icenter,icenter)+x
         xtot=xtot+x
       end do
+!$OMP END PARALLEL DO
       ekinen=xtot
 
-!! PRINTING MATRIX !!
-      write(*,*) " ---------------- "
-      write(*,*) "  KINETIC ENERGY  "
-      write(*,*) " ---------------- "
-      write(*,*) " "
-      call MPRINT2(ekin,nat,maxat)
-      write(*,'(2x,a15,x,f14.7)') "Kinetic energy:",ekinen
-
-!! CHECKING ACCURACY (IF ENERGIES ADDED TO THE fchk FILE ) !!
-      if(ekin0.ne.ZERO) then
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",(ekinen-ekin0)*tokcal                      
+      do i=1,nat
+        tkin(i)=ekin(i,i)
+      end do
+      call enpart_atom_table('KINETIC ENERGY','One-center terms only:'//
+     +  ' the kinetic energy has no pair terms.',' ',1,tkin,'Kinetic',
+     +  ' ',' ',.false.)
+      call print_value('Kinetic energy',ekinen,ndec,'au')
+      lref=ekin0.ne.ZERO
+      errk=ZERO
+      if(lref) then
+        errk=(ekinen-ekin0)*tokcal
+        call print_value('Integration error',errk,2,'kcal/mol')
       else
-        ekin0=ekinen  
+        ekin0=ekinen
       end if
-      write(*,*) " "
-      if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Kinetic energy ' 
-        call group_by_frag_mat(1,line ,ekin)
-      end if
+      if(idofr.eq.1) call group_by_frag_vec(1,'FRAGMENT KINETIC ENERGY',
+     +  tkin,'Kinetic',' ')
+!! the results file keeps the kinetic energy as a (diagonal) matrix, !!
+!! like the other terms                                              !!
+      call json_enpart_term('kinetic','Kinetic energy',ekin,ekinen,lref,
+     +  errk)
 
-!! ADDING NUCLEAR REPULSION !!
       erep=ZERO
       do i=1,nat
         eto(i,i)=ekin(i,i)+epa(i,i)
         do j=i+1,nat
           dist=dsqrt((coord(1,i)-coord(1,j))**2 +(coord(2,i)-coord(2,j))**2+(coord(3,i)-coord(3,j))**2)
           eto(i,j)=ekin(i,j)+epa(i,j)+zn(i)*zn(j)/dist
-          eto(j,i)=epa(i,j)
+          eto(j,i)=eto(i,j)
 
-!! SAVING ALSO FOR PRINTING PURPOSES, I THINK WE SHOULD GIVE IT... COMES FOR FREE !!
+!! enuc: nuclear-repulsion pair matrix, kept only for the printout below. !!
           enuc(i,j)=zn(i)*zn(j)/dist
           enuc(j,i)=enuc(i,j)
           erep=erep+zn(i)*zn(j)/dist
         end do
       end do
 
-!! PRINTING MATRIX !!
-      write(*,*) " --------------------------- "
-      write(*,*) "  NUCLEAR-NUCLEAR REPULSION  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
-      call MPRINT2(enuc,nat,maxat)
-      write(*,'(2x,a25,x,f14.7)') "Nuclear repulsion energy:",erep
-      write(*,*) " "
+      call enpart_matrix('NUCLEAR-NUCLEAR REPULSION',' ',' ',enuc,
+     +  'Nuclear-nuclear repulsion',erep)
+      call enpart_frag('NUCLEAR-NUCLEAR REPULSION',enuc)
+      call json_enpart_term('nuclear_repulsion','Nuclear-nuclear '//
+     +  'repulsion',enuc,erep,.false.,0.0d0)
 
-!! TOTAL ENERGY UP TO HERE !!
+      if(ifield.eq.1) then
+        xxx=ZERO
+        xtot=ZERO
+        do i=1,nat
+          xxx=zn(i)*(coord(1,i)*field(2)+coord(2,i)*field(3)+coord(3,i)*field(4))
+          ect(i,i)=ect(i,i)+xxx
+          xtot=xtot+xxx
+        end do
+        edipole=xtot+xxdip
+        call print_box('EXTERNAL ELECTRIC FIELD')
+        write(cfld,'(3f10.6)') field(2),field(3),field(4)
+        call print_value('Field x, y, z',trim(adjustl(cfld)),'au')
+        call print_value('Electronic dipole term',xxdip,ndec,'au')
+        call print_value('Nuclear dipole term',xtot,ndec,'au')
+        call print_value('Field interaction energy',edipole,ndec,'au')
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Not part of the IQA terms: added to their'//
+     +    ' total in the energy check'
+        write(*,'(2x,a)') 'of IQA ENERGY TERMS.'
+        do i=1,nat
+          fdip(i,1)=edip(i,i)
+          fdip(i,2)=ect(i,i)
+        end do
+        call enpart_atom_table('FIELD INTERACTION PER ATOM','Intrinsic'//
+     +    ' dipole term (origin independent) and charge-transfer',
+     +    'term (origin dependent) of each atom.',2,fdip,'Dipole',
+     +    'Charge tr.',' ',.true.)
+        if(idofr.eq.1) call group_by_frag_vec(2,
+     +    'FRAGMENT FIELD INTERACTION',fdip,'Dipole','Charge tr.')
+      end if
+
       etot=ekinen+eelnuc+erep
       etot0=ekin0+eelnuc0+erep
 
@@ -1234,16 +1873,28 @@
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: numint_two_uhf                                              !!
+!! purpose: two-electron IQA/ENPART energy partition, UHF/UKS twin of      !!
+!!   numint_two -- Coulomb (via calc_coul) and, if requested, HF-type      !!
+!!   exchange (same-center and atom-pair kernels, alpha+beta contributions !!
+!!   summed via the j.le.nb guard), each decomposed into atomic/diatomic   !!
+!!   contributions. Same zero-error rotated-grid interpolation strategy as !!
+!!   numint_two. See numint_two for restricted/closed-shell.               !!
+!! arguments: same as numint_two.                                          !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine numint_two_uhf(ndim,itotps,wp,omp,omp2,pcoord,chp,rho,eto)
 
       use ao_matrices
       use integration_grid
       use OMP_LIB
-      use IFPORT
+      use timing_mod
+      use output_mod, only: print_value
+      use input_options_mod, only: iverbose
 
       implicit real*8(a-h,o-z)
 
-      integer external OMP_GET_NUM_PROCS
 
       include 'parameter.h'
       parameter(maxpass=5)
@@ -1251,47 +1902,44 @@
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common/twoel/twoeltoler !MMO- adding common
-      common /iops/iopt(100)
+      common/twoel/twoeltoler
+      common /iops/iopt(200)
       common/actual/iact,jat,icenter
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,etot0
       common/exchg/exch(maxat,maxat),xmix
-      common/efield/field(4),edipole !MMO- adding common
-!! FROM # GRID SECTION !!
+      common/efield/field(4),edipole
+!! rotated-grid angles/thresholds, read from the # GRID input section. !!
       common /modgrid/nrad22,nang22,rr0022,phb12,phb22
-      common /modgrid2/thr3
 
       dimension eto(maxat,maxat),Excmp(maxat,maxat)
       dimension wp(itotps),chp(itotps,ndim),pcoord(itotps,3)
       dimension omp(itotps),omp2(itotps,nat),rho(itotps)
 
       dimension coul0(maxat,2*maxpass)
+      allocatable :: coulb(:,:),exhfb(:,:),exchb(:,:)
       dimension coul(maxat,maxat),exch_hf(maxat,maxat)
 
-      character*80 line
       character*100 threadenv
 
       allocatable :: chppha(:,:), wppha(:),pcoordpha(:,:),omppha(:)
       allocatable :: chp2pha(:,:),omp2pha(:,:),ibaspointpha(:),rhopha(:)
       allocatable :: chp2(:,:), chp2b(:,:), chp2phab(:,:)
-      allocatable :: fij(:,:),fijb(:,:),xocc(:,:),xoccb(:,:),Excmpb(:,:)
+      allocatable :: Excmpb(:,:)
 
-!! FOR ENPART PARALLEL !!
-      allocatable :: chp2s(:,:),chp2phas(:,:),chp2bs(:,:),chp2phabs(:,:) !! SWITCHED ORDER OF COLUMNS AND ROWS !!
-      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+!! parallelization-related arrays below. !!
+      allocatable :: chp2s(:,:),chp2phas(:,:),chp2bs(:,:),chp2phabs(:,:) !! transposed layout (rows/columns swapped) !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! included atom pairs, thread-slicing bookkeeping !!
       allocatable :: exch_hfk(:,:)
       allocatable :: exch_hfij(:,:)
       allocatable :: f3k(:)
 
-      ihf         = Iopt(18) 
-      idofr       = Iopt(40)
+      ihf         = Iopt(18)
       ithrebod    = Iopt(44)
       ipolar      = Iopt(46)
-      ifield      = Iopt(47) !MMO- adding iopt
-      ianalytical = Iopt(91) !MMO- analytical
+      ifield      = Iopt(47)
+      ianalytical = Iopt(91)
 
-      !thr2=thr3 !! THRESH FOR NUMERICAL INTEGRATION (DISTANCE) !!
       if(ithrebod.lt.1) then
         threbod=ZERO
       else
@@ -1300,14 +1948,30 @@
       idoex=0
       if(xmix.gt.ZERO) idoex=1
       iatps=nang*nrad
+!! zero-error strategy only possible with a reference electron-electron !!
+!! energy in the .fchk (evee0, see mga_misc); twoelerr stays defined.    !!
+      iref=0
+      if(evee0.ne.ZERO) iref=1
+      twoelerr=ZERO
 
-!! DOING ENERGY PARTITION !!
       npass=2
-      write(*,*) " "
-      write(*,*) " --------------------------- "
-      write(*,*) "  GENERAL TWO-ELECTRON PART  "
-      write(*,*) " --------------------------- "
-      write(*,*) " "
+!! HF: the atom pairs integrated and those from the multipolar expansion !!
+!! (for KS-DFT the DFT part has already printed them)                   !!
+      if(ihf.eq.1.and.ianalytical.eq.0) then
+        npairs=0
+        nskip=0
+        do i=1,nat
+          do j=i+1,nat
+            if(bo(i,j).ge.threbod) then
+              npairs=npairs+1
+            else
+              nskip=nskip+1
+            end if
+          end do
+        end do
+        call print_value('Pairs integrated (exact exchange)',npairs)
+        call print_value('Pairs from the multipolar expansion',nskip)
+      end if
       do i=1,nat
         do j=1,nat
           coul(i,j)=ZERO
@@ -1319,354 +1983,298 @@
       end do
 
       ALLOCATE(chp2(itotps,nalf),chp2b(itotps,nb))
-      ALLOCATE(chp2s(nalf,itotps),chp2bs(nb,itotps)) !! TODO: CHANGING THAT NEVER USE CHP2 !!
+      ALLOCATE(chp2s(nalf,itotps),chp2bs(nb,itotps))
 
-!! TO MOs !!
-      do k=1,itotps
-        do j=1,nalf
-          xx=ZERO
-          xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chp(k,i) 
-            if(j.le.nb) xxb=xxb+cb(i,j)*chp(k,i) 
+      call ao_to_mo_grid_t(itotps,igr,nalf,c,chp,chp2,chp2s)
+      call ao_to_mo_grid_t(itotps,igr,nb,cb,chp,chp2b,chp2bs)
+
+      if(ianalytical.eq.0) then !! not for the analytical path !!
+
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
+        phb=phb12
+        pha=ZERO
+        ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
+        ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
+        ALLOCATE(chp2pha(itotps,nalf),rhopha(itotps),chp2phab(itotps,nb))
+        ALLOCATE(chp2phas(nalf,itotps),chp2phabs(nb,itotps))
+
+        call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
+
+        call ao_to_mo_grid_t(itotps,igr,nalf,c,chppha,chp2pha,chp2phas)
+        call ao_to_mo_grid_t(itotps,igr,nb,cb,chppha,chp2phab,chp2phabs)
+
+!! rhopha is recomputed from the MO amplitudes (rather than kept as       !!
+!! prenumint's own density output) to stay numerically consistent with   !!
+!! chp2pha/chp2phab, which the exchange kernel below reads directly.     !!
+!! parallel over grid points: each k only reads its own chp2pha(k,:)/    !!
+!! chp2phab(k,:) and writes only its own rhopha(k).                      !!
+!$OMP PARALLEL DO PRIVATE(k,j,xtot,xtotb)
+        do k=1,itotps
+          xtot=ZERO
+          xtotb=ZERO
+          do j=1,nalf
+            xtot=xtot+chp2pha(k,j)*chp2pha(k,j)
           end do
-          if(j.le.nb) then
-            chp2b(k,j)=xxb
-            chp2bs(j,k)=xxb
-          end if
-          chp2(k,j)=xx
-          chp2s(j,k)=xx
-        end do
-      end do
-
-      if(ianalytical.eq.0) then !MMO- skip if analytical
-
-!! ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
-      phb=phb12
-      pha=ZERO 
-      write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
-      ALLOCATE(wppha(itotps),omppha(itotps),omp2pha(itotps,nat))
-      ALLOCATE(chppha(itotps,ndim),pcoordpha(itotps,3),ibaspointpha(itotps))
-      ALLOCATE(chp2pha(itotps,nalf),rhopha(itotps),chp2phab(itotps,nb))
-      ALLOCATE(chp2phas(nalf,itotps),chp2phabs(nb,itotps))
-
-      call prenumint(ndim,itotps,nat,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
-
-!! TO MOs !!
-      do k=1,itotps
-        xtot=ZERO 
-        xtotb=ZERO 
-        do j=1,nalf
-          xx=ZERO
-          xxb=ZERO
-          do i=1,igr 
-            xx=xx+c(i,j)*chppha(k,i) 
-            if(j.le.nb) xxb=xxb+cb(i,j)*chppha(k,i) 
+          do j=1,nb
+            xtotb=xtotb+chp2phab(k,j)*chp2phab(k,j)
           end do
-          chp2pha(k,j)=xx
-          chp2phas(j,k)=xx
-          if(j.le.nb) then
-            chp2phab(k,j)=xxb
-            chp2phabs(j,k)=xxb
-            xtotb=xtotb+xxb*xxb
-          end if 
-          xtot=xtot+xx*xx
+          rhopha(k)=xtot+xtotb
         end do
-        rhopha(k)=xtot+xtotb 
-      end do
-      end if !MMO- non-analytical skip ends here
+!$OMP END PARALLEL DO
+      end if !! end of the non-analytical part !!
 
-!! COULOMB !!
+!! Coulomb energy term. !!
       call cpu_time(xtime)
+      call get_wall_time(wxtime)
       if(ianalytical.eq.0) then
         call calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
       else
         CALL calc_twoel_analytical(itotps,wp,omp2,pcoord,rho,chp2,chp2b,coul,exch_hf)
       end if
       call cpu_time(xtime2)
-      write(*,'(a32,f10.1,a2)')'(Elapsed time :: Coulomb energy ',xtime2-xtime,'s)'
-      write(*,*) " "
+      call get_wall_time(wxtime2)
+      write(*,'(a)') ''
+      call print_timer('ENPART Coulomb',xtime2-xtime,wxtime2-wxtime)
       xtime=xtime2
+      wxtime=wxtime2
 
-!! EXCHANGE PART !!
-      if(ianalytical.eq.0) then !MMO- skip if analytical
-      if(idoex.eq.1) then
+!! HF-type exchange, computed only if requested (idoex). !!
+      if(ianalytical.eq.0) then !! not for the analytical path !!
+        if(idoex.eq.1) then
 
-!! COMPUTING MULTIPOLAR APPROACH HERE !!
-        norb2=nalf*(nalf+1)/2
-        norb2b=nb*(nb+1)/2
-        ALLOCATE(fij(itotps,norb2),xocc(norb2,norb2))
-        ALLOCATE(fijb(itotps,norb2b),xoccb(norb2b,norb2b),Excmpb(maxat,maxat))
-        do ii=1,itotps
-          irun=0
-          irunb=0
-          do jj=1,nalf
-            do kk=jj,nalf
-              irun=irun+1
-              fij(ii,irun)=chp2(ii,jj)*chp2(ii,kk)
-              if(ii.eq.1) then
-                xocc(irun,irun)=-ONE
-                if(jj.ne.kk) xocc(irun,irun)=-TWO
-              end if
-              if(jj.le.nb.and.kk.le.nb) then
-                irunb=irunb+1
-                fijb(ii,irunb)=chp2b(ii,jj)*chp2b(ii,kk)
-                if(ii.eq.1) then
-                  xoccb(irunb,irunb)=-ONE
-                  if(jj.ne.kk) xoccb(irunb,irunb)=-TWO
-                end if
-              end if 
-            end do
-          end do
-        end do
-        call multipolar(nalf,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
-        call multipolar(nb,itotps,wp,omp2,pcoord,fijb,xoccb,Excmpb)
-        do ii=1,nat
-          do jj=ii+1,nat
-            Excmp(ii,jj)=Excmp(ii,jj)+Excmpb(ii,jj)
-            Excmp(jj,ii)=Excmp(ii,jj)
+!! multipolar approximation, used below for atom pairs skipped by THREBOD, !!
+!! computed for alpha and beta separately then summed. !!
+!! (per spin: weight -1 for phi_i^2, -2 for phi_i*phi_j, i<j)           !!
+          ALLOCATE(Excmpb(maxat,maxat))
+          call multipolar_mo(nalf,itotps,wp,omp2,pcoord,chp2,-ONE,-TWO,Excmp)
+          call multipolar_mo(nb,itotps,wp,omp2,pcoord,chp2b,-ONE,-TWO,Excmpb)
+          do ii=1,nat
+            do jj=ii+1,nat
+              Excmp(ii,jj)=Excmp(ii,jj)+Excmpb(ii,jj)
+              Excmp(jj,ii)=Excmp(ii,jj)
+            end do 
           end do 
-        end do 
-        DEALLOCATE(fij,fijb,xocc,xoccb,Excmpb)
+          DEALLOCATE(Excmpb)
 
-!! MG: REORDERING THE LOOPS FOR PARALLELIZATION PURPOSES !!
-!! MIMICKING STRATEGY FROM RHF PART !!
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) "  EVALUATING HARTREE-FOCK-TYPE EXCHANGE INTEGRALS  "
-        write(*,*) " ------------------------------------------------- "
-        write(*,*) " "
-        write(*,'(2x,a22,x,i6,x,a9)') "Two-el integrations for",nalf*(nalf+1),"functions"
-        write(*,'(2x,a36,x,f10.6)') "Threshold for atom pair calculation :",threbod
+!! loops reordered for parallelization purposes, mimicking numint_two's !!
+!! strategy (see there for the full explanation). !!
 
-!! FIRST ONLY SAME CENTER TERMS !!
-!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
-        call getenv('OMP_NUM_THREADS',threadenv)
-        if(trim(threadenv)=='') then
-          write(*,*) " OMP_NUM_THREADS not set"
-          ithreadenv=ZERO
-        else
-          read(unit=threadenv,FMT='(I4)') ithreadenv
-        end if
+!! same-center terms first; determine the core count for thread splitting. !!
+          call getenv('OMP_NUM_THREADS',threadenv)
+          if(trim(threadenv)=='') then
+            ithreadenv=ZERO
+          else
+            read(unit=threadenv,FMT='(I4)') ithreadenv
+          end if
+!! a parallel region only to query the thread and processor counts;  !!
+!! every thread writes the same values to iprocs/ithreads            !!
         !$OMP PARALLEL
-        iprocs=OMP_GET_MAX_THREADS()
-        ithreads=INT(OMP_GET_NUM_PROCS())
+          iprocs=OMP_GET_MAX_THREADS()
+          ithreads=INT(OMP_GET_NUM_PROCS())
         !$OMP END PARALLEL
-        if(ithreadenv.ne.ZERO) then
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
-     &    ithreads,"available hardware cores"
-          ithreads=ithreadenv
-        else
-          write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
-     &    ithreads,"available hardware cores"
+          if(ithreadenv.ne.ZERO) ithreads=ithreadenv
+
+!! per-thread grid-point slicing bookkeeping. !!
+          ALLOCATE(f3k(ithreads))
+          ALLOCATE(exch_hfk(nat,ithreads))
+          ALLOCATE(istart(ithreads),iend(ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
+
+!! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
+!! avoids an old cap that limited parallelization to 8 cores.               !!
+          exch_hfk=ZERO
+          do icenter=1,nat
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
+
+!! both calls below are required for the thread count to actually take effect. !!
+            call omp_set_dynamic(.false.)
+            call omp_set_num_threads(ithreads)
+!! same real-OMP-plus-false-sharing fix as the RHF twin (numint_two)      !!
+!! above -- f3loc is PRIVATE, exch_hfk written once per ifut, not per i/j.!!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  i,j,f2,f2b,f3loc)
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(icenter-1)+1,iatps*icenter
+                  x1=wppha(jfut)*omp2pha(jfut,icenter)
+                  dx1=pcoordpha(jfut,1)
+                  dy1=pcoordpha(jfut,2)
+                  dz1=pcoordpha(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then
+                    do i=1,nalf-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      if(i.le.nb) then
+                        f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
+                        f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
+                      end if
+                      do j=i+1,nalf
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
+                        if(j.le.nb) then
+                          f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
+                          f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+                        end if
+                      end do
+                    end do
+                    f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
+                    f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
+
+!! nalf=nb's own highest-index term needs adding separately (loop above !!
+!! only pairs i with i+1..nalf, so the beta-side match never triggers). !!
+                    if(nalf.eq.nb) then
+                      f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
+                      f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
+                    end if
+                  end if
+                end do
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
+              end do
+            end do
+!$OMP END PARALLEL DO
+          end do
+
+!! reduce the per-thread accumulator into the same-center exch_hf term. !!
+          do icenter=1,nat
+            do isum=1,ithreads
+              exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
+            end do
+          end do
+
+!! atom-pair terms, skipping pairs below the THREBOD bond-order threshold. !!
+          iterms=0
+          ipaircounter=0
+          ALLOCATE(ijpaircount(nat*nat,2))
+          do icenter=1,nat
+            do jcenter=icenter+1,nat
+              bx0=bo(icenter,jcenter)
+              if(bx0.ge.threbod) then
+                ipaircounter=ipaircounter+1
+                ijpaircount(ipaircounter,1)=icenter
+                ijpaircount(ipaircounter,2)=jcenter
+              else
+                iterms=iterms+1
+              end if
+            end do
+          end do
+
+!! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
+          ALLOCATE(exch_hfij(ipaircounter,ithreads))
+          itilerest=mod(iatps,ithreads)
+          ispace=(iatps-itilerest)/ithreads
+          exch_hfij=ZERO
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            ioffset=(icenter-1)*iatps
+            istart=0
+            iend=0
+            do ik=1,(ithreads-1)
+              istart(ik)=ioffset+((ik-1)*ispace)+1
+              iend(ik)=ioffset+(ik*ispace)
+            end do
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
+            iend(ithreads)=icenter*iatps
+!! parallel over the thread slices ik, as the same-center block above: !!
+!! f3loc is PRIVATE, exch_hfij(numpairnat,ik) written once per ifut.     !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  i,j,f2,f2b,f3loc)
+            do ik=1,ithreads
+              do ifut=istart(ik),iend(ik)
+                x0=wp(ifut)*omp2(ifut,icenter)
+                dx0=pcoord(ifut,1)
+                dy0=pcoord(ifut,2)
+                dz0=pcoord(ifut,3)
+                f3loc=ZERO
+                do jfut=iatps*(jcenter-1)+1,iatps*jcenter
+                  x1=wp(jfut)*omp2(jfut,jcenter)
+                  dx1=pcoord(jfut,1)
+                  dy1=pcoord(jfut,2)
+                  dz1=pcoord(jfut,3)
+                  dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
+                  if(dist.gt.1.0d-12) then
+                    do i=1,nalf-1
+                      f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
+                      f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
+                      if(i.le.nb) then
+                        f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
+                        f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(i,jfut)/dist
+                      end if
+                      do j=i+1,nalf
+                        f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
+                        f3loc=f3loc+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist
+                        if(j.le.nb) then
+                          f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
+                          f3loc=f3loc+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
+                        end if
+                      end do
+                    end do
+                    f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
+                    f3loc=f3loc+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
+
+!! same nalf=nb edge case as the same-center block above. !!
+                    if(nalf.eq.nb) then
+                      f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
+                      f3loc=f3loc+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
+                    end if
+                  end if
+                end do
+                exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3loc
+              end do
+            end do
+!$OMP END PARALLEL DO
+          end do
+
+!! reduce the per-thread accumulator into the atom-pair exch_hf term. !!
+          do numpairnat=1,ipaircounter
+            icenter=ijpaircount(numpairnat,1)
+            jcenter=ijpaircount(numpairnat,2)
+            do isum=1,ithreads
+              exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
+            end do
+          end do   
+
+!! account for A-B/B-A symmetry (factor of 2) and for atom pairs whose !!
+!! term came from the multipolar approximation instead of integration. !!
+          exchen_hf=ZERO
+          do i=1,nat
+            exch_hf(i,i)=exch_hf(i,i)/TWO
+            exchen_hf=exchen_hf+exch_hf(i,i)
+            do j=i+1,nat
+              if(bo(i,j).lt.threbod) exch_hf(i,j)=Excmp(i,j)
+              exch_hf(j,i)=exch_hf(i,j)
+              exchen_hf=exchen_hf+exch_hf(i,j)
+            end do
+          end do
+          call cpu_time(xtime2)
+          call get_wall_time(wxtime2)
+          call print_timer('ENPART exact exchange',xtime2-xtime,
+     +      wxtime2-wxtime)
+          xtime=xtime2
+          wxtime=wxtime2
         end if
+      end if !! non-analytical skip ends here !!
 
-!! TO ENSURE PROPER SLICING BY THREADS !!
-        ALLOCATE(f3k(ithreads))
-        ALLOCATE(exch_hfk(nat,ithreads))
-        ALLOCATE(istart(ithreads),iend(ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
-
-!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
-        exch_hfk=ZERO
-        !DIR$ NOPARALLEL
-        do icenter=1,nat
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
-          !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=iend(ithreads-1)+1
-          iend(ithreads)=icenter*iatps
-
-!! THE TWO CALLS ARE CRUCIAL !!
-          call omp_set_dynamic(.false.)
-          call omp_set_num_threads(ithreads)
-          !DIR$ PARALLEL
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
-              do jfut=iatps*(icenter-1)+1,iatps*icenter
-                x1=wppha(jfut)*omp2pha(jfut,icenter)
-                dx1=pcoordpha(jfut,1)
-                dy1=pcoordpha(jfut,2)
-                dz1=pcoordpha(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! MG: Could be controlled using the thr2 variable !!
-                  do i=1,nalf-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
-                    if(i.le.nb) then
-                      f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                      f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
-                    end if
-                    do j=i+1,nalf
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
-                      if(j.le.nb) then
-                        f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                        f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
-                      end if
-                    end do
-                  end do
-                  f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
-
-!! FOR THE nalf = nb CASE IT IS REQUIRED TO ADD THIS !!
-                  if(nalf.eq.nb) then
-                    f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                    f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
-                  end if
-                end if
-              end do
-              exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
-            end do
-          end do
-        end do
-
-!! ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
-        do icenter=1,nat
-          do isum=1,ithreads
-            exch_hf(icenter,icenter)=exch_hf(icenter,icenter)-exch_hfk(icenter,isum)
-          end do
-        end do
-
-!! NOW PAIRS OF CENTERS !!
-        iterms=0
-        ipaircounter=0
-        ALLOCATE(ijpaircount(nat*nat,2))
-        do icenter=1,nat
-          do jcenter=icenter+1,nat
-            bx0=bo(icenter,jcenter)
-            if(bx0.ge.threbod) then
-              ipaircounter=ipaircounter+1
-              ijpaircount(ipaircounter,1)=icenter
-              ijpaircount(ipaircounter,2)=jcenter
-            else
-              iterms=iterms+1
-            end if
-          end do
-        end do
-        write(*,'(2x,a34,x,i5,x,a10)') "Skipping numerical integration for",iterms,"atom pairs"
-        write(*,*) " "
-
-!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
-        ALLOCATE(exch_hfij(ipaircounter,ithreads))
-        itilerest=mod(iatps,ithreads)
-        ispace=(iatps-itilerest)/ithreads
-        exch_hfij=ZERO
-        !DIR$ NOPARALLEL
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          ioffset=(icenter-1)*iatps
-          istart=0
-          iend=0
-          !DIR$ NOPARALLEL
-          do ik=1,(ithreads-1)
-            istart(ik)=ioffset+((ik-1)*ispace)+1
-            iend(ik)=ioffset+(ik*ispace)
-          end do
-          istart(ithreads)=iend(ithreads-1)+1
-          iend(ithreads)=icenter*iatps
-          !DIR$ PARALLEL
-          do ik=1,ithreads
-            do ifut=istart(ik),iend(ik)
-              x0=wp(ifut)*omp2(ifut,icenter)
-              dx0=pcoord(ifut,1)
-              dy0=pcoord(ifut,2)
-              dz0=pcoord(ifut,3)
-              f3k(ik)=ZERO
-              do jfut=iatps*(jcenter-1)+1,iatps*jcenter
-                x1=wp(jfut)*omp2(jfut,jcenter)
-                dx1=pcoord(jfut,1)
-                dy1=pcoord(jfut,2)
-                dz1=pcoord(jfut,3)
-                dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                if(dist.gt.1.0d-12) then !! Could be controlled using the thr2 variable !!
-                  do i=1,nalf-1
-                    f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2s(i,jfut)*chp2s(i,jfut)/dist
-                    if(i.le.nb) then
-                      f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                      f3k(ik)=f3k(ik)+f2b*x1*chp2bs(i,jfut)*chp2bs(i,jfut)/dist
-                    end if
-                    do j=i+1,nalf
-                      f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2s(i,jfut)*chp2s(j,jfut)/dist !! LC-wPBE programmed in version 3.1 !!
-                      if(j.le.nb) then
-                        f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                        f3k(ik)=f3k(ik)+f2b*x1*chp2bs(i,jfut)*chp2bs(j,jfut)/dist
-                      end if
-                    end do
-                  end do
-                  f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                  f3k(ik)=f3k(ik)+f2*x1*chp2s(nalf,jfut)*chp2s(nalf,jfut)/dist
-
-!! AGAIN, ONLY WHEN nalf = nb !!
-                  if(nalf.eq.nb) then
-                    f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                    f3k(ik)=f3k(ik)+f2b*x1*chp2bs(nb,jfut)*chp2bs(nb,jfut)/dist
-                  end if
-                end if
-              end do
-              exch_hfij(numpairnat,ik)=exch_hfij(numpairnat,ik)+f3k(ik)
-            end do
-          end do
-        end do
-
-!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
-        do numpairnat=1,ipaircounter
-          icenter=ijpaircount(numpairnat,1)
-          jcenter=ijpaircount(numpairnat,2)
-          do isum=1,ithreads
-            exch_hf(icenter,jcenter)=exch_hf(icenter,jcenter)-exch_hfij(numpairnat,isum)
-          end do
-        end do   
-
-!! ACCOUNTING IF SOME TERMS COME FROM MULTIPOLAR APPROACH... AND FACTORS... !!
-        exchen_hf=ZERO
-        do i=1,nat
-          exch_hf(i,i)=exch_hf(i,i)/TWO
-          exchen_hf=exchen_hf+exch_hf(i,i)
-          do j=i+1,nat
-            if(bo(i,j).lt.threbod) exch_hf(i,j)=Excmp(i,j)
-            exch_hf(j,i)=exch_hf(i,j)
-            exchen_hf=exchen_hf+exch_hf(i,j)
-          end do
-        end do
-        write(*,*) " ----------------------------------------- "
-        write(*,*) "  HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-        write(*,*) " ----------------------------------------- "
-        write(*,*) " "
-        call MPRINT2(exch_hf,nat,maxat)
-        write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-        write(*,*) " "
-      end if
-      end if !MMO- non-analytical skip ends here
-
-!! CHECKING THE ACCURACY OF THE TWO ELECTRON PART !!
-!! HF ONLY !!
+!! electron-electron energy on the first grid and its integration error; !!
+!! for a hybrid functional the exact-exchange share joins the DFT part   !!
       if(ihf.eq.1) then
         evee=coulen+exchen_hf
-        write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_hf):",evee
-        if(evee0.ne.ZERO) then
-          twoelerr=(evee-evee0)*tokcal
-          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-          write(*,*) " "
-        else
-          evee0=evee    
-        end if
-
-!! DFT CASE !!
       else
         exchen=ZERO
         do i=1,nat
@@ -1678,63 +2286,74 @@
             exchen=exchen+exch(i,j)
           end do
         end do
-        if(idoex.eq.1) then
-          write(*,*) " ------------------------ "
-          write(*,*) "  HYBRID KS-DFT XC TERMS  "
-          write(*,*) " ------------------------ "
-          write(*,*) " "
-          call MPRINT2(exch,nat,maxat)
-          write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-          write(*,*) " "
-        end if
         evee=coulen+exchen
-        write(*,'(2x,a37,x,f14.7)') "KS-DFT electron-electron energy (au):",evee           
-        if(evee0.ne.ZERO) then
-          twoelerr=(evee-evee0)*tokcal
-          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
-        else
-          evee0=evee
-        end if
-        write(*,*) " "
+      end if
+      if(evee0.ne.ZERO) then
+        twoelerr=(evee-evee0)*tokcal
+      else
+        evee0=evee
       end if
 
-!! ZERO ERROR STRATEGY FOR THE VEE PART !!
       if(ianalytical.eq.1) twoeltoler=232000
-      write(*,'(2x,a55,x,f8.2)') "Max error accepted on the two-electron part (kcal/mol):",twoeltoler
-      write(*,*) " "
+      call enpart_ee_head(evee,twoelerr,iref,twoeltoler)
+!! first-grid values, kept for the results file !!
+      eveefg=evee
+      errfg=twoelerr
+      err2=ZERO
+      phabest=ZERO
 
-      if(abs(twoelerr).gt.twoeltoler) then
+!! the zero-error correction changes only the one-center terms; the      !!
+!! first-grid matrices are kept for VERBOSE 1                            !!
+      izerr=0
+      if(iref.eq.1.and.abs(twoelerr).gt.twoeltoler) izerr=1
+      if(izerr.eq.1.and.iverbose.eq.1) then
+        ALLOCATE(coulb(maxat,maxat),exhfb(maxat,maxat))
+        ALLOCATE(exchb(maxat,maxat))
+        do i=1,nat
+          do j=1,nat
+            coulb(i,j)=coul(i,j)
+            exhfb(i,j)=exch_hf(i,j)
+            exchb(i,j)=exch(i,j)
+          end do
+        end do
+        xcoulb=coulen
+        xexhfb=exchen_hf
+        xexchb=exchen
+      end if
 
-!! NOW ROTATED GRID, ANGLE CONTROLLED BY # GRID SECTION !!
-!! CHECK diatXC PAPER FOR OPTIMIZED VALUES: phb=0.162d0 and later 0.182d0 for 40 146 !!
+      if(izerr.eq.1) then
+
+!! rotated grid, angle controlled by the # GRID section -- see the diatXC !!
+!! paper for optimized values: phb=0.162d0, later 0.182d0, for 40/146.   !!
         phb=phb22
-        pha=ZERO 
-        write(*,'(2x,a20,x,f10.6,x,f10.6)') "Rotating for angles:",pha,phb
+        pha=ZERO
         nat0=nat
         call prenumint(ndim,itotps,nat0,wppha,omppha,omp2pha,chppha,rhopha,pcoordpha,ibaspointpha,0)
 
-!! TO MOs !!
-        do k=1,itotps
-          xtot=ZERO 
-          xtotb=ZERO 
-          do j=1,nalf
-            xx=ZERO
-            xxb=ZERO
-            do i=1,igr 
-              xx=xx+c(i,j)*chppha(k,i) 
-              if(j.le.nb) xxb=xxb+cb(i,j)*chppha(k,i) 
-            end do
-            chp2phas(j,k)=xx
-            if(j.le.nb) then
-              chp2phabs(j,k)=xxb
-              xtotb=xtotb+xxb*xxb
-            end if 
-            xtot=xtot+xx*xx
-          end do
-          rhopha(k)=xtot+xtotb 
-        end do
+        call ao_to_mo_grid_t(itotps,igr,nalf,c,chppha,chp2pha,chp2phas)
+        call ao_to_mo_grid_t(itotps,igr,nb,cb,chppha,chp2phab,chp2phabs)
 
-!! INTERPOLATING ONLY ATOMIC TERMS !!
+!! rhopha recomputed from the MO amplitudes, same reason as the earlier !!
+!! rotated-grid pass above. !!
+!$OMP PARALLEL DO PRIVATE(k,j,xtot,xtotb)
+        do k=1,itotps
+          xtot=ZERO
+          xtotb=ZERO
+          do j=1,nalf
+            xtot=xtot+chp2phas(j,k)*chp2phas(j,k)
+          end do
+          do j=1,nb
+            xtotb=xtotb+chp2phabs(j,k)*chp2phabs(j,k)
+          end do
+          rhopha(k)=xtot+xtotb
+        end do
+!$OMP END PARALLEL DO
+
+!! same-center-only recompute of the Coulomb part on the rotated grid, !!
+!! for the zero-error interpolation below. parallel over icenter: each !!
+!! iteration accumulates into its own coul0(icenter,3), independent of !!
+!! every other icenter.                                                !!
+!$OMP PARALLEL DO PRIVATE(icenter,ifut,x0,dx0,dy0,dz0,f3,jfut,x1,dx1,dy1,dz1,dist)
         do icenter=1,nat
           do ifut=iatps*(icenter-1)+1,iatps*icenter
             x0=wp(ifut)*omp2(ifut,icenter)
@@ -1748,80 +2367,83 @@
               dy1=pcoordpha(jfut,2)
               dz1=pcoordpha(jfut,3)
               dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-              if(dist.gt.1.0d-12) f3=f3+(rho(ifut)*rhopha(jfut))*x1*x0/dist !! MG: Could be controlled using the thr2 variable !!
+              if(dist.gt.1.0d-12) f3=f3+(rho(ifut)*rhopha(jfut))*x1*x0/dist
             end do
             coul0(icenter,3)=coul0(icenter,3)+f3/TWO
           end do
         end do
+!$OMP END PARALLEL DO
 
-!! EXCHANGE PART !!
+!! HF-type exchange, computed only if requested (idoex). !!
         if(idoex.eq.1) then
 
-!! AS BEFORE, MORE CONVOLUTED LOOP STRUCTURE !!
+!! same-center recompute, same manual-chunking shape as above. !!
           exch_hfk=ZERO
-          !DIR$ NOPARALLEL
           do icenter=1,nat
             ioffset=(icenter-1)*iatps
             istart=0
             iend=0
-            !DIR$ NOPARALLEL
             do ik=1,(ithreads-1)
               istart(ik)=ioffset+((ik-1)*ispace)+1
               iend(ik)=ioffset+(ik*ispace)
             end do
-            istart(ithreads)=iend(ithreads-1)+1
+            istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
             iend(ithreads)=icenter*iatps
   
-  !! AGAIN THE TWO CALLS ARE CRUCIAL !!
+!! both calls below are required for the thread count to actually take effect. !!
             call omp_set_dynamic(.false.)
             call omp_set_num_threads(ithreads)
-            !DIR$ PARALLEL
+!! parallel over the thread slices ik, as the blocks above: f3loc is   !!
+!! PRIVATE, exch_hfk(icenter,ik) written once per ifut.                 !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist,
+!$OMP&  i,j,f2,f2b,f3loc)
             do ik=1,ithreads
               do ifut=istart(ik),iend(ik)
                 x0=wp(ifut)*omp2(ifut,icenter)
                 dx0=pcoord(ifut,1)
                 dy0=pcoord(ifut,2)
                 dz0=pcoord(ifut,3)
-                f3k(ik)=ZERO
+                f3loc=ZERO
                 do jfut=iatps*(icenter-1)+1,iatps*icenter
                   x1=wppha(jfut)*omp2pha(jfut,icenter)
                   dx1=pcoordpha(jfut,1)
                   dy1=pcoordpha(jfut,2)
                   dz1=pcoordpha(jfut,3)
                   dist=dsqrt((dx0-dx1)**TWO+(dy0-dy1)**TWO+(dz0-dz1)**TWO)
-                  if(dist.gt.1.0d-8) then !! MG: Could be controlled using the thr2 variable. In fact I don't remember why was 10^-8 !!
+                  if(dist.gt.1.0d-8) then !! 1e-8 here, 1e-12 in the other loops !!
                     do i=1,nalf-1
                       f2=x0*chp2s(i,ifut)*chp2s(i,ifut)
-                      f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
+                      f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(i,jfut)/dist
                       if(i.le.nb) then
                         f2b=x0*chp2bs(i,ifut)*chp2bs(i,ifut)
-                        f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
+                        f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(i,jfut)/dist
                       end if
                       do j=i+1,nalf
                         f2=TWO*x0*chp2s(i,ifut)*chp2s(j,ifut)
-                        f3k(ik)=f3k(ik)+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist !! MG: LC-wPBE programmed in version 3.1 !!
+                        f3loc=f3loc+f2*x1*chp2phas(i,jfut)*chp2phas(j,jfut)/dist
                         if(j.le.nb) then
                           f2b=TWO*x0*chp2bs(i,ifut)*chp2bs(j,ifut)
-                          f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
+                          f3loc=f3loc+f2b*x1*chp2phabs(i,jfut)*chp2phabs(j,jfut)/dist
                         end if
                       end do
                     end do
                     f2=x0*chp2s(nalf,ifut)*chp2s(nalf,ifut)
-                    f3k(ik)=f3k(ik)+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
+                    f3loc=f3loc+f2*x1*chp2phas(nalf,jfut)*chp2phas(nalf,jfut)/dist
 
-!! AGAIN, ONLY WHEN nalf = nb !!
+!! same nalf=nb edge case as the same-center block above. !!
                     if(nalf.eq.nb) then
                       f2b=x0*chp2bs(nb,ifut)*chp2bs(nb,ifut)
-                      f3k(ik)=f3k(ik)+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
+                      f3loc=f3loc+f2b*x1*chp2phabs(nb,jfut)*chp2phabs(nb,jfut)/dist
                     end if
                   end if
                 end do
-                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3k(ik)
+                exch_hfk(icenter,ik)=exch_hfk(icenter,ik)+f3loc
               end do
             end do
+!$OMP END PARALLEL DO
           end do
-  
-  !! ADDING THE TERMS INTO THE ORIGINAL coul0 MATRIX !!
+
+  !! reduce the per-thread accumulator into the same-center coul0 term. !!
           do icenter=1,nat
             do isum=1,ithreads
               coul0(icenter,4)=coul0(icenter,4)-exch_hfk(icenter,isum)/TWO
@@ -1829,7 +2451,8 @@
           end do
         end if
   
-!! CHECKING NEW VALUES !!
+!! compare same-center coul0/exch_hf against the rotated-grid recompute !!
+!! to get the damping parameter for the interpolation below. !!
         do i=1,nat
           coul0(i,1)=coul(i,i)
           if(idoex.eq.1) coul0(i,2)=exch_hf(i,i)
@@ -1841,80 +2464,40 @@
         end do
         deltaee=deltaee*tokcal
         phabest=ONE-(twoelerr/deltaee)
-        write(*,'(2x,a25,x,f8.2)') "New error after rotation:",twoelerr-deltaee
-        if(twoelerr-deltaee*twoelerr.gt.ZERO) write(*,*) " WARNING: New error with same sign"
-        write(*,'(2x,a18,x,f14.7)') "Damping parameter:",phabest !MMO- not dumping !! ...
+        err1=twoelerr
+        err2=twoelerr-deltaee
 
-!! INTERPOLATING ENERGIES AND REPLACING OLD COULOMB AND EXCHANGE TERMS !!
+!! interpolate energies, replacing the old Coulomb/exchange terms !!
         do i=1,nat
           coul(i,i)=coul0(i,1)*phabest+(ONE-phabest)*coul0(i,3)
-          if(idoex.eq.1) then
-            exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
-          end if
+          if(idoex.eq.1) exch_hf(i,i)=coul0(i,2)*phabest+(ONE-phabest)*coul0(i,4)
         end do
-        write(*,*) " "
 
-!! PRINTING !!
-        write(*,*) " ------------------------------------------------------- "
-        write(*,*) "  INTERPOLATED COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
-        write(*,*) " ------------------------------------------------------- "
-        write(*,*) " " 
-        call MPRINT2(coul,nat,maxat)
         coulen=ZERO
         do i=1,nat
           do j=i,nat
             coulen=coulen+coul(i,j)
           end do
         end do
-        write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-        write(*,*) " "
-        if(idofr.eq.1) then
-          line='   FRAGMENT ANALYSIS: Coulomb energy ' 
-          call group_by_frag_mat(1,line ,coul)
-        end if
-
         if(idoex.eq.1) then
-          write(*,*) " ------------------------------------------------------ "
-          write(*,*) "  INTERPOLATED HARTREE-FOCK-TYPE EXCHANGE ENERGY TERMS  "
-          write(*,*) " ------------------------------------------------------ "
-          write(*,*) " "
-          call MPRINT2(exch_hf,nat,maxat)
           exchen_hf=ZERO
           do i=1,nat
             do j=i,nat
               exchen_hf=exchen_hf+exch_hf(i,j)
             end do
           end do
-          write(*,'(2x,a29,x,f14.7)') "Hartree-Fock exchange energy:",exchen_hf
-          write(*,*) " "
-
           if(ihf.ne.1) then
             exchen=ZERO
             do i=1,nat
               exch(i,i)=exch(i,i)+xmix*(exch_hf(i,i)-coul0(i,2))
               exchen=exchen+exch(i,i)
               do j=i+1,nat
-!MMO- commenting the line below this one (instruccions Marti)
-!! MG: THIS IS ALREADY DONE IN THE FIRST ROTATION AND HERE ARE NOT TOUCHED !!
-!                exch(i,j)=exch(i,j)+xmix*exch_hf(i,j)
                 exch(j,i)=exch(i,j)
                 exchen=exchen+exch(i,j)
               end do
             end do
-
-            write(*,*) " ------------------------------------- "
-            write(*,*) "  INTERPOLATED HYBRID KS-DFT XC TERMS  "
-            write(*,*) " ------------------------------------- "
-            write(*,*) " "
-            call MPRINT2(exch,nat,maxat)
-            write(*,'(2x,a34,x,f14.7)') "Total exchange-correlation energy:",exchen
-            write(*,*) " "
-            if(idofr.eq.1) then
-              line='   FRAGMENT ANALYSIS: Final Exc Decomposition ' 
-              call group_by_frag_mat(1,line ,exch)
-            end if
           end if
-        else    
+        else
           exchen=ZERO
           do i=1,nat
             exchen=exchen+exch(i,i)
@@ -1924,24 +2507,35 @@
           end do
         end if
 
-!! TOTAL TWO ELECTRON PART !!
         if(ihf.eq.0) then
           evee=coulen+exchen
-          write(*,'(2x,a32,x,f14.7)') "KS-DFT electron-electron energy:",evee              
-          twoelerr=(evee-evee0)*tokcal
-          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         else
           evee=coulen+exchen_hf
-          write(*,'(2x,a39,x,f14.7)') "Total two-electron part (coul+exch_HF):",evee            
-          twoelerr=(evee-evee0)*tokcal
-          write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",twoelerr
         end if
-        write(*,*) " "
+        twoelerr=(evee-evee0)*tokcal
+        call enpart_ee_tail(err1,err2,phabest,evee,twoelerr,.false.)
+        write(*,'(a)') ''
+        call cpu_time(xtime2)
+        call get_wall_time(wxtime2)
+        call print_timer('ENPART zero-error correction',xtime2-xtime,
+     +    wxtime2-wxtime)
+        xtime=xtime2
+        wxtime=wxtime2
       end if
 
-!! END ZERO-ERROR STRATEGY !!
+      call json_enpart_ee(eveefg,errfg,iref,twoeltoler,izerr,err2,
+     +  phabest,evee,twoelerr)
 
-!! FINAL PRINTING !!
+!! final two-electron matrices; with VERBOSE 1 first the first-grid ones !!
+!! when the zero-error correction was applied                            !!
+      if(izerr.eq.1.and.iverbose.eq.1) call enpart_two_mats(ihf,xmix,
+     +  coulb,xcoulb,exhfb,xexhfb,exchb,xexchb,
+     +  ', BEFORE THE ZERO-ERROR CORRECTION')
+      if(allocated(coulb)) DEALLOCATE(coulb,exhfb,exchb)
+      call enpart_two_mats(ihf,xmix,coul,coulen,exch_hf,exchen_hf,exch,
+     +  exchen,' ')
+
+!! IQA matrix: one-electron terms (in eto) + Coulomb + exchange(-corr.) !!
       if(ihf.eq.1) then
         xtot=ZERO
         do i=1,nat
@@ -1954,24 +2548,7 @@
           end do
         end do
         etot=xtot
-
-        write(*,*) " -------------------------------------------- "
-        write(*,*) "  FUZZY ATOMS Hartree-Fock ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------------- "
-        write(*,*) " "
-        call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total integrated energy  :",etot  
-        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf 
-  
-!MMO - added ifield loop, to match restricted
-        if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
-          err=(etot-escf+edipole)
-        else
-          err=(etot-escf)
-        end if
-        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch_hf,.true.)
       else
         xtot=ZERO
         do i=1,nat
@@ -1984,34 +2561,16 @@
           end do
         end do
         etot=xtot
-
-        write(*,*) " -------------------------------------- "
-        write(*,*) "  FUZZY ATOMS KS-DFT ENERGY COMPONENTS  "
-        write(*,*) " -------------------------------------- "
-        write(*,*) " "
-        call MPRINT2(eto,nat,maxat)
-        write(*,'(2x,a26,x,f14.7)') "Total KS-DFT energy      :",etot  
-        write(*,'(2x,a26,x,f14.7)') "Total energy in Fchk file:",escf
-
-!MMO - added ifield loop, to match restricted
-        if(ifield.eq.1) then
-          write(*,'(2x,a20,x,f14.7)') "Total dipole energy:",edipole
-          err=(etot-escf+edipole)
-        else
-          err=(etot-escf)
-        end if
-        write(*,'(2x,a23,x,f14.7)') "Integration error (au):",err
-        write(*,'(2x,a29,x,f8.2)') "Integration error (kcal/mol):",err*tokcal
-      end if
-      if(idofr.eq.1) then
-        line='   FRAGMENT ANALYSIS: Energy Decomposition' 
-        call group_by_frag_mat(1,line ,eto)
+        call enpart_iqa(eto,etot,escf,ifield,edipole,exch,.true.)
       end if
 
-      if(ianalytic.eq.0) then
+      if(ianalytical.eq.0) then
         DEALLOCATE(chp2,chp2b,chp2pha,rhopha,chp2phab)
         DEALLOCATE(wppha,omppha,omp2pha,chppha,pcoordpha)
-!! MG: DEALLOCATING THE PARALLEL PART MISSING (I'VE BEEN LAZY)
+        DEALLOCATE(chp2s,chp2bs,chp2phas,chp2phabs)
+        if(idoex.eq.1) then
+          DEALLOCATE(f3k,exch_hfk,istart,iend,ijpaircount,exch_hfij)
+        end if
       else
         DEALLOCATE(chp2,chp2b)
       end if
@@ -2019,413 +2578,563 @@
 
 !! ***** !!
 
-      subroutine polar(itotps,nat0,wp,omp,omp2,pcoord,rho)
+!! ----------------------------------------------------------------------
+!! subroutine: polar
+!! POLAR: decomposition of the dipole moment into atomic contributions,
+!! the basis of the origin-independent decomposition of static
+!! polarizabilities by finite fields (M. Montilla, J. M. Luis and
+!! P. Salvador, J. Chem. Theory Comput. 2021, 17, 1098). With the atomic
+!! weights w_A, N_A = int w_A rho and q_A = Z_A - N_A (au throughout):
+!!   dipat_A  = Z_A R_A - int w_A rho r   origin-dependent atomic dipole,
+!!                                        sum over A = molecular dipole
+!!   dipint_A = -int w_A rho (r - R_A)    intrinsic (origin-independent)
+!!   dipat_A  = dipint_A + q_A R_A
+!! The charge-transfer part, sum_A q_A R_A, is split into origin-
+!! independent atomic terms with Keith's bond charges, generalized to
+!! overlapping atoms: Q(A|B) = -Q(B|A) for neighbor atoms A and B, with
+!! sum_B Q(A|B) = q_A (charges renormalized to the number of electrons,
+!! so that they add up to zero), and
+!!   dipct_A = sum_B Q(A|B) (R_A - R_B)/2.
+!! Two atoms are neighbors when no other atom is closer to the midpoint
+!! of A-B than half the A-B distance. Rings give more bond charges than
+!! independent equations: ichi.inp then removes bonds and adds, for each
+!! ring, the equation sum of Q around the ring = 0.
+!! With an external field F in the .fchk, also the field energies of the
+!! intrinsic and charge-transfer dipoles of each atom, mu_A.F.
+!! arguments:
+!!   itotps (in)  total number of grid points
+!!   nat0   (in)  number of atoms (second dimension of omp2)
+!!   wp     (in)  integration weight of each grid point
+!!   omp2   (in)  (itotps,nat0) atomic weight of each point
+!!   pcoord (in)  (itotps,3) coordinates of each point
+!!   rho    (in)  electron density at each point
+!! main local arrays (component k = x, y, z):
+!!   dipat(maxat,3)   origin-dependent atomic dipoles
+!!   dipint(maxat,3)  intrinsic atomic dipoles
+!!   dipct(maxat,3)   charge-transfer atomic dipoles (bond charges)
+!!   dipmol(3)        molecular dipole, sum of dipat
+!!   dipinttot(3)     sum of dipint
+!!   dipcttot(3)      sum of dipct
+!!   dipctq(3)        sum_A q_A R_A, charges as integrated
+!!   efld(maxat,2)    field energies of dipint and dipct of each atom
+!!   ibond(nat,nat)   1 (A<B) or -1 (A>B) for neighbor atoms, else 0
+!!   qbond(nq)        bond charges Q(A|B) of the nq neighbor pairs A<B
+!! author: MMontilla (charge-transfer split)
+!! ----------------------------------------------------------------------
+      subroutine polar(itotps,nat0,wp,omp2,pcoord,rho)
       use integration_grid
+      use elements_mod
+      use output_mod, only: print_value
       IMPLICIT REAL*8(A-H,O-Z)
       integer, intent(in) :: itotps,nat0
       include 'parameter.h'
-      parameter (maxbonds=300)
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /atomrad/atr(maxat),dist(maxat,maxat)
       common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
-      common/actual/iact,jat,icenter
-      common/efield/field(4),edipole
+      common /iops/iopt(200)
+      common /efield/field(4),edipole
       common /qat/qat(maxat,2),qsat(maxat,2)
+      common /printout/iaccur
       dimension wp(itotps),pcoord(itotps,3),rho(itotps)
-      dimension omp(itotps),omp2(itotps,nat0)
-      dimension dipint(maxat,3)
-      dimension eint(maxat),dip(maxat,3),dipct(3),diptot(3)         
-c MM
-      dimension itracker(maxbonds),jtracker(maxbonds)
-      real*8 MAT
-      dimension MAT(maxbonds,maxbonds+1),ichi(maxat,maxat)
-      dimension csolv(maxbonds),qqnorm(maxat),ct(maxat,3)
-      dimension scr(3),iringatoms(20)
-      integer unique_qij,B(maxat,maxat)
+      dimension omp2(itotps,nat0)
+      dimension dipat(maxat,3),dipint(maxat,3),dipct(maxat,3)
+      dimension dipmol(3),dipinttot(3),dipcttot(3),dipctq(3)
+      dimension efld(maxat,2),qqnorm(maxat)
+      integer, allocatable :: ibond(:,:),itracker(:),jtracker(:)
+      integer, allocatable :: iringatoms(:)
+      allocatable amat(:,:),qbond(:)
       logical ilog
-c
+      character*80 line
+      character*40 cfld,fmtrow,fmthdr
+      character*17 clab
 
-      idofr   =   iopt(40)
-      ifield  =   iopt(47)
-
-      ipoints=itotps
+      ifield=iopt(47)
       iatps=nang*nrad
+      if(iaccur.eq.0) then
+        iw=12
+        ndec=6
+      else
+        iw=20
+        ndec=13
+      end if
 
-      do i=1,3
-        dipct(i)=0.0d0
+!! atomic dipoles, from the points of each atom's own grid !!
+      do k=1,3
+        dipctq(k)=ZERO
+      end do
+      do iat=1,nat
+        x=ZERO
+        y=ZERO
+        z=ZERO
+        pop=ZERO
+        do ip=iatps*(iat-1)+1,iatps*iat
+          x=x+wp(ip)*omp2(ip,iat)*rho(ip)*pcoord(ip,1)
+          y=y+wp(ip)*omp2(ip,iat)*rho(ip)*pcoord(ip,2)
+          z=z+wp(ip)*omp2(ip,iat)*rho(ip)*pcoord(ip,3)
+          pop=pop+wp(ip)*omp2(ip,iat)*rho(ip)
+        end do
+        dipat(iat,1)=-x+zn(iat)*coord(1,iat)
+        dipat(iat,2)=-y+zn(iat)*coord(2,iat)
+        dipat(iat,3)=-z+zn(iat)*coord(3,iat)
+        dipint(iat,1)=-x+pop*coord(1,iat)
+        dipint(iat,2)=-y+pop*coord(2,iat)
+        dipint(iat,3)=-z+pop*coord(3,iat)
+        do k=1,3
+          dipctq(k)=dipctq(k)+(zn(iat)-pop)*coord(k,iat)
+        end do
+      end do
+      do k=1,3
+        dipmol(k)=ZERO
+        dipinttot(k)=ZERO
+        do iat=1,nat
+          dipmol(k)=dipmol(k)+dipat(iat,k)
+          dipinttot(k)=dipinttot(k)+dipint(iat,k)
+        end do
       end do
 
+      call enpart_atom_table('ORIGIN-DEPENDENT ATOMIC DIPOLES',
+     +  'Z_A R_A minus the electronic dipole of the atom (au); they '//
+     +  'add up to the',
+     +  'dipole moment of the molecule.',3,dipat,'X','Y','Z',.true.)
+      call enpart_atom_table('INTRINSIC ATOMIC DIPOLES',
+     +  'Electronic dipole of the atom with respect to its nucleus '//
+     +  '(au), origin',
+     +  'independent.',3,dipint,'X','Y','Z',.true.)
 
-       print *,' '
-       print *,' --------------------------------------'
-       print *,'       DIPOLE MOMENT DECOMPOSITION'
-       print *,' --------------------------------------'
-       print *,' '
-       xtot=0.0d0
-       do icenter=1,nat
-        x=0.0d0
-        y=0.0d0
-        z=0.0d0
-        zztop=0.0d0
-        do ifut=iatps*(icenter-1)+1,iatps*icenter
-         distx=pcoord(ifut,1)
-         disty=pcoord(ifut,2)
-         distz=pcoord(ifut,3)
-         x=x+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distx
-         y=y+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*disty
-         z=z+wp(ifut)*omp2(ifut,icenter)*rho(ifut)*distz
-         zztop=zztop+wp(ifut)*omp2(ifut,icenter)*rho(ifut)
+!! neighbor atoms: no third atom closer to the midpoint of A-B than !!
+!! half the A-B distance                                             !!
+      allocate(ibond(nat,nat))
+      do iat=1,nat
+        do jat=1,nat
+          ibond(iat,jat)=0
         end do
-        dip(icenter,1)=-x+zn(icenter)*coord(1,icenter)    
-        dip(icenter,2)=-y+zn(icenter)*coord(2,icenter)    
-        dip(icenter,3)=-z+zn(icenter)*coord(3,icenter)    
-        dipint(icenter,1)=-x+zztop*coord(1,icenter)    
-        dipint(icenter,2)=-y+zztop*coord(2,icenter)    
-        dipint(icenter,3)=-z+zztop*coord(3,icenter)    
-        do j=1,3
-         dipct(j)=dipct(j)+(zn(icenter)-zztop)*coord(j,icenter)    
+      end do
+      do iat=1,nat-1
+        do jat=iat+1,nat
+          ibond(iat,jat)=1
+          xm=(coord(1,jat)+coord(1,iat))/TWO
+          ym=(coord(2,jat)+coord(2,iat))/TWO
+          zm=(coord(3,jat)+coord(3,iat))/TWO
+          disth=dist(iat,jat)/TWO
+          do kat=1,nat
+            if(kat.ne.iat.and.kat.ne.jat) then
+              xdist=dsqrt((xm-coord(1,kat))**2+(ym-coord(2,kat))**2+
+     +          (zm-coord(3,kat))**2)
+              if(xdist.lt.disth) then
+                ibond(iat,jat)=0
+                exit
+              end if
+            end if
+          end do
+          ibond(jat,iat)=-ibond(iat,jat)
         end do
-       enddo
-       write(*,*) ' '
-       write(*,*) 'Origin-dependent atomic dipole moments'
-       call mprint_nlop(dip,nat,maxat)
-       write(*,*) ' '
-       write(*,*) 'Total dipole moment: '
-       do j=1,3  
-        diptot(j)=0.0d0
-        do i=1,nat
-         diptot(j)=diptot(j)+dip(i,j)
+      end do
+
+      nq=0
+      do iat=1,nat-1
+        do jat=iat+1,nat
+          nq=nq+ibond(iat,jat)
         end do
-       end do
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (diptot(i),i=1,3)
-       write(*,*) ' '
-C
-       write(*,*) ' '
-       write(*,*) 'Intrinsic atomic dipole moments'
-       call mprint_nlop(dipint,nat,maxat)
-       write(*,*) ' '
-       write(*,*) 'Total intrinsic dipole moment: '
-       do j=1,3  
-        diptot(j)=0.0d0
-        do i=1,nat
-         diptot(j)=diptot(j)+dipint(i,j)
+      end do
+
+      call print_box('BOND CHARGES')
+      call print_value('Neighbor atom pairs',nq)
+
+!! nq bond charges, nat-1 independent charge equations: each ring of !!
+!! neighbors needs one more equation, read from ichi.inp             !!
+      nring=nq-nat+1
+      if(nring.ne.0) then
+        write(*,'(2x,a,i0,a)') 'The neighbor pairs form rings: ',nring,
+     +  ' more equation(s) needed, read from ichi.inp'
+        open(45,file='ichi.inp',status='old',iostat=ios)
+        if(ios.ne.0) then
+          write(*,'(2x,a)') 'Neighbor atoms (1: A<B, -1: A>B):'
+          do iat=1,nat
+            write(*,'(2x,40i3)') (ibond(iat,jat),jat=1,nat)
+          end do
+          call apost_stop('POLAR: ichi.inp is needed for a molecule '//
+     +      'with rings')
+        end if
+        read(45,'(a80)') line
+        read(45,*) n
+        if(n.lt.0) then
+          do k=1,-n
+            read(45,*) i,j
+            if(ibond(i,j).ne.0) nq=nq-1
+            ibond(i,j)=0
+            ibond(j,i)=0
+            write(*,'(2x,a,i0,a,i0)') 'Pair removed (ichi.inp): ',i,
+     +        ' - ',j
+          end do
+        end if
+      end if
+
+      allocate(itracker(max(nq,1)),jtracker(max(nq,1)))
+      l=0
+      do iat=1,nat-1
+        do jat=iat+1,nat
+          if(ibond(iat,jat).eq.1) then
+            l=l+1
+            itracker(l)=iat
+            jtracker(l)=jat
+          end if
         end do
-       end do
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (diptot(i),i=1,3)
-       write(*,*) ' '
-C
-C Generalized Keith algorithm to decompose the charge-transfer term
-C Code by MMontilla
+      end do
 
-C Recalculating geometrical connectivities 
-C in case TFVC is not used
-
-       do iatom=1,nat-1
-         do jatom=iatom+1,nat
-           ichi(iatom,jatom)=1
-           rijx2=(coord(1,jatom)+coord(1,iatom))/2.0d0
-           rijy2=(coord(2,jatom)+coord(2,iatom))/2.0d0
-           rijz2=(coord(3,jatom)+coord(3,iatom))/2.0d0
-           disth=dist(iatom,jatom)/2.0d0
-           do ii=1,nat
-             if(ii.ne.iatom.and.ii.ne.jatom) then
-               xdist=sqrt((rijx2-coord(1,ii))**2+(rijy2-coord(2,ii))**2+(rijz2-coord(3,ii))**2)
-               if(xdist.lt.disth) then
-                 ichi(iatom,jatom)=0
-                 go to 123
-               end if
-             end if
-           end do
-123        continue
-         end do
-       end do
-
-       do i=1,nat
-         do j=i,nat
-           B(i,j)=ichi(i,j)
-           B(j,i)=-B(i,j)
-         end do
-       end do
-
-C Finding unique q_ij contributions, aka Q(A|B) contributions.
-       unique_qij=0
-       do i=1,Nat
-         do j=i+1,Nat
-           unique_qij=unique_qij+B(i,j)
-         end do
-       end do
-       write(*,*) 'Unique Q(A|B) contributions found:',unique_qij
-
-C Initializing coeff. matrix.
-       do i=1,unique_qij
-         do j=1,unique_qij
-           MAT(i,j)=0.0d0
-         end do
-       end do
-
-C Checking for lack of equations (unique_qij=number of unknowns;nat-1=number of independent equations
-C ;excess unknowns require additional equations)
-       iexcess=unique_qij-nat+1
-       if(iexcess.ne.0) then 
-         write(*,*) 'WARNING, CYCLIC CONNECTIVITY.'
-         write(*,*) 'Will need ',iexcess,'additional equations.'
-         write(*,*) ' '
-
-         open(45,FILE="ichi.inp",status="old",iostat=ii)
-         if(ii.ne.0) then
-           write(*,*) 'Printing connectivity matrix:'
-           do i=1,nat
-             write(*,'(40i2)') (b(i,j),j=1,nat)
-           end do
-           stop 'error in polar, ichi.inp file is needed'
-         end if
-         read(45,'(a80)') 
-         read(45,*) N
-
-C Introducing (-N) modifications on the connectiviy matrix.
-         if(N.lt.0) then
-           write(*,*) 'Removing ',abs(N),' bonds.'
-           do k=1,abs(N)
-             read(45,*) i,j
-             B(i,j)=0
-             B(j,i)=0
-             unique_qij=unique_qij-1
-             write(*,*) 'Removed bond between atoms',i,j            
-           end do
-         end if
-       end if
-
-C Labeling the unique q_ij, or Q(A|B), contributions.
-       l=1
-       do i=1,Nat
-         do j=i+1,Nat
-           if(B(i,j).eq.1.0) then
-             itracker(l)=i
-             jtracker(l)=j
-             write(*,*) 'Tracker pair ',l,':',i,j
-             l=l+1
-           end if
-         end do
-       end do
-       if(l-1.ne.unique_qij) stop 'problem in polar'
-C End of modifications. Final connectiviy matrix.
-
-C Additional equations for rings if needed. The same iexcess check is performed here,
-C  because the loop is never needed if iexcess is 0.
-       iextra=0
-       if(iexcess.ne.0) then 
-         read(45,*) N
-         if(N.ne.0) then
-           write(*,*) 'Reading ',N,'additional ring equations.'
-           do ii=1,N
-             read(45,*) iringsize
-             read(45,*) (iringatoms(k),k=1,iringsize)
-             iextra=iextra+1
-             do i=1,iringsize-1
-               j=i+1
-               do m=1,unique_qij
-                 if(iringatoms(i).eq.itracker(m).and.iringatoms(j).eq.jtracker(m)) then
-                   Mat(iextra,m)=1.0d0
-                 else if(iringatoms(j).eq.itracker(m).and.iringatoms(i).eq.jtracker(m)) then
-                   Mat(iextra,m)=-1.0d0
-                 end if
-               end do
-             end do
-C Particular case (connectivity between last and first atoms in the ring). 
-             i=iringsize
-             j=1
-             do m=1,unique_qij
-               if(iringatoms(i).eq.itracker(m).and.iringatoms(j).eq.jtracker(m)) then
-                 Mat(iextra,m)=1.0d0
-               else if(iringatoms(j).eq.itracker(m).and.iringatoms(i).eq.jtracker(m)) then
-                 Mat(iextra,m)=-1.0d0
-               end if
-             end do
-C Condition for cycles. 
-             Mat(iextra,unique_qij+1)=0.0d0
-           end do
-         end if
-       end if
-C End reading.
-121    if(iexcess.ne.0) close(45)
-
-C Building the matrix of coefficients.
-       do i=1,Nat
-         do j=1,Nat
-           if(B(i,j).eq.1.or.B(i,j).eq.-1) then
-             do m=1,unique_qij
-               if(i.eq.itracker(m).and.j.eq.jtracker(m).or.j.eq.itracker(m).and.i.eq.jtracker(m)) then
-                 Mat(i+iextra,m)=B(i,j)
-               end if
-             end do
-           end if
-         end do
-       end do
-
-       if(iextra+nat-1.ne.unique_qij) stop 'problem building coeff matrix in polar'
-
-c renormalizing atomic populations
-        xx=0.0d0
-        do i=1,nat
-         xx=xx+qat(i,1)
+!! the equations: one row per ring first, then one per atom; the last !!
+!! atom's row is not used (it follows from the others)                !!
+!! solvesystem takes A(ndim,ndim+1) with the right-hand side in column !!
+!! nq+1; ndim = nq+1 rows hold the ring rows and every atom row         !!
+      allocate(amat(nq+1,nq+2),qbond(nq+1))
+      do i=1,nq+1
+        do j=1,nq+2
+          amat(i,j)=ZERO
         end do
-        do i=1,nat
-         qqnorm(i)=zn(i)-qat(i,1)*(nalf+nb)/xx
+      end do
+      iextra=0
+      if(nring.ne.0) then
+        read(45,*) n
+        allocate(iringatoms(nat))
+        do ii=1,n
+          read(45,*) iringsize
+          read(45,*) (iringatoms(k),k=1,iringsize)
+          iextra=iextra+1
+          if(iextra+nat-1.gt.nq) call apost_stop('POLAR: more ring '//
+     +      'equations in ichi.inp than rings')
+          do i=1,iringsize
+            ia=iringatoms(i)
+            ja=iringatoms(mod(i,iringsize)+1)
+            do m=1,nq
+              if(ia.eq.itracker(m).and.ja.eq.jtracker(m))
+     +          amat(iextra,m)=ONE
+              if(ja.eq.itracker(m).and.ia.eq.jtracker(m))
+     +          amat(iextra,m)=-ONE
+            end do
+          end do
         end do
-        
-        do i=1,nat       
-          Mat(i+iextra,unique_qij+1)=qqnorm(i)
+        deallocate(iringatoms)
+        close(45)
+      end if
+      if(iextra+nat-1.ne.nq) call apost_stop('POLAR: the bond charges '//
+     +  'and their equations do not match (check ichi.inp)')
+
+      xx=ZERO
+      do iat=1,nat
+        xx=xx+qat(iat,1)
+      end do
+      do iat=1,nat
+        qqnorm(iat)=zn(iat)-qat(iat,1)*(nalf+nb)/xx
+        amat(iat+iextra,nq+1)=qqnorm(iat)
+        do m=1,nq
+          if(itracker(m).eq.iat.or.jtracker(m).eq.iat) then
+            jat=itracker(m)+jtracker(m)-iat
+            amat(iat+iextra,m)=dble(ibond(iat,jat))
+          end if
         end do
+      end do
+      call solvesystem(nq,nq+1,amat,qbond,ilog)
+      if(.not.ilog) call apost_stop('POLAR: no unique solution for the '//
+     +  'bond charges (check ichi.inp)')
 
-        write(*,*) 'Echoing matrix of coefficients.'
-        do i=1,Nat
-            write(*,'(8f10.6)') (Mat(i,j),j=1,unique_qij+1)
+      do iat=1,nat
+        do k=1,3
+          dipct(iat,k)=ZERO
         end do
-
-        call SOLVESYSTEM(unique_qij,maxbonds,MAT,csolv,ilog)
-        if(ilog.eqv..false.) stop 'error in polar, CT decomposition'
-
-
-C Echoing the solutions of the system of equations, for testing purposes.
-c        do i=1,unique_qij
-c            write(*,*) 'Unkown number',i,'is',csolv(i)
-c        end do
-
-C Final calculations.
-       do i=1,nat
-         do j=1,3
-           CT(i,j)=0.0d0
-           scr(j)=0.0d0
-         end do
-       end do
-
-       do i=1,Nat
-         do j=1,Nat
-           if(B(i,j).NE.0) then
-             Rabx=(coord(1,i)-coord(1,j))/2.0d0
-             Raby=(coord(2,i)-coord(2,j))/2.0d0
-             Rabz=(coord(3,i)-coord(3,j))/2.0d0
-             do m=1,unique_qij
-               if(i.eq.itracker(m).and.j.eq.jtracker(m).or.j.eq.itracker(m).and.i.eq.jtracker(m)) l=m
-             end do
-             CT(i,1)=CT(i,1)+B(i,j)*csolv(l)*Rabx
-             CT(i,2)=CT(i,2)+B(i,j)*csolv(l)*Raby
-             CT(i,3)=CT(i,3)+B(i,j)*csolv(l)*Rabz
-           end if
-         end do
-       end do
-
-C Echoing final Keith results.
-       write(*,*) ' '
-       write(*,*) 'Charge-transfer atomic dipole moments (renormalized charges):'
-       call mprint_nlop(ct,nat,maxat)
-       write(*,*) ' '
-       write(*,*) 'Total CT dipole moment (renormalized charges):'
-        do i=1,Nat
-         do j=1,3
-          scr(j)=scr(j)+CT(i,j)
-         end do
+      end do
+      do iat=1,nat
+        do jat=1,nat
+          if(ibond(iat,jat).ne.0) then
+            do m=1,nq
+              if((iat.eq.itracker(m).and.jat.eq.jtracker(m)).or.
+     +          (jat.eq.itracker(m).and.iat.eq.jtracker(m))) l=m
+            end do
+            do k=1,3
+              r=(coord(k,iat)-coord(k,jat))/TWO
+              dipct(iat,k)=dipct(iat,k)+ibond(iat,jat)*qbond(l)*r
+            end do
+          end if
         end do
-        write(*,'(3f24.15)') (scr(i),i=1,3)
-       write(*,*) '  ' 
-       write(*,*) 'Total CT dipole moment (unscaled charges):'
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (dipct(i),i=1,3)
+      end do
+      do k=1,3
+        dipcttot(k)=ZERO
+        do iat=1,nat
+          dipcttot(k)=dipcttot(k)+dipct(iat,k)
+        end do
+      end do
 
-C PSS
-       write(*,*) ' '
-       write(*,*) 'Total dipole moment:'
-       write(*,*) '               X                   Y                      Z' 
-       write(*,'(3f24.15)') (dipct(i)+diptot(i),i=1,3)
-       write(*,*) ' '
+!! bond charges and the charge-transfer dipoles !!
+      write(*,'(a)') ''
+      write(*,'(2x,a)') 'Bond charges Q(A|B) of the neighbor atoms: '//
+     +  'Q(A|B) = -Q(B|A),'
+      write(*,'(2x,a)') 'the charge of A is the sum of its Q(A|B), '//
+     +  'renormalized to the'
+      write(*,'(2x,a)') 'number of electrons.'
+      write(*,'(a)') ''
+      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
+      write(fmtrow,'(a,i0,a,i0,a)') '(2x,i3,a4,a3,i3,a4,f',iw,'.',
+     +  ndec,')'
+      clab='Atoms A - B'
+      write(*,fmthdr) clab,'Q(A|B)'
+      write(*,'(2x,a)') repeat('-',17+iw)
+      do m=1,nq
+        write(*,fmtrow) itracker(m),element_label(iznuc(itracker(m))),
+     +    ' - ',jtracker(m),element_label(iznuc(jtracker(m))),qbond(m)
+      end do
+      write(*,'(2x,a)') repeat('-',17+iw)
 
-c  energetics 
-       if(ifield.eq.1) then
-       dipen=0.0d0
-       do icenter=1,nat
-        eint(icenter)=dip(icenter,1)*field(2)+dip(icenter,2)*field(3)+dip(icenter,3)*field(4)  
-        dipen=dipen+eint(icenter)
-       end do
-       cten=cten+dipct(1)*field(2)+dipct(2)*field(3)+dipct(3)*field(4)
+      call enpart_atom_table('CHARGE-TRANSFER ATOMIC DIPOLES (BOND '//
+     +  'CHARGES)','Sum of Q(A|B) (R_A - R_B)/2 over the neighbors of '//
+     +  'the atom (au), origin',
+     +  'independent.',3,dipct,'X','Y','Z',.true.)
 
-       write(*,*) 'Intrinsic atomic dipole energy terms :'
-       do i=1,nat
-        write(*,'(a6,i4,f22.15)') 'Atom: ',i,eint(i)
-       end do
-       write(*,*) ' '
-       write(*,*) 'Total Intrinsic dipole energy term :',dipen
+!! the molecular dipole: intrinsic + charge transfer (q_A R_A) !!
+      call print_box('MOLECULAR DIPOLE MOMENT')
+      write(*,'(2x,a)') 'Charge transfer: sum of q_A R_A, with the '//
+     +  'charges as integrated (au).'
+      write(*,'(a)') ''
+      write(fmthdr,'(a,i0,a)') '(2x,a,3a',iw,')'
+      write(fmtrow,'(a,i0,a,i0,a)') '(2x,a,3f',iw,'.',ndec,')'
+      clab=' '
+      write(*,fmthdr) clab,'X','Y','Z'
+      write(*,'(2x,a)') repeat('-',17+3*iw)
+      clab='Intrinsic'
+      write(*,fmtrow) clab,(dipinttot(k),k=1,3)
+      clab='Charge transfer'
+      write(*,fmtrow) clab,(dipctq(k),k=1,3)
+      write(*,'(2x,a)') repeat('-',17+3*iw)
+      clab='Total'
+      write(*,fmtrow) clab,(dipmol(k),k=1,3)
 
-       write(*,*) 'Total Charge-transfer  energy term :',cten
-       edipole=cten+dipen
-       write(*,*) 'Total dipole energy term :',edipole
+!! neutral molecule: the bond charges add up to the same charge-       !!
+!! transfer dipole, up to the renormalization of the charges (the      !!
+!! integration error). An ion leaves its charge out of the last atom's !!
+!! equation, the one not solved                                        !!
+      qnet=ZERO
+      do iat=1,nat
+        qnet=qnet+qqnorm(iat)
+      end do
+      if(abs(qnet).gt.1.0d-6) then
+        write(*,'(a)') ''
+        write(cfld,'(f8.2)') qnet
+        write(*,'(2x,a)') 'Charged molecule (charge '//
+     +    trim(adjustl(cfld))//'): the bond charges miss the charge of the'
+        write(*,'(2x,a)') 'molecule, so the charge-transfer dipoles do '//
+     +    'not add up to sum of q_A R_A;'
+        write(*,'(2x,a)') 'their differences between two fields '//
+     +    '(polarizabilities) are not affected.'
+      else
+        diff=ZERO
+        do k=1,3
+          diff=max(diff,abs(dipcttot(k)-dipctq(k)))
+        end do
+        if(diff.gt.1.0d-4) then
+          write(*,'(a)') ''
+          write(*,'(2x,a,es9.2,a)') 'WARNING: the charge-transfer '//
+     +      'dipoles of the bond charges differ by',diff,' au'
+          write(*,'(2x,a)') 'from sum of q_A R_A: check the '//
+     +      'integration grid (and ichi.inp).'
+        end if
+      end if
 
-       end if
+!! field energies mu_A.F of the intrinsic and charge-transfer dipoles !!
+      if(ifield.eq.1) then
+        do iat=1,nat
+          efld(iat,1)=dipint(iat,1)*field(2)+dipint(iat,2)*field(3)+
+     +      dipint(iat,3)*field(4)
+          efld(iat,2)=dipct(iat,1)*field(2)+dipct(iat,2)*field(3)+
+     +      dipct(iat,3)*field(4)
+        end do
+        efield=ZERO
+        do k=1,3
+          efield=efield+dipmol(k)*field(k+1)
+        end do
+        call enpart_atom_table('FIELD ENERGY OF THE ATOMIC DIPOLES',
+     +    'mu_A.F of the intrinsic and charge-transfer dipoles of '//
+     +    'each atom (au).',' ',2,efld,'Intrinsic','Charge tr.',' ',
+     +    .true.)
+        write(*,'(a)') ''
+        write(cfld,'(3f10.6)') field(2),field(3),field(4)
+        call print_value('Field x, y, z',trim(adjustl(cfld)),'au')
+        call print_value('Field energy of the dipole, mu.F',efield,
+     +    ndec,'au')
+      end if
 
-       end
+      deallocate(ibond,itracker,jtracker,amat,qbond)
+      end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: multipolar                                                  !!
+!! purpose: multipolar-expansion estimate of the exchange(-correlation)    !!
+!!   energy of every atom pair, used for pairs skipped by the THREBOD     !!
+!!   bond-order threshold. Each pair "density" f_ij of the xc density is  !!
+!!   expanded in per-atom charge/dipole/quadrupole moments, and the        !!
+!!   pairwise terms are summed up to quadrupole-quadrupole. This version  !!
+!!   takes the f_ij stored on the grid (CASSCF/CISD: eigenfunctions of     !!
+!!   the xc density); see multipolar_mo for products of MOs.               !!
+!! arguments:                                                              !!
+!!   norb   (in)  -- number of orbitals, norb*(norb+1)/2 pair functions    !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   wp     (in)  -- integration weight of each grid point                 !!
+!!   omp2   (in)  -- becke/tfvc (or hirshfeld) weight of each point for    !!
+!!                   every atom                                            !!
+!!   pcoord (in)  -- xyz coordinates of each grid point                    !!
+!!   fij    (in)  -- pair functions on the grid, (itotps,norb2)            !!
+!!   xocc   (in)  -- their weights (eigenvalues); only the diagonal is read !!
+!!   Excmp  (out) -- multipolar estimate per atom pair (i/=j elements)     !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine multipolar(norb,itotps,wp,omp2,pcoord,fij,xocc,Excmp)
       use integration_grid
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 muamub,muar,mubr,muaqbr,mubqar
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
 
       dimension :: Excmp(maxat,maxat),wp(itotps),pcoord(itotps,3)
       dimension :: fij(itotps,norb*(norb+1)/2),omp2(itotps,nat)
       dimension :: xocc(norb*(norb+1)/2,norb*(norb+1)/2)
 
-      allocatable :: dip(:,:),quadp(:,:,:),rvect(:),sij(:),atdist(:,:) 
-      allocatable :: Excmp1(:,:),Excmp2(:,:),Excmp3(:,:),Excmp4(:,:)
-      allocatable :: Excmp5(:,:),Excmp6(:,:)
+      allocatable :: dip(:,:),quadp(:,:,:),sij(:),atdist(:,:),exk(:,:,:)
+      allocatable :: xones(:)
 
-      iphf  = Iopt(65)
-      iatps = nang*nrad
-      ALLOCATE(dip(nat,3),quadp(nat,3,3),rvect(3),sij(nat),atdist(nat,nat))
-      ALLOCATE(Excmp1(nat,nat),Excmp2(nat,nat),Excmp3(nat,nat))
-      ALLOCATE(Excmp4(nat,nat),Excmp5(nat,nat),Excmp6(nat,nat))
+      ALLOCATE(dip(nat,3),quadp(nat,3,3),sij(nat),atdist(nat,nat))
+      ALLOCATE(exk(nat,nat,6),xones(itotps))
+      xones=ONE
+      call mp_init(atdist,exk,Excmp)
+
+!! fij*1 is exact, so these moments are bit-identical to using fij alone. !!
+      irun=0
+      do i=1,norb
+        do j=i,norb
+          irun=irun+1
+          call mp_moments(itotps,wp,omp2,pcoord,fij(1,irun),xones,sij,dip,quadp)
+          call mp_pairs(xocc(irun,irun),sij,dip,quadp,atdist,exk)
+        end do
+      end do
+
+      call mp_sum(exk,Excmp)
+      DEALLOCATE(dip,quadp,sij,atdist,exk,xones)
+
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: multipolar_mo                                               !!
+!! purpose: same multipolar estimate as multipolar, for a single           !!
+!!   determinant, whose pair functions are the MO products phi_i*phi_j.   !!
+!!   Each product is formed inside the moment loop rather than stored, so  !!
+!!   memory is itotps*norb instead of itotps*norb*(norb+1)/2.              !!
+!! arguments:                                                              !!
+!!   norb   (in)  -- number of occupied MOs (nocc, nalf or nb)             !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   wp, omp2, pcoord (in) -- as in multipolar                             !!
+!!   chpmo  (in)  -- MO values at each grid point, (itotps,norb)           !!
+!!   ffd    (in)  -- weight of the i=j products (-2 closed shell, -1 per   !!
+!!                   spin)                                                 !!
+!!   ffo    (in)  -- weight of the i<j products (-4 closed shell, -2 per   !!
+!!                   spin)                                                 !!
+!!   Excmp  (out) -- multipolar estimate per atom pair (i/=j elements)     !!
+!! author: MGimf                                                           !!
+!! *********************************************************************** !!
+      subroutine multipolar_mo(norb,itotps,wp,omp2,pcoord,chpmo,ffd,ffo,Excmp)
+      use integration_grid
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+
+      dimension :: Excmp(maxat,maxat),wp(itotps),pcoord(itotps,3)
+      dimension :: chpmo(itotps,norb),omp2(itotps,nat)
+
+      allocatable :: dip(:,:),quadp(:,:,:),sij(:),atdist(:,:),exk(:,:,:)
+
+      ALLOCATE(dip(nat,3),quadp(nat,3,3),sij(nat),atdist(nat,nat))
+      ALLOCATE(exk(nat,nat,6))
+      call mp_init(atdist,exk,Excmp)
+
+      do i=1,norb
+        do j=i,norb
+          ffact=ffo
+          if(i.eq.j) ffact=ffd
+          call mp_moments(itotps,wp,omp2,pcoord,chpmo(1,i),chpmo(1,j),sij,dip,quadp)
+          call mp_pairs(ffact,sij,dip,quadp,atdist,exk)
+        end do
+      end do
+
+      call mp_sum(exk,Excmp)
+      DEALLOCATE(dip,quadp,sij,atdist,exk)
+
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: mp_init                                                     !!
+!! purpose: interatomic distances and zeroed accumulators for              !!
+!!   multipolar/multipolar_mo.                                             !!
+!! arguments:                                                              !!
+!!   atdist (out) -- distance between every pair of atoms                  !!
+!!   exk    (out) -- the six multipole-order accumulators, zeroed          !!
+!!   Excmp  (out) -- off-diagonal elements zeroed                          !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_init(atdist,exk,Excmp)
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      dimension :: atdist(nat,nat),exk(nat,nat,6),Excmp(maxat,maxat)
 
       do iat=1,nat
         atdist(iat,iat)=ZERO
         do jat=iat+1,nat
           xx=ZERO
           do ii=1,3
-            rvect(ii)=coord(ii,jat)-coord(ii,iat)
-            xx=xx+rvect(ii)*rvect(ii)
+            xx=xx+(coord(ii,jat)-coord(ii,iat))**2
           end do
           atdist(iat,jat)=dsqrt(xx)
           atdist(jat,iat)=atdist(iat,jat)
           Excmp(iat,jat)=ZERO
-          Excmp1(iat,jat)=ZERO
-          Excmp2(iat,jat)=ZERO
-          Excmp3(iat,jat)=ZERO
-          Excmp4(iat,jat)=ZERO
-          Excmp5(iat,jat)=ZERO
-          Excmp6(iat,jat)=ZERO
+          do k=1,6
+            exk(iat,jat,k)=ZERO
+          end do
         end do
       end do
 
-!! LOOP OVER MO PAIRS !!
+      end
 
-      irun=0
-      do i=1,norb
-      do j=i,norb
+!! ***** !!
 
-      irun=irun+1
-      ffact=xocc(irun,irun) 
+!! *********************************************************************** !!
+!! subroutine: mp_moments                                                  !!
+!! purpose: per-atom charge, dipole and (traceless) quadrupole moments of  !!
+!!   one pair function f = fa*fb, each atom integrated on its own grid     !!
+!!   points with its own weight.                                           !!
+!! arguments:                                                              !!
+!!   itotps, wp, omp2, pcoord (in) -- as in multipolar                     !!
+!!   fa, fb (in)  -- the two factors of the pair function on the grid     !!
+!!   sij    (out) -- charge of each atom                                   !!
+!!   dip    (out) -- dipole of each atom                                   !!
+!!   quadp  (out) -- quadrupole of each atom                               !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_moments(itotps,wp,omp2,pcoord,fa,fb,sij,dip,quadp)
+      use integration_grid
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      dimension :: wp(itotps),pcoord(itotps,3),omp2(itotps,nat)
+      dimension :: fa(itotps),fb(itotps)
+      dimension :: sij(nat),dip(nat,3),quadp(nat,3,3)
 
-!! LOOP OVER ATOMS !!
+      iatps = nang*nrad
 
+!! parallel over icenter: each iteration writes only its own dip(icenter,:), !!
+!! quadp(icenter,:,:) and sij(icenter), all independent across atoms.    !!
+!$OMP PARALLEL DO PRIVATE(icenter,xx,yy,zz,xy,xz,yz,x,y,z,ifut,distx,disty,distz,wccij)
       do icenter=1,nat
-
-!! QUADRUPOLE TERMS !!
 
         xx=ZERO
         yy=ZERO
@@ -2434,20 +3143,16 @@ c  energetics
         xz=ZERO
         yz=ZERO
 
-!! DIPOLE TERMS !!
-
         x=ZERO
         y=ZERO
         z=ZERO
-
-!! CHARGE TERM !!
 
         sij(icenter)=ZERO
         do ifut=iatps*(icenter-1)+1,iatps*icenter
           distx=pcoord(ifut,1)-coord(1,icenter)
           disty=pcoord(ifut,2)-coord(2,icenter)
           distz=pcoord(ifut,3)-coord(3,icenter)
-          wccij=wp(ifut)*omp2(ifut,icenter)*fij(ifut,irun)
+          wccij=wp(ifut)*omp2(ifut,icenter)*(fa(ifut)*fb(ifut))
           xx=xx+wccij*distx*distx
           yy=yy+wccij*disty*disty
           zz=zz+wccij*distz*distz
@@ -2472,9 +3177,41 @@ c  energetics
         quadp(icenter,3,2)= quadp(icenter,2,3)
         quadp(icenter,3,3)=zz-(yy+xx)/TWO
       end do
+!$OMP END PARALLEL DO
 
-!! iat == A, jat == B !!
+      end
 
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: mp_pairs                                                    !!
+!! purpose: adds one pair function's multipole-multipole terms, weighted  !!
+!!   by ffact, to the six accumulators of every atom pair.                 !!
+!! arguments:                                                              !!
+!!   ffact  (in)    -- weight of this pair function                        !!
+!!   sij, dip, quadp (in) -- its per-atom moments (from mp_moments)        !!
+!!   atdist (in)    -- interatomic distances (from mp_init)                !!
+!!   exk    (inout) -- charge-charge, charge-dipole, dipole-dipole,        !!
+!!                     charge-quadrupole, dipole-quadrupole and            !!
+!!                     quadrupole-quadrupole accumulators                  !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_pairs(ffact,sij,dip,quadp,atdist,exk)
+      IMPLICIT REAL*8(A-H,O-Z)
+      REAL*8 muamub,muar,mubr,muaqbr,mubqar
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord(3,maxat),zn(maxat),iznuc(maxat)
+      dimension :: sij(nat),dip(nat,3),quadp(nat,3,3)
+      dimension :: atdist(nat,nat),exk(nat,nat,6)
+      dimension :: rvect(3)
+
+!! pairwise electrostatic terms, iat==A, jat==B. parallel over iat: each   !!
+!! iteration only writes exk(iat,jat>iat,:), a disjoint row per iat.      !!
+!! rvect is PRIVATE (plain fixed-size local) so each thread gets its own  !!
+!! scratch copy.                                                          !!
+!$OMP PARALLEL DO PRIVATE(iat,jat,xx,ii,jj,kk,rvect,muamub,muar,mubr,
+!$OMP&  rqar,rqbr,muaqbr,mubqar,xm,qaqb,rqaqbr)
       do iat=1,nat
         do jat=iat+1,nat
           xx=atdist(iat,jat)
@@ -2482,12 +3219,10 @@ c  energetics
             rvect(ii)=coord(ii,jat)-coord(ii,iat)
           end do
 
-!! CHARGE-CHARGE !!
+!! charge-charge !!
+          exk(iat,jat,1)=exk(iat,jat,1)+ffact*sij(iat)*sij(jat)/xx
 
-          Excmp1(iat,jat)=Excmp1(iat,jat)+ffact*sij(iat)*sij(jat)/xx
-
-!! CHARGE-DIPOLE !!
-
+!! charge-dipole !!
           muamub=ZERO
           muar=ZERO
           mubr=ZERO
@@ -2496,14 +3231,12 @@ c  energetics
             muar=muar+dip(iat,ii)*rvect(ii)
             mubr=mubr+dip(jat,ii)*rvect(ii)
           end do
-          Excmp2(iat,jat)=Excmp2(iat,jat)+ffact*(muar*sij(jat)-mubr*sij(iat))/(xx**THREE)
+          exk(iat,jat,2)=exk(iat,jat,2)+ffact*(muar*sij(jat)-mubr*sij(iat))/(xx**THREE)
 
-!! DIPOLE-DIPOLE !!
+!! dipole-dipole !!
+          exk(iat,jat,3)=exk(iat,jat,3)-ffact*(THREE*muar*mubr/(xx**FIVE)-muamub/(xx**THREE))
 
-          Excmp3(iat,jat)=Excmp3(iat,jat)-ffact*(THREE*muar*mubr/(xx**FIVE)-muamub/(xx**THREE))
-
-!! CHARGE-QUADRUPOLE !!
-
+!! charge-quadrupole !!
           rqar=ZERO
           rqbr=ZERO
           do ii=1,3
@@ -2512,10 +3245,9 @@ c  energetics
               rqbr=rqbr+rvect(ii)*quadp(jat,ii,jj)*rvect(jj)
             end do
           end do
-          Excmp4(iat,jat)=Excmp4(iat,jat)+ffact*(rqar*sij(jat)+rqbr*sij(iat))/(xx**FIVE)
+          exk(iat,jat,4)=exk(iat,jat,4)+ffact*(rqar*sij(jat)+rqbr*sij(iat))/(xx**FIVE)
 
-!! DIPOLE-QUADRUPOLE !!
-
+!! dipole-quadrupole !!
           muaqbr=ZERO
           mubqar=ZERO
           do ii=1,3
@@ -2525,10 +3257,9 @@ c  energetics
             end do
           end do
           xm=-FIVE*(mubr*rqar-muar*rqbr)+TWO*xx*xx*(mubqar-muaqbr)
-          Excmp5(iat,jat)=Excmp5(iat,jat)+ffact*xm/(xx**7.0d0)
+          exk(iat,jat,5)=exk(iat,jat,5)+ffact*xm/(xx**7.0d0)
 
-!! QUADRUPOLE-QUADRUPOLE !!
-
+!! quadrupole-quadrupole !!
           qaqb=ZERO
           rqaqbr=ZERO
           do ii=1,3
@@ -2540,117 +3271,129 @@ c  energetics
             end do
           end do
           xm=(35.0d0/THREE)*(rqar*rqbr)/(xx**9.0d0)+(TWO/THREE)*qaqb/(xx**FIVE)-(60.0/9.0d0)*rqaqbr/(xx**7.0d0)
-          Excmp6(iat,jat)=Excmp6(iat,jat)+ffact*xm
+          exk(iat,jat,6)=exk(iat,jat,6)+ffact*xm
         end do
       end do
-
-!! END LOOP OVER MO PAIRS !!
-
-      end do
-      end do
-
-!! COMPLETING MATRICES !!
-
-      do i=1,nat
-        do j=i+1,nat
-          Excmp1(j,i)=Excmp1(i,j)
-          Excmp2(j,i)=Excmp2(i,j)
-          Excmp3(j,i)=Excmp3(i,j)
-          Excmp4(j,i)=Excmp4(i,j)
-          Excmp5(j,i)=Excmp5(i,j)
-          Excmp6(j,i)=Excmp6(i,j)
-          Excmp(i,j)=Excmp1(i,j)+Excmp2(i,j)+Excmp3(i,j)+Excmp4(i,j)+Excmp5(i,j)+Excmp6(i,j)
-          Excmp(j,i)=Excmp(i,j)
-        end do
-      end do
-      DEALLOCATE(dip,quadp,rvect,sij,atdist,Excmp1,Excmp2,Excmp3,Excmp4,Excmp5,Excmp6)
+!$OMP END PARALLEL DO
 
       end
 
 !! ***** !!
 
+!! *********************************************************************** !!
+!! subroutine: mp_sum                                                      !!
+!! purpose: sums the six multipole orders into the symmetric Excmp.        !!
+!! arguments:                                                              !!
+!!   exk   (in)  -- the six accumulators (from mp_pairs)                   !!
+!!   Excmp (out) -- multipolar estimate per atom pair (i/=j elements)      !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
+      subroutine mp_sum(exk,Excmp)
+      IMPLICIT REAL*8(A-H,O-Z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      dimension :: exk(nat,nat,6),Excmp(maxat,maxat)
+
+      do i=1,nat
+        do j=i+1,nat
+          Excmp(i,j)=exk(i,j,1)+exk(i,j,2)+exk(i,j,3)+exk(i,j,4)+exk(i,j,5)+exk(i,j,6)
+          Excmp(j,i)=Excmp(i,j)
+        end do
+      end do
+
+      end
+
+!! ***** !!
+
+!! *********************************************************************** !!
+!! subroutine: calc_coul                                                   !!
+!! purpose: Coulomb (electron-electron) energy term for the two-electron   !!
+!!   IQA/ENPART part, shared by numint_two and numint_two_uhf. Same-center !!
+!!   and atom-pair kernels, phase-rotated grid throughout (all pairs are   !!
+!!   computed here, unlike the exchange kernels -- no THREBOD skip).       !!
+!! arguments:                                                              !!
+!!   itotps (in)  -- total number of grid points                          !!
+!!   wp/wppha (in) -- integration weight of each point, original/rotated   !!
+!!   omp2/omp2pha (in) -- becke/tfvc weight of each point for every atom,  !!
+!!                   original/rotated                                     !!
+!!   pcoord/pcoordpha (in) -- xyz coordinates of each point, original/     !!
+!!                   rotated                                               !!
+!!   rho/rhopha (in) -- electron density at each point, original/rotated   !!
+!!   coul   (out) -- Coulomb energy matrix, atomic/diatomic contributions  !!
+!! author: PSalse, MGimf.                                                  !!
+!! *********************************************************************** !!
       subroutine calc_coul(itotps,wp,wppha,omp2,omp2pha,pcoord,pcoordpha,rho,rhopha,coul)
 
       use integration_grid
       use OMP_LIB
-      use IFPORT
 
       IMPLICIT REAL*8(A-H,O-Z)
 
-      integer external OMP_GET_NUM_PROCS
 
       include 'parameter.h'
 
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
-      common /modgrid2/thr3 !! We can make that the distance threshold is controlled using this !!
 
       dimension :: wp(itotps),wppha(itotps),pcoord(itotps,3),pcoordpha(itotps,3)
       dimension :: omp2(itotps,nat),omp2pha(itotps,nat),rho(itotps),rhopha(itotps)
       dimension :: coul(maxat,maxat)
 
-      character*80 line
       character*100 threadenv
-      
-      !! FOR ENPART PARALLEL !!
-      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! ATOM PAIRS INCLUDED, AND FOR SLICING chp MATRICES !!
+
+!! parallelization-related arrays below. !!
+      allocatable :: ijpaircount(:,:),istart(:),iend(:) !! included atom pairs, thread-slicing bookkeeping !!
       allocatable :: ecoul_k(:,:)
       allocatable :: ecoul_ij(:,:)
       allocatable :: f3k(:)
 
       iatps = nrad*nang
-      idofr = iopt(40)
 
-!! MIMICKING HF PART !!
-!! EVALUATING NUMBER OF CORES FOR SPLITTING THE CALCULATION BY THREADS !!
+!! same manual thread-chunking strategy as numint_two's exchange kernels; !!
+!! determine the core count for thread splitting. !!
       call getenv('OMP_NUM_THREADS',threadenv)
       if(trim(threadenv)=='') then
-        write(*,*) " OMP_NUM_THREADS not set"
         ithreadenv=ZERO
       else
         read(unit=threadenv,FMT='(I4)') ithreadenv
       end if
+!! a parallel region only to query the thread and processor counts;  !!
+!! every thread writes the same values to iprocs/ithreads            !!
       !$OMP PARALLEL
       iprocs=OMP_GET_MAX_THREADS()
       ithreads=INT(OMP_GET_NUM_PROCS())
       !$OMP END PARALLEL
-      if(ithreadenv.ne.ZERO) then
-        write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreadenv,"threads out of",
-     &  ithreads,"available hardware cores"
-        ithreads=ithreadenv
-      else
-        write(*,'(2x,a43,x,i3,x,a14,x,i3,x,a24)') "Two-el integration will be distributed over",ithreads,"threads out of",
-     &  ithreads,"available hardware cores"
-      end if
+      if(ithreadenv.ne.ZERO) ithreads=ithreadenv
 
-!! TO ENSURE PROPER SLICING BY THREADS !!
+!! per-thread grid-point slicing bookkeeping. !!
       ALLOCATE(f3k(ithreads))
       ALLOCATE(ecoul_k(nat,ithreads))
       ALLOCATE(istart(ithreads),iend(ithreads))
       itilerest=mod(iatps,ithreads)
       ispace=(iatps-itilerest)/ithreads
 
-!! MORE CONVOLUTED LOOP STRUCTURE, AVOIDED PROBLEM OF MAX PARALLEL 8 CORES !!
+!! loop kept in this manual-chunking shape rather than a plain OMP loop --  !!
+!! avoids an old cap that limited parallelization to 8 cores.               !!
       coul=ZERO
       ecoul_k=ZERO
-      !DIR$ NOPARALLEL
       do icenter=1,nat
         ioffset=(icenter-1)*iatps
         istart=0
         iend=0
-        !DIR$ NOPARALLEL
         do ik=1,(ithreads-1)
           istart(ik)=ioffset+((ik-1)*ispace)+1
           iend(ik)=ioffset+(ik*ispace)
         end do
-        istart(ithreads)=iend(ithreads-1)+1
+        istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
 
-!! THIS TWO CALLS ARE CRUCIAL !!
+!! both calls below are required for the thread count to actually take effect. !!
         call omp_set_dynamic(.false.)
         call omp_set_num_threads(ithreads)
-        !DIR$ PARALLEL
+!! parallel over the thread slices ik, as in numint_two: f3loc is      !!
+!! PRIVATE, ecoul_k(icenter,ik) written once per ifut.                  !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
         do ik=1,ithreads
           do ifut=istart(ik),iend(ik)
             x0=wp(ifut)*omp2(ifut,icenter)
@@ -2669,17 +3412,18 @@ c  energetics
             ecoul_k(icenter,ik)=ecoul_k(icenter,ik)+f3k(ik)
           end do
         end do
+!$OMP END PARALLEL DO
       end do
 
-!! ADDING THE TERMS INTO THE ORIGINAL coul MATRIX !!
-!! FACTOR OF TWO ACCOUNTED BELOW !!
+!! reduce the per-thread accumulator into the same-center coul term !!
+!! (the factor of two is accounted for below, once coul is complete). !!
       do icenter=1,nat
         do isum=1,ithreads
           coul(icenter,icenter)=coul(icenter,icenter)+ecoul_k(icenter,isum)
         end do
       end do
 
-!! NOW PAIRS OF CENTERS (HERE ALL HAS TO BE COMPUTED) !!
+!! atom-pair terms -- every pair is computed here, no THREBOD skip. !!
       ipaircounter=0
       ALLOCATE(ijpaircount(nat*nat,2))
       do icenter=1,nat
@@ -2690,26 +3434,25 @@ c  energetics
         end do
       end do
 
-!! AGAIN, PREPARING FOR SLICING AND BLOCKING PARALLELIZATION OF SOME LOOPS !!
+!! per-thread grid-point slicing bookkeeping for the atom-pair loop. !!
       ALLOCATE(ecoul_ij(ipaircounter,ithreads))
       itilerest=mod(iatps,ithreads)
       ispace=(iatps-itilerest)/ithreads
       ecoul_ij=ZERO
-      !DIR$ NOPARALLEL
       do numpairnat=1,ipaircounter
         icenter=ijpaircount(numpairnat,1)
         jcenter=ijpaircount(numpairnat,2)
         ioffset=(icenter-1)*iatps
         istart=0
         iend=0
-        !DIR$ NOPARALLEL
         do ik=1,(ithreads-1)
           istart(ik)=ioffset+((ik-1)*ispace)+1
           iend(ik)=ioffset+(ik*ispace)
         end do
-        istart(ithreads)=iend(ithreads-1)+1
+        istart(ithreads)=ioffset+((ithreads-1)*ispace)+1
         iend(ithreads)=icenter*iatps
-        !DIR$ PARALLEL
+!! parallel over the thread slices ik, as the same-center block above. !!
+!$OMP PARALLEL DO PRIVATE(ifut,jfut,x0,dx0,dy0,dz0,x1,dx1,dy1,dz1,dist)
         do ik=1,ithreads
           do ifut=istart(ik),iend(ik)
             x0=wp(ifut)*omp2(ifut,icenter)
@@ -2728,9 +3471,10 @@ c  energetics
             ecoul_ij(numpairnat,ik)=ecoul_ij(numpairnat,ik)+f3k(ik)
           end do
         end do
+!$OMP END PARALLEL DO
       end do
 
-!! AGAIN, ADDING THE TERMS INTO THE ORIGINAL exch_hf MATRIX !!
+!! reduce the per-thread accumulator into the atom-pair coul term. !!
       do numpairnat=1,ipaircounter
         icenter=ijpaircount(numpairnat,1)
         jcenter=ijpaircount(numpairnat,2)
@@ -2739,7 +3483,8 @@ c  energetics
         end do
       end do
 
-!! FACTOR OF TWO USED HERE !!
+!! same-center coul(i,i) was accumulated twice over (both (ifut,jfut) !!
+!! orderings), halve it before summing into coulen. !!
       coulen=ZERO
       do i=1,nat
         coul(i,i)=coul(i,i)/TWO
@@ -2749,20 +3494,6 @@ c  energetics
           coulen=coulen+coul(i,j)
         end do
       end do
-
-!! PRINTING !!
-      write(*,*) " "
-      write(*,*) " ------------------------------------------ "
-      write(*,*) "  COULOMB (ELECTRON-ELECTRON) ENERGY TERMS  "
-      write(*,*) " ------------------------------------------ "
-      write(*,*) " "
-      call MPRINT2(coul,nat,maxat)
-      write(*,'(2x,a15,x,f14.7)') "Coulomb energy:",coulen
-      write(*,*) " "
-      if(idofr.eq.1) then
-        line=' FRAGMENT ANALYSIS: Coulomb energy '
-        call group_by_frag_mat(1,line,coul)
-      end if
 
       end
 

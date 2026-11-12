@@ -1,0 +1,311 @@
+# Troubleshooting
+
+Messages are quoted as the program prints them. A message starting with
+`STOP` ends the run: it is the last line of the output, and the program
+exits with code 1. Most errors print a line or two of explanation just
+before it. A few print only that explanation, without a `STOP` line.
+
+## Building
+
+**`ERROR: make not found on PATH.`**
+Install `make` (see [Installation](installation.md)), then rerun the
+script.
+
+**`gfortran >= 10 is required`**
+Install a newer compiler and make it the `gfortran` of the `PATH`: `brew
+install gcc`, `module load` a newer GCC on a cluster, or on Ubuntu
+`sudo apt install gfortran-12` followed by `sudo update-alternatives
+--install /usr/bin/gfortran gfortran /usr/bin/gfortran-12 100` (the
+package alone installs only `gfortran-12`, and the scripts call
+`gfortran`). Then run `bash make_compile.sh` again: it rebuilds everything
+automatically.
+
+**`could not link against OpenBLAS`** (or `cannot find -lopenblas`)
+OpenBLAS is not installed, or is somewhere the script doesn't look.
+Install it (see [Installation](installation.md)), or point at it:
+`export OPENBLAS_DIR=/path/to/openblas` (the folder with `lib/` and
+`include/`), then rerun the script.
+
+**`ERROR: cmake not found (>= 3.21 required).`**, or **`ERROR: cmake <version> found, but libxc 7.1.2 needs >= 3.21.`**
+The automatic libxc build needs CMake 3.21 or newer. `pip install --user
+cmake` installs one without administrator rights.
+
+**`ERROR: curl not found, needed to download libxc`**
+Install `curl`. On a machine without internet access, download the file
+named in the message on another machine and copy it to the place the
+message gives. The script then uses it.
+
+**`ERROR: the libxc in LIBXC_DIR (...) cannot be used: <reason>`**
+The libxc that `LIBXC_DIR` points to has no Fortran interface, its Fortran
+modules were written by another gfortran version, it is older than 7.0, or
+a test program does not link against it or does not run (a shared libxc
+not on `LD_LIBRARY_PATH`). Point `LIBXC_DIR` at a libxc 7 (or newer) built with the same
+gfortran, or unset it (`unset LIBXC_DIR`) to let the script build its own.
+
+**`libxc: the one found by pkg-config (<version>) cannot be used: ... Using the bundled copy instead.`**
+Information only: a libxc installed on the system is not suitable (same
+reasons as above), so the script builds and uses its own copy.
+
+**`cannot find -lxcf03` or `-lxc`**
+libxc was not built. Run `bash make_compile.sh`, which builds it. When
+building with `make` directly, run `bash compile_libxc.sh` first.
+
+**macOS: a program doesn't start (`dyld`, "Library not loaded", killed on
+start)**
+`make_compile.sh` signs the programs for macOS. If one is still blocked,
+or was rebuilt with `make`:
+
+```bash
+xattr -cr $APOST3D_PATH
+codesign --force --sign - $APOST3D_PATH/apost3d
+```
+
+**`Illegal instruction`**
+The program was built with `ARCH=native` (or another `-march`) on a newer
+CPU than the one running it. Rebuild with the default:
+`bash make_compile.sh clean`.
+
+## Running
+
+**`STOP The required input filename is missing`**
+The job name is missing: `apost3d jobname`.
+
+**`STOP Input file not found`**, **`STOP Wavefunction file not found`**
+`jobname.inp` or `jobname.fchk` (named in the line above) is not in the
+folder: a misspelled job name or a different folder.
+
+**`STOP Job name given with its extension`**
+Give the job name alone: `apost3d water`, not `apost3d water.inp`.
+
+**`STOP # METHOD block not found`**, **`STOP # ENPART block not found`**,
+**`STOP # OSLO block not found`**
+The input has no `# METHOD` block, or `ENPART`/`OSLO` is requested
+without its block (`# OSLO` may be empty).
+
+**`STOP # DM file not found`**
+A file listed in the [`# DM` block](input/dm.md) (named in the line
+above) is not in the folder.
+
+**`error while loading shared libraries: libopenblas.so.0: cannot open shared object file`**,
+or **`` version `GFORTRAN_10' not found ``** (or another library)
+The program can't find a library it was built with. In a job script, load
+the modules you loaded for the build, and add the `lib/` folder of your own
+OpenBLAS to `LD_LIBRARY_PATH` (see [Special setups](installation.md#special-setups)).
+If the job runs on a compute node and the library was found on the login
+node only, the nodes don't have it: install OpenBLAS in your home folder
+and build against it with `OPENBLAS_DIR`. `ldd $APOST3D_PATH/apost3d`
+lists the libraries the program uses, with `not found` for each missing
+one.
+
+**Segmentation fault**
+Run `ulimit -s unlimited` before the program (in job scripts too).
+
+**The output ends without `...Normal Termination of APOST-3D...`**
+The run stopped early. The reason is in the last lines of the output
+(redirect the errors too: `> jobname.apost 2>&1`).
+
+## The input file
+
+**A keyword has no effect**
+Check the `INPUT SUMMARY` of the output: an analysis or option that is
+not listed there was not read (`DENS` 1, the default, is not listed, and
+`TWOELTOLER` is shown in the ENPART part of the output). Usually it is typed in lower case (keywords are
+case-sensitive), placed after the closing `#` of its block, or placed
+after a line containing `#` (such as a comment), which ends the block.
+See the [input rules](input/index.md#rules).
+
+**`STOP Wrong keyword value in the input`**
+The line above names the keyword, its block and the line: the value
+can't be read, e.g. a real number for an integer keyword.
+
+**`Required section not found in input file`**
+`DOFRAGS` is set but there is no `# FRAGMENTS` block.
+
+**`Required section # CUBE not found in input file`**
+`CUBE` is set but there is no `# CUBE` block (it may be empty).
+
+**`MIN_OCC cannot be larger than MAX_OCC`**, or **`MAX_OCC/MIN_OCC must be
+>= 0 (occupation x 1000).`**
+See [# CUBE](input/cube.md).
+
+**`STOP EOS, GEOS and OSLO need fragments (DOFRAGS)`**
+These analyses need `DOFRAGS` and a [`# FRAGMENTS` block](input/fragments.md).
+For one oxidation state per atom, make every atom a fragment of its own.
+
+**`STOP Atoms missing in # FRAGMENTS`**, **`STOP Atom in two fragments in # FRAGMENTS`**,
+**`STOP Atom out of range in # FRAGMENTS`**, and the other `# FRAGMENTS` stops
+The line above the stop names the atom or fragment. Check the counts and
+atom numbers in `# FRAGMENTS`, or end with `-1` for the remaining atoms
+(see [# FRAGMENTS](input/fragments.md)).
+
+**`STOP Invalid angular grid`**, **`STOP Invalid radial grid`**
+The line above names the value: the angular points must be a Lebedev grid
+(the list is printed), the radial points between 1 and 500. See
+[# GRID](input/grid.md).
+
+**`STOP Renamed block in the input`**
+The line above names the old block and its new name.
+
+**`STOP Grid on the command line`**
+The grid is no longer given after the job name: set `RADIAL` and
+`ANGULAR` in the [`# GRID` block](input/grid.md).
+
+**`STOP Removed keyword in the input`**, **`STOP Renamed keyword in the input`**
+The line above names the keyword and what replaces it. Inputs written for
+earlier versions: `MOD-GRIDTWOEL` is gone (`# GRID` is always read, its
+two-electron grid is now `RADIAL_2E`/`ANGULAR_2E`), `phb1`/`phb2` are
+chosen by the program (or `ROTATION_2E`), `rr00` is `R0_2E`, and
+`FINEGRID` is `ANGULAR 974` in `# GRID`.
+
+**`STOP Keyword not available in this version`**
+The line above names the keyword: `EDAIQA`, `TOPOLOGY`, `DAFH`,
+`SHANNON`, `WFN` or `READINT` in `# METHOD`, or `DMRG` in `# DM`. These
+analyses are not part of version 5.0.
+
+**`STOP Wrong VERBOSE value in # METHOD`**
+`VERBOSE` needs its value, 0 or 1 (e.g. `VERBOSE 1`).
+
+**`STOP Wrong DM value in # METHOD`**
+`DM` takes 1 (the 1-RDM) or 2 (the 1- and 2-RDMs), e.g. `DM 2`.
+
+**`STOP Wrong FOLI_TOLERANCE value in # OSLO`**
+`FOLI_TOLERANCE n` sets the tolerance 10⁻ⁿ, with *n* from 1 to 10 (e.g.
+`FOLI_TOLERANCE 3`, the default).
+
+**`WARNING: no calibrated rotation angles for ANGULAR_2E ...`**
+ENPART's two-electron grid uses an angular grid without calibrated
+rotation angles (only 146 and 590 have them). Use one of those, or set
+`ROTATION_2E` (see [# GRID](input/grid.md#advanced-rotation-angles-and-radial-scaling)).
+
+**`# DM section not found in input file`**
+`DM 1` or `DM 2` is set but there is no `# DM` block.
+
+**`STOP DENS: density not found`**
+`DENS` asks for a density that the `.fchk` file doesn't contain (the
+output lists the ones it has). See
+[Preparing the wavefunction](guide/wavefunctions.md#gaussian). Q-Chem
+files have a single density, see
+[Q-Chem](guide/wavefunctions.md#q-chem).
+
+**`STOP DENS: unrestricted wavefunction`**
+`DENS` above 1 works only with restricted wavefunctions.
+
+**`STOP DENS above 1 with ENPART or OSLO`**
+ENPART and OSLO use the orbitals of the `.fchk` file, which are the SCF
+ones, so they cannot analyse a correlated density selected with `DENS`
+(see [`DENS`](input/method.md#options)).
+
+## Atomic definitions
+
+**`STOP densoutput not found`**, **`STOP densoutput cannot be read`**,
+**`ERROR: atom <El> is missing in densoutput`**
+The Hirshfeld schemes need a complete `densoutput` file with every element
+of the molecule in the working directory. Build it with
+[`gen_hirsh`](tools/utilities.md). A `gen_hirsh` run that stopped leaves
+an incomplete one.
+
+**`STOP NAO-BASIS needs the NBO file jobname.nao (AONAO=W), not found`**, **`STOP jobname.nao is not an NAO file`**, **`STOP jobname.nao does not match the basis`**
+`NAO-BASIS` needs the NAO transformation of the same calculation (see
+[Preparing the wavefunction](guide/wavefunctions.md#gaussian)), and the
+line above the stop says what is wrong. See also
+[Atoms in molecules](guide/aim.md#hilbert-space-schemes).
+
+**`STOP More than one atomic definition`**
+`# METHOD` names two atomic definitions (e.g. `TFVC` and `MULLIKEN`),
+and the line above lists them. Keep one: each run uses a single
+[atomic definition](guide/aim.md).
+
+**`STOP This version can not do QTAIM`**
+QTAIM is not available. Use `TFVC`, which gives very similar results.
+
+## Analyses
+
+**`STOP GEOS/EFFAO-U need a real-space AIM (e.g. TFVC)`**,
+**`STOP ENPART needs a real-space AIM (e.g. TFVC)`**,
+**`STOP OSLO needs a real-space AIM (e.g. TFVC)`**,
+**`STOP POLAR needs a real-space AIM (e.g. TFVC)`**
+These analyses don't work with Mulliken, Löwdin or NAO atoms in
+`# METHOD`. For OSLO, those schemes can go in the
+[`# OSLO` block](input/oslo.md) instead, for the fragment populations.
+
+**`STOP Local Spin needs dm1 and dm2 for correlated WFs`**,
+**`STOP Enpart needs dm1 and dm2 for correlated WFs`**
+For a correlated wavefunction, `SPIN` and `ENPART` need the 1- and 2-RDMs:
+`DM 2` and a [`# DM` block](input/dm.md).
+
+**`STOP EOS: fewer EFOs than electrons (EFF_THRESH)`**, **`STOP EOS: too many EFOs (EFF_THRESH)`**
+The cutoff on the occupation of the orbitals kept for EOS was changed
+with `EFF_THRESH` (in thousandths, default 1) and leaves too few orbitals
+to place every electron, or more than the program can pool. Remove the
+keyword or bring it back towards the default.
+
+**`WARNING: no atomic definition in # METHOD, TFVC used`**
+`# METHOD` names no atomic definition. The run goes on with `TFVC`, but
+write it (or the scheme you want) in the input (see
+[Atoms in molecules](guide/aim.md)).
+
+**`STOP DM needs a correlated-wavefunction .fchk`**
+`DM 1`/`DM 2` are set with an HF or KS-DFT `.fchk`. The RDM files go with
+the `.fchk` of the correlated calculation (CASSCF, FCI, CI) they come from.
+
+**`STOP OSLO cannot be performed for multireference wavefunctions`**
+OSLO needs a single determinant (HF or KS-DFT). For correlated
+wavefunctions, use [EOS](methods/eos.md) or [GEOS](methods/geos.md).
+
+**`STOP BRANCH_ALPHA/BRANCH_BETA need an unrestricted wavefunction`**
+A restricted wavefunction has a single set of orbitals: use
+`BRANCH_ITERATION` (see [# OSLO](input/oslo.md)).
+
+**`Note: SPIN skipped: a closed-shell single determinant has no local spins`**
+Not an error: the local spins of a closed-shell restricted determinant are
+all zero, so `SPIN` is skipped.
+
+**`WARNING: 1 electron shared by 2 EFOs with occupations within ...`**
+(with `Electron assignment : fractional`)
+Not an error: frontier orbitals of different fragments have almost the
+same occupation, and the electrons are shared among them (fractional
+oxidation states). See [EOS](methods/eos.md).
+
+### ENPART
+
+**`STOP RANGE-SEPARATED HYBRID NOT SUPPORTED. REVISE inp`** / **`STOP VV10
+FUNCTIONAL NOT SUPPORTED. REVISE inp`**
+Range-separated hybrids (CAM-B3LYP, ωB97X, LC-ωPBE, HSE, ...) and
+functionals with VV10 nonlocal correlation are not supported. Only
+global hybrids are.
+
+**`STOP NO DFT/HF/CASSCF/CISD SELECTED FOR ENPART. REVISE inp`**,
+**`STOP FUNCTIONAL ID NOT FOUND IN INPUT FILE`**
+`# ENPART` must name the wavefunction: `HF`, a functional keyword,
+`LIBRARY` with its libxc ids, `CASSCF` or `CISD`
+(see [# ENPART](input/enpart.md)).
+
+**`STOP UNSUPPORTED FUNCTIONAL FAMILY. REVISE inp`**, **`STOP KINETIC-ENERGY FUNCTIONAL GIVEN. REVISE inp`**
+The libxc id is not an exchange-correlation functional of a supported
+family (LDA, GGA, meta-GGA and their global hybrids).
+
+**`STOP INVALID LIBXC FUNCTIONAL ID. REVISE inp`**
+The id given with `EXC_FUNCTIONAL`/`EX_FUNCTIONAL`/`EC_FUNCTIONAL` is not
+a libxc functional. The list of ids is at
+[libxc.gitlab.io/functionals](https://libxc.gitlab.io/functionals/).
+
+**`STOP EXC_FUNCTIONAL COMBINED WITH EX/EC_FUNCTIONAL. REVISE inp`**
+Give either `EXC_FUNCTIONAL` alone, or `EX_FUNCTIONAL` and/or
+`EC_FUNCTIONAL`.
+
+**`STOP MORE THAN ONE FUNCTIONAL KEYWORD IN # ENPART. REVISE inp`** /
+**`STOP MORE THAN ONE METHOD IN # ENPART. REVISE inp`**
+Give one way of decomposing only: `HF`, one predefined functional
+keyword, `LIBRARY` with its ids, `CASSCF` or `CISD`.
+
+**`STOP LDA KEYWORD REMOVED. REVISE inp`**
+The old `LDA` keyword meant Slater exchange only. Use `SVWN` or `SVWN5`,
+or `LIBRARY` + `EX_FUNCTIONAL 1` if exchange only is really intended.
+
+**Large integration error, and a note about the missing reference
+electron-electron energy**
+Without the reference energies in the `.fchk`, the two-electron
+integration error is neither estimated nor corrected, and it can reach
+tens of kcal/mol on coarse grids for heavier atoms. Append the reference
+energies (see [Preparing the wavefunction](guide/wavefunctions.md#gaussian)),
+or use a finer two-electron grid.

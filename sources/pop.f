@@ -1,555 +1,983 @@
-      subroutine fborder(sat)
+!! ----------------------------------------------------------------------
+!! subroutine: fborder
+!! Bond orders of every atom pair, Tr(P S^A P S^B) + Tr(Ps S^A Ps S^B),
+!! with the localization index on the diagonal, and the total, bonded
+!! and free valences of each atom (I. Mayer, P. Salvador, Chem. Phys.
+!! Lett. 2004, 383, 368). Works for any atomic definition: sat holds it.
+!! With # DM, P and Ps come from the 1-RDM (dm1input): these are the
+!! exchange-only bond orders of the correlated wavefunction.
+!! Prints the matrix and the three valence tables.
+!! arguments:
+!!   sat (in)   (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!!   val (out)  (maxat,3) total, bonded and free valences
+!! author:
+!! ----------------------------------------------------------------------
+      subroutine fborder(sat,val)
       use basis_set
       use ao_matrices
+      use input_options_mod, only: icorr
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /qat/qat(maxat,2),qsat(maxat,2)
-      dimension sat(nbasis,nbasis,natoms)
+      common /ovpop/ op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common /qat/ qat(maxat,2),qsat(maxat,2)
+      dimension sat(nbasis,nbasis,natoms),val(maxat,3)
 
       dimension rindex(maxat,maxat),tindex(maxat),diag(maxat)
       allocatable tt(:,:,:)
-      allocate (tt(nbasis,nbasis,natoms))
+      allocate(tt(nbasis,nbasis,natoms))
 
-C  COMPUTE THE MATRIX PRODUCTS P*S^A
-C
+!! P*S^A matrix products, contracted into the R-index trace below. !!
       do iat=1,natoms
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=0.d0
-         do itau=1,nbasis
-          x=x+P(mu,itau)*sat(itau,nu,iat)
-         enddo
-         tt(mu,nu,iat)=x
-        enddo
-       enddo
-      enddo
-
-      do iat=1,natoms
-       do ibt=iat,natoms
-        x=0.d0
         do mu=1,nbasis
-         do nu=1,nbasis
-           x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-         enddo
-        enddo
-        rindex(iat,ibt)=x
-        rindex(ibt,iat)=x
-       enddo
-       diag(iat)=rindex(iat,iat)
-      enddo
-
-c Ps contribution
-      if(kop.ne.0)then
-       do iat=1,natoms
-        do mu=1,nbasis
-         do nu=1,nbasis
-          x=0.d0
-          do itau=1,nbasis
-           x=x+Ps(mu,itau)*sat(itau,nu,iat)
-          enddo
-          tt(mu,nu,iat)=x
-         enddo
-        enddo
-       enddo
-       do iat=1,natoms
-        do ibt=iat,natoms
-         x=0.d0
-         do mu=1,nbasis
           do nu=1,nbasis
-           x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+            x=0.d0
+            do itau=1,nbasis
+              x=x+p(mu,itau)*sat(itau,nu,iat)
+            enddo
+            tt(mu,nu,iat)=x
           enddo
-         enddo
-         rindex(iat,ibt)=rindex(iat,ibt)+x
-         rindex(ibt,iat)=rindex(iat,ibt)
         enddo
-       enddo
-      endif
-c
-c Savinig bo matrix. di will be overwritten in case of correlated calcualtion
-      do i=1,natoms
-       do j=1,natoms
-        if (i.eq.j) then
-         bo(i,i)=rindex(i,i)*0.5d0    
-        else
-         bo(i,j)=rindex(i,j)     
-        end if
-        di(i,j)=bo(i,j)     
-       end do
-      end do
-c making zeroes for printing purposes
-      do i=1,natoms
-      rindex(i,i)=0.d0
       enddo
 
-      WRITE(*,6342)
- 6342 FORMAT(1x,/21X,'"FUZZY ATOMS" BOND ORDER MATRIX'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
-      CALL Mprint(bo,NATOMS,maxat)
-C
-C CALCULATION OF THE VALENCE NUMBERS
-C
-      DO I=1,NATOMS
-       X=0.D0
-       DO  J=1,NATOMS
-        X=X+rindex(I,J)
-       end do
-      rindex(I,I)=X
-      end do
-      do i=1,natoms 
-       tindex(i)=rindex(i,i)
-       diag(i)=2.d0*qat(i,1)-diag(i)
+      do iat=1,natoms
+        do ibt=iat,natoms
+          x=0.d0
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+            enddo
+          enddo
+          rindex(iat,ibt)=x
+          rindex(ibt,iat)=x
+        enddo
+!! diag(iat) is taken before the Ps term below: the total valence      !!
+!! follows Mayer's open-shell definition (from P only), while the bond  !!
+!! orders get the Ps term, so the one-center spin part shows up as the  !!
+!! free valence (total valence minus the sum of bond orders).           !!
+        diag(iat)=rindex(iat,iat)
       enddo
-      
-      print *,'  '
-      print *,'   TOTAL VALENCES '
-      print *,'  '
-      print *,'    Atom     V_A'
-      print *,' -----------------'
-      call vprint(diag,nat,maxat,1)
-      print *,' ------------------'
-      print *,'  '
-      print *,'VALENCES USED IN BONDS'
-      print *,'(SUM OF BOND ORDERS)'
-      print *,'  '
-      print *,'    Atom     VB_A'
-      print *,' -----------------'
-      call vprint(tindex,nat,maxat,1)
-      print *,' ------------------'
-      print *,'  '
-      print *,'   FREE VALENCES'
-      print *,' '
-      print *,'    Atom     F_A'
-      print *,' -----------------'
+
+!! Ps contribution: open-shell single determinant, or the 1-RDM of a !!
+!! correlated wavefunction (zero for a singlet)                      !!
+      if(kop.ne.0.or.icorr.ne.0) then
+        do iat=1,natoms
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=0.d0
+              do itau=1,nbasis
+                x=x+ps(mu,itau)*sat(itau,nu,iat)
+              enddo
+              tt(mu,nu,iat)=x
+            enddo
+          enddo
+        enddo
+        do iat=1,natoms
+          do ibt=iat,natoms
+            x=0.d0
+            do mu=1,nbasis
+              do nu=1,nbasis
+                x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
+              enddo
+            enddo
+            rindex(iat,ibt)=rindex(iat,ibt)+x
+            rindex(ibt,iat)=rindex(iat,ibt)
+          enddo
+        enddo
+      endif
+
+!! bo keeps the bond orders; di starts as a copy and is replaced by the !!
+!! 2-RDM delocalization indices in a correlated local spin analysis     !!
       do i=1,natoms
-      diag(i)=diag(i)-tindex(i)
+        do j=1,natoms
+          if(i.eq.j) then
+            bo(i,i)=rindex(i,i)*0.5d0
+          else
+            bo(i,j)=rindex(i,j)
+          endif
+          di(i,j)=bo(i,j)
+        enddo
       enddo
-      call vprint(diag,nat,maxat,1)
-      print *,' ------------------'
-      
+
+!! zero the diagonal so it can be reused as the valence sum below !!
+      do i=1,natoms
+        rindex(i,i)=0.d0
+      enddo
+
+      if(icorr.ne.0) then
+        call print_box('EXCHANGE-ONLY BOND ORDER MATRIX')
+        write(*,'(2x,a)') 'From the 1-RDM'
+        write(*,'(a)') ''
+      else
+        call print_box('BOND ORDER MATRIX')
+      end if
+      call mprint2(bo,natoms,maxat)
+
+!! valence numbers !!
+      do i=1,natoms
+        x=0.d0
+        do j=1,natoms
+          x=x+rindex(i,j)
+        enddo
+        rindex(i,i)=x
+      enddo
+      do i=1,natoms
+        tindex(i)=rindex(i,i)
+        diag(i)=2.d0*qat(i,1)-diag(i)
+      enddo
+
+      call print_atom_table('TOTAL VALENCES',' ',
+     +  'FRAGMENT TOTAL VALENCES',diag)
+      call print_atom_table('VALENCES USED IN BONDS',
+     +  'Sum of the bond orders of each atom',
+     +  'FRAGMENT VALENCES USED IN BONDS',tindex)
+      do i=1,natoms
+        val(i,1)=diag(i)
+        val(i,2)=tindex(i)
+        diag(i)=diag(i)-tindex(i)
+        val(i,3)=diag(i)
+      enddo
+      call print_atom_table('FREE VALENCES',' ',
+     +  'FRAGMENT FREE VALENCES',diag)
+
       deallocate(tt)
-      
+
       return
       end
 
       
 
+!! ----------------------------------------------------------------------
+!! subroutine: opop
+!! Overlap populations of every atom pair, the integral of w_A w_B rho
+!! over the molecular grid (I. Mayer, P. Salvador, Chem. Phys. Lett.
+!! 2004, 383, 368). By default each atom's own grid points are used;
+!! with ALLPOINTS rho is weighted once and every pair is summed over the
+!! whole grid.
+!! arguments:
+!!   wp   (in)     (itotps) integration weights
+!!   omp  (in)     (itotps) Becke weight of each point (ALLPOINTS only)
+!!   omp2 (in)     (itotps,natoms) atomic weight w_A of each point
+!!   rho  (inout)  (itotps) density; ALLPOINTS rescales it in place
+!! author:
+!! ----------------------------------------------------------------------
       subroutine opop(wp,omp,omp2,rho)
       use basis_set, only: natoms
       use ao_matrices
       use integration_grid
-      IMPLICIT REAL*8(A-H,O-Z)
+      implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common/actual/iact,jat,icenter
-      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
-      common /iops/iopt(100)
-      common /achi/achi(maxat,maxat),ibcp
+      common /actual/ iact,jat,icenter
+      common /ovpop/ op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common /iops/ iopt(200)
+      common /achi/ achi(maxat,maxat),ibcp
       dimension wp(nrad*nang*natoms),rho(nrad*nang*natoms)
       dimension omp(nrad*nang*natoms),omp2(nrad*nang*natoms,natoms)
 
-
-c IOPS
-      idono=iopt(4)
-      iallpo = iopt(7) 
+      iallpo=iopt(7)
 
       iatps=nrad*nang
       itotps=iatps*natoms
 
-c igr= number of basis functions
-c iatps = number of grid points per atom
-c wp(i) = integration weight of the ith grid point
-c chp(i,j) = value of the jth atomic orbital at the ith grid point
-c omp(i) =  becke weight of the ith point of the atom to which the point belongs
-
-c Computing  overlap population      
-c each atom with its own grid points
-       do i=1,natoms
+!! not parallelized: called once per calculation on a small (natoms^2) !!
+!! matrix, negligible next to the numerical-integration hot paths.     !!
+      do i=1,natoms
         do j=1,natoms
-         op(i,j)=0.0d0
-        end do
-       end do
+          op(i,j)=0.0d0
+        enddo
+      enddo
 
-       if(iallpo.eq.0) then
+      if(iallpo.eq.0) then
+!! default scheme: each atom integrated over its own grid points !!
         do icenter=1,natoms
-         do ifut=iatps*(icenter-1)+1,iatps*icenter
-          do jcenter=icenter,natoms
-           op(icenter,jcenter)=op(icenter,jcenter)+wp(ifut)*rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
-          end do
-         enddo
+          do ifut=iatps*(icenter-1)+1,iatps*icenter
+            do jcenter=icenter,natoms
+              op(icenter,jcenter)=op(icenter,jcenter)+wp(ifut)*rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
+            enddo
+          enddo
         enddo
-       else if(iallpo.eq.1) then ! overriding rho
+      else if(iallpo.eq.1) then
+!! ALLPOINTS scheme: pre-weight rho once, then re-sum it over the full !!
+!! grid for every atom pair.                                          !!
         do kcenter=1,natoms
-         do ifut=iatps*(kcenter-1)+1,iatps*kcenter
-           rho(ifut)=wp(ifut)*omp(ifut)*rho(ifut)
-         end do
-        end do
-        do ifut=1,itotps 
-         do icenter=1,natoms
-          do jcenter=icenter,natoms
-           op(icenter,jcenter)=op(icenter,jcenter)+rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
-          end do
-         enddo
+          do ifut=iatps*(kcenter-1)+1,iatps*kcenter
+            rho(ifut)=wp(ifut)*omp(ifut)*rho(ifut)
+          enddo
         enddo
-       end if 
+        do ifut=1,itotps
+          do icenter=1,natoms
+            do jcenter=icenter,natoms
+              op(icenter,jcenter)=op(icenter,jcenter)+rho(ifut)*omp2(ifut,icenter)*omp2(ifut,jcenter)
+            enddo
+          enddo
+        enddo
+      endif
 
-       xx0=0.0d0
-       do icenter=1,natoms
-        xx0=xx0+op(icenter,icenter)
+      do icenter=1,natoms
         do jcenter=icenter+1,natoms
-         op(jcenter,icenter)=op(icenter,jcenter)
-         xx0=xx0+2.0d0*op(icenter,jcenter)
-        end do
-       end do
+          op(jcenter,icenter)=op(icenter,jcenter)
+        enddo
+      enddo
 
-      return 
+      return
       end
 
+!! ----------------------------------------------------------------------
+!! subroutine: fspindec
+!! Local spin analysis of a single-determinant wavefunction: effectively
+!! unpaired electrons of each atom and the a=3/4 decomposition of <S^2>
+!! into atomic and diatomic terms (E. Ramos-Cordoba et al., J. Chem.
+!! Theory Comput. 2012, 8, 1270). spincorr (corr.f) does the same for
+!! correlated wavefunctions.
+!! arguments:
+!!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!! author:
+!! ----------------------------------------------------------------------
       subroutine fspindec(sat)
       use basis_set
       use ao_matrices
+      use input_options_mod, only: idofr
+      use output_mod, only: print_value
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /printout/iaccur
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /qat/ qat(maxat,2),qsat(maxat,2)
+      common /localspin/ xlsa(maxat,maxat),ua(maxat)
+      dimension sat(nbasis,nbasis,natoms)
+      dimension rindex(maxat,maxat)
+      allocatable tt(:,:,:),tts(:,:)
+
+      allocate(tt(nbasis,nbasis,natoms))
+      allocate(tts(nbasis,nbasis))
+
+      do mu=1,nbasis
+        do nu=1,nbasis
+          tts(mu,nu)=0.0d0
+        enddo
+      enddo
+
+!! serial: the O(nbasis^2*natoms^2) loops below are cheap next to the !!
+!! numerical integration                                              !!
+
+!! Ps*S^A products, tts is their sum over atoms !!
+      do iat=1,natoms
+        do mu=1,nbasis
+          do nu=1,nbasis
+            x=0.d0
+            do itau=1,nbasis
+              x=x+ps(mu,itau)*sat(itau,nu,iat)
+            enddo
+            tt(mu,nu,iat)=x
+            tts(mu,nu)=tts(mu,nu)+x
+          enddo
+        enddo
+      enddo
+
+!! effectively unpaired electrons !!
+      sum=0.0d0
+      do iat=1,natoms
+        x=0.0d0
+        do mu=1,nbasis
+          do nu=1,nbasis
+            x=x+tt(mu,nu,iat)*tts(nu,mu)
+          enddo
+        enddo
+        ua(iat)=x
+        sum=sum+x
+      enddo
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+      call print_atom_table('EFFECTIVELY UNPAIRED ELECTRONS',' ',' ',ua)
+      call print_value('Total unpaired electrons N_D',sum,ndec)
+      xnd=sum
+      if(idofr.eq.1) call group_by_frag_vec(1,
+     +  'FRAGMENT UNPAIRED ELECTRONS',ua,cshort,' ')
+
+!! a=3/4 U decomposition (I. Mayer, P. Salvador local-spin formula) !!
+      sum=0.0d0
+      do iat=1,natoms
+        do jat=1,natoms
+          rindex(iat,jat)=0.0d0
+        enddo
+      enddo
+
+      do iat=1,natoms
+        x=0.0d0
+        do mu=1,nbasis
+          do nu=1,nbasis
+            x=x+tts(mu,nu)*tt(nu,mu,iat)
+          enddo
+        enddo
+        rindex(iat,iat)=x*0.750d0
+        do ibt=iat,natoms
+          x=0.0d0
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=x+tt(mu,nu,ibt)*tt(nu,mu,iat)
+            enddo
+          enddo
+          rindex(iat,ibt)=rindex(iat,ibt)-x*0.25d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
+          rindex(ibt,iat)=rindex(iat,ibt)
+          sum=sum+rindex(iat,ibt)
+          if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
+        enddo
+      enddo
+
+      call print_box('S^2 DECOMPOSITION (a=3/4)')
+      call mprint2(rindex,natoms,maxat)
+      call print_value('Total <S^2>',sum,ndec)
+
+      do i=1,natoms
+        do j=1,natoms
+          xlsa(i,j)=rindex(i,j)
+        enddo
+      enddo
+      if(idofr.eq.1) call group_by_frag_mat(0,
+     +  'FRAGMENT S^2 DECOMPOSITION (a=3/4)',xlsa)
+      call json_local_spin(.false.,xnd,sum,xlsa,0.d0)
+
+      deallocate(tt,tts)
+
+      return
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: population_density
+!! Electron and spin populations of each atom, Tr(P S^A) and Tr(Ps S^A)
+!! in /qat/ column 1, and their Mulliken counterparts in column 2. Opens
+!! the population analysis section with the atomic definition used.
+!! arguments:
+!!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine population_density(sat)
+      use basis_set
+      use ao_matrices
+      use output_mod, only: print_value
       implicit real*8(a-h,o-z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /qat/qat(maxat,2),qsat(maxat,2)
-      common /localspin/xlsa(maxat,maxat),ua(maxat)
       dimension sat(nbasis,nbasis,natoms)
-c
-      dimension rindex1(maxat,maxat), rindex2(maxat,maxat)
-      dimension rindex3(maxat,maxat) ,rindex(maxat,maxat)
-      dimension tt(:,:,:)
-      dimension tts(:,:)
-      allocatable tt
-      allocatable tts
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
 
-c
-C
-c
-C    CALCULATING "FUZZY" BOND-ORDER AND VALENCE INDICES 
-C  According to I. MAYER and P. SALVADOR, to be published  
-C
-c
-C  Input parameters: Pa: Total electron density matrix;
-c                    Pb: Spin density matrix;
-c                    S: Overlap matrix; 
-c                    Illim and Iulim: arrays of lower and upper limits of the 
-c                                basis orbitals belonging to a given atom;
-c                    Natoms: number of the atoms;
-c                    Nbasis: number of basis orbitals.
-C  
-c     Uses also:     qsat(maxat,2): an array, the first column of which
-c                    contains "fuzzy atom" populations of individual atoms
-C  
-c       
-      allocate (tt(nbasis,nbasis,natoms))
-      allocate (tts(nbasis,nbasis))
+      call print_box('DOING POPULATION ANALYSIS')
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      if(cspace.eq.'hilbert') then
+        call print_value('Atomic definition',
+     +    trim(ckey)//' (Hilbert space)')
+      else
+        call print_value('Atomic definition',trim(ckey)//' (real space)')
+      end if
 
-      do mu=1,nbasis
-       do nu=1,nbasis
-        tts(mu,nu)=0.0d0
-       enddo 
-      enddo
+!! spin density: P^s*S^A contraction, one atom per outer iteration       !!
+      if(kop.ne.0.or.nalf.ne.nb) then
 
-      do iat=1,natoms
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=0.d0
-         do itau=1,nbasis
-          x=x+ps(mu,itau)*sat(itau,nu,iat)
-         enddo
-         tt(mu,nu,iat)=x
-         tts(mu,nu)=tts(mu,nu)+x
+!! parallel over kat (natoms) -- each iteration reduces mu,nu into a     !!
+!! private x and writes only its own qsat(kat,1) slot; ps/sat shared     !!
+!! read-only, no cross-iteration dependency.                             !!
+!$OMP PARALLEL DO PRIVATE(mu,nu,x)
+        do kat=1,natoms
+          x=0.d0
+          do mu=1,nbasis
+            do nu=1,nbasis
+              x=x+ps(mu,nu)*sat(mu,nu,kat)
+            enddo
+          enddo
+          qsat(kat,1)=x
+          qsat(kat,2)=0.d0
         enddo
-       enddo
-      enddo
+!$OMP END PARALLEL DO
 
-C Number of efectively unpaired electrons
-      sum=0.0d0
-      do iat=1,natoms
-       x=0.0d0  
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=x+tt(mu,nu,iat)*tts(nu,mu)
-        enddo
-       enddo
-       ua(iat)=x
-       sum=sum+x
-      enddo
-      print *,'  '
-      print *,' EFFECTIVELY UNPAIRED ELECTRONS'
-      print *,'  '
-      print *,'    Atom     u_A'
-      print *,' -----------------'
-      call vprint(ua,nat,maxat,1)
-      print *,' ------------------'
-      write(*,'(a16,f10.5)') ' Sum check N_D = ' ,sum 
-
-CCCCC
-C DEPRECATED
-CCCCC
-      if(1.eq.0) then
-C No U decomposition !!!!  
-      sum=0.0d0
-      do iat=1,natoms
-       do ibt=iat,natoms
-        x=0.0d0  
+!! second (Ps*S) contribution, O(igr) outer trips only -- left serial,   !!
+!! not worth threading, and kat=ihold(mu) can repeat across mu so the    !!
+!! qsat(kat,2) accumulation isn't race-free without extra care.          !!
         do mu=1,nbasis
-         do nu=1,nbasis
-          x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-         enddo
+          kat=ihold(mu)
+          x=0.d0
+          do itau=1,nbasis
+            x=x+ps(mu,itau)*s(itau,mu)
+          enddo
+          qsat(kat,2)=qsat(kat,2)+x
         enddo
-        rindex(iat,ibt)=x*0.50d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-        rindex(ibt,iat)=rindex(iat,ibt)
-        sum=sum+rindex(iat,ibt)
-        if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
-       enddo
-      enddo
-
-
-c     CALL Mprint(rindex,NATOMS,maxat)
-c      WRITE(*,6342)
-c 6342 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=0)'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
-c      write(*,*) ' '
-c      write(*,*) '<S^2> = ',sum
-
-
-C     U Decomposition 
-      sum=0.0d0
-      do iat=1,natoms
-      x=0.0d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tts(mu,nu)*tt(nu,mu,iat)
-      enddo
-      enddo
-      rindex(iat,iat)=x*0.50d0+(qsat(iat,1)*qsat(iat,1))*0.25d0
-      sum=sum+rindex(iat,iat)
-      do ibt=iat+1,natoms
-      rindex(iat,ibt)=(qsat(iat,1)*qsat(ibt,1))*0.25d0
-      rindex(ibt,iat)=rindex(iat,ibt)
-      sum=sum+2.0d0*rindex(iat,ibt)
-      enddo
-      enddo
-
-c      WRITE(*,6352)
-c 6352 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=1/2)'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
-c      write(*,*) ' '
-c      write(*,*) '<S^2> = ',sum
-
-C   3/8  U Decomposition 
-
-      sum=0.0d0
-      do iat=1,natoms
-      do jat=1,natoms
-       rindex(iat,jat)=0.0d0
-      end do 
-      end do 
-
-
-      do iat=1,natoms
-      x=0.0d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tts(mu,nu)*tt(nu,mu,iat)
-      enddo
-      enddo
-      rindex(iat,iat)=x*0.375d0
-      do ibt=iat,natoms
-      x=0.0d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tt(mu,nu,ibt)*tt(nu,mu,iat)
-      enddo
-      enddo
-      rindex(iat,ibt)=rindex(iat,ibt)+
-     &                x*0.125d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-      rindex(ibt,iat)=rindex(iat,ibt)
-      sum=sum+rindex(iat,ibt)
-      if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
-      enddo
-      enddo
-
-c      WRITE(*,6333)
-c 6333 FORMAT(1x,/21X,'3/8 U "FUZZY ATOMS" SPIN DECOMPOSITION MATRIX'//)
-c      CALL Mprint(rindex,NATOMS,maxat)
-c      write(*,*) ' '
-c      write(*,*) '<S^2> = ',sum
-
       end if
-CCCCC
-C DEPRECATED
-CCCCC
 
-C   3/4  U Decomposition 
-
-      sum=0.0d0
-      do iat=1,natoms
-      do jat=1,natoms
-       rindex(iat,jat)=0.0d0
-       rindex1(iat,jat)=0.0d0
-       rindex2(iat,jat)=0.0d0
-      end do 
-      end do 
-
-
-      do iat=1,natoms
-       x=0.0d0
-       do mu=1,nbasis
-        do nu=1,nbasis
-         x=x+tts(mu,nu)*tt(nu,mu,iat)
-        enddo
-       enddo
-       rindex(iat,iat)=x*0.750d0
-       rindex3(iat,iat)=x*0.750d0
-       do ibt=iat,natoms
-        x=0.0d0
+!! total density: P*S^A contraction, same pattern as spin density above  !!
+!$OMP PARALLEL DO PRIVATE(mu,nu,x)
+      do kat=1,natoms
+        x=0.d0
         do mu=1,nbasis
-         do nu=1,nbasis
-          x=x+tt(mu,nu,ibt)*tt(nu,mu,iat)
-         enddo
+          do nu=1,nbasis
+            x=x+p(mu,nu)*sat(mu,nu,kat)
+          enddo
         enddo
-        rindex(iat,ibt)=rindex(iat,ibt)-x*0.25d0+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-        rindex(ibt,iat)=rindex(iat,ibt)
-c      rindex1(iat,ibt)=rindex1(iat,ibt)-x*0.25d0
-c      rindex2(iat,ibt)=rindex2(iat,ibt)+(qsat(iat,1)*qsat(ibt,1))*0.25d0
-c      rindex1(ibt,iat)=rindex1(iat,ibt)
-c      rindex2(ibt,iat)=rindex2(iat,ibt)
-        sum=sum+rindex(iat,ibt)
-        if(iat.ne.ibt) sum=sum+rindex(iat,ibt)
-       enddo
+        qat(kat,1)=x
+        qat(kat,2)=0.d0
       enddo
+!$OMP END PARALLEL DO
 
-c deprecated
-      if(1.eq.0) then
-      print *,' '
-      print *,'                  *** RECOMMENDED FORMULATION *** '
-      WRITE(*,6090)
- 6090 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)'//)
-      CALL Mprint(rindex3,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,*) '<S^2> = ',sum
-
-
-      WRITE(*,6091)
- 6091 FORMAT(1x,/21X,'3/4 U2 "FUZZY ATOMS" SPIN DECOMPOSITION MATRIX'//)
-      CALL Mprint(rindex1,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,*) '<S^2> = ',sum
-
-
-      WRITE(*,6092)
- 6092 FORMAT(1x,/21X,'3/4 U3 "FUZZY ATOMS" SPIN DECOMPOSITION MATRIX'//)
-      CALL Mprint(rindex2,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,*) '<S^2> = ',sum
-      end if
-
-c LSA
-      print *,' '
-      WRITE(*,6313)
- 6313 FORMAT(1x,/21X,'"FUZZY ATOMS" S^2 DECOMPOSITION (a=3/4)'//)
-      CALL Mprint(rindex,NATOMS,maxat)
-      write(*,*) ' '
-      write(*,'(a20,f10.5)') 'Sum check  <S^2> = ' ,sum
-      write(*,*) ' '
-
-      do i=1,natoms
-       do j=1,natoms
-        xlsa(i,j)=rindex(i,j)
-       end do
-      end do
-
-C
-C NOW DAVIDOSN
-C
-C
-C  COMPUTE THE MATRIX PRODUCTS P*S^A
-C
-      do iat=1,natoms
+!! second (P*S) contribution -- same O(igr)-only reasoning as above      !!
       do mu=1,nbasis
-      do nu=1,nbasis
-      x=0.d0
-      do itau=1,nbasis
-      x=x+p(mu,itau)*sat(itau,nu,iat)
-      enddo
-      tt(mu,nu,iat)=x
-      enddo
-      enddo
+        kat=ihold(mu)
+        x=0.d0
+        do itau=1,nbasis
+          x=x+p(mu,itau)*s(itau,mu)
+        enddo
+        qat(kat,2)=qat(kat,2)+x
       enddo
 
-      do iat=1,natoms
-      xx0=0.d0
-      do ibt=1,natoms
- 
-      x=0.d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-      enddo
-      enddo
-      if(iat.ne.ibt) then
-       rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
-       xx0=xx0+x
-      end if
-      
-      enddo
-      rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
-      enddo
-
-      if(kop.ne.0)then
-
-      do iat=1,natoms
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=0.d0
-      do itau=1,nbasis
-      x=x+ps(mu,itau)*sat(itau,nu,iat)
-      enddo
-      tt(mu,nu,iat)=x
-      enddo
-      enddo
-      enddo
-
-      do iat=1,natoms
-      xx0=0.d0
-      do ibt=1,natoms
- 
-      x=0.d0
-      do mu=1,nbasis
-      do nu=1,nbasis
-      x=x+tt(mu,nu,iat)*tt(nu,mu,ibt)
-      enddo
-      enddo
-
-      if(iat.ne.ibt) then 
-       rindex(iat,ibt)=rindex(iat,ibt)-3.0d0/8.0d0*x
-       xx0=xx0+x
-      end if
-      
-      enddo
-      rindex(iat,iat)=rindex(iat,iat)+3.0d0/8.0d0*xx0
-      enddo
-
-      end if
-
-      WRITE(*,6343)
- 6343 FORMAT(1x,/21X,'"FUZZY ATOMS" DAVIDSON SPIN DEC. MATRIX'//)
-      CALL Mprint(rindex,NATOMS,maxat)
-      sum=0.0d0
-      do iat=1,natoms
-      do ibt=1,natoms
-       sum=sum+rindex(iat,ibt)
-      end do
-      end do
-      write(*,*) ' '
-      write(*,'(a20,f10.5)') 'Sum check  <S^2> = ' ,sum
-      write(*,*) ' '
-
-      deallocate(tt,tts)
-      
       return
       end
 
+!! ----------------------------------------------------------------------
+!! subroutine: print_population_table
+!! Prints a per-atom population table (electrons, charges or spin): one
+!! column for the atomic definition used and one for Mulliken (only the
+!! Mulliken column when that is the definition), a Total row, and the
+!! same per fragment with DOFRAGS.
+!! arguments:
+!!   title     (in)  section title, e.g. 'ELECTRON POPULATIONS'
+!!   fragtitle (in)  title of the fragment table
+!!   arr       (in)  (maxat,2) values: atomic definition, Mulliken
+!!   tc1,tc2   (in)  column totals
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_population_table(title,fragtitle,arr,tc1,tc2)
+      use input_options_mod, only: idofr,imulli
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /printout/iaccur
+      character*(*) title,fragtitle
+      dimension arr(maxat,2)
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      character*30 fmthdr,fmttot
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ncol=2
+      if(imulli.eq.1) ncol=1
+
+!! atom label 7 characters wide, as in vprint; value columns 12 wide    !!
+!! (6 decimals), 20 wide (13) with FULLPRECISION                        !!
+      if(iaccur.eq.0) then
+        iw=12
+        ndec=6
+      else
+        iw=20
+        ndec=13
+      end if
+      write(fmthdr,'(a,i0,a,i0,a)') '(2x,a,',ncol,'a',iw,')'
+      write(fmttot,'(a,i0,a,i0,a,i0,a)') '(2x,a,',ncol,'f',iw,'.',ndec,
+     +  ')'
+
+      call print_box(title)
+      if(ncol.eq.2) then
+        write(*,fmthdr) 'Atom   ',trim(cshort),'Mulliken'
+      else
+        write(*,fmthdr) 'Atom   ',trim(cshort)
+      end if
+      write(*,'(2x,a)') repeat('-',7+iw*ncol)
+      call vprint(arr,nat,maxat,ncol)
+      write(*,'(2x,a)') repeat('-',7+iw*ncol)
+      if(ncol.eq.2) then
+        write(*,fmttot) 'Total  ',tc1,tc2
+      else
+        write(*,fmttot) 'Total  ',tc1
+      end if
+
+      if(idofr.eq.1) call group_by_frag_vec(ncol,fragtitle,arr,cshort,
+     +  'Mulliken')
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: print_atom_table
+!! Prints a one-column per-atom table (valences, unpaired electrons),
+!! headed by the name of the atomic definition, and the same per
+!! fragment with DOFRAGS.
+!! arguments:
+!!   title     (in)  section title, e.g. 'TOTAL VALENCES'
+!!   caption   (in)  line printed under the title, ' ' for none
+!!   fragtitle (in)  title of the fragment table, ' ' for none (the
+!!                   caller prints it)
+!!   arr       (in)  (maxat) values
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine print_atom_table(title,caption,fragtitle,arr)
+      use input_options_mod, only: idofr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /printout/iaccur
+      character*(*) title,caption,fragtitle
+      dimension arr(maxat)
+      character*20 ckey,cspace,fmthdr
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      call print_box(title)
+      if(len_trim(caption).gt.0) then
+        write(*,'(2x,a)') trim(caption)
+        write(*,'(a)') ''
+      end if
+
+!! atom label 7 characters wide, as in vprint; value column 12 wide    !!
+!! (6 decimals), 20 wide (13) with FULLPRECISION                       !!
+      iw=12
+      if(iaccur.ne.0) iw=20
+      write(fmthdr,'(a,i0,a)') '(2x,a,a',iw,')'
+      write(*,fmthdr) 'Atom   ',trim(cshort)
+      write(*,'(2x,a)') repeat('-',7+iw)
+      call vprint(arr,nat,maxat,1)
+      write(*,'(2x,a)') repeat('-',7+iw)
+
+      if(idofr.eq.1.and.len_trim(fragtitle).gt.0) then
+        call group_by_frag_vec(1,fragtitle,arr,cshort,' ')
+      end if
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: population_print_charges
+!! Prints the electron populations and the atomic charges (nuclear
+!! charge minus population) from /qat/, per atom and per fragment.
+!! arguments: none (/qat/, /coord/)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine population_print_charges()
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      dimension chg(maxat,2)
+
+      tc1=0.d0
+      tc2=0.d0
+      do i=1,nat
+        tc1=tc1+qat(i,1)
+        tc2=tc2+qat(i,2)
+      enddo
+      call print_population_table('ELECTRON POPULATIONS',
+     +  'FRAGMENT ELECTRON POPULATIONS',qat,tc1,tc2)
+
+      tc1=0.d0
+      tc2=0.d0
+      do i=1,nat
+        tc1=tc1-qat(i,1)+zn(i)
+        tc2=tc2-qat(i,2)+zn(i)
+        chg(i,1)=zn(i)-qat(i,1)
+        chg(i,2)=zn(i)-qat(i,2)
+      enddo
+      call print_population_table('TOTAL ATOMIC CHARGES',
+     +  'FRAGMENT CHARGES',chg,tc1,tc2)
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: population_print_overlap
+!! Prints the spin populations (open-shell wavefunctions, and correlated
+!! ones with a spin density) and, with OPOP, the overlap population
+!! matrix, built here (opop in real space, mull_opop for Mulliken).
+!! Without OPOP only the diagonal of op is set, to the populations.
+!! arguments:
+!!   wp,omp,omp2,rho (in)  integration grid and density, for opop
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine population_print_overlap(wp,omp,omp2,rho)
+      use basis_set, only: natoms
+      use integration_grid
+      use input_options_mod, only: idofr,imulli,iopop,icorr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      dimension wp(nrad*nang*natoms),rho(nrad*nang*natoms)
+      dimension omp(nrad*nang*natoms),omp2(nrad*nang*natoms,natoms)
+
+      if(kop.ne.0.OR.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)) then
+        tc1=0.d0
+        tc2=0.d0
+        do i=1,nat
+          tc1=tc1+qsat(i,1)
+          tc2=tc2+qsat(i,2)
+        enddo
+        call print_population_table('SPIN POPULATIONS',
+     +    'FRAGMENT SPIN POPULATIONS',qsat,tc1,tc2)
+      end if
+
+      if(iopop.eq.0) then
+        do i=1,nat
+          op(i,i)=qat(i,1)
+        end do
+      else if(imulli.ne.1) then
+        call opop(wp,omp,omp2,rho)
+      else
+        call mull_opop()
+      end if
+
+      if(iopop.eq.1) then
+        call print_box('OVERLAP POPULATION MATRIX')
+        call mprint2(op,nat,maxat)
+        if(idofr.eq.1) call group_by_frag_mat(0,
+     +    'FRAGMENT OVERLAP POPULATIONS',op)
+      end if
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_populations
+!! Writes the populations block of the results file: electron
+!! populations, charges and (when printed) spin populations of the atoms
+!! and fragments, for the atomic definition used and, as a comparison,
+!! for Mulliken.
+!! arguments: none (/qat/, /coord/)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_populations()
+      use input_options_mod, only: idofr,imulli,icorr
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /coord/ coord2(3,maxat),zn(maxat),iznuc(maxat)
+      common /qat/qat(maxat,2),qsat(maxat,2)
+      common /printout/iaccur
+      dimension chg(maxat,2)
+      character*20 ckey,cspace,crole
+      character*60 cname
+      character*12 cshort,cs
+      logical lspin
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+!! spin populations exactly when population_print_overlap prints them !!
+      lspin=kop.ne.0.or.(icas.eq.1.and.nalf.ne.nb.and.icorr.ne.0)
+      do i=1,nat
+        chg(i,1)=zn(i)-qat(i,1)
+        chg(i,2)=zn(i)-qat(i,2)
+      end do
+
+!! set 1: the atomic definition used; set 2: Mulliken, in its own     !!
+!! object and marked as a comparison, unless Mulliken is the atomic    !!
+!! definition                                                          !!
+      nset=2
+      if(imulli.eq.1) nset=1
+      call json_begin_object('populations')
+      call json_value('scheme',trim(ckey))
+      do iset=1,nset
+        cs=cshort
+        crole=' '
+        if(iset.eq.2) then
+          cs='Mulliken'
+          crole='comparison'
+          call json_begin_object('mulliken')
+        end if
+        call json_begin_object('atoms')
+        call json_vector('electrons',qat(1:nat,iset),nat)
+        call json_index('electrons','atom_vector',
+     +    'Electron populations ('//trim(cs)//')',' ',ndec,' ',.false.,
+     +    crole)
+        call json_vector('charges',chg(1:nat,iset),nat)
+        call json_index('charges','atom_vector',
+     +    'Atomic charges ('//trim(cs)//')',' ',ndec,' ',.true.,crole)
+        if(lspin) then
+          call json_vector('spin',qsat(1:nat,iset),nat)
+          call json_index('spin','atom_vector',
+     +      'Spin populations ('//trim(cs)//')',' ',ndec,' ',.true.,
+     +      crole)
+        end if
+        call json_end()
+        if(idofr.eq.1) then
+          call json_begin_object('fragments')
+          call json_frag_vector('electrons',qat(1,iset))
+          call json_index('electrons','fragment_vector',
+     +      'Fragment electron populations ('//trim(cs)//')',' ',ndec,
+     +      ' ',.false.,crole)
+          call json_frag_vector('charges',chg(1,iset))
+          call json_index('charges','fragment_vector',
+     +      'Fragment charges ('//trim(cs)//')',' ',ndec,' ',.true.,
+     +      crole)
+          if(lspin) then
+            call json_frag_vector('spin',qsat(1,iset))
+            call json_index('spin','fragment_vector',
+     +        'Fragment spin populations ('//trim(cs)//')',' ',ndec,' ',
+     +        .true.,crole)
+          end if
+          call json_end()
+        end if
+        if(iset.eq.2) call json_end()
+      end do
+      call json_end()
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: bond_order_analysis
+!! Bond orders and valences (fborder), the fragment bond orders with
+!! DOFRAGS, and their block in the results file. With # DM (correlated
+!! wavefunction) they are the exchange-only bond orders of the 1-RDM,
+!! followed by Mayer's bond orders from the natural orbitals
+!! (bond_orders_no, corr.f). A non-singlet correlated wavefunction
+!! without # DM has no Ps of its own: no bond orders, with a note.
+!! arguments:
+!!   sat (in)  (nbasis,nbasis,natoms) atomic overlap matrices S^A
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine bond_order_analysis(sat)
+      use basis_set, only: natoms,nbasis
+      use input_options_mod, only: idofr,icorr
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      dimension sat(nbasis,nbasis,natoms),val(maxat,3)
+      dimension bonew(maxat,maxat)
+
+      iposthf = iopt(65)
+
+      if(iposthf.eq.1.and.icorr.eq.0.and.
+     +  (nalf.ne.nb.or.icass.eq.1)) then
+        write(*,'(a)') ''
+        write(*,'(2x,a)') 'Note: no bond orders or valences: for a '//
+     +    'non-singlet correlated wavefunction'
+        write(*,'(2x,a)') 'they need its 1-RDM (DM 1 and the # DM '//
+     +    'block)'
+        return
+      end if
+
+      xbonew=0.d0
+      call fborder(sat,val)
+      if(icorr.ne.0) then
+        if(idofr.eq.1) call group_by_frag_mat(1,
+     +    'FRAGMENT EXCHANGE-ONLY BOND ORDERS',bo)
+        call bond_orders_no(sat,bonew,xbonew)
+      else
+        if(idofr.eq.1) call group_by_frag_mat(1,'FRAGMENT BOND ORDERS',
+     +    bo)
+      end if
+      call json_bond_orders(val,icorr.ne.0,bonew,xbonew)
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_bond_orders
+!! Writes the bond_orders block of the results file: the bond order
+!! matrix and the valences of the atoms and fragments, Mayer's bond
+!! orders from the natural orbitals for a correlated wavefunction, and
+!! the overlap populations with OPOP.
+!! arguments:
+!!   val    (in)  (maxat,3) total, bonded and free valences (fborder)
+!!   lcorr  (in)  logical, correlated wavefunction with # DM: the matrix
+!!                holds the exchange-only bond orders of the 1-RDM
+!!   bonew  (in)  (maxat,maxat) Mayer's bond orders (lcorr only)
+!!   xbonew (in)  their total, diagonal and one triangle (lcorr only)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_bond_orders(val,lcorr,bonew,xbonew)
+      use input_options_mod, only: idofr,iopop,imulli
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /ovpop/op(maxat,maxat),bo(maxat,maxat),di(maxat,maxat),totq
+      common /printout/iaccur
+      dimension val(maxat,3),bonew(maxat,maxat)
+      logical lcorr
+      character*40 cbo,cfbo
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+      character*20 cval(3)
+      character*40 tval(3),tfrag(3)
+      logical lsignop
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+      cval(1)='valence_total'
+      cval(2)='valence_bonded'
+      cval(3)='valence_free'
+      tval(1)='Total valences'
+      tval(2)='Valences used in bonds'
+      tval(3)='Free valences'
+      tfrag(1)='Fragment total valences'
+      tfrag(2)='Fragment valences used in bonds'
+      tfrag(3)='Fragment free valences'
+!! Mulliken bond orders and overlap populations can be negative !!
+      lsignop=imulli.eq.1
+
+      cbo='Bond orders'
+      cfbo='Fragment bond orders'
+      if(lcorr) then
+        cbo='Exchange-only bond orders'
+        cfbo='Fragment exchange-only bond orders'
+      end if
+
+      call json_begin_object('bond_orders')
+      call json_value('scheme',trim(ckey))
+      call json_begin_object('atoms')
+      call json_atom_matrix('matrix',bo,.true.,'localization index',
+     +  'bond order',-1,0.d0)
+      call json_index('matrix','atom_matrix',
+     +  trim(cbo)//' ('//trim(cshort)//')',' ',ndec,' ',lsignop,' ')
+      do k=1,3
+        call json_vector(trim(cval(k)),val(1:nat,k),nat)
+        call json_index(trim(cval(k)),'atom_vector',
+     +    trim(tval(k))//' ('//trim(cshort)//')',' ',ndec,' ',.false.,
+     +    ' ')
+      end do
+      if(lcorr) then
+        call json_atom_matrix('improved_bond_orders',bonew,.true.,
+     +    'localization index','bond order',1,xbonew)
+        call json_index('improved_bond_orders','atom_matrix',
+     +    'Improved bond orders ('//trim(cshort)//')',' ',ndec,' ',.false.,
+     +    ' ')
+      end if
+      call json_end()
+
+      if(idofr.eq.1) then
+        call json_begin_object('fragments')
+        call json_frag_matrix('matrix',1,bo,.true.,
+     +    'localization index','bond order')
+        call json_index('matrix','fragment_matrix',
+     +    trim(cfbo)//' ('//trim(cshort)//')',' ',ndec,' ',lsignop,' ')
+        do k=1,3
+          call json_frag_vector(trim(cval(k)),val(1,k))
+          call json_index(trim(cval(k)),'fragment_vector',
+     +      trim(tfrag(k))//' ('//trim(cshort)//')',' ',ndec,' ',
+     +      .false.,' ')
+        end do
+        if(lcorr) then
+          call json_frag_matrix('improved_bond_orders',1,bonew,.true.,
+     +      'localization index','bond order')
+          call json_index('improved_bond_orders','fragment_matrix',
+     +      'Fragment improved bond orders ('//trim(cshort)//')',' ',ndec,
+     +      ' ',.false.,' ')
+        end if
+        call json_end()
+      end if
+
+      if(iopop.eq.1) then
+        call json_begin_object('overlap_populations')
+        call json_begin_object('atoms')
+        call json_atom_matrix('matrix',op,.true.,
+     +    'self overlap population','overlap population',-1,0.d0)
+        call json_index('matrix','atom_matrix',
+     +    'Overlap populations ('//trim(cshort)//')',' ',ndec,' ',
+     +    lsignop,' ')
+        call json_end()
+        if(idofr.eq.1) then
+          call json_begin_object('fragments')
+          call json_frag_matrix('matrix',0,op,.true.,
+     +      'self overlap population','overlap population')
+          call json_index('matrix','fragment_matrix',
+     +      'Fragment overlap populations ('//trim(cshort)//')',' ',ndec,
+     +      ' ',lsignop,' ')
+          call json_end()
+        end if
+        call json_end()
+      end if
+      call json_end()
+      end
+
+!! ----------------------------------------------------------------------
+!! subroutine: json_local_spin
+!! Writes the local_spin block of the results file: effectively unpaired
+!! electrons and the <S^2> decomposition of the atoms and fragments
+!! (/localspin/), with, for a correlated wavefunction, the
+!! exchange-correlation bond orders (LI/DI) from the 2-RDM.
+!! arguments:
+!!   lcorr (in)  logical, correlated wavefunction (spincorr)
+!!   xnd   (in)  total number of effectively unpaired electrons
+!!   xs2   (in)  total <S^2> of the decomposition
+!!   di2   (in)  (maxat,maxat) LI/DI matrix (lcorr only)
+!!   xdi   (in)  its total, diagonal and one triangle (lcorr only)
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      subroutine json_local_spin(lcorr,xnd,xs2,di2,xdi)
+      use input_options_mod, only: idofr
+      use json_mod
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /localspin/ xlsa(maxat,maxat),ua(maxat)
+      common /printout/iaccur
+      dimension di2(maxat,maxat)
+      logical lcorr
+      character*20 ckey,cspace
+      character*60 cname
+      character*12 cshort
+
+      call atomic_definition_names(ckey,cname,cshort,cspace)
+      ndec=6
+      if(iaccur.ne.0) ndec=13
+
+      call json_begin_object('local_spin')
+      call json_value('scheme',trim(ckey))
+      if(lcorr) then
+        call json_value('wavefunction','correlated')
+      else
+        call json_value('wavefunction','single determinant')
+      end if
+      call json_value('total_unpaired_electrons',xnd)
+      call json_index('total_unpaired_electrons','scalar',
+     +  'Total unpaired electrons N_D ('//trim(cshort)//')',' ',ndec,
+     +  ' ',.false.,' ')
+      call json_value('total_s2',xs2)
+      call json_index('total_s2','scalar',
+     +  'Total <S^2> ('//trim(cshort)//')',' ',ndec,' ',.false.,' ')
+
+      call json_begin_object('atoms')
+      call json_vector('unpaired_electrons',ua(1:nat),nat)
+      call json_index('unpaired_electrons','atom_vector',
+     +  'Effectively unpaired electrons ('//trim(cshort)//')',' ',ndec,
+     +  ' ',.false.,' ')
+      call json_atom_matrix('s2',xlsa,.true.,'local spin',
+     +  'spin coupling',-1,0.d0)
+      call json_index('s2','atom_matrix',
+     +  'S^2 decomposition ('//trim(cshort)//')',' ',ndec,' ',.true.,
+     +  ' ')
+      if(lcorr) then
+        call json_atom_matrix('xc_bond_orders',di2,.true.,
+     +    'localization index','delocalization index',1,xdi)
+        call json_index('xc_bond_orders','atom_matrix',
+     +    'Exchange-correlation bond orders, DI ('//trim(cshort)//')',
+     +    ' ',ndec,' ',.false.,' ')
+      end if
+      call json_end()
+
+      if(idofr.eq.1) then
+        call json_begin_object('fragments')
+        call json_frag_vector('unpaired_electrons',ua)
+        call json_index('unpaired_electrons','fragment_vector',
+     +    'Fragment unpaired electrons ('//trim(cshort)//')',' ',ndec,
+     +    ' ',.false.,' ')
+        call json_frag_matrix('s2',0,xlsa,.true.,'local spin',
+     +    'spin coupling')
+        call json_index('s2','fragment_matrix',
+     +    'Fragment S^2 decomposition ('//trim(cshort)//')',' ',ndec,
+     +    ' ',.true.,' ')
+        if(lcorr) then
+          call json_frag_matrix('xc_bond_orders',1,di2,.true.,
+     +      'localization index','delocalization index')
+          call json_index('xc_bond_orders','fragment_matrix',
+     +      'Fragment exchange-correlation bond orders, DI ('//
+     +      trim(cshort)//')',' ',ndec,' ',.false.,' ')
+        end if
+        call json_end()
+      end if
+      call json_end()
+      end

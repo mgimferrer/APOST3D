@@ -1,69 +1,180 @@
-      subroutine input  
+!! ********************************************************************** !!
+!! .fchk READING, DM1/DM2 INPUT, AND .inp KEYWORD PARSING                 !!
+!! .fchk reader (native Gaussian/ORCA wavefunction file, unit 15):        !!
+!!   input           -- MO formalism/type, basis size, P/PS/spin density, !!
+!!                      CAS/CI spin-orbital counts                        !!
+!!   mga_misc        -- reference KE/E-N/E-E energies (project's own      !!
+!!                      post-processing fields) + ECP matrix if present   !!
+!!   field_misc      -- external static electric field, if present        !!
+!! post-HF 1-/2-RDM input (# DM keyword, PySCF/DMN codes:                 !!
+!!   dm1input        -- spin-orbital 1-RDM + natural orbitals + P/Ps      !!
+!!                      reconstruction from it                            !!
+!!   dm2input_pyscf  -- active-space 2-RDM from PySCF's write_dm12        !!
+!!   dm2input_dmn    -- full spin-separated 2-RDM from the DMN code       !!
+!! .inp keyword parsers (unit 16, rewind+rescan per call and their        !!
+!! shared file-scanning                                                   !!
+!! primitives:                                                            !!
+!!   readchar        -- bare-keyword presence check                       !!
+!!   readreal        -- keyword + real value, with default                !!
+!!   readint         -- keyword + integer value, with default             !!
+!!   locate          -- rewind + scan for a matching line (used by the    !!
+!!                      three above and by other files' .inp readers)     !!
+!!   int_locate      -- rewind + scan + fixed-column integer read (.fchk) !!
+!!   real_locate     -- rewind + scan + fixed-column real*8 read (.fchk)  !!
+!! ********************************************************************** !!
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: input                                                     !!
+!! purpose: reads the native Gaussian .fchk (unit 15) into the           !!
+!! wavefunction's global state -- MO formalism/type, basis size (via     !!
+!! build_basis/build_ao_matrices), P/PS density matrices, spin density,  !!
+!! CAS/CI spin-orbital counts. Prints the WAVEFUNCTION SUMMARY block as  !!
+!! each value is determined (see the print_box call below).              !!
+!! arguments: none (unit 15 already open; output via COMMON /nat/,       !!
+!!   /coord/, /energ/, /cas/ and ao_matrices' P/PS/C/CB module arrays)   !!
+!! author:                                                               !!
+!! ********************************************************************* !!
+      subroutine input
       use basis_set
       use ao_matrices
+      use effao_mod, only: allocate_effao
+      use nao_mod, only: allocate_nao
+      use json_mod
+      use output_mod, only: print_value
+      use input_options_mod, only: icorr
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
       common /coord/ coord0(3,maxat),zn(maxat),iznuc(maxat)
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
-      dimension clin(nmax**2)
-      character*80 line
-      logical ilog
-      real*8, allocatable ::vv(:,:)
+      common /printout/iaccur
+      real*8, allocatable :: clin(:)
+      character*80 line,line2
+      character*20 cform,ctype
+      character*30 cword
+      character*200 cdens
+      character*40 cdblock
+      character*20 cnum
+      logical ilog,lescf
 
       ndens0=iopt(9)
-     
+
       irhf=0
       iuhf=0
       icas=0
       icisd=0
-      ikop=0
       irohf=0
 
-ccccccccccccccccccccccccccccc
-c start processing fchk file
-ccccccccccccccccccccccccccccc
+!! wavefunction summary -- each line below prints as its value is determined !!
+      call print_box('WAVEFUNCTION SUMMARY')
+
+!! start processing fchk file !!
       rewind 15
       read(15,'(a80)')line
       read(15,'(a80)')line
       if(index(line(11:11),"R").ne.0) then
-       irhf=1
-       write(*,*) 'Restricted MO formalism'
+        irhf=1
+        cform='Restricted'
       else if(index(line(11:11),"U").ne.0) then
-       write(*,*) 'Unrestricted MO formalism'
-       iuhf=1
+        cform='Unrestricted'
+        iuhf=1
+      else
+
+!! no R/U in the header (pySCF CASSCF, FCI, CCSD): unrestricted only if  !!
+!! the file has Beta MO coefficients, as for kop below                   !!
+        cform='Restricted'
+        do while(.true.)
+          read(15,'(a80)',end=5) line2
+          if(index(line2,"Beta MO co").ne.0) then
+            cform='Unrestricted'
+            exit
+          end if
+        end do
+5       rewind 15
+        read(15,'(a80)') line2
+        read(15,'(a80)') line2
       end if
-      if(index(line(11:25),"CASSCF").ne.0) then
-       icas=1
-       write(*,*) 'CASSCF type calculation'
-      else if(index(line(11:25),"HF").ne.0) then
-       write(*,*) 'Hartree-Fock type calculation'
-      else if(index(line(11:25),"MP").ne.0) then
-       write(*,*) 'Moller-Plesset PT type calculation'
-      else if(index(line(11:25),"CI").ne.0) then
-       icisd=1
-       write(*,*) 'CI type calculation'
-      else if(index(line(11:25),"CCSD").ne.0) then
-       write(*,*) 'Coupled-cluster type calculation'
-       icisd=1
-      else 
-       write(*,*)'KS-DFT type calculation'
-       write(*,*)'(single det. built up of the Kohn-Sham orbitals)'
+      call print_value('MO formalism',trim(cform))
+
+!! the method word: first word of the method field (columns 11-40),   !!
+!! cut at '-' (G16 RMP2-FC, RCCSD-FC) and without the R/U/RO prefix;  !!
+!! no wavefunction method below starts with R or U                    !!
+      cword=adjustl(line(11:40))
+      i=index(cword,' ')
+      if(i.gt.0) cword(i:)=' '
+      i=index(cword,'-')
+      if(i.gt.1) cword(i:)=' '
+      if(cword(1:2).eq.'RO') then
+        cword=cword(3:)
+      else if(cword(1:1).eq.'R'.or.cword(1:1).eq.'U') then
+        cword=cword(2:)
+      end if
+
+!! the whole word is compared, so functional names that contain HF,  !!
+!! MP or CI (M06HF, HFS, MPW1PW91, PBE1KCIS) are KS-DFT               !!
+      select case(cword)
+      case('CASSCF')
+        icas=1
+        ctype='CASSCF'
+      case('HF')
+        ctype='Hartree-Fock'
+      case('CID','CIS','CISD','QCISD','QCISD(T)','QCISD(TQ)')
+        icisd=1
+        ctype='CI'
+      case('CCD','CCSD','CCSD(T)','BD','BD(T)')
+        icisd=1
+        ctype='Coupled-cluster'
+      case default
+        if(cword(1:2).eq.'MP'.and.
+     +     index('0123456789',cword(3:3)).ne.0) then
+          ctype='Moller-Plesset PT'
+        else
+          ctype='KS-DFT'
+        end if
+      end select
+!! a method name not recognised above is taken as a functional: the   !!
+!! method field of the .fchk is shown with it                         !!
+      if(ctype.eq.'KS-DFT') then
+        call print_value('Calculation type','KS-DFT, Kohn-Sham '//
+     +    'determinant (.fchk method: '//trim(adjustl(line(11:25)))//')')
+      else
+        call print_value('Calculation type',trim(ctype))
       end if
 
       call build_basis()
+      call print_value('Number of atoms',natoms)
+      call print_value('Number of basis functions',nbasis)
+      call print_value('Primitive gaussians',numprim)
+
+!! the fixed-size arrays (parameter.h) must hold the system           !!
+      if(natoms.gt.maxat) then
+        write(*,'(2x,a,i0,a)') 'APOST-3D is compiled for at most ',
+     +    maxat,' atoms: raise maxat in sources/parameter.h and rebuild'
+        call apost_stop(' Too many atoms')
+      end if
+      if(nbasis.gt.nmax) then
+        write(*,'(2x,a,i0,a)') 'APOST-3D is compiled for at most ',
+     +    nmax,' basis functions: raise nmax in sources/parameter.h '//
+     +    'and rebuild'
+        call apost_stop(' Too many basis functions')
+      end if
 
       igr=nbasis
       nat=natoms
 
-      call build_ao_matrices(igr) !MMO- WIP!
+      call build_ao_matrices(igr)
 
-      igr0=int_locate(15,"Number of independ",ilog)
-      if(igr.ne.igr0) write(*,*) 'WARNING, some basis functions have bee
-     +n removed'
-   
+!! EFO and natural-AO arrays, sized now that igr and nat are known    !!
+      call allocate_effao(igr,nat)
+      call allocate_nao(igr)
+
+      igr0=nindep_fchk(igr)
+      if(igr.ne.igr0) write(*,'(2x,a)')
+     +  'WARNING: some basis functions were removed (linear dependency)'
 
       nelectr=int_locate(15,"Number of electr",ilog)
 
@@ -81,190 +192,250 @@ ccccccccccccccccccccccccccccc
       read(15,*)(coord0(1,i),coord0(2,i),coord0(3,i),i=1,nat)
 
       escf=real_locate(15,"SCF Energ",ilog)
+      lescf=ilog
       ss2=real_locate(15,"S**2    ",ilog)
 
       dummy=int_locate(15,"Alpha MO co",ilog)
       read(15,*)((c(i,j),i=1,igr),j=1,igr0)
       if(igr0.ne.igr) then
-       do i=igr0+1,igr
-        do j=1,igr
-         c(j,i)=0.0d0
+        do i=igr0+1,igr
+          do j=1,igr
+            c(j,i)=0.0d0
+          end do
         end do
-       end do
       end if
 
       dummy=int_locate(15,"Beta MO co",ilog)
       if(ilog) then
-       read(15,*)((cb(i,j),i=1,igr),j=1,igr0)
-       if(igr0.ne.igr) then
-        do i=igr0+1,igr
-         do j=1,igr
-          c(j,i)=0.0d0
-         end do
-        end do
-       end if
-c just in case not detected above
-       iuhf=1
-       kop=1
+        read(15,*)((cb(i,j),i=1,igr),j=1,igr0)
+        if(igr0.ne.igr) then
+          do i=igr0+1,igr
+            do j=1,igr
+              cb(j,i)=0.0d0
+            end do
+          end do
+        end if
+
+!! just in case not detected above !!
+        iuhf=1
+        kop=1
       end if
 
-
-C Reading P-matrix from fchk
-      ntriang=int_locate(15,"otal SCF D",ilog)
-      read(15,*)(clin(i),i=1,ntriang)
-      ndens=1     
-
-      if(ndens0.gt.1) then
-       ndens=-1
-       rewind 15
- 200   read(15,'(a80)',end=211)line
-       if(index(line,"Total").ne.0) ndens=ndens+1
-       goto 200
- 211   continue                 
-
-       if(ndens.ne.1) then
-        print *, ndens,' densities found in the fchk file'   
-       else
-        print *,' There is only a P-matrix the fchk file - it is used.' 
-       end if
-       if(ndens0.le.ndens)then
-        ndens=ndens0
-        print *,'Using the ',ndens,'-d/th density in the fchk file'
-       else 
-        print *,ndens0,'-d/th density not found in the fchk file'
-        stop
-       endif
-
-c Getting the n-th Density matrix in fchk instead
-       ncou=-1
-       rewind 15
-       do while (ncou.lt.ndens)
-        read(15,'(a80)')line
-        if(index(line,"Total").ne.0) ncou=ncou+1   
-       end do
-       read(15,*)(clin(i),i=1,ntriang)
-      end if
-c 
-      ncou=1
-      do i=1,igr
-       do j=1,i
-        p(i,j)=clin(ncou)
-        p(j,i)=clin(ncou)
-        ncou=ncou+1
-       enddo
-      enddo
-
-c checking for RO case. Wrong P provided in FChk in some Gaussian
-c versions. Building P and PS from MOs just in case
+!! checking for RO case -- wrong P provided in FChk in some Gaussian    !!
+!! versions, building P and PS from MOs just in case                    !!
       irohf=int_locate(15,"IROHF",ilog)
       if(irohf.eq.1) then
-       kop=1
-       do i=1,igr
-        do j=1,igr
-         cb(i,j)=c(i,j)
+        kop=1
+        do i=1,igr
+          do j=1,igr
+            cb(i,j)=c(i,j)
+          enddo
         enddo
-       enddo
       end if
-      if(kop.eq.1) then
-       do i=1,igr
-        do j=1,igr
-         pa(i,j)=0.0d0
-         pb(i,j)=0.0d0
-         do ij=1,nalf
-          pa(i,j)=pa(i,j)+c(i,ij)*c(j,ij)
-         end do
-         do ij=1,nb
-           pb(i,j)=pb(i,j)+cb(i,ij)*cb(j,ij)
-         end do
-         p(i,j)=pa(i,j)+pb(i,j)
-         ps(i,j)=pa(i,j)-pb(i,j)
+
+!! reading P-matrix from fchk !!
+      allocate(clin(igr*(igr+1)/2))
+      ntriang=int_locate(15,"otal SCF D",ilog)
+      if(ntriang.gt.size(clin))
+     +  call apost_stop(' Density larger than the basis in the .fchk file')
+      read(15,*)(clin(i),i=1,ntriang)
+      cdblock='Total SCF Density'
+
+!! DENS n: the n-th density of the .fchk, counting the blocks whose      !!
+!! header starts with "Total" and names a "Density" (the same rule for   !!
+!! Gaussian, Q-Chem and pySCF files)                                    !!
+      if(ndens0.gt.1) then
+        ndens=0
+        cdens=' '
+        rewind 15
+ 200    read(15,'(a80)',end=211) line
+        if(line(1:5).eq.'Total'.and.index(line,'Density').ne.0) then
+          ndens=ndens+1
+          write(cnum,'(i0)') ndens
+          if(ndens.gt.1) cdens=trim(cdens)//';'
+          cdens=trim(cdens)//' '//trim(cnum)//' '//
+     +      trim(adjustl(line(1:40)))
+        end if
+        goto 200
+ 211    continue
+        call print_value('Densities in the .fchk',trim(adjustl(cdens)))
+!! the density of an unrestricted or ROHF wavefunction is rebuilt from  !!
+!! its SCF orbitals below, so another one cannot be used                !!
+        if(kop.eq.1) then
+          write(*,'(2x,a)') 'DENS above 1 is only available for '//
+     +      'restricted wavefunctions'
+          call apost_stop(' DENS: unrestricted wavefunction')
+        end if
+        if(ndens0.gt.ndens) then
+          write(*,'(2x,a,i0,a,i0,a)') 'DENS ',ndens0,
+     +      ' asked for, the number of densities in the .fchk is ',ndens
+          call apost_stop(' DENS: density not found')
+        end if
+        ncou=0
+        rewind 15
+        do while(ncou.lt.ndens0)
+          read(15,'(a80)') line
+          if(line(1:5).eq.'Total'.and.index(line,'Density').ne.0)
+     +      ncou=ncou+1
         end do
-       end do
-      else
-       do i=1,igr
-        do j=1,igr
-         pa(i,j)=p(i,j)/2.0d0 
-         pb(i,j)=p(i,j)/2.0d0 
-        enddo
-       enddo
+        write(cnum,'(i0)') ndens0
+        cdblock=adjustl(line(1:40))
+        call print_value('Density used',trim(cnum)//' ('//
+     +    trim(cdblock)//')')
+        read(15,*)(clin(i),i=1,ntriang)
       end if
-c
-c checking if spin density is available in fchk
-c
-      ntriang=int_locate(15,"Spin SCF ",ilog)
-      if(ilog) then
-       read(15,*)(clin(i),i=1,ntriang)
-       ncou=1
-       do i=1,igr
+
+      ncou=1
+      do i=1,igr
         do j=1,i
-         ps(i,j)=clin(ncou)
-         ps(j,i)=clin(ncou)
-         ncou=ncou+1
+          p(i,j)=clin(ncou)
+          p(j,i)=clin(ncou)
+          ncou=ncou+1
         enddo
-       enddo
-      else if(icas.ne.1.or.icisd.ne.1) then
-       print *, 'Spin density not found in FChk'
-       print *, 'Reconstructing spin density (if any) from MOs'
+      enddo
+
+      if(kop.eq.1) then
+        do i=1,igr
+          do j=1,igr
+            pa(i,j)=0.0d0
+            pb(i,j)=0.0d0
+            do ij=1,nalf
+              pa(i,j)=pa(i,j)+c(i,ij)*c(j,ij)
+            end do
+            do ij=1,nb
+              pb(i,j)=pb(i,j)+cb(i,ij)*cb(j,ij)
+            end do
+            p(i,j)=pa(i,j)+pb(i,j)
+            ps(i,j)=pa(i,j)-pb(i,j)
+          end do
+        end do
+      else
+        do i=1,igr
+          do j=1,igr
+            pa(i,j)=p(i,j)/2.0d0 
+            pb(i,j)=p(i,j)/2.0d0 
+          enddo
+        enddo
       end if
-      
-c In case CASSCF
+
+!! checking if spin density is available in fchk !!
+      ntriang=int_locate(15,"Spin SCF ",ilog)
+      if(ilog.and.ntriang.gt.size(clin))
+     +  call apost_stop(' Density larger than the basis in the .fchk file')
+      if(ilog) then
+        read(15,*)(clin(i),i=1,ntriang)
+        ncou=1
+        do i=1,igr
+          do j=1,i
+            ps(i,j)=clin(ncou)
+            ps(j,i)=clin(ncou)
+            ncou=ncou+1
+          enddo
+        enddo
+        call print_value('Spin density','read from the .fchk')
+      else if(icas.ne.1.and.icisd.ne.1) then
+        call print_value('Spin density','built from the MOs')
+      end if
+      deallocate(clin)
+
+!! in case CASSCF !!
       ncasel=int_locate(15,"Number of CAS El",ilog)
       if(ilog) then
-       icas=1
-       ncasorb=int_locate(15,"Number of CAS Or",ilog)
-       print *,'CAS specification is read:'
-       print *,'Active electrons : ',ncasel 
-       print *,'Active orbitals  : ',ncasorb
+        icas=1
+        ncasorb=int_locate(15,"Number of CAS Or",ilog)
+        call print_value('CAS active electrons',ncasel)
+        call print_value('CAS active orbitals',ncasorb)
       endif
-      
+
       nocc=nelectr/2
       if(icas.eq.1) then
-      ncore=(nelectr-ncasel)/2
-      norb=ncore+ncasorb
-      nspinorb=norb*2
+        ncore=(nelectr-ncasel)/2
+        norb=ncore+ncasorb
+        nspinorb=norb*2
 
-c       nx=ncasel/2
-c       if(2*nx.ne.ncasel)nx=nx+1
-c       nspinorb=2*(nocc-nx+ncasorb)
-c       if(2*nocc.ne.nelectr)nspinorb=nspinorb+2
-       print *,'Number of CAS spin-orbitals', nspinorb
-       icass=0
-       if(abs(ss2).gt.1.0d-2) then
-        print *,'CAS WF other than pure singlet state'
-        icass=1
-       end if
-      else if(icisd.eq.1) then 
-       nspinorb=igr0*2
-       print *,' Number of CI spin-orbitals', nspinorb
+        call print_value('CAS spin-orbitals',nspinorb)
+        icass=0
+        if(abs(ss2).gt.1.0d-2) then
+          call print_value('CAS spin state','non-singlet')
+          icass=1
+        end if
+      else if(icisd.eq.1) then
+        nspinorb=igr0*2
+        call print_value('CI spin-orbitals',nspinorb)
       endif
-c      norb=nspinorb/2
 
-      if(icas.eq.0)then
-       print *,' '
-       print *,'nocc',nocc,'    nalpha',nalf,'    nbeta',nb
+      if(icas.eq.0.and.kop.eq.0) then
+        call print_value('Doubly occupied MOs',nocc)
       else
-       print *,'nalpha',nalf,'    nbeta',nb
-      endif
-      print *,' '
-      print *,'E(SCF/DFT)=',escf
-      print *,' '
+        write(cnum,'(i0,a,i0)') nalf,' / ',nb
+        call print_value('Alpha / beta electrons',trim(cnum))
+      end if
+!! 7 decimals as every energy (13 with FULLPRECISION), as ENPART's !!
+!! "Energy in the .fchk file"                                       !!
+      ndec=7
+      if(iaccur.ne.0) ndec=13
+      if(lescf) then
+        call print_value('SCF energy',escf,ndec,'au')
+      else
+        call print_value('SCF energy','not in the .fchk','au')
+      end if
 
-ccccccccccccccccccccccccccc
-c end processing fchk file
-ccccccccccccccccccccccccccc
-c      allocate(vv(nbasis,nbasis))
-c      call do_potential(zn,vv)
-c      call printmat(nbasis,vv)
+!! the same summary in the results file; no energy in the .fchk -> null !!
+      call json_begin_object('wavefunction')
+      if(kop.eq.0) then
+        call json_value('formalism','restricted')
+      else
+        call json_value('formalism','unrestricted')
+      end if
+      call json_value('method',trim(ctype))
+      call json_value('n_basis_functions',igr)
+      call json_value('n_electrons',nalf+nb)
+      call json_value('n_alpha',nalf)
+      call json_value('n_beta',nb)
+      if(lescf) then
+        call json_value('energy_au',escf)
+      else
+        call json_null('energy_au')
+      end if
+!! the density analysed: its block in the .fchk (DENS), or the 1-RDM   !!
+!! file of # DM, which replaces it (dm1input)                          !!
+      call json_begin_object('density')
+      call json_value('fchk_block',trim(cdblock))
+      call json_value('index',max(ndens0,1))
+      if(icorr.ne.0) then
+        call json_value('source','dm1')
+      else
+        call json_value('source','fchk')
+      end if
+      call json_end()
+      call json_end()
+      end
 
-       end
+!! ***** !!
 
+!! ********************************************************************** !!
+!! subroutine: dm1input                                                   !!
+!! purpose: reads the spin-orbital 1-RDM (dm1) for a post-HF wavefunction !!
+!! -- either the full-space matrix from a DMN-code file (unit 11,         !!
+!! unformatted), or the active-space-only matrix from PySCF (unit 11,     !!
+!! formatted, inactive block assumed diagonally doubly occupied) --       !!
+!! then reconstructs the natural orbitals (occ_no/c_no) and overwrites    !!
+!! the AO-basis P/Pa/Pb/Ps density matrices from it, replacing whatever   !!
+!! the .fchk itself provided. The test LiH-35-CAS22 covers the pySCF      !!
+!! path; the ORCA path has no test.                                       !!
+!! arguments:                                                             !!
+!!   dm1 (out) -- spin-orbital 1-RDM, (nspinorb,nspinorb)                 !!
+!! author:                                                                !!
+!! ********************************************************************** !!
       subroutine dm1input(dm1)
+      use output_mod, only: print_value
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      character*40 cdm
       character*80 line
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension  dm1(nspinorb,nspinorb)
 
@@ -272,11 +443,11 @@ c      call printmat(nbasis,vv)
 
       iorca    = Iopt(43)
       ipyscf   = Iopt(87)
-      thres   = 1.0d-8
+      thres    = 1.0d-8
 
       allocate(scr(igr,igr))
-       
-!! Nbasis HERE IS ncore + nact SPIN-ORBITALS (2x ncore + nact SPATIAL MOs)  
+
+!! nspinorb here is ncore + nact spin-orbitals (2x ncore + nact spatial MOs). !!
 
       do i=1,nspinorb
         do j=1,nspinorb
@@ -284,27 +455,29 @@ c      call printmat(nbasis,vv)
         end do
       end do
 
-c reading dm1 as provided by DMN node. full space
+!! full-space dm1, as provided by the DMN code. !!
       if(iorca.ne.1.and.ipyscf.ne.1) then
-          rewind(11)
-          do while(.true.)
-            read(11,end=99) i,j,vvv 
-            if(ABS(vvv).gt.thres) then
-              dm1(i,j)=dm1(i,j)+vvv
-              dm1(j,i)=dm1(i,j)
-            end if
-          end do
-      else 
+        rewind(11)
+        do while(.true.)
+          read(11,end=99) i,j,vvv
+          if(ABS(vvv).gt.thres) then
+            dm1(i,j)=dm1(i,j)+vvv
+            dm1(j,i)=dm1(i,j)
+          end if
+        end do
+      else
 
-c reading dm1 as provided by PySCF code. Only active space
-c correcting for active orbital index
-
+!! active-space-only dm1, as provided by PySCF -- inactive spin-orbitals !!
+!! assumed doubly occupied/diagonal, active-orbital indices offset by    !!
+!! ncore to land in the full spin-orbital space.                        !!
         ncore=(nspinorb-ncasorb*2)
-        write(*,*) "Nspinorb, Ncasorb, ncoreorb : ",nspinorb,ncasorb,ncore 
-        write(*,*) 'Generating DM1 for inactive spin orbitals, ',ncore
-        write(*,*) 'Assuming diagonal dm1 '
+!! (the 1-RDM file covers the active space only)                         !!
+        write(cdm,'(i0,a,i0,a,i0)') nspinorb,' / ',ncasorb,' / ',ncore
+        call print_value('Spin-orbitals (total / active / core)',
+     +    trim(cdm))
+        call print_value('Core spin-orbitals (occupation 1)',ncore)
 
-        do ii=1,ncore  
+        do ii=1,ncore
           dm1(ii,ii)=ONE
         end do
         rewind(11)
@@ -319,8 +492,10 @@ c correcting for active orbital index
           end if
         end do
       end if
-99    print *, "End DM1 reading "
+99    continue
 
+!! sanity check: dm1 should be idempotent (dm1^2 = dm1) for a single- !!
+!! determinant-equivalent density; reported, not enforced. !!
       difi=ZERO
       do i=1,nspinorb
         do j=1,nspinorb
@@ -331,9 +506,9 @@ c correcting for active orbital index
           difi=dmax1(difi,dabs(x-dm1(i,j)))
         end do
       end do
-      print *, " "
-      print *, " Max. deviation from idempotency = ",difi
-      print *, " "
+      write(cdm,'(f12.8)') difi
+      call print_value('1-RDM, largest idempotency error',
+     +  trim(adjustl(cdm)))
 
       do i=1,norb
         do k=1,norb
@@ -341,98 +516,108 @@ c correcting for active orbital index
         end do
       end do
 
-!! DIAGONALIZING TO GET NOs AND TRANSFORMATION TO THE AO BASIS !!
-
+!! diagonalizing to get NOs and transform to the AO basis. !!
       call diagonalize(igr,norb,occ_no,scr,0)
-      do i=1,igr          
-        do j=1,norb         
+      do i=1,igr
+        do j=1,norb
           x=ZERO
-          do k=1,norb         
-            x=x+c(i,k)*scr(k,j) 
+          do k=1,norb
+            x=x+c(i,k)*scr(k,j)
           end do
-          c_no(i,j)=x                          
+          c_no(i,j)=x
         end do
       end do
 
-c Building Pa and Pb matrix from dm1
-      write(*,*) 'Reconstructing P and Ps matrices from dm1 file'
-      do nu=1,igr 
-       do mu=1,igr  
-        x=0.d0
-        do i=1,nspinorb,2 
-         ii=i/2+1
-         do j=1,nspinorb,2 
-          jj=j/2+1
-          x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
-         enddo 
-        enddo
-        pa(mu,nu)=x    
-       enddo
-      enddo
+!! building Pa and Pb from dm1. !!
+      call print_value('Density matrices P and Ps','built from the 1-RDM')
+      do nu=1,igr
+        do mu=1,igr
+          x=0.d0
+          do i=1,nspinorb,2
+            ii=i/2+1
+            do j=1,nspinorb,2
+              jj=j/2+1
+              x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
+            end do
+          end do
+          pa(mu,nu)=x
+        end do
+      end do
 
-      do nu=1,igr 
-       do mu=1,igr  
-        x=0.d0
-        do i=2,nspinorb,2 
-         ii=i/2
-         do j=2,nspinorb,2 
-          jj=j/2
-          x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
-         enddo 
-        enddo
-        pb(mu,nu)=x    
-       enddo
-      enddo
+      do nu=1,igr
+        do mu=1,igr
+          x=0.d0
+          do i=2,nspinorb,2
+            ii=i/2
+            do j=2,nspinorb,2
+              jj=j/2
+              x=x+c(nu,ii)*dm1(i,j)*c(mu,jj)
+            end do
+          end do
+          pb(mu,nu)=x
+        end do
+      end do
 
-      do mu=1,igr 
-       do nu=1,igr 
-        ps(mu,nu)=pa(mu,nu)-pb(mu,nu)
-       enddo
-      enddo
+      do mu=1,igr
+        do nu=1,igr
+          ps(mu,nu)=pa(mu,nu)-pb(mu,nu)
+        end do
+      end do
 
       dif=0.0d0
-      do i=1,igr 
-       do j=1,igr  
-        dif=dmax1(dif,dabs((pa(i,j)+pb(i,j))-p(i,j)))
-        p(i,j)=pa(i,j)+pb(i,j)
-       end do 
-      end do 
-      write(*,*) 'P (and Ps) in fchk overriden'    
-      write(*,*) 'Max dif. P from dm1 and from FChk: ',dif        
-
+      do i=1,igr
+        do j=1,igr
+          dif=dmax1(dif,dabs((pa(i,j)+pb(i,j))-p(i,j)))
+          p(i,j)=pa(i,j)+pb(i,j)
+        end do
+      end do
+      write(cdm,'(f12.8)') dif
+      call print_value('P, largest difference from the .fchk',
+     +  trim(adjustl(cdm)))
 
       deallocate(scr)
       end
-!!!
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: dm2input_pyscf                                            !!
+!! purpose: reads the active-space-only spinless 2-RDM (dm2) produced by !!
+!! PySCF's write_dm12 (unit 12, formatted *.dm2), then reconstructs the  !!
+!! core and core-active blocks analytically from the spin-resolved 1-RDM !!
+!! (dm1, already read by dm1input) assuming a closed-shell inactive      !!
+!! space. Covered by the test LiH-35-CAS22.                              !!
+!! arguments:                                                             !!
+!!   dm1 (in)  -- spin-orbital 1-RDM, (nspinorb,nspinorb)                 !!
+!!   dm2 (out) -- spinless active+core 2-RDM, (norb,norb,norb,norb)       !!
+!! author:                                                                 !!
+!! ********************************************************************* !!
       subroutine dm2input_pyscf(dm1,dm2)
+      use output_mod, only: print_value
       use ao_matrices
       implicit real*8(a-h,o-z)
       include 'parameter.h'
+      character*40 cdm
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
       dimension dm2(norb,norb,norb,norb)
       dimension dm1(nspinorb,nspinorb)
-      character*80 line
       real*8 vvv
-      logical ilog
-
-! At the moment will read the full spinless rdm2 from file *.dm2, as
-! produced by write_dm12 function in apost3d.py 
 
       dm2=0.0d0
 
       ninact=(nspinorb-ncasorb*2)
       ncore=ninact/2
       iorb=ncore+ncasorb
-      if(iorb.ne.norb) stop 'inconsistency in norb'
-      write(*,*) 'Reconstructing rdm2 for ',ncore,' inactive orbitals'
-      write(*,*) 'Active orbitals : ', ncasorb
-      write(*,*) 'Total spinless rdm2 dimension : ', norb
+      if(iorb.ne.norb) call apost_stop('inconsistency in norb')
+      call print_value('2-RDM, core orbitals added',ncore)
+      call print_value('2-RDM, active orbitals',ncasorb)
+      call print_value('2-RDM, orbitals in total',norb)
 
-! reading active space
+!! active space, from *.dm2. !!
       rewind(12)
-      read(12,*) 
+      read(12,*)
       icount=0
       do while(.true.)
         read(12,*,end=999) ii,jj,kk,ll,vvv
@@ -440,366 +625,565 @@ c Building Pa and Pb matrix from dm1
         icount=icount+1
       end do
 999   continue
-      write(*,*) 'rdm2 elements read:',icount
+      call print_value('2-RDM, elements read',icount)
 
-! reconstructing core and core-active blocks
-! with spin resolved dm1
+!! core and core-active blocks, reconstructed from the spin-resolved dm1. !!
 
-!! ALPHA-ALPHA AND BETA-BETA CASES !!
-
-        do ispin=1,2
-          do ii=1,ncore
-            do jj=1,ncore
-              dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+ONE
-              dm2(ii,jj,jj,ii)=dm2(ii,jj,jj,ii)-ONE
-            end do 
-            do kk=ncore+1,iorb
-              do ll=ncore+1,iorb
-               dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(ii,ll,kk,ii)=dm2(ii,ll,kk,ii)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-               dm2(kk,ii,ii,ll)=dm2(kk,ii,ii,ll)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
-              end do 
-            end do 
-          end do 
-        end do 
-
-!! ALPHA-BETA CASE !!
-
+!! alpha-alpha and beta-beta cases. !!
+      do ispin=1,2
         do ii=1,ncore
-          dm2(ii,ii,ii,ii)=dm2(ii,ii,ii,ii)+TWO
           do jj=1,ncore
-            if(jj.ne.ii) dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+TWO
+            dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+ONE
+            dm2(ii,jj,jj,ii)=dm2(ii,jj,jj,ii)-ONE
           end do
           do kk=ncore+1,iorb
             do ll=ncore+1,iorb
-              dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+1,2*(ll-1)+1)
-              dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+2,2*(ll-1)+2)
-              dm2(ii,ii,ll,kk)=dm2(ii,ii,ll,kk)+dm1(2*(ll-1)+2,2*(kk-1)+2)
-              dm2(ll,kk,ii,ii)=dm2(ll,kk,ii,ii)+dm1(2*(ll-1)+1,2*(kk-1)+1)
+              dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+              dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+              dm2(ii,ll,kk,ii)=dm2(ii,ll,kk,ii)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
+              dm2(kk,ii,ii,ll)=dm2(kk,ii,ii,ll)-dm1(2*(kk-1)+ispin,2*(ll-1)+ispin)
             end do
           end do
         end do
-
-!! CHECKING DM2 !!
-
-       xx2=ZERO
-       do ii=1,ncore
-         do jj=1,ncore
-           xx2=xx2+dm2(ii,ii,jj,jj)
-         end do
-       end do
-       write(*,*) 'Trace of inactive orbitals: ',xx2
-       xx2=ZERO
-       do ii=ncore+1,norb
-         do jj=ncore+1,norb
-           xx2=xx2+dm2(ii,ii,jj,jj)
-         end do
-       end do
-       write(*,*) 'Trace of active orbitals: ',xx2
-       xx2=ZERO
-       do ii=1,norb
-         do jj=1,norb
-           xx2=xx2+dm2(ii,ii,jj,jj)
-         end do
-       end do
-       nelect=nalf+nb
-       write(*,*) " "
-       write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2,nelect*(nelect-1)
-       write(*,*) " "
-      end
-
-      subroutine dm2input_dmn(dm1,dm2)
-      use ao_matrices
-      implicit real*8(a-h,o-z)
-      include 'parameter.h'
-      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
-      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
-      dimension dm2(norb,norb,norb,norb)
-      dimension dm1(nspinorb,nspinorb)
-      character*80 line
-      logical ilog
-
-      thres   = 1.0d-8
-
-!! PREPARATING FOR DM1 AND DM2 READING !!
-
-       dm2=ZERO
-
-!! READING THE DM2(1,2,1,2) MATRIX BUT SAVING AS DM2(1,1,2,2), IMPORTANT FOR LATER ON !!
-
-c reading full rdm2 spin-separated as given by  DMN code
-c reading only i<=j, k<=l, i<=k elements and reconstructing full rdm2
-c reading from formatted (unreadable) dm2 file
-
-      rewind(12)
-      do while(.true.)
-       read(12,end=999) i0,k0,j0,l0,vvv
-       if(abs(vvv).gt.thres) then
-         ii=(i0-1)/2+1
-         kk=(k0-1)/2+1
-         jj=(j0-1)/2+1
-         ll=(l0-1)/2+1
-         ilog=.true.
-         if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.
-
-!! IJ0 FOR THE AAAA, ABAB,BABA AND BBBB TERMS !!
-!! KJ0 FOR THE ABBA AND BAAB TERMS !!
-
-         ij0=mod(i0+j0,2)+mod(k0+l0,2)
-         kj0=mod(k0+j0,2)+mod(i0+l0,2)
-         if(ij0.eq.0)then
-           dm2(ii,jj,kk,ll)=dm2(ii,jj,kk,ll)+vvv
-           if(ilog) dm2(jj,ii,ll,kk)=dm2(jj,ii,ll,kk)+vvv
-           if(k0.ne.i0.and.l0.ne.j0) then
-            dm2(kk,ll,ii,jj)=dm2(kk,ll,ii,jj)+vvv
-             if(ilog) dm2(ll,kk,jj,ii)=dm2(ll,kk,jj,ii)+vvv
-           end if
-         end if
-         if(kj0.eq.0) then
-           if(k0.ne.i0) then
-             dm2(kk,jj,ii,ll)=dm2(kk,jj,ii,ll)-vvv
-             if(ilog) dm2(jj,kk,ll,ii)=dm2(jj,kk,ll,ii)-vvv
-           end if
-           if(l0.ne.j0) then
-             dm2(ii,ll,kk,jj)=dm2(ii,ll,kk,jj)-vvv
-             if(ilog) dm2(ll,ii,jj,kk)=dm2(ll,ii,jj,kk)-vvv
-          end if
-         end if
-       end if
       end do
 
-999   continue
+!! alpha-beta case. !!
+      do ii=1,ncore
+        dm2(ii,ii,ii,ii)=dm2(ii,ii,ii,ii)+TWO
+        do jj=1,ncore
+          if(jj.ne.ii) dm2(ii,ii,jj,jj)=dm2(ii,ii,jj,jj)+TWO
+        end do
+        do kk=ncore+1,iorb
+          do ll=ncore+1,iorb
+            dm2(ii,ii,kk,ll)=dm2(ii,ii,kk,ll)+dm1(2*(kk-1)+1,2*(ll-1)+1)
+            dm2(kk,ll,ii,ii)=dm2(kk,ll,ii,ii)+dm1(2*(kk-1)+2,2*(ll-1)+2)
+            dm2(ii,ii,ll,kk)=dm2(ii,ii,ll,kk)+dm1(2*(ll-1)+2,2*(kk-1)+2)
+            dm2(ll,kk,ii,ii)=dm2(ll,kk,ii,ii)+dm1(2*(ll-1)+1,2*(kk-1)+1)
+          end do
+        end do
+      end do
 
-!! CHECKING DM2 !!
-
+!! checking dm2: traces should reproduce N(N-1) when normalized. !!
+      xx2=ZERO
+      do ii=1,ncore
+        do jj=1,ncore
+          xx2=xx2+dm2(ii,ii,jj,jj)
+        end do
+      end do
+      write(cdm,'(f14.8)') xx2
+      call print_value('2-RDM trace, core orbitals',trim(adjustl(cdm)))
+      xx2=ZERO
+      do ii=ncore+1,norb
+        do jj=ncore+1,norb
+          xx2=xx2+dm2(ii,ii,jj,jj)
+        end do
+      end do
+      write(cdm,'(f14.8)') xx2
+      call print_value('2-RDM trace, active orbitals',trim(adjustl(cdm)))
       xx2=ZERO
       do ii=1,norb
         do jj=1,norb
           xx2=xx2+dm2(ii,ii,jj,jj)
         end do
       end do
-      write(*,*) " TRACE OF THE DM2 (NORMALIZED TO N(N-1) : ",xx2
-      write(*,*) " "
+      nelect=nalf+nb
+      write(cdm,'(f14.8,a,i0)') xx2,' / ',nelect*(nelect-1)
+      call print_value('2-RDM trace / N(N-1)',trim(adjustl(cdm)))
       end
 
-! *****
+!! ***** !!
 
+!! ********************************************************************* !!
+!! subroutine: dm2input_dmn                                              !!
+!! purpose: reads the full spin-separated 2-RDM produced by the DMN code !!
+!! (unit 12, unformatted) -- only the i<=j, k<=l, i<=k elements are      !!
+!! stored on file, reconstructed here into the full spinless dm2(norb^4) !!
+!! via the AAAA/ABAB/BABA/BBBB and ABBA/BAAB symmetry relations.         !!
+!! arguments:                                                            !!
+!!   dm1 (in)  -- spin-orbital 1-RDM, unused here (kept for a uniform    !!
+!!               call signature with dm2input_pyscf)                     !!
+!!   dm2 (out) -- spinless 2-RDM, (norb,norb,norb,norb)                  !!
+!! author:                                                               !!
+!! ********************************************************************* !!
+      subroutine dm2input_dmn(dm1,dm2)
+      use output_mod, only: print_value
+      use ao_matrices
+      implicit real*8(a-h,o-z)
+      include 'parameter.h'
+      character*40 cdm
+      common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
+      common /iops/iopt(200)
+      common /cas/icas,ncasel,ncasorb,nspinorb,norb,icisd,icass
+      dimension dm2(norb,norb,norb,norb)
+      dimension dm1(nspinorb,nspinorb)
+      logical ilog
+
+      thres = 1.0d-8
+
+      dm2=ZERO
+
+!! reading the dm2(1,2,1,2) matrix but saving as dm2(1,1,2,2) (important !!
+!! for downstream consumers). Reads only i<=j, k<=l, i<=k elements from  !!
+!! the formatted (unlabeled) *.dm2 file and reconstructs the full rdm2   !!
+!! via symmetry -- ij0 for the AAAA/ABAB/BABA/BBBB terms, kj0 for the    !!
+!! ABBA/BAAB terms.                                                      !!
+      rewind(12)
+      do while(.true.)
+        read(12,end=999) i0,k0,j0,l0,vvv
+        if(abs(vvv).gt.thres) then
+          ii=(i0-1)/2+1
+          kk=(k0-1)/2+1
+          jj=(j0-1)/2+1
+          ll=(l0-1)/2+1
+          ilog=.true.
+          if((i0.eq.j0.and.k0.eq.l0).or.(k0.eq.j0.and.i0.eq.l0)) ilog=.false.
+
+          ij0=mod(i0+j0,2)+mod(k0+l0,2)
+          kj0=mod(k0+j0,2)+mod(i0+l0,2)
+          if(ij0.eq.0)then
+            dm2(ii,jj,kk,ll)=dm2(ii,jj,kk,ll)+vvv
+            if(ilog) dm2(jj,ii,ll,kk)=dm2(jj,ii,ll,kk)+vvv
+            if(k0.ne.i0.and.l0.ne.j0) then
+              dm2(kk,ll,ii,jj)=dm2(kk,ll,ii,jj)+vvv
+              if(ilog) dm2(ll,kk,jj,ii)=dm2(ll,kk,jj,ii)+vvv
+            end if
+          end if
+          if(kj0.eq.0) then
+            if(k0.ne.i0) then
+              dm2(kk,jj,ii,ll)=dm2(kk,jj,ii,ll)-vvv
+              if(ilog) dm2(jj,kk,ll,ii)=dm2(jj,kk,ll,ii)-vvv
+            end if
+            if(l0.ne.j0) then
+              dm2(ii,ll,kk,jj)=dm2(ii,ll,kk,jj)-vvv
+              if(ilog) dm2(ll,ii,jj,kk)=dm2(ll,ii,jj,kk)-vvv
+            end if
+          end if
+        end if
+      end do
+
+999   continue
+
+!! checking dm2: trace should reproduce N(N-1) when normalized. !!
+      xx2=ZERO
+      do ii=1,norb
+        do jj=1,norb
+          xx2=xx2+dm2(ii,ii,jj,jj)
+        end do
+      end do
+      write(cdm,'(f14.8)') xx2
+      call print_value('2-RDM trace',trim(adjustl(cdm)))
+      end
+
+!! ***** !!
+
+!! ********************************************************************** !!
+!! subroutine: mga_misc                                                   !!
+!! purpose: reads the reference one-/two-electron energy components       !!
+!! (kinetic, electron-nuclear, electron-electron) that ENPART's           !!
+!! integration-error checks compare against, from custom fields appended  !!
+!! to the .fchk by the project's own post-processing scripts (Gaussian:   !!
+!! utils/get_energy(_g16); ORCA: orca2fchk) -- not a stock Gaussian/ORCA  !!
+!! field; pySCF: utils/apost3d.py. Also reads an ECP matrix if present,   !!
+!! returning per-atom (Mulliken-type) ECP energies; the reference E-N     !!
+!! then includes the ECP energy (ENPART adds eecp to the E-N terms).      !!
+!! arguments:                                                             !!
+!!   iecp (out) -- 1 if an ECP matrix was found in the .fchk, 0 otherwise !!
+!!   eecp (out) -- per-atom ECP energy (only filled if iecp=1)            !!
+!! author: MGimf                                                          !!
+!! ********************************************************************** !!
       subroutine mga_misc(iecp,eecp)
       use basis_set
       use ao_matrices
       use integration_grid
+      use output_mod, only: print_value
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common /nat/ nat,igr,ifg,nocc,nalf,nb,kop
-      common /iops/iopt(100)
+      common /iops/iopt(200)
       common /achi/achi(maxat,maxat),ibcp
       common/energ/escf,eelnuc,ekinen,erep,coulen,exchen,exchen_hf,etot
       common/energ0/ekin0,eelnuc0,evee0,eone0
       dimension eecp(maxat)
       character*80 line
 
-      allocatable :: xecpv(:),xecpm(:,:),xprod(:,:)
+      allocatable :: xecpv(:),xecpm(:,:)
 
-
-!! Reading KE, PE and EE from fchk. Printed to the fchk file using the following programs: !!
-!! From Gaussian09: /users/mgimferrer/FORTRAN/APOST3D.3.1-devel/utils/get_energy xxx.log >> xxx.fchk !!
-!! From Gaussian16: /users/mgimferrer/FORTRAN/APOST3D.3.1-devel/utils/get_energy_g16 xxx.log >> xxx.fchk !!
-c also included in FChk with orca2fchk program
       ekin0=ZERO
       eelnuc0=ZERO
-      ecoul0=ZERO
-      eexch0=ZERO
-      ecorr0=ZERO
       evee0=ZERO
-      eone0=ZERO
 
       rewind(15)
 991   read(15,'(a80)',end=891) line
       if(index(line,"Kinetic Energy").ne.0) then
-       read(line(45:71),'(es27.15)')  ekin0
+        read(line(45:71),'(es27.15)')  ekin0
       else
-       go to 991
+        go to 991
       end if
 891   continue
       rewind(15)
 992   read(15,'(a80)',end=892) line
       if(index(line,"Electron-Nuclei Energy").ne.0) then
-       read(line(45:71),'(es27.15)')  eelnuc0
+        read(line(45:71),'(es27.15)')  eelnuc0
       else
-       go to 992
+        go to 992
       end if
 892   continue
       rewind(15)
 993   read(15,'(a80)',end=893) line
       if(index(line,"Electron-Electron Energy").ne.0) then
-       read(line(45:71),'(es27.15)')  evee0
+        read(line(45:71),'(es27.15)')  evee0
       else
-       go to 993
+        go to 993
       end if
-
 893   continue
-c ECP?
+
+!! pseudopotential (ECP) matrix, if present: header "ECP Matrix ... N=" !!
+!! then the lower triangle of the AO matrix, as written by the utilities.  !!
       iecp=0
       rewind(15)
 998   read(15,'(a80)',end=897) line
-      if(index(line,"ECP Mat").ne.0) then
-       iecp=1                                 
-       write(*,*) ' Pseudopotential matrix found in fchk file'
-      else
-       go to 998
-      end if
+      if(index(line,"ECP Mat").eq.0) go to 998
+      iecp=1
 897   continue
-c Reading ECP matrix
-      if(iecp.eq.1) then
-999   read(15,'(a80)',end=1000) line
-      if(index(line,"ECP-Mat").ne.0) then !! MG: Bug corrected. The blank was giving problems !!
-       read(line(51:66),'(i17)') nn
-       ALLOCATE(xecpv(nn))
-       read(15,*) (xecpv(i),i=1,nn)
-      else
-       go to 999
-      end if
-c Transform to matrix
-       ALLOCATE(xecpm(igr,igr))
-       ALLOCATE(xprod(igr,igr))
-       k=1
-       do i=1,igr
-        do j=1,i
-         xecpm(i,j)=xecpv(k)   
-         xecpm(j,i)=xecpm(i,j) 
-         k=k+1
-        end do 
-       end do 
-       DEALLOCATE(xecpv)
 
-c ECP energy values for each atom Mulliken-type
-       xecp=0.0d0
-       do iiat=1,nat
-        xxx=0.0d0
-        do i=llim(iiat),iulim(iiat)
-         do k=1,igr
-          xxx=xxx+p(i,k)*xecpm(k,i)
-         end do
+      if(iecp.eq.1) then
+        ntri=igr*(igr+1)/2
+        nn=-1
+        i=index(line,"N=")
+        if(i.gt.0) read(line(i+2:),*,iostat=ios) nn
+        if(nn.ne.ntri) then
+          write(*,'(2x,a,i0,a,i0,a)') 'ECP Matrix: ',nn,
+     +      ' values announced, ',ntri,' expected (lower triangle)'
+          call apost_stop(' Wrong ECP Matrix size in the .fchk file')
+        end if
+        ALLOCATE(xecpv(ntri))
+        read(15,*,iostat=ios) (xecpv(i),i=1,ntri)
+        if(ios.ne.0) call apost_stop(' ECP Matrix in the .fchk file is incomplete')
+
+!! lower-triangular packed -> full symmetric matrix. !!
+        ALLOCATE(xecpm(igr,igr))
+        k=1
+        do i=1,igr
+          do j=1,i
+            xecpm(i,j)=xecpv(k)
+            xecpm(j,i)=xecpm(i,j)
+            k=k+1
+          end do
         end do
-        eecp(iiat)=xxx
-        xecp=xecp+xxx
-       end do
-       write(*,'(a27,es27.15)') ' Pseudopotential Energy :',xecp
-       write(*,'(5ES16.5)') (eecp(i),i=1,nat)
+        DEALLOCATE(xecpv)
+
+!! per-atom ECP energy, Mulliken-type (P contracted against the ECP matrix). !!
+        xecp=0.0d0
+        do iiat=1,nat
+          xxx=0.0d0
+          do i=llim(iiat),iulim(iiat)
+            do k=1,igr
+              xxx=xxx+p(i,k)*xecpm(k,i)
+            end do
+          end do
+          eecp(iiat)=xxx
+          xecp=xecp+xxx
+        end do
+        DEALLOCATE(xecpm)
+        write(*,'(a)') ''
+        call print_value('Pseudopotential energy',xecp,8,'au')
       end if
 
       return
-1000  stop ' ECP Matrix not found'
-      end 
+      end
 
-c ****
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: field_misc                                                !!
+!! purpose: scans the .fchk for an external static electric field entry  !!
+!! and reads its 4 components; ifield=1 if the x/y/z components are      !!
+!! non-negligible (the 4th component, magnitude, is read but not used    !!
+!! for this check).                                                      !!
+!! arguments:                                                            !!
+!!   ifield (out) -- 1 if a non-negligible field is present, 0 otherwise !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       subroutine field_misc(ifield)
       IMPLICIT REAL*8(A-H,O-Z)
       include 'parameter.h'
       common/efield/field(4),edipole
       character*80 line
 
-
       ifield=0
-C External electric field?
-C REading and taking into acocunt ony x.y and z dipole components
+
       rewind(15)
 1     read(15,'(a80)',end=2) line
       if(index(line,"External E-field").ne.0) then
-       read(15,*) (field(i),i=1,4)
-       xx=abs(field(2))+abs(field(3))+abs(field(4))
-       if(xx.gt.1.0d-4) ifield=1
+        read(15,*) (field(i),i=1,4)
+        xx=abs(field(2))+abs(field(3))+abs(field(4))
+        if(xx.gt.1.0d-4) ifield=1
       else
-       go to 1
+        go to 1
       end if
 2     continue
       end
 
+!! ***** !!
 
-c*******************************
-c PROCESSING INP FILE   ********
-c*******************************
+!! ********************************************************************* !!
+!! subroutine: readchar                                                  !!
+!! purpose: scans an .inp section (unit 16, already open) for a bare     !!
+!! keyword; ival=1 if found before the section closes, 0 otherwise.      !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
+!!   keyword (in)  -- keyword text to search for                         !!
+!!   ival    (out) -- 1 if found, 0 otherwise                            !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       subroutine readchar(section,keyword,ival)
       character section*(*), keyword*(*)
       character linea*80
       integer ipos,ii
 
-        ival=0
-      call locate(16,section,ii)
+      ival=0
+      call locate_block(16,section,ii)
+
+!! a missing block: the keyword is absent (the caller stops if the     !!
+!! block is required); the end of the file also ends the block         !!
+      if(ii.eq.0) return
       ii=0
       do while(ii.eq.0)
-       read(16,"(a80)") linea
-         ipos=index(linea,keyword)
-         if(ipos.ne.0) then
-        ival=1
-        ii=1
-         end if
-       if(index(linea,"#").ne.0) ii=2 
+        read(16,"(a80)",end=20) linea
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
+          ival=1
+          ii=1
+        end if
+        if(index(linea,"#").ne.0) ii=2
       end do
-c        if(ii.eq.1) write(*,"(a8,a2,i3)") keyword,'= ',ival
-      return
-        end
-C*****************************************************************
+20    return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: readreal                                                  !!
+!! purpose: scans an .inp section (unit 16, already open) for a keyword  !!
+!! followed by a real value; falls back to intdef if not found.          !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
+!!   keyword (in)  -- keyword text to search for                         !!
+!!   intv    (out) -- parsed value, or intdef if not found               !!
+!!   intdef  (in)  -- default value                                      !!
+!!   ilog    (in)  -- unused, kept for the call sites                    !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       subroutine readreal(section,keyword,intv,intdef,ilog)
       character section*(*), keyword*(*)
       character linea*80
-      real*8 intv,intdef
-      integer ilog
+      real*8 intv,intdef,xval
+      integer ilog,ios
 
-      call locate(16,section,ii)
-       if(ii.eq.0) go to 10
+      intv=intdef
+      call locate_block(16,section,ii)
+      if(ii.eq.0) return
       ii=0
       do while(ii.eq.0)
-      read(16,"(a80)") linea
-         ipos=index(linea,keyword)
-         if(ipos.ne.0) then
-          ipos=ipos+1+len(keyword)
-          read(linea(ipos:),*,err=10,end=10) intv
-      ii=1
-         end if
-      if(index(linea,"#").ne.0) ii=2 
-      end do
-      if(ilog.eq.0.and.ii.ne.1) then
-      write(*,*) keyword,'is required.'
-      stop
-      else if(ii.eq.2) then
-10       intv=intdef
-      end if
-c        write(*,"(a8,a2,2e10.4)") keyword,'= ',intv,intdef
-      return
-        end
-C*****************************************************************
-        subroutine readint(section,keyword,intv,intdef,ilog)
-        character section*(*), keyword*(*)
-        character linea*80
-        integer ipos,ii,intv,intdef,ilog
-
-        call locate(16,section,ii)
-        if(ii.eq.0) goto 40
-        ii=0
-        do while(ii.eq.0)
-         read(16,"(a80)") linea
-         ipos=index(linea,keyword)
-         if(ipos.ne.0) then
-          ipos=ipos+1+len(keyword)
-          read(linea(ipos:),*,end=40) intv
-          ii=1
-         end if
-         if(index(linea,"#").ne.0) ii=2
-        end do
-        if(ilog.eq.0.and.ii.ne.1) then
-         write(*,*) keyword,"is required."
-         stop
-        else if(ii.eq.2) then
-40       intv=intdef
+        read(16,"(a80)",end=10) linea
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
+          if(linea(ipos:).ne.' ') then
+            read(linea(ipos:),*,iostat=ios) xval
+            if(ios.ne.0) call bad_value(section,keyword,linea)
+            ii=1
+          end if
         end if
-        write(*,"(a8,a2,i3)") keyword,'= ',intv
-        return
-        end
+        if(index(linea,"#").ne.0) ii=2
+      end do
+      if(ii.eq.1) intv=xval
+10    return
+      end
 
-C*****************************************************************
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: readint                                                   !!
+!! purpose: scans an .inp section (unit 16, already open) for a keyword  !!
+!! followed by an integer value; falls back to intdef if not found.      !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# METHOD"               !!
+!!   keyword (in)  -- keyword text to search for                         !!
+!!   intv    (out) -- parsed value, or intdef if not found               !!
+!!   intdef  (in)  -- default value                                      !!
+!!   ilog    (in)  -- unused, kept for the call sites                    !!
+!! author:                                                               !!
+!! ********************************************************************* !!
+      subroutine readint(section,keyword,intv,intdef,ilog)
+      character section*(*), keyword*(*)
+      character linea*80
+      integer ipos,ii,intv,intdef,ilog,ival,ios
+
+      intv=intdef
+      call locate_block(16,section,ii)
+      if(ii.eq.0) return
+      ii=0
+      do while(ii.eq.0)
+        read(16,"(a80)",end=40) linea
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
+          if(linea(ipos:).ne.' ') then
+            read(linea(ipos:),*,iostat=ios) ival
+            if(ios.ne.0) call bad_value(section,keyword,linea)
+            ii=1
+          end if
+        end if
+        if(index(linea,"#").ne.0) ii=2
+      end do
+      if(ii.eq.1) intv=ival
+40    return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: readintlist                                               !!
+!! purpose: like readint, for a keyword followed by one or more integers !!
+!!   on its line; nval=0 if the keyword is absent or has no value.       !!
+!! arguments:                                                            !!
+!!   section (in)  -- .inp section header, e.g. "# OSLO"                 !!
+!!   keyword (in)  -- keyword text to search for                         !!
+!!   nmax    (in)  -- largest number of values accepted                  !!
+!!   nval    (out) -- number of values read                              !!
+!!   ivals   (out) -- (nmax) the values                                  !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine readintlist(section,keyword,nmax,nval,ivals)
+      character section*(*), keyword*(*)
+      character linea*80
+      integer nmax,nval,ivals(nmax),ipos,ii,i,j,ios
+
+      nval=0
+      call locate_block(16,section,ii)
+      if(ii.eq.0) return
+      ii=0
+      do while(ii.eq.0)
+        read(16,"(a80)",end=40) linea
+        call keyword_value(linea,keyword,ipos)
+        if(ipos.gt.0) then
+          i=ipos
+          do while(i.le.len(linea))
+            if(linea(i:i).eq.' ') then
+              i=i+1
+            else
+              j=index(linea(i:),' ')
+              if(j.eq.0) then
+                j=len(linea)
+              else
+                j=i+j-2
+              end if
+              if(nval.eq.nmax) then
+                write(*,'(2x,a,i0,a,a)') 'At most ',nmax,
+     +            ' values are accepted for ',trim(keyword)
+                call apost_stop(' Too many values for an input keyword')
+              end if
+              nval=nval+1
+              read(linea(i:j),*,iostat=ios) ivals(nval)
+              if(ios.ne.0) call bad_value(section,keyword,linea)
+              i=j+1
+            end if
+          end do
+          ii=1
+        end if
+        if(index(linea,"#").ne.0) ii=2
+      end do
+40    return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: keyword_value                                             !!
+!! purpose: finds keyword in an .inp line as a whole word -- at the      !!
+!!   start of the line or after a blank, and followed by a blank, "=" or !!
+!!   the end of the line ("-" and "_" belong to the word) -- and returns !!
+!!   where its value starts, after blanks and one optional "=".          !!
+!! arguments:                                                            !!
+!!   linea   (in)  -- the .inp line                                      !!
+!!   keyword (in)  -- keyword text to search for                         !!
+!!   ipos    (out) -- start of the value (beyond the line if none), or   !!
+!!                    0 if the keyword is not there                      !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine keyword_value(linea,keyword,ipos)
+      character linea*(*), keyword*(*)
+      integer ipos,i,j,n,lk
+      logical lword
+
+      n=len(linea)
+      lk=len_trim(keyword)
+      ipos=0
+      if(lk.eq.0) return
+      j=0
+      lword=.false.
+      do while(.not.lword)
+        i=index(linea(j+1:),keyword(1:lk))
+        if(i.eq.0) return
+        i=i+j
+        j=i
+        lword=.true.
+        if(i.gt.1) then
+          if(linea(i-1:i-1).ne.' ') lword=.false.
+        end if
+        i=i+lk
+        if(i.le.n) then
+          if(linea(i:i).ne.' '.and.linea(i:i).ne.'=') lword=.false.
+        end if
+      end do
+      do while(i.le.n)
+        if(linea(i:i).ne.' ') exit
+        i=i+1
+      end do
+      if(i.le.n) then
+        if(linea(i:i).eq.'=') i=i+1
+      end if
+      do while(i.le.n)
+        if(linea(i:i).ne.' ') exit
+        i=i+1
+      end do
+      ipos=i
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: bad_value                                                 !!
+!! purpose: stops the run when a keyword's value cannot be read, showing !!
+!!   the block and the line.                                             !!
+!! arguments:                                                            !!
+!!   section, keyword, linea (in) -- block header, keyword, .inp line    !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine bad_value(section,keyword,linea)
+      character section*(*), keyword*(*), linea*(*)
+
+      write(*,'(2x,a,a,a,a,a)') 'Cannot read the value of ',
+     +  trim(keyword),' in ',trim(section),':'
+      write(*,'(4x,a)') trim(linea)
+      call apost_stop(' Wrong keyword value in the input')
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: locate                                                    !!
+!! purpose: rewinds iunit and scans it for a line containing string,     !!
+!! leaving the file positioned just past that line for the caller to     !!
+!! keep reading from. Used throughout input()/read_input() to find       !!
+!! .fchk/.inp section markers before parsing what follows.               !!
+!! arguments:                                                            !!
+!!   iunit  (in)  -- file unit to scan (already open)                    !!
+!!   string (in)  -- text to search for                                  !!
+!!   ii     (out) -- 1 if found, 0 otherwise                             !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       subroutine locate(iunit,string,ii)
       integer iunit
       character string*(*)
@@ -809,19 +1193,96 @@ C*****************************************************************
 
       ii=0
       do while(ii.eq.0)
-       read(iunit,"(a80)",end=10)linia
-       if(index(linia,string).ne.0) then
+        read(iunit,'(a80)',end=10) linia
+        if(index(linia,string).ne.0) then
           ii=1
           return
-         end if
+        end if
       end do
-10      write(*,*) string, 'section not found '
+
+10    write(*,'(2x,a,1x,a)') trim(string),'section not found'
       return
       end
 
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: locate_block                                              !!
+!! purpose: like locate, for an .inp block header: the line must be the  !!
+!!   header itself (blanks ignored), so "# DFTDM1" does not find         !!
+!!   "# DFTDM1_FUNCTIONAL". Leaves the file just past the header, and    !!
+!!   reports a missing block.                                            !!
+!! arguments:                                                            !!
+!!   iunit  (in)  -- file unit to scan (already open)                    !!
+!!   string (in)  -- block header, e.g. "# METHOD"                       !!
+!!   ii     (out) -- 1 if found, 0 otherwise                             !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine locate_block(iunit,string,ii)
+      integer iunit,ii
+      character string*(*)
+
+      call find_block(iunit,string,ii)
+      if(ii.eq.0) write(*,'(2x,a,1x,a)') trim(string),'section not found'
+
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! subroutine: find_block                                                !!
+!! purpose: silent core of locate_block (see there).                     !!
+!! arguments: as locate_block                                            !!
+!! author: MGimf                                                         !!
+!! ********************************************************************* !!
+      subroutine find_block(iunit,string,ii)
+      integer iunit,ii,i,k
+      character string*(*)
+      character*80 linia,a,b
+
+      b=' '
+      k=0
+      do i=1,len(string)
+        if(string(i:i).ne.' ') then
+          k=k+1
+          b(k:k)=string(i:i)
+        end if
+      end do
+
+      rewind(iunit)
+      ii=0
+      do while(ii.eq.0)
+        read(iunit,'(a80)',end=10) linia
+        a=' '
+        k=0
+        do i=1,80
+          if(linia(i:i).ne.' '.and.linia(i:i).ne.char(9)) then
+            k=k+1
+            a(k:k)=linia(i:i)
+          end if
+        end do
+        if(a.eq.b) ii=1
+      end do
+10    return
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! function: int_locate                                                  !!
+!! purpose: rewinds iunit and scans it for a line containing text, then  !!
+!! reads an integer value from its fixed .fchk column position. Returns  !!
+!! 0 and ilog=.false. if text isn't found or the value can't be parsed.  !!
+!! See real_locate for the real*8 twin.                                  !!
+!! arguments:                                                            !!
+!!   iunit (in)  -- file unit to scan (already open)                     !!
+!!   text  (in)  -- text to search for                                   !!
+!!   ilog  (out) -- .true. if found and parsed, .false. otherwise        !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       function int_locate(iunit,text,ilog)
       implicit double precision(a-h,o-z)
-      character*(*)text
+      character*(*) text
       character*80 line
       integer int_locate
       logical ilog
@@ -830,19 +1291,55 @@ C*****************************************************************
       rewind(iunit)
 1     read(iunit,'(a80)',end=99) line
       if(index(line,text).eq.0) then
-       goto 1
+        goto 1
       else
-       read(line(50:61),*,err=99) int_locate
-       ilog=.true.
-       go to 2
+        read(line(50:61),*,err=99) int_locate
+        ilog=.true.
+        go to 2
       end if
 99    int_locate=0
 2     continue
       end
 
+!! ***** !!
+
+!! ----------------------------------------------------------------------
+!! function: nindep_fchk
+!! Number of independent basis functions in the .fchk (unit 15): fewer
+!! than igr when the program that wrote it removed linear dependencies,
+!! igr when the file doesn't give it.
+!! arguments:
+!!   igr (in)  number of basis functions
+!! author: MGimf
+!! ----------------------------------------------------------------------
+      integer function nindep_fchk(igr)
+      implicit none
+      integer, intent(in) :: igr
+      integer int_locate,n
+      logical lfound
+
+      n=int_locate(15,"Number of independ",lfound)
+      nindep_fchk=igr
+      if(lfound) nindep_fchk=min(igr,n)
+      end
+
+!! ***** !!
+
+!! ********************************************************************* !!
+!! function: real_locate                                                 !!
+!! purpose: rewinds iunit and scans it for a line containing text, then  !!
+!! reads a real*8 value from its fixed .fchk column position. Returns 0  !!
+!! and ilog=.false. if text isn't found or the value can't be parsed.    !!
+!! See int_locate for the integer twin.                                  !!
+!! arguments:                                                            !!
+!!   iunit (in)  -- file unit to scan (already open)                     !!
+!!   text  (in)  -- text to search for                                   !!
+!!   ilog  (out) -- .true. if found and parsed, .false. otherwise        !!
+!! author:                                                               !!
+!! ********************************************************************* !!
       function real_locate(iunit,text,ilog)
       implicit double precision(a-h,o-z)
-      character*(*)text
+      character*(*) text
       character*80 line
       real*8  real_locate
       logical ilog
@@ -851,289 +1348,12 @@ C*****************************************************************
       rewind(iunit)
 1     read(iunit,'(a80)',end=99) line
       if(index(line,text).eq.0) then
-       goto 1
+        goto 1
       else
-       read(line(50:71),*,err=99) real_locate
-       ilog=.true.
-       go to 2
+        read(line(50:71),*,err=99) real_locate
+        ilog=.true.
+        go to 2
       end if
 99    real_locate=0
 2     continue
       end
-
-      subroutine do_potential(zn,vv)
-      use basis_set
-      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-      include 'parameter.h'
-      PARAMETER(TOL=1.0d-8)
-      dimension AminusB(3)
-      dimension zn(maxat)
-      real*8, allocatable ::sp(:,:)
-      real*8 vv(nbasis,nbasis)
-     
-      DIMENSION E(0:10,0:10,0:10)
-      DIMENSION E_coulomb(3,0:10)
-      DIMENSION max_ang(3),xnew_coord(3)
-      DIMENSION Boys(0:20)
-      DIMENSION xR(0:20,0:10,0:10,0:10)
-     
-      allocate(sp(numprim,numprim))
-      do ia=1,numprim
-       do ib=1,ia
-       sp(ia,ib)=0.0d0
-       do ixyz=1,3 ! screening of primitives
-        AminusB(ixyz)=coord(ixyz,iptoat(ia))-coord(ixyz,iptoat(ib))
-!        ii=mod(nlm(ia,ixyz)+nlm(ib,ixyz),2)
-!        if(abs(AminusB(ixyz)).lt.TOL.and.ii.ne.0) go to 111
-       end do
-       gamma_p=expp(ia)+expp(ib)
-       eta_p=(expp(ia)*expp(ib))/gamma_p
-
-       do idir=1,3
-         if (ABS(gauss_dist).lt.1.0d-15) gauss_dist=0.0d0
-         xnew_coord(idir)=(expp(ia)*coord(idir,iptoat(ia))+expp(ib)*coord(idir,iptoat(ib)))/gamma_p
-         xdist_a=xnew_coord(idir)-coord(idir,iptoat(ia))
-         xdist_b=xnew_coord(idir)-coord(idir,iptoat(ib))
-         imax=nlm(ia,idir) 
-         jmax=nlm(ib,idir) 
-         max_ang(idir)=imax+jmax
-
-         E(0,0,0)=exp(-eta_p*gauss_dist**2.0d0)
-         if(imax.eq.0.and.jmax.eq.0) E_coulomb(idir,0)=E(0,0,0)
-         do ii=0,imax-1
-           do it=0,ii+1
-             if ((it-1).lt.0.or.(it-1).gt.ii) then
-               E1=0.0d0
-             else
-               E1=E(ii,0,it-1)/(2.0d0*gamma_p)
-             end if
-             if (it.gt.ii) then
-               E2=0.0d0
-             else
-               E2=E(ii,0,it)*xdist_a
-             end if
-             if ((it+1).gt.ii) then
-               E3=0.0d0
-             else
-               E3=real((it+1))*E(ii,0,it+1)
-             end if
-             E(ii+1,0,it)=E1+E2+E3
-             if(ii.eq.imax-1.and.jmax.eq.0) E_coulomb(idir,it)=E(ii+1,0,it)
-           end do
-         end do
-
-         do jj=0,jmax-1
-           do it=0,imax+jj+1
-             if (((it-1).lt.0).or.((it-1).gt.(jj+imax))) then
-               E1=0
-             else
-               E1=E(imax,jj,it-1)/(2.0d0*gamma_p)
-             end if
-             if (it.gt.(jj+imax)) then
-               E2=0
-             else
-               E2=E(imax,jj,it)*xdist_b
-             end if
-             if ((it+1).gt.(jj+imax)) then
-               E3=0
-             else
-               E3=real((it+1))*E(imax,jj,it+1)
-             end if
-             E(imax,jj+1,it)=E1+E2+E3
-             if(jj+1.eq.jmax) E_coulomb(idir,it)=E(imax,jmax,it)
-           end do
-         end do
-         E_ij=E(imax,jmax,0)
-       end do !end of idir loop
-
-!!! RECURRENCE FOR COULOMB BEGINS, USING THE SAVED E VALUES (ALL VALUES OF T FOR IMAX,JMAX) ACROSS ALL 3 DIRECTIONS !!
-!!! CALCULATING BOYS FUNCTION OF ORDER n_max (lower n has to be obtained through recurrence) !!!
-
-       n_max=max_ang(1)+max_ang(2)+max_ang(3)
-      do icenter=1,natoms
-       dist_x=xnew_coord(1)-coord(1,icenter) !assuming hydrogen is atom 1
-       dist_y=xnew_coord(2)-coord(2,icenter) !assuming hydrogen is atom 1
-       dist_z=xnew_coord(3)-coord(3,icenter) !assuming hydrogen is atom 1
-       if(dist_x.lt.1.0d-12) dist_x=0.0d0
-       if(dist_y.lt.1.0d-12) dist_y=0.0d0
-       if(dist_z.lt.1.0d-12) dist_z=0.0d0
-       Rmod_CN2=dist_x**2.0d0+dist_y**2.0d0+dist_z**2.0d0 
-       if(Rmod_CN2.lt.1.0d-12) then
-         Boys(n_max)=1.0d0/(2.0d0*real(n_max)+1.0d0)
-         xT=0.0d0
-       else
-         xT=gamma_p*Rmod_CN2
-         if(n_max.eq.0) then
-           Boys(n_max)=DSQRT(PI/(4.0d0*xT))*erf(DSQRT(xT))
-         else if(xT.gt.8.0d0.and.xT.lt.15.0d0) then !Taylor expansion
-           CALL Boys_expansionn(n_max,xT,Boys(n_max))
-         else if(xT.gt.15.0d0) then !asymptotic value
-           xvalue=fact(2*n_max-1)/2.0d0**(real(n_max)+1.0d0)
-           Boys(n_max)=xvalue*DSQRT(PI/(xT**(2.0d0*real(n_max)+1.0d0)))
-         else !infinite series
-           xa=real(n_max)+0.50d0
-           gammaincomplete=0.0d0
-           do i=0,30
-             xnewsum=xT**(xa+real(i))/((xa+real(i))*FACT(i))
-             if(MOD(i,2).ne.0) xnewsum=-xnewsum
-             gammaincomplete=gammaincomplete+xnewsum
-           end do
-           Boys(n_max)=0.50d0*gammaincomplete*xT**(-xa)
-         end if
-       end if
-       if(Boys(n_max).lt.1.0d-12) Boys(n_max)=0.0d0
-
-!!!  RECURRENCE FOR BOYS FUNCTION OF ALL ORDERS !!!
-       n=1
-       do while(n.le.n_max)
-         Boys(n_max-n)=(2.0d0*xT*Boys(n_max-n+1)+exp(-xT))/(2.0d0*(real(n_max-n+1))-1.0d0)
-         n=n+1
-       end do
-
-!!! RATING R VALUES FOR t=0,u=0,v=0 FOR N=[0,n_max] !!!
-       do n=0,n_max
-         xR(n,0,0,0)=(-2.0d0*gamma_p)**n*Boys(n)
-       end do
-
-!!!  RECURRENCE LOOP, TO OBTAIN R VALUES FOR ALL VALUES OF n,t,u,v !!!
-!!!  INCLUDES FINAL CALCULATIONS, USING ALL THE OBTAINED VALUES OF xR(0,t,u,v) AND E(imax,jmax,t/u/v) STORED AS E_coulomb(idir,it) !!!
-
-       Vab=0.0d0
-       do it=0,max_ang(1)
-         do iu=0,max_ang(2)
-           do iv=0,max_ang(3)
-             do n=0,n_max-it-iu-iv
-               if(it.eq.0) then
-                 xRa=0.0d0
-               else
-                 xRa=real(it)*xR(n+1,it-1,iu,iv)
-               end if
-               xR(n,it+1,iu,iv)=xRa+dist_x*xR(n+1,it,iu,iv)
-
-               if(iu.eq.0) then
-                 xRa=0.0d0
-               else
-                 xRa=real(iu)*xR(n+1,it,iu-1,iv)
-               end if
-               xR(n,it,iu+1,iv)=xRa+dist_y*xR(n+1,it,iu,iv)
-
-               if(iv.eq.0) then
-                 xRa=0.0d0
-               else
-                 xRa=real(iv)*xR(n+1,it,iu,iv-1)
-               end if
-               xR(n,it,iu,iv+1)=xRa+dist_z*xR(n+1,it,iu,iv)
-             end do
-             Vab=Vab+E_coulomb(1,it)*E_coulomb(2,iu)*E_coulomb(3,iv)*xR(0,it,iu,iv)
-           end do
-         end do
-       end do
-       sp(ia,ib)=sp(ia,ib)+zn(icenter)*Vab*2.0d0*PI/gamma_p
-       if(ia.ne.ib) sp(ib,ia)=sp(ia,ib)
-      end do 
-      end do
-      end do
-! basis functions potential
-      do i=1,nbasis
-      do j=1,i
-      vv(i,j)=0.0d0
-      k=1
-      do while(nprimbas(k,i).ne.0) 
-      l=1
-      do while(nprimbas(l,j).ne.0) 
-       vv(i,j)=vv(i,j)+coefpb(nprimbas(k,i),i)*coefpb(nprimbas(l,j),j)*sp(nprimbas(k,i),nprimbas(l,j)) 
-       l=l+1
-      end do
-       k=k+1
-      end do
-      if(i.ne.j) vv(j,i)=vv(i,j)
-      end do
-      end do
-      deallocate(sp)
-      end subroutine do_potential
-
-      SUBROUTINE Boys_expansionn(n_max,xT,Boys)
-      use basis_set
-      IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-      DIMENSION WA_Boys(11,29) 
-      DATA (WA_Boys(n,1),n=1,11)/0.0195608d0,0.00364669d0,0.00111862d0,0.000468431d0,0.000242526d0,
-     + 0.00014577d0,0.000097472d0,0.0000704136d0,0.0000538481d0,0.0000429782d0,0.0000354424d0/,
-     +(WA_Boys(n,2),n=1,11)/0.0186829d0,0.00338106d0,0.00100873d0,0.000412112d0,0.000208955d0,
-     + 0.000123469d0,0.000081445d0,0.0000582071d0,0.0000441371d0,0.0000349906d0,0.0000286997d0/,
-     + (WA_Boys(n,3),n=1,11)/0.0178681d0,0.00314123d0,0.000911924d0,0.000363529d0,0.000180488d0,
-     + 0.000104818d0,0.0000681859d0,0.0000481953d0,0.0000362266d0,0.0000285198d0,0.0000232616d0/,
-     + (WA_Boys(n,4),n=1,11)/0.0171104d0,0.00292416d0,0.000826419d0,0.000321513d0,0.000156294d0, 
-     + 0.0000891873d0,0.0000571985d0,0.0000399724d0,0.0000297754d0,0.0000232726d0,0.0000188722d0/,
-     + (WA_Boys(n,5),n=1,11)/0.0164044d0,0.00272721d0,0.000750702d0,0.000285084d0,0.000135686d0,
-     + 0.0000760629d0,0.0000480782d0,0.0000332091d0,0.000024508d0,0.0000190135d0,0.0000153263d0/,
-     + (WA_Boys(n,6),n=1,11)/0.0157453d0,0.0025481d0,0.000683481d0,0.000253419d0,0.00011809d0,
-     + 0.0000650203d0,0.0000404947d0,0.0000276383d0,0.0000202022d0,0.0000155529d0,0.0000124595d0/,
-     + (WA_Boys(n,7),n=1,11)/0.015129d0,0.00238485d0,0.000623653d0,0.000225827d0,0.000103031d0,
-     + 0.0000557101d0,0.0000341779d0,0.000023043d0,0.0000166778d0,0.0000127383d0,0.0000101396d0/,
-     + (WA_Boys(n,8),n=1,11)/0.0145517d0,0.00223574d0,0.000570276d0,0.000201725d0,0.0000901145d0,
-     + 0.0000478443d0,0.0000289067d0,0.0000192465d0,0.0000137895d0,0.0000104465d0,8.260577971693436E-6/,
-     + (WA_Boys(n,9),n=1,11)/0.0140101d0,0.00209924d0,0.000522541d0,0.000180619d0,0.0000790087d0,
-     + 0.0000411848d0,0.0000245001d0,0.0000161051d0,0.0000114193d0,8.578378262164428E-6,6.737300687156685E-6/,
-     + (WA_Boys(n,10),n=1,11)/0.0135012d0,0.00197405d0,0.000479752d0,0.000162093d0,0.000069438d0,
-     + 0.0000355347d0,0.0000208094d0,0.0000135017d0,9.471736878316576E-6,7.053926821346582E-6,5.501217677944795E-6/,
-     + (WA_Boys(n,11),n=1,11)/0.0130222d0,0.00185901d0,0.000441309d0,0.000145792d0,0.000061171d0,
-     + 0.0000307307d0,0.0000177125d0,0.0000113405d0,7.869163916680592E-6,5.80846024129448E-6,4.497200748449379E-6/,
-     + (WA_Boys(n,12),n=1,11)/0.0125709d0,0.00175308d0,0.000406696d0,0.000131415d0,0.0000540135d0,
-     + 0.0000266374d0,0.0000151089d0,9.543599724113801E-6,6.5486412555044375E-6,4.789710490139303E-6,3.680861022155174E-6/,
-     + (WA_Boys(n,13),n=1,11)/0.012145d0,0.00165538d0,0.000375463d0,0.000118706d0,0.0000478025d0,
-     + 0.0000231421d0,0.0000129157d0,8.04699180325652E-6,5.458961812050689E-6,3.955389710843769E-6,3.016431051707373E-6/,
-     + (WA_Boys(n,14),n=1,11)/0.0117426d0,0.0015651d0,0.000347222d0,0.000107447d0,0.0000424005d0,
-     + 0.000020151d0,0.0000110647d0,6.798376276547872E-6,4.558448846544275E-6,3.2712546857899363E-6,2.475068922112048E-6/,
-     + (WA_Boys(n,15),n=1,11)/0.0113619d0,0.00148155d0,0.000321635d0,0.0000974484d0,0.0000376915d0,
-     + 0.0000175859d0,9.499443638459046E-6,5.75485047731543E-6,3.81314628329268E-6,2.7095515558230534E-6,
-     + 2.033499524941453E-6/,
-     + (WA_Boys(n,16),n=1,11)/0.0110013d0,0.00140409d0,0.000298406d0,0.0000885512d0,0.0000335775d0,0.0000153814d0,
-     + 8.173154150633697E-6,4.8811909545661805E-6,3.1953583574648872E-6,2.247765275090749E-6,1.672925359561938E-6/,
-     + (WA_Boys(n,17),n=1,11)/0.0106594d0,0.00133217d0,0.000277279d0,0.000080617d0,0.0000299754d0,0.0000134827d0,
-     + 7.04711984415125E-6,4.148441054539189E-6,2.6824702322432485E-6,1.8676134191372295E-6,1.378152893686431E-6/,
-     + (WA_Boys(n,18),n=1,11)/0.0103348d0,0.00126529d0,0.000258027d0,0.0000735268d0,0.0000268145d0,0.0000118439d0,
-     + 6.089189123641323E-6,3.532764059693503E-6,2.255994760108594E-6,1.5542360428544605E-6,1.1368914084822314E-6/,
-     + (WA_Boys(n,19),n=1,11)/0.0100264d0,0.00120301d0,0.000240454d0,0.000067178d0,0.000024035d0,0.0000104263d0,
-     + 5.272628628800348E-6,3.014511050397064E-6,1.9008013873868572E-6,1.2955429275308632E-6,9.391899322427788E-7/,
-     + (WA_Boys(n,20),n=1,11)/0.00973295d0,0.00114494d0,0.000224384d0,0.0000614818d0,0.0000215856d0,9.197635833852241E-6,
-     + 4.5751743306442665E-6,2.577462531412298E-6,1.6044918676611233E-6,1.0816872579180755E-6,7.76984784609612E-7/,
-     + (WA_Boys(n,21),n=1,11)/0.00945357d0,0.00109071d0,0.000209665d0,0.0000563613d0,0.0000194227d0,8.130379517397552E-6,
-     + 3.9782540122764285E-6,2.208210799121746E-6,1.3568943914649463E-6,9.046409242635738E-7,6.437357693257796E-7/,
-     + (WA_Boys(n,22),n=1,11)/0.0091873d0,0.00104001d0,0.000196161d0,0.0000517497d0,0.0000175089d0,7.201431182817885E-6,
-     + 3.4663493986594863E-6,1.8956564025560807E-6,1.1496533030678184E-6,7.578515640049953E-7,5.341334540326893E-7/,
-     + (WA_Boys(n,23),n=1,11)/0.0089333d0,0.000992538d0,0.000183753d0,0.0000475888d0,0.0000158121d0,6.391208339399082E-6,
-     + 3.026472197252E-6,1.6305971804591078E-6,9.758960363489164E-7,6.359653927498272E-7,4.438634874578624E-7/,
-     + (WA_Boys(n,24),n=1,11)/0.00869078d0,0.000948047d0,0.000172333d0,0.0000438278d0,0.0000143048d0,5.683105061880854E-6,
-     + 2.6477331561605937E-6,1.405392484813605E-6,8.299624811562363E-7,5.346030229794071E-7,3.694167080892861E-7/,
-     + (WA_Boys(n,25),n=1,11)/0.00845904d0,0.000906297d0,0.000161809d0,0.0000404225d0,0.0000129633d0,5.063013022410489E-6,
-     + 2.320987163294029E-6,1.2136885260823884E-6,7.071848651534656E-7,4.5017798995758116E-7,3.0793603821185376E-7/,
-     + (WA_Boys(n,26),n=1,11)/0.00823742d0,0.000867075d0,0.000152096d0,0.0000373341d0,0.000011767d0,4.5189232096371906E-6,
-     + 2.0385405792175185E-6,1.0501934551115288E-6,6.037085445372549E-7,3.7974972381135496E-7,2.5709294675278E-7/,
-     + (WA_Boys(n,27),n=1,11)/0.00802531d0,0.000830187d0,0.000143118d0,0.0000345284d0,0.0000106983d0,4.0405942296332715E-6,
-     + 1.7939095628505054E-6,9.104929579375757E-7,5.163459524955484E-7,3.2090432533957015E-7,2.1498769550217542E-7/,
-     + (WA_Boys(n,28),n=1,11)/0.00782215d0,0.00079546d0,0.00013481d0,0.0000319756d0,9.741947025074953E-6,
-     + 3.6192756244500433E-6,1.5816202292644905E-6,7.908988842176024E-7,4.424574466830895E-7,2.716578010993421E-7,
-     + 1.8006872774705342E-7/,
-     + (WA_Boys(n,29),n=1,11)/0.00762742d0,0.000762731d0,0.000127112d0,0.0000296492d0,8.884563981972003E-6,
-     + 3.24747671603967E-6,1.3970431662671294E-6,6.883248391168378E-7,3.798539981494806E-7,2.303774548112768E-7,
-     + 1.510674743511661E-7/
- 
-      xcheck_min=0.25d0
-        do iT=1,29 !find which pretabulated xT is closest to the xT of Boys being calculated
-         xpoint=(8.d0+0.25d0*real(iT-1))
-         xcheck=ABS(xpoint-xT)
-         if(xcheck.lt.xcheck_min) then
-           xcheck_min=xcheck
-           iT_min=iT
-         end if
-       end do
-
-       Boys=WA_Boys(n_max,iT_min)
-       xdeltaT=xT-(8.d0+0.25d0*real(iT_min-1))
-       do i=1,5 !Taylor expand around the found closest value to obtain the Boys function of interest
-         Taylor_term=WA_Boys(n_max+i,iT_min)*xdeltaT**real(i)/FACT(i)
-         if(MOD(i,2).ne.0) Taylor_term=-Taylor_term
-         Boys=Boys+Taylor_term
-       end do
-
-      END SUBROUTINE

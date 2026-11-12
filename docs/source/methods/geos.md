@@ -1,0 +1,229 @@
+# GEOS - Generalized effective oxidation states
+
+```{admonition} Unpublished method
+:class: danger
+
+GEOS is not published yet (manuscript in preparation). The method, its
+keywords and its output may still change before publication, and **we
+do not recommend its use for production results yet**.
+```
+
+**Generalized effective oxidation states** (`GEOS`) assigns electrons, and
+from them oxidation states, to atoms or fragments using two density
+functions instead of one: the **paired** and the **unpaired** electron
+density. It extends the [EOS](eos.md) analysis to open-shell,
+broken-symmetry and multiconfigurational (correlated) wavefunctions, where
+the alpha/beta picture used by EOS is not the natural one.
+
+```{admonition} Cite
+:class: note
+
+- M. Gimferrer and P. Salvador, *manuscript in preparation*, **2026**.
+- The EOS method it builds on: E. Ramos-Cordoba, V. Postils and
+  P. Salvador, *J. Chem. Theory Comput.*, **2015**, 11, 1501-1508.
+
+See [How to cite](../citations.md).
+```
+
+## How it works
+
+1. **Natural orbitals.** The one-particle density of the wavefunction is
+   diagonalized into natural orbitals with occupations *n*.
+2. **Paired and unpaired densities.** Each natural orbital contributes
+   *u* = *n*(2 − *n*) to the unpaired density (Takatsuka's definition).
+   The paired density is the total density minus the unpaired one. For a
+   closed-shell single determinant every *n* is 0 or 2, so the unpaired
+   density is zero and GEOS reduces to a closed-shell EOS analysis.
+3. **Effective fragment orbitals (EFOs).** For each fragment and each of
+   the two densities, the effective fragment orbitals and their net and
+   gross occupations are obtained, as in EOS. EFOs with net occupation
+   below 0.0001 are discarded.
+4. **Electron assignment.** The EFOs of all fragments are pooled and
+   sorted by gross occupation. A paired EFO takes two electrons, an
+   unpaired one takes one. The starting assignment places the |N_α − N_β|
+   electrons that must be unpaired, and the rest as electron pairs. The
+   program then repeatedly tries to break the least-occupied pair into
+   the two most-occupied unpaired EFOs not yet assigned, keeping the move only while it
+   lowers the RMSD between the assigned and the actual occupations.
+5. **Oxidation states.** Each fragment's oxidation state follows from the
+   number of electrons assigned to it, and a reliability index R(%) is
+   given per density and overall, as in EOS.
+
+## Requirements and input
+
+- A **real-space** atomic definition (`TFVC` recommended). GEOS stops with
+  an error for Hilbert-space schemes (`MULLIKEN`, `LOWDIN`, ...).
+- Any wavefunction whose `.fchk` provides the total density: restricted,
+  unrestricted (including broken-symmetry), or correlated (e.g. a pySCF
+  CASSCF/FCI `.fchk`, with no `.dm1`/`.dm2` needed).
+- Fragments are required (`DOFRAGS` and a
+  [`# FRAGMENTS` block](../input/fragments.md)), with every atom in exactly
+  one of them. The run stops otherwise. For one oxidation state per atom,
+  make every atom a fragment of its own.
+
+```text
+# METHOD
+TFVC
+GEOS
+DOFRAGS
+#
+# FRAGMENTS
+2
+1
+1
+-1
+#
+```
+
+`EFFAO-U` computes the same paired/unpaired EFOs **without** the electron
+assignment, the oxidation states and the `.fchk` export described below.
+
+## Reading the output
+
+The excerpts below come from LiH at 3.2 Å, pySCF FCI/cc-pVTZ, with Li and
+H as fragments 1 and 2 (the full input is
+[Example 6](../input/examples.md)).
+
+**EFO blocks.** After the atomic definition, the densities, the
+occupation cutoff (0.0001 for GEOS) and the number of natural orbitals,
+the output has one section per density (`PAIRED DENSITY`, then
+`UNPAIRED DENSITY`), with one entry per fragment:
+
+% source: tests/reference/LiH-32-FCI.apost
+```text
+  Fragment 2
+  Net occupation                          :        1.05137
+  Net       1.0512   0.0002
+  Gross occupation                        :        1.08681
+  Gross     1.0861   0.0007
+  Fit (%)    93.01    33.07
+  Left out by the cutoff (net)            :       -0.09431
+  Left out by the cutoff (gross)          :       -0.10682
+```
+
+- The `Net` rows are the net occupations of the fragment's EFOs, and the
+  `Gross` rows their gross occupations, 8 per line, in the same order.
+  Paired occupations go up to 2, unpaired ones up to 1.
+- `Fit (%)` gives, for each EFO, how faithfully the projected orbital
+  written to `<jobname>-GEOS-EFOs.fchk` reproduces it (see *Orbitals in
+  the .fchk file* below). The cube files and the unweighted file are
+  exact. It concerns only the drawing of the orbitals, never a result
+  (see [EFFAO](effao.md#reading-the-output)).
+- `Left out by the cutoff` is what the listed EFOs miss of the fragment's
+  net and gross population in that density (see [EFFAO](effao.md)). In
+  the paired density it can be negative, as here: the EFOs below the
+  cutoff include the negative ones described next.
+
+**Negative paired EFOs.** The paired density is the difference of two
+densities, so unlike a normal density it can yield EFOs with a *negative*
+occupation. Those with net occupation below −0.025 are listed at the
+start of the assignment section:
+
+% source: tests/reference/LiH-32-FCI.apost
+```text
+  WARNING: 1 paired EFO(s) with net occupation below -0.0250 left out of the assignment
+
+  Frag.  Net occ.  Gross occ.        Fit (%)
+  ------------------------------------------
+      2   -0.0856     -0.0978          84.36
+  ------------------------------------------
+```
+
+They never take part in the electron assignment. They are written to the
+`.fchk` file (see below), and cube files of them can be requested with
+`NEG_EFOS` (see *Cube files* below).
+
+**Assignment and oxidation states.**
+
+% source: tests/reference/LiH-32-FCI.apost
+```text
+  Ideal assignment                        : 2 electron pairs, 0 unpaired electrons
+  RMSD of the ideal assignment            :        0.53195
+
+  Pairs moved to the unpaired density (kept while the RMSD decreases):
+  Try  Frag.  Paired  Frag.  Unpaired  Frag.  Unpaired     RMSD  Result
+  -----------------------------------------------------------------------
+    1      2  1.0861      2    0.4272      1    0.2352  0.73340  rejected
+  -----------------------------------------------------------------------
+  RMSD of the electron assignment         :        0.53195
+```
+
+The assignment starts with every electron paired (except the
+`|Nα − Nβ|` that must be unpaired) and moves one pair at a time, from the
+least occupied paired EFO to the two most occupied unpaired ones not yet
+assigned, while
+that lowers the RMSD between occupations and assigned electrons. Each try
+is listed. Here moving the pair raises the RMSD, so it is rejected.
+
+Then come the usual EOS tables, one per density (`GEOS, PAIRED
+ELECTRONS` / `GEOS, UNPAIRED ELECTRONS`: electrons per fragment, last
+occupied and first unoccupied gross occupation, and R, with the paired
+occupations halved when computing R), followed by:
+
+% source: tests/reference/LiH-32-FCI.apost
+```text
+  Frag.  Oxidation state
+  ----------------------
+      1             1.00
+      2            -1.00
+  ----------------------
+  Total             0.00
+  Overall reliability index R (%)         :         96.638
+```
+
+## Orbitals in the .fchk file
+
+Every GEOS run writes `<jobname>-GEOS-EFOs.fchk`, with the EFOs of all
+fragments as its orbitals (see [Visualizing orbitals](../guide/visualization.md)
+for the general layout and the meaning of `Fit (%)`):
+
+- **Alpha orbitals:** paired EFOs of all fragments, sorted by decreasing
+  gross occupation. The negative paired EFOs, if any, are the **last**
+  Alpha orbitals (most negative last).
+- **Beta orbitals:** unpaired EFOs, same ordering. For a restricted
+  input `.fchk` with a non-empty unpaired density, a Beta set is added.
+- **"Orbital energy"** of each orbital: its gross occupation.
+
+With `BECKE`, `BECKE-RHO` or `TFVC` atoms, GEOS also writes
+`<jobname>-GEOS-EFOs-unweighted.fchk`, with the same orbitals before the
+multiplication by the fragment's weight
+([The unweighted files](../guide/visualization.md#the-unweighted-files)).
+
+In the LiH example, the negative EFO of the H atom is the last Alpha
+orbital, with "orbital energy" −0.0978 (its gross occupation), and its
+`Fit (%)` of 84.36 is the quality of that orbital's fit.
+
+## Cube files
+
+With `CUBE` in `# METHOD` and a [`# CUBE` block](../input/cube.md):
+
+- `<jobname>_<scheme>_paired_FR<n>_<i>.cube` and `..._unpaired_...` for
+  the EFOs selected by `MAX_OCC`/`MIN_OCC`. Paired occupations go up to 2,
+  so both bounds are doubled for the paired density.
+- With `NEG_EFOS [val]`, also `..._paired_neg_FR<n>_<i>.cube` for every
+  paired EFO with net occupation ≤ −val/1000 (default val = 25), index 1
+  being the most negative. This selection is independent of the −0.025
+  used for the output and the `.fchk`: a smaller value plots more EFOs,
+  some of which then have no `.fchk` counterpart.
+
+For only the negative EFOs, use an empty occupation window. They are
+diffuse: if their `Norm in cube` is below 0.9, raise `PADDING`.
+
+```text
+# CUBE
+MAX_OCC 0
+MIN_OCC 0
+NEG_EFOS 10
+#
+```
+
+## Checking the result
+
+- R(%) is read as in [EOS](eos.md#how-it-works), per density and overall.
+- `RMSD of the electron assignment` is
+  $\sqrt{\sum_i (n_i^{\rm assigned} - n_i)^2 / N}$, over all EFOs, with
+  $n_i$ the gross occupations and $N$ the number of electrons: the
+  smaller, the closer the electron distribution is to the integer
+  assignment.
+- For negative paired EFOs, `Fit (%)` tells how faithfully the
+  orbital in `<jobname>-GEOS-EFOs.fchk` represents them.
